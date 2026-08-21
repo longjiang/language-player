@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Give its pronunciation. If it is an inflected or conjugated form, state its dictionary form and explain the inflection. If it is not inflected, do not mention inflection or lemma."
+  },
+  "inflection": {
+    "message": "Inflection"
+  },
+  "morphemes": {
+    "message": "Morphemes"
+  },
+  "etymology": {
+    "message": "Etymology"
+  },
+  "syntax": {
+    "message": "Syntax"
+  },
+  "synonyms": {
+    "message": "Synonyms"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Please explain the lemma (dictionary form) of the $l2Name$ word \"$word$\", how the word is inflecting, and the meaning of the inflected form.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Please explain the lemma (dictionary form) of the $l2Name$ word \"$word$\", how the word is inflecting in \"$context$\", and the meaning of the inflected form.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Please explain the lemma (dictionary form) of the $l2Name$ word \"$word$\" (inflected form: $contextForm$), how the word is inflecting in \"$context$\", and the meaning of the inflected form.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Please explain whether the $l2Name$ word \"$word$\" can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Please explain whether the $l2Name$ word \"$word$\" in \"$context$\" can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Please give the etymology of the $l2Name$ word \"$word$\".",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Please explain whether the $l2Name$ word \"$word$\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Please explain whether the $l2Name$ word \"$word$\" in \"$context$\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "List up to three synonyms of the $l2Name$ word \"$word$\" (not the word itself). For each, briefly explain how it differs from \"$word$\" in meaning or use. If you include pronunciation, put it inline — never on a separate line. No tables or any other content.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "List up to three synonyms of the $l2Name$ word \"$word$\" in \"$context$\" (not the word itself). For each, briefly explain how it differs from \"$word$\" in meaning or use. If you include pronunciation, put it inline — never on a separate line. No tables or any other content.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "For each synonym, include one natural example sentence in $l2Name$ and its translation in the learner's UI language. Keep each synonym's explanation, example sentence, and translation together. No tables.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

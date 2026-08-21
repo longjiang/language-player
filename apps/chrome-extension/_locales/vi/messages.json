@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Cho biết cách phát âm và hình thái (hoặc từ nguyên nếu phù hợp). Nếu là dạng biến tố, cho biết lemma và dạng biến tố; nếu không, đừng đề cập đến biến tố hoặc lemma."
+  },
+  "inflection": {
+    "message": "Biến cách"
+  },
+  "morphemes": {
+    "message": "Hình vị"
+  },
+  "etymology": {
+    "message": "Từ nguyên"
+  },
+  "syntax": {
+    "message": "Cú pháp"
+  },
+  "synonyms": {
+    "message": "Từ đồng nghĩa"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Vui lòng giải thích lemma (dạng từ điển) của từ tiếng $l2Name$ \"$word$\", cách từ đó biến cách và ý nghĩa của dạng biến cách.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Vui lòng giải thích lemma (dạng từ điển) của từ tiếng $l2Name$ \"$word$\", cách từ đó biến cách trong \"$context$\" và ý nghĩa của dạng biến cách.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Vui lòng giải thích lemma (dạng từ điển) của từ tiếng $l2Name$ \"$word$\" (dạng biến cách: $contextForm$), cách từ đó biến cách trong \"$context$\" và ý nghĩa của dạng biến cách.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Vui lòng giải thích từ tiếng $l2Name$ \"$word$\" có thể được phân tách thành các phần ngữ nghĩa (hình vị) hay không và nêu bất kỳ cách hiểu theo nghĩa đen nào của từ.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Vui lòng giải thích từ tiếng $l2Name$ \"$word$\" trong \"$context$\" có thể được phân tách thành các phần ngữ nghĩa (hình vị) hay không và nêu bất kỳ cách hiểu theo nghĩa đen nào của từ.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Vui lòng cung cấp từ nguyên của từ tiếng $l2Name$ \"$word$\".",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Vui lòng giải thích từ tiếng $l2Name$ \"$word$\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Vui lòng giải thích từ tiếng $l2Name$ \"$word$\" trong \"$context$\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "Liệt kê tối đa ba từ đồng nghĩa của từ tiếng $l2Name$ \"$word$\" (không phải chính từ đó). Giải thích ngắn gọn mỗi từ khác \"$word$\" như thế nào về nghĩa hoặc cách dùng. Nếu có phiên âm, hãy viết cùng dòng, không tách dòng riêng. Không dùng bảng hay nội dung khác.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "Liệt kê tối đa ba từ đồng nghĩa của từ tiếng $l2Name$ \"$word$\" trong \"$context$\" (không phải chính từ đó). Giải thích ngắn gọn mỗi từ khác \"$word$\" như thế nào về nghĩa hoặc cách dùng. Nếu có phiên âm, hãy viết cùng dòng, không tách dòng riêng. Không dùng bảng hay nội dung khác.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "Với mỗi từ đồng nghĩa, hãy thêm một câu ví dụ tự nhiên bằng $l2Name$ và bản dịch sang ngôn ngữ giao diện của người học. Giữ phần giải thích, câu ví dụ và bản dịch của từng từ đồng nghĩa cùng nhau. Không dùng bảng.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

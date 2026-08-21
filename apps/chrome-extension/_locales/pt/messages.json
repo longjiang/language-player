@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema."
+  },
+  "inflection": {
+    "message": "Flexão"
+  },
+  "morphemes": {
+    "message": "Morfemas"
+  },
+  "etymology": {
+    "message": "Etimologia"
+  },
+  "syntax": {
+    "message": "Sintaxe"
+  },
+  "synonyms": {
+    "message": "Sinônimos"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Explica o lema (forma de dicionário) da palavra em $l2Name$ \"$word$\", como a palavra se flexiona e o significado da forma flexionada.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Explica o lema (forma de dicionário) da palavra em $l2Name$ \"$word$\", como a palavra se flexiona em \"$context$\" e o significado da forma flexionada.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Explica o lema (forma de dicionário) da palavra em $l2Name$ \"$word$\" (forma flexionada: $contextForm$), como a palavra se flexiona em \"$context$\" e o significado da forma flexionada.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Explica se a palavra em $l2Name$ \"$word$\" pode ser decomposta em partes semânticas (morfemas) e indica as interpretações literais da palavra.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Explica se a palavra em $l2Name$ \"$word$\" em \"$context$\" pode ser decomposta em partes semânticas (morfemas) e indica as interpretações literais da palavra.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Dá a etimologia da palavra em $l2Name$ \"$word$\".",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Explica se a palavra em $l2Name$ \"$word$\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Explica se a palavra em $l2Name$ \"$word$\" em \"$context$\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "Liste até três sinônimos da palavra em $l2Name$ \"$word$\" (não a própria palavra). Explique brevemente como cada um difere de \"$word$\" em significado ou uso. Se incluir a pronúncia, faça-o na mesma linha, nunca em uma linha separada. Sem tabelas ou outro conteúdo.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "Liste até três sinônimos da palavra em $l2Name$ \"$word$\" em \"$context$\" (não a própria palavra). Explique brevemente como cada um difere de \"$word$\" em significado ou uso. Se incluir a pronúncia, faça-o na mesma linha, nunca em uma linha separada. Sem tabelas ou outro conteúdo.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "Para cada sinónimo, inclua uma frase de exemplo natural em $l2Name$ e a sua tradução para o idioma da interface do estudante. Mantenha juntas a explicação, a frase de exemplo e a tradução de cada sinónimo. Não use tabelas.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

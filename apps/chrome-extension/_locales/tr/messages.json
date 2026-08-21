@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme."
+  },
+  "inflection": {
+    "message": "Çekim"
+  },
+  "morphemes": {
+    "message": "Biçimbirimler"
+  },
+  "etymology": {
+    "message": "Etimoloji"
+  },
+  "syntax": {
+    "message": "Sözdizimi"
+  },
+  "synonyms": {
+    "message": "Eş anlamlılar"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin lemmasını (sözlük biçimini), kelimenin nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin lemmasını (sözlük biçimini), kelimenin \"$context$\" içinde nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin lemmasını (sözlük biçimini) (çekimli biçimi: $contextForm$), kelimenin \"$context$\" içinde nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin anlamlı parçalara (biçimbirimlere) ayrılıp ayrılamayacağını açıkla ve kelimenin varsa gerçek anlamdaki yorumlarını belirt.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin \"$context$\" içinde anlamlı parçalara (biçimbirimlere) ayrılıp ayrılamayacağını açıkla ve kelimenin varsa gerçek anlamdaki yorumlarını belirt.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin etimolojisini ver.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesinin \"$context$\" içinde sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "$l2Name$ dilindeki \"$word$\" kelimesinin (kelimenin kendisi hariç) en fazla üç eş anlamlısını listele. Her birinin \"$word$\" ile anlam veya kullanım bakımından nasıl farklılaştığını kısaca açıkla. Telaffuz verirsen aynı satır içinde ver, asla ayrı bir satırda. Tablo veya başka içerik ekleme.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "\"$context$\" içindeki $l2Name$ dilindeki \"$word$\" kelimesinin (kelimenin kendisi hariç) en fazla üç eş anlamlısını listele. Her birinin \"$word$\" ile anlam veya kullanım bakımından nasıl farklılaştığını kısaca açıkla. Telaffuz verirsen aynı satır içinde ver, asla ayrı bir satırda. Tablo veya başka içerik ekleme.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "Her eş anlamlı için $l2Name$ dilinde doğal bir örnek cümle ve bunun öğrencinin arayüz dilindeki çevirisini ekle. Her eş anlamlının açıklamasını, örnek cümlesini ve çevirisini birlikte tut. Tablo kullanma.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

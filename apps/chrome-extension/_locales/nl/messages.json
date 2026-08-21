@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Geef de uitspraak en morfologie (of etymologie indien van toepassing). Als verbogen, geef het lemma en de verbuiging; anders, vermeld geen verbuiging of lemma."
+  },
+  "inflection": {
+    "message": "Flexie"
+  },
+  "morphemes": {
+    "message": "Morfemen"
+  },
+  "etymology": {
+    "message": "Etymologie"
+  },
+  "syntax": {
+    "message": "Syntaxis"
+  },
+  "synonyms": {
+    "message": "Synoniemen"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Leg het lemma (woordenboekvorm) uit van het $l2Name$-woord \"$word$\", hoe het woord verbuigt en de betekenis van de verbogen vorm.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Leg het lemma (woordenboekvorm) uit van het $l2Name$-woord \"$word$\", hoe het woord in \"$context$\" verbuigt en de betekenis van de verbogen vorm.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Leg het lemma (woordenboekvorm) uit van het $l2Name$-woord \"$word$\" (verbuigingsvorm: $contextForm$), hoe het woord in \"$context$\" verbuigt en de betekenis van de verbogen vorm.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Leg uit of het $l2Name$-woord \"$word$\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Leg uit of het $l2Name$-woord \"$word$\" in \"$context$\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Geef de etymologie van het $l2Name$-woord \"$word$\".",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Leg uit of het $l2Name$-woord \"$word$\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Leg uit of het $l2Name$-woord \"$word$\" in \"$context$\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "Geef maximaal drie synoniemen van het $l2Name$-woord \"$word$\" (niet het woord zelf). Leg kort uit waarin elk verschilt van \"$word$\" in betekenis of gebruik. Geef de uitspraak indien nodig inline, nooit op een aparte regel. Geen tabellen of andere inhoud.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "Geef maximaal drie synoniemen van het $l2Name$-woord \"$word$\" in \"$context$\" (niet het woord zelf). Leg kort uit waarin elk verschilt van \"$word$\" in betekenis of gebruik. Geef de uitspraak indien nodig inline, nooit op een aparte regel. Geen tabellen of andere inhoud.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "Voeg voor elk synoniem één natuurlijke voorbeeldzin in $l2Name$ toe, met de vertaling ervan in de interfacetaal van de leerling. Houd de uitleg, voorbeeldzin en vertaling van elk synoniem bij elkaar. Gebruik geen tabellen.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

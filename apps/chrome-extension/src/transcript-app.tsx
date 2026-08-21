@@ -647,7 +647,7 @@ Text: ${cue.text}`;
             className="lpv-stepper-btn"
             onClick={() => adjustTextScale(-1)}
             disabled={textScale <= 0}
-            title={t('action.zoom_out') || 'Smaller'}
+            title={t('zoomOut')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/></svg>
           </button>
@@ -656,7 +656,7 @@ Text: ${cue.text}`;
             className="lpv-stepper-btn"
             onClick={() => adjustTextScale(1)}
             disabled={textScale >= 4}
-            title={t('action.zoom_in') || 'Larger'}
+            title={t('zoomIn')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           </button>
@@ -897,7 +897,7 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
             className="lpv-stepper-btn"
             onClick={() => adjustTextScale(-1)}
             disabled={textScale <= 0}
-            title={t('action.zoom_out') || 'Smaller'}
+            title={t('zoomOut')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/></svg>
           </button>
@@ -906,7 +906,7 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
             className="lpv-stepper-btn"
             onClick={() => adjustTextScale(1)}
             disabled={textScale >= 4}
-            title={t('action.zoom_in') || 'Larger'}
+            title={t('zoomIn')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           </button>

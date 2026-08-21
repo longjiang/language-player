@@ -6,13 +6,12 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-14 (Netflix active-track detection via manifest URL → language fetch/XHR interception)
+- **Last Updated**: 2026-08-21 (SPEC-086 web-parity side-panel redesign implementation)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
   - `apps/chrome-extension/src/background.js` — service worker (subtitle HTTP interception)
-  - `apps/chrome-extension/src/popup.js` — extension popup UI
-  - `apps/chrome-extension/src/popup.html` — popup HTML shell
+  - `apps/chrome-extension/src/sidepanel.tsx` — native side-panel app shell
   - `apps/chrome-extension/src/transcript-app.tsx` — React transcript component
   - `apps/chrome-extension/src/subtitle-parsers.js` — format parsers (TTML, WebVTT, SRT, YouTube)
   - `apps/chrome-extension/src/netflix-main-world.js` — Netflix JSON.parse monkeypatch (MAIN world)
@@ -54,7 +53,7 @@ apps/chrome-extension/
 │   ├── content.css                    ← Copied verbatim from src/content.css (not bundled)
 │   ├── page-content.js                ← esbuild IIFE bundle of page-content.js (page tokenizer)
 │   ├── sidepanel.js                   ← esbuild IIFE bundle of sidepanel.tsx (native side panel host, React)
-│   ├── sidepanel.css                  ← Copied verbatim from src/sidepanel.css (panel-area overrides)
+│   ├── sidepanel.css                  ← Copied verbatim from src/sidepanel.css (panel tokens/components)
 │   ├── netflix-main-world.js          ← Copied verbatim from src/netflix-main-world.js (not bundled)
 │   └── lang-names.json                ← Auto-generated from monorepo translations.csv on every build
 ├── _locales/                          ← Chrome i18n locale files (18 supported locales, ADR-0033)
@@ -76,9 +75,9 @@ apps/chrome-extension/
     ├── netflix-main-world.js          ← Netflix JSON.parse hook (injected in MAIN world)
     ├── sidepanel.html                 ← Static chrome.sidePanel page (loads dist/sidepanel.js + CSS)
     ├── sidepanel.tsx                  ← ENTRY POINT: SidePanelApp — active-tab tracking, message relay, host UI
-    ├── sidepanel.css                  ← Side-panel-area overrides of the in-page panel styles
+    ├── sidepanel.css                  ← Side-panel token/component styles
     ├── page-content.js                ← ENTRY POINT: page tokenizer (lazy, viewport-driven) + pageLookup pushes
-    ├── transcript-app.tsx             ← React components (TranscriptAppInner, PagePanel, DictionaryCard)
+    ├── transcript-app.tsx             ← React components (TranscriptAppInner, PagePanel)
     ├── subtitle-parsers.js            ← Subtitle format parsers (platform-agnostic)
     ├── i18n.js                        ← chrome.i18n.getMessage() wrapper
     ├── auth.ts                        ← Auth helpers (Flask → Supabase GoTrue proxy, refresh rotation)
@@ -87,7 +86,15 @@ apps/chrome-extension/
     ├── use-translate-lines.ts         ← React hook: batch subtitle translation
     ├── use-subscription.ts            ← React hook: check Pro subscription status (JWT, /user-subscription)
     └── components/
-        ├── DictionaryCard.tsx           ← Dictionary lookup card (lemma, definition, examples)
+        ├── ui/                          ← Extension-local Shadcn-compatible primitives
+        ├── DictionaryCard.tsx           ← Compact dictionary cards and AI explanation
+        ├── DictionaryModal.tsx          ← Modal lookup surface for transcript/page tokens
+        ├── LanguagePicker.tsx            ← L1/L2 picker and script preference
+        ├── SettingsModal.tsx             ← Two-panel Display settings dialog
+        ├── UserMenu.tsx                  ← Auth-aware profile menu and login dialog
+        ├── AccountModal.tsx              ← Profile, level, subscription, deletion flow
+        ├── HelpModal.tsx                 ← Offline two-panel help/docs dialog
+        ├── AboutModal.tsx                ← About dialog and external links
         ├── Markdown.tsx                 ← Markdown renderer for AI explanations
         └── SavedWordsProvider.tsx       ← React context for saved words state
 ```
@@ -422,12 +429,12 @@ src/sidepanel.tsx (SidePanelApp — chrome.sidePanel page)
     ├── #lpv-mismatch-banner                  ← L2 mismatch prompt (video)
     └── <div id="lpv-panel-content">
         ├── <SavedWordsProvider>              (video mode)
-        │   └── <TranscriptAppInner>          ← cue list, dictionary dock, bottom bar
+        │   └── <TranscriptAppInner>          ← cue list, dictionary modal, bottom bar
         │       └── <TokenizedLine>  ← per-cue (IntersectionObserver + 5-line lookahead)
         │           ├── ruby annotations (furigana, pinyin)
         │           └── clickable token spans
         └── <SavedWordsProvider>              (page mode)
-            └── <PagePanel>                   ← translated block + dictionary dock
+            └── <PagePanel>                   ← translated block + dictionary modal
 ```
 
 Key behaviors:
@@ -451,8 +458,8 @@ with `position:fixed`. They render in the browser's own side panel:
   `toggle-panel-alt` = Ctrl/⌘+Shift+Y).
 - **`src/sidepanel.html`** (static) + **`src/sidepanel.tsx`** (bundled to
   `dist/sidepanel.js`): `SidePanelApp` tracks the active tab, pulls state, and
-  renders the video/page React trees. `dist/sidepanel.css` overrides the
-  in-page `position:fixed` panel styles so the panel fills the side-panel area.
+  renders the video/page React trees. `dist/sidepanel.css` supplies semantic
+  side-panel tokens and local Shadcn-compatible component styles.
 - **Message flow**:
   - Content script → side panel: `chrome.runtime.sendMessage` → background
     relays over a runtime port named `lpv-sidepanel` (tagged with the sender's
@@ -463,10 +470,11 @@ with `position:fixed`. They render in the browser's own side panel:
   - Background → content scripts: `panelOpenState` on panel open/close/tab
     switch (gates ArrowUp/Down cue seeking).
 - **Opening the panel**: `chrome.sidePanel.open({ tabId })` requires a user
-  gesture, so auto-open on subtitle load is gone. It opens from: the popup
-  "Show transcript" button, the Alt+T / Ctrl+Shift+Y commands, or — in page
-  mode — a token click (the content script calls `sidePanel.open()` on the
-  click gesture, then pushes `pageLookup`).
+  gesture, so auto-open on subtitle load is gone. It opens from the extension
+  action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token
+  click (the content script calls `sidePanel.open()` on the click gesture,
+  then pushes `pageLookup`). The action click and close control share the same
+  window-scoped toggle/close behavior.
 - **Page mode lifecycle**: token clicks send `pageLookup` and open the panel.
   The panel's ✕ disables page tokenization (storage + `pageTokenizationOff`);
   the browser's native ✕ just closes the panel and leaves tokens in place.
@@ -475,6 +483,37 @@ with `position:fixed`. They render in the browser's own side panel:
   `togglePanel`, `updateStatus` (now log-only), and the `autoOpenPanel` pref.
   `content-entry.js` only computes `buildPanelState()` (cues, active cue, L1/L2,
   title, web URL, mismatch) and pushes it.
+
+---
+
+### SPEC-086 web-parity surface
+
+The side panel is an app-like React surface with extension-local
+Shadcn-compatible primitives. The top bar contains the responsive logo,
+language picker, auth-aware profile menu, and close control. `sidePanelTab` is
+persisted in `chrome.storage.local`; the Subtitles and Page Translation tabs
+retain independent loading/error states and the latter requests a bounded page
+snapshot from `page-content.js` before translating visible blocks.
+
+Profile, Settings, Help, and About are dialogs owned by `SidePanelApp`.
+Authenticated user names come from the existing login/session payload and are
+stored in `AuthState` as `firstName`/`lastName`; no `/auth/me` endpoint was
+added. Account deletion uses the existing authenticated DELETE route and the
+same active-renewing subscription predicate as web. Web-only account actions
+open the canonical production site in a new tab.
+
+Token lookup is rendered by `DictionaryModal`, never as a bottom dock.
+`DictionaryCard` imports `formatPronunciation` from `@langplayer/utils` and
+uses shared level filtering/formatting. Entry cards keep speaker, bookmark,
+and image-search events separate from card navigation, and route to the
+canonical Language Player dictionary entry URL.
+
+The manifest permission budget is frozen by
+`scripts/check-extension-permissions.mjs`. SPEC-086 adds no permission,
+optional permission, host match, download flow, remote stylesheet, or remote
+code path. `node apps/chrome-extension/build.mjs` generates the side-panel and
+page bundles, copies both stylesheets, and bumps only the extension build
+component in `manifest.json`.
 
 ---
 

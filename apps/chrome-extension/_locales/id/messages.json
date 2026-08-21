@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Berikan pengucapan dan morfologinya (atau etimologi jika sesuai). Jika berinfleksi, berikan lemma dan infleksinya; jika tidak, jangan sebutkan infleksi atau lemma."
+  },
+  "inflection": {
+    "message": "Infleksi"
+  },
+  "morphemes": {
+    "message": "Morfem"
+  },
+  "etymology": {
+    "message": "Etimologi"
+  },
+  "syntax": {
+    "message": "Sintaksis"
+  },
+  "synonyms": {
+    "message": "Sinonim"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Jelaskan lemma (bentuk kamus) dari kata $l2Name$ \"$word$\", bagaimana kata itu berinfleksi, dan arti bentuk infleksinya.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Jelaskan lemma (bentuk kamus) dari kata $l2Name$ \"$word$\", bagaimana kata itu berinfleksi dalam \"$context$\", dan arti bentuk infleksinya.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Jelaskan lemma (bentuk kamus) dari kata $l2Name$ \"$word$\" (bentuk infleksi: $contextForm$), bagaimana kata itu berinfleksi dalam \"$context$\", dan arti bentuk infleksinya.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Jelaskan apakah kata $l2Name$ \"$word$\" dapat dipecah menjadi bagian-bagian semantik (morfem), dan sebutkan interpretasi harfiah dari kata tersebut.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Jelaskan apakah kata $l2Name$ \"$word$\" dalam \"$context$\" dapat dipecah menjadi bagian-bagian semantik (morfem), dan sebutkan interpretasi harfiah dari kata tersebut.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Berikan etimologi kata $l2Name$ \"$word$\".",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Jelaskan apakah kata $l2Name$ \"$word$\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Jelaskan apakah kata $l2Name$ \"$word$\" dalam \"$context$\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "Sebutkan hingga tiga sinonim dari kata $l2Name$ \"$word$\" (bukan kata itu sendiri). Jelaskan singkat bagaimana masing-masing berbeda dari \"$word$\" dalam makna atau penggunaan. Jika menyertakan pelafalan, tulis sebaris saja, jangan pada baris terpisah. Tanpa tabel atau konten lain.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "Sebutkan hingga tiga sinonim dari kata $l2Name$ \"$word$\" dalam \"$context$\" (bukan kata itu sendiri). Jelaskan singkat bagaimana masing-masing berbeda dari \"$word$\" dalam makna atau penggunaan. Jika menyertakan pelafalan, tulis sebaris saja, jangan pada baris terpisah. Tanpa tabel atau konten lain.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "Untuk setiap sinonim, sertakan satu kalimat contoh alami dalam $l2Name$ dan terjemahannya ke bahasa antarmuka pelajar. Pertahankan penjelasan, kalimat contoh, dan terjemahan setiap sinonim secara berdekatan. Jangan gunakan tabel.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }
