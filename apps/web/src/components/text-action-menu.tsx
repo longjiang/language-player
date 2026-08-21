@@ -1,12 +1,13 @@
 'use client';
 
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useTextActions } from '@/hooks/use-text-actions';
 import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
 import { TokenizedText } from '@/components/tokenized-text';
 import { AlignedTranslation } from '@/components/reader/aligned-translation';
+import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
 import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { clampTranslationSize } from '@/lib/reader-text-size';
@@ -101,6 +102,7 @@ export function TextActionMenu({
   const t = useT();
   const { tokenizedText } = useSettingsContext();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isSideBySide, setIsSideBySide] = useState(false);
   // The L2 content wrapper — the aligned translation measures its line grid.
   const l2Ref = useRef<HTMLDivElement>(null);
   const aligned = translationAligned ?? null;
@@ -135,6 +137,23 @@ export function TextActionMenu({
   const sideBySideGapStyle = sideBySideGap == null
     ? undefined
     : { '--reader-side-gap': `${sideBySideGap}px` } as CSSProperties;
+
+  // `translationAligned` is supplied by reader blocks even while their
+  // responsive row is stacked. Baseline alignment is meaningful only in the
+  // side-by-side reader layout; the stacked layout needs a normal paragraph
+  // so its distance from the L2 line is controlled by the row gap alone.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const breakpointPx = sideBySideBreakpoint === 'md' ? 768 : 1024;
+    const media = window.matchMedia(`(min-width: ${breakpointPx}px)`);
+    const update = () => setIsSideBySide(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, [sideBySideBreakpoint]);
+
+  const useAlignedTranslation = !!aligned && !translationBelow && isSideBySide;
+
   const {
     activeAction,
     close,
@@ -181,12 +200,12 @@ export function TextActionMenu({
           <div
             className={`min-w-0 text-muted-foreground ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass}`}
             style={
-              aligned
+              useAlignedTranslation
                 ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }
                 : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }
             }
           >
-            {aligned ? (
+            {useAlignedTranslation ? (
               <AlignedTranslation
                 text={aligned.text}
                 map={aligned.map}
@@ -195,6 +214,8 @@ export function TextActionMenu({
                 anchorRef={l2Ref}
                 translationFactor={translationRatio}
               />
+            ) : aligned ? (
+              <SegmentedTranslation text={aligned.text} map={aligned.map} active={aligned.active} />
             ) : typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
         )}
