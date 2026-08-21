@@ -28,6 +28,9 @@ interface TextActionMenuProps {
   context?: string;
   /** Always show the trigger (default: only on hover via group). */
   alwaysShow?: boolean;
+  /** Center the content while keeping the action trigger out of the layout
+   *  flow. Used by single-line subtitle displays. */
+  centered?: boolean;
   /** Pre-fetched translation to show inline to the right of children. */
   translation?: ReactNode;
   /** Tailwind classes for the translation element (e.g. match heading size). */
@@ -84,6 +87,7 @@ export function TextActionMenu({
   l1Code,
   context,
   alwaysShow = false,
+  centered = false,
   translation,
   translationClass = '',
   translationBelow = false,
@@ -180,13 +184,19 @@ export function TextActionMenu({
   ];
 
   return (
-    <div className={`group relative flex items-start gap-3 ${noMargin ? '' : 'mb-4'}`}>
+    <div className={`group relative ${centered ? 'flex items-start' : 'flex items-start gap-3'} ${noMargin ? '' : 'mb-4'}`}>
       {/* Content + inline translation */}
       <div
-        className={`flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : `${sideBySideBreakpoint}:flex-row ${sideBySideGapClass}`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}
+        className={centered
+          ? 'w-full min-w-0 flex flex-col items-center gap-y-2'
+          : `flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : `${sideBySideBreakpoint}:flex-row ${sideBySideGapClass}`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}
         style={sideBySideGapStyle}
       >
-        <div className="min-w-0" style={{ flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }} ref={l2Ref}>
+        <div
+          className={centered ? 'w-full min-w-0' : 'min-w-0'}
+          style={centered ? undefined : { flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }}
+          ref={l2Ref}
+        >
           {children}
         </div>
         {resizable && hasTranslation && !translationBelow && (
@@ -198,9 +208,13 @@ export function TextActionMenu({
         )}
         {hasTranslation && (
           <div
-            className={`min-w-0 text-muted-foreground ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass}`}
+            className={centered
+              ? `w-full text-center text-muted-foreground ${translationClass}`
+              : `min-w-0 ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} text-muted-foreground ${translationClass}`}
             style={
-              useAlignedTranslation
+              centered
+                ? { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, lineHeight: translationLeading }
+                : useAlignedTranslation
                 ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }
                 : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }
             }
@@ -221,8 +235,12 @@ export function TextActionMenu({
         )}
         {loading && !translation && !aligned && (
           <div
-            className={`min-w-0 pt-1 ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass || 'text-sm'}`}
-            style={{ fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }}
+            className={centered
+              ? `w-full text-center ${translationClass || 'text-sm'}`
+              : `min-w-0 pt-1 ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass || 'text-sm'}`}
+            style={centered
+              ? { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, lineHeight: translationLeading }
+              : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }}
           >
             <TranslationSkeleton
               text={text}
@@ -235,7 +253,7 @@ export function TextActionMenu({
       {/* Action menu dropdown — controlled so any option click closes it
           immediately (Radix popovers don't auto-close on item click). */}
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-        <PopoverTrigger className="z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100" aria-label={t('action.more')}>
+        <PopoverTrigger className={`z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100 ${centered ? 'absolute right-0 top-0 mt-1' : 'mt-1'}`} aria-label={t('action.more')}>
           <MoreVertical className="h-4 w-4" />
         </PopoverTrigger>
         <PopoverContent side="bottom" align="end" sideOffset={4} className="min-w-[180px] p-1">

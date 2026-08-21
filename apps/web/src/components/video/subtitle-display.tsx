@@ -493,7 +493,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           onClick={handleBandRowClick}
         >
           {bandActiveLine ? (
-            <>
+            <TextActionMenu
+              text={bandActiveText}
+              l2Code={l2Code}
+              l1Code={l1Code}
+              centered
+              translation={showTranslation && bandActiveTranslation ? bandActiveTranslation : undefined}
+              translationClass={cn('text-center', transClass)}
+              translationBelow
+              translationFontSize={0.875 * SINGLELINE_TEXT_SCALE * textZoomFactor}
+              noMargin
+            >
               <div className={cn('text-center', textClass)}>
                 <TokenizedText
                   text={bandActiveText}
@@ -507,16 +517,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   context={videoTitle ? { videoTitle } : undefined}
                 />
               </div>
-              {showTranslation && bandActiveTranslation && (
-                // Same multiplier as the L2 subtitle line (SPEC-051).
-                <p
-                  className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}
-                  style={{ fontSize: `${0.875 * SINGLELINE_TEXT_SCALE * textZoomFactor}rem` }}
-                >
-                  {bandActiveTranslation}
-                </p>
-              )}
-            </>
+            </TextActionMenu>
           ) : (
             <p className={cn('text-sm', placeholderClass)}>...</p>
           )}
@@ -569,6 +570,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             text={shownLine.line}
             l2Code={l2Code}
             l1Code={l1Code}
+            centered
             translation={
               showTranslation && activeTranslation ? (
                 // Sizing follows the column's default rule — when `translationFactor`
