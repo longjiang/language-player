@@ -26,6 +26,9 @@
   "copy": {
     "message": "Salin"
   },
+  "detectingSubtitles": {
+    "message": "Mendeteksi subtitle"
+  },
   "explain": {
     "message": "Biarkan DeepSeek Menjelaskan"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Hapus dari kata tersimpan"
   },
+  "retry": {
+    "message": "Coba Lagi"
+  },
   "save": {
     "message": "Simpan kata"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Tampilkan terjemahan"
+  },
+  "noSubtitlesFound": {
+    "message": "Subtitle tidak ditemukan"
   },
   "speak": {
     "message": "Bicara"

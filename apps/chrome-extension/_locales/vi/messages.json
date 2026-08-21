@@ -26,6 +26,9 @@
   "copy": {
     "message": "Sao chép"
   },
+  "detectingSubtitles": {
+    "message": "Đang phát hiện phụ đề"
+  },
   "explain": {
     "message": "Để DeepSeek giải thích"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Xóa khỏi từ đã lưu"
   },
+  "retry": {
+    "message": "Thử lại"
+  },
   "save": {
     "message": "Lưu từ"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Hiển thị bản dịch"
+  },
+  "noSubtitlesFound": {
+    "message": "Không tìm thấy phụ đề"
   },
   "speak": {
     "message": "Nói"

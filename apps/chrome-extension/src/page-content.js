@@ -40,6 +40,8 @@ const tokenCache = new Map();
 const tokenizedBlocks = new Set();
 let nextBlockId = 1;
 let pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
+let pageTranslationStatus = 'idle'; // idle | loading | ready | empty | error
+let pageTranslationError = null;
 
 /** Cached tab id (via background) — used to open the side panel. */
 let _tabId = null;
@@ -442,6 +444,8 @@ function pushPageModeState() {
         pageUrl: location.href,
         lookup: lastLookup,
         mismatch: pageLangMismatch(),
+        pageTranslationStatus,
+        pageTranslationError,
       },
     }).catch(() => {});
   } catch {}
@@ -472,6 +476,8 @@ function cleanup() {
   restoreTokens();
   tokenCache.clear();
   lastLookup = null;
+  pageTranslationStatus = 'idle';
+  pageTranslationError = null;
 }
 
 function restoreTokens() {
@@ -511,6 +517,8 @@ async function init() {
   await setLocale(l1Code);
 
   enabled = true;
+  pageTranslationStatus = 'ready';
+  pageTranslationError = null;
   log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}, showPhonetics=${showPhonetics}`);
   // Warn BEFORE tokenizing when the page declares a language different from
   // the saved L2 — the side panel shows a banner with a one-tap switch.
@@ -540,9 +548,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Side panel pulled state (open, tab switch, navigation).
     sendResponse({
       state: enabled
-        ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup, mismatch: pageLangMismatch() }
+        ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup, mismatch: pageLangMismatch(), pageTranslationStatus, pageTranslationError }
         : null,
     });
+    return true;
+  }
+  if (message.action === 'pageTranslationStart') {
+    if (!enabled) {
+      sendResponse({ ok: false, error: 'page interactivity is disabled' });
+      return true;
+    }
+    pageTranslationStatus = 'ready';
+    pageTranslationError = null;
+    pushPageModeState();
+    sendResponse({ ok: true });
     return true;
   }
   if (message.action === 'changeLanguage') {

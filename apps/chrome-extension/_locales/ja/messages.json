@@ -26,6 +26,9 @@
   "copy": {
     "message": "コピー"
   },
+  "detectingSubtitles": {
+    "message": "字幕を検出しています"
+  },
   "explain": {
     "message": "DeepSeekに説明させる"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "保存済み単語から削除"
   },
+  "retry": {
+    "message": "再試行"
+  },
   "save": {
     "message": "単語を保存"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "翻訳を表示"
+  },
+  "noSubtitlesFound": {
+    "message": "字幕が見つかりません"
   },
   "speak": {
     "message": "読み上げ"

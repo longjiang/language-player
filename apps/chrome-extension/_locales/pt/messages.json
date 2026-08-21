@@ -26,6 +26,9 @@
   "copy": {
     "message": "Copiar"
   },
+  "detectingSubtitles": {
+    "message": "Detetando legendas"
+  },
   "explain": {
     "message": "Deixe o DeepSeek Explicar"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Remover das palavras salvas"
   },
+  "retry": {
+    "message": "Tentar novamente"
+  },
   "save": {
     "message": "Salvar palavra"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Mostrar tradução"
+  },
+  "noSubtitlesFound": {
+    "message": "Nenhuma legenda encontrada"
   },
   "speak": {
     "message": "Falar"

@@ -26,6 +26,9 @@
   "copy": {
     "message": "Kopyala"
   },
+  "detectingSubtitles": {
+    "message": "Altyazılar algılanıyor"
+  },
   "explain": {
     "message": "DeepSeek Açıklasın"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Kaydedilen kelimelerden kaldır"
   },
+  "retry": {
+    "message": "Tekrar Dene"
+  },
   "save": {
     "message": "Kelimeyi Kaydet"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Çeviriyi Göster"
+  },
+  "noSubtitlesFound": {
+    "message": "Altyazı bulunamadı"
   },
   "speak": {
     "message": "Konuş"

@@ -26,6 +26,9 @@
   "copy": {
     "message": "Copier"
   },
+  "detectingSubtitles": {
+    "message": "Détection des sous-titres"
+  },
   "explain": {
     "message": "Laissez DeepSeek expliquer"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Retirer des mots sauvegardés"
   },
+  "retry": {
+    "message": "Réessayer"
+  },
   "save": {
     "message": "Sauvegarder le mot"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Afficher la traduction"
+  },
+  "noSubtitlesFound": {
+    "message": "Aucun sous-titre trouvé"
   },
   "speak": {
     "message": "Parler"

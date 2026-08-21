@@ -26,6 +26,9 @@
   "copy": {
     "message": "复制"
   },
+  "detectingSubtitles": {
+    "message": "正在检测字幕"
+  },
   "explain": {
     "message": "让 DeepSeek 解释"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "取消收藏"
   },
+  "retry": {
+    "message": "重试"
+  },
   "save": {
     "message": "收藏单词"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "显示翻译"
+  },
+  "noSubtitlesFound": {
+    "message": "未找到字幕"
   },
   "speak": {
     "message": "朗读"

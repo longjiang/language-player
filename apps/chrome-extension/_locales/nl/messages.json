@@ -26,6 +26,9 @@
   "copy": {
     "message": "Kopiëren"
   },
+  "detectingSubtitles": {
+    "message": "Ondertitels detecteren"
+  },
   "explain": {
     "message": "Laat DeepSeek het uitleggen"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Verwijderen uit opgeslagen woorden"
   },
+  "retry": {
+    "message": "Opnieuw proberen"
+  },
   "save": {
     "message": "Woord opslaan"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Toon vertaling"
+  },
+  "noSubtitlesFound": {
+    "message": "Geen ondertitels gevonden"
   },
   "speak": {
     "message": "Spreken"

@@ -26,6 +26,9 @@
   "copy": {
     "message": "คัดลอก"
   },
+  "detectingSubtitles": {
+    "message": "กำลังตรวจหาคำบรรยาย"
+  },
   "explain": {
     "message": "ให้ DeepSeek อธิบาย"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "ลบออกจากคำที่บันทึกไว้"
   },
+  "retry": {
+    "message": "ลองอีกครั้ง"
+  },
   "save": {
     "message": "บันทึกคำ"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "แสดงคำแปล"
+  },
+  "noSubtitlesFound": {
+    "message": "ไม่พบคำบรรยาย"
   },
   "speak": {
     "message": "พูด"

@@ -26,6 +26,9 @@
   "copy": {
     "message": "Копировать"
   },
+  "detectingSubtitles": {
+    "message": "Поиск субтитров"
+  },
   "explain": {
     "message": "Пусть DeepSeek объяснит"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "Удалить из сохранённых слов"
   },
+  "retry": {
+    "message": "Повторить"
+  },
   "save": {
     "message": "Сохранить слово"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "Показать перевод"
+  },
+  "noSubtitlesFound": {
+    "message": "Субтитры не найдены"
   },
   "speak": {
     "message": "Говорить"
