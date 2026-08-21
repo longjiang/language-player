@@ -412,7 +412,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
         onPointerCancel={overlay ? handleBandPointerUp : undefined}
         onClickCapture={overlay ? handleBandClickCapture : undefined}
       >
-        <div className="flex items-center justify-center gap-0.5 px-2 py-1">
+        <div className={cn('flex items-center justify-center gap-0.5 py-1', overlay ? 'px-1' : 'px-2')}>
           <Button
             variant="ghost" size="icon"
             className={cn('h-8 w-8', btnColorClass)}
@@ -485,7 +485,10 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
         </div>
 
         <div
-          className="flex-1 flex flex-col items-center justify-center px-4 py-2 cursor-pointer min-h-0"
+          className={cn(
+            'flex-1 flex flex-col items-center justify-center cursor-pointer min-h-0',
+            overlay ? 'px-1 py-1' : 'px-4 py-2',
+          )}
           onClick={handleBandRowClick}
         >
           {bandActiveLine ? (
