@@ -546,7 +546,7 @@ export default function ReviewScreen() {
     setTestError(null);
     setTestLoading(true);
     try {
-      const questions = await Promise.all(kinds.map(async (kind) => {
+      const questionResults = await Promise.allSettled(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: cards[currentIndex]?.word.context?.text as string | undefined, l1Code: baseCode(l1Lang.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
         const { apiClient } = await import('@langplayer/api-client');
         const requestPrompt = options?.retry
@@ -572,6 +572,12 @@ export default function ReviewScreen() {
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
+      const failedQuestion = questionResults.find((result) => result.status === 'rejected');
+      if (failedQuestion) throw failedQuestion.reason;
+      const questions = questionResults.map((result) => {
+        if (result.status !== 'fulfilled') throw result.reason;
+        return result.value;
+      });
       if (requestVersion !== testRequestVersionRef.current) return;
       setTestQuestions(questions);
       setTestError(null);
