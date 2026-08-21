@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/providers/language-provider';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useTextActions } from '@/hooks/use-text-actions';
 import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
@@ -11,6 +13,7 @@ import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
 import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { clampTranslationSize } from '@/lib/reader-text-size';
+import { isRTL } from '@/lib/language-data';
 import type { SentenceMap } from '@langplayer/utils';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
@@ -104,6 +107,7 @@ export function TextActionMenu({
   children,
 }: TextActionMenuProps) {
   const t = useT();
+  const { l1 } = useLanguage();
   const { tokenizedText } = useSettingsContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSideBySide, setIsSideBySide] = useState(false);
@@ -111,6 +115,12 @@ export function TextActionMenu({
   const l2Ref = useRef<HTMLDivElement>(null);
   const aligned = translationAligned ?? null;
   const hasTranslation = !!(translation || aligned);
+  // Translation content is L1, not L2. Tag it explicitly so browsers choose
+  // the user's regional glyph domain (e.g. zh-Hans) instead of inheriting the
+  // browser/device language, which can make Chinese glyphs render as Japanese.
+  const effectiveL1Code = l1Code ?? l1.code;
+  const translationGlyphLang = useGlyphLang(effectiveL1Code);
+  const translationDir = isRTL(effectiveL1Code) ? 'rtl' : 'ltr';
   // Translation:tokenized ratio from settings (0.5–1); the caller's
   // `translationFactor` carries the L2 text size (rem) it should scale against
   // (defaults to 1). The aligned readers let AlignedTranslation measure the L2
@@ -211,6 +221,8 @@ export function TextActionMenu({
             className={centered
               ? `w-full text-center text-muted-foreground ${translationClass}`
               : `min-w-0 ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} text-muted-foreground ${translationClass}`}
+            lang={translationGlyphLang}
+            dir={translationDir}
             style={
               centered
                 ? { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, lineHeight: translationLeading }
@@ -238,6 +250,8 @@ export function TextActionMenu({
             className={centered
               ? `w-full text-center ${translationClass || 'text-sm'}`
               : `min-w-0 pt-1 ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass || 'text-sm'}`}
+            lang={translationGlyphLang}
+            dir={translationDir}
             style={centered
               ? { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, lineHeight: translationLeading }
               : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }}
