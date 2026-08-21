@@ -375,6 +375,7 @@ export default function WatchPage() {
                 onPreviousVideo={playPrevious}
                 onNextVideo={playNext}
                 onTogglePanel={handleTogglePanel}
+                panelAtEnd={isWide && !isSubtitles}
                 hasPreviousVideo={hasPrevious}
                 hasNextVideo={hasNext}
                 translatingText={translatingText}

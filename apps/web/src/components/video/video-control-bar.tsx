@@ -52,6 +52,8 @@ interface VideoControlBarProps {
   className?: string;
   /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
   reduced?: boolean;
+  /** Places the sidebar toggle after the like and playlist controls. */
+  panelAtEnd?: boolean;
   /** Optional translation progress text shown inline in reduced mode (e.g. "Translating 5/120"). */
   translatingText?: string | null;
   /** Like state + handler. When omitted, the heart button is hidden. */
@@ -84,6 +86,7 @@ export function VideoControlBar({
   videoCountText,
   className,
   reduced = false,
+  panelAtEnd = false,
   translatingText,
   liked = false,
   onToggleLike,
@@ -174,7 +177,7 @@ export function VideoControlBar({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            className={cn('h-7 w-7 text-muted-foreground hover:text-foreground', panelAtEnd && 'order-last')}
             onClick={onTogglePanel}
             title={t('a11y.video_info')}
             aria-pressed={panelOpen}
