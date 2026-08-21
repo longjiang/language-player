@@ -170,6 +170,13 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     [l2Lines, highlightTerms],
   );
 
+  // The watch-page band receives the same raw subtitle payload as the
+  // transcript. Some payloads include an embedded L1 line, while others only
+  // include L2 text and rely on the client translation path. Keep the fast
+  // embedded value when present, but enable the lazy translator for the latter
+  // so single-line subtitles do not silently lose their translation.
+  const bandNeedsTranslation = band && (initialLines ?? []).some((line) => !line.l1Line?.trim());
+
   // ── Progressive caption normalization (SPEC-029) ──
   // Only auto-generated transcripts are normalized, and only when the parent
   // hasn't already taken ownership by passing a normalizedOverlay (e.g. the
@@ -204,9 +211,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     l2Lines,
     l1.code,
     l2Code,
-    // Band mode shows the API-embedded L1 from initialLines — no client
-    // translation, exactly like the old SubtitlesModeBand.
-    showTranslation && !band,
+    showTranslation && (!band || bandNeedsTranslation),
     activeIndex,
     lineHighlightForms,
   );
@@ -319,6 +324,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     const transClass = overlay ? 'text-white/70' : 'text-muted-foreground';
     const placeholderClass = overlay ? 'text-white/50' : 'text-muted-foreground';
     const bandActiveText = bandActiveLine ? stripSubtitleDurationPrefix(bandActiveLine.l2Line) : '';
+    const bandActiveTranslation = bandActiveLine?.l1Line || translatedLines[bandActiveIndex]?.line || '';
 
     return (
       <div className={cn(containerClass, 'min-h-[6rem] flex flex-col')}>
@@ -413,13 +419,13 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   context={videoTitle ? { videoTitle } : undefined}
                 />
               </div>
-              {showTranslation && bandActiveLine.l1Line && (
+              {showTranslation && bandActiveTranslation && (
                 // Same multiplier as the L2 subtitle line (SPEC-051).
                 <p
                   className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}
                   style={{ fontSize: `${0.875 * SINGLELINE_TEXT_SCALE * textZoomFactor}rem` }}
                 >
-                  {bandActiveLine.l1Line}
+                  {bandActiveTranslation}
                 </p>
               )}
             </>

@@ -90,7 +90,7 @@ export interface RubyTextProps {
   readingSize: number;
   rubyPull: number;
   baseLeading?: number;
-  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold' };
+  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold'; textAlign?: 'left' | 'center' | 'right' };
   /** Resolved dark-theme hex colors for the native renderer. */
   colorHex: string;
   readingColorHex: string;
@@ -249,6 +249,7 @@ export interface RubyTextParagraphProps {
   lineHeight: number;
   readingSize: number;
   isRtl: boolean;
+  textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
   /** Bold the measuring text too — bold glyphs are wider and wrap differently. */
   fontWeight?: 'normal' | 'bold';
@@ -283,6 +284,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     lineHeight,
     readingSize,
     isRtl,
+    textAlign = 'left',
     fontFamily,
     fontWeight,
     onTokenTap,
@@ -436,6 +438,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
           fontSize,
           lineHeight,
           fontWeight: fontWeight ?? 'normal',
+          textAlign,
           ...(fontFamily ? { fontFamily } : {}),
         }}
         onLayout={onLayout}
@@ -453,6 +456,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               lineHeight={lineHeight}
               readingSize={readingSize}
               isRtl={isRtl}
+              textAlign={textAlign}
               fontFamily={fontFamily ?? null}
               onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
               onSelection={(event) =>

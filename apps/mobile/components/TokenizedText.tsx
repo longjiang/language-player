@@ -130,6 +130,10 @@ export interface TokenizedTextProps {
    *  zoom alone); only single-line subtitles pass 1.33. SPEC-051: this is the
    *  only allowed non-default value. */
   textScale?: number;
+  /** Horizontal alignment for the rendered token block. This is passed
+   *  through to the internal ruby/plain/native renderers instead of relying
+   *  on a parent View's alignment. */
+  textAlign?: 'left' | 'center' | 'right';
   /** Inline tokenized text (e.g. AI explanation spans): no user-zoom scaling
    *  and no leading — inherit from the parent text. SPEC-051 §Target behavior. */
   inline?: boolean;
@@ -178,7 +182,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -347,7 +351,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     // 1.33 for single-line subtitles). Inline text has no size of its own —
     // it inherits from the parent Text.
     const effectiveScale = (textScale ?? 1) * zoomRem;
-    const style: { fontSize?: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold' } = {};
+    const style: { fontSize?: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold'; textAlign?: 'left' | 'center' | 'right' } = { textAlign };
     if (inlineFontSize !== undefined) {
       style.fontSize = inlineFontSize;
     } else if (!inline) {
@@ -365,7 +369,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     }
 
     return style;
-  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, inlineFontSize, bold, glyphLang]);
+  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, inlineFontSize, bold, glyphLang, textAlign]);
 
   // ── Leading ratio from prop (default: relaxed = 1.625) ──
   const effectiveLeading = leading ?? tokenSettings.leading ?? 1.625;
@@ -1165,7 +1169,14 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             no selection-change event, so the native paragraph is the only
             selection host for both ruby and plain render paths. */}
         {(showPhonetics && phonetics.show === 'ruby') || showDefinition || selectionDictionary ? (
-          <View testID={testID} className="flex-row flex-wrap items-end" style={isRtl ? { direction: 'rtl' } : undefined}>
+          <View
+            testID={testID}
+            className="flex-row flex-wrap items-end"
+            style={[
+              isRtl ? { direction: 'rtl' } : undefined,
+              textAlign === 'center' ? { justifyContent: 'center' } : textAlign === 'right' ? { justifyContent: 'flex-end' } : undefined,
+            ]}
+          >
             {(() => {
               let wordIndexSoFar = 0;
               const useParagraph = NATIVE_PARAGRAPH_ACTIVE && !showDefinition;
@@ -1485,6 +1496,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     readingSize={readingSize}
                     fontFamily={textStyle.fontFamily ?? null}
                     isRtl={isRtl}
+                    textAlign={textAlign}
                     fontWeight={textStyle.fontWeight === 'bold' ? 'bold' : 'normal'}
                     quizMode={quizMode}
                     popupEnabled={popupEnabled}
@@ -1669,6 +1681,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.onOpenLink === next.onOpenLink &&
     prev.phonetics === next.phonetics &&
     prev.textScale === next.textScale &&
+    prev.textAlign === next.textAlign &&
     prev.inline === next.inline &&
     prev.inlineFontSize === next.inlineFontSize &&
     prev.textColor === next.textColor &&

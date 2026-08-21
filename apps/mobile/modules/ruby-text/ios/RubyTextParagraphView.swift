@@ -61,6 +61,7 @@ internal final class RubyTextParagraphView: ExpoView {
   var lineHeight: Double = 26 { didSet { rebuild() } }
   var readingSize: Double = 9 { didSet { rebuild() } }
   var isRtl = false { didSet { rebuild() } }
+  var textAlign = "left" { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
 
   /// How far every base run is nudged down so the reading sits close to the
@@ -250,6 +251,7 @@ internal final class RubyTextParagraphView: ExpoView {
     paragraph.minimumLineHeight = CGFloat(lineHeight)
     paragraph.maximumLineHeight = CGFloat(lineHeight)
     paragraph.lineBreakMode = .byWordWrapping
+    paragraph.alignment = textAlign == "center" ? .center : textAlign == "right" ? .right : .left
     if isRtl {
       paragraph.baseWritingDirection = .rightToLeft
     }
