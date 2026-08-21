@@ -1,4 +1,4 @@
-import { SUPPORTED_L1S, SUPPORTED_L2S, CONTENT_L2S, POPULAR_LANGUAGES, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
+import { SUPPORTED_L1S, SUPPORTED_L2S, CONTENT_L2S, POPULAR_LANGUAGES, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV, glyphLangTag as sharedGlyphLangTag } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { LOCALIZED_LANGUAGE_NAMES } from './language-names-i18n';
 
@@ -158,16 +158,7 @@ export function isHan(code: string): boolean {
  * codes that lack a script subtag (`zh`, `yue`, `lzh`, `zh-*`); unambiguous
  * codes (`ja`, `ko`, `zh-Hans`, `zh-Hant`) are fixed.
  */
-export function glyphLangTag(code: string, useTraditional: boolean): string {
-  if (code === 'ja') return 'ja';
-  if (code === 'ko') return 'ko';
-  if (code === 'zh-Hans') return 'zh-Hans';
-  if (code === 'zh-Hant') return 'zh-Hant';
-  if (HAN_CODES.has(baseCode(code)) || code.startsWith('zh-')) {
-    return useTraditional ? 'zh-Hant' : 'zh-Hans';
-  }
-  return code;
-}
+export const glyphLangTag = sharedGlyphLangTag;
 
 // ── Language flags ───────────────────────────
 

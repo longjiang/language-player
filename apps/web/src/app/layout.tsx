@@ -108,7 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const timeZone = await getTimeZone();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-ui-lang={locale} suppressHydrationWarning>
       <head>
         {/* Preconnect to YouTube for faster iframe embed */}
         <link rel="preconnect" href="https://www.youtube.com" crossOrigin="anonymous" />

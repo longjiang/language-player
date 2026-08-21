@@ -4,6 +4,10 @@
 
 @layer base {
   :root {
+    --lp-font-ja: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
+    --lp-font-zh-hans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
+    --lp-font-zh-hant: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
+    --lp-font-ko: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
@@ -47,6 +51,25 @@
     --input: 230 20% 22%;
     --ring: 274 60% 46%;
   }
+
+  /* L1 controls the family used by interface strings. The explicit regional
+     family is what makes UI glyphs independent of the browser/OS language. */
+  html[data-ui-lang="ja"] { --lp-ui-font-family: var(--lp-font-ja); }
+  html[data-ui-lang="ko"] { --lp-ui-font-family: var(--lp-font-ko); }
+  html[data-ui-lang="zh-Hans"] { --lp-ui-font-family: var(--lp-font-zh-hans); }
+  html[data-ui-lang="zh-Hant"] { --lp-ui-font-family: var(--lp-font-zh-hant); }
+
+  /* L2 content can be embedded inside L1 UI. A lang attribute is necessary
+     but not sufficient when a generic font family already contains Han: use
+     a script-specific family on the tagged content as well. */
+  :root [lang="ja"],
+  :root [lang^="ja-"] { font-family: var(--lp-font-ja); }
+  :root [lang="ko"],
+  :root [lang^="ko-"] { font-family: var(--lp-font-ko); }
+  :root [lang="zh-Hans"],
+  :root [lang^="zh-Hans-"] { font-family: var(--lp-font-zh-hans); }
+  :root [lang="zh-Hant"],
+  :root [lang^="zh-Hant-"] { font-family: var(--lp-font-zh-hant); }
 }
 
 @layer base {

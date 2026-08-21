@@ -100,6 +100,11 @@ export function useLanguage(): LanguageContextValue {
   return ctx;
 }
 
+/** Optional form used by the global text renderer during boot/error states. */
+export function useOptionalLanguage(): LanguageContextValue | null {
+  return useContext(LanguageContext);
+}
+
 // ── Provider ────────────────────────────────
 
 const L1_STORAGE_KEY = 'lp_l1';

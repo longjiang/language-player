@@ -21,6 +21,9 @@ describe('glyphLangTag', () => {
     expect(glyphLangTag('lzh', true)).toBe('zh-Hant');
     expect(glyphLangTag('zh-CN', false)).toBe('zh-Hans');
     expect(glyphLangTag('zh-CN', true)).toBe('zh-Hant');
+    expect(glyphLangTag('zh-Hant-TW', false)).toBe('zh-Hant');
+    expect(glyphLangTag('nan', false)).toBe('zh-Hans');
+    expect(glyphLangTag('nan', true)).toBe('zh-Hant');
   });
 
   it('passes through non-Han codes unchanged', () => {
