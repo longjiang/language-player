@@ -322,6 +322,25 @@ export default function WebReaderPage() {
     }
   }, [text]);
 
+  const handleLemmatize = useCallback(async (texts: string[]) => {
+    const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, l2: l2.code }),
+    });
+    const data = res.ok ? await res.json() : null;
+    return data?.results ?? [];
+  }, [l2.code]);
+
+  const handlePageTranslate = useCallback(async (texts: string[]) => {
+    try {
+      const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
+      return byKey;
+    } catch {
+      return {};
+    }
+  }, [l1.code, l2.code]);
+
   // Load from URL param — on mount and whenever it changes (e.g. a chevron
   // link inside a block navigates to another article while already here).
   const urlParam = searchParams.get('url');
@@ -502,23 +521,8 @@ export default function WebReaderPage() {
           onTabChange={() => {}}
           onTokenize={handleTokenize}
           onFillSample={() => {}}
-          onLemmatize={async (texts) => {
-            const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ texts, l2: l2.code }),
-            });
-            const data = res.ok ? await res.json() : null;
-            return data?.results ?? [];
-          }}
-          onPageTranslate={async (texts) => {
-            try {
-              const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
-              return byKey;
-            } catch {
-              return {};
-            }
-          }}
+          onLemmatize={handleLemmatize}
+          onPageTranslate={handlePageTranslate}
         />
       )}
 

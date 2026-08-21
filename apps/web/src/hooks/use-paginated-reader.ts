@@ -795,11 +795,15 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
       if (gen !== translateGenRef.current) return;
       setBlockTranslations(prev => {
         const next = { ...prev };
+        let changed = false;
         for (const m of missing) {
           const tr = byKey[md5(m.text)];
-          if (tr) next[m.key] = tr;
+          if (tr && next[m.key] !== tr) {
+            next[m.key] = tr;
+            changed = true;
+          }
         }
-        return next;
+        return changed ? next : prev;
       });
     }).catch(() => {
       // Translation failed — leave the block untranslated; the next page

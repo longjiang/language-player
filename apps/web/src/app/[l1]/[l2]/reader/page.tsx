@@ -182,6 +182,29 @@ export default function ReaderPage() {
 
   const handleTokenize = useCallback(async () => { await saveNow(); setActiveTab('read'); }, [saveNow]);
 
+  const handleLemmatize = useCallback(async (texts: string[]) => {
+    const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, l2: l2.code }),
+    });
+    const data = res.ok ? await res.json() : null;
+    return data?.results ?? [];
+  }, [l2.code]);
+
+  const handlePageTranslate = useCallback(async (texts: string[]) => {
+    setTranslating(true);
+    try {
+      const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
+      return byKey;
+    } catch (e: any) {
+      setError(e?.message || 'Translation failed');
+      return {};
+    } finally {
+      setTranslating(false);
+    }
+  }, [l1.code, l2.code]);
+
   // Track the sidebar breakpoint (lg = 1024px, matching the Sidebar component)
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -313,27 +336,8 @@ export default function ReaderPage() {
             onTabChange={setActiveTab}
             onTokenize={handleTokenize}
             onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
-            onLemmatize={async (texts) => {
-              const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texts, l2: l2.code }),
-              });
-              const data = res.ok ? await res.json() : null;
-              return data?.results ?? [];
-            }}
-            onPageTranslate={async (texts) => {
-              setTranslating(true);
-              try {
-                const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
-                return byKey;
-              } catch (e: any) {
-                setError(e?.message || 'Translation failed');
-                return {};
-              } finally {
-                setTranslating(false);
-              }
-            }}
+            onLemmatize={handleLemmatize}
+            onPageTranslate={handlePageTranslate}
           />
         </div>
 
