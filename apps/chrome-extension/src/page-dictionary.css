@@ -1,13 +1,14 @@
-/* The iframe has its own document, so these rules cannot be overridden by
- * the inspected webpage. Theme colors intentionally mirror sidepanel.css. */
+/* The iframe has its own document, so these rules cannot be overridden by the
+ * inspected webpage. Every color resolves through the side-panel semantic
+ * tokens, including when Settings changes the iframe's theme. */
 
 :root {
-  --lpv-frame-background: hsl(0 0% 100%);
-  --lpv-frame-foreground: hsl(222 47% 11%);
-  --lpv-frame-muted: hsl(215 14% 46%);
-  --lpv-frame-border: hsl(214 20% 85%);
-  --lpv-frame-primary: hsl(274 60% 38%);
-  --lpv-frame-secondary: hsl(210 17% 94%);
+  --lpv-frame-background: hsl(var(--background));
+  --lpv-frame-foreground: hsl(var(--foreground));
+  --lpv-frame-muted: hsl(var(--muted-foreground));
+  --lpv-frame-border: hsl(var(--border));
+  --lpv-frame-primary: hsl(var(--primary));
+  --lpv-frame-secondary: hsl(var(--secondary));
 }
 
 html,
@@ -34,7 +35,7 @@ body,
   justify-content: center;
   box-sizing: border-box;
   padding: 1rem;
-  background: hsl(222 47% 11% / 0.5);
+  background: hsl(var(--foreground) / 0.5);
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog {
@@ -46,7 +47,7 @@ body,
   border-radius: 0.75rem;
   background: var(--lpv-frame-background);
   color: var(--lpv-frame-foreground);
-  box-shadow: 0 1.5rem 4rem hsl(222 47% 11% / 0.24);
+  box-shadow: 0 1.5rem 4rem hsl(var(--foreground) / 0.24);
   text-align: left;
 }
 
@@ -151,7 +152,7 @@ body,
   gap: 0.5rem;
   margin: 0 1rem 0.5rem;
   padding: 0.375rem 0.75rem;
-  border: 1px solid hsl(274 60% 38% / 0.35);
+  border: 1px solid hsl(var(--primary) / 0.35);
   border-radius: 0.375rem;
   background: transparent;
   color: var(--lpv-frame-primary);
@@ -162,16 +163,5 @@ body,
 }
 
 #lpv-page-dictionary-root .lpv-explain-btn:hover {
-  background: hsl(274 60% 38% / 0.08);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --lpv-frame-background: hsl(230 30% 8%);
-    --lpv-frame-foreground: hsl(0 0% 95%);
-    --lpv-frame-muted: hsl(215 14% 56%);
-    --lpv-frame-border: hsl(230 20% 22%);
-    --lpv-frame-primary: hsl(274 60% 46%);
-    --lpv-frame-secondary: hsl(230 20% 18%);
-  }
+  background: hsl(var(--primary) / 0.08);
 }
