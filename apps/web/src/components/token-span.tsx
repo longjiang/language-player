@@ -10,6 +10,21 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
+/**
+ * Ruby elements do not consistently expose Han-character line-break
+ * opportunities in Chromium/WebKit, even when their parent uses
+ * `word-break: break-all`. Keep the reading attached to each character while
+ * adding an explicit break opportunity between adjacent characters.
+ */
+function renderCjkBreakableText(text: string): React.ReactNode {
+  return [...text].map((char, index) => (
+    <React.Fragment key={`${index}-${char}`}>
+      {index > 0 ? <wbr /> : null}
+      {char}
+    </React.Fragment>
+  ));
+}
+
 // ── Module-level L1 definition cache ──
 // Key: `${l2Code}:${text}:${l1Code}` → first definition in the user's L1.
 // Populated by per-word /dictionary/lookup calls when L1 ≠ English.
@@ -237,7 +252,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Chinese script conversion: simplified ↔ traditional (ADR-0019) ──
   const { getL2 } = useSettingsContext();
   const l2Settings = getL2(l2Code);
-  const isChinese = baseCode(l2Code) === 'zh';
+  const l2Base = baseCode(l2Code);
+  const isChinese = l2Base === 'zh';
+  const isCjkLanguage = ['zh', 'yue'].includes(l2Base);
   const useTraditional = isChinese && l2Settings.display.traditional;
 
   // Per-token OpenCC conversion (lazy-loaded once at module level).
@@ -460,7 +477,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
        
         onClick={segmentClick}
       >
-        {'＿'.repeat(Math.max(1, token.text.length))}
+        {renderCjkBreakableText('＿'.repeat(Math.max(1, token.text.length)))}
       </span>
     ) : (
       <span className="px-1 text-muted-foreground/40 select-none">
@@ -488,20 +505,25 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       wordContent = rubySegments ? (
         <>
           {rubySegments.map((seg, j) =>
-            seg.reading ? (
-              <ruby key={j} className={flatSegmentClasses} onClick={segmentClick}>
-                {seg.text}
-                <rt className="select-none" dir="ltr">{seg.reading}</rt>
-              </ruby>
-            ) : (
-              <span key={j} className={flatSegmentClasses} onClick={segmentClick}>
-                {seg.text}
-              </span>
-            )
+            <React.Fragment key={j}>
+              {isCjkLanguage && j > 0 ? <wbr /> : null}
+              {seg.reading ? (
+                <ruby className={flatSegmentClasses} onClick={segmentClick}>
+                  {seg.text}
+                  <rt className="select-none" dir="ltr">{seg.reading}</rt>
+                </ruby>
+              ) : (
+                <span className={flatSegmentClasses} onClick={segmentClick}>
+                  {seg.text}
+                </span>
+              )}
+            </React.Fragment>
           )}
         </>
       ) : (
-        <span className={flatSegmentClasses} onClick={segmentClick}>{displayText}</span>
+        <span className={flatSegmentClasses} onClick={segmentClick}>
+          {isCjkLanguage ? renderCjkBreakableText(displayText) : displayText}
+        </span>
       );
     } else {
       wordContent = (
@@ -509,10 +531,20 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
           {rubySegments
             ? rubySegments.map((seg, j) =>
                 seg.reading
-                  ? <ruby key={j}>{seg.text}<rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
-                  : <React.Fragment key={j}>{seg.text}</React.Fragment>
+                  ? (
+                    <React.Fragment key={j}>
+                      {isCjkLanguage && j > 0 ? <wbr /> : null}
+                      <ruby>{seg.text}<rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
+                    </React.Fragment>
+                  )
+                  : (
+                    <React.Fragment key={j}>
+                      {isCjkLanguage && j > 0 ? <wbr /> : null}
+                      {seg.text}
+                    </React.Fragment>
+                  )
               )
-            : displayText}
+            : isCjkLanguage ? renderCjkBreakableText(displayText) : displayText}
         </span>
       );
     }
