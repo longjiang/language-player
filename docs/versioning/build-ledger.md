@@ -34,6 +34,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 15 | 25c5e426 | 2026-08-19 | 3.2.3 — iOS TestFlight (b8, consumed) · 3.2.3 — Android Internal testing (b8, consumed) | — |
 | 16 | 96af02c8 | 2026-08-19 | 3.3.0 — iOS TestFlight (b9, consumed) | — |
 | 17 | 56dd0894 | 2026-08-21 | — | dev 11 (Debug; active (dirty); lp-dev-11-ios-device-56dd08942074.zip; 355ee1f6d2d6e7893c29e1b7a7dba4bdedf29248469716ce61373c5ac5376729) |
+| 18 | efaebf55 | 2026-08-21 | 3.3.1 — iOS TestFlight (b10, consumed) · 3.3.1 — Android Internal testing (b10, consumed) | — |
 
 ## Preserved working builds
 
