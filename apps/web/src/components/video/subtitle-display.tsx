@@ -389,7 +389,6 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     const btnColorClass = overlay
       ? 'text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10'
       : 'text-muted-foreground hover:text-foreground';
-    const separatorClass = overlay ? 'border-primary-foreground/20' : 'border-border';
     const textClass = overlay ? 'text-primary-foreground' : 'text-foreground';
     const transClass = overlay ? 'text-primary-foreground/80' : 'text-muted-foreground';
     const placeholderClass = overlay ? 'text-primary-foreground/70' : 'text-muted-foreground';
@@ -484,8 +483,6 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             <SkipForward className="h-4 w-4" />
           </Button>
         </div>
-
-        <div className={cn('mx-3 border-t', separatorClass)} />
 
         <div
           className="flex-1 flex flex-col items-center justify-center px-4 py-2 cursor-pointer min-h-0"
