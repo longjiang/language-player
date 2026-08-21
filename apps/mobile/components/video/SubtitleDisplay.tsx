@@ -49,6 +49,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   const t = useT();
   const { display, playback, tokenizedText } = useSettingsContext();
   const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
+  const tokenizedLeading = tokenizedText.leading ?? 1.625;
   // SPEC-082 Task 1: the translation renders at `translationSize` × the L2
   // text size (clamped to [0.5, 1], default 0.8).
   const translationFactor = translationSizeFactor({ tokenizedText });
@@ -203,8 +204,11 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   if (singleLine) {
     const activeLine = activeLineIndex >= 0 ? displayLines[activeLineIndex] : undefined;
     // Before playback there is no active line — show the caller's default
-    // line (e.g. the subs-search match line) instead of a placeholder.
-    const shownLine = activeLine ?? defaultLine;
+    // line (e.g. the subs-search match line), or the first subtitle line on
+    // the watch page, instead of a placeholder.
+    const shownLine = activeLine ?? defaultLine ?? displayLines[0];
+    const singleLineTranslationFontSize = translationFactor * 16 * singlelineTextScale * zoomRem;
+    const singleLineTranslationGap = Math.ceil(16 * singlelineTextScale * zoomRem * tokenizedLeading);
 
     // Karaoke progress for the active line
     let karaokeProgress: number | undefined;
@@ -221,7 +225,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
         {/* Active line */}
         <Pressable
           className="flex-1 flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0"
-          onPress={() => { if (activeLine) onSeekToLine?.(activeLine.starttime); }}
+          onPress={() => { if (shownLine) onSeekToLine?.(shownLine.starttime); }}
         >
           {shownLine ? (
             <TextActionMenu
@@ -250,8 +254,12 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 </View>
                 {showTranslation && shownLine.l1Line ? (
                   <Text
-                    className={`w-full text-sm text-center mt-2 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
-                    style={{ fontSize: translationFactor * 16 * singlelineTextScale * zoomRem }}
+                    className={`w-full text-sm text-center leading-relaxed ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
+                    style={{
+                      fontSize: singleLineTranslationFontSize,
+                      lineHeight: Math.ceil(singleLineTranslationFontSize * 1.625),
+                      marginTop: singleLineTranslationGap,
+                    }}
                   >
                     {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
                   </Text>
@@ -326,7 +334,13 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                     />
                   </View>
                   {item.l1Line ? (
-                    <Text className="w-full mt-2 text-left text-sm text-muted-foreground" style={{ fontSize: translationFactor * 16 * zoomRem }}>
+                    <Text
+                      className="w-full text-left text-sm text-muted-foreground"
+                      style={{
+                        fontSize: translationFactor * 16 * zoomRem,
+                        marginTop: Math.ceil(16 * zoomRem * tokenizedLeading),
+                      }}
+                    >
                       {renderInlineMarkdown(item.l1Line, { markBold: true })}
                     </Text>
                   ) : null}
