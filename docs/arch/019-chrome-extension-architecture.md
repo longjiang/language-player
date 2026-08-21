@@ -469,22 +469,26 @@ with `position:fixed`. They render in the browser's own side panel:
   `dist/sidepanel.js`): `SidePanelApp` tracks the active tab, pulls state, and
   renders the video/page React trees. `dist/sidepanel.css` supplies semantic
   side-panel tokens and local Shadcn-compatible component styles.
-- **Modal iframe**: `SidePanelApp` renders one full-panel
-  `SidePanelModalFrame` bridge. The bridge opens
-  `src/sidepanel-modal-frame.html`, which renders language selection, settings,
-  help, about, login, account, subtitle dictionary, and line explanation
-  dialogs in an extension-owned document. The iframe is hidden and has
-  `pointer-events: none` when no modal is open, so it never intercepts normal
-  side-panel interaction.
+- **Page modal iframe**: `SidePanelApp` sends modal payloads to the active tab's
+  content script. The `page-dictionary.tsx` bridge opens one full-viewport,
+  extension-origin iframe using `src/page-dictionary-frame.html`. That document
+  renders language selection, settings, help, about, login, account, subtitle
+  dictionary, and line explanation dialogs. The modal therefore appears over
+  the webpage, has room for the web-parity two-panel layouts, and cannot be
+  changed by webpage CSS. The same iframe also renders ordinary webpage
+  dictionary lookups and the restored Follow Link action.
 - **Message flow**:
   - Content script → side panel: `chrome.runtime.sendMessage` → background
     relays over a runtime port named `lpv-sidepanel` (tagged with the sender's
     tabId). Actions: `panelState` (video), `pageModeState` / `pageLookup`
-    (page mode).
+    (page mode), and `pageModalEvent` (modal results such as language changes,
+    theme changes, login, logout, and close).
   - Side panel → content script: direct `chrome.tabs.sendMessage` (`panelSeek`,
     `pageTranslationVisibility`, `pageTokenizationOff`, `changeLanguage`).
-  - Background → content scripts: `panelOpenState` on panel open/close/tab
-    switch (gates ArrowUp/Down cue seeking).
+  - Side panel → content script: `openPageModal` sends a modal payload and the
+    current theme to the active tab; the page content script dispatches it to
+    the iframe bridge. Background → content scripts: `panelOpenState` on panel
+    open/close/tab switch (gates ArrowUp/Down cue seeking).
 - **Opening the panel**: `chrome.sidePanel.open({ tabId })` requires a user
   gesture, so auto-open on subtitle load is gone. It opens from the extension
   action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token

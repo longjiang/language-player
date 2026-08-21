@@ -68,6 +68,7 @@ if (JSON.stringify(sorted(resourceRule.resources)) !== JSON.stringify(sorted([
   'dist/netflix-main-world.js',
   'src/page-dictionary-frame.html',
   'dist/content.css',
+  'dist/sidepanel.css',
   'dist/page-dictionary.css',
   'dist/page-dictionary-frame.js',
   '_locales/*.json',

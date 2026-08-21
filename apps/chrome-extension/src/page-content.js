@@ -578,6 +578,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     init().then(() => sendResponse({ ok: true }));
     return true;
   }
+  if (message.action === 'openPageModal') {
+    log(`[PAGE] opening page modal: ${message.modal?.kind || 'unknown'}`);
+    window.dispatchEvent(new CustomEvent('lpv-page-modal-open', { detail: message.modal }));
+    sendResponse({ ok: true });
+    return true;
+  }
   if (message.action === 'pageTokenizationOff') {
     log('[PAGE] toggle disabled from popup');
     cleanup();
