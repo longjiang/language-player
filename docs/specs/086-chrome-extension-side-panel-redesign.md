@@ -586,6 +586,7 @@ The implementation is split into independently rebuilt commits:
 - `6e4b81b4` — account, Help, About, login/logout, and subscription flows
 - `ea4d4554` — dictionary modal surface
 - `7bd9366a` — compact dictionary cards, shared pronunciation formatting, and event boundaries
+- `acecab58` — Examples from Videos AI follow-up parity
 
 Every implementation phase ran `node apps/chrome-extension/build.mjs` and
 `node scripts/check-extension-permissions.mjs`. The shared pronunciation

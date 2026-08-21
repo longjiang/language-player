@@ -504,9 +504,11 @@ open the canonical production site in a new tab.
 
 Token lookup is rendered by `DictionaryModal`, never as a bottom dock.
 `DictionaryCard` imports `formatPronunciation` from `@langplayer/utils` and
-uses shared level filtering/formatting. Entry cards keep speaker, bookmark,
-and image-search events separate from card navigation, and route to the
-canonical Language Player dictionary entry URL.
+uses shared level filtering/formatting. Its Pro AI surface includes the web's
+five language follow-ups plus Examples from Videos, which samples the existing
+subtitle-search endpoint before sending context to chat. Entry cards keep
+speaker, bookmark, and image-search events separate from card navigation, and
+route to the canonical Language Player dictionary entry URL.
 
 The manifest permission budget is frozen by
 `scripts/check-extension-permissions.mjs`. SPEC-086 adds no permission,
