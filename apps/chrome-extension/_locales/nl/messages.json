@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Toon fonetiek"
   },
+  "settings": {
+    "message": "Instellingen"
+  },
+  "display": {
+    "message": "Weergave"
+  },
+  "theme": {
+    "message": "Thema"
+  },
+  "light": {
+    "message": "Licht"
+  },
+  "dark": {
+    "message": "Donker"
+  },
+  "system": {
+    "message": "Systeem"
+  },
+  "sample": {
+    "message": "Voorbeeld"
+  },
+  "typeface": {
+    "message": "Lettertype"
+  },
+  "defaultTypeface": {
+    "message": "Standaard"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Tekstgrootte"
+  },
+  "translationSize": {
+    "message": "Vertalingsgrootte"
+  },
+  "leading": {
+    "message": "Regelafstand"
+  },
+  "phonetics": {
+    "message": "Fonetiek"
+  },
+  "above": {
+    "message": "Boven het woord"
+  },
+  "replace": {
+    "message": "Woord vervangend"
+  },
+  "off": {
+    "message": "Uit"
+  },
+  "scope": {
+    "message": "Toon voor"
+  },
+  "allWords": {
+    "message": "Alle woorden"
+  },
+  "hardWords": {
+    "message": "Alleen moeilijke woorden"
+  },
+  "searchSettings": {
+    "message": "Zoek instellingen…"
+  },
+  "playback": {
+    "message": "Afspelen"
+  },
+  "speech": {
+    "message": "Spraak"
+  },
+  "review": {
+    "message": "Beoordeling"
+  },
+  "settingsUnavailable": {
+    "message": "Deze instellingencategorie komt binnenkort."
+  },
+  "noLanguagesFound": {
+    "message": "Geen talen komen overeen met je zoekopdracht."
+  },
+  "traditional": {
+    "message": "Traditioneel Chinees"
+  },
+  "simplified": {
+    "message": "Vereenvoudigd Chinees"
+  },
   "explainWord": {
     "message": "Leg kort uit wat het $l2Name$-woord \"$word$\" betekent en geef daarna 2 voorbeelden met vertalingen.",
     "placeholders": {

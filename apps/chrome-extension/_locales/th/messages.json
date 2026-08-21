@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "แสดงสัทอักษร"
   },
+  "settings": {
+    "message": "การตั้งค่า"
+  },
+  "display": {
+    "message": "การแสดงผล"
+  },
+  "theme": {
+    "message": "ธีม"
+  },
+  "light": {
+    "message": "สว่าง"
+  },
+  "dark": {
+    "message": "มืด"
+  },
+  "system": {
+    "message": "ระบบ"
+  },
+  "sample": {
+    "message": "ตัวอย่าง"
+  },
+  "typeface": {
+    "message": "แบบอักษร"
+  },
+  "defaultTypeface": {
+    "message": "ค่าเริ่มต้น"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "ขนาดข้อความ"
+  },
+  "translationSize": {
+    "message": "ขนาดคำแปล"
+  },
+  "leading": {
+    "message": "ระยะห่างบรรทัด"
+  },
+  "phonetics": {
+    "message": "สัทอักษร"
+  },
+  "above": {
+    "message": "เหนือคำ"
+  },
+  "replace": {
+    "message": "แทนที่คำ"
+  },
+  "off": {
+    "message": "ปิด"
+  },
+  "scope": {
+    "message": "แสดงสำหรับ"
+  },
+  "allWords": {
+    "message": "ทุกคำ"
+  },
+  "hardWords": {
+    "message": "เฉพาะคำยาก"
+  },
+  "searchSettings": {
+    "message": "ค้นหาในการตั้งค่า…"
+  },
+  "playback": {
+    "message": "การเล่น"
+  },
+  "speech": {
+    "message": "คำพูด"
+  },
+  "review": {
+    "message": "ทบทวน"
+  },
+  "settingsUnavailable": {
+    "message": "หมวดหมู่การตั้งค่านี้จะพร้อมใช้งานเร็วๆ นี้"
+  },
+  "noLanguagesFound": {
+    "message": "ไม่มีภาษาที่ตรงกับการค้นหาของคุณ"
+  },
+  "traditional": {
+    "message": "繁體 ตัวเต็ม"
+  },
+  "simplified": {
+    "message": "简体 ตัวย่อ"
+  },
   "explainWord": {
     "message": "กรุณาอธิบายคำภาษา$l2Name$ \"$word$\" โดยสรุป แล้วยกตัวอย่างพร้อมคำแปล 2 ตัวอย่าง",
     "placeholders": {

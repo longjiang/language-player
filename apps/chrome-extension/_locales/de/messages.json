@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Phonetik anzeigen"
   },
+  "settings": {
+    "message": "Einstellungen"
+  },
+  "display": {
+    "message": "Anzeige"
+  },
+  "theme": {
+    "message": "Design"
+  },
+  "light": {
+    "message": "Hell"
+  },
+  "dark": {
+    "message": "Dunkel"
+  },
+  "system": {
+    "message": "System"
+  },
+  "sample": {
+    "message": "Vorschau"
+  },
+  "typeface": {
+    "message": "Schriftart"
+  },
+  "defaultTypeface": {
+    "message": "Standard"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Textgröße"
+  },
+  "translationSize": {
+    "message": "Übersetzungsgröße"
+  },
+  "leading": {
+    "message": "Zeilenabstand"
+  },
+  "phonetics": {
+    "message": "Phonetik"
+  },
+  "above": {
+    "message": "Über dem Wort"
+  },
+  "replace": {
+    "message": "Wort ersetzen"
+  },
+  "off": {
+    "message": "Aus"
+  },
+  "scope": {
+    "message": "Anzeigen für"
+  },
+  "allWords": {
+    "message": "Alle Wörter"
+  },
+  "hardWords": {
+    "message": "Nur schwierige Wörter"
+  },
+  "searchSettings": {
+    "message": "Einstellungen suchen…"
+  },
+  "playback": {
+    "message": "Wiedergabe"
+  },
+  "speech": {
+    "message": "Sprache"
+  },
+  "review": {
+    "message": "Wiederholung"
+  },
+  "settingsUnavailable": {
+    "message": "Diese Einstellungskategorie kommt bald."
+  },
+  "noLanguagesFound": {
+    "message": "Keine Sprachen entsprechen deiner Suche."
+  },
+  "traditional": {
+    "message": "繁體 Traditionell"
+  },
+  "simplified": {
+    "message": "简体 Vereinfacht"
+  },
   "explainWord": {
     "message": "Erkläre bitte kurz das $l2Name$-Wort \"$word$\" und gib dann 2 Beispiele mit Übersetzungen.",
     "placeholders": {

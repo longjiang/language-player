@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "ふりがなを表示"
   },
+  "settings": {
+    "message": "設定"
+  },
+  "display": {
+    "message": "表示"
+  },
+  "theme": {
+    "message": "テーマ"
+  },
+  "light": {
+    "message": "ライト"
+  },
+  "dark": {
+    "message": "ダーク"
+  },
+  "system": {
+    "message": "システム"
+  },
+  "sample": {
+    "message": "プレビュー"
+  },
+  "typeface": {
+    "message": "フォント"
+  },
+  "defaultTypeface": {
+    "message": "デフォルト"
+  },
+  "serif": {
+    "message": "セリフ"
+  },
+  "sansSerif": {
+    "message": "サンセリフ"
+  },
+  "textSize": {
+    "message": "文字サイズ"
+  },
+  "translationSize": {
+    "message": "翻訳のサイズ"
+  },
+  "leading": {
+    "message": "行間"
+  },
+  "phonetics": {
+    "message": "発音表記"
+  },
+  "above": {
+    "message": "単語の上に"
+  },
+  "replace": {
+    "message": "単語を置き換え"
+  },
+  "off": {
+    "message": "オフ"
+  },
+  "scope": {
+    "message": "表示対象"
+  },
+  "allWords": {
+    "message": "すべての単語"
+  },
+  "hardWords": {
+    "message": "難しい単語のみ"
+  },
+  "searchSettings": {
+    "message": "設定を検索…"
+  },
+  "playback": {
+    "message": "再生"
+  },
+  "speech": {
+    "message": "音声"
+  },
+  "review": {
+    "message": "復習"
+  },
+  "settingsUnavailable": {
+    "message": "この設定カテゴリは近日公開予定です。"
+  },
+  "noLanguagesFound": {
+    "message": "検索に一致する言語はありません。"
+  },
+  "traditional": {
+    "message": "繁体字"
+  },
+  "simplified": {
+    "message": "簡体字"
+  },
   "explainWord": {
     "message": "$l2Name$の単語\"$word$\"を簡潔に説明し、翻訳付きの例を2つ挙げてください。",
     "placeholders": {

@@ -15,28 +15,16 @@ import { createRoot } from 'react-dom/client';
 import { SavedWordsProvider } from './components/SavedWordsProvider';
 import { TranscriptAppInner, PagePanel, type PageLookupDetail } from './transcript-app';
 import { PageTranslationPanel } from './components/PageTranslationPanel';
+import { LanguagePicker } from './components/LanguagePicker';
+import { SettingsModal } from './components/SettingsModal';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
-import langNames from '../dist/lang-names.json';
+import { languageName } from './language-names';
 
-/** CSV-style locale → Chrome _locales/ directory name (mirrors popup.js). */
-const CSV_TO_CHROME_LOCALE = { 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW' };
 type SidePanelTab = 'subtitles' | 'page-translation';
 type Theme = 'light' | 'dark' | 'system';
 type SubtitleStatus = 'idle' | 'detecting' | 'ready' | 'empty' | 'error';
-
-function languageName(code, l1Code) {
-  const entry = (langNames && langNames[code]) || null;
-  if (!entry) return (code || '').toUpperCase();
-  const chromeLocale = CSV_TO_CHROME_LOCALE[l1Code] || l1Code;
-  if (entry[chromeLocale]) return entry[chromeLocale];
-  if (entry[l1Code]) return entry[l1Code];
-  const bare = l1Code.replace(/[-_][A-Z]{2}$/i, '');
-  if (bare !== l1Code && entry[bare]) return entry[bare];
-  if (entry.en) return entry.en;
-  return (code || '').toUpperCase();
-}
 
 function applyTheme(theme: Theme): void {
   const root = document.documentElement;
@@ -88,6 +76,8 @@ function SidePanelApp() {
   const [selectedTab, setSelectedTab] = useState<SidePanelTab>('subtitles');
   const [theme, setTheme] = useState<Theme>('system');
   const [subtitleRequesting, setSubtitleRequesting] = useState(false);
+  const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const tabIdRef = useRef<number | null>(null);
   tabIdRef.current = tabId;
@@ -176,6 +166,15 @@ function SidePanelApp() {
       port.disconnect();
     };
   }, []);
+
+  // Keep the System theme in sync while the side panel remains open.
+  useEffect(() => {
+    if (theme !== 'system' || !window.matchMedia) return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => applyTheme('system');
+    media.addEventListener?.('change', onChange);
+    return () => media.removeEventListener?.('change', onChange);
+  }, [theme]);
 
   // ── Locale ──
   useEffect(() => {
@@ -355,6 +354,18 @@ function SidePanelApp() {
 
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
 
+  const handleLanguageConfirm = useCallback(async (nextL1: string, nextL2: string, traditional: boolean) => {
+    await chrome.storage.local.set({ l1Language: nextL1, l2Language: nextL2, useTraditional: traditional });
+    if (nextL1 !== l1Code) {
+      setL1Code(nextL1);
+      await setLocale(nextL1);
+      setLocaleVersion((version) => version + 1);
+    }
+    setL2Code(nextL2);
+    sendToTab('changeLanguage', { l1: nextL1, l2: nextL2 });
+    setLanguagePickerOpen(false);
+  }, [l1Code, sendToTab]);
+
   return (
     <div className="lpv-app-shell" data-theme={theme}>
       <header className="lpv-app-topbar">
@@ -374,7 +385,7 @@ function SidePanelApp() {
             size="sm"
             className="lpv-language-trigger"
             aria-haspopup="dialog"
-            onClick={() => log('Language picker trigger opened; Phase 4 will mount the picker')}
+            onClick={() => setLanguagePickerOpen(true)}
           >
             {languageName(currentL2Code, l1Code)}
             <span aria-hidden="true">⌄</span>
@@ -385,7 +396,7 @@ function SidePanelApp() {
             className="lpv-profile-trigger"
             aria-label={t('profile')}
             aria-haspopup="menu"
-            onClick={() => log('Profile menu trigger opened; Phase 5 will mount the menu')}
+            onClick={() => setSettingsOpen(true)}
           >
             <span aria-hidden="true">{l1Code ? '◉' : '?'}</span>
           </Button>
@@ -426,6 +437,19 @@ function SidePanelApp() {
           {pageTranslationContent}
         </TabsContent>
       </Tabs>
+      <LanguagePicker
+        open={languagePickerOpen}
+        l1Code={l1Code}
+        l2Code={currentL2Code}
+        onOpenChange={setLanguagePickerOpen}
+        onConfirm={handleLanguageConfirm}
+      />
+      <SettingsModal
+        open={settingsOpen}
+        l2Code={currentL2Code}
+        onOpenChange={setSettingsOpen}
+        onThemeChange={applyTheme}
+      />
     </div>
   );
 }

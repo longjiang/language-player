@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Tampilkan fonetik"
   },
+  "settings": {
+    "message": "Pengaturan"
+  },
+  "display": {
+    "message": "Tampilan"
+  },
+  "theme": {
+    "message": "Tema"
+  },
+  "light": {
+    "message": "Terang"
+  },
+  "dark": {
+    "message": "Gelap"
+  },
+  "system": {
+    "message": "Sistem"
+  },
+  "sample": {
+    "message": "Pratinjau"
+  },
+  "typeface": {
+    "message": "Font"
+  },
+  "defaultTypeface": {
+    "message": "Bawaan"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Ukuran teks"
+  },
+  "translationSize": {
+    "message": "Ukuran terjemahan"
+  },
+  "leading": {
+    "message": "Spasi baris"
+  },
+  "phonetics": {
+    "message": "Fonetik"
+  },
+  "above": {
+    "message": "Di atas kata"
+  },
+  "replace": {
+    "message": "Mengganti kata"
+  },
+  "off": {
+    "message": "Mati"
+  },
+  "scope": {
+    "message": "Tampilkan untuk"
+  },
+  "allWords": {
+    "message": "Semua kata"
+  },
+  "hardWords": {
+    "message": "Hanya kata sulit"
+  },
+  "searchSettings": {
+    "message": "Cari pengaturan…"
+  },
+  "playback": {
+    "message": "Pemutaran"
+  },
+  "speech": {
+    "message": "Ucapan"
+  },
+  "review": {
+    "message": "Tinjauan"
+  },
+  "settingsUnavailable": {
+    "message": "Kategori pengaturan ini akan segera hadir."
+  },
+  "noLanguagesFound": {
+    "message": "Tidak ada bahasa yang cocok dengan pencarian Anda."
+  },
+  "traditional": {
+    "message": "繁體 Tradisional"
+  },
+  "simplified": {
+    "message": "简体 Sederhana"
+  },
   "explainWord": {
     "message": "Jelaskan secara singkat kata $l2Name$ \"$word$\", lalu berikan 2 contoh dengan terjemahan.",
     "placeholders": {

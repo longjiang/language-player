@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "إظهار الصوتيات"
   },
+  "settings": {
+    "message": "الإعدادات"
+  },
+  "display": {
+    "message": "العرض"
+  },
+  "theme": {
+    "message": "المظهر"
+  },
+  "light": {
+    "message": "فاتح"
+  },
+  "dark": {
+    "message": "داكن"
+  },
+  "system": {
+    "message": "النظام"
+  },
+  "sample": {
+    "message": "معاينة"
+  },
+  "typeface": {
+    "message": "الخط"
+  },
+  "defaultTypeface": {
+    "message": "افتراضي"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "حجم النص"
+  },
+  "translationSize": {
+    "message": "حجم الترجمة"
+  },
+  "leading": {
+    "message": "تباعد الأسطر"
+  },
+  "phonetics": {
+    "message": "الصوتيات"
+  },
+  "above": {
+    "message": "فوق الكلمة"
+  },
+  "replace": {
+    "message": "استبدال الكلمة"
+  },
+  "off": {
+    "message": "إيقاف"
+  },
+  "scope": {
+    "message": "إظهار لـ"
+  },
+  "allWords": {
+    "message": "كل الكلمات"
+  },
+  "hardWords": {
+    "message": "الكلمات الصعبة فقط"
+  },
+  "searchSettings": {
+    "message": "بحث في الإعدادات…"
+  },
+  "playback": {
+    "message": "التشغيل"
+  },
+  "speech": {
+    "message": "الكلام"
+  },
+  "review": {
+    "message": "مراجعة"
+  },
+  "settingsUnavailable": {
+    "message": "ستتوفر فئة الإعدادات هذه قريبًا."
+  },
+  "noLanguagesFound": {
+    "message": "لا توجد لغات تطابق بحثك."
+  },
+  "traditional": {
+    "message": "繁體 تقليدية"
+  },
+  "simplified": {
+    "message": "简体 مبسطة"
+  },
   "explainWord": {
     "message": "يرجى شرح كلمة $l2Name$ \"$word$\" بإيجاز، ثم أعط مثالين مع ترجماتهما.",
     "placeholders": {
