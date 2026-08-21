@@ -12,14 +12,12 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+import type { AuthState } from './auth';
 import { SavedWordsProvider } from './components/SavedWordsProvider';
-import { TranscriptAppInner, type PageLookupDetail } from './transcript-app';
+import { TranscriptAppInner, type DictionaryModalRequest, type LineExplanationRequest, type PageLookupDetail } from './transcript-app';
 import { PageTranslationPanel } from './components/PageTranslationPanel';
-import { LanguagePicker } from './components/LanguagePicker';
-import { SettingsModal } from './components/SettingsModal';
 import { UserMenu } from './components/UserMenu';
-import { HelpModal } from './components/HelpModal';
-import { AboutModal } from './components/AboutModal';
+import { SidePanelModalFrame, type SidePanelModal } from './components/SidePanelModalFrame';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
@@ -79,10 +77,7 @@ function SidePanelApp() {
   const [selectedTab, setSelectedTab] = useState<SidePanelTab>('subtitles');
   const [theme, setTheme] = useState<Theme>('system');
   const [subtitleRequesting, setSubtitleRequesting] = useState(false);
-  const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
+  const [modal, setModal] = useState<SidePanelModal | null>(null);
 
   const tabIdRef = useRef<number | null>(null);
   tabIdRef.current = tabId;
@@ -306,6 +301,12 @@ function SidePanelApp() {
           localeVersion={localeVersion + (videoState.localeVersion ?? 0)}
           videoTitle={videoState.videoTitle}
           pageUrl={videoState.pageUrl}
+          onDictionaryOpen={(request: DictionaryModalRequest | null) => {
+            setModal(request ? { kind: 'dictionary', ...request } : null);
+          }}
+          onLineExplainOpen={(request: LineExplanationRequest | null) => {
+            setModal(request ? { kind: 'line-explanation', request } : null);
+          }}
         />
       </SavedWordsProvider>
     ) : subtitleStatus === 'detecting' || subtitleRequesting ? (
@@ -354,8 +355,19 @@ function SidePanelApp() {
     }
     setL2Code(nextL2);
     sendToTab('changeLanguage', { l1: nextL1, l2: nextL2 });
-    setLanguagePickerOpen(false);
+    setModal(null);
   }, [l1Code, sendToTab]);
+
+  const openAccount = useCallback((auth: AuthState) => {
+    setModal({ kind: 'account', auth, l1Code, l2Code: currentL2Code });
+  }, [currentL2Code, l1Code]);
+
+  const closeModal = useCallback(() => setModal(null), []);
+
+  const handleThemeChange = useCallback((nextTheme: Theme) => {
+    setTheme(nextTheme);
+    applyTheme(nextTheme);
+  }, []);
 
   return (
     <div className="lpv-app-shell" data-theme={theme}>
@@ -376,12 +388,18 @@ function SidePanelApp() {
             size="sm"
             className="lpv-language-trigger"
             aria-haspopup="dialog"
-            onClick={() => setLanguagePickerOpen(true)}
+            onClick={() => setModal({ kind: 'language', l1Code, l2Code: currentL2Code })}
           >
             {languageName(currentL2Code, l1Code)}
             <span aria-hidden="true">⌄</span>
           </Button>
-          <UserMenu l1Code={l1Code} l2Code={currentL2Code} onSettings={() => setSettingsOpen(true)} onHelp={() => setHelpOpen(true)} onAbout={() => setAboutOpen(true)} />
+          <UserMenu
+            onSettings={() => setModal({ kind: 'settings', l2Code: currentL2Code })}
+            onHelp={() => setModal({ kind: 'help' })}
+            onAbout={() => setModal({ kind: 'about' })}
+            onLogin={() => setModal({ kind: 'login' })}
+            onAccount={openAccount}
+          />
           <Button variant="ghost" size="icon" aria-label={t('closePanel')} onClick={closePanel}>
             <span aria-hidden="true">×</span>
           </Button>
@@ -419,21 +437,13 @@ function SidePanelApp() {
           {pageTranslationContent}
         </TabsContent>
       </Tabs>
-      <LanguagePicker
-        open={languagePickerOpen}
-        l1Code={l1Code}
-        l2Code={currentL2Code}
-        onOpenChange={setLanguagePickerOpen}
-        onConfirm={handleLanguageConfirm}
+      <SidePanelModalFrame
+        modal={modal}
+        theme={theme}
+        onClose={closeModal}
+        onLanguageConfirm={handleLanguageConfirm}
+        onThemeChange={handleThemeChange}
       />
-      <SettingsModal
-        open={settingsOpen}
-        l2Code={currentL2Code}
-        onOpenChange={setSettingsOpen}
-        onThemeChange={applyTheme}
-      />
-      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
-      <AboutModal open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
   );
 }

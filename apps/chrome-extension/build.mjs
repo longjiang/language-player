@@ -307,6 +307,40 @@ if (pageDictionaryFrameResult.warnings.length > 0) {
   console.warn('[build] Webpage dictionary iframe warnings:', pageDictionaryFrameResult.warnings);
 }
 
+// Step 2h: Bundle the native side-panel modal iframe. It gives every modal a
+// full side-panel-sized extension document instead of constraining it to the
+// shell's React tree.
+console.log('[build] Bundling side-panel modal iframe...');
+
+const sidePanelModalFrameResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/sidepanel-modal-frame.tsx')],
+  bundle: true,
+  outfile: resolve(outDir, 'sidepanel-modal-frame.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  jsx: 'automatic',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (sidePanelModalFrameResult.errors.length > 0) {
+  console.error('[build] Side-panel modal iframe errors:', sidePanelModalFrameResult.errors);
+  process.exit(1);
+}
+if (sidePanelModalFrameResult.warnings.length > 0) {
+  console.warn('[build] Side-panel modal iframe warnings:', sidePanelModalFrameResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),
@@ -332,6 +366,18 @@ copyFileSync(
   resolve(outDir, 'page-dictionary-frame.html'),
 );
 console.log('[build] Copied page-dictionary-frame.html');
+
+copyFileSync(
+  resolve(__dirname, 'src/sidepanel-modal-frame.css'),
+  resolve(outDir, 'sidepanel-modal-frame.css'),
+);
+console.log('[build] Copied sidepanel-modal-frame.css');
+
+copyFileSync(
+  resolve(__dirname, 'src/sidepanel-modal-frame.html'),
+  resolve(outDir, 'sidepanel-modal-frame.html'),
+);
+console.log('[build] Copied sidepanel-modal-frame.html');
 
 // Copy Netflix MAIN world script (injected via <script src> at document_start)
 copyFileSync(

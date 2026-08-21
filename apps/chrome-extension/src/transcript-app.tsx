@@ -10,9 +10,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
-import { DictionaryModal } from './components/DictionaryModal';
-import { Markdown } from './components/Markdown';
-import { X, Ellipsis } from './components/Icons';
+import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
@@ -56,6 +54,24 @@ interface TranscriptAppProps {
   videoTitle?: string;
   /** Page URL, used to extract platform/video ID for word-saving context. */
   pageUrl?: string;
+  onDictionaryOpen?: (request: DictionaryModalRequest | null) => void;
+  onLineExplainOpen?: (request: LineExplanationRequest | null) => void;
+}
+
+export interface DictionaryModalRequest {
+  token: LemmatizedToken;
+  l1Code: string;
+  l2Code: string;
+  contextText?: string;
+  cueStartTime?: number;
+  videoTitle?: string;
+  pageUrl?: string;
+}
+
+export interface LineExplanationRequest {
+  cue: { text: string; start: number; end: number };
+  l1Code: string;
+  l2Code: string;
 }
 
 // Re-export SubCue type for content-entry.js
@@ -369,22 +385,17 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   localeVersion,
   videoTitle,
   pageUrl,
+  onDictionaryOpen,
+  onLineExplainOpen,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const prevActiveRef = useRef(activeCueIdx);
-  const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
-  /** The cue from which the selectedToken was clicked — used for save context. */
-  const [selectedCue, setSelectedCue] = useState<SubtitleCue | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showPhonetics, setShowPhonetics] = useState(true);
   /** Text scale index: 0 (smallest) to 4 (largest). Maps to 87%–150%. */
   const [textScale, setTextScale] = useState(2);
-  const [explainLoading, setExplainLoading] = useState(false);
-  const [explainText, setExplainText] = useState<string | null>(null);
-  const [explainError, setExplainError] = useState<string | null>(null);
-  const [explainCue, setExplainCue] = useState<SubtitleCue | null>(null);
 
-  const { isPro, loading: subLoading } = useSubscription();
+  const { isPro } = useSubscription();
   const { preFetch } = useBatchLemmatize();
 
   // Load saved preferences
@@ -438,54 +449,30 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   );
 
   const handleSeekTo = useCallback((timeSec: number) => {
-    setSelectedToken(null);
-    setSelectedCue(null);
+    onDictionaryOpen?.(null);
+    onLineExplainOpen?.(null);
     onSeekTo(timeSec);
-  }, [onSeekTo]);
+  }, [onDictionaryOpen, onLineExplainOpen, onSeekTo]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken, cue: SubtitleCue) => {
     log('Token clicked:', token.text, token.lemmas.map(l => l.lemma));
-    setSelectedToken(token);
-    setSelectedCue(cue);
-    setExplainCue(null);
-  }, []);
+    onDictionaryOpen?.({
+      token,
+      l1Code,
+      l2Code,
+      contextText: cue.text,
+      cueStartTime: cue.start,
+      videoTitle,
+      pageUrl,
+    });
+    onLineExplainOpen?.(null);
+  }, [l1Code, l2Code, onDictionaryOpen, pageUrl, videoTitle]);
 
-  const handleExplainLine = useCallback(async (cue: SubtitleCue) => {
+  const handleExplainLine = useCallback((cue: SubtitleCue) => {
     if (!isPro) return; // ADR-0034 D3: AI explanations are hard Pro-only
-    setSelectedToken(null);
-    setExplainCue(cue);
-    setExplainLoading(true);
-    setExplainText(null);
-    setExplainError(null);
-
-    try {
-      const l1Name = l1Code.toUpperCase();
-      const prompt = `Provide a clear breakdown of the following ${l2Code} text. Include:
-1. Its overall meaning in ${l1Name}
-2. A phrase-by-phrase breakdown explaining how the text is constructed
-
-Text: ${cue.text}`;
-
-      const res = await apiFetch(`${API_BASE}/chatgpt`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setExplainText(data.response || data.text || data.result || JSON.stringify(data));
-    } catch (err: any) {
-      setExplainError(err?.message || 'Explain failed');
-    } finally {
-      setExplainLoading(false);
-    }
-  }, [isPro, l1Code, l2Code]);
-
-  const closeExplain = useCallback(() => {
-    setExplainCue(null);
-    setExplainText(null);
-    setExplainError(null);
-  }, []);
+    onDictionaryOpen?.(null);
+    onLineExplainOpen?.({ cue, l1Code, l2Code });
+  }, [isPro, l1Code, l2Code, onDictionaryOpen, onLineExplainOpen]);
 
   // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
   // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).
@@ -561,7 +548,7 @@ Text: ${cue.text}`;
             translation={translated.get(i) || ''}
             showTranslation={showTranslation}
             onExplainLine={handleExplainLine}
-            explainLoading={explainLoading}
+            explainLoading={false}
             localeVersion={localeVersion}
           />
         ))}
@@ -579,46 +566,6 @@ Text: ${cue.text}`;
           >
             {t('upgradeToPro')}
           </a>
-        </div>
-      )}
-
-      {/* Shared dictionary dock — renders above bottom bar */}
-      <DictionaryDock
-        token={selectedToken}
-        l1Code={l1Code}
-        l2Code={l2Code}
-        contextText={selectedCue?.text}
-        cueStartTime={selectedCue?.start}
-        videoTitle={videoTitle}
-        pageUrl={pageUrl}
-        isPro={isPro}
-        subLoading={subLoading}
-        onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
-      />
-
-      {explainCue && (
-        <div className="lpv-dict-overlay">
-          <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
-            <div className="lpv-dict-card-header">
-              <div className="lpv-dict-card-header-left">
-                <span className="lpv-dict-card-word">{t('explainTitle')}</span>
-              </div>
-              <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}><X size={14} /></button>
-            </div>
-            <div className="lpv-dict-card-body">
-              {explainLoading && (
-                <div className="lpv-explain-loading"><span className="lpv-spinner" /></div>
-              )}
-              {explainError && (
-                <div className="lpv-explain-error">{explainError}</div>
-              )}
-              {explainText && (
-                <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
-                  <Markdown text={explainText} />
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       )}
 
@@ -672,51 +619,6 @@ Text: ${cue.text}`;
   );
 };
 
-// ── Shared Dictionary Dock ────────────────────────────────────────────────
-
-interface DictionaryDockProps {
-  token: LemmatizedToken | null;
-  l1Code: string;
-  l2Code: string;
-  contextText?: string;
-  cueStartTime?: number;
-  videoTitle?: string;
-  pageUrl?: string;
-  isPro: boolean;
-  subLoading: boolean;
-  onClose: () => void;
-}
-
-/** Dictionary lookup shown in a modal over both video and page surfaces. */
-const DictionaryDock: React.FC<DictionaryDockProps> = ({
-  token,
-  l1Code,
-  l2Code,
-  contextText,
-  cueStartTime,
-  videoTitle,
-  pageUrl,
-  isPro,
-  subLoading,
-  onClose,
-}) => {
-  if (!token) return null;
-  return (
-    <DictionaryModal
-        token={token}
-        l1Code={l1Code}
-        l2Code={l2Code}
-        contextText={contextText}
-        cueStartTime={cueStartTime}
-        videoTitle={videoTitle}
-        pageUrl={pageUrl}
-        isPro={isPro}
-        subLoading={subLoading}
-        onClose={onClose}
-    />
-  );
-};
-
 // ── Page Panel (text mode) ────────────────────────────────────────────────
 
 interface PagePanelProps {
@@ -750,7 +652,7 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   const [showTranslation, setShowTranslation] = useState(false);
   const [showPhonetics, setShowPhonetics] = useState(true);
   const [textScale, setTextScale] = useState(2);
-  const { isPro, loading: subLoading } = useSubscription();
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     try {
@@ -860,17 +762,6 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
           </button>
         )}
       </div>
-
-      <DictionaryDock
-        token={selectedToken}
-        l1Code={l1Code}
-        l2Code={l2Code}
-        contextText={blockText}
-        pageUrl={pageUrl}
-        isPro={isPro}
-        subLoading={subLoading}
-        onClose={() => setSelectedToken(null)}
-      />
 
       {/* Bottom bar — same controls as video mode */}
       <div className="lpv-bottom-bar">
