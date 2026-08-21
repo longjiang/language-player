@@ -506,6 +506,15 @@ export default function ReviewPage() {
   const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
     const card = cards[currentIndex];
     if (!card) return;
+    if (testActiveRequestRef.current !== null) {
+      log('[SRS Test] question generation ignored — request already active', {
+        l2Code,
+        word: wordForm,
+        activeRequestVersion: testActiveRequestRef.current,
+        retry: Boolean(options?.retry),
+      });
+      return;
+    }
     const requestVersion = ++testRequestVersionRef.current;
     testActiveRequestRef.current = requestVersion;
     const context = card.word.context?.text ?? '';
@@ -599,13 +608,15 @@ export default function ReviewPage() {
 
   const handleRetryTestQuestions = useCallback(() => {
     log('[SRS Test] retry requested', { l2Code, word: wordForm });
+    const cardId = cards[currentIndex]?.word.id;
+    if (cardId) testAutoLoadKeyRef.current = `${l2Code}:${cardId}`;
     setTestError(null);
     setTestQuestions([]);
     setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestStartedAt(null);
     void loadTestQuestions({ retry: true });
-  }, [l2Code, wordForm, loadTestQuestions]);
+  }, [cards, currentIndex, l2Code, wordForm, loadTestQuestions]);
 
   useEffect(() => {
     const cardId = cards[currentIndex]?.word.id;
