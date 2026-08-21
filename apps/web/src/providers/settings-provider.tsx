@@ -7,6 +7,7 @@ import type { SettingsV2, TokenizedTextSettings, DisplaySettings, PlaybackSettin
 interface SettingsContextValue {
   settings: SettingsV2;
   loaded: boolean;
+  cloudHydrated: boolean;
 
   tokenizedText: TokenizedTextSettings;
   updateTokenizedText: (patch: Partial<TokenizedTextSettings>) => void;

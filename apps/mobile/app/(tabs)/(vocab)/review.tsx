@@ -160,7 +160,7 @@ export default function ReviewScreen() {
     removeCard,
     pruneOrphans,
   } = useSrs();
-  const { review, display, offlineMode } = useSettingsContext();
+  const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, review, display, offlineMode } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const dayStartHour = review.dayStartHour;
   const srsCardMeta = useMemo(
@@ -267,7 +267,7 @@ export default function ReviewScreen() {
   // The blue ("new") deck holds at most `dailyNewLimit` new cards per local day.
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
-    if (!srsLoaded || !wordsLoaded) return;
+    if (!settingsLoaded || !settingsCloudHydrated || !srsLoaded || !wordsLoaded) return;
     // Never auto-create cards from stale local state before the server's SRS
     // cards have been fetched (SPEC-066): a "new" card minted here can
     // overwrite a rated card from another device.
@@ -330,7 +330,7 @@ export default function ReviewScreen() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, dayStartHour, updateCard, removeCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, dayStartHour, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // Cards only make sense for words that are still saved; unsaving through
@@ -1036,7 +1036,7 @@ export default function ReviewScreen() {
 
   // ── Render states ──
 
-  const isLoading = !wordsLoaded || !srsLoaded || initializing || (user && (!savedWordsCloudHydrated || !srsCloudHydrated));
+  const isLoading = !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded || initializing || (user && (!savedWordsCloudHydrated || !srsCloudHydrated));
 
   // ── Log the loaded review deck once per language ──
   useEffect(() => {

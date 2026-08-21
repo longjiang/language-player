@@ -520,10 +520,12 @@ today" message.
 
 ### Loading states
 
-- **Web**: spinner while auth/saved words/SRS/cloud hydration are pending;
+- **Web**: spinner while auth, settings, saved words, SRS, or cloud hydration
+  are pending;
   unauthenticated users see "Sign in to review words" + a sign-in CTA.
-- **Mobile**: spinner while saved words/SRS/initial deck creation load; there
-  is no in-screen sign-in gate (auth is handled by app-level contexts).
+- **Mobile**: spinner while settings, saved words, SRS, or initial deck
+  creation load; there is no in-screen sign-in gate (auth is handled by
+  app-level contexts).
 - Mobile is fully offline-capable: saved words, SRS cards, settings, and
   dictionary entries come from SecureStore/SQLite, and rating changes queue in
   the outbox ([SPEC-053](053-mobile-offline-mode.md)).
