@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Показать фонетику"
   },
+  "settings": {
+    "message": "Настройки"
+  },
+  "display": {
+    "message": "Дисплей"
+  },
+  "theme": {
+    "message": "Тема"
+  },
+  "light": {
+    "message": "Светлая"
+  },
+  "dark": {
+    "message": "Тёмная"
+  },
+  "system": {
+    "message": "Система"
+  },
+  "sample": {
+    "message": "Предпросмотр"
+  },
+  "typeface": {
+    "message": "Шрифт"
+  },
+  "defaultTypeface": {
+    "message": "По умолчанию"
+  },
+  "serif": {
+    "message": "С засечками"
+  },
+  "sansSerif": {
+    "message": "Без засечек"
+  },
+  "textSize": {
+    "message": "Размер текста"
+  },
+  "translationSize": {
+    "message": "Размер перевода"
+  },
+  "leading": {
+    "message": "Межстрочный интервал"
+  },
+  "phonetics": {
+    "message": "Фонетика"
+  },
+  "above": {
+    "message": "Над словом"
+  },
+  "replace": {
+    "message": "Заменяя слово"
+  },
+  "off": {
+    "message": "Выкл."
+  },
+  "scope": {
+    "message": "Показывать для"
+  },
+  "allWords": {
+    "message": "Все слова"
+  },
+  "hardWords": {
+    "message": "Только сложные слова"
+  },
+  "searchSettings": {
+    "message": "Поиск в настройках…"
+  },
+  "playback": {
+    "message": "Воспроизведение"
+  },
+  "speech": {
+    "message": "Речь"
+  },
+  "review": {
+    "message": "Повторение"
+  },
+  "settingsUnavailable": {
+    "message": "Эта категория настроек скоро появится."
+  },
+  "noLanguagesFound": {
+    "message": "Нет языков, соответствующих поиску."
+  },
+  "traditional": {
+    "message": "Традиционный"
+  },
+  "simplified": {
+    "message": "Упрощённый"
+  },
   "explainWord": {
     "message": "Кратко объясни слово на $l2Name$ \"$word$\", затем приведи 2 примера с переводами.",
     "placeholders": {

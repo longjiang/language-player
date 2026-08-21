@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "显示拼音"
   },
+  "settings": {
+    "message": "设置"
+  },
+  "display": {
+    "message": "显示"
+  },
+  "theme": {
+    "message": "主题"
+  },
+  "light": {
+    "message": "浅色"
+  },
+  "dark": {
+    "message": "深色"
+  },
+  "system": {
+    "message": "系统"
+  },
+  "sample": {
+    "message": "预览"
+  },
+  "typeface": {
+    "message": "字体"
+  },
+  "defaultTypeface": {
+    "message": "默认"
+  },
+  "serif": {
+    "message": "衬线体"
+  },
+  "sansSerif": {
+    "message": "无衬线体"
+  },
+  "textSize": {
+    "message": "文字大小"
+  },
+  "translationSize": {
+    "message": "翻译字号"
+  },
+  "leading": {
+    "message": "行距"
+  },
+  "phonetics": {
+    "message": "注音"
+  },
+  "above": {
+    "message": "显示在单词上方"
+  },
+  "replace": {
+    "message": "替换单词"
+  },
+  "off": {
+    "message": "关闭"
+  },
+  "scope": {
+    "message": "显示范围"
+  },
+  "allWords": {
+    "message": "所有单词"
+  },
+  "hardWords": {
+    "message": "仅难词"
+  },
+  "searchSettings": {
+    "message": "搜索设置…"
+  },
+  "playback": {
+    "message": "播放"
+  },
+  "speech": {
+    "message": "语音"
+  },
+  "review": {
+    "message": "复习"
+  },
+  "settingsUnavailable": {
+    "message": "此设置类别即将推出。"
+  },
+  "noLanguagesFound": {
+    "message": "没有匹配您搜索的语言。"
+  },
+  "traditional": {
+    "message": "繁體 Traditional"
+  },
+  "simplified": {
+    "message": "简体 Simplified"
+  },
   "explainWord": {
     "message": "请简洁地解释$l2Name$单词\"$word$\"，然后给出2个带翻译的示例。",
     "placeholders": {

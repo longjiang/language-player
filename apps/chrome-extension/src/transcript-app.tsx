@@ -398,6 +398,14 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
         if (result.textScale !== undefined) setTextScale(result.textScale);
       });
     } catch {}
+    const onChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+      if (area !== 'local') return;
+      if (changes.showPhonetics) setShowPhonetics(changes.showPhonetics.newValue !== false);
+      if (changes.showTranslation) setShowTranslation(changes.showTranslation.newValue === true);
+      if (changes.textScale) setTextScale(Math.max(0, Math.min(4, Number(changes.textScale.newValue) || 0)));
+    };
+    chrome.storage.onChanged.addListener(onChange);
+    return () => chrome.storage.onChanged.removeListener(onChange);
   }, []);
 
   // Persist phonetics preference on change
@@ -916,4 +924,3 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
 // longer mount React into the page — they push state to the side panel via
 // chrome.runtime messages. TranscriptAppInner and PagePanel are exported
 // here for the side panel host to render.
-

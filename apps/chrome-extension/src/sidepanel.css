@@ -351,6 +351,297 @@ button:focus-visible,
   padding: 0;
 }
 
+.lpv-ui-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: hsl(var(--foreground) / 0.5);
+}
+
+.lpv-ui-dialog {
+  display: flex;
+  width: min(100%, 42rem);
+  max-height: calc(100% - 2rem);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) + 0.25rem);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1rem 3rem hsl(var(--foreground) / 0.2);
+}
+
+.lpv-ui-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border));
+  flex-shrink: 0;
+}
+
+.lpv-ui-dialog-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.lpv-ui-dialog-description,
+.lpv-ui-muted {
+  margin: 0.25rem 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-ui-dialog-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+
+.lpv-ui-input,
+.lpv-ui-select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--input));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.lpv-ui-input {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+}
+
+.lpv-ui-select {
+  height: 2.25rem;
+  padding: 0 0.625rem;
+}
+
+.lpv-ui-input:focus,
+.lpv-ui-select:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+.lpv-ui-switch {
+  position: relative;
+  width: 2.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.125rem;
+  background: hsl(var(--muted-foreground) / 0.35);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.lpv-ui-switch.is-checked {
+  background: hsl(var(--primary));
+}
+
+.lpv-ui-switch-thumb {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: hsl(var(--primary-foreground));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.2);
+  transform: translateX(0);
+  transition: transform 120ms ease;
+}
+
+.lpv-ui-switch.is-checked .lpv-ui-switch-thumb {
+  transform: translateX(1rem);
+}
+
+.lpv-ui-slider {
+  width: min(12rem, 50%);
+  accent-color: hsl(var(--primary));
+}
+
+.lpv-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+.lpv-picker-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding: 0.25rem;
+  border-radius: var(--radius);
+  background: hsl(var(--muted));
+}
+
+.lpv-picker-tab {
+  flex: 1;
+  border: 0;
+  border-radius: calc(var(--radius) - 0.125rem);
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.lpv-picker-tab.is-active {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.1);
+}
+
+.lpv-language-list {
+  max-height: 18rem;
+  margin-top: 0.75rem;
+  overflow-y: auto;
+}
+
+.lpv-language-group + .lpv-language-group {
+  margin-top: 0.75rem;
+}
+
+.lpv-language-group-title {
+  margin: 0 0 0.25rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lpv-language-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-align: start;
+}
+
+.lpv-language-row:hover,
+.lpv-language-row.is-selected {
+  background: hsl(var(--accent) / 0.12);
+}
+
+.lpv-language-row.is-selected {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.lpv-language-code {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+}
+
+.lpv-picker-traditional {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-settings-layout {
+  display: grid;
+  min-height: 24rem;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.lpv-settings-sidebar {
+  min-width: 0;
+  padding-right: 1rem;
+  border-right: 1px solid hsl(var(--border));
+}
+
+.lpv-settings-nav {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.lpv-settings-nav-item {
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  text-align: start;
+}
+
+.lpv-settings-nav-item:hover,
+.lpv-settings-nav-item.is-active {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.lpv-settings-content {
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.lpv-settings-section h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lpv-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-settings-row label {
+  min-width: 0;
+}
+
+.lpv-settings-preview {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.5);
+}
+
+.lpv-settings-preview-token,
+.lpv-settings-preview-translation {
+  margin: 0;
+}
+
+.lpv-settings-preview-translation {
+  margin-top: 0.5rem;
+  color: hsl(var(--muted-foreground));
+}
+
 /* Legacy content compatibility: transcript/page-reader styles remain scoped
  * to their own classes, while the old floating host must not escape the panel. */
 .lpv-side-panel-body #lpv-transcript-panel {
@@ -383,5 +674,26 @@ button:focus-visible,
 @media (min-width: 26rem) {
   .lpv-app-wordmark {
     display: block;
+  }
+}
+
+@media (max-width: 34rem) {
+  .lpv-settings-layout {
+    display: block;
+  }
+
+  .lpv-settings-sidebar {
+    padding: 0 0 0.75rem;
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .lpv-settings-nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .lpv-settings-nav-item {
+    flex: 0 0 auto;
   }
 }

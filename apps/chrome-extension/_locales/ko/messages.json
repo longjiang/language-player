@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "발음 표시"
   },
+  "settings": {
+    "message": "설정"
+  },
+  "display": {
+    "message": "디스플레이"
+  },
+  "theme": {
+    "message": "테마"
+  },
+  "light": {
+    "message": "라이트"
+  },
+  "dark": {
+    "message": "다크"
+  },
+  "system": {
+    "message": "시스템"
+  },
+  "sample": {
+    "message": "미리보기"
+  },
+  "typeface": {
+    "message": "글꼴"
+  },
+  "defaultTypeface": {
+    "message": "기본값"
+  },
+  "serif": {
+    "message": "세리프"
+  },
+  "sansSerif": {
+    "message": "산세리프"
+  },
+  "textSize": {
+    "message": "텍스트 크기"
+  },
+  "translationSize": {
+    "message": "번역 크기"
+  },
+  "leading": {
+    "message": "줄 간격"
+  },
+  "phonetics": {
+    "message": "발음"
+  },
+  "above": {
+    "message": "단어 위에"
+  },
+  "replace": {
+    "message": "단어 대체"
+  },
+  "off": {
+    "message": "끄기"
+  },
+  "scope": {
+    "message": "표시 대상"
+  },
+  "allWords": {
+    "message": "모든 단어"
+  },
+  "hardWords": {
+    "message": "어려운 단어만"
+  },
+  "searchSettings": {
+    "message": "설정 검색…"
+  },
+  "playback": {
+    "message": "재생"
+  },
+  "speech": {
+    "message": "음성"
+  },
+  "review": {
+    "message": "복습"
+  },
+  "settingsUnavailable": {
+    "message": "이 설정 카테고리는 곧 제공됩니다."
+  },
+  "noLanguagesFound": {
+    "message": "검색과 일치하는 언어가 없습니다."
+  },
+  "traditional": {
+    "message": "번체"
+  },
+  "simplified": {
+    "message": "간체"
+  },
   "explainWord": {
     "message": "$l2Name$ 단어 \"$word$\"를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.",
     "placeholders": {

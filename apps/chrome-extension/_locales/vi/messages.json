@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Hiển thị ngữ âm"
   },
+  "settings": {
+    "message": "Cài đặt"
+  },
+  "display": {
+    "message": "Hiển thị"
+  },
+  "theme": {
+    "message": "Chủ đề"
+  },
+  "light": {
+    "message": "Sáng"
+  },
+  "dark": {
+    "message": "Tối"
+  },
+  "system": {
+    "message": "Hệ thống"
+  },
+  "sample": {
+    "message": "Xem trước"
+  },
+  "typeface": {
+    "message": "Phông chữ"
+  },
+  "defaultTypeface": {
+    "message": "Mặc định"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Cỡ chữ"
+  },
+  "translationSize": {
+    "message": "Cỡ chữ bản dịch"
+  },
+  "leading": {
+    "message": "Giãn dòng"
+  },
+  "phonetics": {
+    "message": "Phiên âm"
+  },
+  "above": {
+    "message": "Phía trên từ"
+  },
+  "replace": {
+    "message": "Thay thế từ"
+  },
+  "off": {
+    "message": "Tắt"
+  },
+  "scope": {
+    "message": "Hiển thị cho"
+  },
+  "allWords": {
+    "message": "Tất cả các từ"
+  },
+  "hardWords": {
+    "message": "Chỉ từ khó"
+  },
+  "searchSettings": {
+    "message": "Tìm kiếm cài đặt…"
+  },
+  "playback": {
+    "message": "Phát lại"
+  },
+  "speech": {
+    "message": "Giọng nói"
+  },
+  "review": {
+    "message": "Ôn tập"
+  },
+  "settingsUnavailable": {
+    "message": "Danh mục cài đặt này sẽ sớm ra mắt."
+  },
+  "noLanguagesFound": {
+    "message": "Không có ngôn ngữ nào khớp với tìm kiếm của bạn."
+  },
+  "traditional": {
+    "message": "Phồn thể"
+  },
+  "simplified": {
+    "message": "Giản thể"
+  },
   "explainWord": {
     "message": "Vui lòng giải thích ngắn gọn từ tiếng $l2Name$ \"$word$\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
     "placeholders": {

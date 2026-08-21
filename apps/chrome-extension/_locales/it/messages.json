@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Mostra fonetica"
   },
+  "settings": {
+    "message": "Impostazioni"
+  },
+  "display": {
+    "message": "Schermo"
+  },
+  "theme": {
+    "message": "Tema"
+  },
+  "light": {
+    "message": "Chiaro"
+  },
+  "dark": {
+    "message": "Scuro"
+  },
+  "system": {
+    "message": "Sistema"
+  },
+  "sample": {
+    "message": "Anteprima"
+  },
+  "typeface": {
+    "message": "Carattere"
+  },
+  "defaultTypeface": {
+    "message": "Predefinito"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Dimensione del testo"
+  },
+  "translationSize": {
+    "message": "Dimensione della traduzione"
+  },
+  "leading": {
+    "message": "Interlinea"
+  },
+  "phonetics": {
+    "message": "Fonetica"
+  },
+  "above": {
+    "message": "Sopra la parola"
+  },
+  "replace": {
+    "message": "Sostituendo la parola"
+  },
+  "off": {
+    "message": "Spento"
+  },
+  "scope": {
+    "message": "Mostra per"
+  },
+  "allWords": {
+    "message": "Tutte le parole"
+  },
+  "hardWords": {
+    "message": "Solo parole difficili"
+  },
+  "searchSettings": {
+    "message": "Cerca nelle impostazioni…"
+  },
+  "playback": {
+    "message": "Riproduzione"
+  },
+  "speech": {
+    "message": "Voce"
+  },
+  "review": {
+    "message": "Ripasso"
+  },
+  "settingsUnavailable": {
+    "message": "Questa categoria di impostazioni sarà disponibile presto."
+  },
+  "noLanguagesFound": {
+    "message": "Nessuna lingua corrisponde alla tua ricerca."
+  },
+  "traditional": {
+    "message": "繁體 Tradizionale"
+  },
+  "simplified": {
+    "message": "简体 Semplificato"
+  },
   "explainWord": {
     "message": "Spiega brevemente la parola $l2Name$ \"$word$\", poi fornisci 2 esempi con traduzioni.",
     "placeholders": {

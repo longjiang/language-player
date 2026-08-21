@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Show Phonetics"
   },
+  "settings": {
+    "message": "Settings"
+  },
+  "display": {
+    "message": "Display"
+  },
+  "theme": {
+    "message": "Theme"
+  },
+  "light": {
+    "message": "Light"
+  },
+  "dark": {
+    "message": "Dark"
+  },
+  "system": {
+    "message": "System"
+  },
+  "sample": {
+    "message": "Preview"
+  },
+  "typeface": {
+    "message": "Font"
+  },
+  "defaultTypeface": {
+    "message": "Default"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Text Size"
+  },
+  "translationSize": {
+    "message": "Translation Size"
+  },
+  "leading": {
+    "message": "Line Spacing"
+  },
+  "phonetics": {
+    "message": "Phonetics"
+  },
+  "above": {
+    "message": "On top of word"
+  },
+  "replace": {
+    "message": "Replacing word"
+  },
+  "off": {
+    "message": "Off"
+  },
+  "scope": {
+    "message": "Show for"
+  },
+  "allWords": {
+    "message": "All Words"
+  },
+  "hardWords": {
+    "message": "Hard Words Only"
+  },
+  "searchSettings": {
+    "message": "Search settings…"
+  },
+  "playback": {
+    "message": "Playback"
+  },
+  "speech": {
+    "message": "Speech"
+  },
+  "review": {
+    "message": "Review"
+  },
+  "settingsUnavailable": {
+    "message": "This settings category is coming soon."
+  },
+  "noLanguagesFound": {
+    "message": "No languages match your search."
+  },
+  "traditional": {
+    "message": "繁體 Traditional"
+  },
+  "simplified": {
+    "message": "简体 Simplified"
+  },
   "explainWord": {
     "message": "Please succinctly explain the $l2Name$ word \"$word$\", then give 2 examples with translations.",
     "placeholders": {

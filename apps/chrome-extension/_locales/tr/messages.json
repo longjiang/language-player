@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Fonetiği göster"
   },
+  "settings": {
+    "message": "Ayarlar"
+  },
+  "display": {
+    "message": "Görüntü"
+  },
+  "theme": {
+    "message": "Tema"
+  },
+  "light": {
+    "message": "Açık"
+  },
+  "dark": {
+    "message": "Koyu"
+  },
+  "system": {
+    "message": "Sistem"
+  },
+  "sample": {
+    "message": "Önizleme"
+  },
+  "typeface": {
+    "message": "Yazı Tipi"
+  },
+  "defaultTypeface": {
+    "message": "Varsayılan"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Metin Boyutu"
+  },
+  "translationSize": {
+    "message": "Çeviri Boyutu"
+  },
+  "leading": {
+    "message": "Satır aralığı"
+  },
+  "phonetics": {
+    "message": "Fonetik"
+  },
+  "above": {
+    "message": "Kelimenin üstünde"
+  },
+  "replace": {
+    "message": "Kelimeyi değiştirerek"
+  },
+  "off": {
+    "message": "Kapalı"
+  },
+  "scope": {
+    "message": "Şunun için göster"
+  },
+  "allWords": {
+    "message": "Tüm Kelimeler"
+  },
+  "hardWords": {
+    "message": "Yalnızca Zor Kelimeler"
+  },
+  "searchSettings": {
+    "message": "Ayarlarda ara…"
+  },
+  "playback": {
+    "message": "Oynatma"
+  },
+  "speech": {
+    "message": "Konuşma"
+  },
+  "review": {
+    "message": "Gözden Geçir"
+  },
+  "settingsUnavailable": {
+    "message": "Bu ayar kategorisi yakında kullanıma sunulacak."
+  },
+  "noLanguagesFound": {
+    "message": "Aramanızla eşleşen dil yok."
+  },
+  "traditional": {
+    "message": "繁體 Geleneksel"
+  },
+  "simplified": {
+    "message": "简体 Basitleştirilmiş"
+  },
   "explainWord": {
     "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesini kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
     "placeholders": {

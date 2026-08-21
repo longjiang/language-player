@@ -225,6 +225,93 @@
   "showPhonetics": {
     "message": "Afficher la phonétique"
   },
+  "settings": {
+    "message": "Paramètres"
+  },
+  "display": {
+    "message": "Affichage"
+  },
+  "theme": {
+    "message": "Thème"
+  },
+  "light": {
+    "message": "Clair"
+  },
+  "dark": {
+    "message": "Sombre"
+  },
+  "system": {
+    "message": "Système"
+  },
+  "sample": {
+    "message": "Aperçu"
+  },
+  "typeface": {
+    "message": "Police"
+  },
+  "defaultTypeface": {
+    "message": "Par défaut"
+  },
+  "serif": {
+    "message": "Serif"
+  },
+  "sansSerif": {
+    "message": "Sans Serif"
+  },
+  "textSize": {
+    "message": "Taille du texte"
+  },
+  "translationSize": {
+    "message": "Taille de la traduction"
+  },
+  "leading": {
+    "message": "Interligne"
+  },
+  "phonetics": {
+    "message": "Phonétique"
+  },
+  "above": {
+    "message": "Au-dessus du mot"
+  },
+  "replace": {
+    "message": "Remplacer le mot"
+  },
+  "off": {
+    "message": "Désactivé"
+  },
+  "scope": {
+    "message": "Afficher pour"
+  },
+  "allWords": {
+    "message": "Tous les mots"
+  },
+  "hardWords": {
+    "message": "Mots difficiles uniquement"
+  },
+  "searchSettings": {
+    "message": "Rechercher dans les paramètres…"
+  },
+  "playback": {
+    "message": "Lecture"
+  },
+  "speech": {
+    "message": "Parole"
+  },
+  "review": {
+    "message": "Révision"
+  },
+  "settingsUnavailable": {
+    "message": "Cette catégorie de paramètres sera bientôt disponible."
+  },
+  "noLanguagesFound": {
+    "message": "Aucune langue ne correspond à votre recherche."
+  },
+  "traditional": {
+    "message": "繁體 Traditionnel"
+  },
+  "simplified": {
+    "message": "简体 Simplifié"
+  },
   "explainWord": {
     "message": "Expliquez brièvement le mot $l2Name$ \"$word$\", puis donnez 2 exemples avec traductions.",
     "placeholders": {
