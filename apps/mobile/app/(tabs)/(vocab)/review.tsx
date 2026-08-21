@@ -181,8 +181,10 @@ export default function ReviewScreen() {
   const [testError, setTestError] = useState<string | null>(null);
   const testAutoLoadKeyRef = useRef<string | null>(null);
   const testRequestVersionRef = useRef(0);
+  const testActiveRequestRef = useRef<number | null>(null);
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     testRequestVersionRef.current += 1;
+    testActiveRequestRef.current = null;
     setReviewMode(mode);
     AsyncStorage.setItem('lp:srs-review-mode', mode).catch(() => {});
     setTestQuestions([]);
@@ -537,6 +539,7 @@ export default function ReviewScreen() {
     const card = cards[currentIndex];
     if (!card) return;
     const requestVersion = ++testRequestVersionRef.current;
+    testActiveRequestRef.current = requestVersion;
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
     log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text), retry: Boolean(options?.retry), requestVersion });
@@ -575,6 +578,7 @@ export default function ReviewScreen() {
       setTestQuestions([]);
     } finally {
       log('[srs-test] question generation finished', { l2Code, word: wordForm, loading: false });
+      if (testActiveRequestRef.current === requestVersion) testActiveRequestRef.current = null;
       if (requestVersion !== testRequestVersionRef.current) return;
       setTestLoading(false);
     }
@@ -592,7 +596,7 @@ export default function ReviewScreen() {
 
   useEffect(() => {
     const cardId = cards[currentIndex]?.word.id;
-    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated) return;
+    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated || testActiveRequestRef.current !== null) return;
     const requestKey = `${l2Code}:${cardId}`;
     if (testAutoLoadKeyRef.current === requestKey) return;
     testAutoLoadKeyRef.current = requestKey;
@@ -655,6 +659,7 @@ export default function ReviewScreen() {
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     testRequestVersionRef.current += 1;
+    testActiveRequestRef.current = null;
     setTestQuestions([]);
     setTestAnswers([]);
     setTestStartedAt(null);
@@ -792,6 +797,7 @@ export default function ReviewScreen() {
     const prevStillSaved = l2SavedWords.some((w) => w.id === prev.id);
     if (!prevStillSaved) {
       testRequestVersionRef.current += 1;
+      testActiveRequestRef.current = null;
        setTestQuestions([]);
        setTestAnswers([]);
        setTestQuestionIndex(0);
