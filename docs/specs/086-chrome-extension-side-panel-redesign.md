@@ -163,7 +163,13 @@ The modal mirrors the relevant web profile content in a compact, scrollable dial
 
 ### 3.4 Account data and endpoint gap
 
-The existing extension auth state does not reliably contain a display name. The implementation must use the canonical authenticated user shape before shipping this modal. The current api-client contract includes GET /auth/me, but the Flask route must be verified or added in the backend migration task. Until then, use the user returned by login/session when it contains names and show email as the fallback; do not invent a new client-only name source.
+The canonical authenticated user shape is already returned by Flask's login/session responses and is already consumed by web and mobile:
+
+- Web maps user.firstName and user.lastName from POST /auth/login or POST /auth/session into the NextAuth session name, falling back to user.email.
+- Mobile stores the returned user object in SecureStore and reads firstName, lastName, email, and id through AuthContext.
+- The extension must extend its AuthState and login/session parsing to retain firstName and lastName, then use the same display-name rule: joined non-empty first/last name, otherwise email.
+
+No new /auth/me endpoint is required for this design. A future profile-edit feature may need a separate API decision, but SPEC-086 only reads the existing login/session user payload.
 
 ## 4. Settings modal
 
@@ -434,7 +440,7 @@ Implementation must proceed in dependency order. Keep the current transcript/pag
 3. Inventory each current side-panel capability and its source of truth: active-tab tracking, subtitle detection, cue seeking, page lookup, page interactivity, auth refresh, saved words, subscription, and settings storage. Record the current runtime messages and response shapes before renaming or extending them.
 4. Make a web parity checklist for every reference in the table in section 1. The checklist must include screenshot/state comparisons, API/request comparisons, i18n keys, keyboard and dismissal behavior, and edge cases.
 5. Add pronunciation golden fixtures using the current packages/utils formatter tests. Include Japanese pitch, Japanese fallback, Mandarin, Cantonese, Thai, and IPA fallback cases before porting the new cards. This prevents a card migration from hiding pronunciation regressions.
-6. Resolve the authenticated user-profile data dependency before implementing the profile modal. Verify whether GET /auth/me is available; if it is not, define the smallest backend-compatible way to obtain first/last name without adding an extension permission.
+6. Resolve the authenticated user-profile data dependency before implementing the profile modal. Extend the extension's existing login/session parsing and AuthState to retain firstName and lastName exactly as web and mobile do; do not add an /auth/me call or backend permission dependency.
 
 ### Phase 1 — Manifest-safe side-panel foundation
 
