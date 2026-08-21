@@ -27,6 +27,9 @@ const FLUSH_DELAY = 80;
 
 let initialized = false;
 let enabled = false;
+let panelOpen = false;
+let pageTranslationTabOpen = false;
+let lifecycleGeneration = 0;
 let l1Code = 'en';
 let l2Code = 'en';
 let showPhonetics = true;
@@ -476,6 +479,8 @@ function pushPageModeState() {
 }
 
 function cleanup() {
+  lifecycleGeneration++;
+  initialized = false;
   enabled = false;
   log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks`);
   if (observer) {
@@ -502,6 +507,7 @@ function cleanup() {
   lastLookup = null;
   pageTranslationStatus = 'idle';
   pageTranslationError = null;
+  window.dispatchEvent(new CustomEvent('lpv-page-dictionary-close'));
 }
 
 function restoreTokens() {
@@ -526,19 +532,29 @@ function startObserver() {
 async function init() {
   if (initialized) return;
   initialized = true;
+  const generation = lifecycleGeneration;
   if (isVideoHost() || isOwnHost() || isLocalhost()) {
     log(`[PAGE] init skipped: host=${location.hostname} (${isVideoHost() ? 'video' : isOwnHost() ? 'own asset' : 'localhost'})`);
     return;
   }
-
-  const sync = await chrome.storage.sync.get('pageTokenizationEnabled');
-  if (!sync.pageTokenizationEnabled) return;
+  if (!panelOpen || !pageTranslationTabOpen) {
+    log(`[PAGE] init skipped: panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}`);
+    return;
+  }
 
   const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation']);
+  if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
+    log('[PAGE] init cancelled before preferences completed');
+    return;
+  }
   l1Code = local.l1Language || 'en';
   l2Code = local.l2Language || 'en';
   showPhonetics = local.showPhonetics !== false;
   await setLocale(l1Code);
+  if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
+    log('[PAGE] init cancelled after locale load');
+    return;
+  }
 
   enabled = true;
   pageTranslationStatus = 'ready';
@@ -557,7 +573,7 @@ async function init() {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'pageTokenizationOn') {
-    log('[PAGE] toggle enabled from popup');
+    log('[PAGE] legacy tokenization-on request received; lifecycle gate still required');
     initialized = false;
     init().then(() => sendResponse({ ok: true }));
     return true;
@@ -568,10 +584,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ ok: true });
     return true;
   }
+  if (message.action === 'panelOpenState') {
+    panelOpen = message.open === true;
+    log(`[PAGE] panel lifecycle: open=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}`);
+    if (!panelOpen) {
+      pageTranslationTabOpen = false;
+      cleanup();
+    } else if (pageTranslationTabOpen) {
+      initialized = false;
+      init();
+    }
+    sendResponse({ ok: true, enabled });
+    return true;
+  }
+  if (message.action === 'pageTranslationVisibility') {
+    pageTranslationTabOpen = message.open === true;
+    log(`[PAGE] page translation tab visibility: open=${pageTranslationTabOpen}, panelOpen=${panelOpen}`);
+    if (panelOpen && pageTranslationTabOpen) {
+      initialized = false;
+      init();
+    } else {
+      cleanup();
+    }
+    sendResponse({ ok: true, enabled });
+    return true;
+  }
   if (message.action === 'getPanelState') {
     // Side panel pulled state (open, tab switch, navigation).
     sendResponse({
-      state: enabled
+      state: panelOpen && !isVideoHost() && !isOwnHost() && !isLocalhost()
         ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup, mismatch: pageLangMismatch(), pageTranslationStatus, pageTranslationError }
         : null,
     });
@@ -589,6 +630,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
   if (message.action === 'getPageTranslationSnapshot') {
+    if (!enabled || !panelOpen || !pageTranslationTabOpen) {
+      sendResponse({ ok: false, error: 'page translation is not active' });
+      return true;
+    }
     sendResponse({ ok: true, pageUrl: location.href, blocks: getPageTranslationSnapshot() });
     return true;
   }
@@ -618,15 +663,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'sync' && changes.pageTokenizationEnabled) {
     if (changes.pageTokenizationEnabled.newValue) {
-      log('[PAGE] storage: pageTokenizationEnabled → true');
+      log('[PAGE] storage: legacy pageTokenizationEnabled → true; waiting for panel lifecycle gate');
       initialized = false;
       init();
     } else {
-      log('[PAGE] storage: pageTokenizationEnabled → false');
+      log('[PAGE] storage: legacy pageTokenizationEnabled → false; restoring page');
       cleanup();
     }
   }
-  if (area === 'local' && changes.l2Language && enabled) {
+  if (area === 'local' && changes.l2Language && panelOpen && pageTranslationTabOpen) {
     l2Code = changes.l2Language.newValue || l2Code;
     cleanup();
     initialized = false;
