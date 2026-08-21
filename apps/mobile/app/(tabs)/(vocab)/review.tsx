@@ -549,8 +549,17 @@ export default function ReviewScreen() {
       const questions = await Promise.all(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: cards[currentIndex]?.word.context?.text as string | undefined, l1Code: baseCode(l1Lang.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
         const { apiClient } = await import('@langplayer/api-client');
-        log('[srs-test] request started', { l2Code, word: wordForm, kind });
-        const payload = await apiClient.post('/chatgpt', { prompt, cache: !options?.retry, max_tokens: 500 });
+        const requestPrompt = options?.retry
+          ? `${prompt}\n\nGenerate a fresh variation for retry ${requestVersion}; do not reuse any previous response.`
+          : prompt;
+        log('[srs-test] request started', { l2Code, word: wordForm, kind, cache: !options?.retry, cacheBust: Boolean(options?.retry) });
+        const payload = await apiClient.post('/chatgpt', {
+          prompt: requestPrompt,
+          cache: !options?.retry,
+          max_tokens: 500,
+        }, options?.retry ? {
+          headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+        } : undefined);
         log('[srs-test] response received', { l2Code, word: wordForm, kind, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
         const parsed = parseSrsQuestionResponse((payload as any).response);
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');

@@ -517,8 +517,19 @@ export default function ReviewPage() {
     try {
       const questions = await Promise.all(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: context, l1Code: baseCode(l1.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
-        log('[SRS Test] request started', { l2Code, word: wordForm, kind });
-        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, cache: !options?.retry, max_tokens: 500 }) });
+        const requestPrompt = options?.retry
+          ? `${prompt}\n\nGenerate a fresh variation for retry ${requestVersion}; do not reuse any previous response.`
+          : prompt;
+        log('[SRS Test] request started', { l2Code, word: wordForm, kind, cache: !options?.retry, cacheBust: Boolean(options?.retry) });
+        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, {
+          method: 'POST',
+          cache: options?.retry ? 'no-store' : 'default',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options?.retry ? { 'Cache-Control': 'no-cache', Pragma: 'no-cache' } : {}),
+          },
+          body: JSON.stringify({ prompt: requestPrompt, cache: !options?.retry, max_tokens: 500 }),
+        });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
         log('[SRS Test] response received', { l2Code, word: wordForm, kind, status: response.status, responseType: typeof payload.response, responseLength: typeof payload.response === 'string' ? payload.response.length : null });
