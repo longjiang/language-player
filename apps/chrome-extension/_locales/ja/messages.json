@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Language Player で開く"
   },
+  "pageUnavailable": {
+    "message": "このページは翻訳できません。"
+  },
   "readInLanguagePlayer": {
     "message": "Language Player で読む"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "字幕が見つかりません"
+  },
+  "noReadableContent": {
+    "message": "読み取れるコンテンツが見つかりません"
   },
   "speak": {
     "message": "読み上げ"

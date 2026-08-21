@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Language Player'de aç"
   },
+  "pageUnavailable": {
+    "message": "Bu sayfa çeviri için kullanılamıyor."
+  },
   "readInLanguagePlayer": {
     "message": "Language Player'de oku"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "Altyazı bulunamadı"
+  },
+  "noReadableContent": {
+    "message": "Okunabilir içerik bulunamadı"
   },
   "speak": {
     "message": "Konuş"

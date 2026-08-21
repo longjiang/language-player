@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Открыть в Language Player"
   },
+  "pageUnavailable": {
+    "message": "Эта страница недоступна для перевода."
+  },
   "readInLanguagePlayer": {
     "message": "Читать в Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "Субтитры не найдены"
+  },
+  "noReadableContent": {
+    "message": "Читаемый контент не найден"
   },
   "speak": {
     "message": "Говорить"

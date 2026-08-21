@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Buka di Language Player"
   },
+  "pageUnavailable": {
+    "message": "Halaman ini tidak tersedia untuk diterjemahkan."
+  },
   "readInLanguagePlayer": {
     "message": "Baca di Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "Subtitle tidak ditemukan"
+  },
+  "noReadableContent": {
+    "message": "Tidak ada konten yang dapat dibaca"
   },
   "speak": {
     "message": "Bicara"

@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Abrir en Language Player"
   },
+  "pageUnavailable": {
+    "message": "Esta página no está disponible para traducir."
+  },
   "readInLanguagePlayer": {
     "message": "Leer en Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "No se encontraron subtítulos"
+  },
+  "noReadableContent": {
+    "message": "No se encontró contenido legible"
   },
   "speak": {
     "message": "Hablar"

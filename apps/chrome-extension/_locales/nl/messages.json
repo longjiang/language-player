@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Openen in Language Player"
   },
+  "pageUnavailable": {
+    "message": "Deze pagina is niet beschikbaar voor vertaling."
+  },
   "readInLanguagePlayer": {
     "message": "Lezen in Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "Geen ondertitels gevonden"
+  },
+  "noReadableContent": {
+    "message": "Geen leesbare inhoud gevonden"
   },
   "speak": {
     "message": "Spreken"

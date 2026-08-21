@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "在 Language Player 中開啟"
   },
+  "pageUnavailable": {
+    "message": "此頁面無法翻譯。"
+  },
   "readInLanguagePlayer": {
     "message": "在 Language Player 中閱讀"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "找不到字幕"
+  },
+  "noReadableContent": {
+    "message": "找不到可讀取的內容"
   },
   "speak": {
     "message": "朗讀"

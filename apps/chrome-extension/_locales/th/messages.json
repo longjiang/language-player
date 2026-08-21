@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "เปิดใน Language Player"
   },
+  "pageUnavailable": {
+    "message": "หน้านี้ไม่พร้อมให้แปล"
+  },
   "readInLanguagePlayer": {
     "message": "อ่านใน Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "ไม่พบคำบรรยาย"
+  },
+  "noReadableContent": {
+    "message": "ไม่พบเนื้อหาที่อ่านได้"
   },
   "speak": {
     "message": "พูด"

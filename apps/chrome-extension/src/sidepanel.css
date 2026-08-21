@@ -198,6 +198,55 @@ button:focus-visible,
   text-align: center;
 }
 
+.lpv-page-translation-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.lpv-page-translation-block {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.lpv-page-translation-block:first-child {
+  padding-top: 0.25rem;
+}
+
+.lpv-page-translation-block p {
+  margin: 0;
+}
+
+.lpv-page-translation-source {
+  color: hsl(var(--foreground));
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.lpv-page-translation-result {
+  margin-top: 0.375rem !important;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.lpv-page-translation-pending,
+.lpv-page-translation-retry {
+  margin-top: 0.375rem !important;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-page-translation-retry {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: hsl(var(--primary));
+  cursor: pointer;
+}
+
 .lpv-ui-empty-state p {
   margin: 0;
 }

@@ -246,6 +246,26 @@ function normalizeBlockText(text) {
   return (text || '').replace(/\s+/g, ' ').trim();
 }
 
+/** Return source blocks for the side-panel translation view. This reads the
+ * page DOM from the page content script, never from the side-panel document.
+ * The cap keeps runtime message payloads bounded on very large pages. */
+function getPageTranslationSnapshot() {
+  const blocks = [];
+  let totalChars = 0;
+  for (const el of document.querySelectorAll(BLOCK_SELECTOR)) {
+    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || el.querySelector(BLOCK_SELECTOR)) continue;
+    const text = normalizeBlockText(el.innerText || el.textContent || '');
+    if (!text || text.length < 2) continue;
+    const clipped = text.slice(0, 2000);
+    if (totalChars + clipped.length > 180000) break;
+    if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
+    const anchor = el.closest('a[href]');
+    blocks.push({ id: el.__lpvBlockId, text: clipped, href: anchor?.href || null });
+    totalChars += clipped.length;
+  }
+  return blocks;
+}
+
 function onTokenClick(e, token, textNodeParent) {
   e.preventDefault();
   e.stopPropagation();
@@ -562,6 +582,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     pageTranslationError = null;
     pushPageModeState();
     sendResponse({ ok: true });
+    return true;
+  }
+  if (message.action === 'getPageTranslationSnapshot') {
+    sendResponse({ ok: true, pageUrl: location.href, blocks: getPageTranslationSnapshot() });
     return true;
   }
   if (message.action === 'changeLanguage') {
