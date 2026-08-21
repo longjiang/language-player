@@ -367,6 +367,16 @@ export default function ReviewPage() {
     [dueCards, currentDueCard?.word.id, currentEntry],
   );
 
+  const nextReviewLabelFor = useCallback((card: ReviewCard, quality: Rating) => {
+    const nextReviewInterval = getNextReviewInterval(fsrs.rate(card.srs, quality).due);
+    const nextReviewKey = nextReviewInterval.unit === 'minutes'
+      ? 'msg.next_review_in_minutes'
+      : nextReviewInterval.unit === 'hours'
+        ? 'msg.next_review_in_hours'
+        : 'msg.next_review_in_days';
+    return t(nextReviewKey, { n: nextReviewInterval.value });
+  }, [t]);
+
   // ── Handlers ──
 
   /** Toast background/border colors matching the rating buttons. */
@@ -409,13 +419,7 @@ export default function ReviewPage() {
     updated.rating = quality;
     undoRef.current.ratingId = updated.ratingId;
 
-    const nextReviewInterval = getNextReviewInterval(updated.due);
-    const nextReviewKey = nextReviewInterval.unit === 'minutes'
-      ? 'msg.next_review_in_minutes'
-      : nextReviewInterval.unit === 'hours'
-        ? 'msg.next_review_in_hours'
-        : 'msg.next_review_in_days';
-    const nextReviewLabel = t(nextReviewKey, { n: nextReviewInterval.value });
+    const nextReviewLabel = nextReviewLabelFor(card, quality);
 
     // Visual feedback via toast — matches button color, includes Undo
     const label = RATING_LABELS.find((r) => r.key === quality);
@@ -463,7 +467,7 @@ export default function ReviewPage() {
     setTimeout(() => {
       setRated(false);
     }, 400);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey, nextReviewLabelFor]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -1368,7 +1372,7 @@ export default function ReviewPage() {
             </div>
           )}
           <div className="grid grid-cols-4 gap-3">
-            {RATING_LABELS.map(({ key, label, hint, color, keyShortcut }) => (
+            {RATING_LABELS.map(({ key, label, color, keyShortcut }) => (
               <button
                 key={key}
                 onClick={() => handleRate(key as 'again' | 'hard' | 'good' | 'easy')}
@@ -1383,7 +1387,7 @@ export default function ReviewPage() {
                     {keyShortcut}
                   </kbd>
                 </span>
-                <span className="text-xs opacity-80">{hint}</span>
+                <span className="text-xs opacity-80">{currentCard ? nextReviewLabelFor(currentCard, key) : ''}</span>
               </button>
             ))}
           </div>

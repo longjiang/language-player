@@ -517,6 +517,15 @@ export default function ReviewScreen() {
     srs: (store.cards[l2Code] ?? {})[word.id] || fsrs.newCard(),
     entry: word.id === currentDueCard?.id ? currentEntry : null,
   })), [dueCards, store, l2Code, currentDueCard?.id, currentEntry]);
+  const nextReviewLabelFor = useCallback((card: { srs: SrsFields }, quality: Rating) => {
+    const nextReviewInterval = getNextReviewInterval(fsrs.rate(card.srs, quality).due);
+    const nextReviewKey = nextReviewInterval.unit === 'minutes'
+      ? 'msg.next_review_in_minutes'
+      : nextReviewInterval.unit === 'hours'
+        ? 'msg.next_review_in_hours'
+        : 'msg.next_review_in_days';
+    return t(nextReviewKey, { n: nextReviewInterval.value });
+  }, [t]);
   const definitionTestAnswered = reviewMode === 'test'
     && testQuestions.some((question, index) => question.kind === 'definition' && Boolean(testAnswers[index]));
   const showContextTranslation = showTabs || definitionTestAnswered;
@@ -660,13 +669,7 @@ export default function ReviewScreen() {
     updated.ratingId = newRatingId(user?.id, card.word.id);
     updated.rating = quality;
     undoRef.current.ratingId = updated.ratingId;
-    const nextReviewInterval = getNextReviewInterval(updated.due);
-    const nextReviewKey = nextReviewInterval.unit === 'minutes'
-      ? 'msg.next_review_in_minutes'
-      : nextReviewInterval.unit === 'hours'
-        ? 'msg.next_review_in_hours'
-        : 'msg.next_review_in_days';
-    const nextReviewLabel = t(nextReviewKey, { n: nextReviewInterval.value });
+    const nextReviewLabel = nextReviewLabelFor(card, quality);
     log('[srs] mark', {
       quality,
       wordId: card.word.id,
@@ -719,7 +722,7 @@ export default function ReviewScreen() {
     setTimeout(() => {
       setRated(false);
     }, 600);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey, nextReviewLabelFor]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -1358,7 +1361,7 @@ export default function ReviewScreen() {
                 style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: !isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP ? 0.5 : 1 }}
               >
                 <Text className="text-sm font-bold text-white">{r.label}</Text>
-                <Text className="mt-0.5 text-xs text-white/70">{r.hint}</Text>
+                <Text className="mt-0.5 text-xs text-white/70">{currentCard ? nextReviewLabelFor(currentCard, r.key) : ''}</Text>
               </Pressable>
             ))}
           </View>
