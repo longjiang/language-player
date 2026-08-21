@@ -180,6 +180,9 @@
   "speak": {
     "message": "Mów"
   },
+  "searchImages": {
+    "message": "Szukaj obrazów"
+  },
   "startPlaying": {
     "message": "Rozpocznij odtwarzanie filmu."
   },

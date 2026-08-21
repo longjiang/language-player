@@ -142,6 +142,25 @@ export const Search: React.FC<IconProps> = ({ size = 16, className, strokeWidth 
   </svg>
 );
 
+export const Volume2: React.FC<IconProps> = ({ size = 16, className, strokeWidth = 2 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+  </svg>
+);
+
 export const ChevronDown: React.FC<IconProps> = ({ size = 16, className, strokeWidth = 2 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -174,6 +193,25 @@ export const ArrowRight: React.FC<IconProps> = ({ size = 16, className, strokeWi
   >
     <path d="M5 12h14" />
     <path d="m12 5 7 7-7 7" />
+  </svg>
+);
+
+export const ExternalLink: React.FC<IconProps> = ({ size = 16, className, strokeWidth = 2 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
   </svg>
 );
 

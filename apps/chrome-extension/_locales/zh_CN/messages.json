@@ -180,6 +180,9 @@
   "speak": {
     "message": "朗读"
   },
+  "searchImages": {
+    "message": "搜索图片"
+  },
   "startPlaying": {
     "message": "开始播放视频。"
   },

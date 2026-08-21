@@ -180,6 +180,9 @@
   "speak": {
     "message": "読み上げ"
   },
+  "searchImages": {
+    "message": "画像を検索"
+  },
   "startPlaying": {
     "message": "動画を再生してください。"
   },

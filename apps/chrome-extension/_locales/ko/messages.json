@@ -180,6 +180,9 @@
   "speak": {
     "message": "말하기"
   },
+  "searchImages": {
+    "message": "이미지 검색"
+  },
   "startPlaying": {
     "message": "동영상을 재생하세요."
   },

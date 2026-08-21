@@ -180,6 +180,9 @@
   "speak": {
     "message": "Sprechen"
   },
+  "searchImages": {
+    "message": "Bilder suchen"
+  },
   "startPlaying": {
     "message": "Starte die Wiedergabe eines Videos."
   },
