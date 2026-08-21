@@ -26,6 +26,9 @@
   "copy": {
     "message": "نسخ"
   },
+  "detectingSubtitles": {
+    "message": "جارٍ اكتشاف الترجمات"
+  },
   "explain": {
     "message": "دع DeepSeek يشرح"
   },
@@ -150,6 +153,9 @@
   "removeFromSaved": {
     "message": "إزالة من الكلمات المحفوظة"
   },
+  "retry": {
+    "message": "إعادة المحاولة"
+  },
   "save": {
     "message": "حفظ الكلمة"
   },
@@ -161,6 +167,9 @@
   },
   "showTranslation": {
     "message": "إظهار الترجمة"
+  },
+  "noSubtitlesFound": {
+    "message": "لم يتم العثور على ترجمات"
   },
   "speak": {
     "message": "تحدث"

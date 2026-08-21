@@ -23,6 +23,7 @@ import langNames from '../dist/lang-names.json';
 const CSV_TO_CHROME_LOCALE = { 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW' };
 type SidePanelTab = 'subtitles' | 'page-translation';
 type Theme = 'light' | 'dark' | 'system';
+type SubtitleStatus = 'idle' | 'detecting' | 'ready' | 'empty' | 'error';
 
 function languageName(code, l1Code) {
   const entry = (langNames && langNames[code]) || null;
@@ -53,6 +54,8 @@ interface VideoPanelState {
   videoTitle?: string;
   pageUrl?: string;
   loadingL2?: string;
+  subtitleStatus?: SubtitleStatus;
+  subtitleError?: string | null;
   localeVersion?: number;
   webUrl?: { url: string; labelKey: string } | null;
   mismatch?: { detected: string; saved: string } | null;
@@ -64,6 +67,8 @@ interface PagePanelState {
   l2Code: string;
   pageUrl: string;
   lookup?: PageLookupDetail | null;
+  pageTranslationStatus?: 'idle' | 'loading' | 'ready' | 'empty' | 'error';
+  pageTranslationError?: string | null;
   /** Page-declared language ≠ saved L2 (page reader warning, web parity of
    *  the video-mode mismatch). */
   mismatch?: { detected: string; saved: string } | null;
@@ -81,6 +86,7 @@ function SidePanelApp() {
   const [l2Code, setL2Code] = useState('en');
   const [selectedTab, setSelectedTab] = useState<SidePanelTab>('subtitles');
   const [theme, setTheme] = useState<Theme>('system');
+  const [subtitleRequesting, setSubtitleRequesting] = useState(false);
 
   const tabIdRef = useRef<number | null>(null);
   tabIdRef.current = tabId;
@@ -221,9 +227,30 @@ function SidePanelApp() {
 
   const sendToTab = useCallback((action: string, payload: object = {}) => {
     const tid = tabIdRef.current;
-    if (!tid) return;
-    chrome.tabs.sendMessage(tid, { action, ...payload }).catch(() => {});
+    if (!tid) return Promise.resolve(undefined);
+    return chrome.tabs.sendMessage(tid, { action, ...payload }).catch(() => undefined);
   }, []);
+
+  const requestSubtitleDetection = useCallback((retry = false) => {
+    if (!tabId || mode !== 'video') return;
+    setSubtitleRequesting(true);
+    sendToTab('requestSubtitleDetection', { retry }).finally(() => setSubtitleRequesting(false));
+  }, [mode, sendToTab, tabId]);
+
+  const subtitlesAvailable = mode === 'video' || !!videoState;
+  const activeTab: SidePanelTab = selectedTab === 'subtitles' && subtitlesAvailable
+    ? 'subtitles'
+    : 'page-translation';
+
+  useEffect(() => {
+    if (activeTab !== 'subtitles' || !tabId) return;
+    requestSubtitleDetection();
+  }, [activeTab, requestSubtitleDetection, tabId]);
+
+  useEffect(() => {
+    if (activeTab !== 'page-translation' || mode !== 'page' || !tabId) return;
+    sendToTab('pageTranslationStart');
+  }, [activeTab, mode, sendToTab, tabId]);
 
   const handleSeek = useCallback((timeSec: number) => {
     sendToTab('panelSeek', { timeSec });
@@ -262,7 +289,9 @@ function SidePanelApp() {
     (mode === 'video' && videoState?.mismatch) || (mode === 'page' && pageState?.mismatch) || null;
   const mismatchShown = mismatch && !mismatchDismissed ? mismatch : null;
 
-  const subtitleContent = mode === 'video' && videoState ? (
+  const subtitleStatus = videoState?.subtitleStatus
+    || (videoState?.cues?.length ? 'ready' : 'idle');
+  const subtitleContent = mode === 'video' && videoState && subtitleStatus === 'ready' ? (
       <SavedWordsProvider l2Code={videoState.l2Code}>
         <TranscriptAppInner
           cues={videoState.cues}
@@ -276,13 +305,32 @@ function SidePanelApp() {
           pageUrl={videoState.pageUrl}
         />
       </SavedWordsProvider>
+    ) : subtitleStatus === 'detecting' || subtitleRequesting ? (
+      <div className="lpv-ui-empty-state" role="status" aria-live="polite">
+        <span className="lpv-ui-spinner" aria-hidden="true" />
+        <p>{t('detectingSubtitles')}</p>
+      </div>
+    ) : subtitleStatus === 'error' ? (
+      <div className="lpv-ui-empty-state" role="alert">
+        <p>{videoState?.subtitleError || t('failedToLoadSubtitles')}</p>
+        <Button variant="outline" size="sm" onClick={() => requestSubtitleDetection(true)}>
+          {t('retry')}
+        </Button>
+      </div>
+    ) : subtitleStatus === 'empty' || mode === 'video' ? (
+      <div className="lpv-ui-empty-state" role="status" aria-live="polite">
+        <p>{t('noSubtitlesFound')}</p>
+        <Button variant="outline" size="sm" onClick={() => requestSubtitleDetection(true)}>
+          {t('retry')}
+        </Button>
+      </div>
     ) : (
       <div className="lpv-ui-empty-state">
         <p>{t('startPlaying')}</p>
       </div>
     );
 
-  const pageTranslationContent = mode === 'page' && pageState ? (
+  const pageTranslationContent = mode === 'page' && pageState && pageState.pageTranslationStatus !== 'error' ? (
       <SavedWordsProvider l2Code={pageState.l2Code}>
         <PagePanel
           l1Code={pageState.l1Code}
@@ -292,6 +340,13 @@ function SidePanelApp() {
           onFollowLink={handleFollowLink}
         />
       </SavedWordsProvider>
+    ) : pageState?.pageTranslationStatus === 'error' ? (
+      <div className="lpv-ui-empty-state" role="alert">
+        <p>{pageState.pageTranslationError || t('failedToLoadSubtitles')}</p>
+        <Button variant="outline" size="sm" onClick={() => sendToTab('pageTranslationStart')}>
+          {t('retry')}
+        </Button>
+      </div>
     ) : (
       <div className="lpv-ui-empty-state">
         <p>{t('startPlaying')}</p>
@@ -359,9 +414,9 @@ function SidePanelApp() {
         </div>
       )}
 
-      <Tabs value={selectedTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
+      <Tabs value={activeTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
         <TabsList className="lpv-app-tabs">
-          {(mode === 'video' || videoState) && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
+          {subtitlesAvailable && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
           <TabsTrigger value="page-translation">{t('pageTranslation')}</TabsTrigger>
         </TabsList>
         <TabsContent value="subtitles" className="lpv-app-tabpanel" id="lpv-panel-content">

@@ -48,12 +48,17 @@ const STATE = {
   activeCueIdx: -1,   // index of currently active cue
   subtitleUrl: null,
   loading: false,
+  subtitleStatus: 'idle', // idle | detecting | ready | empty | error
+  subtitleError: null,
 };
 
 /** Generation counter — incremented before each subtitle fetch.
  *  Prevents race conditions where a slow-loading subtitle file
  *  overwrites a newer one that loaded faster. */
 let fetchGen = 0;
+let detectionGeneration = 0;
+let detectionPromise = null;
+let detectionTimer = null;
 
 // ── Panel state ───────────────────────────────────────────────────────────
 /** True while the native side panel is open on this tab (told by the
@@ -372,6 +377,19 @@ function seekTo(timeSec) {
 // Every point that used to re-render the in-page React panel now pushes the
 // full panel state; the background relays it to the side panel host.
 
+function clearDetectionTimer() {
+  if (detectionTimer) {
+    clearTimeout(detectionTimer);
+    detectionTimer = null;
+  }
+}
+
+function setSubtitleDetectionState(status, error = null) {
+  STATE.subtitleStatus = status;
+  STATE.subtitleError = error ? String(error) : null;
+  pushPanelState();
+}
+
 function buildPanelState(loadingL2) {
   // Extract video title — strip platform suffixes like " | Prime Video", " - YouTube"
   const rawTitle = document.title || '';
@@ -389,6 +407,8 @@ function buildPanelState(loadingL2) {
     videoTitle,
     pageUrl: location.href,
     loadingL2,
+    subtitleStatus: STATE.subtitleStatus,
+    subtitleError: STATE.subtitleError,
     localeVersion: getLocaleVersion(),
     webUrl: buildWebUrl(),
     mismatch,
@@ -451,12 +471,78 @@ function trimDistantCues(cues, currentTimeSec) {
   return cues.filter(c => c.end >= currentTimeSec - windowSec && c.start <= currentTimeSec + windowSec);
 }
 
+/**
+ * Begin an explicit, idempotent detection pass for the side panel. Platform
+ * interception continues independently; this request only asks the existing
+ * platform pipeline to resolve its current state and gives the panel a
+ * generation it can use to ignore stale retries.
+ */
+async function requestSubtitleDetection({ retry = false } = {}) {
+  if (!retry && STATE.cues.length > 0) {
+    setSubtitleDetectionState('ready');
+    return;
+  }
+  if (!retry && STATE.subtitleStatus === 'detecting' && detectionPromise) {
+    return detectionPromise;
+  }
+
+  const generation = ++detectionGeneration;
+  clearDetectionTimer();
+  if (retry) {
+    fetchGen++;
+    STATE.cues = [];
+    STATE.activeCueIdx = -1;
+    STATE.subtitleUrl = null;
+  }
+  STATE.loading = true;
+  STATE.subtitleStatus = 'detecting';
+  STATE.subtitleError = null;
+  pushPanelState();
+
+  const promise = (async () => {
+    if (isYouTube) {
+      await loadYouTubeSubtitles(generation);
+    } else if (isNetflix && Object.keys(cachedNetflixTracks).length > 0) {
+      const lang = savedL2Code;
+      await loadNetflixTrackForLanguage(lang);
+    } else {
+      // Prime Video, Disney+, Hulu, and Max are fed by the existing network
+      // interception path. Re-arm time tracking and wait for that signal.
+      attachTimeTracking();
+    }
+
+    if (generation !== detectionGeneration) return;
+    STATE.loading = false;
+    if (STATE.cues.length > 0) {
+      setSubtitleDetectionState('ready');
+      return;
+    }
+
+    detectionTimer = setTimeout(() => {
+      if (generation !== detectionGeneration || STATE.cues.length > 0) return;
+      STATE.loading = false;
+      setSubtitleDetectionState('empty');
+    }, 8000);
+  })().catch((err) => {
+    if (generation !== detectionGeneration) return;
+    STATE.loading = false;
+    setSubtitleDetectionState('error', err?.message || t('failedToLoadSubtitles'));
+  }).finally(() => {
+    if (generation === detectionGeneration) detectionPromise = null;
+  });
+
+  detectionPromise = promise;
+  return promise;
+}
+
 async function fetchAndParseSubtitles(url) {
   // Block duplicate URLs and set URL BEFORE async fetch to prevent
   // concurrent fetches of different URLs from racing each other.
   if (STATE.subtitleUrl === url) return;
   STATE.subtitleUrl = url;
   STATE.loading = true;
+  STATE.subtitleStatus = 'detecting';
+  STATE.subtitleError = null;
 
   trace('FETCH', `URL detected: ${url.substring(0, 120)}`);
 
@@ -510,9 +596,13 @@ async function fetchAndParseSubtitles(url) {
     checkL2Mismatch();
 
     if (cues.length === 0) {
-      pushPanelState(undefined);
+      clearDetectionTimer();
+      setSubtitleDetectionState('empty');
     } else {
+      clearDetectionTimer();
       STATE.activeCueIdx = -1;
+      STATE.subtitleStatus = 'ready';
+      STATE.subtitleError = null;
       renderTranscript();
       updateStatus('');
       // Note: the panel can no longer auto-open (chrome.sidePanel.open()
@@ -520,7 +610,10 @@ async function fetchAndParseSubtitles(url) {
       // the Alt+T / Ctrl+Shift+Y keyboard shortcut; state stays ready.
     }
   } catch (err) {
+    if (fetchGen !== gen) return;
     logerr('Failed to fetch/parse subtitles:', err);
+    clearDetectionTimer();
+    setSubtitleDetectionState('error', err?.message || t('failedToLoadSubtitles'));
     updateStatus(t('failedToLoadSubtitles'));
   } finally {
     STATE.loading = false;
@@ -754,9 +847,12 @@ function mainWorldFetch(url) {
 }
 
 /** Fetch YouTube subtitles from a track and render */
-async function fetchYTTrack(track) {
+async function fetchYTTrack(track, requestGeneration = detectionGeneration) {
   try {
+    if (requestGeneration !== detectionGeneration) return;
     trace('FETCH', `YouTube track: ${track.languageCode} (kind=${track.kind || 'manual'})`);
+    STATE.subtitleStatus = 'detecting';
+    STATE.subtitleError = null;
     updateStatus(t('loadingSubtitles'));
 
     // Ensure URL is absolute
@@ -791,6 +887,7 @@ async function fetchYTTrack(track) {
 
     log('Parsed', cues.length, 'cues');
 
+    if (requestGeneration !== detectionGeneration) return;
     STATE.cues = cues;
     STATE.subtitleUrl = track.baseUrl;
     logCueTimeRange('YouTube');
@@ -804,22 +901,32 @@ async function fetchYTTrack(track) {
     checkL2Mismatch();
 
     if (cues.length > 0) {
+      clearDetectionTimer();
+      STATE.subtitleStatus = 'ready';
+      STATE.subtitleError = null;
       STATE.activeCueIdx = -1;
       renderTranscript();
+    } else {
+      clearDetectionTimer();
+      setSubtitleDetectionState('empty');
     }
     setBadge(true);
     updateStatus('');
   } catch (err) {
+    if (requestGeneration !== detectionGeneration) return;
     logerr('Failed to fetch YouTube subtitles:', err);
+    clearDetectionTimer();
+    setSubtitleDetectionState('error', err?.message || t('failedToLoadSubtitles'));
     updateStatus(t('failedToLoadSubtitles'));
   }
 }
 
 /** Load YouTube subtitles — discover tracks and pick the best one */
-async function loadYouTubeSubtitles() {
+async function loadYouTubeSubtitles(requestGeneration = detectionGeneration) {
   const videoId = getYTVideoId();
   if (!videoId) {
     log('No YouTube video ID found in URL');
+    setSubtitleDetectionState('empty');
     return;
   }
 
@@ -827,6 +934,7 @@ async function loadYouTubeSubtitles() {
 
   // Try InnerTube API first (mimics ANDROID client)
   let tracks = await fetchInnerTubeTracks(videoId);
+  if (requestGeneration !== detectionGeneration) return;
 
   if (tracks.length === 0) {
     // Fall back to ytInitialPlayerResponse from the page
@@ -834,6 +942,7 @@ async function loadYouTubeSubtitles() {
     let attempts = 0;
     while (!pr && attempts < 30) {
       await new Promise(r => setTimeout(r, 500));
+      if (requestGeneration !== detectionGeneration) return;
       pr = getYTPlayerResponse();
       attempts++;
     }
@@ -847,6 +956,7 @@ async function loadYouTubeSubtitles() {
 
   if (tracks.length === 0) {
     log('No caption tracks found');
+    setSubtitleDetectionState('empty');
     return;
   }
 
@@ -864,7 +974,7 @@ async function loadYouTubeSubtitles() {
 
   if (best) {
     log('Loading track:', best.languageCode, best.kind === 'asr' ? '(auto)' : '');
-    await fetchYTTrack(best);
+    await fetchYTTrack(best, requestGeneration);
   }
 }
 
@@ -1293,6 +1403,8 @@ async function loadNetflixTrackForLanguage(langCode) {
 
   // Clear old cues and show spinner
   STATE.cues = [];
+  STATE.subtitleStatus = 'detecting';
+  STATE.subtitleError = null;
   renderTranscript(bestKey);
   updateStatus(t('loadingSubtitles'));
 
@@ -1321,13 +1433,22 @@ async function loadNetflixTrackForLanguage(langCode) {
     loadedNetflixUrl = track.url;
 
     if (cues.length > 0) {
+      clearDetectionTimer();
+      STATE.subtitleStatus = 'ready';
+      STATE.subtitleError = null;
       STATE.activeCueIdx = -1;
       renderTranscript();
+    } else {
+      clearDetectionTimer();
+      setSubtitleDetectionState('empty');
     }
     setBadge(true);
     updateStatus('');
   } catch (err) {
+    if (fetchGen !== gen) return;
     logerr('Failed to fetch Netflix subtitles:', err);
+    clearDetectionTimer();
+    setSubtitleDetectionState('error', err?.message || t('failedToLoadSubtitles'));
     updateStatus(t('failedToLoadSubtitles'));
   }
 }
@@ -1428,6 +1549,13 @@ function waitForPlayer() {
 // ── Message Handling ─────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'requestSubtitleDetection') {
+    requestSubtitleDetection({ retry: !!message.retry })
+      .then(() => sendResponse({ ok: true }))
+      .catch((err) => sendResponse({ ok: false, error: err?.message || 'detection failed' }));
+    return true;
+  }
+
   if (message.action === 'subtitleDetected') {
     const { url, fileName } = message;
     log('Subtitle detected:', fileName, url);
@@ -1444,6 +1572,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       cuesCount: STATE.cues.length,
       savedL2Code,
       detectedSubLang,
+      subtitleStatus: STATE.subtitleStatus,
+      subtitleError: STATE.subtitleError,
     });
     return true;
   }
@@ -1532,7 +1662,7 @@ async function init() {
 
   if (isYouTube) {
     // YouTube: extract subs from page data, re-attach time tracking periodically
-    await loadYouTubeSubtitles();
+    await requestSubtitleDetection();
     setupYouTubeNavigationObserver();
     setInterval(() => {
       attachTimeTracking();
@@ -1544,6 +1674,7 @@ async function init() {
     if (STATE.cues.length > 0) {
       log('Pushing pre-loaded cues:', STATE.cues.length);
       STATE.activeCueIdx = -1;
+      STATE.subtitleStatus = 'ready';
       renderTranscript();
       setBadge(true);
       updateStatus('');
