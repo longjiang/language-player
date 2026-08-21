@@ -138,6 +138,255 @@ button:focus-visible,
   color: hsl(var(--foreground));
 }
 
+.lpv-user-menu {
+  position: relative;
+}
+
+.lpv-user-menu-popover {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  z-index: 110;
+  width: 13rem;
+  padding: 0.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  box-shadow: 0 0.75rem 2rem hsl(var(--foreground) / 0.18);
+}
+
+.lpv-user-menu-summary,
+.lpv-user-menu-item {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 0;
+  border-radius: calc(var(--radius) - 0.125rem);
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  color: hsl(var(--popover-foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  text-align: start;
+}
+
+.lpv-user-menu-summary {
+  border-bottom: 1px solid hsl(var(--border));
+  border-radius: 0;
+  gap: 0.125rem;
+}
+
+.lpv-user-menu-summary span {
+  max-width: 100%;
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpv-user-menu-item:hover,
+.lpv-user-menu-summary:hover {
+  background: hsl(var(--muted));
+}
+
+.lpv-user-menu-item.is-destructive {
+  color: hsl(var(--destructive));
+}
+
+.lpv-login-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lpv-account-scroll {
+  display: grid;
+  gap: 1rem;
+}
+
+.lpv-account-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+}
+
+.lpv-account-avatar {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.lpv-account-chip div {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.lpv-account-chip span:not(.lpv-account-avatar) {
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpv-account-section,
+.lpv-account-danger-section {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.lpv-account-section h3,
+.lpv-account-danger-section h3,
+.lpv-account-delete-confirm h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.lpv-account-section p,
+.lpv-account-danger-section p,
+.lpv-account-delete-confirm p {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.lpv-account-status {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  background: hsl(var(--accent) / 0.15);
+  color: hsl(var(--foreground));
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lpv-account-danger {
+  color: hsl(var(--destructive)) !important;
+}
+
+.lpv-account-delete-confirm {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lpv-account-delete-confirm label {
+  display: grid;
+  gap: 0.375rem;
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.lpv-help-layout {
+  display: grid;
+  min-height: 24rem;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.lpv-help-sidebar {
+  min-width: 0;
+  padding-right: 1rem;
+  border-right: 1px solid hsl(var(--border));
+}
+
+.lpv-help-nav {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.lpv-help-nav-item,
+.lpv-help-toc-item {
+  border: 0;
+  border-radius: calc(var(--radius) - 0.125rem);
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.75rem;
+  text-align: start;
+  text-decoration: none;
+}
+
+.lpv-help-nav-item:hover,
+.lpv-help-nav-item.is-active,
+.lpv-help-toc-item:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.lpv-help-toc-title {
+  margin: 1.25rem 0 0.25rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lpv-help-toc-item {
+  display: block;
+  padding: 0.25rem 0.375rem;
+}
+
+.lpv-help-content {
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.lpv-help-content h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.lpv-help-content h4 {
+  margin: 1.25rem 0 0.375rem;
+  font-size: 0.875rem;
+}
+
+.lpv-help-content p {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.lpv-about-content {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.lpv-about-content h3,
+.lpv-about-content p {
+  margin: 0;
+}
+
+.lpv-about-content p {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
 .lpv-app-main,
 .lpv-ui-tabs {
   display: flex;
@@ -695,5 +944,29 @@ button:focus-visible,
 
   .lpv-settings-nav-item {
     flex: 0 0 auto;
+  }
+
+  .lpv-help-layout {
+    display: block;
+  }
+
+  .lpv-help-sidebar {
+    padding: 0 0 0.75rem;
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .lpv-help-nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .lpv-help-nav-item {
+    flex: 0 0 auto;
+  }
+
+  .lpv-help-toc-title,
+  .lpv-help-toc-item {
+    display: none;
   }
 }

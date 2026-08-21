@@ -17,6 +17,9 @@ import { TranscriptAppInner, PagePanel, type PageLookupDetail } from './transcri
 import { PageTranslationPanel } from './components/PageTranslationPanel';
 import { LanguagePicker } from './components/LanguagePicker';
 import { SettingsModal } from './components/SettingsModal';
+import { UserMenu } from './components/UserMenu';
+import { HelpModal } from './components/HelpModal';
+import { AboutModal } from './components/AboutModal';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
@@ -78,6 +81,8 @@ function SidePanelApp() {
   const [subtitleRequesting, setSubtitleRequesting] = useState(false);
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const tabIdRef = useRef<number | null>(null);
   tabIdRef.current = tabId;
@@ -390,16 +395,7 @@ function SidePanelApp() {
             {languageName(currentL2Code, l1Code)}
             <span aria-hidden="true">⌄</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lpv-profile-trigger"
-            aria-label={t('profile')}
-            aria-haspopup="menu"
-            onClick={() => setSettingsOpen(true)}
-          >
-            <span aria-hidden="true">{l1Code ? '◉' : '?'}</span>
-          </Button>
+          <UserMenu l1Code={l1Code} l2Code={currentL2Code} onSettings={() => setSettingsOpen(true)} onHelp={() => setHelpOpen(true)} onAbout={() => setAboutOpen(true)} />
           <Button variant="ghost" size="icon" aria-label={t('closePanel')} onClick={closePanel}>
             <span aria-hidden="true">×</span>
           </Button>
@@ -450,6 +446,8 @@ function SidePanelApp() {
         onOpenChange={setSettingsOpen}
         onThemeChange={applyTheme}
       />
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
+      <AboutModal open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
   );
 }

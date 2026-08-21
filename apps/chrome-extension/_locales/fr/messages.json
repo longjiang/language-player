@@ -306,6 +306,174 @@
   "noLanguagesFound": {
     "message": "Aucune langue ne correspond à votre recherche."
   },
+  "login": {
+    "message": "Se connecter"
+  },
+  "logout": {
+    "message": "Se déconnecter"
+  },
+  "help": {
+    "message": "Documentation"
+  },
+  "about": {
+    "message": "À propos"
+  },
+  "account": {
+    "message": "Profil"
+  },
+  "learningLevel": {
+    "message": "Niveau"
+  },
+  "level": {
+    "message": "Niveau"
+  },
+  "subscription": {
+    "message": "Abonnement"
+  },
+  "subscriptionMonthly": {
+    "message": "Mensuel"
+  },
+  "subscriptionAnnual": {
+    "message": "Annuel"
+  },
+  "subscriptionLifetime": {
+    "message": "À vie"
+  },
+  "freeAccount": {
+    "message": "Compte gratuit"
+  },
+  "autoRenews": {
+    "message": "Renouvellement automatique"
+  },
+  "daysRemaining": {
+    "message": "Il reste $days$ jours",
+    "placeholders": {
+      "days": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "manageSubscription": {
+    "message": "Manage subscription"
+  },
+  "myActivities": {
+    "message": "Mon activité"
+  },
+  "openActivities": {
+    "message": "Open activities"
+  },
+  "deleteAccount": {
+    "message": "Supprimer le compte"
+  },
+  "deleteAccountWarning": {
+    "message": "Cela supprimera définitivement votre compte et toutes vos données, y compris les mots enregistrés, les listes de lecture, l'historique de visionnage, les vidéos aimées, la progression et les informations d'abonnement."
+  },
+  "deleteSubscriptionFirst": {
+    "message": "Annulez votre abonnement actif avant de pouvoir supprimer votre compte."
+  },
+  "typeToConfirm": {
+    "message": "Saisissez DELETE pour confirmer."
+  },
+  "deleteConfirmation": {
+    "message": "DELETE"
+  },
+  "deleteAccountFailed": {
+    "message": "Impossible de supprimer votre compte. Veuillez réessayer."
+  },
+  "subscriptionUnavailable": {
+    "message": "Subscription status is unavailable."
+  },
+  "levelSaveFailed": {
+    "message": "Could not save your level."
+  },
+  "cancel": {
+    "message": "Annuler"
+  },
+  "loginFailed": {
+    "message": "Login failed. Check your email and password."
+  },
+  "searchHelp": {
+    "message": "Search help"
+  },
+  "onThisPage": {
+    "message": "On this page"
+  },
+  "helpWatchingTitle": {
+    "message": "Watching Videos"
+  },
+  "helpWatchingBody": {
+    "message": "Open the side panel on Prime Video, YouTube, Netflix, or Disney Plus. Hulu and Max are experimental. Subtitles, tokenization, and translation load as needed."
+  },
+  "helpSupportedServices": {
+    "message": "Supported services"
+  },
+  "helpSupportedServicesBody": {
+    "message": "Prime Video, YouTube, Netflix, and Disney Plus are supported. Other services may work experimentally."
+  },
+  "helpWordLookup": {
+    "message": "Word lookup"
+  },
+  "helpWordLookupBody": {
+    "message": "Click a word to look it up, save it, hear it, or open its dictionary entry in Language Player."
+  },
+  "helpReadingTitle": {
+    "message": "Reading Web Pages"
+  },
+  "helpReadingBody": {
+    "message": "Use Page Translation on an ordinary web page. The extension translates readable blocks progressively without changing the page unless you enable interactivity."
+  },
+  "helpInteractivity": {
+    "message": "Page interactivity"
+  },
+  "helpInteractivityBody": {
+    "message": "Enable interactivity when you want clickable words and phonetics on the page. It remains opt-in."
+  },
+  "helpPageDictionary": {
+    "message": "Popup dictionary"
+  },
+  "helpPageDictionaryBody": {
+    "message": "Click an interactive word to open its dictionary details in the side panel."
+  },
+  "helpSettingsTitle": {
+    "message": "Adjusting Settings"
+  },
+  "helpSettingsBody": {
+    "message": "Open Settings from the profile menu. Changes apply immediately and persist between side-panel openings."
+  },
+  "helpDisplayControls": {
+    "message": "Display controls"
+  },
+  "helpDisplayControlsBody": {
+    "message": "Choose a theme, text size, translation size, leading, typeface, phonetics mode, and whether to show difficult-word phonetics."
+  },
+  "helpAccountTitle": {
+    "message": "Managing Your Account"
+  },
+  "helpAccountBody": {
+    "message": "Use the profile menu to log in, view your level and subscription, open activities, or log out."
+  },
+  "helpProfile": {
+    "message": "Profile"
+  },
+  "helpProfileBody": {
+    "message": "Your profile shows your name, email, learning level, and subscription status. Web-only actions open Language Player."
+  },
+  "helpDeletion": {
+    "message": "Delete account"
+  },
+  "helpDeletionBody": {
+    "message": "Account deletion requires typing DELETE. Active auto-renewing monthly or annual subscriptions must be cancelled first."
+  },
+  "aboutDescription": {
+    "message": "Learn languages with interactive subtitles, page translation, and instant dictionary lookups."
+  },
+  "privacy": {
+    "message": "Politique de confidentialité"
+  },
+  "openWebsite": {
+    "message": "Open website"
+  },
   "traditional": {
     "message": "繁體 Traditionnel"
   },

@@ -306,6 +306,174 @@
   "noLanguagesFound": {
     "message": "Aramanızla eşleşen dil yok."
   },
+  "login": {
+    "message": "Giriş Yap"
+  },
+  "logout": {
+    "message": "Çıkış Yap"
+  },
+  "help": {
+    "message": "Belgeler"
+  },
+  "about": {
+    "message": "Hakkında"
+  },
+  "account": {
+    "message": "Profil"
+  },
+  "learningLevel": {
+    "message": "Seviye"
+  },
+  "level": {
+    "message": "Seviye"
+  },
+  "subscription": {
+    "message": "Abonelik"
+  },
+  "subscriptionMonthly": {
+    "message": "Aylık"
+  },
+  "subscriptionAnnual": {
+    "message": "Yıllık"
+  },
+  "subscriptionLifetime": {
+    "message": "Ömür Boyu"
+  },
+  "freeAccount": {
+    "message": "Ücretsiz Hesap"
+  },
+  "autoRenews": {
+    "message": "Otomatik yenilenir"
+  },
+  "daysRemaining": {
+    "message": "$days$ gün kaldı",
+    "placeholders": {
+      "days": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "manageSubscription": {
+    "message": "Manage subscription"
+  },
+  "myActivities": {
+    "message": "Etkinliklerim"
+  },
+  "openActivities": {
+    "message": "Open activities"
+  },
+  "deleteAccount": {
+    "message": "Hesabı Sil"
+  },
+  "deleteAccountWarning": {
+    "message": "Bu işlem, kayıtlı kelimeler, çalma listeleri, izleme geçmişi, beğenilen videolar, ilerleme ve abonelik bilgileri dahil hesabınızı ve tüm verilerinizi kalıcı olarak siler."
+  },
+  "deleteSubscriptionFirst": {
+    "message": "Hesabınızı silmeden önce aktif aboneliğinizi iptal edin."
+  },
+  "typeToConfirm": {
+    "message": "Onaylamak için DELETE yazın."
+  },
+  "deleteConfirmation": {
+    "message": "DELETE"
+  },
+  "deleteAccountFailed": {
+    "message": "Hesabınız silinemedi. Lütfen tekrar deneyin."
+  },
+  "subscriptionUnavailable": {
+    "message": "Subscription status is unavailable."
+  },
+  "levelSaveFailed": {
+    "message": "Could not save your level."
+  },
+  "cancel": {
+    "message": "İptal"
+  },
+  "loginFailed": {
+    "message": "Login failed. Check your email and password."
+  },
+  "searchHelp": {
+    "message": "Search help"
+  },
+  "onThisPage": {
+    "message": "On this page"
+  },
+  "helpWatchingTitle": {
+    "message": "Watching Videos"
+  },
+  "helpWatchingBody": {
+    "message": "Open the side panel on Prime Video, YouTube, Netflix, or Disney Plus. Hulu and Max are experimental. Subtitles, tokenization, and translation load as needed."
+  },
+  "helpSupportedServices": {
+    "message": "Supported services"
+  },
+  "helpSupportedServicesBody": {
+    "message": "Prime Video, YouTube, Netflix, and Disney Plus are supported. Other services may work experimentally."
+  },
+  "helpWordLookup": {
+    "message": "Word lookup"
+  },
+  "helpWordLookupBody": {
+    "message": "Click a word to look it up, save it, hear it, or open its dictionary entry in Language Player."
+  },
+  "helpReadingTitle": {
+    "message": "Reading Web Pages"
+  },
+  "helpReadingBody": {
+    "message": "Use Page Translation on an ordinary web page. The extension translates readable blocks progressively without changing the page unless you enable interactivity."
+  },
+  "helpInteractivity": {
+    "message": "Page interactivity"
+  },
+  "helpInteractivityBody": {
+    "message": "Enable interactivity when you want clickable words and phonetics on the page. It remains opt-in."
+  },
+  "helpPageDictionary": {
+    "message": "Popup dictionary"
+  },
+  "helpPageDictionaryBody": {
+    "message": "Click an interactive word to open its dictionary details in the side panel."
+  },
+  "helpSettingsTitle": {
+    "message": "Adjusting Settings"
+  },
+  "helpSettingsBody": {
+    "message": "Open Settings from the profile menu. Changes apply immediately and persist between side-panel openings."
+  },
+  "helpDisplayControls": {
+    "message": "Display controls"
+  },
+  "helpDisplayControlsBody": {
+    "message": "Choose a theme, text size, translation size, leading, typeface, phonetics mode, and whether to show difficult-word phonetics."
+  },
+  "helpAccountTitle": {
+    "message": "Managing Your Account"
+  },
+  "helpAccountBody": {
+    "message": "Use the profile menu to log in, view your level and subscription, open activities, or log out."
+  },
+  "helpProfile": {
+    "message": "Profile"
+  },
+  "helpProfileBody": {
+    "message": "Your profile shows your name, email, learning level, and subscription status. Web-only actions open Language Player."
+  },
+  "helpDeletion": {
+    "message": "Delete account"
+  },
+  "helpDeletionBody": {
+    "message": "Account deletion requires typing DELETE. Active auto-renewing monthly or annual subscriptions must be cancelled first."
+  },
+  "aboutDescription": {
+    "message": "Learn languages with interactive subtitles, page translation, and instant dictionary lookups."
+  },
+  "privacy": {
+    "message": "Gizlilik Politikası"
+  },
+  "openWebsite": {
+    "message": "Open website"
+  },
   "traditional": {
     "message": "繁體 Geleneksel"
   },

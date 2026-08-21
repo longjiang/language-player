@@ -306,6 +306,174 @@
   "noLanguagesFound": {
     "message": "没有匹配您搜索的语言。"
   },
+  "login": {
+    "message": "登录"
+  },
+  "logout": {
+    "message": "退出登录"
+  },
+  "help": {
+    "message": "帮助"
+  },
+  "about": {
+    "message": "关于"
+  },
+  "account": {
+    "message": "个人资料"
+  },
+  "learningLevel": {
+    "message": "等级"
+  },
+  "level": {
+    "message": "等级"
+  },
+  "subscription": {
+    "message": "订阅"
+  },
+  "subscriptionMonthly": {
+    "message": "月度"
+  },
+  "subscriptionAnnual": {
+    "message": "年度"
+  },
+  "subscriptionLifetime": {
+    "message": "终身"
+  },
+  "freeAccount": {
+    "message": "免费账户"
+  },
+  "autoRenews": {
+    "message": "自动续费"
+  },
+  "daysRemaining": {
+    "message": "剩余 $days$ 天",
+    "placeholders": {
+      "days": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "manageSubscription": {
+    "message": "Manage subscription"
+  },
+  "myActivities": {
+    "message": "我的活动"
+  },
+  "openActivities": {
+    "message": "Open activities"
+  },
+  "deleteAccount": {
+    "message": "删除账户"
+  },
+  "deleteAccountWarning": {
+    "message": "这将永久删除您的账户和所有数据，包括保存的单词、播放列表、观看历史、喜欢的视频、进度和订阅信息。"
+  },
+  "deleteSubscriptionFirst": {
+    "message": "取消您的有效订阅后才能删除账户。"
+  },
+  "typeToConfirm": {
+    "message": "输入 DELETE 以确认。"
+  },
+  "deleteConfirmation": {
+    "message": "DELETE"
+  },
+  "deleteAccountFailed": {
+    "message": "无法删除您的账户。请重试。"
+  },
+  "subscriptionUnavailable": {
+    "message": "Subscription status is unavailable."
+  },
+  "levelSaveFailed": {
+    "message": "Could not save your level."
+  },
+  "cancel": {
+    "message": "取消"
+  },
+  "loginFailed": {
+    "message": "Login failed. Check your email and password."
+  },
+  "searchHelp": {
+    "message": "Search help"
+  },
+  "onThisPage": {
+    "message": "On this page"
+  },
+  "helpWatchingTitle": {
+    "message": "Watching Videos"
+  },
+  "helpWatchingBody": {
+    "message": "Open the side panel on Prime Video, YouTube, Netflix, or Disney Plus. Hulu and Max are experimental. Subtitles, tokenization, and translation load as needed."
+  },
+  "helpSupportedServices": {
+    "message": "Supported services"
+  },
+  "helpSupportedServicesBody": {
+    "message": "Prime Video, YouTube, Netflix, and Disney Plus are supported. Other services may work experimentally."
+  },
+  "helpWordLookup": {
+    "message": "Word lookup"
+  },
+  "helpWordLookupBody": {
+    "message": "Click a word to look it up, save it, hear it, or open its dictionary entry in Language Player."
+  },
+  "helpReadingTitle": {
+    "message": "Reading Web Pages"
+  },
+  "helpReadingBody": {
+    "message": "Use Page Translation on an ordinary web page. The extension translates readable blocks progressively without changing the page unless you enable interactivity."
+  },
+  "helpInteractivity": {
+    "message": "Page interactivity"
+  },
+  "helpInteractivityBody": {
+    "message": "Enable interactivity when you want clickable words and phonetics on the page. It remains opt-in."
+  },
+  "helpPageDictionary": {
+    "message": "Popup dictionary"
+  },
+  "helpPageDictionaryBody": {
+    "message": "Click an interactive word to open its dictionary details in the side panel."
+  },
+  "helpSettingsTitle": {
+    "message": "Adjusting Settings"
+  },
+  "helpSettingsBody": {
+    "message": "Open Settings from the profile menu. Changes apply immediately and persist between side-panel openings."
+  },
+  "helpDisplayControls": {
+    "message": "Display controls"
+  },
+  "helpDisplayControlsBody": {
+    "message": "Choose a theme, text size, translation size, leading, typeface, phonetics mode, and whether to show difficult-word phonetics."
+  },
+  "helpAccountTitle": {
+    "message": "Managing Your Account"
+  },
+  "helpAccountBody": {
+    "message": "Use the profile menu to log in, view your level and subscription, open activities, or log out."
+  },
+  "helpProfile": {
+    "message": "Profile"
+  },
+  "helpProfileBody": {
+    "message": "Your profile shows your name, email, learning level, and subscription status. Web-only actions open Language Player."
+  },
+  "helpDeletion": {
+    "message": "Delete account"
+  },
+  "helpDeletionBody": {
+    "message": "Account deletion requires typing DELETE. Active auto-renewing monthly or annual subscriptions must be cancelled first."
+  },
+  "aboutDescription": {
+    "message": "Learn languages with interactive subtitles, page translation, and instant dictionary lookups."
+  },
+  "privacy": {
+    "message": "隐私政策"
+  },
+  "openWebsite": {
+    "message": "Open website"
+  },
   "traditional": {
     "message": "繁體 Traditional"
   },

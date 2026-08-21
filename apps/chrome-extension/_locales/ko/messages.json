@@ -306,6 +306,174 @@
   "noLanguagesFound": {
     "message": "검색과 일치하는 언어가 없습니다."
   },
+  "login": {
+    "message": "로그인"
+  },
+  "logout": {
+    "message": "로그아웃"
+  },
+  "help": {
+    "message": "도움말"
+  },
+  "about": {
+    "message": "정보"
+  },
+  "account": {
+    "message": "프로필"
+  },
+  "learningLevel": {
+    "message": "레벨"
+  },
+  "level": {
+    "message": "레벨"
+  },
+  "subscription": {
+    "message": "구독"
+  },
+  "subscriptionMonthly": {
+    "message": "월간"
+  },
+  "subscriptionAnnual": {
+    "message": "연간"
+  },
+  "subscriptionLifetime": {
+    "message": "평생"
+  },
+  "freeAccount": {
+    "message": "무료 계정"
+  },
+  "autoRenews": {
+    "message": "자동 갱신"
+  },
+  "daysRemaining": {
+    "message": "$days$일 남음",
+    "placeholders": {
+      "days": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "manageSubscription": {
+    "message": "Manage subscription"
+  },
+  "myActivities": {
+    "message": "내 활동"
+  },
+  "openActivities": {
+    "message": "Open activities"
+  },
+  "deleteAccount": {
+    "message": "계정 삭제"
+  },
+  "deleteAccountWarning": {
+    "message": "이 작업은 저장된 단어, 재생 목록, 시청 기록, 좋아요한 동영상, 진행 상황 및 구독 정보를 포함한 계정과 모든 데이터를 영구적으로 삭제합니다."
+  },
+  "deleteSubscriptionFirst": {
+    "message": "계정을 삭제하려면 먼저 활성 구독을 취소하세요."
+  },
+  "typeToConfirm": {
+    "message": "확인하려면 DELETE를 입력하세요."
+  },
+  "deleteConfirmation": {
+    "message": "DELETE"
+  },
+  "deleteAccountFailed": {
+    "message": "계정을 삭제할 수 없습니다. 다시 시도해 주세요."
+  },
+  "subscriptionUnavailable": {
+    "message": "Subscription status is unavailable."
+  },
+  "levelSaveFailed": {
+    "message": "Could not save your level."
+  },
+  "cancel": {
+    "message": "취소"
+  },
+  "loginFailed": {
+    "message": "Login failed. Check your email and password."
+  },
+  "searchHelp": {
+    "message": "Search help"
+  },
+  "onThisPage": {
+    "message": "On this page"
+  },
+  "helpWatchingTitle": {
+    "message": "Watching Videos"
+  },
+  "helpWatchingBody": {
+    "message": "Open the side panel on Prime Video, YouTube, Netflix, or Disney Plus. Hulu and Max are experimental. Subtitles, tokenization, and translation load as needed."
+  },
+  "helpSupportedServices": {
+    "message": "Supported services"
+  },
+  "helpSupportedServicesBody": {
+    "message": "Prime Video, YouTube, Netflix, and Disney Plus are supported. Other services may work experimentally."
+  },
+  "helpWordLookup": {
+    "message": "Word lookup"
+  },
+  "helpWordLookupBody": {
+    "message": "Click a word to look it up, save it, hear it, or open its dictionary entry in Language Player."
+  },
+  "helpReadingTitle": {
+    "message": "Reading Web Pages"
+  },
+  "helpReadingBody": {
+    "message": "Use Page Translation on an ordinary web page. The extension translates readable blocks progressively without changing the page unless you enable interactivity."
+  },
+  "helpInteractivity": {
+    "message": "Page interactivity"
+  },
+  "helpInteractivityBody": {
+    "message": "Enable interactivity when you want clickable words and phonetics on the page. It remains opt-in."
+  },
+  "helpPageDictionary": {
+    "message": "Popup dictionary"
+  },
+  "helpPageDictionaryBody": {
+    "message": "Click an interactive word to open its dictionary details in the side panel."
+  },
+  "helpSettingsTitle": {
+    "message": "Adjusting Settings"
+  },
+  "helpSettingsBody": {
+    "message": "Open Settings from the profile menu. Changes apply immediately and persist between side-panel openings."
+  },
+  "helpDisplayControls": {
+    "message": "Display controls"
+  },
+  "helpDisplayControlsBody": {
+    "message": "Choose a theme, text size, translation size, leading, typeface, phonetics mode, and whether to show difficult-word phonetics."
+  },
+  "helpAccountTitle": {
+    "message": "Managing Your Account"
+  },
+  "helpAccountBody": {
+    "message": "Use the profile menu to log in, view your level and subscription, open activities, or log out."
+  },
+  "helpProfile": {
+    "message": "Profile"
+  },
+  "helpProfileBody": {
+    "message": "Your profile shows your name, email, learning level, and subscription status. Web-only actions open Language Player."
+  },
+  "helpDeletion": {
+    "message": "Delete account"
+  },
+  "helpDeletionBody": {
+    "message": "Account deletion requires typing DELETE. Active auto-renewing monthly or annual subscriptions must be cancelled first."
+  },
+  "aboutDescription": {
+    "message": "Learn languages with interactive subtitles, page translation, and instant dictionary lookups."
+  },
+  "privacy": {
+    "message": "개인정보 보호정책"
+  },
+  "openWebsite": {
+    "message": "Open website"
+  },
   "traditional": {
     "message": "번체"
   },
