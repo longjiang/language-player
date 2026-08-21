@@ -19,6 +19,7 @@ import { fetchInflectedForms } from '../saved-words';
 import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
 import { Bookmark, BookmarkCheck, ExternalLink, Volume2, X } from './Icons';
+import { Button } from './ui/button';
 import { log, logerr, t } from '../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -39,6 +40,10 @@ interface DictionaryCardProps {
   videoTitle?: string;
   /** Page URL, used to extract platform/video ID for save context. */
   pageUrl?: string;
+  /** URL of the hyperlink containing the selected token, if any. */
+  linkUrl?: string | null;
+  /** Navigate to the selected hyperlink without treating the card click as an entry click. */
+  onFollowLink?: (href: string) => void;
   /** Subscription state from the parent transcript app (ADR-0034). */
   isPro: boolean;
   subLoading: boolean;
@@ -203,29 +208,31 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           </div>
         )}
         <div className="lpv-dict-entry-footer">
-          <span className="lpv-dict-source">{entry.dictionary?.name ?? entry.source ?? ''}</span>
-          <a
-            href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lpv-dict-images-link"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <ExternalLink size={12} /> {t('searchImages')}
-          </a>
+          <div className="lpv-dict-entry-footer-left">
+            <span className="lpv-dict-source">{entry.dictionary?.name ?? entry.source ?? ''}</span>
+            <a
+              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lpv-dict-images-link"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <ExternalLink size={12} /> {t('searchImages')}
+            </a>
+          </div>
+          {isLoggedIn && !wordsLoading && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
+              title={isSaved ? t('removeFromSaved') : t('save')}
+              aria-label={isSaved ? t('removeFromSaved') : t('save')}
+            >
+              {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+            </button>
+          )}
         </div>
       </div>
-      {isLoggedIn && !wordsLoading && (
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
-          title={isSaved ? t('removeFromSaved') : t('save')}
-          aria-label={isSaved ? t('removeFromSaved') : t('save')}
-        >
-          {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-        </button>
-      )}
     </div>
   );
 });
@@ -243,6 +250,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   cueStartTime,
   videoTitle,
   pageUrl,
+  linkUrl,
+  onFollowLink,
   isPro,
   subLoading,
   onClose,
@@ -487,15 +496,31 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </div>
       </div>
 
+      {linkUrl && (
+        <button
+          type="button"
+          className="lpv-page-follow-link"
+          onClick={(event) => {
+            event.stopPropagation();
+            if (onFollowLink) onFollowLink(linkUrl);
+            else window.location.assign(linkUrl);
+          }}
+        >
+          {t('followLink')} →
+        </button>
+      )}
+
       {/* AI explanation — Pro-only (ADR-0034 D3). Free users see the prompt. */}
       {!subLoading && isPro && !showExplain && (
-        <button
+        <Button
           onClick={handleExplain}
+          variant="outline"
+          size="sm"
           className="lpv-explain-btn"
           title={t('explainPro')}
         >
-          {t('explain')}
-        </button>
+          <span aria-hidden="true">✦</span> {t('explain')}
+        </Button>
       )}
       {!subLoading && !isPro && (
         <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>

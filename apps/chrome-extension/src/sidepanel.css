@@ -763,9 +763,17 @@ button:focus-visible,
 .lpv-dictionary-dialog .lpv-dict-entry-footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.625rem;
   margin-top: 0.625rem;
   font-size: 0.6875rem;
+}
+
+.lpv-dictionary-dialog .lpv-dict-entry-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
 }
 
 .lpv-dictionary-dialog .lpv-dict-source,
@@ -814,8 +822,8 @@ button:focus-visible,
 }
 
 .lpv-dictionary-dialog .lpv-entry-save-btn {
-  align-self: flex-start;
-  margin: 0.625rem 0.625rem 0 0;
+  flex-shrink: 0;
+  margin: 0;
   border-color: transparent;
   background: transparent;
   color: hsl(var(--muted-foreground));
