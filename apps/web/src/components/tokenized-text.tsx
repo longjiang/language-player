@@ -216,6 +216,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // so CJK renders with the correct regional glyph variants.
   const glyphLang = useGlyphLang(l2Code);
   const contentDir = isRTL(l2Code) ? 'rtl' : 'ltr';
+  // Each Chinese token is rendered as a sequence of inline ruby bases so its
+  // pinyin stays attached to the matching character. Chromium/WebKit do not
+  // consistently expose the normal Han line-break opportunities across that
+  // ruby boundary, which can leave a long tokenized line clipped at the right
+  // edge. CJK text has no whitespace-based word boundary to preserve, so allow
+  // character-level breaks only for Chinese-family L2s. Other languages keep
+  // their normal word-wrapping behavior.
+  const cjkWrapClass = ['zh', 'yue'].includes(baseCode(l2Code)) ? 'break-all' : '';
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
 
@@ -680,7 +688,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground/80 ${fontClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground/80 ${fontClass} ${cjkWrapClass}`} style={textStyle}>
         {highlightPlainText(text, formats)}
       </span>
     );
@@ -688,7 +696,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading) {
     return (
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground animate-pulse ${fontClass} ${cjkWrapClass}`} style={textStyle}>
         {highlightPlainText(text, formats)}
       </span>
     );
@@ -696,7 +704,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground ${fontClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground ${fontClass} ${cjkWrapClass}`} style={textStyle}>
         {highlightPlainText(text, formats)}
       </span>
     );
@@ -704,7 +712,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <>
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${fontClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${fontClass} ${cjkWrapClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
       <span style={textStyle}>
         {/* Precompute karaoke word weights once, outside the per-token loop */}
         {(() => {
@@ -785,33 +793,39 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               format={flat ? fmt : null}
             />
           );
+          const withCjkBreak = (node: React.ReactNode) => (
+            <React.Fragment key={i}>
+              {cjkWrapClass && i > 0 ? <wbr /> : null}
+              {node}
+            </React.Fragment>
+          );
           // Flat run: format styling is folded into the segment element
           // classes inside TokenSpan — no wrapper element, which would
           // re-create the per-token box (ADR-0039).
-          if (flat) return tokenSpan;
-          if (fmt === 'bold') return <strong key={i} className="font-semibold">{tokenSpan}</strong>;
-          if (fmt === 'italic') return <em key={i}>{tokenSpan}</em>;
+          if (flat) return withCjkBreak(tokenSpan);
+          if (fmt === 'bold') return withCjkBreak(<strong className="font-semibold">{tokenSpan}</strong>);
+          if (fmt === 'italic') return withCjkBreak(<em>{tokenSpan}</em>);
           if (fmt === 'highlight') {
-            return (
-              <mark key={i} className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
+            return withCjkBreak(
+              <mark className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
                 {tokenSpan}
               </mark>
             );
           }
           if (fmt === 'code') {
-            return <code key={i} className="rounded bg-muted px-1 font-mono text-[0.9em]">{tokenSpan}</code>;
+            return withCjkBreak(<code className="rounded bg-muted px-1 font-mono text-[0.9em]">{tokenSpan}</code>);
           }
           if (fmt === 'strikethrough') {
-            return <del key={i} className="line-through decoration-muted-foreground/60">{tokenSpan}</del>;
+            return withCjkBreak(<del className="line-through decoration-muted-foreground/60">{tokenSpan}</del>);
           }
           if (fmt === 'link') {
-            return (
-              <span key={i} className="text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary">
+            return withCjkBreak(
+              <span className="text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary">
                 {tokenSpan}
               </span>
             );
           }
-          return tokenSpan;
+          return withCjkBreak(tokenSpan);
         });
       })()}
       </span>
