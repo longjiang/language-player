@@ -268,18 +268,78 @@ The script wraps Transporter (`-assetFile`, required since 2026) and aborts
 on version/build mismatch. Manual alternative: Xcode Organizer →
 Distribute App → App Store Connect, or drag the IPA into the Transporter app.
 
+### 4.3.1 TestFlight metadata (required for every build)
+
+Uploading an IPA does not complete the TestFlight release. Every uploaded
+build must have current tester-facing metadata before it is added to a testing
+group:
+
+| Scope | App Store Connect field | API resource / attribute | Rule |
+|---|---|---|---|
+| App-level | Beta App Description | `betaAppLocalizations.description` | Keep this aligned with the current Language Player 3 product description; update only when the product description changes. |
+| Build-level | “What to Test” in the App Store Connect UI / “What’s New” in TestFlight | `betaBuildLocalizations.whatsNew` for the uploaded build | Required for every build. Apple recommends changing this text for every build. Describe the actual changes in this build and the areas testers should exercise. |
+
+Apple’s UI calls the build-level input **What to Test** when a build is added
+to an internal or external group; the App Store Connect API exposes the same
+localized tester note as `betaBuildLocalizations.whatsNew`. Do not confuse it
+with `appStoreVersionLocalizations.whatsNew`, which is App Store listing copy
+for a submitted version. Apple documents the build-level resource as the
+localized text shown to TestFlight testers for a specific build.
+
+The current `scripts/upload.mjs ios` command only sends the IPA through
+Transporter. The `appstore prepare` / `appstore metadata` commands update
+App Store version metadata, not TestFlight build metadata. Therefore, after
+Apple finishes processing the IPA, use the App Store Connect API (or the
+equivalent TestFlight UI) to complete this step:
+
+1. Find the processed build by app ID `6520385296`, marketing version, and
+   build number `N`.
+2. List `GET /v1/builds/{buildId}/betaBuildLocalizations`.
+3. Update the `en-CA` localization with
+   `PATCH /v1/betaBuildLocalizations/{localizationId}` and
+   `{"data":{"type":"betaBuildLocalizations","id":"{localizationId}","attributes":{"whatsNew":"<release-specific tester note>"}}}`.
+4. If no `en-CA` localization exists, create one with
+   `POST /v1/betaBuildLocalizations`, using `locale: "en-CA"`, the same
+   `whatsNew` text, and
+   `relationships.build.data = {"type":"builds","id":"{buildId}"}`.
+5. Read the localization back and verify that `whatsNew` is non-empty and
+   names the correct version/build. Only then add the build to the tester
+   group and notify testers.
+
+Use a release-specific note, not a generic legacy paragraph. For example:
+
+```text
+Language Player 3 <version> (build <N>)
+
+What changed:
+- <user-visible change 1>
+- <user-visible change 2>
+
+What to test:
+- <focused workflow 1>
+- <focused workflow 2>
+- Confirm login, video playback, interactive subtitles, dictionary lookup,
+  saved words, and any release-specific regression area.
+```
+
+The release operator owns the `<version>`, `<N>`, change list, and test focus;
+do not reuse the previous build’s note without reviewing it against the
+actual commit. Keep the stable Beta App Description separate from this
+per-build note.
+
 > **Xcode 26 note:** Xcode no longer bundles the full Transporter CLI — only a
 > shim. If upload fails with OSStatus error `-10661`, install the free
 > **Transporter** app from the Mac App Store; the script then uses
 > `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter`
 > automatically.
 
-**Fully automated submission (no browser):** with an App Store Connect API
+**App Store version metadata and submission (no browser):** with an App Store Connect API
 key (`LP_ASC_KEY_PATH` / `LP_ASC_KEY_ID` / `LP_ASC_ISSUER_ID` in the
 gitignored `scripts/.env.upload`; generate at App Store Connect → Users and
 Access → Integrations → App Store Connect API, role **App Manager**), the
 same script creates the version record, attaches the build, sets review info
-(demo account + notes) and What's New, and submits for review:
+(demo account + notes), updates the App Store listing’s What's New, and can
+submit for review:
 
 ```bash
 node scripts/upload.mjs appstore status                # current versions + builds
@@ -295,13 +355,17 @@ This is exactly how 3.1.0 was submitted (2026-08-14). Listing copy
 while the version is waiting for review. Screenshots are per-version in App
 Store Connect but are carried forward from the previous version (verified on
 3.1.0: same sets as 3.0.0 — iPhone 6.7" ×10, iPad Pro 12.9" ×3, iPad Pro
-12.9" 3rd gen ×9).
+12.9" 3rd gen ×9). This does **not** replace the required per-build
+TestFlight metadata in § 4.3.1.
 
 ### 4.4 After upload
 
 1. App Store Connect → TestFlight: confirm the build appears and finishes
    processing.
-2. **Export compliance ("Missing Compliance"):** `app.config.js` sets
+2. Complete § 4.3.1: update and verify the build’s `en-CA` “What to Test” /
+   `betaBuildLocalizations.whatsNew` note, and confirm the Beta App Description
+   is current.
+3. **Export compliance ("Missing Compliance"):** `app.config.js` sets
    `ios.infoPlist.ITSAppUsesNonExemptEncryption: false`, which prebuild bakes
    into Info.plist. App Store Connect then treats the build as "None of the
    algorithms mentioned above" and skips the compliance prompt, so TestFlight
@@ -310,10 +374,10 @@ Store Connect but are carried forward from the previous version (verified on
    the key is read from the binary, so a build uploaded **before** the key was
    added still prompts once; answer "None of the algorithms mentioned above"
    manually for that build (or bump the build number and re-upload).
-3. Add testers / run the beta QA pass.
-4. Submit for review from App Store Connect (review notes: demo account,
+4. Add testers / run the beta QA pass.
+5. Submit for review from App Store Connect (review notes: demo account,
    sample video IDs, real backend note — SPEC-048 § 3.4).
-5. Record the consumed build number immediately, even if rejected/rolled
+6. Record the consumed build number immediately, even if rejected/rolled
    back:
 
    ```bash
