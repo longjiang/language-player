@@ -56,6 +56,7 @@ interface RubyTokenSpanProps {
   isSavedWord: boolean;
   isTokenSelected: boolean;
   isKaraokeDimmed: boolean;
+  karaokeDimOpacity: number;
   showByeonggi: boolean;
   byeonggiText: string | null;
   showQuickGloss: boolean;
@@ -72,6 +73,7 @@ interface RubyTokenSpanProps {
   readingSize: number;
   baseLeading: number | undefined;
   textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number; textAlign?: 'left' | 'center' | 'right' };
+  textColor?: string;
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;
@@ -81,11 +83,16 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
   const rubyColors = useMobileRubyColors();
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
-    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, karaokeDimOpacity, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
-    linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle,
+    linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle, textColor,
     onOpenLink, onPressWord, onReveal,
   } = props;
+  const overlayText = textColor === 'text-primary-foreground';
+  const rubyForeground = overlayText ? rubyColors.primaryForeground : rubyColors.foreground;
+  const rubyMutedForeground = overlayText ? rubyColors.primaryForeground : rubyColors.mutedForeground;
+  const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
+  const highlightTextClass = overlayText ? 'text-primary-foreground' : 'text-primary';
 
   // Ruby segments are rebuilt only when the pieces change (displayText,
   // pronunciation, script); they are a fresh array each render otherwise,
@@ -111,7 +118,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
   };
 
   return (
-    <View className="items-center" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined]}>
+    <View className="items-center" style={[isKaraokeDimmed ? { opacity: karaokeDimOpacity } : undefined]}>
       {/* One pressable per token: the whole word — kanji + kana +
           furigana + quick gloss — shares a single tap target, matching
           web's token-span.tsx wrapper span. */}
@@ -142,8 +149,8 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
               rubyPull={rubyPull}
               baseLeading={baseLeading}
               textStyle={textStyle}
-              colorHex={isTokenSelected || isHighlighted ? rubyColors.primary : rubyColors.foreground}
-              readingColorHex={isTokenSelected ? rubyColors.primary : rubyColors.mutedForeground}
+              colorHex={isTokenSelected || isHighlighted ? rubyPrimary : rubyForeground}
+              readingColorHex={isTokenSelected ? rubyPrimary : rubyMutedForeground}
               bold={!isBlanked && (isHighlighted || isBoldFormat)}
               underline={!isBlanked && isLink}
               italic={!isBlanked && isItalicFormat}
@@ -151,10 +158,10 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
                 isBlanked
                   ? 'text-foreground'
                   : isTokenSelected
-                    ? 'text-primary'
-                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                    ? highlightTextClass
+                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
               }
-              fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
+              fallbackReadingClassName={isTokenSelected ? highlightTextClass : (textColor ?? 'text-muted-foreground')}
             />
           ))}
           {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
@@ -221,10 +228,15 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
   const rubyColors = useMobileRubyColors();
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
-    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, karaokeDimOpacity, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, firstLemma, linkUrl, l2Code, quizMode, popupEnabled,
-    rubyPull, readingSize, baseLeading, textStyle, onOpenLink, onPressWord, onReveal,
+    rubyPull, readingSize, baseLeading, textStyle, textColor, onOpenLink, onPressWord, onReveal,
   } = props;
+  const overlayText = textColor === 'text-primary-foreground';
+  const rubyForeground = overlayText ? rubyColors.primaryForeground : rubyColors.foreground;
+  const rubyMutedForeground = overlayText ? rubyColors.primaryForeground : rubyColors.mutedForeground;
+  const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
+  const highlightTextClass = overlayText ? 'text-primary-foreground' : 'text-primary';
 
   const rubySegs = useMemo<RubySegment[]>(() => {
     if (!hasRuby || !pronunciation) return [{ text: displayText }];
@@ -256,29 +268,30 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
           rubyPull={rubyPull}
           baseLeading={baseLeading}
           textStyle={textStyle}
-          colorHex={isTokenSelected || isHighlighted ? rubyColors.primary : rubyColors.foreground}
-          readingColorHex={isTokenSelected ? rubyColors.primary : rubyColors.mutedForeground}
+          colorHex={isTokenSelected || isHighlighted ? rubyPrimary : rubyForeground}
+          readingColorHex={isTokenSelected ? rubyPrimary : rubyMutedForeground}
           bold={!isBlanked && (isHighlighted || isBoldFormat)}
           underline={!isBlanked && isLink}
           italic={!isBlanked && isItalicFormat}
           tokenIndex={index}
           onTokenPress={handlePress}
           dimmed={isKaraokeDimmed}
+          dimmedOpacity={karaokeDimOpacity}
           fallbackBaseClassName={
             isBlanked
               ? 'text-foreground'
-              : isTokenSelected
-                ? 'text-primary'
-                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                : isTokenSelected
+                ? highlightTextClass
+                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
           }
-          fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
+          fallbackReadingClassName={isTokenSelected ? highlightTextClass : (textColor ?? 'text-muted-foreground')}
         />
       ))}
       {showByeonggi ? (
         <Text
           style={{
             fontSize: readingSize,
-            opacity: isKaraokeDimmed ? 0.4 : 1,
+            opacity: isKaraokeDimmed ? karaokeDimOpacity : 1,
             ...(textStyle.fontFamily ? { fontFamily: textStyle.fontFamily } : {}),
           }}
           className="text-muted-foreground/70"
@@ -287,7 +300,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
         </Text>
       ) : null}
       {showQuickGloss ? (
-        <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading, opacity: isKaraokeDimmed ? 0.4 : 1 }}>
+        <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading, opacity: isKaraokeDimmed ? karaokeDimOpacity : 1 }}>
           <Text
             style={{
               fontSize: textStyle.fontSize ?? 16,
@@ -433,6 +446,7 @@ interface PlainTokenSpanProps {
   isTokenSelected: boolean;
   isPressed: boolean;
   isKaraokeDimmed: boolean;
+  karaokeDimOpacity: number;
   showByeonggi: boolean;
   byeonggiText: string | null;
   showQuickGloss: boolean;
@@ -454,7 +468,7 @@ interface PlainTokenSpanProps {
 export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) {
   const {
     index, word, displayText, isWordToken, isBlanked, isHighlighted, isLink, isSearchHighlight,
-    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, karaokeDimOpacity, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, firstLemma, tokenPron, linkUrl, quizMode, popupEnabled,
     textColor, textStyle, onOpenLink, onPressWord, onReveal, onPressIn, onPressOut,
   } = props;
@@ -480,7 +494,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
       onPressIn={() => onPressIn(index)}
       onPressOut={() => onPressOut(null)}
       onPress={handlePress}
-      style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
+      style={isKaraokeDimmed ? { opacity: karaokeDimOpacity } : undefined}
       className={
         isTokenSelected
           ? 'rounded bg-primary/20 text-primary'

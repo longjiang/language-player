@@ -479,7 +479,7 @@ All 6 TokenizedText settings now fully wired and rendered:
 | Feature | Implementation | Files Changed |
 |---|---|---|
 | `playback.smoothScroll` | ✅ SubtitleDisplay scroll respects `playback.smoothScroll`: ON → animated spring + 2s throttle (via `useRef` cooldown). OFF → instant jump (`animated: false`). Matches web's ON=custom RAF+throttle / OFF=native smooth pattern. | `SubtitleDisplay.tsx` |
-| `playback.karaokeMode` | ✅ `karaokeProgress` prop added to `TokenizedText`. Computes `spokenWordCount = floor(karaokeProgress * wordCount)`. Non-spoken words render at `opacity: 0.4` in both ruby and plain-text rendering paths. `SubtitleDisplay` and `SubtitlesModeBand` compute progress from active line's duration (explicit, next-line gap, or 5s fallback). | `TokenizedText.tsx`, `SubtitleDisplay.tsx`, `SubtitlesModeBand.tsx` |
+| `playback.karaokeMode` | ✅ `karaokeProgress` prop added to `TokenizedText`. Computes `spokenWordCount = floor(karaokeProgress * wordCount)`. Non-spoken words render at `opacity: 0.4` by default, with the subtitles band using a higher readable opacity and light overlay colors in both ruby and plain-text rendering paths. `SubtitleDisplay` computes progress from the active line's duration (explicit, next-line gap, or 5s fallback). | `TokenizedText.tsx`, `SubtitleDisplay.tsx`, `RubyText.tsx` |
 | `playback.autoPause` | ✅ Watch screen computes `activeLineIndex` from `currentTime` + `subtitleStartTimes`. When the active line's duration elapses, calls `playerRef.current?.pause()`. Uses `autoPausedLineRef` to avoid re-pausing the same line. Note: programmatic pause is a no-op on iOS (see YouTubePlayer.tsx), but works on Android and future player implementations. | `[videoId].tsx` |
 
 ### Implementation Order

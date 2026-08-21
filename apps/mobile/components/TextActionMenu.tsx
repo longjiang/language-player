@@ -31,6 +31,8 @@ interface TextActionMenuProps {
   /** Centers children in the full width and overlays the action button on the
    *  right — used for centered single-line subtitles. Default false. */
   centered?: boolean;
+  /** Keeps the content row intrinsic-width instead of stretching it. */
+  fitContent?: boolean;
   children: React.ReactNode;
 }
 
@@ -44,7 +46,7 @@ type ActionKind = 'explain' | 'translate';
  * AI explain and translate open their own result modals.
  */
 export function TextActionMenu(props: TextActionMenuProps) {
-  const { text, l2Code, l1Code, context, className, centered = false, children } = props;
+  const { text, l2Code, l1Code, context, className, centered = false, fitContent = false, children } = props;
   const { l1Lang } = useLanguage();
   const effectiveL1 = l1Code ?? l1Lang.code;
   const t = useT();
@@ -201,7 +203,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
     <>
       {/* Content row with action button */}
       <View className={`gap-1 ${centered ? 'relative flex-col items-stretch' : 'flex-row items-start'} ${className ?? ''}`}>
-        <View className={centered ? 'w-full pr-8' : 'flex-1 min-w-0'}>
+        <View className={centered ? 'w-full pr-8' : fitContent ? 'items-start' : 'flex-1 min-w-0'}>
           {/* as any: @types/react ReactNode includes bigint; RN's View expects RN's ReactNode (excludes it).
               This is the standard workaround for the type mismatch in RN projects with @types/react installed. */}
           {children as any}

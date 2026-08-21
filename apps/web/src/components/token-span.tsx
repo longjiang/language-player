@@ -111,6 +111,8 @@ export interface TokenSpanProps {
   cacheVersion: number;
   /** In karaoke mode: true = this word has been spoken (full brightness), false = not yet spoken (dimmed). */
   isKaraokeSpoken?: boolean;
+  /** Opacity used for an unspoken karaoke word. */
+  karaokeDimOpacity?: number;
   /** True when the following token is whitespace or punctuation — suppress the
    *  trailing space after the quick gloss so it stays attached to the next word. */
   nextTokenIsSeparator?: boolean;
@@ -159,6 +161,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   onHoverChange,
   cacheVersion,
   isKaraokeSpoken,
+  karaokeDimOpacity = 0.4,
   nextTokenIsSeparator,
   flat = false,
   format,
@@ -397,10 +400,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const hasKanji = isJapanese && /[一-龯]/.test(token.text);
 
   // ── Common class for the outer clickable wrapper ──
-  const karaokeClass = isKaraokeSpoken === false && !isSelected && !isHighlighted && !isQuizBlanking
-    ? 'opacity-40'
-    : '';
-  const wrapperClass = `cursor-pointer rounded transition-opacity ${karaokeClass} ${
+  const karaokeDimmed = isKaraokeSpoken === false && !isSelected && !isHighlighted && !isQuizBlanking;
+  const karaokeStyle = karaokeDimmed ? { opacity: karaokeDimOpacity } : undefined;
+  const wrapperClass = `cursor-pointer rounded transition-opacity ${
     isSelected
       ? 'bg-primary/20 text-primary'
       : isHighlighted
@@ -508,12 +510,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
             <React.Fragment key={j}>
               {isCjkLanguage && j > 0 ? <wbr /> : null}
               {seg.reading ? (
-                <ruby className={flatSegmentClasses} onClick={segmentClick}>
+                <ruby className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
                   {seg.text}
                   <rt className="select-none" dir="ltr">{seg.reading}</rt>
                 </ruby>
               ) : (
-                <span className={flatSegmentClasses} onClick={segmentClick}>
+                <span className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
                   {seg.text}
                 </span>
               )}
@@ -521,7 +523,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
           )}
         </>
       ) : (
-        <span className={flatSegmentClasses} onClick={segmentClick}>
+        <span className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
           {isCjkLanguage ? renderCjkBreakableText(displayText) : displayText}
         </span>
       );
@@ -572,7 +574,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
-      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} {...hoverHandlers}>
+      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} style={karaokeStyle} {...hoverHandlers}>
         <span className="inline-flex flex-col items-center">
           {wordWithGloss}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
@@ -591,7 +593,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──
   return (
-    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} {...hoverHandlers}>
+    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} style={karaokeDimmed ? { opacity: karaokeDimOpacity } : undefined} {...hoverHandlers}>
       {wordWithGloss}
     </span>
   );

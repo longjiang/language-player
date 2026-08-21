@@ -140,6 +140,11 @@ export interface TokenizedTextProps {
   highlightEntryIds?: string[];
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end). When undefined, karaoke is off. */
   karaokeProgress?: number;
+  /** Opacity for words not reached yet by karaoke. Band mode uses a higher
+   *  value so unspoken words remain readable over the dark overlay. */
+  karaokeDimOpacity?: number;
+  /** Semantic text color for contexts such as the dark subtitle band. */
+  textColor?: string;
   /** When false, phonetics are suppressed on highlighted tokens. Used by the SRS
    *  review page so the target word's reading stays hidden until the card is
    *  revealed. Defaults to true — highlighting alone does not hide readings. */
@@ -198,6 +203,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   highlightForms,
   highlightEntryIds,
   karaokeProgress,
+  karaokeDimOpacity = 0.4,
+  textColor,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
   phonetics,
@@ -688,7 +695,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground/80 ${fontClass} ${cjkWrapClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${textColor ?? 'text-muted-foreground'} ${fontClass} ${cjkWrapClass}`} style={{ ...textStyle, opacity: 0.8 }}>
         {highlightPlainText(text, formats)}
       </span>
     );
@@ -696,7 +703,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading) {
     return (
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground animate-pulse ${fontClass} ${cjkWrapClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${textColor ?? 'text-muted-foreground'} animate-pulse ${fontClass} ${cjkWrapClass}`} style={textStyle}>
         {highlightPlainText(text, formats)}
       </span>
     );
@@ -704,7 +711,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground ${fontClass} ${cjkWrapClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${textColor ?? 'text-muted-foreground'} ${fontClass} ${cjkWrapClass}`} style={textStyle}>
         {highlightPlainText(text, formats)}
       </span>
     );
@@ -712,7 +719,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <>
-      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${fontClass} ${cjkWrapClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${textColor ?? ''} ${fontClass} ${cjkWrapClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
       <span style={textStyle}>
         {/* Precompute karaoke word weights once, outside the per-token loop */}
         {(() => {
@@ -787,6 +794,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
                 : undefined}
               cacheVersion={cacheVersion}
               isKaraokeSpoken={isKaraokeSpoken}
+              karaokeDimOpacity={karaokeDimOpacity}
               phoneticsOnHighlight={phoneticsOnHighlight}
               quickGlossOnHighlight={quickGlossOnHighlight}
               flat={flat}
