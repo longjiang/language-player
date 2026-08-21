@@ -469,6 +469,13 @@ with `position:fixed`. They render in the browser's own side panel:
   `dist/sidepanel.js`): `SidePanelApp` tracks the active tab, pulls state, and
   renders the video/page React trees. `dist/sidepanel.css` supplies semantic
   side-panel tokens and local Shadcn-compatible component styles.
+- **Modal iframe**: `SidePanelApp` renders one full-panel
+  `SidePanelModalFrame` bridge. The bridge opens
+  `src/sidepanel-modal-frame.html`, which renders language selection, settings,
+  help, about, login, account, subtitle dictionary, and line explanation
+  dialogs in an extension-owned document. The iframe is hidden and has
+  `pointer-events: none` when no modal is open, so it never intercepts normal
+  side-panel interaction.
 - **Message flow**:
   - Content script → side panel: `chrome.runtime.sendMessage` → background
     relays over a runtime port named `lpv-sidepanel` (tagged with the sender's

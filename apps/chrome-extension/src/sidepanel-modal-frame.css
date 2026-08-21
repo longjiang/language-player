@@ -1,0 +1,45 @@
+html,
+body,
+#lpv-sidepanel-modal-frame-root,
+.lpv-sidepanel-modal-frame-root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.lpv-sidepanel-modal-frame-root {
+  position: relative;
+  color: hsl(var(--foreground));
+}
+
+.lpv-sidepanel-modal-frame-root .lpv-ui-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 0.5rem;
+}
+
+.lpv-sidepanel-modal-frame-root .lpv-ui-dialog {
+  width: min(100%, 52rem);
+  max-width: none;
+  max-height: calc(100% - 1rem);
+}
+
+.lpv-sidepanel-modal-frame-root .lpv-settings-dialog,
+.lpv-sidepanel-modal-frame-root .lpv-help-dialog,
+.lpv-sidepanel-modal-frame-root .lpv-account-dialog {
+  width: 100%;
+}
+
+.lpv-sidepanel-modal-frame-root .lpv-settings-layout,
+.lpv-sidepanel-modal-frame-root .lpv-help-layout {
+  min-height: min(34rem, 65vh);
+}
+
+.lpv-sidepanel-modal-frame-root .lpv-settings-content,
+.lpv-sidepanel-modal-frame-root .lpv-help-content,
+.lpv-sidepanel-modal-frame-root .lpv-account-scroll {
+  max-height: calc(100vh - 7rem);
+}

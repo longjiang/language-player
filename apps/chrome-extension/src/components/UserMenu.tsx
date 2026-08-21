@@ -2,23 +2,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
 import { Input } from './ui/input';
-import { AccountModal } from './AccountModal';
 import { AuthState, getAuthState, login, logout } from '../auth';
 import { t } from '../i18n';
 
 interface UserMenuProps {
-  l1Code: string;
-  l2Code: string;
   onSettings: () => void;
   onHelp: () => void;
   onAbout: () => void;
+  onLogin: () => void;
+  onAccount: (auth: AuthState) => void;
 }
 
-export function UserMenu({ l1Code, l2Code, onSettings, onHelp, onAbout }: UserMenuProps) {
+export function UserMenu({ onSettings, onHelp, onAbout, onLogin, onAccount }: UserMenuProps) {
   const [auth, setAuth] = useState<AuthState | null>(null);
   const [open, setOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const refreshAuth = async () => setAuth(await getAuthState());
@@ -46,19 +43,17 @@ export function UserMenu({ l1Code, l2Code, onSettings, onHelp, onAbout }: UserMe
     <div ref={menuRef} className="lpv-user-menu">
       <Button variant="ghost" size="icon" className="lpv-profile-trigger" aria-label={auth ? displayName : t('login')} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}><span aria-hidden="true">{auth ? displayName.charAt(0).toUpperCase() : '◉'}</span></Button>
       {open && <div className="lpv-user-menu-popover" role="menu">
-        {auth ? <button className="lpv-user-menu-summary" onClick={() => { setAccountOpen(true); setOpen(false); }}><strong>{displayName}</strong><span>{auth.email}</span></button> : <button className="lpv-user-menu-item" onClick={() => { setLoginOpen(true); setOpen(false); }}>{t('login')}</button>}
+        {auth ? <button className="lpv-user-menu-summary" onClick={() => { onAccount(auth); setOpen(false); }}><strong>{displayName}</strong><span>{auth.email}</span></button> : <button className="lpv-user-menu-item" onClick={() => { onLogin(); setOpen(false); }}>{t('login')}</button>}
         <button className="lpv-user-menu-item" onClick={() => { onSettings(); setOpen(false); }}>{t('settings')}</button>
         <button className="lpv-user-menu-item" onClick={() => { onHelp(); setOpen(false); }}>{t('help')}</button>
         <button className="lpv-user-menu-item" onClick={() => { onAbout(); setOpen(false); }}>{t('about')}</button>
         {auth && <button className="lpv-user-menu-item is-destructive" onClick={handleLogout}>{t('logout')}</button>}
       </div>}
-      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} onLoggedIn={(next) => { setAuth(next); setLoginOpen(false); }} />
-      {auth && <AccountModal open={accountOpen} auth={auth} l1Code={l1Code} l2Code={l2Code} onOpenChange={setAccountOpen} onLoggedOut={() => setAuth(null)} />}
     </div>
   );
 }
 
-function LoginDialog({ open, onOpenChange, onLoggedIn }: { open: boolean; onOpenChange: (open: boolean) => void; onLoggedIn: (auth: AuthState) => void }) {
+export function LoginDialog({ open, onOpenChange, onLoggedIn }: { open: boolean; onOpenChange: (open: boolean) => void; onLoggedIn: (auth: AuthState) => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
