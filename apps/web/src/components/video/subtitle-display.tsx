@@ -291,8 +291,78 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     return idx;
   }, [currentTime, bandLines]);
   const bandActiveLine = bandActiveIndex >= 0 ? bandLines[bandActiveIndex] : null;
+  const bandKaraokeProgress = useMemo(() => {
+    if (!playback.karaokeMode || !bandActiveLine) return undefined;
+    const nextLine = bandLines[bandActiveIndex + 1];
+    const duration = bandActiveLine.duration
+      ?? (nextLine ? nextLine.starttime - bandActiveLine.starttime : 5);
+    if (duration <= 0) return 0;
+    return Math.min(1, Math.max(0, (currentTime - bandActiveLine.starttime + KARAOKE_LEAD_SECONDS) / duration));
+  }, [playback.karaokeMode, bandActiveLine, bandActiveIndex, bandLines, currentTime]);
   const bandIsFirstLine = bandActiveIndex <= 0;
   const bandIsLastLine = bandActiveIndex >= bandLines.length - 1;
+  const bandRef = useRef<HTMLDivElement>(null);
+  const bandTopRef = useRef<number | null>(null);
+  const bandDragRef = useRef({
+    active: false,
+    didDrag: false,
+    startY: 0,
+    startTop: 0,
+  });
+  const [bandTop, setBandTop] = useState<number | null>(null);
+
+  const handleBandPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const target = e.target as Element;
+    if (target.closest('button, a, input, select, textarea, [role="button"]')) return;
+
+    const bandElement = bandRef.current;
+    const frameElement = bandElement?.parentElement;
+    if (!bandElement || !frameElement) return;
+
+    const bandRect = bandElement.getBoundingClientRect();
+    const frameRect = frameElement.getBoundingClientRect();
+    bandDragRef.current = {
+      active: true,
+      didDrag: false,
+      startY: e.clientY,
+      startTop: bandTopRef.current ?? bandRect.top - frameRect.top,
+    };
+    bandElement.setPointerCapture(e.pointerId);
+  }, []);
+
+  const handleBandPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = bandDragRef.current;
+    if (!drag.active) return;
+
+    const bandElement = bandRef.current;
+    const frameElement = bandElement?.parentElement;
+    if (!bandElement || !frameElement) return;
+
+    const deltaY = e.clientY - drag.startY;
+    if (Math.abs(deltaY) > 3) drag.didDrag = true;
+    const frameRect = frameElement.getBoundingClientRect();
+    const bandHeight = bandElement.getBoundingClientRect().height;
+    const maxTop = Math.max(0, frameRect.height - bandHeight);
+    const nextTop = Math.min(maxTop, Math.max(0, drag.startTop + deltaY));
+    bandTopRef.current = nextTop;
+    setBandTop(nextTop);
+  }, []);
+
+  const handleBandPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (bandDragRef.current.active && bandRef.current?.hasPointerCapture(e.pointerId)) {
+      bandRef.current.releasePointerCapture(e.pointerId);
+    }
+    bandDragRef.current.active = false;
+  }, []);
+
+  const handleBandClickCapture = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (bandDragRef.current.didDrag) {
+      e.preventDefault();
+      e.stopPropagation();
+      bandDragRef.current.didDrag = false;
+    }
+  }, []);
   const handleBandPrevLine = useCallback(() => {
     if (bandIsFirstLine) return;
     const prev = bandLines[bandActiveIndex - 1];
@@ -314,20 +384,35 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
   if (band) {
     const containerClass = overlay
-      ? 'absolute bottom-14 left-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-t-xl'
+      ? 'absolute left-1/2 z-10 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-t-xl'
       : 'bg-card border-t border-border';
     const btnColorClass = overlay
-      ? 'text-white/80 hover:text-white hover:bg-white/10'
+      ? 'text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10'
       : 'text-muted-foreground hover:text-foreground';
-    const separatorClass = overlay ? 'border-white/20' : 'border-border';
-    const textClass = overlay ? 'text-white' : 'text-foreground';
-    const transClass = overlay ? 'text-white/70' : 'text-muted-foreground';
-    const placeholderClass = overlay ? 'text-white/50' : 'text-muted-foreground';
+    const separatorClass = overlay ? 'border-primary-foreground/20' : 'border-border';
+    const textClass = overlay ? 'text-primary-foreground' : 'text-foreground';
+    const transClass = overlay ? 'text-primary-foreground/80' : 'text-muted-foreground';
+    const placeholderClass = overlay ? 'text-primary-foreground/70' : 'text-muted-foreground';
     const bandActiveText = bandActiveLine ? stripSubtitleDurationPrefix(bandActiveLine.l2Line) : '';
     const bandActiveTranslation = bandActiveLine?.l1Line || translatedLines[bandActiveIndex]?.line || '';
 
     return (
-      <div className={cn(containerClass, 'min-h-[6rem] flex flex-col')}>
+      <div
+        ref={overlay ? bandRef : undefined}
+        className={cn(containerClass, 'min-h-[6rem] flex flex-col')}
+        style={overlay
+          ? {
+              ...(bandTop === null ? { bottom: '3.5rem' } : { top: `${bandTop}px` }),
+              touchAction: 'none',
+              userSelect: 'none',
+            }
+          : undefined}
+        onPointerDown={overlay ? handleBandPointerDown : undefined}
+        onPointerMove={overlay ? handleBandPointerMove : undefined}
+        onPointerUp={overlay ? handleBandPointerUp : undefined}
+        onPointerCancel={overlay ? handleBandPointerUp : undefined}
+        onClickCapture={overlay ? handleBandClickCapture : undefined}
+      >
         <div className="flex items-center gap-0.5 px-2 py-1">
           <Button
             variant="ghost" size="icon"
@@ -414,6 +499,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   text={bandActiveText}
                   l2Code={l2.code}
                   textScale={SINGLELINE_TEXT_SCALE}
+                  textColor={textClass}
+                  karaokeProgress={bandKaraokeProgress}
+                  karaokeDimOpacity={overlay ? 0.72 : 0.7}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
                   context={videoTitle ? { videoTitle } : undefined}

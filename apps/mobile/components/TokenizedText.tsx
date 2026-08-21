@@ -95,6 +95,9 @@ export interface TokenizedTextProps {
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end).
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
+  /** Opacity for words not reached yet by karaoke. Band mode uses a higher
+   *  value so unspoken words remain readable over the dark overlay. */
+  karaokeDimOpacity?: number;
   /**
    * Line-height (leading) multiplier for tokenized text (1–2). Defaults to
    * the display-settings value (1.625×).
@@ -182,7 +185,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -268,6 +271,10 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // ── Settings (matches Next.js) ──
   const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
   const rubyColors = useMobileRubyColors();
+  const overlayText = textColor === 'text-primary-foreground';
+  const rubyForeground = overlayText ? rubyColors.primaryForeground : rubyColors.foreground;
+  const rubyMutedForeground = overlayText ? rubyColors.primaryForeground : rubyColors.mutedForeground;
+  const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
   const l2Settings = getL2(l2Code);
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showPhonetics = phoneticsOverride === false ? false : phonetics.show !== false;
@@ -1199,8 +1206,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   text: '\u3000',
                   fontSize: tokenFontSize,
                   tappable: false,
-                  color: rubyColors.foreground,
-                  readingColor: rubyColors.foreground,
+                  color: rubyForeground,
+                  readingColor: rubyForeground,
                   bold: false,
                   underline: false,
                   opacity: 1,
@@ -1237,8 +1244,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     tokenId: i,
                     text: isTab ? '  ' : token.text,
                     tappable: false,
-                    color: rubyColors.foreground,
-                    readingColor: rubyColors.mutedForeground,
+                    color: rubyForeground,
+                    readingColor: rubyMutedForeground,
                     bold: false,
                     underline: false,
                     opacity: 1,
@@ -1384,11 +1391,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     ...(seg.reading ? { reading: seg.reading } : {}),
                     tappable: true,
                     color: isTokenSelected || isHighlighted
-                      ? rubyColors.primary
-                      : rubyColors.foreground,
+                      ? rubyPrimary
+                      : rubyForeground,
                     readingColor: isTokenSelected
-                      ? rubyColors.primary
-                      : rubyColors.mutedForeground,
+                      ? rubyPrimary
+                      : rubyMutedForeground,
                     bold: (!isBlanked && (isHighlighted || isBoldFormat)) || textStyle.fontWeight === 'bold',
                     underline: !isBlanked && isLink,
                     italic: !isBlanked && isItalicFormat,
@@ -1397,7 +1404,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                       : isSavedWord
                         ? { background: MOBILE_RUBY_SAVED_BG, backgroundAlpha: 0.2 }
                         : {}),
-                    opacity: isKaraokeDimmed ? 0.4 : 1,
+                    opacity: isKaraokeDimmed ? karaokeDimOpacity : 1,
                   });
                 }
                 if (showByeonggi) {
@@ -1406,11 +1413,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     text: ` ${byeonggiText}`,
                     fontSize: readingSize,
                     tappable: false,
-                    color: rubyColors.mutedForeground,
-                    readingColor: rubyColors.mutedForeground,
+                    color: rubyMutedForeground,
+                    readingColor: rubyMutedForeground,
                     bold: false,
                     underline: false,
-                    opacity: (isKaraokeDimmed ? 0.4 : 1) * 0.7,
+                    opacity: (isKaraokeDimmed ? karaokeDimOpacity : 1) * 0.7,
                   });
                 }
                 if (showQuickGloss) {
@@ -1419,11 +1426,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     tokenId: i,
                     text: ` (‘${quickGlossDef}’) `,
                     tappable: false,
-                    color: rubyColors.mutedForeground,
-                    readingColor: rubyColors.mutedForeground,
+                    color: rubyMutedForeground,
+                    readingColor: rubyMutedForeground,
                     bold: false,
                     underline: false,
-                    opacity: isKaraokeDimmed ? 0.4 : 1,
+                    opacity: isKaraokeDimmed ? karaokeDimOpacity : 1,
                   });
                 }
                 taps.push({
@@ -1453,6 +1460,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 isSavedWord,
                 isTokenSelected,
                 isKaraokeDimmed,
+                karaokeDimOpacity,
                 showByeonggi,
                 byeonggiText,
                 showQuickGloss,
@@ -1463,6 +1471,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 firstLemma,
                 linkUrl,
                 l2Code,
+                textColor,
                 quizMode,
                 popupEnabled,
                 rubyPull,
@@ -1588,6 +1597,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   isTokenSelected={isTokenSelected}
                   isPressed={isPressed}
                   isKaraokeDimmed={isKaraokeDimmed}
+                  karaokeDimOpacity={karaokeDimOpacity}
                   showByeonggi={showByeonggi}
                   byeonggiText={byeonggiText}
                   showQuickGloss={showQuickGloss}
@@ -1674,6 +1684,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.tokens === next.tokens &&
     prev.deferTokenization === next.deferTokenization &&
     prev.karaokeProgress === next.karaokeProgress &&
+    prev.karaokeDimOpacity === next.karaokeDimOpacity &&
     prev.leading === next.leading &&
     prev.testID === next.testID &&
     prev.phoneticsOnHighlight === next.phoneticsOnHighlight &&

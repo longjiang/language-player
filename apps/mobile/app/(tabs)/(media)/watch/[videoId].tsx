@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator, FlatList, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, ActivityIndicator, FlatList, PanResponder, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -88,6 +88,33 @@ export default function WatchScreen() {
   const [subtitleLines, setSubtitleLines] = useState<SubtitleSyncedLine[]>([]);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
+  const [bandTop, setBandTop] = useState<number | null>(null);
+  const bandFrameHeightRef = useRef(0);
+  const bandHeightRef = useRef(0);
+  const bandLayoutTopRef = useRef(0);
+  const bandTopRef = useRef<number | null>(null);
+
+  const bandPanResponder = useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (_, gestureState) =>
+      Math.abs(gestureState.dy) > 4 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+    onMoveShouldSetPanResponderCapture: (_, gestureState) =>
+      Math.abs(gestureState.dy) > 4 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+    onPanResponderGrant: () => {
+      bandTopRef.current = bandTopRef.current ?? bandLayoutTopRef.current;
+    },
+    onPanResponderMove: (_, gestureState) => {
+      const maxTop = Math.max(0, bandFrameHeightRef.current - bandHeightRef.current);
+      const startTop = bandTopRef.current ?? bandLayoutTopRef.current;
+      const nextTop = Math.min(maxTop, Math.max(0, startTop + gestureState.dy));
+      bandTopRef.current = nextTop;
+      setBandTop(nextTop);
+    },
+    onPanResponderRelease: () => {},
+    onPanResponderTerminate: () => {},
+    onPanResponderTerminationRequest: () => false,
+    onShouldBlockNativeResponder: () => true,
+  }), []);
 
   // Persist the deep-link L2 override so the header and library state agree
   // with the language of the linked video.
@@ -364,11 +391,32 @@ export default function WatchScreen() {
       <View testID="watch-screen" className="flex-1 bg-black">
         <View
           className="relative flex-1"
-          onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}
+          onLayout={(e) => {
+            setPlayerContainerWidth(e.nativeEvent.layout.width);
+            const frameHeight = e.nativeEvent.layout.height;
+            bandFrameHeightRef.current = frameHeight;
+            if (bandTopRef.current !== null && bandHeightRef.current > 0) {
+              const maxTop = Math.max(0, frameHeight - bandHeightRef.current);
+              const nextTop = Math.min(maxTop, bandTopRef.current);
+              bandTopRef.current = nextTop;
+              setBandTop(nextTop);
+            }
+          }}
         >
           {playerElement}
-          <View className="absolute bottom-0 left-0 right-0 z-10 min-h-24 rounded-t-xl bg-black/70">
-            <View className="flex-row justify-center border-b border-white/10 py-1">
+          <View
+            {...bandPanResponder.panHandlers}
+            className="absolute bottom-0 z-10 min-h-24 max-w-full self-center rounded-t-xl bg-black/70"
+            style={[
+              { maxWidth: Math.max(0, screenWidth - 16) },
+              bandTop === null ? { bottom: 0 } : { top: bandTop },
+            ]}
+            onLayout={(e) => {
+              bandHeightRef.current = e.nativeEvent.layout.height;
+              bandLayoutTopRef.current = e.nativeEvent.layout.y;
+            }}
+          >
+            <View className="flex-row justify-center border-b border-primary-foreground/10 py-1">
               <VideoControlBar
                 reduced
                 playerRef={playerRef}

@@ -221,22 +221,23 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     }
 
     return (
-      <View className={overlay ? 'min-h-0 flex-1' : 'min-h-32 flex-1 bg-card border-t border-border'}>
+      <View className={overlay ? 'min-h-0' : 'min-h-32 flex-1 bg-card border-t border-border'}>
         {/* Active line */}
         <Pressable
-          className="flex-1 flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0"
+          className={`${overlay ? '' : 'flex-1'} flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0`}
           onPress={() => { if (shownLine) onSeekToLine?.(shownLine.starttime); }}
         >
           {shownLine ? (
             <TextActionMenu
-              className="w-full"
-              centered
+              className={overlay ? undefined : 'w-full'}
+              centered={!overlay}
+              fitContent={overlay}
               text={shownLine.l2Line}
               l2Code={l2Lang.code}
               l1Code={baseCode(l1Lang.code)}
             >
-              <View className="w-full items-center">
-                <View className="w-full items-center">
+              <View className={overlay ? 'items-center' : 'w-full items-center'}>
+                <View className={overlay ? 'items-center' : 'w-full items-center'}>
                   <TokenizedText
                     text={shownLine.l2Line}
                     l2Code={l2Lang.code}
@@ -246,7 +247,8 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                     highlightTerms={highlightTerms}
                     textScale={singlelineTextScale}
                     textAlign="center"
-                    textColor={overlay ? 'text-white' : undefined}
+                    textColor={overlay ? 'text-primary-foreground' : undefined}
+                    karaokeDimOpacity={overlay ? 0.72 : 0.7}
                     // SPEC-084: selection on the transcript single-line mode,
                     // not the on-video band.
                     selectionDictionary={!overlay}
@@ -254,7 +256,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 </View>
                 {showTranslation && shownLine.l1Line ? (
                   <Text
-                    className={`w-full text-sm text-center leading-relaxed ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
+                    className={`${overlay ? '' : 'w-full'} text-sm text-center leading-relaxed ${overlay ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}
                     style={{
                       fontSize: singleLineTranslationFontSize,
                       lineHeight: Math.ceil(singleLineTranslationFontSize * 1.625),
@@ -267,7 +269,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
               </View>
             </TextActionMenu>
           ) : (
-            <Text className={`text-sm ${overlay ? 'text-white/50' : 'text-muted-foreground'}`}>...</Text>
+            <Text className={`text-sm ${overlay ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>...</Text>
           )}
         </Pressable>
       </View>

@@ -56,6 +56,7 @@ The watch page renders one of two completely different layouts based on `playbac
 | **Prev / next video** | `⏮` `⏭` in control bar | `⏮` `⏭` in overlay band |
 | **Rewind to line start** | `R` key or tap empty space around line | `R` key or tap empty space around line |
 | **Subtitle display** | `SubtitleDisplay` multiline in tab panel | Overlay band, current line only |
+| **Karaoke** | Spoken words brighten within the active line | Spoken words brighten within the band; unspoken words remain clearly readable |
 | **Video meta** | Below player | ❌ Hidden |
 | **Channel card** | Below meta | ❌ Hidden |
 | **Transcript** | Tab in right sidebar (w:h > 1) / collapsible panel (w:h ≤ 1) | ❌ (switch mode to see) |
@@ -131,9 +132,11 @@ The mode can be toggled via:
 ```
 
 - Player container: `h-[calc(100vh-3.5rem)]` — full viewport minus header.
-- **Overlay band**: positioned `absolute bottom-14 left-0 right-0` (above YouTube's native controls). Two rows:
+- **Overlay band**: positioned above YouTube's native controls, centered horizontally, and sized to its controls/text content. Two rows:
   - **Control row**: `[⏮ ← → ⏭ ◧]` as a huddled button group, left-aligned. Thin and compact.
   - **Subtitle row**: L2 `TokenizedText` + L1 translation, centered.
+  - **Karaoke mode**: passes the active line's weighted progress to `TokenizedText`; both spoken and unspoken words use light, readable band colors.
+  - **Positioning**: tap/click and hold an empty area of the band, then drag vertically to place it anywhere within the video frame.
   - No TTS button.
 - `bg-black/70 backdrop-blur-sm rounded-t-xl`, `min-h-[6rem]`
 - No `VideoControlBar`, `VideoMeta`, `YouTubeChannelCard`, or `TranscriptQueuePanel`.

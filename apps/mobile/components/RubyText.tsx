@@ -102,6 +102,8 @@ export interface RubyTextProps {
   onTokenPress?: (index: number) => void;
   /** Karaoke dimming — applied as opacity on the native view (no wrapper). */
   dimmed?: boolean;
+  /** Opacity used when karaoke dims this segment. */
+  dimmedOpacity?: number;
   /** Exact classes the View fallback used before the native path existed. */
   fallbackBaseClassName?: string;
   fallbackReadingClassName?: string;
@@ -147,6 +149,7 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
     tokenIndex,
     onTokenPress,
     dimmed = false,
+    dimmedOpacity = 0.4,
     fallbackBaseClassName,
     fallbackReadingClassName,
   } = props;
@@ -212,14 +215,14 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
         onTap={() => {
           if (tokenIndex != null) onTokenPress?.(tokenIndex);
         }}
-        style={{ width: measured.width, height: measured.height, opacity: dimmed ? 0.4 : 1 }}
+        style={{ width: measured.width, height: measured.height, opacity: dimmed ? dimmedOpacity : 1 }}
       />
     );
   }
 
   // View fallback: one column, identical to the pre-native per-segment markup.
   return (
-    <View className="items-center" onLayout={NativeRubyTextView ? onLayout : undefined}>
+    <View className="items-center" style={dimmed ? { opacity: dimmedOpacity } : undefined} onLayout={NativeRubyTextView ? onLayout : undefined}>
       {segment.reading ? (
         <Text
           style={{
