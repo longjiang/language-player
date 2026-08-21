@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Examples from Videos"
+  },
+  "subsAiExamples": {
+    "message": "You are a language-learning assistant. Below are subtitle lines from $n$ videos, each in $l2Name$, that contain the term \"$term$\". Lines marked with a leading * are the matched lines.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Contoh dari Video"
+  },
+  "subsAiExamples": {
+    "message": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah baris subtitle dari $n$ video, masing-masing dalam $l2Name$, yang mengandung istilah \"$term$\". Baris yang diawali * adalah baris yang cocok.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

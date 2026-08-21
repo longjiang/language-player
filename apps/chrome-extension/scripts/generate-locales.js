@@ -139,6 +139,8 @@ const CSV_LOOKUP = {
   'etymology': 'action.etymology',
   'syntax': 'action.syntax',
   'synonyms': 'action.synonyms',
+  'examples': 'title.examples_from_videos',
+  'subsAiExamples': 'prompt.subs_ai_examples',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.

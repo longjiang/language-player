@@ -48,13 +48,14 @@ interface DictionaryCardProps {
 // ── API ────────────────────────────────────────────────────────────────────
 
 const WEB_APP = 'https://languageplayer.io';
-type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms';
+type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms' | 'examples';
 const FOLLOW_UPS: Array<{ kind: FollowUpKind; labelKey: string }> = [
   { kind: 'inflection', labelKey: 'inflection' },
   { kind: 'morphemes', labelKey: 'morphemes' },
   { kind: 'etymology', labelKey: 'etymology' },
   { kind: 'syntax', labelKey: 'syntax' },
   { kind: 'synonyms', labelKey: 'synonyms' },
+  { kind: 'examples', labelKey: 'examples' },
 ];
 
 async function fetchEntries(
@@ -390,6 +391,35 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     const context = contextText?.replace(/[.。！!？?…]+$/, '');
     const contextForm = token.text !== word ? token.text : undefined;
     let prompt = '';
+    if (kind === 'examples') {
+      setFollowUpLoading(kind);
+      setShowExplain(true);
+      setExplainError(null);
+      try {
+        const response = await fetch(`${API_BASE}/subs-search?terms=${encodeURIComponent(word)}&l2=${encodeURIComponent(l2Base)}&limit=5&context=2`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const results = await response.json();
+        const lines = Array.isArray(results)
+          ? results.flatMap((result: any) => String(result.subs_l2 || '').split('\n').slice(0, 2)).filter(Boolean)
+          : [];
+        if (lines.length === 0) throw new Error('No subtitle examples found');
+        const prompt = `${t('subsAiExamples', [String(results.length), language, word])}\n\n${lines.join('\n')}`;
+        const res = await apiFetch(`${API_BASE}/chatgpt`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setExplainText(data.response || data.text || data.result || JSON.stringify(data));
+        setUsedFollowUps((current) => current.includes(kind) ? current : [...current, kind]);
+      } catch (err: any) {
+        setExplainError(err?.message || 'Examples failed');
+      } finally {
+        setFollowUpLoading(null);
+      }
+      return;
+    }
     if (kind === 'inflection') {
       prompt = context && contextForm
         ? t('followupInflectionContextForm', [language, word, contextForm, context])
@@ -432,6 +462,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     }
   }, [isPro, followUpLoading, token, l2Name, l2Code, contextText]);
 
+  const l2Base = baseCode(l2Code);
   const searchUrl = `${WEB_APP}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/dictionary?q=${encodeURIComponent(token.text)}`;
 
   return (

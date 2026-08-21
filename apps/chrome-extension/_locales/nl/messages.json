@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Voorbeelden uit video's"
+  },
+  "subsAiExamples": {
+    "message": "Je bent een taalleerassistent. Hieronder staan ondertitelregels uit $n$ video's, elk in het $l2Name$, die de term \"$term$\" bevatten. Regels die met een * beginnen zijn de overeenkomende regels.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

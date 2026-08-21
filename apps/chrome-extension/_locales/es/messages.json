@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Ejemplos de videos"
+  },
+  "subsAiExamples": {
+    "message": "Eres un asistente de aprendizaje de idiomas. A continuación hay líneas de subtítulos de $n$ videos, cada una en $l2Name$, que contienen el término \"$term$\". Las líneas que empiezan con * son las líneas coincidentes.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

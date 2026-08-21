@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "ビデオからの例"
+  },
+  "subsAiExamples": {
+    "message": "あなたは語学学習アシスタントです。以下は\"$term$\"を含む$n$本の動画の字幕行（すべて$l2Name$）です。先頭に*が付いた行が一致行です。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

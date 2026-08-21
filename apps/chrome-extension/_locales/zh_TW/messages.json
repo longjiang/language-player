@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "影片中的例子"
+  },
+  "subsAiExamples": {
+    "message": "你是一名語言學習助手。以下是來自$n$個影片的字幕行，均為$l2Name$，包含術語\"$term$\"。以*開頭的行是匹配行。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Exemplos de Vídeos"
+  },
+  "subsAiExamples": {
+    "message": "Você é um assistente de aprendizado de idiomas. Abaixo estão linhas de legendas de $n$ vídeos, cada uma em $l2Name$, que contêm o termo \"$term$\". As linhas que começam com * são as linhas correspondentes.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }
