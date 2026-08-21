@@ -406,7 +406,7 @@ export default function WatchScreen() {
           {playerElement}
           <View
             {...bandPanResponder.panHandlers}
-            className="absolute bottom-0 z-10 min-h-24 max-w-full self-center rounded-xl bg-black/70"
+            className={`absolute z-10 min-h-24 max-w-full self-center rounded-xl bg-black/70 ${bandTop === null ? 'bottom-0' : ''}`}
             style={[
               { maxWidth: Math.max(0, screenWidth - 64) },
               bandTop === null ? { bottom: 0 } : { top: bandTop },
@@ -472,7 +472,7 @@ export default function WatchScreen() {
         </View>
         {/* Web parity: controls + active line in one band below the player */}
         <View className="bg-card border-t border-border">
-          <View className="flex-row justify-end border-b border-border px-2 py-1">
+          <View className="flex-row justify-end px-2 py-1">
             <VideoControlBar
               reduced
               playerRef={playerRef}
