@@ -99,6 +99,7 @@ export function VideoControlBar({
   }, [onRewind, currentTime, playerRef]);
 
   const progress = duration > 0 ? currentTime / duration : 0;
+  const reducedIconColor = subtitlesBand ? ICON_ON_PRIMARY : ICON_MUTED;
 
   // ── Reduced mode: compact inline bar with only LP-specific controls ──
   if (reduced) {
@@ -109,14 +110,14 @@ export function VideoControlBar({
           disabled={!hasPreviousVideo || !onPreviousVideo}
           className={`rounded p-1.5 ${!hasPreviousVideo || !onPreviousVideo ? 'opacity-30' : 'active:bg-muted'}`}
         >
-          <SkipBack size={16} color={ICON_MUTED} />
+          <SkipBack size={16} color={reducedIconColor} />
         </Pressable>
         <Pressable
           onPress={onPreviousLine}
           disabled={!hasPreviousLine}
           className={`rounded p-1.5 ${!hasPreviousLine ? 'opacity-30' : 'active:bg-muted'}`}
         >
-          <ChevronLeft size={18} color={ICON_MUTED} />
+          <ChevronLeft size={18} color={reducedIconColor} />
         </Pressable>
         {!subtitlesBand && videoCountText ? (
           <Text className="px-1 text-xs tabular-nums text-muted-foreground">{videoCountText}</Text>
@@ -127,7 +128,7 @@ export function VideoControlBar({
             disabled={likeDisabled}
             className={`rounded p-1.5 ${likeDisabled ? 'opacity-30' : 'active:bg-muted'}`}
           >
-            <Heart size={16} color={liked ? ICON_DESTRUCTIVE : ICON_MUTED} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
+            <Heart size={16} color={liked ? ICON_DESTRUCTIVE : reducedIconColor} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
           </Pressable>
         )}
         {subtitlesBand && onSaveToPlaylist && (
@@ -136,15 +137,15 @@ export function VideoControlBar({
             disabled={playlistDisabled}
             className={`rounded p-1.5 ${playlistDisabled ? 'opacity-30' : 'active:bg-muted'}`}
           >
-            <Bookmark size={16} color={ICON_MUTED} />
+            <Bookmark size={16} color={reducedIconColor} />
           </Pressable>
         )}
         {subtitlesBand && onTogglePanel && (
           <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
             {panelOpen ? (
-              <PanelRightClose size={16} color={ICON_MUTED} />
+              <PanelRightClose size={16} color={reducedIconColor} />
             ) : (
-              <PanelRightOpen size={16} color={ICON_MUTED} />
+              <PanelRightOpen size={16} color={reducedIconColor} />
             )}
           </Pressable>
         )}
@@ -153,14 +154,14 @@ export function VideoControlBar({
           disabled={!hasNextLine}
           className={`rounded p-1.5 ${!hasNextLine ? 'opacity-30' : 'active:bg-muted'}`}
         >
-          <ChevronRight size={18} color={ICON_MUTED} />
+          <ChevronRight size={18} color={reducedIconColor} />
         </Pressable>
         <Pressable
           onPress={onNextVideo}
           disabled={!hasNextVideo || !onNextVideo}
           className={`rounded p-1.5 ${!hasNextVideo || !onNextVideo ? 'opacity-30' : 'active:bg-muted'}`}
         >
-          <SkipForward size={16} color={ICON_MUTED} />
+          <SkipForward size={16} color={reducedIconColor} />
         </Pressable>
         {!subtitlesBand && onToggleLike && (
           <Pressable
