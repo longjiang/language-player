@@ -30,7 +30,6 @@ const subtitleExtensions = [
     '.xml'
 ];
 
-const BADGE_COLOR = "#22c55e"; // green
 const BADGE_CHECK = "\u2713";  // ✓
 
 // Keep track of detected subtitle URLs in memory
@@ -94,28 +93,41 @@ const tabIdMap = {};
 // panel is open (gates ArrowUp/Down cue seeking).
 let sidePanelPort = null;
 let sidePanelConnected = false;
+let sidePanelTabId = null;
+let sidePanelWindowId = null;
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'lpv-sidepanel') return;
   sidePanelPort = port;
   sidePanelConnected = true;
   console.log('[LP Extension] Side panel connected');
-  notifyActiveTabPanelOpenState(true);
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const activeTab = tabs?.[0];
+    if (!activeTab?.id) return;
+    if (sidePanelTabId != null && activeTab.id !== sidePanelTabId) {
+      const windowId = sidePanelWindowId ?? activeTab.windowId;
+      chrome.sidePanel.close({ windowId }).catch(() => {});
+      return;
+    }
+    sidePanelTabId = activeTab.id;
+    sidePanelWindowId = activeTab.windowId;
+    notifyTabPanelOpenState(activeTab.id, true);
+  });
   port.onDisconnect.addListener(() => {
+    const previousTabId = sidePanelTabId;
     sidePanelPort = null;
     sidePanelConnected = false;
+    sidePanelTabId = null;
+    sidePanelWindowId = null;
     console.log('[LP Extension] Side panel disconnected');
-    notifyActiveTabPanelOpenState(false);
+    notifyTabPanelOpenState(previousTabId, false);
   });
 });
 
-function notifyActiveTabPanelOpenState(open) {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const tab = tabs?.[0];
-    if (!tab?.id) return;
-    chrome.tabs.sendMessage(tab.id, { action: 'panelOpenState', open }).catch(() => {
-      // Content script may not be ready yet; that's ok.
-    });
+function notifyTabPanelOpenState(tabId, open) {
+  if (tabId == null) return;
+  chrome.tabs.sendMessage(tabId, { action: 'panelOpenState', open }).catch(() => {
+    // Content script may not be ready yet; that's ok.
   });
 }
 
@@ -126,8 +138,11 @@ async function toggleSidePanel(tab) {
       // The manifest uses one global side panel. Closing by windowId works
       // across Chrome versions where close({ tabId }) rejects for a global
       // panel.
-      await chrome.sidePanel.close({ windowId: tab.windowId });
+      notifyTabPanelOpenState(sidePanelTabId, false);
+      await chrome.sidePanel.close({ windowId: sidePanelWindowId ?? tab.windowId });
     } else {
+      sidePanelTabId = tab.id;
+      sidePanelWindowId = tab.windowId;
       await chrome.sidePanel.open({ tabId: tab.id });
     }
   } catch {}
@@ -140,11 +155,17 @@ chrome.action.onClicked.addListener((tab) => {
   toggleSidePanel(tab);
 });
 
-// When the user switches tabs while the side panel is open, tell the newly
-// active tab's content script the panel is open.
-chrome.tabs.onActivated.addListener(({ tabId }) => {
+// The native side panel is global to a window. Close it when the user changes
+// tabs so opening the panel on one reading page never affects other tabs.
+chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   if (!sidePanelConnected) return;
-  chrome.tabs.sendMessage(tabId, { action: 'panelOpenState', open: true }).catch(() => {});
+  if (tabId === sidePanelTabId) return;
+  const previousTabId = sidePanelTabId;
+  const panelWindowId = sidePanelWindowId ?? windowId;
+  sidePanelTabId = null;
+  sidePanelWindowId = null;
+  notifyTabPanelOpenState(previousTabId, false);
+  chrome.sidePanel.close({ windowId: panelWindowId }).catch(() => {});
 });
 
 // Alt+T / Ctrl+Shift+Y — registered in manifest "commands".
@@ -476,16 +497,12 @@ function getExtensionFromUrl(url) {
 function updateBadge() {
   const found = detectedSubtitles.length > 0;
   chrome.action.setBadgeText({ text: found ? BADGE_CHECK : '' });
-  chrome.action.setBadgeTextColor({ color: '#ffffff' });
-  chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
 }
 
 /** Per-tab badge (for YouTube where subs aren't detected via webRequest) */
 function updateBadgeForTab(tabId, found) {
   if (!tabId) return;
   chrome.action.setBadgeText({ text: found ? BADGE_CHECK : '', tabId });
-  chrome.action.setBadgeTextColor({ color: '#ffffff', tabId });
-  chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR, tabId });
 }
 
 function clearDetectedSubtitlesByTab(tabId) {
