@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSrsQuestionResponse } from './srs-test-mode';
+import { normalizeTestChoice, parseSrsQuestionResponse } from './srs-test-mode';
 
 describe('parseSrsQuestionResponse', () => {
   const json = JSON.stringify({
@@ -23,5 +23,9 @@ describe('parseSrsQuestionResponse', () => {
 
   it('rejects non-object JSON', () => {
     expect(() => parseSrsQuestionResponse('[1, 2, 3]')).toThrow();
+  });
+
+  it('normalizes internal whitespace when deduplicating choices', () => {
+    expect(normalizeTestChoice('  very   good  ')).toBe('very good');
   });
 });

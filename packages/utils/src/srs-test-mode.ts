@@ -67,7 +67,7 @@ export function needsPronunciationTest(l2Code: string, word?: string): boolean {
 
 /** Normalize an answer for duplicate-choice detection without changing display text. */
 export function normalizeTestChoice(choice: string): string {
-  return choice.trim().replace(/\\s+/g, ' ').toLocaleLowerCase();
+  return choice.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 }
 
 /**

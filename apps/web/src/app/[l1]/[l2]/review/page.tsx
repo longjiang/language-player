@@ -507,7 +507,7 @@ export default function ReviewPage() {
     const context = card.word.context?.text ?? '';
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
-    log('[SRS Test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(context) });
+    log('[SRS Test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(context), retry: Boolean(options?.retry), requestVersion });
     setTestError(null);
     setTestLoading(true);
     try {
@@ -534,16 +534,20 @@ export default function ReviewPage() {
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
         if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer) ) throw new Error('Japanese pronunciation must be hiragana');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
-        const rawChoices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string');
+        const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
+        const rawChoices = [parsed.correct_answer, ...confounders].filter((x): x is string => typeof x === 'string');
         const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
+        log('[SRS Test] choices parsed', { l2Code, word: wordForm, kind, rawChoiceCount: rawChoices.length, uniqueChoiceCount: choices.length, confoundersIsArray: Array.isArray(parsed.confounders) });
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
       if (requestVersion !== testRequestVersionRef.current) return;
       setTestQuestions(questions);
+      setTestError(null);
       setTestAnswers([]);
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
+      log('[SRS Test] question generation succeeded', { l2Code, word: wordForm, requestVersion, questionCount: questions.length });
     } catch (error) {
       if (requestVersion !== testRequestVersionRef.current) {
         log('[SRS Test] stale question generation error ignored', {
@@ -569,7 +573,18 @@ export default function ReviewPage() {
       });
       if (isCurrentRequest) setTestLoading(false);
     }
-  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code, t]);
+
+  const handleRetryTestQuestions = useCallback(() => {
+    log('[SRS Test] retry requested', { l2Code, word: wordForm });
+    testAutoLoadKeyRef.current = null;
+    setTestError(null);
+    setTestQuestions([]);
+    setTestAnswers([]);
+    setTestQuestionIndex(0);
+    setTestStartedAt(null);
+    void loadTestQuestions({ retry: true });
+  }, [l2Code, wordForm, loadTestQuestions]);
 
   useEffect(() => {
     const cardId = cards[currentIndex]?.word.id;
@@ -1294,7 +1309,7 @@ export default function ReviewPage() {
         {testError && (
           <div className="mt-4 w-full rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
             <p>{testError}</p>
-            <button type="button" onClick={() => { setTestError(null); void loadTestQuestions({ retry: true }); }} className="mt-2 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium hover:bg-destructive/10">
+            <button type="button" onClick={handleRetryTestQuestions} className="mt-2 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium hover:bg-destructive/10">
               {t('action.try_again')}
             </button>
           </div>
