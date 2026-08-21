@@ -569,7 +569,7 @@ export default function ReviewScreen() {
         const rawChoices = [parsed.correct_answer, ...confounders].filter((x): x is string => typeof x === 'string');
         const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
         log('[srs-test] choices parsed', { l2Code, word: wordForm, kind, rawChoiceCount: rawChoices.length, uniqueChoiceCount: choices.length, confoundersIsArray: Array.isArray(parsed.confounders) });
-        if (choices.length < 2) throw new Error('Invalid question choices');
+        if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
       if (requestVersion !== testRequestVersionRef.current) return;
