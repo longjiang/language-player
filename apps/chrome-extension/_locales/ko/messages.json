@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Language Player에서 열기"
   },
+  "pageUnavailable": {
+    "message": "이 페이지는 번역할 수 없습니다."
+  },
   "readInLanguagePlayer": {
     "message": "Language Player에서 읽기"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "자막을 찾을 수 없습니다"
+  },
+  "noReadableContent": {
+    "message": "읽을 수 있는 콘텐츠를 찾을 수 없습니다"
   },
   "speak": {
     "message": "말하기"

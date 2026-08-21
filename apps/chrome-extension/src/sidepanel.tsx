@@ -14,6 +14,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SavedWordsProvider } from './components/SavedWordsProvider';
 import { TranscriptAppInner, PagePanel, type PageLookupDetail } from './transcript-app';
+import { PageTranslationPanel } from './components/PageTranslationPanel';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
@@ -330,28 +331,27 @@ function SidePanelApp() {
       </div>
     );
 
-  const pageTranslationContent = mode === 'page' && pageState && pageState.pageTranslationStatus !== 'error' ? (
-      <SavedWordsProvider l2Code={pageState.l2Code}>
-        <PagePanel
-          l1Code={pageState.l1Code}
-          l2Code={pageState.l2Code}
-          pageUrl={pageState.pageUrl}
-          lookup={lookup}
-          onFollowLink={handleFollowLink}
-        />
-      </SavedWordsProvider>
-    ) : pageState?.pageTranslationStatus === 'error' ? (
-      <div className="lpv-ui-empty-state" role="alert">
-        <p>{pageState.pageTranslationError || t('failedToLoadSubtitles')}</p>
-        <Button variant="outline" size="sm" onClick={() => sendToTab('pageTranslationStart')}>
-          {t('retry')}
-        </Button>
-      </div>
-    ) : (
-      <div className="lpv-ui-empty-state">
-        <p>{t('startPlaying')}</p>
-      </div>
-    );
+  const pageTranslationContent = (
+    <>
+      <PageTranslationPanel
+        tabId={tabId}
+        l1Code={pageState?.l1Code || l1Code}
+        l2Code={pageState?.l2Code || l2Code}
+        pageUrl={pageState?.pageUrl}
+      />
+      {mode === 'page' && pageState && lookup && (
+        <SavedWordsProvider l2Code={pageState.l2Code}>
+          <PagePanel
+            l1Code={pageState.l1Code}
+            l2Code={pageState.l2Code}
+            pageUrl={pageState.pageUrl}
+            lookup={lookup}
+            onFollowLink={handleFollowLink}
+          />
+        </SavedWordsProvider>
+      )}
+    </>
+  );
 
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
 

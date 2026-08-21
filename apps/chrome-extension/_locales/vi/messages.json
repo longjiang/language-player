@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Mở trong Language Player"
   },
+  "pageUnavailable": {
+    "message": "Không thể dịch trang này."
+  },
   "readInLanguagePlayer": {
     "message": "Đọc trong Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "Không tìm thấy phụ đề"
+  },
+  "noReadableContent": {
+    "message": "Không tìm thấy nội dung có thể đọc"
   },
   "speak": {
     "message": "Nói"

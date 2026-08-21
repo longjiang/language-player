@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "فتح في Language Player"
   },
+  "pageUnavailable": {
+    "message": "هذه الصفحة غير متاحة للترجمة."
+  },
   "readInLanguagePlayer": {
     "message": "اقرأ في Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "لم يتم العثور على ترجمات"
+  },
+  "noReadableContent": {
+    "message": "لم يتم العثور على محتوى قابل للقراءة"
   },
   "speak": {
     "message": "تحدث"

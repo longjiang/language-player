@@ -90,6 +90,9 @@
   "openInLanguagePlayer": {
     "message": "Abrir no Language Player"
   },
+  "pageUnavailable": {
+    "message": "Esta página não está disponível para tradução."
+  },
   "readInLanguagePlayer": {
     "message": "Ler no Language Player"
   },
@@ -170,6 +173,9 @@
   },
   "noSubtitlesFound": {
     "message": "Nenhuma legenda encontrada"
+  },
+  "noReadableContent": {
+    "message": "Nenhum conteúdo legível encontrado"
   },
   "speak": {
     "message": "Falar"
