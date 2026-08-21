@@ -438,9 +438,11 @@ src/sidepanel.tsx (SidePanelApp — chrome.sidePanel page)
 
 The page-mode dictionary is separate from the native side panel. The page
 content script emits `lpv-page-dictionary-open` after a token click, and
-`dist/page-dictionary.js` renders the same compact dictionary modal over the
-webpage viewport. This keeps the original page visible behind a centered,
-web-parity dialog while the side panel remains the translation surface.
+`dist/page-dictionary.js` creates an extension-origin iframe whose
+`src/page-dictionary-frame.html` renders the same compact dictionary modal.
+The iframe keeps webpage CSS out of the modal while leaving the original page
+visible behind a centered, web-parity dialog. Follow Link actions are sent
+back through the bridge and navigate the parent page, not the iframe.
 ```
 
 Key behaviors:

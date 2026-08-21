@@ -66,6 +66,10 @@ const resourceRule = resources[0];
 if (JSON.stringify(sorted(resourceRule.resources)) !== JSON.stringify(sorted([
   'src/language-player-logo-64.png',
   'dist/netflix-main-world.js',
+  'src/page-dictionary-frame.html',
+  'dist/content.css',
+  'dist/page-dictionary.css',
+  'dist/page-dictionary-frame.js',
   '_locales/*.json',
 ]))) {
   throw new Error('web_accessible_resources.resources changed');

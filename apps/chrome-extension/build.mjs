@@ -274,6 +274,39 @@ if (pageDictionaryResult.warnings.length > 0) {
   console.warn('[build] Webpage dictionary warnings:', pageDictionaryResult.warnings);
 }
 
+// Step 2g: Bundle the extension-origin iframe document used by the webpage
+// dictionary. Its DOM is outside the inspected page's CSS tree.
+console.log('[build] Bundling webpage dictionary iframe...');
+
+const pageDictionaryFrameResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/page-dictionary-frame.tsx')],
+  bundle: true,
+  outfile: resolve(outDir, 'page-dictionary-frame.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  jsx: 'automatic',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (pageDictionaryFrameResult.errors.length > 0) {
+  console.error('[build] Webpage dictionary iframe errors:', pageDictionaryFrameResult.errors);
+  process.exit(1);
+}
+if (pageDictionaryFrameResult.warnings.length > 0) {
+  console.warn('[build] Webpage dictionary iframe warnings:', pageDictionaryFrameResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),
@@ -287,6 +320,18 @@ copyFileSync(
   resolve(outDir, 'sidepanel.css'),
 );
 console.log('[build] Copied sidepanel.css');
+
+copyFileSync(
+  resolve(__dirname, 'src/page-dictionary.css'),
+  resolve(outDir, 'page-dictionary.css'),
+);
+console.log('[build] Copied page-dictionary.css');
+
+copyFileSync(
+  resolve(__dirname, 'src/page-dictionary-frame.html'),
+  resolve(outDir, 'page-dictionary-frame.html'),
+);
+console.log('[build] Copied page-dictionary-frame.html');
 
 // Copy Netflix MAIN world script (injected via <script src> at document_start)
 copyFileSync(
