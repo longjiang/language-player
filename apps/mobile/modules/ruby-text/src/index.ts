@@ -88,6 +88,8 @@ export interface NativeRubyTextParagraphProps {
   readingSize: number;
   /** Right-to-left script layout (Arabic, Hebrew, ...). */
   isRtl: boolean;
+  /** Horizontal paragraph alignment. */
+  textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
   /** Dispatched with { tokenId } when a tappable run is tapped. */
   onTokenTap?: (event: { nativeEvent: { tokenId: number } }) => void;

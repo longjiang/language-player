@@ -128,6 +128,10 @@ public final class RubyTextModule: Module {
         view.isRtl = rtl
       }
 
+      Prop("textAlign") { (view: RubyTextParagraphView, alignment: String) in
+        view.textAlign = alignment
+      }
+
       Prop("fontFamily") { (view: RubyTextParagraphView, family: String?) in
         view.fontFamily = family
       }

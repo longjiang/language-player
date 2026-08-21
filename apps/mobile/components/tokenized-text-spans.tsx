@@ -71,7 +71,7 @@ interface RubyTokenSpanProps {
   rubyPull: number;
   readingSize: number;
   baseLeading: number | undefined;
-  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number };
+  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number; textAlign?: 'left' | 'center' | 'right' };
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;
@@ -340,6 +340,7 @@ interface RubyTextParagraphBlockProps {
   readingSize: number;
   fontFamily: string | null;
   isRtl: boolean;
+  textAlign?: 'left' | 'center' | 'right';
   fontWeight?: 'normal' | 'bold';
   quizMode: boolean;
   popupEnabled: boolean;
@@ -366,6 +367,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
     readingSize,
     fontFamily,
     isRtl,
+    textAlign,
     fontWeight,
     quizMode,
     popupEnabled,
@@ -403,6 +405,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
       readingSize={readingSize}
       fontFamily={fontFamily}
       isRtl={isRtl}
+      textAlign={textAlign}
       fontWeight={fontWeight}
       onTokenTap={handleTokenTap}
       onSelectionChange={onSelectionChange}
@@ -440,7 +443,7 @@ interface PlainTokenSpanProps {
   quizMode: boolean;
   popupEnabled: boolean;
   textColor: string;
-  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number };
+  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number; textAlign?: 'left' | 'center' | 'right' };
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;

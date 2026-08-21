@@ -232,22 +232,25 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
               l1Code={baseCode(l1Lang.code)}
             >
               <View className="w-full items-center">
-                <TokenizedText
-                  text={shownLine.l2Line}
-                  l2Code={l2Lang.code}
-                  tokenCache={tokenCache}
-                  tokenCacheLoaded={tokenCacheLoaded}
-                  karaokeProgress={karaokeProgress}
-                  highlightTerms={highlightTerms}
-                  textScale={singlelineTextScale}
-                  textColor={overlay ? 'text-white' : undefined}
-                  // SPEC-084: selection on the transcript single-line mode,
-                  // not the on-video band.
-                  selectionDictionary={!overlay}
-                />
+                <View className="w-full items-center">
+                  <TokenizedText
+                    text={shownLine.l2Line}
+                    l2Code={l2Lang.code}
+                    tokenCache={tokenCache}
+                    tokenCacheLoaded={tokenCacheLoaded}
+                    karaokeProgress={karaokeProgress}
+                    highlightTerms={highlightTerms}
+                    textScale={singlelineTextScale}
+                    textAlign="center"
+                    textColor={overlay ? 'text-white' : undefined}
+                    // SPEC-084: selection on the transcript single-line mode,
+                    // not the on-video band.
+                    selectionDictionary={!overlay}
+                  />
+                </View>
                 {showTranslation && shownLine.l1Line ? (
                   <Text
-                    className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
+                    className={`w-full text-sm text-center mt-2 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
                     style={{ fontSize: translationFactor * 16 * singlelineTextScale * zoomRem }}
                   >
                     {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
@@ -308,22 +311,26 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 l2Code={l2Lang.code}
                 l1Code={baseCode(l1Lang.code)}
               >
-                <TokenizedText
-                  text={item.l2Line}
-                  l2Code={l2Lang.code}
-                  tokenCache={tokenCache}
-                  tokenCacheLoaded={tokenCacheLoaded}
-                  karaokeProgress={karaokeProgress}
-                  highlightTerms={highlightTerms}
-                  textScale={1}
-                  // SPEC-084: selection on the transcript list.
-                  selectionDictionary
-                />
-                {item.l1Line ? (
-                  <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: translationFactor * 16 * zoomRem }}>
-                    {renderInlineMarkdown(item.l1Line, { markBold: true })}
-                  </Text>
-                ) : null}
+                <View className="w-full flex-col">
+                  <View className="w-full">
+                    <TokenizedText
+                      text={item.l2Line}
+                      l2Code={l2Lang.code}
+                      tokenCache={tokenCache}
+                      tokenCacheLoaded={tokenCacheLoaded}
+                      karaokeProgress={karaokeProgress}
+                      highlightTerms={highlightTerms}
+                      textScale={1}
+                      // SPEC-084: selection on the transcript list.
+                      selectionDictionary
+                    />
+                  </View>
+                  {item.l1Line ? (
+                    <Text className="w-full mt-2 text-left text-sm text-muted-foreground" style={{ fontSize: translationFactor * 16 * zoomRem }}>
+                      {renderInlineMarkdown(item.l1Line, { markBold: true })}
+                    </Text>
+                  ) : null}
+                </View>
               </TextActionMenu>
             </Pressable>
           );
