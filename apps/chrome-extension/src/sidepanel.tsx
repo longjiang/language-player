@@ -339,6 +339,7 @@ function SidePanelApp() {
         l1Code={pageState?.l1Code || l1Code}
         l2Code={pageState?.l2Code || l2Code}
         pageUrl={pageState?.pageUrl}
+        lookup={lookup}
       />
   ) : null;
 
