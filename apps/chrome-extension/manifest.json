@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "1.0.110.32",
+  "version": "1.0.110.33",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "permissions": [
@@ -74,7 +74,8 @@
         "https://*/*"
       ],
       "js": [
-        "dist/page-content.js"
+        "dist/page-content.js",
+        "dist/page-dictionary.js"
       ],
       "css": [
         "dist/content.css"
