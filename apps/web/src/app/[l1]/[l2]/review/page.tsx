@@ -129,9 +129,11 @@ export default function ReviewPage() {
   const [testError, setTestError] = useState<string | null>(null);
   const testAutoLoadKeyRef = useRef<string | null>(null);
   const testRequestVersionRef = useRef(0);
+  const testActiveRequestRef = useRef<number | null>(null);
 
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     testRequestVersionRef.current += 1;
+    testActiveRequestRef.current = null;
     setTestLoading(false);
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
@@ -392,6 +394,7 @@ export default function ReviewPage() {
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     testRequestVersionRef.current += 1;
+    testActiveRequestRef.current = null;
     setTestLoading(false);
     setShowDefinition(false); // hide answer immediately for next card
     setTestQuestions([]);
@@ -504,6 +507,7 @@ export default function ReviewPage() {
     const card = cards[currentIndex];
     if (!card) return;
     const requestVersion = ++testRequestVersionRef.current;
+    testActiveRequestRef.current = requestVersion;
     const context = card.word.context?.text ?? '';
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
@@ -571,6 +575,7 @@ export default function ReviewPage() {
         currentRequestVersion: testRequestVersionRef.current,
         isCurrentRequest,
       });
+      if (testActiveRequestRef.current === requestVersion) testActiveRequestRef.current = null;
       if (isCurrentRequest) setTestLoading(false);
     }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code, t]);
@@ -587,7 +592,7 @@ export default function ReviewPage() {
 
   useEffect(() => {
     const cardId = cards[currentIndex]?.word.id;
-    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated) return;
+    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated || testActiveRequestRef.current !== null) return;
     const requestKey = `${l2Code}:${cardId}`;
     if (testAutoLoadKeyRef.current === requestKey) return;
     testAutoLoadKeyRef.current = requestKey;
@@ -648,6 +653,7 @@ export default function ReviewPage() {
     const card = cards[currentIndex];
     if (!card) return;
     testRequestVersionRef.current += 1;
+    testActiveRequestRef.current = null;
     setTestLoading(false);
     removeSavedWord(l2Code, card.word.id);
     removeCard(l2Code, card.word.id);
@@ -689,6 +695,7 @@ export default function ReviewPage() {
       lastCardIdRef.current = currentId;
       if (!rated) {
         testRequestVersionRef.current += 1;
+        testActiveRequestRef.current = null;
         setTestLoading(false);
         setShowDefinition(false);
         setTestQuestions([]);
