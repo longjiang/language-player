@@ -515,7 +515,7 @@ export default function ReviewPage() {
     setTestError(null);
     setTestLoading(true);
     try {
-      const questions = await Promise.all(kinds.map(async (kind) => {
+      const questionResults = await Promise.allSettled(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: context, l1Code: baseCode(l1.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
         const requestPrompt = options?.retry
           ? `${prompt}\n\nGenerate a fresh variation for retry ${requestVersion}; do not reuse any previous response.`
@@ -556,6 +556,12 @@ export default function ReviewPage() {
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
+      const failedQuestion = questionResults.find((result) => result.status === 'rejected');
+      if (failedQuestion) throw failedQuestion.reason;
+      const questions = questionResults.map((result) => {
+        if (result.status !== 'fulfilled') throw result.reason;
+        return result.value;
+      });
       if (requestVersion !== testRequestVersionRef.current) return;
       setTestQuestions(questions);
       setTestError(null);
