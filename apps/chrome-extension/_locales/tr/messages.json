@@ -171,6 +171,15 @@
   "translate": {
     "message": "Çeviri"
   },
+  "pageTranslation": {
+    "message": "Sayfa çevirisi"
+  },
+  "profile": {
+    "message": "Profil"
+  },
+  "subtitles": {
+    "message": "Altyazılar"
+  },
   "translating": {
     "message": "Çevriliyor…"
   },

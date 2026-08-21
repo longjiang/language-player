@@ -171,6 +171,15 @@
   "translate": {
     "message": "翻訳"
   },
+  "pageTranslation": {
+    "message": "ページ翻訳"
+  },
+  "profile": {
+    "message": "プロフィール"
+  },
+  "subtitles": {
+    "message": "字幕"
+  },
   "translating": {
     "message": "翻訳中…"
   },

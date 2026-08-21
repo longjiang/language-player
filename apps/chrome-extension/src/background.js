@@ -119,6 +119,27 @@ function notifyActiveTabPanelOpenState(open) {
   });
 }
 
+async function toggleSidePanel(tab) {
+  if (!tab?.id) return;
+  try {
+    if (sidePanelConnected && chrome.sidePanel?.close) {
+      // The manifest uses one global side panel. Closing by windowId works
+      // across Chrome versions where close({ tabId }) rejects for a global
+      // panel.
+      await chrome.sidePanel.close({ windowId: tab.windowId });
+    } else {
+      await chrome.sidePanel.open({ tabId: tab.id });
+    }
+  } catch {}
+}
+
+// The extension icon is the primary panel toggle. Keeping this as an action
+// click (and removing action.default_popup from the manifest) preserves the
+// native Chrome side-panel user gesture without adding a permission.
+chrome.action.onClicked.addListener((tab) => {
+  toggleSidePanel(tab);
+});
+
 // When the user switches tabs while the side panel is open, tell the newly
 // active tab's content script the panel is open.
 chrome.tabs.onActivated.addListener(({ tabId }) => {
@@ -130,19 +151,7 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 chrome.commands.onCommand.addListener(async (command) => {
   if (command !== 'toggle-panel' && command !== 'toggle-panel-alt') return;
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) return;
-  try {
-    if (sidePanelConnected && chrome.sidePanel?.close) {
-      // Close by windowId: this is a GLOBAL side panel (manifest default_path,
-      // no per-tab setOptions), and close({ tabId }) rejects on Chrome 145+
-      // when only the global panel is open.
-      await chrome.sidePanel.close({ windowId: tab.windowId });
-    } else {
-      await chrome.sidePanel.open({ tabId: tab.id });
-    }
-  } catch (err) {
-    console.log('[LP Extension] toggle-panel failed:', err?.message);
-  }
+  await toggleSidePanel(tab);
 });
 
 // Listen for messages from popup and content script

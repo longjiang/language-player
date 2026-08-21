@@ -1,34 +1,293 @@
-/* Side panel (chrome.sidePanel) host overrides.
- *
- * The extension's React panels (video transcript + page reader) previously
- * rendered inside the page as #lpv-transcript-panel with position:fixed.
- * Now they render inside the native side panel page, where the same element
- * must fill the panel area instead of floating over the page.
- */
+/* Side-panel shell tokens mirror apps/web's Shadcn semantic theme. */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 274 60% 38%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 17% 94%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 17% 94%;
+  --muted-foreground: 215 14% 46%;
+  --accent: 24 100% 62%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 20% 85%;
+  --input: 214 20% 85%;
+  --ring: 274 60% 38%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 230 30% 8%;
+  --foreground: 0 0% 95%;
+  --card: 230 25% 12%;
+  --card-foreground: 0 0% 95%;
+  --popover: 230 25% 12%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 274 60% 46%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 230 20% 18%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 230 20% 18%;
+  --muted-foreground: 215 14% 56%;
+  --accent: 24 100% 58%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 230 20% 22%;
+  --input: 230 20% 22%;
+  --ring: 274 60% 46%;
+}
 
 html,
 body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: rgb(14, 16, 27);
-  color: #ddd;
-  font-family: 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow: hidden;
 }
 
-#lpv-side-panel-root {
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+#lpv-side-panel-root,
+.lpv-app-shell {
   height: 100%;
 }
 
-/* Neutralize the in-page floating-panel styles inside the side panel host. */
+.lpv-app-shell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.lpv-app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  flex-shrink: 0;
+}
+
+.lpv-app-brand,
+.lpv-app-topbar-actions {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.lpv-app-brand {
+  gap: 0.5rem;
+}
+
+.lpv-app-logo {
+  display: block;
+  flex: 0 0 auto;
+  border-radius: 0.375rem;
+}
+
+.lpv-app-wordmark {
+  display: none;
+  overflow: hidden;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpv-app-topbar-actions {
+  gap: 0.125rem;
+}
+
+.lpv-language-trigger {
+  max-width: 10rem;
+  color: hsl(var(--foreground));
+}
+
+.lpv-language-trigger span {
+  margin-left: 0.25rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.lpv-profile-trigger {
+  color: hsl(var(--foreground));
+}
+
+.lpv-app-main,
+.lpv-ui-tabs {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.lpv-app-tabs {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  flex-shrink: 0;
+}
+
+.lpv-ui-tabs-trigger {
+  position: relative;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.625rem 0.75rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.lpv-ui-tabs-trigger:hover,
+.lpv-ui-tabs-trigger.is-active {
+  color: hsl(var(--foreground));
+}
+
+.lpv-ui-tabs-trigger.is-active {
+  border-bottom-color: hsl(var(--primary));
+}
+
+.lpv-ui-tabs-content,
+.lpv-app-tabpanel {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lpv-ui-empty-state {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 1.5rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.lpv-ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+  white-space: nowrap;
+}
+
+.lpv-ui-button:disabled,
+.lpv-ui-tabs-trigger:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.lpv-ui-button-default {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.lpv-ui-button-default:hover {
+  filter: brightness(0.94);
+}
+
+.lpv-ui-button-ghost {
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+
+.lpv-ui-button-ghost:hover {
+  background: hsl(var(--accent) / 0.12);
+}
+
+.lpv-ui-button-outline {
+  border-color: hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.lpv-ui-button-outline:hover,
+.lpv-ui-button-secondary:hover {
+  background: hsl(var(--secondary));
+}
+
+.lpv-ui-button-secondary {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.lpv-ui-button-destructive {
+  background: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+
+.lpv-ui-button-destructive:hover {
+  filter: brightness(0.94);
+}
+
+.lpv-ui-button-default,
+.lpv-ui-button-sm {
+  height: 2.25rem;
+  padding: 0 1rem;
+}
+
+.lpv-ui-button-sm {
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.lpv-ui-button-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+}
+
+/* Legacy content compatibility: transcript/page-reader styles remain scoped
+ * to their own classes, while the old floating host must not escape the panel. */
 .lpv-side-panel-body #lpv-transcript-panel {
   position: static;
   top: auto;
   right: auto;
   width: 100%;
   max-width: none;
-  height: 100vh;
+  height: 100%;
   z-index: auto;
   border-left: none;
   box-shadow: none;
@@ -40,7 +299,6 @@ body {
   transform: none;
 }
 
-/* Mismatch banner inside the side panel — full width, no absolute offsets. */
 .lpv-side-panel-body #lpv-mismatch-banner {
   position: static;
   top: auto;
@@ -48,4 +306,10 @@ body {
   left: auto;
   width: auto;
   margin: 0;
+}
+
+@media (min-width: 26rem) {
+  .lpv-app-wordmark {
+    display: block;
+  }
 }

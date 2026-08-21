@@ -171,6 +171,15 @@
   "translate": {
     "message": "ترجمة"
   },
+  "pageTranslation": {
+    "message": "ترجمة الصفحة"
+  },
+  "profile": {
+    "message": "الملف الشخصي"
+  },
+  "subtitles": {
+    "message": "ترجمات"
+  },
   "translating": {
     "message": "جار الترجمة..."
   },

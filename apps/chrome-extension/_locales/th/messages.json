@@ -171,6 +171,15 @@
   "translate": {
     "message": "การแปล"
   },
+  "pageTranslation": {
+    "message": "แปลหน้าเว็บ"
+  },
+  "profile": {
+    "message": "โปรไฟล์"
+  },
+  "subtitles": {
+    "message": "คำบรรยาย"
+  },
   "translating": {
     "message": "กำลังแปล…"
   },
