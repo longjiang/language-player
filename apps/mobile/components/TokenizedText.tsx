@@ -60,6 +60,8 @@ import {
 import { useEffectiveHighlightTerms, useHighlightKanaForms, useSavedPhraseCandidates } from '@/hooks/use-highlight-forms';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
+import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
+import { glyphFontFamily } from '@/lib/glyph-font';
 import { buildSelectionMap, selectionSourceOffset, selectionTermAt } from '@/lib/selection-map';
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
@@ -286,6 +288,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // ── Chinese script conversion (Phase 3: SPEC-019) ──
   const isChinese = baseCode(l2Code) === 'zh';
   const useTraditional = isChinese && l2Settings.display.traditional;
+  const glyphLang = glyphLangTag(l2Code, isHanLanguage(l2Code) && l2Settings.display.traditional);
 
   // Pre-convert all unique token texts to the preferred script (OpenCC is
   // lazy-loaded). Bidirectional per ADR-0019: traditional when
@@ -353,12 +356,16 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
     const family = typeFaceFontFamily(tokenSettings.typeFace);
     if (family) style.fontFamily = family;
+    else {
+      const glyphFamily = glyphFontFamily(glyphLang);
+      if (glyphFamily) style.fontFamily = glyphFamily;
+    }
     if (bold) {
       style.fontWeight = 'bold';
     }
 
     return style;
-  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, inlineFontSize, bold]);
+  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, inlineFontSize, bold, glyphLang]);
 
   // ── Leading ratio from prop (default: relaxed = 1.625) ──
   const effectiveLeading = leading ?? tokenSettings.leading ?? 1.625;
@@ -1118,6 +1125,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   if (offlineNoDict) {
     return (
       <Text
+        lang={glyphLang}
         className={textColor}
         style={[textStyle, fallbackStyle]}
         onPress={() => Alert.alert(t('title.offline_dictionaries'), t('msg.offline_dictionary_required'))}
@@ -1233,7 +1241,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                       <View style={{ height: readingSize, marginBottom: -rubyPull }} />
                     )}
                     {!isNewline && (
-                      <Text style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
+                      <Text lang={glyphLang} style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
                     )}
                     {/* Universal definition slot: when showDefinition is on, every token
                         gets a slot of the same height so all word texts share a baseline.
@@ -1499,7 +1507,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text.
              Line-height is controlled by the `leading` prop (default: relaxed). */
-          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor} onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines.map((l) => ({ y: l.y, height: l.height, ascender: l.ascender }))) : undefined}>
+          <Text lang={glyphLang} testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor} onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines.map((l) => ({ y: l.y, height: l.height, ascender: l.ascender }))) : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
               // SPEC-082 Task 5: first-line indent (U+3000 = 1 em).
@@ -1637,7 +1645,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     );
   }
 
-  return <Text testID={testID} className={textColor} style={[textStyle, fallbackStyle]}>{text}</Text>;
+  return <Text lang={glyphLang} testID={testID} className={textColor} style={[textStyle, fallbackStyle]}>{text}</Text>;
 }
 
 // Memoized export: the reader re-renders its whole page on every scroll-window

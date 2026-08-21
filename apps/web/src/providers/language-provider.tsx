@@ -52,6 +52,7 @@ export function LanguageProvider({
   React.useEffect(() => {
     document.documentElement.dir = l1.direction;
     document.documentElement.lang = l1.code;
+    document.documentElement.dataset.uiLang = l1.code;
   }, [l1]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

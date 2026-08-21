@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { isHanLanguage } from '@langplayer/shared';
 
 /** ISO 639-1 codes for languages that use Chinese characters and have a
  *  traditional/simplified script toggle. */
-const CHINESE_LANGS = new Set(['zh', 'yue', 'lzh']);
-
 function isChineseLang(l2Code: string): boolean {
-  return CHINESE_LANGS.has(l2Code) || l2Code.startsWith('zh-');
+  return isHanLanguage(l2Code);
 }
 
 /** Languages that display han_script.han as the alternate script form. */

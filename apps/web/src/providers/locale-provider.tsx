@@ -75,6 +75,7 @@ export function LocaleProvider({
         document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=${60 * 60 * 24 * 365}`;
         document.documentElement.lang = code;
         document.documentElement.dir = isRTL(code) ? 'rtl' : 'ltr';
+        document.documentElement.dataset.uiLang = code;
       } catch (err) {
         console.error('[LP Web] switchLocale failed', err);
       }

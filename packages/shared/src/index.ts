@@ -11,6 +11,7 @@ export * from './settings-search-keys';
 export * from './first-gloss';
 export * from './hooks/use-language-picker';
 export * from './language-data';
+export * from './glyph-language';
 export * from './transcript-scroll';
 export * from './sale';
 export * from './reading-suggestions';

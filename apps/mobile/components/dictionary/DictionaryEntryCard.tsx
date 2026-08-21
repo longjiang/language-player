@@ -8,6 +8,7 @@ import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplay
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { BookOpen, Bookmark, BookmarkCheck, ExternalLink, Video } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
@@ -149,6 +150,7 @@ export function DictionaryEntryCard({
     router,
   ]);
   const { apply, getAlternateScript } = useScriptPreference(l2Code);
+  const glyphLang = useGlyphLang(l2Code);
   const { head, alternate } = apply(entry.head, entry.alternate);
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
@@ -239,9 +241,9 @@ export function DictionaryEntryCard({
         {/* Head + alt + pronunciation + badges */}
         <View className="flex-row items-start">
           <View className="flex-1 flex-row items-center gap-2 flex-wrap">
-            <Text className="text-lg font-bold text-foreground">{displayHead}</Text>
+            <Text lang={glyphLang} className="text-lg font-bold text-foreground">{displayHead}</Text>
             {displayAlternate && displayAlternate !== head && (
-              <Text className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</Text>
+              <Text className="text-xs text-muted-foreground" lang={glyphLang}>{displayAlternate}</Text>
             )}
             <SpeakButton text={displayHead} l2Code={l2Code} size={14} />
             {formattedPron ? (
@@ -340,9 +342,9 @@ export function DictionaryEntryCard({
         className="active:opacity-70"
       >
         <View className="flex-row items-start gap-2">
-          <Text className="text-3xl font-bold text-foreground shrink-0" lang={l2Code}>{head}</Text>
+          <Text className="text-3xl font-bold text-foreground shrink-0" lang={glyphLang}>{head}</Text>
           {displayAlternate && (
-            <Text className="mt-2 text-base text-muted-foreground shrink-0" lang={l2Code}>{displayAlternate}</Text>
+            <Text className="mt-2 text-base text-muted-foreground shrink-0" lang={glyphLang}>{displayAlternate}</Text>
           )}
           <View className="flex-1" />
           {badges}
@@ -387,7 +389,7 @@ export function DictionaryEntryCard({
               <View key={i} className="rounded-lg bg-primary/10 px-2.5 py-1">
                 {cl.kind === 'measure_word' ? (
                   <Text className="text-sm">
-                    <Text className="font-medium" lang={l2Code}>{cl.simplified}</Text>
+                    <Text className="font-medium" lang="zh-Hans">{cl.simplified}</Text>
                     {' '}
                     <Text className="text-muted-foreground">{cl.reading}</Text>
                   </Text>
@@ -415,7 +417,7 @@ export function DictionaryEntryCard({
                 </Text>
               </View>
               {m.example && (
-                <Text className="mt-1 text-sm text-foreground" lang={l2Code}>{m.example}</Text>
+                        <Text className="mt-1 text-sm text-foreground" lang={glyphLang}>{m.example}</Text>
               )}
               {m.exampleTranslation && (
                 <Text className="mt-0.5 text-sm text-muted-foreground">{m.exampleTranslation}</Text>

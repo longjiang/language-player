@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-080
 - **Feature**: Correct CJK glyph rendering via `lang` attributes
-- **Status**: draft
+- **Status**: implemented
 - **Created**: (today)
 - **ROADMAP Phase**: Web polish
 
@@ -192,14 +192,21 @@ Do not drive `dir` off the L1 when the container's content is L2.
 
 ### Helper
 
-- `glyphLangTag(code, useTraditional)` in `lib/language-data.ts` — pure mapper
+- `glyphLangTag(code, useTraditional)` in `packages/shared/src/glyph-language.ts` — pure mapper
   implementing the Rule 3 table. Unit tests for each row (esp. `zh`/`yue`/`lzh`
   flipping with the preference, and `ja`/`ko` staying fixed).
 
 ### Font stack (Rule 6)
 
-- Audit `tailwind.config.ts` CJK font families; add per-script JP/SC/TC faces
-  or apply `font-language-override` on lang-tagged containers.
+- `apps/web/src/app/globals.css` defines separate JP/SC/TC/KO family stacks.
+  The active L1 selects the UI family through `data-ui-lang`, and script-tagged
+  L2 containers select their own family. A shared fallback list is deliberately
+  avoided because the first installed Han-capable face wins before `lang` can
+  distinguish Japanese from Chinese.
+- `apps/mobile/components/GlyphText.tsx` applies the same resolved language
+  domain to native UI/content text, with platform regional families. The Babel
+  transform installs it for every app `<Text>` element; `TokenizedText` also
+  passes its resolved L2 tag to the native ruby/plain-text paths.
 
 ### Components (Rules 1–8)
 
