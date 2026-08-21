@@ -14,13 +14,15 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SavedWordsProvider } from './components/SavedWordsProvider';
 import { TranscriptAppInner, PagePanel, type PageLookupDetail } from './transcript-app';
+import { Button } from './components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
 import langNames from '../dist/lang-names.json';
 
-const WEB_APP_URL = 'https://language-player.netlify.app';
-
 /** CSV-style locale → Chrome _locales/ directory name (mirrors popup.js). */
 const CSV_TO_CHROME_LOCALE = { 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW' };
+type SidePanelTab = 'subtitles' | 'page-translation';
+type Theme = 'light' | 'dark' | 'system';
 
 function languageName(code, l1Code) {
   const entry = (langNames && langNames[code]) || null;
@@ -32,6 +34,14 @@ function languageName(code, l1Code) {
   if (bare !== l1Code && entry[bare]) return entry[bare];
   if (entry.en) return entry.en;
   return (code || '').toUpperCase();
+}
+
+function applyTheme(theme: Theme): void {
+  const root = document.documentElement;
+  const isDark = theme === 'dark'
+    || (theme === 'system' && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+  root.classList.toggle('dark', isDark);
+  root.dataset.theme = theme;
 }
 
 interface VideoPanelState {
@@ -68,6 +78,9 @@ function SidePanelApp() {
   const [mismatchDismissed, setMismatchDismissed] = useState(false);
   const [localeVersion, setLocaleVersion] = useState(0);
   const [l1Code, setL1Code] = useState('en');
+  const [l2Code, setL2Code] = useState('en');
+  const [selectedTab, setSelectedTab] = useState<SidePanelTab>('subtitles');
+  const [theme, setTheme] = useState<Theme>('system');
 
   const tabIdRef = useRef<number | null>(null);
   tabIdRef.current = tabId;
@@ -101,6 +114,11 @@ function SidePanelApp() {
       // No content script (or not ready yet) — the empty state shows until a
       // content script pushes its first panelState/pageModeState.
     }
+  }, []);
+
+  const selectTab = useCallback((next: SidePanelTab) => {
+    setSelectedTab(next);
+    chrome.storage.local.set({ sidePanelTab: next }).catch(() => {});
   }, []);
 
   // ── Active tab tracking ──
@@ -155,9 +173,21 @@ function SidePanelApp() {
   // ── Locale ──
   useEffect(() => {
     (async () => {
-      const { l1Language } = await chrome.storage.local.get('l1Language');
+      const { l1Language, l2Language, sidePanelTab, theme: savedTheme } = await chrome.storage.local.get([
+        'l1Language',
+        'l2Language',
+        'sidePanelTab',
+        'theme',
+      ]);
       const l1 = l1Language || 'en';
       setL1Code(l1);
+      setL2Code(l2Language || 'en');
+      if (sidePanelTab === 'subtitles' || sidePanelTab === 'page-translation') {
+        setSelectedTab(sidePanelTab);
+      }
+      const nextTheme: Theme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'system';
+      setTheme(nextTheme);
+      applyTheme(nextTheme);
       await setLocale(l1);
       setLocaleVersion((v) => v + 1);
     })();
@@ -169,6 +199,20 @@ function SidePanelApp() {
         const next = changes.l1Language.newValue || 'en';
         setL1Code(next);
         setLocale(next).then(() => setLocaleVersion((v) => v + 1));
+      }
+      if (area === 'local' && changes.l2Language) {
+        setL2Code(changes.l2Language.newValue || 'en');
+      }
+      if (area === 'local' && changes.sidePanelTab) {
+        const next = changes.sidePanelTab.newValue;
+        if (next === 'subtitles' || next === 'page-translation') setSelectedTab(next);
+      }
+      if (area === 'local' && changes.theme) {
+        const next: Theme = changes.theme.newValue === 'light' || changes.theme.newValue === 'dark'
+          ? changes.theme.newValue
+          : 'system';
+        setTheme(next);
+        applyTheme(next);
       }
     };
     chrome.storage.onChanged.addListener(onChange);
@@ -190,14 +234,6 @@ function SidePanelApp() {
   }, [sendToTab]);
 
   const closePanel = useCallback(async () => {
-    if (mode === 'page') {
-      // Closing the panel from page mode disables page tokenization, exactly
-      // like the old in-page close button (SPEC-075).
-      try {
-        chrome.storage.sync.set({ pageTokenizationEnabled: false });
-      } catch {}
-      sendToTab('pageTokenizationOff');
-    }
     try {
       // Chrome 141+ closes programmatically. The panel is a GLOBAL side panel
       // (manifest side_panel.default_path, no per-tab setOptions), so
@@ -222,24 +258,11 @@ function SidePanelApp() {
     setMismatchDismissed(true);
   }, [videoState, pageState, mode, sendToTab]);
 
-  // Header "open in web app" button: YouTube watch page (video) or web-reader (page).
-  const webBtn =
-    mode === 'video' && videoState?.webUrl
-      ? videoState.webUrl
-      : mode === 'page' && pageState
-        ? {
-            url: `${WEB_APP_URL}/${encodeURIComponent(pageState.l1Code)}/${encodeURIComponent(pageState.l2Code)}/web-reader?url=${encodeURIComponent(pageState.pageUrl)}`,
-            labelKey: 'readInLanguagePlayer',
-          }
-        : null;
-
   const mismatch =
     (mode === 'video' && videoState?.mismatch) || (mode === 'page' && pageState?.mismatch) || null;
   const mismatchShown = mismatch && !mismatchDismissed ? mismatch : null;
 
-  let content;
-  if (mode === 'video' && videoState) {
-    content = (
+  const subtitleContent = mode === 'video' && videoState ? (
       <SavedWordsProvider l2Code={videoState.l2Code}>
         <TranscriptAppInner
           cues={videoState.cues}
@@ -253,9 +276,13 @@ function SidePanelApp() {
           pageUrl={videoState.pageUrl}
         />
       </SavedWordsProvider>
+    ) : (
+      <div className="lpv-ui-empty-state">
+        <p>{t('startPlaying')}</p>
+      </div>
     );
-  } else if (mode === 'page' && pageState) {
-    content = (
+
+  const pageTranslationContent = mode === 'page' && pageState ? (
       <SavedWordsProvider l2Code={pageState.l2Code}>
         <PagePanel
           l1Code={pageState.l1Code}
@@ -265,47 +292,53 @@ function SidePanelApp() {
           onFollowLink={handleFollowLink}
         />
       </SavedWordsProvider>
-    );
-  } else {
-    content = (
-      <div className="lpv-page-panel-scroll">
-        <div className="lpv-page-empty">{t('startPlaying')}</div>
+    ) : (
+      <div className="lpv-ui-empty-state">
+        <p>{t('startPlaying')}</p>
       </div>
     );
-  }
+
+  const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
 
   return (
-    <div
-      id="lpv-transcript-panel"
-      className={mode === 'page' ? 'lpv-page-panel' : ''}
-    >
-      <div id="lpv-panel-header">
-        <span id="lpv-panel-title">
+    <div className="lpv-app-shell" data-theme={theme}>
+      <header className="lpv-app-topbar">
+        <div className="lpv-app-brand">
           <img
-            id="lpv-panel-logo"
+            className="lpv-app-logo"
             src={chrome.runtime.getURL('src/language-player-logo-64.png')}
             alt=""
             width="24"
             height="24"
           />
-        </span>
-        <div id="lpv-header-right">
-          {webBtn && (
-            <a
-              id="lpv-open-web-btn"
-              className="lpv-visible"
-              href={webBtn.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t(webBtn.labelKey)}
-            </a>
-          )}
-          <button id="lpv-close-btn" title={t('closePanel')} onClick={closePanel}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
+          <span className="lpv-app-wordmark">Language Player</span>
         </div>
-      </div>
+        <div className="lpv-app-topbar-actions">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lpv-language-trigger"
+            aria-haspopup="dialog"
+            onClick={() => log('Language picker trigger opened; Phase 4 will mount the picker')}
+          >
+            {languageName(currentL2Code, l1Code)}
+            <span aria-hidden="true">⌄</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lpv-profile-trigger"
+            aria-label={t('profile')}
+            aria-haspopup="menu"
+            onClick={() => log('Profile menu trigger opened; Phase 5 will mount the menu')}
+          >
+            <span aria-hidden="true">{l1Code ? '◉' : '?'}</span>
+          </Button>
+          <Button variant="ghost" size="icon" aria-label={t('closePanel')} onClick={closePanel}>
+            <span aria-hidden="true">×</span>
+          </Button>
+        </div>
+      </header>
 
       {mismatchShown && (
         <div id="lpv-mismatch-banner" style={{ display: 'block' }}>
@@ -326,7 +359,18 @@ function SidePanelApp() {
         </div>
       )}
 
-      <div id="lpv-panel-content">{content}</div>
+      <Tabs value={selectedTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
+        <TabsList className="lpv-app-tabs">
+          {(mode === 'video' || videoState) && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
+          <TabsTrigger value="page-translation">{t('pageTranslation')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="subtitles" className="lpv-app-tabpanel" id="lpv-panel-content">
+          {subtitleContent}
+        </TabsContent>
+        <TabsContent value="page-translation" className="lpv-app-tabpanel" id="lpv-panel-content">
+          {pageTranslationContent}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

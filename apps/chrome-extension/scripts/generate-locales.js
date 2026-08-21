@@ -32,6 +32,8 @@ const CSV_LOOKUP = {
   'showTranslation': 'label.show_translation',
   'copy': 'action.copy',
   'speak': 'action.speak',
+  'profile': 'title.profile',
+  'subtitles': 'label.subtitles',
   'explain': 'action.let_ai_explain',
   'explainTitle': 'action.let_ai_explain',
   'save': 'action.save_word',
@@ -73,6 +75,25 @@ const CSV_LOOKUP = {
 // Keyed by CSV column name (zh-Hans, fr, de, etc.).
 // Only include languages NOT already handled by manual _locales/ files.
 const MANUAL = {
+  'pageTranslation': {
+    'ja': 'ページ翻訳',
+    'zh-Hans': '页面翻译',
+    'zh-Hant': '頁面翻譯',
+    'fr': 'Traduction de la page',
+    'ar': 'ترجمة الصفحة',
+    'de': 'Seitenübersetzung',
+    'es': 'Traducción de página',
+    'id': 'Terjemahan halaman',
+    'it': 'Traduzione della pagina',
+    'ko': '페이지 번역',
+    'nl': 'Paginavertaling',
+    'pl': 'Tłumaczenie strony',
+    'pt': 'Tradução da página',
+    'ru': 'Перевод страницы',
+    'th': 'แปลหน้าเว็บ',
+    'tr': 'Sayfa çevirisi',
+    'vi': 'Dịch trang',
+  },
   'startPlaying': {
     'ja': '動画を再生してください。',
     'zh-Hans': '开始播放视频。',

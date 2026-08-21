@@ -171,6 +171,15 @@
   "translate": {
     "message": "Tłumaczenie"
   },
+  "pageTranslation": {
+    "message": "Tłumaczenie strony"
+  },
+  "profile": {
+    "message": "Profil"
+  },
+  "subtitles": {
+    "message": "Napisy"
+  },
   "translating": {
     "message": "Tłumaczenie…"
   },

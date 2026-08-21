@@ -171,6 +171,15 @@
   "translate": {
     "message": "Terjemahan"
   },
+  "pageTranslation": {
+    "message": "Terjemahan halaman"
+  },
+  "profile": {
+    "message": "Profil"
+  },
+  "subtitles": {
+    "message": "Subtitel"
+  },
   "translating": {
     "message": "Menerjemahkan…"
   },

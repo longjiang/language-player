@@ -171,6 +171,15 @@
   "translate": {
     "message": "Dịch thuật"
   },
+  "pageTranslation": {
+    "message": "Dịch trang"
+  },
+  "profile": {
+    "message": "Hồ sơ"
+  },
+  "subtitles": {
+    "message": "Phụ đề"
+  },
   "translating": {
     "message": "Đang dịch…"
   },
