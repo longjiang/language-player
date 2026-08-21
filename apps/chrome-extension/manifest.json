@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "1.0.110.37",
+  "version": "1.0.110.38",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "permissions": [
@@ -88,6 +88,10 @@
       "resources": [
         "src/language-player-logo-64.png",
         "dist/netflix-main-world.js",
+        "src/page-dictionary-frame.html",
+        "dist/content.css",
+        "dist/page-dictionary.css",
+        "dist/page-dictionary-frame.js",
         "_locales/*.json"
       ],
       "matches": [

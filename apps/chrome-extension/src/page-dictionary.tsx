@@ -1,72 +1,88 @@
 /**
- * Webpage dictionary host.
+ * Webpage dictionary bridge.
  *
- * Page-mode lookups are rendered in the inspected page's viewport, while the
- * native side panel remains available underneath. The host is intentionally
- * event-driven: page-content.js owns tokenization and emits lookup details;
- * this bundle owns only the modal presentation.
+ * The visible modal lives in an extension-origin iframe, so webpage CSS
+ * cannot reach its DOM. This content script only owns the iframe lifecycle
+ * and forwards lookup/follow-link events between page-content.js and the
+ * isolated extension document.
  */
 
-import React, { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import type { LemmatizedToken } from '@langplayer/shared';
-import DictionaryModal from './components/DictionaryModal';
-import { SavedWordsProvider } from './components/SavedWordsProvider';
-import { useSubscription } from './use-subscription';
-import type { PageLookupDetail } from './transcript-app';
+const MESSAGE_SOURCE = 'language-player-page-dictionary';
+const FRAME_ID = 'lpv-page-dictionary-frame';
+const frameUrl = chrome.runtime.getURL('src/page-dictionary-frame.html');
+let frame: HTMLIFrameElement | null = null;
+let pendingLookup: unknown = null;
 
-interface PageDictionaryLookup extends PageLookupDetail {
-  l1Code?: string;
-  l2Code?: string;
-  pageUrl?: string;
+function setFrameInteractive(interactive: boolean) {
+  if (!frame) return;
+  frame.style.setProperty('pointer-events', interactive ? 'auto' : 'none', 'important');
+  frame.style.setProperty('visibility', interactive ? 'visible' : 'hidden', 'important');
 }
 
-function PageDictionaryHost() {
-  const [lookup, setLookup] = useState<PageDictionaryLookup | null>(null);
-  const [language, setLanguage] = useState({ l1Code: 'en', l2Code: 'en' });
-  const { isPro, loading: subLoading } = useSubscription();
-
-  useEffect(() => {
-    const onOpen = (event: Event) => {
-      const detail = (event as CustomEvent<PageDictionaryLookup>).detail;
-      if (!detail?.token) return;
-      setLanguage({
-        l1Code: detail.l1Code || 'en',
-        l2Code: detail.l2Code || 'en',
-      });
-      setLookup(detail);
-    };
-    const onClose = () => setLookup(null);
-    window.addEventListener('lpv-page-dictionary-open', onOpen);
-    window.addEventListener('lpv-page-dictionary-close', onClose);
-    return () => {
-      window.removeEventListener('lpv-page-dictionary-open', onOpen);
-      window.removeEventListener('lpv-page-dictionary-close', onClose);
-    };
-  }, []);
-
-  const token: LemmatizedToken | null = lookup?.token || null;
-  return (
-    <div className="lpv-page-dictionary-host">
-      <SavedWordsProvider l2Code={language.l2Code}>
-        <DictionaryModal
-          token={token}
-          l1Code={language.l1Code}
-          l2Code={language.l2Code}
-          contextText={lookup?.blockText}
-          pageUrl={lookup?.pageUrl || location.href}
-          linkUrl={lookup?.href}
-          onFollowLink={(href) => window.location.assign(href)}
-          isPro={isPro}
-          subLoading={subLoading}
-          onClose={() => setLookup(null)}
-        />
-      </SavedWordsProvider>
-    </div>
-  );
+function sendToFrame(message: unknown) {
+  if (!frame?.contentWindow) return;
+  frame.contentWindow.postMessage(message, new URL(frameUrl).origin);
 }
 
-const container = document.createElement('div');
-container.id = 'lpv-page-dictionary-root';
-document.documentElement.appendChild(container);
-createRoot(container).render(<PageDictionaryHost />);
+function ensureFrame() {
+  if (frame) return frame;
+  frame = document.createElement('iframe');
+  frame.id = FRAME_ID;
+  frame.title = 'Language Player dictionary';
+  frame.src = frameUrl;
+  frame.setAttribute('aria-hidden', 'true');
+  frame.style.cssText = [
+    'position:fixed',
+    'inset:0',
+    'width:100vw',
+    'height:100vh',
+    'border:0',
+    'margin:0',
+    'padding:0',
+    'z-index:2147483647',
+    'background:transparent',
+    'pointer-events:none',
+    'visibility:hidden',
+  ].join(';');
+  frame.addEventListener('load', () => {
+    if (pendingLookup) {
+      sendToFrame({ source: MESSAGE_SOURCE, action: 'open', lookup: pendingLookup });
+    }
+  });
+  (document.documentElement || document.body).appendChild(frame);
+  return frame;
+}
+
+function openLookup(lookup: unknown) {
+  pendingLookup = lookup;
+  ensureFrame();
+  setFrameInteractive(true);
+  sendToFrame({ source: MESSAGE_SOURCE, action: 'open', lookup });
+}
+
+function closeLookup() {
+  pendingLookup = null;
+  setFrameInteractive(false);
+  sendToFrame({ source: MESSAGE_SOURCE, action: 'close' });
+}
+
+window.addEventListener('lpv-page-dictionary-open', (event) => {
+  openLookup((event as CustomEvent).detail);
+});
+
+window.addEventListener('lpv-page-dictionary-close', closeLookup);
+
+window.addEventListener('message', (event) => {
+  if (!frame || event.source !== frame.contentWindow) return;
+  if (event.origin !== new URL(frameUrl).origin) return;
+  if (!event.data || event.data.source !== MESSAGE_SOURCE) return;
+
+  if (event.data.action === 'close') {
+    closeLookup();
+    return;
+  }
+  if (event.data.action === 'follow-link' && typeof event.data.href === 'string') {
+    closeLookup();
+    location.href = event.data.href;
+  }
+});
