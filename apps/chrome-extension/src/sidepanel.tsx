@@ -13,7 +13,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SavedWordsProvider } from './components/SavedWordsProvider';
-import { TranscriptAppInner, PagePanel, type PageLookupDetail } from './transcript-app';
+import { TranscriptAppInner, type PageLookupDetail } from './transcript-app';
 import { PageTranslationPanel } from './components/PageTranslationPanel';
 import { LanguagePicker } from './components/LanguagePicker';
 import { SettingsModal } from './components/SettingsModal';
@@ -253,16 +253,14 @@ function SidePanelApp() {
   }, [activeTab, requestSubtitleDetection, tabId]);
 
   useEffect(() => {
-    if (activeTab !== 'page-translation' || mode !== 'page' || !tabId) return;
-    sendToTab('pageTranslationStart');
-  }, [activeTab, mode, sendToTab, tabId]);
+    if (!tabId) return;
+    sendToTab('pageTranslationVisibility', {
+      open: activeTab === 'page-translation',
+    });
+  }, [activeTab, sendToTab, tabId]);
 
   const handleSeek = useCallback((timeSec: number) => {
     sendToTab('panelSeek', { timeSec });
-  }, [sendToTab]);
-
-  const handleFollowLink = useCallback((href: string) => {
-    sendToTab('pageFollowLink', { href });
   }, [sendToTab]);
 
   const closePanel = useCallback(async () => {
@@ -335,27 +333,14 @@ function SidePanelApp() {
       </div>
     );
 
-  const pageTranslationContent = (
-    <>
+  const pageTranslationContent = activeTab === 'page-translation' ? (
       <PageTranslationPanel
         tabId={tabId}
         l1Code={pageState?.l1Code || l1Code}
         l2Code={pageState?.l2Code || l2Code}
         pageUrl={pageState?.pageUrl}
       />
-      {mode === 'page' && pageState && lookup && (
-        <SavedWordsProvider l2Code={pageState.l2Code}>
-          <PagePanel
-            l1Code={pageState.l1Code}
-            l2Code={pageState.l2Code}
-            pageUrl={pageState.pageUrl}
-            lookup={lookup}
-            onFollowLink={handleFollowLink}
-          />
-        </SavedWordsProvider>
-      )}
-    </>
-  );
+  ) : null;
 
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
 
