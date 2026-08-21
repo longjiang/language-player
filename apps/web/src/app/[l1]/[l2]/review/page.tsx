@@ -246,7 +246,7 @@ export default function ReviewPage() {
       remaining: budget.remaining,
       candidates,
       toCreate: plan.toCreate.length,
-      toRemove: plan.toRemove.length,
+      inactiveNewCards: plan.toRemove.length,
     });
     const introduced = Object.entries(langCards)
       .filter(([, c]) => c.createdAt >= budget.dayStart)
@@ -261,10 +261,9 @@ export default function ReviewPage() {
       log('[SRS] introducedToday cards', introduced);
     }
 
-    // Push back: drop blue cards that fell outside the newest `dailyLimit`.
-    for (const id of plan.toRemove) {
-      removeCard(l2Code, id);
-    }
+    // Cards outside the current blue-card window stay persisted but are not
+    // selected for review. This makes changing the daily limit reversible and
+    // avoids one DELETE request per card during page load.
 
     // Introduce: create due-now cards for the newest unrated words lacking one.
     if (plan.toCreate.length > 0) {
@@ -274,7 +273,7 @@ export default function ReviewPage() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, dayStartHour, updateCard, removeCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, dayStartHour, updateCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -300,10 +299,14 @@ export default function ReviewPage() {
   const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
+    const activeNewCardIds = new Set(
+      fsrs.getActiveNewCardIds(l2SavedWords, langCards, dailyLimit),
+    );
     return l2SavedWords
       .filter((sw) => {
         const srs = langCards[sw.id];
         if (!srs) return false;
+        if (fsrs.getCardState(srs) === 'new' && !activeNewCardIds.has(sw.id)) return false;
         return srs.due <= now;
       })
       .sort((a, b) => {
@@ -316,7 +319,7 @@ export default function ReviewPage() {
         word: sw,
         srs: langCards[sw.id] || fsrs.newCard(),
       }));
-  }, [l2SavedWords, store, l2Code]);
+  }, [l2SavedWords, store, l2Code, dailyLimit]);
 
   // ── Pre-fetch dictionary entries for all due cards ──
   // This ensures entries are in the cache before the user reveals a card,

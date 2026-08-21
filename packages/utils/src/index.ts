@@ -39,6 +39,7 @@ export {
   srsDueLabel,
   createSrsStore,
   getLanguageCards,
+  getActiveNewCardIds,
   mergeSrsCards,
 } from './fsrs-scheduler';
 export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating } from './fsrs-scheduler';

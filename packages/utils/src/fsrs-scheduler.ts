@@ -479,10 +479,37 @@ export function countNewCardCandidates(
 }
 
 /**
+ * Return the blue-card window active for the current limit.
+ *
+ * Cards outside this window remain persisted as unrated cards. Changing the
+ * daily limit is a budget/presentation change, so raising it again can make
+ * those cards available without recreating them or issuing DELETE requests.
+ */
+export function getActiveNewCardIds(
+  savedWords: Array<{ id: string; date?: number }>,
+  cards: Record<string, FsrsCard>,
+  limit: number,
+): string[] {
+  const cap = Math.max(0, Math.floor(limit));
+  return savedWords
+    .filter((sw) => {
+      const srs = cards[sw.id];
+      return !srs || isNewCard(srs);
+    })
+    .sort((a, b) => (b.date ?? 0) - (a.date ?? 0))
+    .slice(0, cap)
+    .map((sw) => sw.id);
+}
+
+/**
  * Compute the blue ("new") deck for today: up to `limit` most recently saved
  * words that have no card yet or an unreviewed `state: new` card, newest-saved
  * first, but never more than today's remaining new-card budget. Rated cards
  * (learning/review/relearning) are never displaced.
+ *
+ * `toRemove` is a soft-deactivation list for persisted blue cards outside the
+ * active window. Callers should use `getActiveNewCardIds()` to exclude them
+ * from review rather than deleting them from SRS storage.
  */
 export function planNewDeck(
   savedWords: Array<{ id: string; date?: number }>,
