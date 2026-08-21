@@ -109,7 +109,7 @@ export default function ReviewPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
-  const { display, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
+  const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, display, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
   const srsCardMeta = useMemo(
     () => ({ timezone: deviceTimezone(), dayStartHour }),
     [dayStartHour],
@@ -208,7 +208,7 @@ export default function ReviewPage() {
   // The blue ("new") deck holds at most `dailyLimit` new cards per local day.
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
-    if (!srsLoaded || !wordsLoaded) return;
+    if (!settingsLoaded || !settingsCloudHydrated || !srsLoaded || !wordsLoaded) return;
     // Never auto-create cards from stale local state before the server's SRS
     // cards have been fetched (SPEC-066): a "new" card minted here can
     // overwrite a rated card from another device.
@@ -271,7 +271,7 @@ export default function ReviewPage() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, dayStartHour, updateCard, removeCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, dayStartHour, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -1062,7 +1062,7 @@ export default function ReviewPage() {
   // For authenticated users, wait for the row-API hydration to finish
   // (even when the account is genuinely empty) so we don't flash a false
   // "no cards to review" state while the cloud store is still loading.
-  const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing
+  const isLoading = status === 'loading' || !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded || initializing
     || (status === 'authenticated' && (!cloudHydrated || !srsCloudHydrated));
 
   if (isLoading) {

@@ -34,9 +34,10 @@ export function useSettings() {
   const { getUserSettings, putUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
+  const [cloudHydrated, setCloudHydrated] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
-  const cloudLoaded = useRef(false);
+  const cloudLoadedUserId = useRef<string | null>(null);
 
   // ── Helper: persist to localStorage + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
@@ -139,15 +140,26 @@ export function useSettings() {
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded || cloudLoaded.current) return;
-    cloudLoaded.current = true;
+    if (status !== 'authenticated') {
+      cloudLoadedUserId.current = null;
+      setCloudHydrated(true);
+      return;
+    }
+    if (!loaded) return;
+    const userId = session?.user?.id;
+    if (!userId || cloudLoadedUserId.current === userId) return;
+    cloudLoadedUserId.current = userId;
+    setCloudHydrated(false);
     let cancelled = false;
     (async () => {
       try {
         const res = await getUserSettings();
         if (cancelled) return;
         const cloud = res.settings_v2;
-        if (!cloud || cloud.v !== 2) return;
+        if (!cloud || cloud.v !== 2) {
+          setCloudHydrated(true);
+          return;
+        }
         setSettings((prev) => {
           // Stale cloud (older than the local blob) must not touch local
           // state — and must not bump the local ts either, or the next
@@ -166,12 +178,14 @@ export function useSettings() {
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
           return merged;
         });
+        setCloudHydrated(true);
       } catch (err) {
         logwarn('[settings] Could not load from server:', err);
+        setCloudHydrated(true);
       }
     })();
     return () => { cancelled = true; };
-  }, [status, loaded, getUserSettings]);
+  }, [status, loaded, session?.user?.id, getUserSettings]);
 
   // ── Global setters ──
 
@@ -285,6 +299,7 @@ export function useSettings() {
     updateReview,
     search: settings.search,
     updateSearch,
+    cloudHydrated,
 
     getL2: (code: string): L2Settings => settings.l2[code] ?? L2_DEFAULTS,
     updateL2,

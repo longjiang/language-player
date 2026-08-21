@@ -42,6 +42,7 @@ export function useSettings() {
   const { getUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
+  const [cloudHydrated, setCloudHydrated] = useState(false);
   const [offlineMode, setOfflineModeState] = useState<boolean>(() => isOfflineModeEnabled());
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cloudLoadedUserId = useRef<string | null>(null);
@@ -83,12 +84,20 @@ export function useSettings() {
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (!user || !loaded || cloudLoadedUserId.current === user.id) return;
-    if (offlineMode) {
-      log('[settings] hydrate skipped — offlineMode is on');
+    if (!loaded) return;
+    if (!user) {
+      cloudLoadedUserId.current = null;
+      setCloudHydrated(true);
       return;
     }
+    if (offlineMode) {
+      log('[settings] hydrate skipped — offlineMode is on');
+      setCloudHydrated(true);
+      return;
+    }
+    if (cloudLoadedUserId.current === user.id) return;
     cloudLoadedUserId.current = user.id;
+    setCloudHydrated(false);
     let cancelled = false;
     (async () => {
       try {
@@ -98,7 +107,10 @@ export function useSettings() {
         log('[settings] GET /user-settings ok — user:', user.id,
           'cloud v:', cloud?.v, 'cloud ts:', cloud?.ts,
           'cloud review:', JSON.stringify(cloud?.review ?? null));
-        if (!cloud || cloud.v !== 2) return;
+        if (!cloud || cloud.v !== 2) {
+          setCloudHydrated(true);
+          return;
+        }
         setSettings((prev) => {
           if (cloud.ts <= prev.ts) {
             log('[settings] hydrate SKIP cloud — cloud.ts <= local.ts',
@@ -117,9 +129,11 @@ export function useSettings() {
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
           return merged;
         });
+        setCloudHydrated(true);
       } catch (err) {
         logwarn('[settings] GET /user-settings failed — user:', user.id, err);
         cloudLoadedUserId.current = null;
+        setCloudHydrated(true);
       }
     })();
     return () => { cancelled = true; };
@@ -134,6 +148,7 @@ export function useSettings() {
     if (prev === undefined) return; // initial boot — keep locally loaded state
     if (prev !== next) {
       cloudLoadedUserId.current = null;
+      setCloudHydrated(next === null || offlineMode);
       log('[settings] user changed — resetting local settings',
         { from: prev, to: next });
       setSettings(createSettingsV2());
@@ -290,6 +305,7 @@ export function useSettings() {
     updateReview,
     search: settings.search,
     updateSearch,
+    cloudHydrated,
     offlineMode,
     setOfflineMode,
     getL2,
