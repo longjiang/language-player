@@ -384,7 +384,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
   if (band) {
     const containerClass = overlay
-      ? 'absolute left-1/2 z-10 w-fit max-w-[calc(100%-4rem)] -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-xl'
+      ? 'absolute left-1/2 z-10 w-max max-w-[calc(100%-4rem)] -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-xl'
       : 'bg-card border-t border-border';
     const btnColorClass = overlay
       ? 'text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10'
