@@ -156,7 +156,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 
 // Listen for messages from popup and content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "panelState" || request.action === "pageModeState" || request.action === "pageLookup") {
+    if (request.action === "panelState" || request.action === "pageModeState" || request.action === "pageLookup" || request.action === "pageModalEvent") {
         // Content script → side panel relay (tagged with the sender tab).
         if (sidePanelPort && sender.tab?.id) {
             try {

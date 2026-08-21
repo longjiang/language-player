@@ -38,8 +38,9 @@ body,
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog {
-  width: min(34rem, calc(100vw - 2rem));
-  max-height: min(42rem, calc(100vh - 2rem));
+  width: min(52rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: min(44rem, calc(100vh - 2rem));
   overflow: hidden;
   border: 1px solid var(--lpv-frame-border);
   border-radius: 0.75rem;
@@ -47,6 +48,18 @@ body,
   color: var(--lpv-frame-foreground);
   box-shadow: 0 1.5rem 4rem hsl(222 47% 11% / 0.24);
   text-align: left;
+}
+
+#lpv-page-dictionary-root .lpv-settings-layout,
+#lpv-page-dictionary-root .lpv-help-layout {
+  min-height: min(32rem, calc(100vh - 8rem));
+}
+
+#lpv-page-dictionary-root .lpv-settings-content,
+#lpv-page-dictionary-root .lpv-help-content,
+#lpv-page-dictionary-root .lpv-account-scroll {
+  max-height: min(36rem, calc(100vh - 8rem));
+  overflow-y: auto;
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog-body,

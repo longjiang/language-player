@@ -17,7 +17,6 @@ import { SavedWordsProvider } from './components/SavedWordsProvider';
 import { TranscriptAppInner, type DictionaryModalRequest, type LineExplanationRequest, type PageLookupDetail } from './transcript-app';
 import { PageTranslationPanel } from './components/PageTranslationPanel';
 import { UserMenu } from './components/UserMenu';
-import { SidePanelModalFrame, type SidePanelModal } from './components/SidePanelModalFrame';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
@@ -26,6 +25,16 @@ import { languageName } from './language-names';
 type SidePanelTab = 'subtitles' | 'page-translation';
 type Theme = 'light' | 'dark' | 'system';
 type SubtitleStatus = 'idle' | 'detecting' | 'ready' | 'empty' | 'error';
+
+type PageModal =
+  | { kind: 'language'; l1Code: string; l2Code: string }
+  | { kind: 'settings'; l2Code: string }
+  | { kind: 'help' }
+  | { kind: 'about' }
+  | { kind: 'login' }
+  | ({ kind: 'dictionary' } & DictionaryModalRequest)
+  | { kind: 'line-explanation'; request: LineExplanationRequest }
+  | { kind: 'account'; auth: AuthState; l1Code: string; l2Code: string };
 
 function applyTheme(theme: Theme): void {
   const root = document.documentElement;
@@ -77,7 +86,7 @@ function SidePanelApp() {
   const [selectedTab, setSelectedTab] = useState<SidePanelTab>('subtitles');
   const [theme, setTheme] = useState<Theme>('system');
   const [subtitleRequesting, setSubtitleRequesting] = useState(false);
-  const [modal, setModal] = useState<SidePanelModal | null>(null);
+  const pageModalEventRef = useRef<(event: any) => void>(() => {});
 
   const tabIdRef = useRef<number | null>(null);
   tabIdRef.current = tabId;
@@ -160,6 +169,8 @@ function SidePanelApp() {
         if (msg.state?.lookup) setLookup(msg.state.lookup);
       } else if (msg.action === 'pageLookup') {
         setLookup(msg.payload);
+      } else if (msg.action === 'pageModalEvent') {
+        pageModalEventRef.current(msg.event);
       }
     });
     return () => {
@@ -230,6 +241,10 @@ function SidePanelApp() {
     if (!tid) return Promise.resolve(undefined);
     return chrome.tabs.sendMessage(tid, { action, ...payload }).catch(() => undefined);
   }, []);
+
+  const openPageModal = useCallback((pageModal: PageModal) => {
+    sendToTab('openPageModal', { modal: pageModal, theme });
+  }, [sendToTab, theme]);
 
   const requestSubtitleDetection = useCallback((retry = false) => {
     if (!tabId || mode !== 'video') return;
@@ -302,10 +317,10 @@ function SidePanelApp() {
           videoTitle={videoState.videoTitle}
           pageUrl={videoState.pageUrl}
           onDictionaryOpen={(request: DictionaryModalRequest | null) => {
-            setModal(request ? { kind: 'dictionary', ...request } : null);
+            if (request) openPageModal({ kind: 'dictionary', ...request });
           }}
           onLineExplainOpen={(request: LineExplanationRequest | null) => {
-            setModal(request ? { kind: 'line-explanation', request } : null);
+            if (request) openPageModal({ kind: 'line-explanation', request });
           }}
         />
       </SavedWordsProvider>
@@ -355,19 +370,21 @@ function SidePanelApp() {
     }
     setL2Code(nextL2);
     sendToTab('changeLanguage', { l1: nextL1, l2: nextL2 });
-    setModal(null);
   }, [l1Code, sendToTab]);
-
-  const openAccount = useCallback((auth: AuthState) => {
-    setModal({ kind: 'account', auth, l1Code, l2Code: currentL2Code });
-  }, [currentL2Code, l1Code]);
-
-  const closeModal = useCallback(() => setModal(null), []);
 
   const handleThemeChange = useCallback((nextTheme: Theme) => {
     setTheme(nextTheme);
     applyTheme(nextTheme);
   }, []);
+
+  pageModalEventRef.current = (event: any) => {
+    if (!event?.action) return;
+    if (event.action === 'languageConfirm') {
+      handleLanguageConfirm(event.l1Code, event.l2Code, event.traditional === true).catch(() => {});
+    } else if (event.action === 'themeChange' && (event.theme === 'light' || event.theme === 'dark' || event.theme === 'system')) {
+      handleThemeChange(event.theme);
+    }
+  };
 
   return (
     <div className="lpv-app-shell" data-theme={theme}>
@@ -388,17 +405,17 @@ function SidePanelApp() {
             size="sm"
             className="lpv-language-trigger"
             aria-haspopup="dialog"
-            onClick={() => setModal({ kind: 'language', l1Code, l2Code: currentL2Code })}
+            onClick={() => openPageModal({ kind: 'language', l1Code, l2Code: currentL2Code })}
           >
             {languageName(currentL2Code, l1Code)}
             <span aria-hidden="true">⌄</span>
           </Button>
           <UserMenu
-            onSettings={() => setModal({ kind: 'settings', l2Code: currentL2Code })}
-            onHelp={() => setModal({ kind: 'help' })}
-            onAbout={() => setModal({ kind: 'about' })}
-            onLogin={() => setModal({ kind: 'login' })}
-            onAccount={openAccount}
+            onSettings={() => openPageModal({ kind: 'settings', l2Code: currentL2Code })}
+            onHelp={() => openPageModal({ kind: 'help' })}
+            onAbout={() => openPageModal({ kind: 'about' })}
+            onLogin={() => openPageModal({ kind: 'login' })}
+            onAccount={(auth) => openPageModal({ kind: 'account', auth, l1Code, l2Code: currentL2Code })}
           />
           <Button variant="ghost" size="icon" aria-label={t('closePanel')} onClick={closePanel}>
             <span aria-hidden="true">×</span>
@@ -437,13 +454,6 @@ function SidePanelApp() {
           {pageTranslationContent}
         </TabsContent>
       </Tabs>
-      <SidePanelModalFrame
-        modal={modal}
-        theme={theme}
-        onClose={closeModal}
-        onLanguageConfirm={handleLanguageConfirm}
-        onThemeChange={handleThemeChange}
-      />
     </div>
   );
 }
