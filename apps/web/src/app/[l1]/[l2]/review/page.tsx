@@ -131,6 +131,7 @@ export default function ReviewPage() {
 
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     testRequestVersionRef.current += 1;
+    setTestLoading(false);
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
     setTestQuestions([]);
@@ -380,6 +381,7 @@ export default function ReviewPage() {
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     testRequestVersionRef.current += 1;
+    setTestLoading(false);
     setShowDefinition(false); // hide answer immediately for next card
     setTestQuestions([]);
     setTestAnswers([]);
@@ -524,20 +526,34 @@ export default function ReviewPage() {
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
       if (requestVersion !== testRequestVersionRef.current) return;
-       setTestQuestions(questions);
+      setTestQuestions(questions);
       setTestAnswers([]);
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
     } catch (error) {
-      if (requestVersion !== testRequestVersionRef.current) return;
-       const message = error instanceof Error ? error.message : t('error.unexpected');
+      if (requestVersion !== testRequestVersionRef.current) {
+        log('[SRS Test] stale question generation error ignored', {
+          l2Code,
+          word: wordForm,
+          requestVersion,
+          currentRequestVersion: testRequestVersionRef.current,
+        });
+        return;
+      }
+      const message = error instanceof Error ? error.message : t('error.unexpected');
       log('[SRS Test] question generation failed', { l2Code, word: wordForm, error: message });
       setTestError(message);
       setTestQuestions([]);
     } finally {
-      log('[SRS Test] question generation finished', { l2Code, word: wordForm, loading: false });
-      if (requestVersion !== testRequestVersionRef.current) return;
-       setTestLoading(false);
+      const isCurrentRequest = requestVersion === testRequestVersionRef.current;
+      log('[SRS Test] question generation finished', {
+        l2Code,
+        word: wordForm,
+        requestVersion,
+        currentRequestVersion: testRequestVersionRef.current,
+        isCurrentRequest,
+      });
+      if (isCurrentRequest) setTestLoading(false);
     }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
 
@@ -604,6 +620,7 @@ export default function ReviewPage() {
     const card = cards[currentIndex];
     if (!card) return;
     testRequestVersionRef.current += 1;
+    setTestLoading(false);
     removeSavedWord(l2Code, card.word.id);
     removeCard(l2Code, card.word.id);
     setShowDefinition(false);
@@ -634,9 +651,17 @@ export default function ReviewPage() {
     const card = cards[currentIndex];
     const currentId = card?.word.id ?? null;
     if (currentId && currentId !== lastCardIdRef.current) {
+      // The first card is not a change. The auto-loader effect runs before
+      // this effect on the initial render, so invalidating here would discard
+      // the first request and leave its spinner stuck on a stale response.
+      if (lastCardIdRef.current === null) {
+        lastCardIdRef.current = currentId;
+        return;
+      }
       lastCardIdRef.current = currentId;
       if (!rated) {
         testRequestVersionRef.current += 1;
+        setTestLoading(false);
         setShowDefinition(false);
         setTestQuestions([]);
         setTestAnswers([]);
