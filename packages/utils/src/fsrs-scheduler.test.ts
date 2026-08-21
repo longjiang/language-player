@@ -4,6 +4,7 @@ import {
   countDueCards,
   countDeckStates,
   deserializeSrsCard,
+  getActiveNewCardIds,
   getCardState,
   getDueCards,
   isDue,
@@ -249,6 +250,16 @@ describe('fsrs-scheduler: deck budgeting', () => {
     const plan = planNewDeck(savedWords, cards, 2, NOW, 0);
     expect(plan.toCreate).toEqual([]);
     expect(plan.toRemove).toEqual(['old']);
+  });
+
+  it('keeps cards outside the window available when the limit is raised again', () => {
+    const cards: Record<string, FsrsCard> = {
+      new: newCard(NOW),
+      mid: newCard(NOW),
+      old: newCard(NOW),
+    };
+    expect(getActiveNewCardIds(savedWords, cards, 2)).toEqual(['new', 'mid']);
+    expect(getActiveNewCardIds(savedWords, cards, 3)).toEqual(['new', 'mid', 'old']);
   });
 
   it('counts the remaining daily new-card budget', () => {

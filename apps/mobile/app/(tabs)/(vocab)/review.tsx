@@ -305,7 +305,7 @@ export default function ReviewScreen() {
       remaining: budget.remaining,
       candidates,
       toCreate: plan.toCreate.length,
-      toRemove: plan.toRemove.length,
+      inactiveNewCards: plan.toRemove.length,
     });
     const introduced = Object.entries(langCards)
       .filter(([, c]) => c.createdAt >= budget.dayStart)
@@ -320,10 +320,9 @@ export default function ReviewScreen() {
       log('[srs] introducedToday cards', introduced);
     }
 
-    // Push back: drop blue cards that fell outside the newest `dailyNewLimit`.
-    for (const id of plan.toRemove) {
-      removeCard(l2Code, id);
-    }
+    // Cards outside the current blue-card window stay persisted but are not
+    // selected for review. This makes changing the daily limit reversible and
+    // avoids one DELETE request per card during page load.
 
     // Introduce: create due-now cards for the newest unrated words lacking one.
     if (plan.toCreate.length > 0) {
@@ -333,7 +332,7 @@ export default function ReviewScreen() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, dayStartHour, updateCard, removeCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, dayStartHour, updateCard]);
 
   // ── Prune orphaned SRS cards ──
   // Cards only make sense for words that are still saved; unsaving through
@@ -355,10 +354,14 @@ export default function ReviewScreen() {
   const dueCards = useMemo(() => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
+    const activeNewCardIds = new Set(
+      fsrs.getActiveNewCardIds(l2SavedWords, langCards, dailyNewLimit),
+    );
     return l2SavedWords
       .filter((sw) => {
         const srs = langCards[sw.id];
         if (!srs) return false;
+        if (fsrs.getCardState(srs) === 'new' && !activeNewCardIds.has(sw.id)) return false;
         return srs.due <= now;
       })
       .sort((a, b) => {
@@ -367,7 +370,7 @@ export default function ReviewScreen() {
         if (!sa || !sb) return 0;
         return sa.due - sb.due;
       });
-  }, [l2SavedWords, store, l2Code]);
+  }, [l2SavedWords, store, l2Code, dailyNewLimit]);
 
   // ── Derive entry for the current card from the reactive ID cache ──
   const currentDueCard = dueCards[currentIndex];

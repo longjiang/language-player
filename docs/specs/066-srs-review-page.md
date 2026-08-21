@@ -5,8 +5,7 @@
 - **Spec ID**: SPEC-066
 - **Feature**: SRS Review Page
 - **Status**: implemented (2026-08-11); `dailyNewLimit` semantics corrected
-  to match Anki/FSRS (2026-08-13) — previous wording was wrong; code update
-  pending
+  to match Anki/FSRS (2026-08-13), with reversible limit changes (2026-08-21)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -322,8 +321,10 @@ recomputes the queue on the next store change (rating, removal) or page reload.
    remaining new-card budget.
 2. Words in `toCreate` get a brand-new card with `due = Date.now()`
    (due immediately) and count against today's budget.
-3. Blue cards pushed out of the newest-`dailyNewLimit` window are removed
-   (`toRemove`) so the deck doesn't grow unboundedly.
+3. Blue cards outside the newest-`dailyNewLimit` window are soft-deactivated
+   for review selection. They remain persisted as unrated cards, so changing
+   the limit does not issue one DELETE request per card and raising the limit
+   later can restore them without recreating their state.
 4. Rated cards (green/red) are never displaced.
 5. Due cards = saved words whose card has `due <= now`, sorted by
    `due` ascending (oldest due first).
@@ -645,6 +646,10 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Mobile cap-rejection reconciliation** — implemented (2026-08-13):
   `srs_cap_reached` rejections revert the unsynced card and surface the
   upgrade banner instead of silently dropping the rating.
+- ✅ **Reversible daily-limit changes** — implemented (2026-08-21):
+  changing `dailyNewLimit` no longer deletes blue cards outside the active
+  window. Both review pages soft-deactivate those cards during selection;
+  orphan pruning still deletes cards whose saved words were actually removed.
 - ✅ **Server-side tombstone guard** — implemented (2026-08-13): stale
   saved-word / SRS-card upserts are rejected against `user_sync_log` deletes,
   and direct web writes carry client timestamps for LWW.
