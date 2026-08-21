@@ -433,8 +433,14 @@ src/sidepanel.tsx (SidePanelApp — chrome.sidePanel page)
         │       └── <TokenizedLine>  ← per-cue (IntersectionObserver + 5-line lookahead)
         │           ├── ruby annotations (furigana, pinyin)
         │           └── clickable token spans
-        └── <SavedWordsProvider>              (page mode)
-            └── <PagePanel>                   ← translated block + dictionary modal
+        └── <PageTranslationPanel>            (page mode, only while this tab is active)
+            └── translated blocks + lazy skeletons
+
+The page-mode dictionary is separate from the native side panel. The page
+content script emits `lpv-page-dictionary-open` after a token click, and
+`dist/page-dictionary.js` renders the same compact dictionary modal over the
+webpage viewport. This keeps the original page visible behind a centered,
+web-parity dialog while the side panel remains the translation surface.
 ```
 
 Key behaviors:
@@ -442,7 +448,8 @@ Key behaviors:
   5 lines proactively (`TOKENIZE_LOOKAHEAD`), while `IntersectionObserver`
   covers manual scroll beyond that window
 - **Token cache**: `tokenCache = new Map<string, LemmatizedToken[]>()` — prevents re-fetching tokens for the same text
-- **Translated lines**: `useTranslateLines` hook batch-translates visible lines in chunks of 5 via `/translate_array`
+- **Translated lines**: `PageTranslationPanel` batch-translates only blocks that intersect its scrollport, in chunks of 5 via `/translate_array`; unloaded blocks show a skeleton sized from their source length
+- **Page-mode lifecycle**: tokenization requires both `panelOpenState.open === true` and `pageTranslationVisibility.open === true`. Switching tabs or closing the side panel calls `cleanup()`, restores each block's original HTML, clears token listeners/cache, and closes the webpage dictionary modal
 - **State flow**: `content-entry.js` `pushPanelState()` → `chrome.runtime.sendMessage({action:'panelState'})` → background tags `sender.tab.id` → `sidePanelPort.postMessage()` → `SidePanelApp` re-renders `TranscriptAppInner` with new props (React preserves scroll/selection state across pushes). The side panel pulls the current state on open/tab-switch via `getPanelState`, and sends `panelSeek` back to seek the player.
 
 ---
@@ -466,7 +473,7 @@ with `position:fixed`. They render in the browser's own side panel:
     tabId). Actions: `panelState` (video), `pageModeState` / `pageLookup`
     (page mode).
   - Side panel → content script: direct `chrome.tabs.sendMessage` (`panelSeek`,
-    `pageFollowLink`, `pageTokenizationOff`, `changeLanguage`).
+    `pageTranslationVisibility`, `pageTokenizationOff`, `changeLanguage`).
   - Background → content scripts: `panelOpenState` on panel open/close/tab
     switch (gates ArrowUp/Down cue seeking).
 - **Opening the panel**: `chrome.sidePanel.open({ tabId })` requires a user
@@ -476,13 +483,38 @@ with `position:fixed`. They render in the browser's own side panel:
   then pushes `pageLookup`). The action click and close control share the same
   window-scoped toggle/close behavior.
 - **Page mode lifecycle**: token clicks send `pageLookup` and open the panel.
-  The panel's ✕ disables page tokenization (storage + `pageTokenizationOff`);
-  the browser's native ✕ just closes the panel and leaves tokens in place.
+  Tokenization starts only after the Page Translation tab is active. The
+  browser's native ✕ restores the original page immediately; switching to
+  Subtitles does the same. A later Page Translation tab open re-reads the page
+  snapshot and lazily tokenizes only near-viewport page blocks.
 - **What moved out of content scripts**: `createPanelUI`/`createPanel`, the
   mismatch banner DOM, the header (logo/open-in-web/close), `setPanelVisible`,
   `togglePanel`, `updateStatus` (now log-only), and the `autoOpenPanel` pref.
   `content-entry.js` only computes `buildPanelState()` (cues, active cue, L1/L2,
   title, web URL, mismatch) and pushes it.
+
+### Inspecting extension network activity
+
+The extension routes API calls through `src/api-fetch.ts`, which sends a
+`bgFetch` message to `src/background.js`. The actual HTTP request therefore
+belongs to the extension service worker, not the inspected webpage.
+
+1. Open `chrome://extensions`, find Language Player, and click its **service
+   worker / Inspect views** link.
+2. In that DevTools window, open **Network**, enable **Preserve log**, and
+   filter `Fetch/XHR` or search for `translate_array`, `lemmatize`,
+   `dictionary/lookup`, or `user-subscription`.
+3. Trigger the action again after opening DevTools. The Network panel does not
+   retroactively show requests made before it attached.
+
+The side panel has its own DevTools context: right-click inside the side panel
+and choose **Inspect**, or inspect it from the extension's views. Use that
+console for React/side-panel rendering logs. For page tokenization and the
+centered dictionary modal, inspect the webpage's DevTools console; all
+extension logs are prefixed `[LP Extension]`. Set the app-wide `LOG_LEVEL` in
+`src/i18n.js` to `3` in a development build when verbose request/response
+diagnostics are needed. The implementation must not add permissions or host
+matches just to inspect traffic.
 
 ---
 
