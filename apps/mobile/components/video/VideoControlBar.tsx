@@ -171,7 +171,7 @@ export function VideoControlBar({
             <Heart size={16} color={liked ? ICON_DESTRUCTIVE : ICON_MUTED} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
           </Pressable>
         )}
-        {onSaveToPlaylist && (
+        {!subtitlesBand && onSaveToPlaylist && (
           <Pressable
             onPress={onSaveToPlaylist}
             disabled={playlistDisabled}
