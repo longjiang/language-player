@@ -1,5 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
 
+/* Content-script surfaces use the same semantic palette as the native side
+ * panel. Components consume these tokens; literal colors do not appear in
+ * selectors so the page UI can follow the active light/dark preference. */
+:root {
+  --lpv-background: 230 30% 8%;
+  --lpv-foreground: 0 0% 95%;
+  --lpv-card: 230 25% 12%;
+  --lpv-primary: 274 60% 46%;
+  --lpv-primary-foreground: 0 0% 100%;
+  --lpv-secondary: 230 20% 18%;
+  --lpv-muted-foreground: 215 14% 56%;
+  --lpv-border: 230 20% 22%;
+  --lpv-warning: 38 92% 50%;
+  --lpv-destructive: 0 72% 51%;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --lpv-background: 0 0% 100%;
+    --lpv-foreground: 222 47% 11%;
+    --lpv-card: 0 0% 100%;
+    --lpv-primary: 274 60% 38%;
+    --lpv-primary-foreground: 0 0% 100%;
+    --lpv-secondary: 210 17% 94%;
+    --lpv-muted-foreground: 215 14% 46%;
+    --lpv-border: 214 20% 85%;
+    --lpv-warning: 38 92% 42%;
+    --lpv-destructive: 0 84% 45%;
+  }
+}
+
 /**
  * Prime Video Subtitle Viewer — Content Styles
  *
@@ -57,13 +88,13 @@ body.lpv-panel-open disney-web-player-ui {
   max-width: 90vw;
   height: 100vh;
   z-index: 9999;
-  background: rgb(14, 16, 27);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: hsl(var(--lpv-background));
+  border-left: 1px solid hsl(var(--lpv-border) / 0.8);
   display: flex;
   flex-direction: column;
   font-family: 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
-  color: #ddd;
-  box-shadow: -2px 0 16px rgba(0, 0, 0, 0.4);
+  color: hsl(var(--lpv-foreground));
+  box-shadow: -2px 0 16px hsl(var(--lpv-foreground) / 0.4);
   transform: translateX(0);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0, 1);
 }
@@ -79,8 +110,8 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgb(22, 25, 38);
+  border-bottom: 1px solid hsl(var(--lpv-border) / 0.8);
+  background: hsl(var(--lpv-card));
   flex-shrink: 0;
 }
 
@@ -91,7 +122,7 @@ body.lpv-panel-open disney-web-player-ui {
   font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: hsl(var(--lpv-primary-foreground));
 }
 
 #lpv-panel-logo {
@@ -106,7 +137,7 @@ body.lpv-panel-open disney-web-player-ui {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #999;
+  color: hsl(var(--lpv-muted-foreground));
   font-size: 16px;
   cursor: pointer;
   display: flex;
@@ -116,8 +147,8 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 #lpv-close-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: hsl(var(--lpv-primary-foreground));
+  background: hsl(var(--lpv-border));
 }
 
 #lpv-header-right {
@@ -137,9 +168,9 @@ body.lpv-panel-open disney-web-player-ui {
   font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   font-size: 12px;
   font-weight: 600;
-  color: #ccc;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: hsl(var(--lpv-foreground) / 0.88);
+  background: hsl(var(--lpv-secondary) / 0.7);
+  border: 1px solid hsl(var(--lpv-border));
   border-radius: 6px;
   text-decoration: none;
   cursor: pointer;
@@ -153,21 +184,21 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 #lpv-open-web-btn:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
+  color: hsl(var(--lpv-primary-foreground));
+  border-color: hsl(var(--lpv-border));
+  background: hsl(var(--lpv-border));
 }
 
 #lpv-open-web-btn.lpv-warning {
-  color: #f59e0b;
-  border-color: rgba(245, 158, 11, 0.4);
-  background: rgba(245, 158, 11, 0.08);
+  color: hsl(var(--lpv-warning));
+  border-color: hsl(var(--lpv-warning) / 0.4);
+  background: hsl(var(--lpv-warning) / 0.08);
 }
 
 #lpv-open-web-btn.lpv-warning:hover {
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.6);
-  background: rgba(245, 158, 11, 0.14);
+  color: hsl(var(--lpv-warning));
+  border-color: hsl(var(--lpv-warning) / 0.6);
+  background: hsl(var(--lpv-warning) / 0.14);
 }
 
 #lpv-open-web-btn::after {
@@ -181,9 +212,9 @@ body.lpv-panel-open disney-web-player-ui {
 #lpv-status {
   padding: 8px 16px;
   font-size: 12px;
-  color: #888;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: hsl(var(--lpv-muted-foreground));
+  background: hsl(var(--lpv-card) / 0.3);
+  border-bottom: 1px solid hsl(var(--lpv-card) / 0.5);
   flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -217,12 +248,12 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-cue-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: hsl(var(--lpv-secondary));
   border-radius: 3px;
 }
 
 .lpv-cue-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: hsl(var(--lpv-secondary));
 }
 
 /* ── Cue Entry ─────────────────────────────────────────────────────────── */
@@ -239,21 +270,21 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-cue:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: hsl(var(--lpv-card) / 0.5);
 }
 
 /* Active / currently-playing cue */
 .lpv-cue.lpv-active {
-  background: rgba(0, 168, 225, 0.12);
-  border-left-color: #00A8E1;
+  background: hsl(var(--lpv-primary) / 0.12);
+  border-left-color: hsl(var(--lpv-primary));
 }
 
 .lpv-cue.lpv-active .lpv-cue-time {
-  color: #00A8E1;
+  color: hsl(var(--lpv-primary));
 }
 
 .lpv-cue.lpv-active .lpv-cue-text {
-  color: #fff;
+  color: hsl(var(--lpv-primary-foreground));
 }
 
 /* ── Cue Time Badge ────────────────────────────────────────────────────── */
@@ -262,7 +293,7 @@ body.lpv-panel-open disney-web-player-ui {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 500;
-  color: #666;
+  color: hsl(var(--lpv-muted-foreground));
   min-width: 36px;
   font-variant-numeric: tabular-nums;
   user-select: none;
@@ -272,7 +303,7 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-cue-text {
   font-size: calc(14px * var(--lpv-font-scale, 1));
-  color: #bbb;
+  color: hsl(var(--lpv-muted-foreground));
   flex: 1;
   white-space: pre-line;
 }
@@ -285,7 +316,7 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #555;
+  color: hsl(var(--lpv-muted-foreground));
   font-size: 14px;
   text-align: center;
   padding: 24px;
@@ -298,8 +329,8 @@ body.lpv-panel-open disney-web-player-ui {
   display: inline-block;
   width: 24px;
   height: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-top-color: rgba(0, 168, 225, 0.8);
+  border: 2px solid hsl(var(--lpv-secondary));
+  border-top-color: hsl(var(--lpv-primary) / 0.8);
   border-radius: 50%;
   animation: lpv-spin 0.8s linear infinite;
 }
@@ -318,15 +349,15 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-token:hover {
-  background: rgba(0, 168, 225, 0.2);
+  background: hsl(var(--lpv-primary) / 0.2);
 }
 
 .lpv-token-saved {
-  background: rgba(255, 193, 7, 0.15);
+  background: hsl(var(--lpv-warning) / 0.15);
 }
 
 .lpv-token-saved:hover {
-  background: rgba(255, 193, 7, 0.3);
+  background: hsl(var(--lpv-warning) / 0.3);
 }
 
 .lpv-token-active {
@@ -335,7 +366,7 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-cue-text {
   font-size: calc(14px * var(--lpv-font-scale, 1));
-  color: #bbb;
+  color: hsl(var(--lpv-muted-foreground));
   line-height: 1.8; /* extra space for ruby text */
   white-space: pre-line;
 }
@@ -350,7 +381,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-cue.lpv-active .lpv-cue-text {
-  color: #ddd;
+  color: hsl(var(--lpv-foreground));
 }
 
 /* ── Cue Translation (L1 text below L2 line) ─────────────────────────── */
@@ -362,13 +393,13 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-cue-translation {
   font-size: calc(12px * var(--lpv-font-scale, 1));
-  color: #777;
+  color: hsl(var(--lpv-muted-foreground));
   margin-top: 2px;
   line-height: 1.5;
 }
 
 .lpv-cue.lpv-active .lpv-cue-translation {
-  color: #999;
+  color: hsl(var(--lpv-muted-foreground));
 }
 
 /* ── Cue Menu (… popup) ─────────────────────────────────────────────── */
@@ -386,7 +417,7 @@ body.lpv-panel-open disney-web-player-ui {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: #555;
+  color: hsl(var(--lpv-muted-foreground));
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -403,8 +434,8 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-cue-menu-btn:hover,
 .lpv-cue-menu-btn-open {
-  color: #ccc;
-  background: rgba(255, 255, 255, 0.08);
+  color: hsl(var(--lpv-foreground) / 0.88);
+  background: hsl(var(--lpv-border) / 0.8);
 }
 
 .lpv-cue-menu-dropdown {
@@ -414,10 +445,10 @@ body.lpv-panel-open disney-web-player-ui {
   z-index: 20;
   min-width: 120px;
   margin-top: 2px;
-  background: rgb(22, 25, 38);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: hsl(var(--lpv-card));
+  border: 1px solid hsl(var(--lpv-border));
   border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px hsl(var(--lpv-foreground) / 0.5);
   overflow: hidden;
 }
 
@@ -427,7 +458,7 @@ body.lpv-panel-open disney-web-player-ui {
   padding: 6px 12px;
   border: none;
   background: transparent;
-  color: #bbb;
+  color: hsl(var(--lpv-muted-foreground));
   font-size: 12px;
   text-align: left;
   cursor: pointer;
@@ -435,8 +466,8 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-cue-menu-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  background: hsl(var(--lpv-secondary) / 0.7);
+  color: hsl(var(--lpv-primary-foreground));
 }
 
 /* ── Bottom Bar (translation toggle) ─────────────────────────────────── */
@@ -446,8 +477,8 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgb(22, 25, 38);
+  border-top: 1px solid hsl(var(--lpv-border) / 0.8);
+  background: hsl(var(--lpv-card));
   flex-shrink: 0;
 }
 
@@ -471,7 +502,7 @@ body.lpv-panel-open disney-web-player-ui {
   position: relative;
   width: 34px;
   height: 20px;
-  background: rgba(255, 255, 255, 0.12);
+  background: hsl(var(--lpv-border));
   border-radius: 10px;
   transition: background 0.2s;
   flex-shrink: 0;
@@ -484,13 +515,13 @@ body.lpv-panel-open disney-web-player-ui {
   left: 2px;
   width: 16px;
   height: 16px;
-  background: #fff;
+  background: hsl(var(--lpv-primary-foreground));
   border-radius: 50%;
   transition: transform 0.2s;
 }
 
 .lpv-translate-switch input:checked + .lpv-switch-slider {
-  background: #00A8E1;
+  background: hsl(var(--lpv-primary));
 }
 
 .lpv-translate-switch input:checked + .lpv-switch-slider::after {
@@ -500,17 +531,17 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-switch-label {
   font-size: 12px;
   font-weight: 600;
-  color: #999;
+  color: hsl(var(--lpv-muted-foreground));
   transition: color 0.15s;
 }
 
 .lpv-translate-switch input:checked ~ .lpv-switch-label {
-  color: #00A8E1;
+  color: hsl(var(--lpv-primary));
 }
 
 .lpv-control-status {
   font-size: 11px;
-  color: #666;
+  color: hsl(var(--lpv-muted-foreground));
   margin-left: auto;
 }
 
@@ -526,10 +557,10 @@ body.lpv-panel-open disney-web-player-ui {
   width: 22px;
   height: 22px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid hsl(var(--lpv-border));
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #999;
+  background: hsl(var(--lpv-secondary) / 0.7);
+  color: hsl(var(--lpv-muted-foreground));
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -538,9 +569,9 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-stepper-btn:hover:not(:disabled) {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
+  color: hsl(var(--lpv-primary-foreground));
+  border-color: hsl(var(--lpv-border));
+  background: hsl(var(--lpv-border));
 }
 
 .lpv-stepper-btn:disabled {
@@ -551,7 +582,7 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-stepper-value {
   font-size: 11px;
   font-weight: 600;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
   min-width: 20px;
   text-align: center;
   user-select: none;
@@ -562,12 +593,12 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-token rt {
   font-size: 0.55em;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
   user-select: none;
 }
 
 .lpv-cue.lpv-active .lpv-token rt {
-  color: #aaa;
+  color: hsl(var(--lpv-muted-foreground));
 }
 
 /* ── Dictionary Card ───────────────────────────────────────────────────── */
@@ -576,9 +607,9 @@ body.lpv-panel-open disney-web-player-ui {
   position: sticky;
   bottom: 0;
   z-index: 10;
-  background: rgb(18, 21, 32);
-  border-top: 1px solid rgba(0, 168, 225, 0.25);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+  background: hsl(var(--lpv-card));
+  border-top: 1px solid hsl(var(--lpv-primary) / 0.25);
+  box-shadow: 0 -4px 16px hsl(var(--lpv-foreground) / 0.5);
   max-height: 50vh;
   overflow-y: auto;
 }
@@ -593,7 +624,7 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: flex-start;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid hsl(var(--lpv-border) / 0.8);
 }
 
 .lpv-dict-card-header-left {
@@ -619,18 +650,18 @@ body.lpv-panel-open disney-web-player-ui {
   font-size: 12px;
   font-weight: 500;
   text-align: center;
-  color: #6d28d9;
+  color: hsl(var(--lpv-primary));
   background: transparent;
-  border: 1px solid rgba(109, 40, 217, 0.35);
+  border: 1px solid hsl(var(--lpv-primary) / 0.35);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .lpv-explain-btn:hover {
-  background: rgba(109, 40, 217, 0.08);
-  color: #5b21b6;
-  border-color: rgba(109, 40, 217, 0.55);
+  background: hsl(var(--lpv-primary) / 0.08);
+  color: hsl(var(--lpv-primary));
+  border-color: hsl(var(--lpv-primary) / 0.55);
 }
 
 .lpv-explain-btn:disabled {
@@ -639,8 +670,8 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-explain-btn-active {
-  background: rgba(167, 139, 250, 0.1);
-  color: #c4b5fd;
+  background: hsl(var(--lpv-primary) / 0.1);
+  color: hsl(var(--lpv-primary));
 }
 
 .lpv-explain-bar {
@@ -651,8 +682,8 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-explain-section {
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(167, 139, 250, 0.04);
+  border-bottom: 1px solid hsl(var(--lpv-secondary) / 0.7);
+  background: hsl(var(--lpv-primary) / 0.04);
 }
 
 .lpv-explain-loading {
@@ -660,12 +691,12 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  color: #a78bfa;
+  color: hsl(var(--lpv-primary));
 }
 
 .lpv-explain-error {
   font-size: 13px;
-  color: #e05555;
+  color: hsl(var(--lpv-destructive));
 }
 
 /* Pro-gated feature banners (ADR-0034) */
@@ -675,9 +706,9 @@ body.lpv-panel-open disney-web-player-ui {
   padding: 8px 16px;
   font-size: 12px;
   text-align: center;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: hsl(var(--lpv-warning));
+  background: hsl(var(--lpv-warning) / 0.07);
+  border-bottom: 1px solid hsl(var(--lpv-secondary) / 0.7);
 }
 
 .lpv-pro-banner {
@@ -688,27 +719,27 @@ body.lpv-panel-open disney-web-player-ui {
   padding: 14px 16px;
   font-size: 12px;
   text-align: center;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.08);
-  border-top: 1px solid rgba(251, 191, 36, 0.25);
+  color: hsl(var(--lpv-warning));
+  background: hsl(var(--lpv-warning) / 0.08);
+  border-top: 1px solid hsl(var(--lpv-warning) / 0.25);
 }
 
 .lpv-pro-banner-link {
-  color: #fbbf24;
+  color: hsl(var(--lpv-warning));
   font-weight: 600;
   text-decoration: none;
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  border: 1px solid hsl(var(--lpv-warning) / 0.4);
   border-radius: 6px;
   padding: 4px 12px;
 }
 
 .lpv-pro-banner-link:hover {
-  background: rgba(251, 191, 36, 0.12);
+  background: hsl(var(--lpv-warning) / 0.12);
 }
 
 .lpv-explain-text {
   font-size: 13px;
-  color: #ccc;
+  color: hsl(var(--lpv-foreground) / 0.88);
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -718,7 +749,7 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-markdown p {
   margin: 0 0 8px;
   font-size: 13px;
-  color: #ccc;
+  color: hsl(var(--lpv-foreground) / 0.88);
   line-height: 1.7;
 }
 
@@ -727,24 +758,24 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-markdown strong {
-  color: #eee;
+  color: hsl(var(--lpv-foreground));
   font-weight: 600;
 }
 
 .lpv-markdown em {
-  color: #bbb;
+  color: hsl(var(--lpv-muted-foreground));
 }
 
 .lpv-markdown code {
-  background: rgba(255, 255, 255, 0.08);
+  background: hsl(var(--lpv-border) / 0.8);
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 12px;
-  color: #a78bfa;
+  color: hsl(var(--lpv-primary));
 }
 
 .lpv-markdown pre {
-  background: rgba(255, 255, 255, 0.05);
+  background: hsl(var(--lpv-card) / 0.5);
   padding: 8px 10px;
   border-radius: 4px;
   overflow-x: auto;
@@ -754,12 +785,12 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-markdown pre code {
   background: none;
   padding: 0;
-  color: #ccc;
+  color: hsl(var(--lpv-foreground) / 0.88);
 }
 
 .lpv-markdown h2, .lpv-markdown h3, .lpv-markdown h4 {
   margin: 8px 0 3px;
-  color: #ddd;
+  color: hsl(var(--lpv-foreground));
   font-weight: 600;
 }
 
@@ -774,7 +805,7 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-markdown li {
   font-size: 13px;
-  color: #ccc;
+  color: hsl(var(--lpv-foreground) / 0.88);
   line-height: 1.5;
 }
 
@@ -787,46 +818,46 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-markdown td {
   padding: 4px 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #ccc;
+  border: 1px solid hsl(var(--lpv-border) / 0.8);
+  color: hsl(var(--lpv-foreground) / 0.88);
   vertical-align: top;
 }
 
 .lpv-markdown td:first-child {
-  color: #eee;
+  color: hsl(var(--lpv-foreground));
   font-weight: 600;
   white-space: nowrap;
 }
 
 .lpv-markdown hr {
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid hsl(var(--lpv-border) / 0.8);
   margin: 10px 0;
 }
 
 .lpv-markdown h5 {
   margin: 6px 0 3px;
   font-size: 12px;
-  color: #ddd;
+  color: hsl(var(--lpv-foreground));
   font-weight: 600;
 }
 
 .lpv-dict-card-word {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: hsl(var(--lpv-primary-foreground));
 }
 
 .lpv-dict-card-pron {
   margin-left: 6px;
   font-size: 13px;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
 }
 
 .lpv-dict-card-lemma {
   display: block;
   font-size: 11px;
-  color: #666;
+  color: hsl(var(--lpv-muted-foreground));
   margin-top: 2px;
 }
 
@@ -836,15 +867,15 @@ body.lpv-panel-open disney-web-player-ui {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
   font-size: 14px;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .lpv-dict-card-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: hsl(var(--lpv-border));
+  color: hsl(var(--lpv-primary-foreground));
 }
 
 .lpv-dict-card-body {
@@ -857,12 +888,12 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-empty {
   padding: 16px;
   font-size: 13px;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
   text-align: center;
 }
 
 .lpv-dict-error {
-  color: #e05555;
+  color: hsl(var(--lpv-destructive));
 }
 
 .lpv-dict-empty-link {
@@ -870,7 +901,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-dict-empty-link a {
-  color: #00A8E1;
+  color: hsl(var(--lpv-primary));
   text-decoration: none;
   font-size: 12px;
 }
@@ -884,7 +915,7 @@ body.lpv-panel-open disney-web-player-ui {
   padding: 8px 12px;
   text-decoration: none;
   color: inherit;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid hsl(var(--lpv-card) / 0.4);
   transition: background 0.1s;
 }
 
@@ -893,7 +924,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-dict-entry:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: hsl(var(--lpv-card) / 0.4);
 }
 
 .lpv-dict-entry-header {
@@ -906,31 +937,31 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-head {
   font-size: 15px;
   font-weight: 600;
-  color: #eee;
+  color: hsl(var(--lpv-foreground));
 }
 
 .lpv-dict-pron-small {
   font-size: 11px;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
 }
 
 .lpv-dict-pos {
   font-size: 11px;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
   font-style: italic;
 }
 
 .lpv-dict-source {
   font-size: 10px;
-  color: #00A8E1;
-  background: rgba(0, 168, 225, 0.1);
+  color: hsl(var(--lpv-primary));
+  background: hsl(var(--lpv-primary) / 0.1);
   padding: 1px 6px;
   border-radius: 4px;
 }
 
 .lpv-dict-def {
   font-size: 13px;
-  color: #bbb;
+  color: hsl(var(--lpv-muted-foreground));
   margin-top: 4px;
   line-height: 1.5;
 }
@@ -940,7 +971,7 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-entry-row {
   display: flex;
   align-items: flex-start;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid hsl(var(--lpv-card) / 0.4);
 }
 
 .lpv-dict-entry-row:last-child {
@@ -977,8 +1008,8 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-level {
   font-size: 10px;
   font-weight: 600;
-  color: #00A8E1;
-  background: rgba(0, 168, 225, 0.12);
+  color: hsl(var(--lpv-primary));
+  background: hsl(var(--lpv-primary) / 0.12);
   padding: 1px 6px;
   border-radius: 4px;
 }
@@ -988,8 +1019,8 @@ body.lpv-panel-open disney-web-player-ui {
 #lpv-mismatch-banner {
   display: none;
   padding: 12px 16px;
-  background: #fef3c7;
-  border-bottom: 1px solid #f59e0b;
+  background: hsl(var(--lpv-warning) / 0.2);
+  border-bottom: 1px solid hsl(var(--lpv-warning));
   font-size: 13px;
   line-height: 1.5;
 }
@@ -1008,7 +1039,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-mismatch-text {
-  color: #92400e;
+  color: hsl(var(--lpv-warning));
 }
 
 .lpv-mismatch-actions {
@@ -1018,8 +1049,8 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-mismatch-switch-btn {
   padding: 6px 14px;
-  background: #f59e0b;
-  color: #fff;
+  background: hsl(var(--lpv-warning));
+  color: hsl(var(--lpv-primary-foreground));
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -1028,21 +1059,21 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-mismatch-switch-btn:hover {
-  background: #d97706;
+  background: hsl(var(--lpv-warning));
 }
 
 .lpv-mismatch-dismiss-btn {
   padding: 6px 14px;
   background: transparent;
-  color: #92400e;
-  border: 1px solid #d97706;
+  color: hsl(var(--lpv-warning));
+  border: 1px solid hsl(var(--lpv-warning));
   border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
 }
 
 .lpv-mismatch-dismiss-btn:hover {
-  background: #fef3c7;
+  background: hsl(var(--lpv-warning) / 0.2);
 }
 
 /* ── Responsive: smaller screens ───────────────────────────────────────── */
@@ -1065,7 +1096,7 @@ body.lpv-panel-open disney-web-player-ui {
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
-  color: #666;
+  color: hsl(var(--lpv-muted-foreground));
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1074,9 +1105,9 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-entry-save-btn:hover {
-  color: #ffc107;
-  border-color: rgba(255, 193, 7, 0.3);
-  background: rgba(255, 193, 7, 0.08);
+  color: hsl(var(--lpv-warning));
+  border-color: hsl(var(--lpv-warning) / 0.3);
+  background: hsl(var(--lpv-warning) / 0.08);
 }
 
 .lpv-entry-save-btn:disabled {
@@ -1085,9 +1116,9 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-entry-save-btn-saved {
-  color: #ffc107;
-  border-color: rgba(255, 193, 7, 0.3);
-  background: rgba(255, 193, 7, 0.1);
+  color: hsl(var(--lpv-warning));
+  border-color: hsl(var(--lpv-warning) / 0.3);
+  background: hsl(var(--lpv-warning) / 0.1);
 }
 
 /* ── Page-mode dictionary modal ────────────────────────────────────────── */
@@ -1186,28 +1217,28 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-page-empty {
-  color: #777;
+  color: hsl(var(--lpv-muted-foreground));
   font-size: 13px;
   text-align: center;
   padding: 24px 8px;
 }
 
 .lpv-page-translation {
-  background: rgba(255, 255, 255, 0.05);
-  border-left: 3px solid #00A8E1;
+  background: hsl(var(--lpv-card) / 0.5);
+  border-left: 3px solid hsl(var(--lpv-primary));
   border-radius: 6px;
   padding: 10px 12px;
   margin-bottom: 12px;
   font-size: calc(13px * var(--lpv-font-scale, 1));
   line-height: 1.7;
-  color: #ccc;
+  color: hsl(var(--lpv-foreground) / 0.88);
 }
 
 .lpv-page-translation-loading {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #999;
+  color: hsl(var(--lpv-muted-foreground));
 }
 
 .lpv-page-follow-link {
@@ -1218,16 +1249,16 @@ body.lpv-panel-open disney-web-player-ui {
   font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
-  background: rgba(0, 168, 225, 0.18);
-  border: 1px solid rgba(0, 168, 225, 0.45);
+  color: hsl(var(--lpv-primary-foreground));
+  background: hsl(var(--lpv-primary) / 0.18);
+  border: 1px solid hsl(var(--lpv-primary) / 0.45);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .lpv-page-follow-link:hover {
-  background: rgba(0, 168, 225, 0.3);
+  background: hsl(var(--lpv-primary) / 0.3);
 }
 
 .lpv-page-token {
@@ -1237,8 +1268,8 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-page-token:hover {
-  background: rgba(0, 168, 225, 0.22);
-  box-shadow: 0 0 0 1px rgba(0, 168, 225, 0.35);
+  background: hsl(var(--lpv-primary) / 0.22);
+  box-shadow: 0 0 0 1px hsl(var(--lpv-primary) / 0.35);
 }
 
 .lpv-page-token ruby {
@@ -1247,7 +1278,7 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-page-token rt {
   font-size: 0.55em;
-  color: #888;
+  color: hsl(var(--lpv-muted-foreground));
   user-select: none;
 }
 
