@@ -10,7 +10,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
-import { DictionaryCard } from './components/DictionaryCard';
+import { DictionaryModal } from './components/DictionaryModal';
 import { Markdown } from './components/Markdown';
 import { X, Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
@@ -687,7 +687,7 @@ interface DictionaryDockProps {
   onClose: () => void;
 }
 
-/** Dictionary card pinned to the bottom of both video and page sidebars. */
+/** Dictionary lookup shown in a modal over both video and page surfaces. */
 const DictionaryDock: React.FC<DictionaryDockProps> = ({
   token,
   l1Code,
@@ -702,8 +702,7 @@ const DictionaryDock: React.FC<DictionaryDockProps> = ({
 }) => {
   if (!token) return null;
   return (
-    <div className="lpv-dict-overlay">
-      <DictionaryCard
+    <DictionaryModal
         token={token}
         l1Code={l1Code}
         l2Code={l2Code}
@@ -714,8 +713,7 @@ const DictionaryDock: React.FC<DictionaryDockProps> = ({
         isPro={isPro}
         subLoading={subLoading}
         onClose={onClose}
-      />
-    </div>
+    />
   );
 };
 
