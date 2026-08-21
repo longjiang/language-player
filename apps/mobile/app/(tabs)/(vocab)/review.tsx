@@ -15,6 +15,7 @@ import {
   baseCode,
   dailyReviewCounterKey,
   formatNextDueLabel,
+  getNextReviewInterval,
   dayKey,
   msUntilNextDay,
   deviceTimezone,
@@ -659,6 +660,13 @@ export default function ReviewScreen() {
     updated.ratingId = newRatingId(user?.id, card.word.id);
     updated.rating = quality;
     undoRef.current.ratingId = updated.ratingId;
+    const nextReviewInterval = getNextReviewInterval(updated.due);
+    const nextReviewKey = nextReviewInterval.unit === 'minutes'
+      ? 'msg.next_review_in_minutes'
+      : nextReviewInterval.unit === 'hours'
+        ? 'msg.next_review_in_hours'
+        : 'msg.next_review_in_days';
+    const nextReviewLabel = t(nextReviewKey, { n: nextReviewInterval.value });
     log('[srs] mark', {
       quality,
       wordId: card.word.id,
@@ -694,7 +702,13 @@ export default function ReviewScreen() {
         type: 'info',
         visibilityTime: 3000,
         position: 'top',
-        props: { quality, label, undoLabel: t('action.undo'), handleUndo: () => handleUndo() },
+        props: {
+          quality,
+          label,
+          nextReviewLabel,
+          undoLabel: t('action.undo'),
+          handleUndo: () => handleUndo(),
+        },
       });
     }
 

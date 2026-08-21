@@ -36,17 +36,17 @@ const TOAST_BORDER_COLORS: Record<string, string> = {
 const toastConfig = {
   /*
     Info toast with Undo button for rating feedback.
-    Consumes custom props: { quality, label: { label, hint }, handleUndo, undoLabel }
+    Consumes custom props: { quality, label: { label, hint }, nextReviewLabel, handleUndo, undoLabel }
     Styled to match the web review page: colored background, Undo button trailing.
   */
-  info: (params: ToastConfigParams<{ quality?: string; label?: { label: string; hint: string }; handleUndo?: () => void; undoLabel?: string }>) => {
-    const { quality, label, handleUndo, undoLabel } = params.props ?? {};
+  info: (params: ToastConfigParams<{ quality?: string; label?: { label: string; hint: string }; nextReviewLabel?: string; handleUndo?: () => void; undoLabel?: string }>) => {
+    const { quality, label, nextReviewLabel, handleUndo, undoLabel } = params.props ?? {};
     const bgColor = TOAST_BG_COLORS[quality ?? ''] ?? '#16a34a';
     const borderColor = TOAST_BORDER_COLORS[quality ?? ''] ?? '#15803d';
     return (
       <InfoToast
         text1={label?.label}
-        text2={label?.hint}
+        text2={nextReviewLabel ?? label?.hint}
         onPress={params.onPress}
         style={{
           borderLeftColor: borderColor,

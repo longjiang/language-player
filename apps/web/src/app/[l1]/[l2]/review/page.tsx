@@ -12,6 +12,7 @@ import {
   baseCode,
   dailyReviewCounterKey,
   formatNextDueLabel,
+  getNextReviewInterval,
   dayKey,
   msUntilNextDay,
   deviceTimezone,
@@ -403,6 +404,19 @@ export default function ReviewPage() {
     const wasLastCard = currentIndex >= cards.length - 1;
     undoRef.current = { wordId: card.word.id, prevSrs: { ...card.srs }, wasLastCard };
 
+    const updated = fsrs.rate(card.srs, quality);
+    updated.ratingId = newRatingId(session?.user?.id, card.word.id);
+    updated.rating = quality;
+    undoRef.current.ratingId = updated.ratingId;
+
+    const nextReviewInterval = getNextReviewInterval(updated.due);
+    const nextReviewKey = nextReviewInterval.unit === 'minutes'
+      ? 'msg.next_review_in_minutes'
+      : nextReviewInterval.unit === 'hours'
+        ? 'msg.next_review_in_hours'
+        : 'msg.next_review_in_days';
+    const nextReviewLabel = t(nextReviewKey, { n: nextReviewInterval.value });
+
     // Visual feedback via toast — matches button color, includes Undo
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
@@ -410,7 +424,7 @@ export default function ReviewPage() {
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white">{label.label}</p>
-            <p className="text-xs text-white/80 truncate">{label.hint}</p>
+            <p className="text-xs text-white/80 truncate">{nextReviewLabel}</p>
           </div>
           <button
             onClick={() => {
@@ -432,10 +446,6 @@ export default function ReviewPage() {
       );
     }
 
-    const updated = fsrs.rate(card.srs, quality);
-    updated.ratingId = newRatingId(session?.user?.id, card.word.id);
-    updated.rating = quality;
-    undoRef.current.ratingId = updated.ratingId;
     updateCard(l2Code, card.word.id, updated, srsCardMeta);
 
     if (!isPro) {

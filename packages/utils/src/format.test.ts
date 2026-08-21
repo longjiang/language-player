@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatNextDueLabel } from './format';
+import { formatNextDueLabel, getNextReviewInterval } from './format';
 
 const now = new Date(2026, 7, 16, 12, 0); // Aug 16 2026, noon
 
@@ -42,5 +42,24 @@ describe('formatNextDueLabel', () => {
   it('falls back to a plain date for far dates', () => {
     const label = formatNextDueLabel(new Date(2026, 9, 1, 9, 0).getTime(), 'en', now);
     expect(label).toMatch(/\d/);
+  });
+});
+
+describe('getNextReviewInterval', () => {
+  const base = new Date(2026, 7, 16, 12, 0).getTime();
+
+  it('rounds short intervals up to minutes', () => {
+    expect(getNextReviewInterval(base + 1, base)).toEqual({ value: 1, unit: 'minutes' });
+    expect(getNextReviewInterval(base + 59 * 60_000, base)).toEqual({ value: 59, unit: 'minutes' });
+  });
+
+  it('switches to hours and days at the unit boundaries', () => {
+    expect(getNextReviewInterval(base + 60 * 60_000, base)).toEqual({ value: 1, unit: 'hours' });
+    expect(getNextReviewInterval(base + 23 * 60 * 60_000, base)).toEqual({ value: 23, unit: 'hours' });
+    expect(getNextReviewInterval(base + 24 * 60 * 60_000, base)).toEqual({ value: 1, unit: 'days' });
+  });
+
+  it('never reports zero for an already-due timestamp', () => {
+    expect(getNextReviewInterval(base - 1, base)).toEqual({ value: 1, unit: 'minutes' });
   });
 });

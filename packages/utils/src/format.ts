@@ -36,6 +36,22 @@ export function formatRelativeDate(date: Date | string, now: Date = new Date()):
   return `${Math.floor(diffDay / 365)}y ago`;
 }
 
+export type ReviewIntervalUnit = 'minutes' | 'hours' | 'days';
+
+/** Return a rounded-up interval suitable for a "next review in …" label. */
+export function getNextReviewInterval(
+  dueMs: number,
+  now = Date.now(),
+): { value: number; unit: ReviewIntervalUnit } {
+  const minutes = Math.max(1, Math.ceil((dueMs - now) / 60_000));
+  if (minutes < 60) return { value: minutes, unit: 'minutes' };
+
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return { value: hours, unit: 'hours' };
+
+  return { value: Math.ceil(hours / 24), unit: 'days' };
+}
+
 /** Locale-aware "next review" label: today/tomorrow include the time, later
  *  dates fall back to a plain date.
  *
