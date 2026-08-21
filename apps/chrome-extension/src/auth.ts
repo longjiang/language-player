@@ -24,6 +24,8 @@ export interface AuthState {
   /** GoTrue refresh token — used to mint a new access token on expiry. */
   refreshToken?: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   userId: string;
   expires: number; // unix ms
 }
@@ -34,6 +36,8 @@ interface LoginResponse {
   user?: {
     id?: string | number;
     email?: string;
+    firstName?: string;
+    lastName?: string;
   };
 }
 
@@ -68,6 +72,8 @@ function toAuthState(
     token,
     refreshToken: data.refreshToken || previous?.refreshToken,
     email: user.email || previous?.email || emailFallback,
+    firstName: user.firstName || previous?.firstName,
+    lastName: user.lastName || previous?.lastName,
     userId: String(user.id ?? payload.sub ?? previous?.userId ?? ''),
     expires: (typeof payload.exp === 'number' ? payload.exp : 0) * 1000,
   };
