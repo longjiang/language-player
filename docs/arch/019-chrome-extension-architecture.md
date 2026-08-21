@@ -493,8 +493,9 @@ with `position:fixed`. They render in the browser's own side panel:
   gesture, so auto-open on subtitle load is gone. It opens from the extension
   action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token
   click (the content script calls `sidePanel.open()` on the click gesture,
-  then pushes `pageLookup`). The action click and close control share the same
-  window-scoped toggle/close behavior.
+  then pushes `pageLookup`). The background records the originating tab and
+  closes Chrome's global panel when the active tab changes, so panel-open state
+  affects only the page where the user opened it.
 - **Page mode lifecycle**: token clicks send `pageLookup` and open the panel.
   Tokenization starts only after the Page Translation tab is active. The
   browser's native ✕ restores the original page immediately; switching to
