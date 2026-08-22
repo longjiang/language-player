@@ -296,24 +296,9 @@ internal final class RubyTextParagraphView: ExpoView {
 
       if let reading = run.reading, !reading.isEmpty {
         let readingFont = makeReadingFont()
-        // Seat the furigana INSIDE the base line's existing leading (web-browser
-        // <ruby> behavior) instead of letting Core Text add a fixed reading
-        // slab on top of every line. The base paragraph pins
-        // min=max=lineHeight; a full-height reading font makes Core Text grow
-        // each line by ~readingSize (measured 32 → 39 = +7px), which makes
-        // mobile lines taller than web. Capping the *annotation's* line box to
-        // a small height keeps the base box un-grown; the reading glyphs
-        // overhang into the half-leading (clipsToBounds=false), exactly like a
-        // browser <rt> overhang. Value tuned so the annotation reads at a good
-        // size but reserves almost no extra vertical space.
-        let readingPS = NSMutableParagraphStyle()
-        let slabCappedHeight = max(1.0, CGFloat(readingSize) * 0.35)
-        readingPS.minimumLineHeight = slabCappedHeight
-        readingPS.maximumLineHeight = slabCappedHeight
         let readingAttributes: [String: Any] = [
           kCTFontAttributeName as String: readingFont,
           kCTForegroundColorAttributeName as String: run.readingColor.withAlphaComponent(CGFloat(run.opacity)),
-          kCTParagraphStyleAttributeName as String: readingPS,
         ]
 #if DEBUG
         let syllables = reading.split(separator: " ").count
