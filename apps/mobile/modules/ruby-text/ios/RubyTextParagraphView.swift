@@ -64,18 +64,16 @@ internal final class RubyTextParagraphView: ExpoView {
   var textAlign = "left" { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
 
-  /// How far every base run is nudged down so the reading sits close to the
-  /// base text. Core Text's CTRubyAnnotation positions the reading a fixed
-  /// ~4–5px above the base text (measured: 4px at 20pt base / 11pt reading,
-  /// 5px at 16/9), independent of the reserved slot or line height — leaving
-  /// a visible gap of ~20% of a CJK character height. The JS fallback
-  /// (apps/mobile/lib/ruby-layout.ts, RUBY_READING_GAP) targets ~2px, so the
-  /// base text is offset down by the difference to match it. The annotation
-  /// does NOT follow the base run's baselineOffset — it stays anchored to the
-  /// original baseline, which is exactly what closes the gap. Applied to
-  /// every base run (whitespace, byeonggi, gloss included) so the whole line
-  /// keeps one baseline.
-  private let rubyBaseTextOffset: CGFloat = 2
+  /// Vertical nudge of every base run, which sets the visible furigana↔base
+  /// gap. The Core Text ruby annotation is anchored to the base run's original
+  /// metrics and does NOT follow `baselineOffset`, so this constant moves only
+  /// the base: a positive value raises the base toward the reading (tightens
+  /// the gap), 0 leaves the natural Core Text gap (the web-browser default),
+  /// negative lowers the base further (widens it). Tuned to 0 (2026-08-22) —
+  /// the previous +2 raised the base and closed the gap; 0 matches web's small
+  /// browser-default ruby gap. Applied to every base run (whitespace, byeonggi,
+  /// gloss included) so the whole line keeps one baseline.
+  private let rubyBaseTextOffset: CGFloat = 0
 
   private var attributedString: NSAttributedString?
   /// Whether the current attributed string has been applied to a real
