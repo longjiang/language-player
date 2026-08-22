@@ -123,7 +123,13 @@ internal final class RubyTextParagraphView: ExpoView {
   }
 
   internal var diagnostics: [String: Any] {
-    [
+    // BASE/READING VERTICAL METRICS — diagnose the furigana↔base gap. Core Text
+    // anchors a CTRubyAnnotation to the base run's metrics; the visible gap
+    // depends on these plus `.baselineOffset` (rubyBaseTextOffset). Read-only
+    // (no textView.layoutManager access — ARCH-030 rule 1).
+    let baseFont = makeFont(size: CGFloat(fontSize), weight: .regular)
+    let readingFont = makeReadingFont()
+    return [
       "runs": runs.count,
       "chars": attributedString?.length ?? -1,
       "bounds": String(describing: bounds),
@@ -134,6 +140,13 @@ internal final class RubyTextParagraphView: ExpoView {
       "textKit": textView.textLayoutManager != nil ? "2" : "1",
       "readingSize": readingSize,
       "fontFamily": fontFamily ?? "nil",
+      "lineHeight": lineHeight,
+      "rubyBaseTextOffset": Double(rubyBaseTextOffset),
+      "baseAscender": Double(baseFont.ascender),
+      "baseDescender": Double(baseFont.descender),
+      "baseCapHeight": Double(baseFont.capHeight),
+      "readingAscender": Double(readingFont.ascender),
+      "readingDescender": Double(readingFont.descender),
     ]
   }
 
