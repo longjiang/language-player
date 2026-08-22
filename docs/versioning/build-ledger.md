@@ -30,13 +30,14 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 11 | 6c12a034 | 2026-08-18 | — | dev 9 (Debug; archived; lp-dev-9-ios-device-6c12a0348b41.zip; 15b3c7f3727ba1b112021580344b37286844740df75970adedc7ecd7b5fc95cf) |
 | 12 | 77ccd8ef | 2026-08-18 | 3.2.1 — iOS TestFlight (b6, consumed) · 3.2.1 — Android Internal testing (b6, consumed) | — |
 | 13 | 7f220cf9 | 2026-08-18 | 3.2.2 — iOS testflight (b7, consumed) · 3.2.2 — Android internal (b7, consumed) | — |
-| 14 | 0dddc4ba | 2026-08-19 | — | dev 10 (Debug; active; lp-dev-10-ios-device-0dddc4ba14fe.zip; 8596df43fe7407a3779402af17c5ccea521a7ec217aefee79a4d5c1ceb0cabe3) |
+| 14 | 0dddc4ba | 2026-08-19 | — | dev 10 (Debug; archived; lp-dev-10-ios-device-0dddc4ba14fe.zip; 8596df43fe7407a3779402af17c5ccea521a7ec217aefee79a4d5c1ceb0cabe3) |
 | 15 | 25c5e426 | 2026-08-19 | 3.2.3 — iOS TestFlight (b8, consumed) · 3.2.3 — Android Internal testing (b8, consumed) | — |
 | 16 | 96af02c8 | 2026-08-19 | 3.3.0 — iOS TestFlight (b9, consumed) | — |
 | 17 | 56dd0894 | 2026-08-21 | — | dev 11 (Debug; active (dirty); lp-dev-11-ios-device-56dd08942074.zip; 355ee1f6d2d6e7893c29e1b7a7dba4bdedf29248469716ce61373c5ac5376729) |
 | 18 | efaebf55 | 2026-08-21 | 3.3.1 — iOS TestFlight (b10, consumed) · 3.3.1 — Android Internal testing (b10, consumed) | — |
 | 19 | b8f9ba0b | 2026-08-22 | — | dev 12 (Debug; active; lp-dev-12-ios-device-b8f9ba0bb624.zip; 7ed6de3c217f146a63a0836a3bb4d7c411aa5b0ff3d605dcaf244e6d09bf6fc0) |
 | 20 | 3ee53ad9 | 2026-08-21 | 3.3.2 — iOS TestFlight (b11, consumed) | — |
+| 21 | 4e9d7176 | 2026-08-22 | — | dev 13 (Debug; active; lp-dev-13-ios-device-4e9d717633e9.zip; 1ac86dcd455a633a45c7d9358a4638992516e2d40b9bc9646162b45b67930409) |
 
 ## Preserved working builds
 
