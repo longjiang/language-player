@@ -473,6 +473,63 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     );
   }, [l2Code]);
 
+  // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
+  // When the token is a saved word, the definition/byeonggi come from the
+  // exact entry the user saved — multiple dictionary entries can match one
+  // surface form, and the saved record pins the one the user chose. Falls
+  // back to the first cached match for unsaved words (or when the saved
+  // entry isn't resolvable yet).
+  const getTokenEntryData = useCallback((token: LemmatizedToken) => {
+    if (!token.lemmas.length) {
+      return { byeonggiText: null as string | null, firstDef: null as string | null, savedWordId: undefined as string | undefined };
+    }
+
+    const savedRecord = savedRecordForToken(token);
+    if (savedRecord) {
+      const savedEntry = resolveSavedEntry(savedRecord);
+      if (savedEntry?.definitions?.length) {
+        return {
+          byeonggiText: savedEntry.han_script?.hanja ?? savedEntry.han_script?.hantu ?? savedEntry.han_script?.han ?? null,
+          firstDef: firstGloss(savedEntry.definitions),
+          savedWordId: savedRecord.id,
+        };
+      }
+    }
+
+    const firstLemma = token.lemmas[0]!.lemma;
+    // Cache/backend keys use the base L2 code (e.g. "zh" not "zh-Hans"), but
+    // components may be mounted with the regional code. Check both so quick
+    // glosses work everywhere (including video subtitles). Also check the
+    // lowercase form — the batch lookup is case-sensitive on the server, while
+    // Vietnamese lemmatization keeps sentence-initial capitals ("Bạn").
+    const entries =
+      getCachedEntries(l2Code, firstLemma) ??
+      getCachedEntries(baseCode(l2Code), firstLemma) ??
+      getCachedEntries(l2Code, firstLemma.toLowerCase()) ??
+      getCachedEntries(baseCode(l2Code), firstLemma.toLowerCase());
+    if (!entries || entries.length === 0) {
+      // Try surface form if lemma didn't match
+      const surfaceEntries =
+        getCachedEntries(l2Code, token.text) ??
+        getCachedEntries(baseCode(l2Code), token.text) ??
+        getCachedEntries(l2Code, token.text.toLowerCase()) ??
+        getCachedEntries(baseCode(l2Code), token.text.toLowerCase());
+      if (surfaceEntries && surfaceEntries.length > 0) {
+        const e = surfaceEntries[0]!;
+        return {
+          byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? e.han_script?.han ?? null,
+          firstDef: e.definitions ? firstGloss(e.definitions) : null,
+        };
+      }
+      return { byeonggiText: null, firstDef: null };
+    }
+    const firstEntry = entries[0]!;
+    return {
+      byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? firstEntry.han_script?.han ?? null,
+      firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
+    };
+  }, [l2Code, cacheVersion, savedRecordForToken, resolveSavedEntry]);
+
   // Saved phrase candidates — every saved form (head + inflections + per-
   // instance surface) that could span multiple tokens. The merge below
   // collapses exact token-boundary matches into one atomic token so
@@ -684,6 +741,24 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
         ) {
           displayText = token.pronunciation;
         }
+        // Path 1 (quick gloss shown in selection-enabled contexts): the native
+        // paragraph now renders the gloss inline as a run, so `rendered` must
+        // reproduce ` (‘def’) ` byte-for-byte to keep selection offsets correct.
+        // Mirrors the paragraph path's showQuickGloss + gloss-run text exactly.
+        const isSavedToken = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
+        if (isSavedToken && quickGlossEnabled && !isHighlightedToken) {
+          const firstLemma = token.lemmas[0]?.lemma;
+          const { firstDef, savedWordId } = getTokenEntryData(token);
+          if (firstDef) {
+            const l1GlossDef =
+              l1Glosses[`${firstLemma ?? word}:${savedWordId ?? ''}`] ??
+              l1Glosses[firstLemma ?? word] ??
+              l1Glosses[word] ??
+              null;
+            const q = l1GlossDef ?? firstDef;
+            displayText = `${displayText} (‘${q}’) `;
+          }
+        }
         return { text: token.text, displayText };
       }),
       !!leadingIndent,
@@ -692,6 +767,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     selectionDictionary, displayTokens, convertedTexts, quizMode, revealedTokens,
     replaceWithPhonetics, shouldShowPhonetics, phoneticsOnHighlight,
     tokenMatchesOrContainsTerm, tokenHasTargetEntry, leadingIndent,
+    highlightSaved, savedFormSet, quickGlossEnabled, l1Glosses, getTokenEntryData,
   ]);
 
   // Lookup term for the selection popup — the selected text as displayed
@@ -1024,63 +1100,6 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     void prewarmLocalLemmatizer(l2Code);
   }, [l2Code]);
 
-  // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
-  // When the token is a saved word, the definition/byeonggi come from the
-  // exact entry the user saved — multiple dictionary entries can match one
-  // surface form, and the saved record pins the one the user chose. Falls
-  // back to the first cached match for unsaved words (or when the saved
-  // entry isn't resolvable yet).
-  const getTokenEntryData = useCallback((token: LemmatizedToken) => {
-    if (!token.lemmas.length) {
-      return { byeonggiText: null as string | null, firstDef: null as string | null, savedWordId: undefined as string | undefined };
-    }
-
-    const savedRecord = savedRecordForToken(token);
-    if (savedRecord) {
-      const savedEntry = resolveSavedEntry(savedRecord);
-      if (savedEntry?.definitions?.length) {
-        return {
-          byeonggiText: savedEntry.han_script?.hanja ?? savedEntry.han_script?.hantu ?? savedEntry.han_script?.han ?? null,
-          firstDef: firstGloss(savedEntry.definitions),
-          savedWordId: savedRecord.id,
-        };
-      }
-    }
-
-    const firstLemma = token.lemmas[0]!.lemma;
-    // Cache/backend keys use the base L2 code (e.g. "zh" not "zh-Hans"), but
-    // components may be mounted with the regional code. Check both so quick
-    // glosses work everywhere (including video subtitles). Also check the
-    // lowercase form — the batch lookup is case-sensitive on the server, while
-    // Vietnamese lemmatization keeps sentence-initial capitals ("Bạn").
-    const entries =
-      getCachedEntries(l2Code, firstLemma) ??
-      getCachedEntries(baseCode(l2Code), firstLemma) ??
-      getCachedEntries(l2Code, firstLemma.toLowerCase()) ??
-      getCachedEntries(baseCode(l2Code), firstLemma.toLowerCase());
-    if (!entries || entries.length === 0) {
-      // Try surface form if lemma didn't match
-      const surfaceEntries =
-        getCachedEntries(l2Code, token.text) ??
-        getCachedEntries(baseCode(l2Code), token.text) ??
-        getCachedEntries(l2Code, token.text.toLowerCase()) ??
-        getCachedEntries(baseCode(l2Code), token.text.toLowerCase());
-      if (surfaceEntries && surfaceEntries.length > 0) {
-        const e = surfaceEntries[0]!;
-        return {
-          byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? e.han_script?.han ?? null,
-          firstDef: e.definitions ? firstGloss(e.definitions) : null,
-        };
-      }
-      return { byeonggiText: null, firstDef: null };
-    }
-    const firstEntry = entries[0]!;
-    return {
-      byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? firstEntry.han_script?.han ?? null,
-      firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
-    };
-  }, [l2Code, cacheVersion, savedRecordForToken, resolveSavedEntry]);
-
   // ── L1-translated quick gloss (matches web token-span) ──
   useEffect(() => {
     if (l1Lang.code === 'en' || !quickGlossEnabled) return;
@@ -1316,7 +1335,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // Quick gloss and interlinear definition coexist (matching web).
               // Quick gloss: 'def' marker inline after saved words.
               // Interlinear: definition stacked below all words.
-              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted && !suppressSelectionDecorations;
+              // NOTE (quick-gloss vs SPEC-084): the gloss is no longer suppressed
+              // in selection-enabled contexts. The native paragraph string now
+              // includes the gloss run, so the selection map (selectionMap below)
+              // reproduces it byte-for-byte to keep drag-select offsets correct.
+              // Byeonggi stays suppressed in selection contexts (see showByeonggi).
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
@@ -1562,7 +1586,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText && !suppressSelectionDecorations;
               const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
-              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted && !suppressSelectionDecorations;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;
