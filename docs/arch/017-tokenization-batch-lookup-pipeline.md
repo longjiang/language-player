@@ -435,7 +435,7 @@ TokenizedText (single file, ~360 lines)
 | **In-flight lemmatize dedup** | `lemmatizeInflight` Map | `lemmatizeInflight` Map in `tokenizer.ts` | ✅ Done — same pattern, different file |
 | **Traditional Chinese** | OpenCC per-token in TokenSpan, bidirectional (ADR-0019) | Pre-converted at TokenizedText level via `getConverter()`/`getSimplifiedConverter()` | ✅ Done — batch conversion of unique texts, both directions |
 | **hardWords filter** | `getWordDifficulty()` in TokenSpan | `getWordDifficulty()` + `shouldShowPhonetics()` in TokenizedText | ✅ Done |
-| **quickGloss** | `QuickGloss` component for saved words | Inline `savedFormSet` + `firstDef` from dict cache | ✅ Done — rendered as small muted text after word |
+| **quickGloss** | `QuickGloss` component for saved words | Inline `savedFormSet` + `firstDef` from dict cache | ✅ Done — rendered as small muted text after word; since 2026-08-22 also rendered in selection-enabled contexts (reader/transcript), with the selection map reproducing the gloss run so drag-select offsets stay correct |
 | **byeonggi** | Per-token `useMemo` from cache | `getTokenEntryData()` per token | ✅ Done |
 | **Quiz mode** | TokenSpan per-word blanking | `revealedTokens` Set | ✅ Done |
 | **Interlinear gloss** | Via `definition.show` in TokenSpan | First lemma below/beside word | ✅ Done |

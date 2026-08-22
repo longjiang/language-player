@@ -95,7 +95,7 @@ virtualization (only mounted lines tokenize), so it needs no change.
 | # | Setting | Web Does | Mobile Status | Blocker |
 |---|---|---|---|---|
 | F1 | `phonetics.conditions` | `getWordDifficulty()` from dict cache, compares `levels[].numeric` to `userLevel` | TODO (G9) — shows phonetics on ALL tokens | Needs `useProgressLevel(l2Code)` hook + filter logic |
-| F2 | `quickGloss` | `QuickGloss` component renders `firstDef` from cache for saved words only | TODO (G7) — dict data available via cache, not rendered | Needs `useSavedWords()` context integration |
+| F2 | `quickGloss` | `QuickGloss` component renders `firstDef` from cache for saved words only | ✅ Done — rendered for saved words (SPEC-015 Phase 5B); **2026-08-22** also rendered in selection-enabled contexts (the README/reader/transcript), with the selection offset map reproducing the inline gloss so drag-select stays correct | — |
 | F3 | `display.traditional` | `TokenSpan` lazy-loads OpenCC, converts per-token (ADR-0019) | TODO (G11) — no conversion | Needs OpenCC port or character map |
 | F4 | `tokenizedText.mode` | `TokenSpan` per-word blanking with quiz-reveal state | ✅ Done (G8) | — |
 | F5 | `tokenSpan.definition.show` | Interlinear gloss from dict cache | ✅ Done (G10) | — |
@@ -202,7 +202,7 @@ For a video transcript with 500 subtitle lines, 200 unique lemmas:
 - [ ] Video token cache wired through to subtitle TokenizedText instances (Phase 1)
 - [ ] In-flight lemmatize dedup prevents duplicate API calls (Phase 1)
 - [ ] `phonetics.conditions === 'hardWords'` filters phonetics by word difficulty (Phase 2)
-- [ ] `quickGloss` shows dictionary definition for saved words (Phase 2)
+- [x] `quickGloss` shows dictionary definition for saved words, including selection-enabled reader/transcript contexts (Phase 2; 2026-08-22)
 - [x] Chinese script conversion works per-token on mobile, both directions (Phase 3 — 2026-08-08)
 - [x] Reader-page blocks lazily tokenized when approaching viewport (Phase 4)
 - [ ] TypeScript compiles cleanly: `./node_modules/.bin/tsc --noEmit`
