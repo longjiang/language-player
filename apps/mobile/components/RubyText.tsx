@@ -249,7 +249,17 @@ export interface RubyTextParagraphProps {
   /** Flat list of text runs spanning the whole block (one attributed string). */
   runs: NativeRubyTextParagraphRun[];
   fontSize: number;
+  /** Line box handed to the native paragraph view. May be the COMPENSATED
+   *  value (baseLeading − ruby slab) so the native Core Text / Android renderer
+   *  (which inflates every line by the reading slab) lands on the intended
+   *  `baseLeading` pitch. */
   lineHeight: number;
+  /** Line height of the JS measuring text, which drives the measured box AND
+   *  the `onLineGrid` used to baseline-align the translation column. Must
+   *  equal the ACTUAL rendered L2 pitch (baseLeading), not the compensated
+   *  native box — otherwise the translation drifts off the L2 lines. Defaults
+   *  to `lineHeight`. */
+  gridLineHeight?: number;
   readingSize: number;
   isRtl: boolean;
   textAlign?: 'left' | 'center' | 'right';
@@ -285,6 +295,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     runs,
     fontSize,
     lineHeight,
+    gridLineHeight,
     readingSize,
     isRtl,
     textAlign = 'left',
@@ -332,6 +343,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     plainText,
     fontSize,
     lineHeight,
+    gridLineHeight ?? lineHeight,
     readingSize,
     fontFamily ?? '',
     fontWeight ?? '',
@@ -461,7 +473,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
           top: 0,
           opacity: 0,
           fontSize,
-          lineHeight,
+          lineHeight: gridLineHeight ?? lineHeight,
           fontWeight: fontWeight ?? 'normal',
           textAlign,
           ...(fontFamily ? { fontFamily } : {}),

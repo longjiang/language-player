@@ -1542,6 +1542,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     taps={taps}
                     fontSize={tokenFontSize}
                     lineHeight={paragraphLineHeight}
+                    gridLineHeight={baseLeading ?? tokenFontSize}
                     readingSize={readingSize}
                     fontFamily={textStyle.fontFamily ?? null}
                     isRtl={isRtl}
