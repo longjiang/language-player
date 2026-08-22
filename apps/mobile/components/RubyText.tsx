@@ -396,6 +396,28 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   const [measuringLines, setMeasuringLines] = useState<TextLayoutLine[] | null>(null);
   const [nativeGrid, setNativeGrid] = useState<GridLine[] | null>(null);
 
+  // Ruby annotations increase the actual TextKit line-fragment height beyond
+  // the ruby-free RN measuring Text (for the reported SRS case: 74 -> 88pt).
+  // Keep the native grid only for the current paragraph; otherwise a previous
+  // sentence could temporarily donate its height while the new runs mount.
+  useEffect(() => {
+    setNativeGrid(null);
+  }, [sizeKey]);
+
+  const nativeMeasuredHeight = nativeGrid && nativeGrid.length > 0
+    ? Math.max(...nativeGrid.map((line) => line.y + line.height))
+    : 0;
+  const renderedHeight = measured
+    ? Math.max(measured.height, nativeMeasuredHeight)
+    : undefined;
+
+  useEffect(() => {
+    if (!__DEV__ || !measured || nativeMeasuredHeight <= measured.height + 0.5) return;
+    log(
+      `[LP Mobile] [RubyText] paragraph ruby-height correction textLen=${plainText.length} measured=${measured.height.toFixed(1)} native=${nativeMeasuredHeight.toFixed(1)} width=${measured.width.toFixed(1)}`,
+    );
+  }, [measured, nativeMeasuredHeight, plainText.length]);
+
   useEffect(() => {
     if (!onLineGrid) return;
     if (nativeGrid && nativeGrid.length > 1) {
@@ -467,7 +489,11 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               }
               clearSelection={clearSelection ?? 0}
               onLineGrid={(event) => setNativeGrid(event.nativeEvent.lines)}
-              style={{ width: measured.width, height: measured.height }}
+              // The RN Text measurement excludes the ruby annotation band.
+              // Once the native paragraph reports its ruby-aware fragment
+              // height, use that larger height so wrapped base lines remain
+              // visible instead of being clipped at the bottom.
+              style={{ width: measured.width, height: renderedHeight ?? measured.height }}
             />
           );
         })()
