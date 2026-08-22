@@ -230,11 +230,16 @@ layout.
   floats in the leading exactly like a browser `<ruby>`, matching web's
   unitless `lineHeight`. The JS view-column fallback still reserves the reading
   band (`TokenizedText.tsx` gates it on `!NATIVE_PARAGRAPH_ACTIVE`).
-- **Furigana↔base gap:** reported as visually flush on iOS (2026-08-22). The
-  `diagnostics` dict now reports base/reading ascender/descender/capHeight,
-  `lineHeight`, and `rubyBaseTextOffset` to measure the true Core Text ruby gap
-  before tuning `rubyBaseTextOffset` (the annotation is anchored to the base's
-  original baseline, per the `baselineOffset` comment).
+- **Furigana↔base gap (tuned 2026-08-22):** the iOS ruby paragraph rendered the
+  furigana flush on the base (tighter than web's browser `<ruby>`). Root cause:
+  the base run's `baselineOffset` (`rubyBaseTextOffset`) was `+2`, which raises
+  the base toward the Core Text ruby annotation and closes the gap. Since the
+  annotation is anchored to the base's original metrics (it doesn't follow
+  `baselineOffset`), setting `rubyBaseTextOffset` to `0` leaves the base at its
+  natural position and opens the gap to the web-browser default. Applies to
+  `RubyTextParagraphView.swift` and `RubyTextView.swift`. The `diagnostics` dict
+  reports base/reading ascender/descender/capHeight, `lineHeight`, and
+  `rubyBaseTextOffset` so the gap can be verified from the Metro log.
 
 ---
 
