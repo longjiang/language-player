@@ -149,9 +149,20 @@ internal final class RubyTextView: ExpoView {
     // UILabel/TextKit to draw ruby on modern iOS, and lets the reading carry
     // its own font size and muted color.
     let readingFont = makeReadingFont()
+    // Seat the furigana inside the base line's leading (web-browser <ruby>
+    // behavior) instead of letting Core Text grow each line by a full reading
+    // slab. Cap the annotation's line box to a small height so it reserves
+    // almost no extra vertical space; the reading glyphs overhang into the
+    // half-leading (clipsToBounds=false), like a browser <rt>. Matches
+    // RubyTextParagraphView.swift.
+    let readingPS = NSMutableParagraphStyle()
+    let slabCappedHeight = max(1.0, CGFloat(readingSize) * 0.35)
+    readingPS.minimumLineHeight = slabCappedHeight
+    readingPS.maximumLineHeight = slabCappedHeight
     let attributes: [String: Any] = [
       kCTFontAttributeName as String: readingFont,
       kCTForegroundColorAttributeName as String: readingColor,
+      kCTParagraphStyleAttributeName as String: readingPS,
     ]
     // Swift imports the C function as CTRubyAnnotationCreateWithAttributes(_:_:_:_:_:) —
     // no argument labels.
