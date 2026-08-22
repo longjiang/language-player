@@ -1,7 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import * as Tabs from '@/components/ui/tabs';
+import { tabbedPanelLogger } from '@/lib/logger';
+
+const { log } = tabbedPanelLogger;
 
 export interface TabDef {
   key: string;
@@ -22,6 +25,12 @@ interface TabbedPanelProps {
   className?: string;
   /** Class name for the content panel. */
   contentClassName?: string;
+  /**
+   * Whether the panel participates in a bounded flex layout. Keep this false
+   * for content inside a vertical ScrollView so the active panel measures to
+   * its children instead of collapsing to the available flex basis (zero).
+   */
+  fill?: boolean;
 }
 
 type DisplayMode = 'full' | 'compact' | 'icon';
@@ -85,6 +94,7 @@ export function TabbedPanel({
   children,
   className,
   contentClassName,
+  fill = false,
 }: TabbedPanelProps) {
   const isControlled = controlledTab !== undefined;
   const [internalTab, setInternalTab] = useState(defaultTab ?? tabs[0]?.key ?? '');
@@ -97,6 +107,7 @@ export function TabbedPanel({
     compact: number;
     icon: number;
   } | null>(null);
+  const lastModeRef = useRef<DisplayMode | null>(null);
 
   const updateMeasurement = (key: 'full' | 'compact' | 'icon', width: number) => {
     setMeasurements((prev) => {
@@ -114,16 +125,43 @@ export function TabbedPanel({
     return 'icon';
   }, [measurements, containerWidth]);
 
+  useEffect(() => {
+    if (lastModeRef.current === mode) return;
+    lastModeRef.current = mode;
+    log('[TabbedPanel] mode selected', {
+      tabs: tabs.map((tab) => tab.key),
+      activeTab,
+      fill,
+      containerWidth,
+      measurements,
+      mode,
+    });
+  }, [activeTab, containerWidth, fill, measurements, mode, tabs]);
+
   const handleTabChange = (key: string) => {
     if (!isControlled) setInternalTab(key);
     onTabChange?.(key);
   };
 
   return (
-    <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
+    <Tabs.Root
+      className={fill ? 'flex-1 min-h-0' : undefined}
+      value={activeTab}
+      onValueChange={handleTabChange}
+    >
       <View
         className={className}
-        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+        onLayout={(e) => {
+          const { width, height } = e.nativeEvent.layout;
+          log('[TabbedPanel] container layout', {
+            tabs: tabs.map((tab) => tab.key),
+            activeTab,
+            fill,
+            width,
+            height,
+          });
+          setContainerWidth(width);
+        }}
       >
         <Tabs.List>
           {tabs.map((tab) => {
@@ -157,7 +195,16 @@ export function TabbedPanel({
 
         {/* Tab content panels */}
         {tabs.map((tab, i) => (
-          <Tabs.Content key={tab.key} value={tab.key} className={contentClassName ?? 'p-4'}>
+          <Tabs.Content
+            key={tab.key}
+            value={tab.key}
+            className={`${fill ? 'flex-1 min-h-0' : ''} ${contentClassName ?? 'p-4'}`.trim()}
+            onLayout={(e) => {
+              if (activeTab !== tab.key) return;
+              const { width, height } = e.nativeEvent.layout;
+              log('[TabbedPanel] content layout', { tab: tab.key, fill, width, height });
+            }}
+          >
             {childrenArray[i] as any}
           </Tabs.Content>
         ))}
@@ -168,13 +215,31 @@ export function TabbedPanel({
           pointerEvents="none"
           style={{ position: 'absolute', left: -10000, top: 0, opacity: 0 }}
         >
-          <View onLayout={(e) => updateMeasurement('full', e.nativeEvent.layout.width)}>
+          <View
+            onLayout={(e) => {
+              const width = e.nativeEvent.layout.width;
+              log('[TabbedPanel] ruler layout', { mode: 'full', width, activeTab });
+              updateMeasurement('full', width);
+            }}
+          >
             <MeasureRow tabs={tabs} mode="full" activeKey={activeTab} />
           </View>
-          <View onLayout={(e) => updateMeasurement('compact', e.nativeEvent.layout.width)}>
+          <View
+            onLayout={(e) => {
+              const width = e.nativeEvent.layout.width;
+              log('[TabbedPanel] ruler layout', { mode: 'compact', width, activeTab });
+              updateMeasurement('compact', width);
+            }}
+          >
             <MeasureRow tabs={tabs} mode="compact" activeKey={activeTab} />
           </View>
-          <View onLayout={(e) => updateMeasurement('icon', e.nativeEvent.layout.width)}>
+          <View
+            onLayout={(e) => {
+              const width = e.nativeEvent.layout.width;
+              log('[TabbedPanel] ruler layout', { mode: 'icon', width, activeTab });
+              updateMeasurement('icon', width);
+            }}
+          >
             <MeasureRow tabs={tabs} mode="icon" activeKey={activeTab} />
           </View>
         </View>
