@@ -1403,18 +1403,23 @@ export default function ReviewScreen() {
             </View>
           )}
           <View className="flex-row gap-2">
-            {RATING_LABELS.map((r) => (
-              <Pressable
-                key={r.key}
-                onPress={() => handleRate(r.key)}
-                disabled={suggestedRating ? r.key !== suggestedRating : (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP)}
-                className="flex-1 items-center rounded-lg py-3"
-                style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: !isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP ? 0.5 : 1 }}
-              >
-                <Text className="text-sm font-bold text-white">{r.label}</Text>
-                <Text className="mt-0.5 text-xs text-white/70">{currentCard ? nextReviewLabelFor(currentCard, r.key) : ''}</Text>
-              </Pressable>
-            ))}
+            {RATING_LABELS.map((r) => {
+              const ratingDisabled = suggestedRating
+                ? r.key !== suggestedRating
+                : (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP);
+              return (
+                <Pressable
+                  key={r.key}
+                  onPress={() => handleRate(r.key)}
+                  disabled={ratingDisabled}
+                  className="flex-1 items-center rounded-lg py-3"
+                  style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: ratingDisabled ? 0.5 : 1 }}
+                >
+                  <Text className="text-sm font-bold text-white">{r.label}</Text>
+                  <Text className="mt-0.5 text-xs text-white/70">{currentCard ? nextReviewLabelFor(currentCard, r.key) : ''}</Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
       )}
