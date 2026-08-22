@@ -8,6 +8,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
+import { log } from '@/lib/logger';
 import { TokenizedText } from '../TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
@@ -159,8 +160,22 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   useEffect(() => {
     if (activeLineIndex < 0) return;
 
+    // ADR-0034 pro wall: free users see only the first FREE_TRANSCRIPT_LINES,
+    // so the FlatList is shorter than the full transcript. scrollToIndex with
+    // an index beyond the rendered items throws the "scrollToIndex out of
+    // range" invariant — clamp to the last visible item so the scroll lands
+    // on the upgrade banner instead of crashing.
+    const listItemCount = isPro
+      ? displayLines.length
+      : Math.min(displayLines.length, FREE_TRANSCRIPT_LINES);
+    if (listItemCount <= 0) return;
+    const targetIndex = Math.min(activeLineIndex, listItemCount - 1);
+    if (targetIndex !== activeLineIndex) {
+      log(`[auto-scroll] ✂️ clamped scroll index ${activeLineIndex} → ${targetIndex} (free tier, ${listItemCount} items)`);
+    }
+
     const now = Date.now();
-    const idxDelta = Math.abs(activeLineIndex - lastScrolledIdx.current);
+    const idxDelta = Math.abs(targetIndex - lastScrolledIdx.current);
     const isSeek = idxDelta > SCROLL.SEEK_INDEX_DELTA;
 
     // Compute isFullyOut from scroll position if containerHeight is known
@@ -169,10 +184,10 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
       const visibleCount = Math.floor(containerHeight / estimatedItemHeight);
       const firstVisible = Math.floor(scrollYRef.current / estimatedItemHeight);
       const lastVisible = firstVisible + visibleCount - 1;
-      isFullyOut = activeLineIndex < firstVisible || activeLineIndex > lastVisible;
+      isFullyOut = targetIndex < firstVisible || targetIndex > lastVisible;
     } else {
       // Fallback: treat initial load as fully-out
-      isFullyOut = lastScrolledIdx.current === -1 && activeLineIndex > 0;
+      isFullyOut = lastScrolledIdx.current === -1 && targetIndex > 0;
     }
 
     // Throttle: skip if we scrolled too recently (unless seek or fully-out)
@@ -181,10 +196,10 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     // Bypass cooldown on seek or when line is far out of view
     if (!isSeek && !isFullyOut && now < userScrolledUntil.current) return;
 
-    lastScrolledIdx.current = activeLineIndex;
+    lastScrolledIdx.current = targetIndex;
     lastAutoScrollTime.current = now;
 
-    const targetOffset = activeLineIndex * estimatedItemHeight - (containerHeight - estimatedItemHeight) / 2;
+    const targetOffset = targetIndex * estimatedItemHeight - (containerHeight - estimatedItemHeight) / 2;
 
     if (playback.smoothScroll && !isInitialLoad.current && !isSeek && !isFullyOut) {
       // Smooth: use Animated.spring driven by scrollAnim
@@ -192,13 +207,13 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     } else {
       // Instant: jump directly
       flatListRef.current?.scrollToIndex({
-        index: activeLineIndex,
+        index: targetIndex,
         animated: false,
         viewPosition: 0.5,
       });
     }
     isInitialLoad.current = false;
-  }, [activeLineIndex, containerHeight, estimatedItemHeight, playback.smoothScroll, animateToOffset]);
+  }, [activeLineIndex, containerHeight, estimatedItemHeight, playback.smoothScroll, animateToOffset, isPro, displayLines.length]);
 
   // ── Single-line subtitle mode ──
   if (singleLine) {

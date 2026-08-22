@@ -14,6 +14,12 @@ export interface UseTranscriptAutoScrollOptions {
   smoothScrollEnabled: boolean;
   /** Estimated height of each subtitle item in pixels. Use ~100 with translations, ~56 without. Default 48. */
   estimatedItemHeight?: number;
+  /** Total number of items in the FlatList. When set, the scroll index is
+   *  clamped to [0, itemCount - 1] — the free-tier transcript truncation
+   *  (ADR-0034) otherwise makes scrollToIndex throw its "out of range"
+   *  invariant once playback passes the visible lines. Default Infinity
+   *  (no clamping) preserves the old behavior for callers without a limit. */
+  itemCount?: number;
 }
 
 export interface UseTranscriptAutoScrollReturn {
@@ -38,6 +44,7 @@ export function useTranscriptAutoScroll({
   flatListRef,
   smoothScrollEnabled,
   estimatedItemHeight = 48,
+  itemCount = Infinity,
 }: UseTranscriptAutoScrollOptions): UseTranscriptAutoScrollReturn {
   // ── Refs ──
   const lastAutoScrollTime = useRef(0);
@@ -109,13 +116,23 @@ export function useTranscriptAutoScroll({
     if (activeIndex < 0) return;
     if (containerHeight <= 0) return;
 
+    // Clamp to the FlatList's real item count: the free-tier transcript
+    // truncation (ADR-0034) makes the visible list shorter than the full
+    // transcript, and scrollToIndex throws an invariant for out-of-range
+    // indices. Clamping lands on the last visible line / upgrade banner.
+    const targetIndex =
+      itemCount > 0 ? Math.min(activeIndex, itemCount - 1) : activeIndex;
+    if (targetIndex !== activeIndex) {
+      log(`[auto-scroll] ✂️ clamped scroll index ${activeIndex} → ${targetIndex} (itemCount=${itemCount})`);
+    }
+
     const firstVisible = computeFirstVisible();
     const visibleCount = computeVisibleCount();
     const lastVisible = firstVisible >= 0 ? firstVisible + visibleCount - 1 : -1;
 
-    const isVisible = firstVisible >= 0 && activeIndex >= firstVisible && activeIndex <= lastVisible;
+    const isVisible = firstVisible >= 0 && targetIndex >= firstVisible && targetIndex <= lastVisible;
     const isFullyOut = !isVisible;
-    const isNearEdge = isVisible && (activeIndex === firstVisible || activeIndex === lastVisible);
+    const isNearEdge = isVisible && (targetIndex === firstVisible || targetIndex === lastVisible);
 
     // If user recently scrolled, don't treat "fully out" as an emergency —
     // the user deliberately scrolled away from the active line. Respect cooldown.
@@ -124,7 +141,7 @@ export function useTranscriptAutoScroll({
     const effectiveFullyOut = inUserCooldown ? false : isFullyOut;
 
     const state: AutoScrollState = {
-      activeIndex,
+      activeIndex: targetIndex,
       prevScrolledIndex: lastScrolledIdx.current,
       isFullyOut: effectiveFullyOut,
       isNearEdge,
@@ -137,23 +154,23 @@ export function useTranscriptAutoScroll({
 
     const decision = decideAutoScroll(state);
 
-    log(`[auto-scroll] 🧠 decision: activeIdx=${activeIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px itemH=${estimatedItemHeight}) isFullyOut=${isFullyOut} effOut=${effectiveFullyOut} isNearEdge=${isNearEdge} userCooldown=${inUserCooldown} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
+    log(`[auto-scroll] 🧠 decision: activeIdx=${targetIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px itemH=${estimatedItemHeight}) isFullyOut=${isFullyOut} effOut=${effectiveFullyOut} isNearEdge=${isNearEdge} userCooldown=${inUserCooldown} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
 
     if (!decision.shouldScroll) return;
 
     // Execute
     lastAutoScrollTime.current = Date.now();
-    lastScrolledIdx.current = activeIndex;
+    lastScrolledIdx.current = targetIndex;
     isInitialLoad.current = false;
 
-    log(`[auto-scroll] 🚀 EXECUTE scrollToIndex: index=${activeIndex} animated=${decision.animated} reason=${decision.reason}`);
+    log(`[auto-scroll] 🚀 EXECUTE scrollToIndex: index=${targetIndex} animated=${decision.animated} reason=${decision.reason}`);
 
     flatListRef.current?.scrollToIndex({
-      index: activeIndex,
+      index: targetIndex,
       animated: decision.animated,
       viewPosition: 0.5,
     });
-  }, [activeIndex, containerHeight, lastFirstVisible, smoothScrollEnabled, flatListRef, computeFirstVisible, computeVisibleCount]);
+  }, [activeIndex, containerHeight, lastFirstVisible, smoothScrollEnabled, flatListRef, computeFirstVisible, computeVisibleCount, itemCount]);
 
   return { onScroll, onLayout, onScrollBeginDrag };
 }
