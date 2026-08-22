@@ -35,6 +35,7 @@ export const dictDbLogger = createLogger('[LP Mobile]', 'dictdb');
 export const syncLogger = createLogger('[LP Mobile]', 'sync');
 export const srsLogger = createLogger('[LP Mobile]', 'srs');
 export const dictionaryEntryLogger = createLogger('[LP Mobile]', 'dictionaryEntry');
+export const tabbedPanelLogger = createLogger('[LP Mobile]', 'tabbedPanel');
 
 /**
  * Default a domain to OFF unless its env override is explicitly set, e.g.
@@ -62,6 +63,7 @@ defaultOff('tokenizer');
 defaultOff('tokenizer-worker');
 defaultOff('popup');
 defaultOff('dictionaryEntry');
+defaultOff('tabbedPanel');
 defaultOff('reader');
 defaultOff('translation');
 defaultOff('boot');

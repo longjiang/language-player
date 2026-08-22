@@ -10,7 +10,7 @@ type RootProps = TabsPrimitive.RootProps & {
 
 export function Root({ children, className, ...props }: RootProps) {
   return (
-    <TabsPrimitive.Root className={`flex-1 ${className ?? ''}`} {...props}>
+    <TabsPrimitive.Root className={className} {...props}>
       {children}
     </TabsPrimitive.Root>
   );
@@ -75,7 +75,7 @@ type ContentProps = TabsPrimitive.ContentProps & {
 export function Content({ children, className, ...props }: ContentProps) {
   return (
     <TabsPrimitive.Content
-      className={`flex-1 ${className ?? ''}`}
+      className={className}
       {...props}
     >
       {children}
