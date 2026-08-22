@@ -250,7 +250,11 @@ internal final class RubyTextParagraphView: ExpoView {
     // per-token views' reserveReadingSlot behavior.
     paragraph.minimumLineHeight = CGFloat(lineHeight)
     paragraph.maximumLineHeight = CGFloat(lineHeight)
-    paragraph.lineBreakMode = .byWordWrapping
+    // Japanese and other scripts without whitespace must still wrap at valid
+    // character boundaries. Word wrapping treats a whole unspaced sentence as
+    // one unbreakable run, so the native view clips the tail of a review
+    // context sentence (including its highlighted target word).
+    paragraph.lineBreakMode = .byCharWrapping
     paragraph.alignment = textAlign == "center" ? .center : textAlign == "right" ? .right : .left
     if isRtl {
       paragraph.baseWritingDirection = .rightToLeft
