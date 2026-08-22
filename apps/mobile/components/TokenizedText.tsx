@@ -1183,14 +1183,17 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     // in actual ruby mode — selection-enabled plain/word-replace contexts keep
     // the plain path's line height (no slot), so visuals stay unchanged.
     // Line-box parity with web (SPEC-051 / web tokenized-text): web sets a
-    // unitless `lineHeight` = leading (1.625/1.75…) and lets the browser fit the
-    // ruby annotation into the line's leading. We must NOT add a reading band on
-    // top of `baseLeading` — baseLeading is ALREADY the pinned line box
-    // (`fontSize × leading`), so adding `(readingSize − rubyPull)` double-counts
-    // it and inflates every ruby line vs web. The native paragraph's Core Text /
-    // Android ruby annotation then floats in the leading (and grows the fragment
-    // only as needed), exactly like a browser <ruby>.
-    const paragraphLineHeight = baseLeading ?? tokenFontSize;
+    // unitless `lineHeight` = leading (1.625/1.75…) and the browser keeps the
+    // ruby line near `fontSize × leading`. The native paragraph renderers
+    // (Core Text / Android) instead inflate EVERY line by a reading slab on top
+    // of the pinned box (measured 32 → 39 = ~readingSize × 0.7 ≈ +7px), which
+    // made mobile's within-line leading taller than web. Compensation: subtract
+    // the slab from the line box we hand the native view, so the ACTUAL pitch
+    // lands back on `baseLeading` = `fontSize × leading`. Applied only in ruby
+    // mode (no readings → no slab). Kept as a leading tweak — no renderer
+    // changes; the value is verified from the `ruby-height correction` log.
+    const rubySlabCompensation = isRubyMode ? Math.round(readingSize * 0.7) : 0;
+    const paragraphLineHeight = Math.max(1, (baseLeading ?? tokenFontSize) - rubySlabCompensation);
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
