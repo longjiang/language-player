@@ -223,6 +223,18 @@ layout.
 - The per-token reading color/positioning (`.center` alignment, `.before`
   position) matches web's per-kanji `<ruby>` closely but not identically;
   visual drift is expected.
+- **Paragraph line box (2026-08-22):** the native paragraph's line height was
+  double-counting the reading band — `baseLeading + (readingSize − rubyPull)`
+  where `baseLeading` is already `fontSize × leading`. Now
+  `paragraphLineHeight = baseLeading`, so the Core Text/Android ruby annotation
+  floats in the leading exactly like a browser `<ruby>`, matching web's
+  unitless `lineHeight`. The JS view-column fallback still reserves the reading
+  band (`TokenizedText.tsx` gates it on `!NATIVE_PARAGRAPH_ACTIVE`).
+- **Furigana↔base gap:** reported as visually flush on iOS (2026-08-22). The
+  `diagnostics` dict now reports base/reading ascender/descender/capHeight,
+  `lineHeight`, and `rubyBaseTextOffset` to measure the true Core Text ruby gap
+  before tuning `rubyBaseTextOffset` (the annotation is anchored to the base's
+  original baseline, per the `baselineOffset` comment).
 
 ---
 
