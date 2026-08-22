@@ -384,8 +384,13 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // The plain render (loading / offline / rapid page flipping) must keep the
   // SAME line pitch the tokenized render will use — otherwise the page jumps
   // the moment readings appear. The base line height is the user's leading;
-  // in ruby mode the reading band (readingSize − rubyPull) is added, exactly
-  // like the tokenized paragraph's line box (paragraphLineHeight below).
+  // in ruby mode the reading band (readingSize − rubyPull) is added — but ONLY
+  // when the native paragraph renderer is NOT active. When the native paragraph
+  // renders (dev/release builds), its Core Text/Android annotation floats the
+  // reading within `baseLeading` (web's unitless lineHeight), so the native
+  // paragraph's line box is baseLeading and must NOT get the band (matching
+  // paragraphLineHeight below). The JS View-column fallback still stacks the
+  // reading as a separate column, so it needs the band.
   const baseFontSize = textStyle.fontSize ?? 16;
   const plainRubyLayout = computeRubyLayout(baseCode(l2Code), {
     fontSize: baseFontSize,
@@ -395,7 +400,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   });
   const fallbackLineHeight = leadingRatio
     ? Math.round(baseFontSize * leadingRatio)
-      + (plainRubyLayout.isRubyMode ? (plainRubyLayout.readingSize - plainRubyLayout.rubyPull) : 0)
+      + ((plainRubyLayout.isRubyMode && !NATIVE_PARAGRAPH_ACTIVE) ? (plainRubyLayout.readingSize - plainRubyLayout.rubyPull) : 0)
     : undefined;
   const fallbackStyle = fallbackLineHeight ? { lineHeight: fallbackLineHeight } : undefined;
 
@@ -1173,11 +1178,19 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       showPhonetics,
       phoneticsShow: phonetics.show,
     });
-    const { isRtl, tokenFontSize, readingSize, baseLeading, halfLeading, rubyPull, isRubyMode } = rubyLayout;
+    const { isRtl, tokenFontSize, readingSize, baseLeading, rubyPull, isRubyMode } = rubyLayout;
     // SPEC-084: the native paragraph's line box only reserves the reading slot
     // in actual ruby mode — selection-enabled plain/word-replace contexts keep
     // the plain path's line height (no slot), so visuals stay unchanged.
-    const paragraphLineHeight = (baseLeading ?? tokenFontSize) + (isRubyMode ? (readingSize - rubyPull) : 0);
+    // Line-box parity with web (SPEC-051 / web tokenized-text): web sets a
+    // unitless `lineHeight` = leading (1.625/1.75…) and lets the browser fit the
+    // ruby annotation into the line's leading. We must NOT add a reading band on
+    // top of `baseLeading` — baseLeading is ALREADY the pinned line box
+    // (`fontSize × leading`), so adding `(readingSize − rubyPull)` double-counts
+    // it and inflates every ruby line vs web. The native paragraph's Core Text /
+    // Android ruby annotation then floats in the leading (and grows the fragment
+    // only as needed), exactly like a browser <ruby>.
+    const paragraphLineHeight = baseLeading ?? tokenFontSize;
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
