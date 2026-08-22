@@ -546,11 +546,20 @@ export function PaginatedReader({
   const swipeActionsRef = useRef({ hasPrev, hasNext, prevPage, nextPage, width: windowWidth });
   swipeActionsRef.current = { hasPrev, hasNext, prevPage, nextPage, width: windowWidth };
 
+  // The page content ScrollView's native scroll gesture. The horizontal
+  // page-turn pan is registered as simultaneous with it so a vertical drag
+  // always scrolls the page content — revealing text that overflows the page
+  // (a tall block, or a translation taller than measured) — instead of being
+  // captured/blocked by the pan. The pan still only activates on a horizontal
+  // offset, so vertical scrolling and horizontal page turns coexist cleanly.
+  const nativeScrollGesture = useMemo(() => Gesture.Native(), []);
+
   const panGesture = Gesture.Pan()
     .enabled(!scrollMode && (hasPrev || hasNext))
     .activeOffsetX([-10, 10])
     .failOffsetY([-40, 40])
     .runOnJS(true)
+    .simultaneousWithExternalGesture(nativeScrollGesture)
     .onUpdate((e) => {
       if (swipeAnimatingRef.current) return;
       const { hasPrev: canPrev, hasNext: canNext } = swipeActionsRef.current;
@@ -772,31 +781,33 @@ export function PaginatedReader({
           <GestureDetector gesture={panGesture}>
             <View className="flex-1">
               <Animated.View className="flex-1" style={{ transform: [{ translateX: swipeTranslateX }] }}>
-                <ScrollView
-                  key={scrollViewKey}
-                  ref={scrollRef}
-                  className="flex-1"
-                  style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}
-                  onScroll={handleScroll}
-                  scrollEventThrottle={16}
-                  onLayout={handleViewportLayout}
-                  onContentSizeChange={(_w, h) => {
-                    if (viewportHeightRef.current <= 0) return;
-                    const overflow = h - viewportHeightRef.current;
-                    if (overflow > 2 && Math.round(overflow) !== lastOverflowLogRef.current) {
-                      lastOverflowLogRef.current = Math.round(overflow);
-                      log(`[Reader] ⚠️ page overflow contentH=${Math.round(h)} viewportH=${Math.round(viewportHeightRef.current)} overflow=${Math.round(overflow)}px t=${Date.now()} — translation/page break taller than measured`);
-                    }
-                  }}
-                >
-                  {/* Loading indicator — inside the scroll content (web parity) so
-                      it doesn't resize the measured viewport. */}
-                  {/* loadingTokens indicator removed — no "making text
-                      interactive" row; content shows when ready */}
-                  {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
-                  )}
-                </ScrollView>
+                <GestureDetector gesture={nativeScrollGesture}>
+                  <ScrollView
+                    key={scrollViewKey}
+                    ref={scrollRef}
+                    className="flex-1"
+                    style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    onLayout={handleViewportLayout}
+                    onContentSizeChange={(_w, h) => {
+                      if (viewportHeightRef.current <= 0) return;
+                      const overflow = h - viewportHeightRef.current;
+                      if (overflow > 2 && Math.round(overflow) !== lastOverflowLogRef.current) {
+                        lastOverflowLogRef.current = Math.round(overflow);
+                        log(`[Reader] ⚠️ page overflow contentH=${Math.round(h)} viewportH=${Math.round(viewportHeightRef.current)} overflow=${Math.round(overflow)}px t=${Date.now()} — translation/page break taller than measured`);
+                      }
+                    }}
+                  >
+                    {/* Loading indicator — inside the scroll content (web parity) so
+                        it doesn't resize the measured viewport. */}
+                    {/* loadingTokens indicator removed — no "making text
+                        interactive" row; content shows when ready */}
+                    {visibleBlocks.map((block, bi) =>
+                      renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
+                    )}
+                  </ScrollView>
+                </GestureDetector>
               </Animated.View>
             </View>
           </GestureDetector>
