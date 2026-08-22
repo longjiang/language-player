@@ -349,7 +349,10 @@ interface RubyTextParagraphBlockProps {
   runs: ParagraphRun[];
   taps: Array<ParagraphTapAction | null>;
   fontSize: number;
+  /** Native paragraph line box (possibly slab-compensated). */
   lineHeight: number;
+  /** Measuring-text / line-grid line height — the ACTUAL L2 pitch. */
+  gridLineHeight?: number;
   readingSize: number;
   fontFamily: string | null;
   isRtl: boolean;
@@ -377,6 +380,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
     taps,
     fontSize,
     lineHeight,
+    gridLineHeight,
     readingSize,
     fontFamily,
     isRtl,
@@ -415,6 +419,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
       runs={runs}
       fontSize={fontSize}
       lineHeight={lineHeight}
+      gridLineHeight={gridLineHeight}
       readingSize={readingSize}
       fontFamily={fontFamily}
       isRtl={isRtl}
