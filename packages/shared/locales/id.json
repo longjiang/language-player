@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Waktu yang dihabiskan belajar {language} di Language Player",
         "today": "Hari ini",
         "tokenizer_desc": "Tokenisasi + lematisasi untuk {l2}. Lihat bagaimana teks dipecah menjadi kata-kata individual dan bentuk dasarnya.",
+        "tokenizer_test_desc": "Lihat bagaimana teks dipecah menjadi kata-kata individu dan bentuk dasarnya di bahasa-bahasa pembelajaran paling populer.",
         "transcript_mode_desc": "Tampilkan transkrip interaktif lengkap alih-alih subtitle yang disinkronkan dengan video.",
         "transcript_still_available": "Transkrip masih tersedia di bawah.",
         "translated_subtitles": "Subtitle terjemahan tersedia",

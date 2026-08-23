@@ -112,6 +112,14 @@ export interface PaginatedReaderProps {
   /** Immersive: overlay rendered in the bottom reserved strip (muted page count). */
   pageInfoOverlay?: (page: number, total: number, isEstimate: boolean) => ReactNode;
 
+  /**
+   * When true, arrow/PageUp/PageDown/space keys do NOT page this reader.
+   * Defaults to false. Used by surfaces that mount several readers at once
+   * (e.g. the tokenizer test page's per-language grid) where a single global
+   * keydown would page every reader simultaneously.
+   */
+  disableKeyboardPaging?: boolean;
+
   /** Render one visible block (reader-specific types/styles). */
   renderBlock: (item: ReaderPageItem, ctx: BlockRenderCtx) => ReactNode;
   /** Render one mirror block — must be ONE root element per block, and must
@@ -146,6 +154,7 @@ export function PaginatedReader({
   onOpenSearch,
   topOverlay,
   pageInfoOverlay,
+  disableKeyboardPaging = false,
   renderBlock,
   renderMeasureBlock,
 }: PaginatedReaderProps) {
@@ -171,6 +180,7 @@ export function PaginatedReader({
   // input/textarea/select/contenteditable (e.g. the sidebar search box).
   const { prevPage, nextPage } = pager;
   useEffect(() => {
+    if (disableKeyboardPaging) return;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
@@ -182,7 +192,7 @@ export function PaginatedReader({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [prevPage, nextPage]);
+  }, [prevPage, nextPage, disableKeyboardPaging]);
 
   // ── Swipe/flick left/right page turns (mobile parity) ──
   // Pointer-based horizontal drag on the scroll viewport: the page follows

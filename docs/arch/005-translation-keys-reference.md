@@ -442,6 +442,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.time_spent_learning` | Spent learning {language} in Language Player |
 | `msg.today` | Today |
 | `msg.tokenizer_desc` | Tokenization + lemmatization for {l2}. See how text breaks down into individual words and their base forms. |
+| `msg.tokenizer_test_desc` | See how text breaks down into individual words and their base forms across the most popular learning languages. |
 | `msg.transcript_mode_desc` | Show full interactive transcript instead of subtitles synced to video playback. |
 | `msg.translated_subtitles` | Translated subtitles available |
 | `msg.translating` | Translating… |

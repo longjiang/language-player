@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Thời gian dành để học {language} trong Language Player",
         "today": "Hôm nay",
         "tokenizer_desc": "Token hóa + phân tích hình thái cho {l2}. Xem cách văn bản được chia nhỏ thành các từ riêng lẻ và dạng gốc của chúng.",
+        "tokenizer_test_desc": "Xem cách văn bản được tách thành các từ riêng lẻ và dạng gốc của chúng trong các ngôn ngữ học phổ biến nhất.",
         "transcript_mode_desc": "Hiển thị bảng điểm tương tác đầy đủ thay vì phụ đề đồng bộ với video.",
         "transcript_still_available": "Bản ghi vẫn có sẵn bên dưới.",
         "translated_subtitles": "Có phụ đề dịch",

@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Language Player'da {language} öğrenmeye harcanan süre",
         "today": "Bugün",
         "tokenizer_desc": "{l2} için tokenleştirme + lemmatizasyon. Metnin tek tek sözcüklere ve temel biçimlerine nasıl ayrıldığını görün.",
+        "tokenizer_test_desc": "Metnin en popüler öğrenme dillerinde tek tek kelimelere ve temel biçimlerine nasıl ayrıldığını görün.",
         "transcript_mode_desc": "Videoyla senkronize altyazılar yerine tam etkileşimli transkripti göster.",
         "transcript_still_available": "Transkript aşağıda hâlâ mevcut.",
         "translated_subtitles": "Çevrilmiş altyazılar mevcut",

@@ -1035,6 +1035,7 @@
         "time_spent_learning": "在Language Player學習{language}的時間",
         "today": "今天",
         "tokenizer_desc": "{l2} 的分詞與詞形還原。查看文字如何分解為個別單字及其基本形式。",
+        "tokenizer_test_desc": "查看文字如何在最受歡迎的學習語言中被拆分為單詞及其原形。",
         "transcript_mode_desc": "顯示完整的互動式逐字稿，而非與影片同步的字幕。",
         "transcript_still_available": "下方仍提供逐字稿。",
         "translated_subtitles": "提供翻譯字幕",

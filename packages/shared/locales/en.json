@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Spent learning {language} in Language Player",
         "today": "Today",
         "tokenizer_desc": "Tokenization + lemmatization for {l2}. See how text breaks down into individual words and their base forms.",
+        "tokenizer_test_desc": "See how text breaks down into individual words and their base forms across the most popular learning languages.",
         "transcript_mode_desc": "Show full interactive transcript instead of subtitles synced to video playback.",
         "transcript_still_available": "The transcript is still available below.",
         "translated_subtitles": "Translated subtitles available",
