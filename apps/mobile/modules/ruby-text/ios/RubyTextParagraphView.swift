@@ -127,7 +127,7 @@ internal final class RubyTextParagraphView: ExpoView {
     // (no textView.layoutManager access — ARCH-030 rule 1).
     let baseFont = makeFont(size: CGFloat(fontSize), weight: .regular)
     let readingFont = makeReadingFont()
-    return [
+    var diagnostics: [String: Any] = [
       "runs": runs.count,
       "chars": attributedString?.length ?? -1,
       "bounds": String(describing: bounds),
@@ -145,7 +145,27 @@ internal final class RubyTextParagraphView: ExpoView {
       "baseCapHeight": Double(baseFont.capHeight),
       "readingAscender": Double(readingFont.ascender),
       "readingDescender": Double(readingFont.descender),
+      "readingBody": Double(readingFont.ascender + readingFont.descender),
     ]
+    // First-line TextKit 1 geometry (in-memory replica of the live view — same
+    // engine, same string, same pinned style): the fragment box vs the base
+    // baseline vs the reading's estimated top. If
+    // `readingTop < fragmentTop` the reading glyphs overflow the line box and
+    // collide with the line above (the 2026-08-23 overlap bug). Reading top is
+    // estimated from font metrics (the reading baseline is the first glyph's
+    // origin when the engine emits annotation glyphs; ± the base-only layout
+    // proves it — see makeLineGrid's `tk1` output).
+    let tk1 = makeLineGrid()
+    if var first = tk1.first {
+      let fragTop = first["y"] ?? 0
+      let baseBaseline = (first["ascender"] ?? 0) + fragTop
+      let readingTop = baseBaseline - readingFont.ascender
+      first["readingTop"] = Double(readingTop)
+      first["readingFitsInBox"] = (readingTop >= fragTop) ? 1.0 : 0.0
+      first["fragmentHeight"] = first["height"] ?? 0
+      diagnostics["tk1Line0"] = first
+    }
+    return diagnostics
   }
 
   override func layoutSubviews() {
@@ -200,40 +220,27 @@ internal final class RubyTextParagraphView: ExpoView {
   }
 
   /// Line grid of the base text exactly as this paragraph lays out WITH its
-  /// ruby annotations — the reading band pushes the base text's baseline down
-  /// inside each pinned line box, so a ruby-free RN Text cannot reproduce it.
-  /// Measured on a throwaway in-memory TextKit 2 layout (same attributed
-  /// string, same width): never touches the live textView, so it can't trip
-  /// the CTRubyAnnotation painting bug (see layoutSubviews note).
+  /// ruby annotations.
+  ///
+  /// Measured on a throwaway in-memory **TextKit 1** layout (NSTextStorage +
+  /// NSLayoutManager) built from the SAME attributed string, SAME pinned
+  /// paragraph style, and SAME container width as the live textView — the live
+  /// UITextView is TextKit 1 (`textKit="1"`), so this replica reproduces its
+  /// per-line fragment boxes and the base baseline exactly. Never touches the
+  /// live textView, so it can't trip the CTRubyAnnotation painting bug (see
+  /// layoutSubviews note).
+  ///
+  /// Per line:
+  /// - `y` / `height` — the line-fragment rect (the box the next line stacks
+  ///   on; includes any reading augment the engine adds above the pin).
+  /// - `ascender` — the BASE text's baseline offset from the fragment top. The
+  ///   base baseline comes from the line's LAST glyph origin (annotation
+  ///   glyphs, when the engine emits them, precede the base glyphs, so the max
+  ///   of first/last glyph origins is the base baseline; a plain line has one
+  ///   glyph origin for both).
   private func makeLineGrid() -> [[String: Double]] {
     guard let attributedString, bounds.width > 0, bounds.height > 0 else { return [] }
-    let contentStorage = NSTextContentStorage()
-    contentStorage.attributedString = attributedString
-    let layoutManager = NSTextLayoutManager()
-    contentStorage.addTextLayoutManager(layoutManager)
-    let container = NSTextContainer(size: CGSize(width: bounds.width, height: .greatestFiniteMagnitude))
-    container.lineFragmentPadding = 0
-    layoutManager.textContainer = container
-    let range = contentStorage.documentRange
-    layoutManager.ensureLayout(for: range)
-
-    var grid: [[String: Double]] = []
-    layoutManager.enumerateTextLayoutFragments(from: range.location, options: [.ensuresLayout]) { fragment in
-      let frame = fragment.layoutFragmentFrame
-      // Base text baseline offset from the line top: the first text line
-      // fragment's glyph origin (the glyph origin IS the baseline origin).
-      var ascender = Double(frame.size.height)
-      if let line = fragment.textLineFragments.first {
-        ascender = Double(line.glyphOrigin.y)
-      }
-      grid.append([
-        "y": Double(frame.origin.y),
-        "height": Double(frame.size.height),
-        "ascender": ascender,
-      ])
-      return true
-    }
-    return grid
+    return gridFor(attributedString: attributedString)
   }
 
   /// Emits the base-text line grid to JS when it changed (mount, re-layout,
@@ -248,8 +255,84 @@ internal final class RubyTextParagraphView: ExpoView {
     let sig = grid
       .map { "\(Int($0["y"] ?? 0)):\(Int($0["height"] ?? 0)):\(Int($0["ascender"] ?? 0))" }
       .joined(separator: "|")
-    print("[LP Mobile] [RubyTextParagraph] line-grid lines=\(grid.count) sig=\(sig)")
+    print("[LP Mobile] [RubyTextParagraph] line-grid-tk1 lines=\(grid.count) sig=\(sig)")
+    diagnoseRubyFit(grid: grid)
     onLineGrid(["lines": grid])
+  }
+
+  /// Dev/audit print: where the reading sits inside the first line's box.
+  /// Compares the WITH-ruby layout against the SAME string without ruby
+  /// attributes (identical base runs, identical pin) so the log shows exactly
+  /// how much the engine augments each line and whether the reading's glyph
+  /// body fits between the fragment top and the base baseline. This is the
+  /// ARCH-030 line-box audit trail — if readings ever overlap the line above
+  /// again, `readingFitsInBox=0` here is the evidence.
+  private func diagnoseRubyFit(grid: [[String: Double]]) {
+    guard let attributedString, let first = grid.first else { return }
+    let fragTop = first["y"] ?? 0
+    let fragHeight = first["height"] ?? 0
+    let baseBaseline = (first["ascender"] ?? 0) + fragTop
+    let readingFont = makeReadingFont()
+    let readingTop = baseBaseline - readingFont.ascender
+    let readingBottom = baseBaseline + readingFont.descender
+    // Same string without ruby annotations -> the base-only fragment height
+    // and baseline (the engine's augment = withRby − withoutRuby).
+    let stripped = NSMutableAttributedString(attributedString: attributedString)
+    stripped.removeAttribute(
+      NSAttributedString.Key(kCTRubyAnnotationAttributeName as String),
+      range: NSRange(location: 0, length: stripped.length)
+    )
+    let plainGrid = gridFor(attributedString: stripped)
+    var augmentInfo = "noPlain"
+    if let plain0 = plainGrid.first {
+      let plainHeight = plain0["height"] ?? 0
+      let plainBaseline = (plain0["ascender"] ?? 0) + (plain0["y"] ?? 0)
+      augmentInfo = String(
+        format: "plainH=%.1f rubyH=%.1f Hdelta=%.1f baseBaseline=%.1f plainBaseline=%.1f Bdelta=%.1f",
+        plainHeight, fragHeight, fragHeight - plainHeight, baseBaseline, plainBaseline, baseBaseline - plainBaseline
+      )
+    }
+    print(
+      String(
+        format: "[LP Mobile] [RubyTextParagraph] ruby-fit line0 fragTop=%.1f fragH=%.1f baseBaseline=%.1f readingTop=%.1f readingBottom=%.1f readingBody=%.1f readingFitsInBox=%d %@",
+        fragTop, fragHeight, baseBaseline, readingTop, readingBottom,
+        readingFont.ascender + readingFont.descender,
+        (readingTop >= fragTop && readingTop >= 0) ? 1 : 0,
+        augmentInfo
+      )
+    )
+  }
+
+  /// Line grid (same shape as makeLineGrid) for an arbitrary attributed string
+  /// on the in-memory TextKit 1 replica: fragment boxes + base baseline (last
+  /// glyph origin per line).
+  private func gridFor(attributedString: NSAttributedString) -> [[String: Double]] {
+    let storage = NSTextStorage(attributedString: attributedString)
+    let layoutManager = NSLayoutManager()
+    storage.addLayoutManager(layoutManager)
+    let container = NSTextContainer(size: CGSize(width: bounds.width, height: .greatestFiniteMagnitude))
+    container.lineFragmentPadding = 0
+    layoutManager.addTextContainer(container)
+    let glyphCount = layoutManager.numberOfGlyphs
+    guard glyphCount > 0 else { return [] }
+    var grid: [[String: Double]] = []
+    layoutManager.enumerateLineFragments(
+      forGlyphRange: NSRange(location: 0, length: glyphCount),
+      using: { rect, _, _, glyphRange, _ in
+        let top = Double(rect.origin.y)
+        var baseBaselineY = top
+        if glyphRange.length > 0 {
+          let firstY = Double(layoutManager.location(forGlyphAt: glyphRange.location).y)
+          let lastY = Double(layoutManager.location(forGlyphAt: glyphRange.location + glyphRange.length - 1).y)
+          baseBaselineY = max(firstY, lastY)
+        }
+        grid.append([
+          "y": top,
+          "height": Double(rect.size.height),
+          "ascender": baseBaselineY - top,
+        ])
+      })
+    return grid
   }
 
   private func makeAttributedString() -> NSAttributedString? {
