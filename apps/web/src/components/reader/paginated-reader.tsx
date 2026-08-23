@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
@@ -8,6 +8,14 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   usePaginatedReader,
   type BlockRenderCtx,
@@ -67,6 +75,8 @@ export interface PaginatedReaderProps {
   jumpNonce?: number;
   /** Called whenever the visible page's start changes. */
   onLocationChange?: (loc: ReaderLoc) => void;
+  /** Initial reading location to restore on mount (saved position / jump). */
+  initialLocation?: ReaderLoc | null;
   onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
   onPageTranslate: (texts: string[]) => Promise<Record<string, string>>;
   /** Layout identity — re-measure when it changes (zoom, translation, ruby…). */
@@ -134,6 +144,7 @@ export function PaginatedReader({
   location,
   jumpNonce,
   onLocationChange,
+  initialLocation,
   onLemmatize,
   onPageTranslate,
   measureNonce,
@@ -168,6 +179,7 @@ export function PaginatedReader({
     book,
     location,
     jumpNonce,
+    initialLocation,
     onLocationChange,
     onLemmatize,
     onPageTranslate,
@@ -175,6 +187,19 @@ export function PaginatedReader({
     measureNonce,
     chromeHeight,
   });
+
+  // ── Go-to-page dialog (mobile parity: click the page counter) ──
+  const [jumpOpen, setJumpOpen] = useState(false);
+  const [jumpValue, setJumpValue] = useState('');
+  const openJump = useCallback(() => {
+    setJumpValue(String(pager.page));
+    setJumpOpen(true);
+  }, [pager.page]);
+  const submitJump = useCallback(() => {
+    const n = parseInt(jumpValue, 10);
+    if (!isNaN(n) && n >= 1) pager.goToPage(n);
+    setJumpOpen(false);
+  }, [jumpValue, pager.goToPage]);
 
   // Keyboard paging (arrows, PageUp/Down, space) — never while typing in an
   // input/textarea/select/contenteditable (e.g. the sidebar search box).
@@ -508,13 +533,17 @@ export function PaginatedReader({
           className="rounded p-1 hover:bg-muted disabled:opacity-30">
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span
-          onClick={(event) => event.stopPropagation()}
-          className="select-none"
+        {/* Page counter — click to jump to an arbitrary page (mobile parity). */}
+        <button
+          onClick={(event) => { event.stopPropagation(); openJump(); }}
+          disabled={pager.measuring}
+          aria-label={t('action.go_to_page')}
+          title={t('action.go_to_page')}
+          className="select-none rounded px-1.5 py-0.5 hover:bg-muted disabled:opacity-50 disabled:hover:bg-transparent"
         >
           {pager.page}
           {pager.totalPages > 0 ? ` / ${pager.totalPagesIsEstimate ? '~' : ''}${pager.totalPages}` : ''}
-        </span>
+        </button>
         <button onClick={pager.nextPage} disabled={!pager.hasNext || pager.measuring}
           className="rounded p-1 hover:bg-muted disabled:opacity-30">
           <ChevronRight className="h-4 w-4" />
@@ -594,6 +623,34 @@ export function PaginatedReader({
       >
         {pager.measureWindow.map((item, i) => renderMeasureBlock(item, i))}
       </div>
+
+      {/* Go-to-page dialog (mobile parity: click the page counter). */}
+      <Dialog open={jumpOpen} onOpenChange={setJumpOpen}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>{t('action.go_to_page')}</DialogTitle>
+          </DialogHeader>
+          <input
+            type="number"
+            min={1}
+            max={pager.totalPages}
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitJump(); } }}
+            autoFocus
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            aria-label={t('action.go_to_page')}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setJumpOpen(false)}>
+              {t('action.cancel')}
+            </Button>
+            <Button onClick={submitJump}>
+              {t('action.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
