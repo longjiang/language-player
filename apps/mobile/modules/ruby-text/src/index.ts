@@ -94,8 +94,11 @@ export interface NativeRubyTextParagraphProps {
   /** Dispatched with { tokenId } when a tappable run is tapped. */
   onTokenTap?: (event: { nativeEvent: { tokenId: number } }) => void;
   /** Dispatched with the base-text line grid once the paragraph lays out
-   *  (per-line y/height/ascender — ascender includes the ruby band, so the
-   *  reader's translation baseline alignment can match the real render). */
+   *  (per-line y/height/ascender — ascender is the BASE baseline's offset from
+   *  the line top, ruby band included, so the reader's translation baseline
+   *  alignment can match the real render). iOS measures it on an in-memory
+   *  TextKit 1 replica of the live view; Android reports its own live
+   *  TextView layout. */
   onLineGrid?: (event: { nativeEvent: { lines: NativeRubyTextParagraphLineGrid[] } }) => void;
   /** Dispatched with { start, end } (UTF-16 offsets into the BASE text —
    *  readings are ruby attributes, not part of the string) when the user

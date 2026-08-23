@@ -114,6 +114,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
 
   private val onTokenTap by EventDispatcher<Map<String, Any>>()
   private val onSelection by EventDispatcher<Map<String, Any>>()
+  private val onLineGrid by EventDispatcher<Map<String, Any>>()
 
   // RN passes sizes in dp; Canvas/TextView draw in px.
   private val density: Float = resources.displayMetrics.density
@@ -157,6 +158,39 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     if (selStart >= 0 && selEnd >= 0 && selStart != selEnd) {
       onSelection(mapOf("start" to selStart, "end" to selEnd))
     }
+  }
+
+  /** Emit the base-text line grid once the view's own layout is up to date —
+   *  the LIVE geometry (line tops/bottoms/baselines of this TextView; the
+   *  readings are painted inside each span's box, so the base baseline is the
+   *  span's own baseline). The reader's translation column baseline-aligns to
+   *  this (SPEC-082 parity; iOS emits the same shape from its TextKit 1
+   *  replica). */
+  override fun onLayoutChanged(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    super.onLayoutChanged(changed, left, top, right, bottom)
+    emitLineGrid()
+  }
+
+  private fun emitLineGrid() {
+    val layout = layout ?: return
+    if (layout.lineCount <= 0) return
+    val lines = ArrayList<Map<String, Double>>(layout.lineCount)
+    for (i in 0 until layout.lineCount) {
+      val lineTop = layout.getLineTop(i).toDouble()
+      val lineBottom = layout.getLineBottom(i).toDouble()
+      lines.add(
+        mapOf(
+          "y" to lineTop,
+          "height" to (lineBottom - lineTop),
+          "ascender" to (layout.getLineBaseline(i).toDouble() - lineTop),
+        )
+      )
+    }
+    onLineGrid(mapOf("lines" to lines))
+    Log.i(
+      "LP Mobile",
+      "[RubyText] paragraph line-grid-android lines=${lines.size} y0=${lines[0]["y"]} h0=${lines[0]["height"]} a0=${lines[0]["ascender"]}"
+    )
   }
 
   /** Map a tap to the token whose span contains the tapped offset — only for
