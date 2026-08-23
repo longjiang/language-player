@@ -398,22 +398,17 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   }, [runs.length, sizeKey]);
 
   // ── Base-text line grid for translation baseline alignment ──
-  // The ruby-free measuring Text gives the line count, pitch, and box
-  // heights; the native paragraph reports the REAL base baseline(s) with the
-  // ruby band included (the reading pushes the base text down inside the
-  // pinned line box — at least on the first line). Two sources merged:
-  //   - nativeGrid with >1 line (future native fix) → use it directly;
-  //   - nativeGrid with 1 line (current build: the whole paragraph comes
-  //     back as one fragment, so only line 0's baseline is meaningful) →
-  //     override line 0's ascender on the measuring grid;
-  //   - no native grid yet → measuring grid as-is.
+  // The native paragraph measures its OWN line grid on an in-memory TextKit 1
+  // replica — the same engine, string, and pinned box as the live view — so
+  // the reported per-line y/height/ascender ARE the rendered geometry (the
+  // reading band included; a ruby-free RN Text cannot reproduce it). Use it
+  // as-is. The ruby-free measuring grid is only a fallback while the native
+  // grid hasn't arrived yet (a value, not a correction of it — short-lived).
   const [measuringLines, setMeasuringLines] = useState<TextLayoutLine[] | null>(null);
   const [nativeGrid, setNativeGrid] = useState<GridLine[] | null>(null);
 
-  // Ruby annotations increase the actual TextKit line-fragment height beyond
-  // the ruby-free RN measuring Text (for the reported SRS case: 74 -> 88pt).
-  // Keep the native grid only for the current paragraph; otherwise a previous
-  // sentence could temporarily donate its height while the new runs mount.
+  // Reset the native grid for a new paragraph so a previous sentence can't
+  // temporarily donate its geometry while the new runs mount.
   useEffect(() => {
     setNativeGrid(null);
   }, [sizeKey]);
@@ -434,23 +429,14 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
 
   useEffect(() => {
     if (!onLineGrid) return;
-    if (nativeGrid && nativeGrid.length > 1) {
+    if (nativeGrid && nativeGrid.length > 0) {
       onLineGrid(nativeGrid);
       return;
     }
     if (!measuringLines || measuringLines.length === 0) return;
-    // The ruby band pushes the base baseline down inside EVERY pinned line
-    // box, not just the first. The current native build reports only line 0's
-    // true baseline, so apply its delta to every measuring line (uniform
-    // shift — e.g. 38 − 29 = 9px at 20px/43px settings).
-    const native0 = nativeGrid && nativeGrid.length === 1 ? nativeGrid[0]!.ascender : null;
-    const shift = native0 != null ? native0 - measuringLines[0]!.ascender : 0;
-    const merged: GridLine[] = measuringLines.map((l) => ({
-      y: l.y,
-      height: l.height,
-      ascender: l.ascender + shift,
-    }));
-    onLineGrid(merged);
+    onLineGrid(
+      measuringLines.map((l) => ({ y: l.y, height: l.height, ascender: l.ascender })),
+    );
   }, [onLineGrid, nativeGrid, measuringLines]);
 
   if (!NativeRubyTextParagraphView) return null;
