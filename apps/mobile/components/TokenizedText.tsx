@@ -70,6 +70,9 @@ const { log, logwarn } = tokenizedTextLogger;
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
 const NATIVE_PARAGRAPH_ACTIVE = isNativeRubyParagraphActive();
 
+/** Dev-only one-shot ruby line-pitch log keys (see RUBY-PITCH below). */
+const rubyPitchLoggedRef = { current: new Set<string>() };
+
 
 export interface TokenizedTextProps {
   text: string;
@@ -383,14 +386,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   const leadingRatio: number | undefined = inline ? undefined : effectiveLeading;
   // The plain render (loading / offline / rapid page flipping) must keep the
   // SAME line pitch the tokenized render will use — otherwise the page jumps
-  // the moment readings appear. The base line height is the user's leading;
-  // in ruby mode the reading band (readingSize − rubyPull) is added — but ONLY
-  // when the native paragraph renderer is NOT active. When the native paragraph
-  // renders (dev/release builds), its Core Text/Android annotation floats the
-  // reading within `baseLeading` (web's unitless lineHeight), so the native
-  // paragraph's line box is baseLeading and must NOT get the band (matching
-  // paragraphLineHeight below). The JS View-column fallback still stacks the
-  // reading as a separate column, so it needs the band.
+  // the moment readings appear. In ruby mode the reading band is added to the
+  // base leading — the FULL band for the native paragraph (whose pinned line
+  // box is baseLeading + readingBand = linePitch, see render below), and the
+  // narrower View-column band (readingSize − rubyPull) when the JS column
+  // fallback renders (Expo Go / native module missing — its columns are
+  // baseLeading + readingSize − rubyPull tall).
   const baseFontSize = textStyle.fontSize ?? 16;
   const plainRubyLayout = computeRubyLayout(baseCode(l2Code), {
     fontSize: baseFontSize,
@@ -398,9 +399,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     showPhonetics,
     phoneticsShow: phonetics.show,
   });
+  const fallbackBand = plainRubyLayout.isRubyMode
+    ? (NATIVE_PARAGRAPH_ACTIVE ? plainRubyLayout.readingBand : plainRubyLayout.readingSize - plainRubyLayout.rubyPull)
+    : 0;
   const fallbackLineHeight = leadingRatio
-    ? Math.round(baseFontSize * leadingRatio)
-      + ((plainRubyLayout.isRubyMode && !NATIVE_PARAGRAPH_ACTIVE) ? (plainRubyLayout.readingSize - plainRubyLayout.rubyPull) : 0)
+    ? Math.round(baseFontSize * leadingRatio) + fallbackBand
     : undefined;
   const fallbackStyle = fallbackLineHeight ? { lineHeight: fallbackLineHeight } : undefined;
 
@@ -1179,21 +1182,34 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       phoneticsShow: phonetics.show,
     });
     const { isRtl, tokenFontSize, readingSize, baseLeading, rubyPull, isRubyMode } = rubyLayout;
-    // SPEC-084: the native paragraph's line box only reserves the reading slot
-    // in actual ruby mode — selection-enabled plain/word-replace contexts keep
-    // the plain path's line height (no slot), so visuals stay unchanged.
-    // Line-box parity with web (SPEC-051 / web tokenized-text): web sets a
-    // unitless `lineHeight` = leading (1.625/1.75…) and the browser keeps the
-    // ruby line near `fontSize × leading`. The native paragraph renderers
-    // (Core Text / Android) instead inflate EVERY line by a reading slab on top
-    // of the pinned box (measured 32 → 39 = ~readingSize × 0.7 ≈ +7px), which
-    // made mobile's within-line leading taller than web. Compensation: subtract
-    // the slab from the line box we hand the native view, so the ACTUAL pitch
-    // lands back on `baseLeading` = `fontSize × leading`. Applied only in ruby
-    // mode (no readings → no slab). Kept as a leading tweak — no renderer
-    // changes; the value is verified from the `ruby-height correction` log.
-    const rubySlabCompensation = isRubyMode ? Math.round(readingSize * 0.7) : 0;
-    const paragraphLineHeight = Math.max(1, (baseLeading ?? tokenFontSize) - rubySlabCompensation);
+    // ── Line pitch (single source of truth: ruby-layout.ts computeRubyLayout) ──
+    // CSS parity: a ruby line box is the base line box PLUS the annotation
+    // above it — browsers grow the line to fit the reading instead of keeping
+    // `fontSize × leading` and letting the reading overlap the previous line.
+    // The native paragraph is pinned to linePitch and every line — ruby or
+    // plain — gets the same box, so the grid stays uniform. The line grid the
+    // translation column baseline-aligns to reports linePitch too (same value
+    // as gridLineHeight below — no divergence between pin and grid).
+    const paragraphLineHeight = rubyLayout.linePitch;
+    const gridLineHeight = rubyLayout.linePitch;
+
+    // ── Ruby pitch/fit diagnostics (dev, one-shot per layout) ──
+    // Logs every input + the pinned box for the native paragraph so the
+    // reading fit can be verified from the Metro log: the reading's glyph
+    // body (readingBand) must fit inside `linePitch − baseLeading` — if lines
+    // ever overlap again, this plus the native `line-grid-tk1` dump pinpoints
+    // which side under-reserved. ARCH-030 line-box audit (2026-08-23).
+    // Uses the GLOBAL logger: the tokenized-text domain is opt-in by default,
+    // and this is exactly the log needed when text looks mis-pitched.
+    if (__DEV__) {
+      const pitchKey = `pitch:${l2Code}:${tokenFontSize}:${baseLeading}:${leadingRatio ?? ''}:${isRubyMode}`;
+      if (!rubyPitchLoggedRef.current.has(pitchKey)) {
+        rubyPitchLoggedRef.current.add(pitchKey);
+        appLog(
+          `[TokenizedText] 🔡 RUBY-PITCH l2=${l2Code} fontSize=${tokenFontSize} leading=${leadingRatio ?? 'inherit'} baseLeading=${baseLeading} readingSize=${readingSize} readingBand=${rubyLayout.readingBand} linePitch=${rubyLayout.linePitch} paragraphLineHeight=${paragraphLineHeight} gridLineHeight=${gridLineHeight} rubyMode=${isRubyMode}`,
+        );
+      }
+    }
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -1542,7 +1558,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     taps={taps}
                     fontSize={tokenFontSize}
                     lineHeight={paragraphLineHeight}
-                    gridLineHeight={baseLeading ?? tokenFontSize}
+                    gridLineHeight={gridLineHeight}
                     readingSize={readingSize}
                     fontFamily={textStyle.fontFamily ?? null}
                     isRtl={isRtl}
