@@ -14,6 +14,7 @@ import { TranslationSplitHandle } from '@/components/reader/translation-split-ha
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { clampTranslationSize } from '@/lib/reader-text-size';
 import { isRTL } from '@/lib/language-data';
+import { log } from '@/lib/logger';
 import type { SentenceMap } from '@langplayer/utils';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
@@ -108,13 +109,21 @@ export function TextActionMenu({
 }: TextActionMenuProps) {
   const t = useT();
   const { l1 } = useLanguage();
-  const { tokenizedText } = useSettingsContext();
+  const { display, tokenizedText } = useSettingsContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSideBySide, setIsSideBySide] = useState(false);
   // The L2 content wrapper — the aligned translation measures its line grid.
   const l2Ref = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const aligned = translationAligned ?? null;
   const hasTranslation = !!(translation || aligned);
+  // The translation column must never reserve space when translation is off.
+  // Callers gate `translation`/`translationAligned` on display.translation, but
+  // guard here too so a stale/erroneously-passed translation can't render a
+  // blank column on wide screens (reported against the web readers).
+  const showTranslation = display.translation;
+  const renderColumn = showTranslation && hasTranslation;
   // Translation content is L1, not L2. Tag it explicitly so browsers choose
   // the user's regional glyph domain (e.g. zh-Hans) instead of inheriting the
   // browser/device language, which can make Chinese glyphs render as Japanese.
@@ -168,6 +177,24 @@ export function TextActionMenu({
 
   const useAlignedTranslation = !!aligned && !translationBelow && isSideBySide;
 
+  // ── DEV diagnostics ──
+  // Reports whether a translation column actually renders, so a reported
+  // "blank column when translation is off" can be confirmed from logs.
+  const diagnosticKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const key = `${text.slice(0, 12)}:${showTranslation ? 1 : 0}:${hasTranslation ? 1 : 0}:${loading ? 1 : 0}:${isSideBySide ? 1 : 0}`;
+    if (diagnosticKeyRef.current === key) return;
+    diagnosticKeyRef.current = key;
+    const raf = requestAnimationFrame(() => {
+      const row = rowRef.current;
+      const wrapper = wrapperRef.current;
+      const l2 = l2Ref.current;
+      log(`[LP Web] TextActionMenu diag text="${text.slice(0, 16)}" showTranslation=${showTranslation} hasTranslation=${hasTranslation} renderColumn=${renderColumn} loading=${loading} aligned=${!!aligned} trLen=${typeof translation === 'string' ? translation.length : 'n/a'} sideBySide=${isSideBySide} l2Grow=${l2Grow} trGrow=${trGrow} | widths row=${row?.clientWidth ?? 'n/a'} wrapper=${wrapper?.clientWidth ?? 'n/a'} l2=${l2?.clientWidth ?? 'n/a'}`);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [text, showTranslation, hasTranslation, renderColumn, loading, isSideBySide, aligned, translation, l2Grow, trGrow]);
+
   const {
     activeAction,
     close,
@@ -194,9 +221,10 @@ export function TextActionMenu({
   ];
 
   return (
-    <div className={`group relative ${centered ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start' : 'flex items-start gap-3'} ${noMargin ? '' : 'mb-4'}`}>
+    <div ref={rowRef} className={`group relative ${centered ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start' : 'flex items-start gap-3'} ${noMargin ? '' : 'mb-4'}`}>
       {/* Content + inline translation */}
       <div
+        ref={wrapperRef}
         className={centered
           ? 'col-start-2 min-w-0 max-w-full flex flex-col items-center gap-y-1'
           : `flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : `${sideBySideBreakpoint}:flex-row ${sideBySideGapClass}`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}
@@ -209,14 +237,14 @@ export function TextActionMenu({
         >
           {children}
         </div>
-        {resizable && hasTranslation && !translationBelow && (
+        {resizable && renderColumn && !translationBelow && (
           <TranslationSplitHandle
             ratio={translationSplit!}
             onChange={onTranslationSplitChange!}
             onCommit={onTranslationSplitCommit}
           />
         )}
-        {hasTranslation && (
+        {renderColumn && (
           <div
             className={centered
               ? `w-full text-center text-muted-foreground ${translationClass}`
@@ -245,7 +273,7 @@ export function TextActionMenu({
             ) : typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
         )}
-        {loading && !translation && !aligned && (
+        {showTranslation && loading && !translation && !aligned && (
           <div
             className={centered
               ? `w-full text-center ${translationClass || 'text-sm'}`
