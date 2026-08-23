@@ -50,7 +50,6 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   const t = useT();
   const { display, playback, tokenizedText } = useSettingsContext();
   const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
-  const tokenizedLeading = tokenizedText.leading ?? 1.625;
   // SPEC-082 Task 1: the translation renders at `translationSize` × the L2
   // text size (clamped to [0.5, 1], default 0.8).
   const translationFactor = translationSizeFactor({ tokenizedText });
@@ -223,9 +222,11 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     // the watch page, instead of a placeholder.
     const shownLine = activeLine ?? defaultLine ?? displayLines[0];
     const singleLineTranslationFontSize = translationFactor * 16 * singlelineTextScale * zoomRem;
-    const singleLineTranslationGap = overlay
-      ? Math.ceil(4 * zoomRem)
-      : Math.ceil(16 * singlelineTextScale * zoomRem * tokenizedLeading);
+    // Gap between the subtitle line and its translation. Web keeps this tiny
+    // (the stacked TextActionMenu row is gap-y-1 = 4px); the old value was a
+    // FULL L2 line pitch (16 × scale × zoom × leading ≈ 35px), which pushed the
+    // translation far below the subtitle. Match web: a small gap scaled by zoom.
+    const singleLineTranslationGap = Math.ceil(4 * zoomRem);
 
     // Karaoke progress for the active line
     let karaokeProgress: number | undefined;
@@ -357,7 +358,10 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                       className="w-full text-left text-sm text-muted-foreground"
                       style={{
                         fontSize: translationFactor * 16 * zoomRem,
-                        marginTop: Math.ceil(16 * zoomRem * tokenizedLeading),
+                        // Web transcript rows use a small gap (gap-y-2 = 8px);
+                        // the old value was a full L2 line pitch (16 × zoom ×
+                        // leading ≈ 26px). Match web, scaled by zoom.
+                        marginTop: Math.ceil(8 * zoomRem),
                       }}
                     >
                       {renderInlineMarkdown(item.l1Line, { markBold: true })}
