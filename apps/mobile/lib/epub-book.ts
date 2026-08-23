@@ -182,6 +182,7 @@ export async function openEpubBook(
   fileName: string,
   opts: OpenOptions = {},
 ): Promise<EpubBookModel> {
+  const t0 = Date.now();
   // Some books arrive as unzipped EPUB directories (e.g. older files from
   // Dropbox/Calibre). Build an in-memory JSZip from the directory so the rest
   // of the model code is identical for both forms.
@@ -196,6 +197,7 @@ export async function openEpubBook(
     // and can make JSZip hang or freeze the JS thread on large books.
     const data = await new File(fileUri).arrayBuffer();
     zip = await JSZip.loadAsync(data);
+    log(`[LP Mobile] ⏱️ epub open "${fileName}": unzip ${Date.now() - t0}ms (isDirectory=${isDirectory})`);
   }
   const id = sanitizeEpubId(fileName);
   const tempDir = `${FileSystem.cacheDirectory}epub_tmp_${id}/`;
@@ -260,6 +262,7 @@ export async function openEpubBook(
   const imageCache = new Map<string, string>();
   let imgIdx = 0;
   const tempPaths: string[] = [];
+  const tImg = Date.now();
   for (const [, item] of manifestItems) {
     if (item.mediaType && IMAGE_MIME_TYPES.includes(item.mediaType)) {
       const resolvedPath = resolvePath(opfDir, item.href);
@@ -279,6 +282,7 @@ export async function openEpubBook(
       }
     }
   }
+  log(`[LP Mobile] ⏱️ epub open "${fileName}": extracted ${imgIdx} images ${Date.now() - tImg}ms`);
 
   // Cover — reuse the persisted bookshelf cover when available.
   let coverUrl: string | null = opts.coverUri ?? null;
@@ -302,6 +306,7 @@ export async function openEpubBook(
   }
 
   // ── Convert every spine item once into the global block stream ──
+  const tBlocks = Date.now();
   const spineData: SpineData[] = [];
   const blocks: ContentBlock[] = [];
   const blockLengths: number[] = [];
@@ -366,6 +371,7 @@ export async function openEpubBook(
   const chapterLabels = markers.map((m) => ({ blockIndex: m.location.blockIndex, label: m.label }));
 
   log(`[LP Mobile] 📖 EPUB open ${fileName}: ${meta.spine.length} spines, ${blocks.length} blocks, ${totalChars} chars, ${markers.length} TOC markers`);
+  log(`[LP Mobile] ⏱️ epub open "${fileName}": spine→blocks ${Date.now() - tBlocks}ms, total ${Date.now() - t0}ms (unzip+parse+images+blocks)`);
 
   return {
     fileName,

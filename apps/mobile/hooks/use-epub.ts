@@ -211,6 +211,8 @@ export function useEpub(): UseEpubReturn {
     try {
       await ensureLibraryDir();
       for (const asset of assets) {
+        const assetStart = Date.now();
+        log(`[LP Mobile] 📚 import start "${asset.name}" t=${assetStart}`);
         try {
           const isZipName = /\.(epub\.)?zip$/i.test(asset.name);
           let displayName = isZipName
@@ -281,8 +283,10 @@ export function useEpub(): UseEpubReturn {
           importedCount++;
           lastModel = m;
           lastId = id;
+          log(`[LP Mobile] 📚 import done "${asset.name}" total=${Date.now() - assetStart}ms (copy+unwrap+open+cover+save)`);
         } catch (e: any) {
           firstError ??= e?.message ?? String(e);
+          log(`[LP Mobile] 📚 import FAILED "${asset.name}" elapsed=${Date.now() - assetStart}ms err=${e?.message ?? e}`);
         }
       }
 
