@@ -191,7 +191,7 @@ The page counter shows the measured page number after step 3; between steps 1 an
 | **External links** | Route to web reader (unchanged) | — |
 | **Restore** (EPUB) | `lastLocation` → `jumpTo` | Replaces the jump-on-open effect with the same call |
 | **Markdown headings** (future) | Heading block → `jumpTo` | A heading TOC for notes/web-reader becomes trivial once locations exist |
-| **Saved position** (future) | `onLocationChange` → persisted location → `jumpTo` | The panel already reports the visible page's start block (§11.3) |
+| **Saved position** | `onLocationChange` → persisted location → `jumpTo` | The panel already reports the visible page's start block (§11.3). Implemented for the markdown readers: the notes reader saves the block index keyed by note id, and the web reader keyed by URL; the markdown readers restore it via `initialLocation` on mount (see §9.3). |
 
 **Deletions**: `ReaderPanel`'s `initialAnchor` / `onAnchorChange` props and the prefix-probe seek effect (§1, §2) — no caller passes them today; the shared panel's `initialLocation` replaces them.
 
@@ -222,6 +222,8 @@ CSS columns make an exact whole-book count a **single layout pass** — no per-b
 - Read the last block's `offsetLeft` → exact total pages, and read the **full break list** → exact page number for every future `jumpTo` target (no estimate step at all).
 - Run in an idle callback after first paint, chunked if needed, cancellable on book close/settings change; cache the break list keyed by layout identity (§9) alongside the search index.
 - v1 ships without it (estimate-only, exactly like today); this section is the plan for when exact totals matter (e.g., "jump to page N" UI).
+
+The **"Jump to page"** control itself shipped before this phase-2 job: the shared `PaginatedReader` page counter opens a dialog (mobile parity) and jumps via `goToPage`. For the markdown readers the total is already exact, so the jump lands on the exact page; for the EPUB reader the jump uses the chars-per-page estimate and refines once the window loads. This phase-2 idle-time job would upgrade the EPUB jump (and the displayed total) to be exact.
 
 Bookshelf progress stays character-based (viewport-independent) — unchanged.
 
@@ -371,7 +373,7 @@ The shared panel. Renders the viewport + active/pending pagers, the page-nav bar
 
 - SPEC-009 (layout shell), SPEC-032 (locations, search, persistence), SPEC-051 (zoom semantics).
 - No new npm dependencies — CSS multicol is native.
-- New translation keys: none expected (`msg.page_of` exists; `n / ~N` display exists). If the exact-count phase adds a "Jump to page" control, one key follows the usual 31-locale pipeline.
+- **New translation keys: none required.** The page counter shows `n / ~N` directly (no key needed), and the "Jump to page" control reuses the existing `action.go_to_page` key (already present for the mobile reader) plus `action.cancel`/`action.confirm` for the dialog footer. No new 31-locale payload was needed.
 
 ## 17. Open questions
 
