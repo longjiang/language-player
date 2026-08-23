@@ -376,6 +376,10 @@ export function useEpubPagination({
   const [translateRetry, setTranslateRetry] = useState(0);
   const anchorSeenRef = useRef(false);
   const prevPageRef = useRef(0);
+  /** Global block index of the first text block on the visible page — the
+   *  anchor kept across re-measures (window resize / rotation / layout change)
+   *  so the reader never resets to page 1 (SPEC-077 §10). */
+  const anchorBlockRef = useRef(0);
   /** True once the user has stopped flipping. Navigation resets this via a
    *  debounce; tokenization / translation / exact re-measure run only when
    *  true, so rapid flipping stays cheap (instant estimated pages). */
@@ -609,6 +613,7 @@ export function useEpubPagination({
     setPage(0);
     anchorSeenRef.current = false;
     prevPageRef.current = 0;
+    anchorBlockRef.current = 0;
     setInteractionSettled(true);
     setRenderCommitted(true);
     boundariesExactRef.current = false;
@@ -727,6 +732,7 @@ export function useEpubPagination({
     waitingMissingRef.current = -1;
     lazySeekKeyRef.current = null;
     setPage(0);
+    anchorBlockRef.current = 0;
     // Estimate mode: 0 keeps the hidden measuring view empty until the seek
     // sets the window (MAX would render the whole book for a frame).
     setMeasuredWindow(estimate ? 0 : (measureChunkSize ?? Number.MAX_SAFE_INTEGER));
@@ -919,7 +925,18 @@ export function useEpubPagination({
     }
 
     setPageBreaks(breaks);
-    setPage(0);
+    // Preserve the reader's place across re-measures (SPEC-077 §10): restore
+    // the page containing the anchor block (the visible page's first text
+    // block) instead of resetting to page 1 on a window resize / rotation.
+    // On a fresh stream anchorBlockRef is 0 → page 1, and the initial-restore
+    // effect below re-applies the saved anchor once measurement is done.
+    let targetPage = 0;
+    const target = Math.max(0, anchorBlockRef.current);
+    for (let b = 0; b < breaks.length; b++) {
+      if (breaks[b]! <= target) targetPage = b + 1;
+      else break;
+    }
+    setPage(Math.min(targetPage, breaks.length));
     setHasMeasured(true);
   }, [blocks, availableHeight, measuredBlockCount, estimate, hardStarts]);
 
@@ -1368,7 +1385,10 @@ export function useEpubPagination({
     if (!first) return;
     onAnchorChange?.(first.text.slice(0, 40));
     const globalIdx = blocks?.indexOf(first) ?? -1;
-    if (globalIdx >= 0) onBlockChange?.(globalIdx);
+    if (globalIdx >= 0) {
+      anchorBlockRef.current = globalIdx;
+      onBlockChange?.(globalIdx);
+    }
   }, [page, visibleBlocks, onAnchorChange, onBlockChange, blocks]);
 
   return {
