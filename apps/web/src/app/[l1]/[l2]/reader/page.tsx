@@ -38,6 +38,12 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
     const href = el.getAttribute('href');
     if (href) { try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {} }
   });
+  // Resolve relative/absolute image srcs against the page URL (same as the
+  // <a> rewrite above) so images render instead of showing a broken image.
+  mainContent.querySelectorAll('img').forEach(el => {
+    const src = el.getAttribute('src');
+    if (src) { try { el.setAttribute('src', new URL(src, baseUrl).href); } catch {} }
+  });
   const td = await getTurndown();
   return td.turndown(mainContent.innerHTML);
 }
