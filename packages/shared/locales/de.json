@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Zeit, die mit dem Lernen von {language} in Language Player verbracht wurde",
         "today": "Heute",
         "tokenizer_desc": "Tokenisierung + Lemmatisierung für {l2}. Sehen Sie, wie Text in einzelne Wörter und deren Grundformen zerlegt wird.",
+        "tokenizer_test_desc": "Sieh, wie Text in einzelne Wörter und ihre Grundformen zerlegt wird – in den beliebtesten Lernsprachen.",
         "transcript_mode_desc": "Vollständiges interaktives Transkript anstelle von mit dem Video synchronisierten Untertiteln anzeigen.",
         "transcript_still_available": "Das Transkript ist weiterhin unten verfügbar.",
         "translated_subtitles": "Übersetzte Untertitel verfügbar",

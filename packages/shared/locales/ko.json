@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Language Player에서 {language} 학습에 소요된 시간",
         "today": "오늘",
         "tokenizer_desc": "{l2}에 대한 토큰화 및 표제어 추출. 텍스트가 개별 단어와 기본 형태로 어떻게 분해되는지 확인하세요.",
+        "tokenizer_test_desc": "가장 인기 있는 학습 언어에서 텍스트가 개별 단어와 기본형으로 어떻게 나뉘는지 확인하세요.",
         "transcript_mode_desc": "동영상에 동기화된 자막 대신 전체 대화형 대본을 표시합니다.",
         "transcript_still_available": "대본은 아래에서 계속 확인할 수 있습니다.",
         "translated_subtitles": "번역 자막 가능",

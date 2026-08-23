@@ -1056,6 +1056,7 @@
         "time_spent_learning": "Language Playerで{language}の学習に費やした時間",
         "today": "今日",
         "tokenizer_desc": "{l2}のトークン化とレンマ化。テキストがどのように個々の単語とその基本形に分解されるかを確認してください。",
+        "tokenizer_test_desc": "最も人気のある学習言語で、テキストが個々の単語とその基本形にどのように分割されるかを確認します。",
         "transcript_mode_desc": "動画に同期した字幕ではなく、完全なインタラクティブトランスクリプトを表示します。",
         "transcript_still_available": "トランスクリプトは引き続き下にあります。",
         "translated_subtitles": "翻訳字幕あり",
