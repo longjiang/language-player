@@ -70,14 +70,27 @@ measured, and replaced by the native view of the same size.
 - `UITextView`, non-editable/selectable, zero insets, `clipsToBounds = false`.
 - `runs` (a flat list of text runs, each with optional `reading`) is converted
   into one `NSMutableAttributedString` with a uniform paragraph style:
-  `minimumLineHeight = maximumLineHeight = lineHeight` (line height already
-  includes the reading slot), `byWordWrapping`.
+  `minimumLineHeight = maximumLineHeight = lineHeight` (the UNIFORM line
+  pitch — see "Line box model" below), `byWordWrapping`.
 - Ruby annotations are attached per run with `CTRubyAnnotationCreateWithAttributes`.
 - **Lazy-layout safeguard**: UITextView lays out lazily; setting
   `attributedText` while the container is still zero-sized can leave the text
   blank. `layoutSubviews()` therefore re-applies the attributed string once
   real bounds exist (`hasLaidOutText`).
 - Taps are mapped from `UITextView` input geometry back to run/token ids.
+- **Line grid (translation baseline alignment)**: the paragraph measures its
+  own base-text line grid on an **in-memory TextKit 1 replica** of the exact
+  live layout (same attributed string, same pinned paragraph style, same
+  container width) — the live view is TextKit 1, so the replica's fragment
+  boxes and base baselines ARE the rendered geometry. Per line it reports
+  `y`/`height` (fragment rect) and `ascender` (base baseline offset from the
+  line top = the line's last glyph origin; annotation glyphs, when the engine
+  emits them, precede the base glyphs, so max(first, last) is the base
+  baseline). The grid goes to JS through `onLineGrid` and drives the reader's
+  baseline-aligned translation column. The Android paragraph (`RubyTextParagraphView.kt`)
+  reports the same shape straight from its live `TextView` layout
+  (`onLayoutChanged`). Never touches the live view's layout manager
+  ([incident](#the-2026-08-16-incident-readings-silently-stop-painting-in-debug)).
 
 ### JS side (`RubyText.tsx`, `TokenizedText.tsx`)
 
@@ -223,13 +236,52 @@ layout.
 - The per-token reading color/positioning (`.center` alignment, `.before`
   position) matches web's per-kanji `<ruby>` closely but not identically;
   visual drift is expected.
-- **Paragraph line box (2026-08-22):** the native paragraph's line height was
-  double-counting the reading band — `baseLeading + (readingSize − rubyPull)`
-  where `baseLeading` is already `fontSize × leading`. Now
-  `paragraphLineHeight = baseLeading`, so the Core Text/Android ruby annotation
-  floats in the leading exactly like a browser `<ruby>`, matching web's
-  unitless `lineHeight`. The JS view-column fallback still reserves the reading
-  band (`TokenizedText.tsx` gates it on `!NATIVE_PARAGRAPH_ACTIVE`).
+
+### Line box model (2026-08-23 audit — supersedes all earlier line-box notes)
+
+**CSS parity: the ruby line box GROWS to include the annotation.** A ruby
+line is the base line box (`fontSize × leading`) PLUS the reading band
+(reading glyph body + gap) above it; browsers never keep a ruby line at
+`fontSize × leading` and let the reading overlap the previous line. The
+earlier tuning history chased a "floats in the leading" model that browsers
+do not implement:
+
+| Commit | Box pinned to | Result |
+|---|---|---|
+| `278a7806` | `baseLeading` (band removed) | reading band missing → readings crowd the line above |
+| `59309fb7` / `5d587125` | reading line-box cap | Core Text slab grew (39 → 41px); reverted |
+| `a7d1bbca` | `baseLeading − round(readingSize × 0.7)` | **the overlap bug**: box is ~0.5 × readingSize shorter than the reading's glyph body (≈1.2 × readingSize), so readings poke into the line above in every ruby language |
+| `519a1e0e` | grid/pin divergence | translation column drifted off the render |
+
+Today (single source of truth, `apps/mobile/lib/ruby-layout.ts` →
+`computeRubyLayout()`):
+
+- `readingBand = round(readingSize × 1.2) + RUBY_READING_GAP` — the reading's
+  full glyph height (ascender + descender ≈ 1.2 em) + the target gap.
+- `linePitch = baseLeading + readingBand` in ruby mode (`baseLeading`
+  otherwise). One formula for every language → consistent ruby spacing
+  everywhere.
+- The native paragraph pins `min = max = linePitch`; the JS measuring text,
+  the plain/loading fallback, and the line grid all use the same `linePitch`
+  (no pin/grid divergence — `gridLineHeight` == the pin).
+- The line grid is measured on the **TextKit 1 replica** (live engine), not a
+  TextKit 2 layout — the two engines size ruby lines differently, and every
+  TextKit-2-derived grid drifted the translation column 2–5 px per line.
+- The Android paragraph gets the same `lineHeight` and draws the reading
+  inside its span box; the pitch math (≥ base glyph body + reading glyph body)
+  makes it fit.
+
+**Verification logs** (keep these; they are the audit trail):
+
+- JS: `RUBY-PITCH` (one-shot per layout; global logger) — every input plus
+  the pinned `paragraphLineHeight`/`gridLineHeight`.
+- iOS native: `line-grid-tk1` (per-line y/height/ascender of the replica),
+  `ruby-fit` (line 0: fragment top/height vs base baseline vs reading
+  top/bottom, `readingFitsInBox`, and the with-ruby vs ruby-free H/B deltas —
+  `readingFitsInBox=0` is the evidence if readings ever overlap again).
+- Diagnostics dict: `tk1Line0` (same numbers via
+  `getParagraphDiagnosticsForTag`).
+- Android native: `line-grid-android` (its own live layout).
 - **Furigana↔base gap (tuned 2026-08-22):** the iOS ruby paragraph rendered the
   furigana flush on the base (tighter than web's browser `<ruby>`). Root cause:
   the base run's `baselineOffset` (`rubyBaseTextOffset`) was `+2`, which raises
@@ -250,8 +302,12 @@ layout.
   `android/…`, `src/index.ts`)
 - Component plumbing: `apps/mobile/components/RubyText.tsx`,
   `apps/mobile/components/TokenizedText.tsx`
-- Readings source: `buildRuby()` in `packages/utils/src/furigana.ts`
-  (per-character pinyin for zh/yue since `2eb07fcc`; word-level for ja)
+- Line metrics: `apps/mobile/lib/ruby-layout.ts` (`computeRubyLayout` —
+  `readingBand` / `linePitch`), `packages/utils/src/furigana.ts`
+  (`buildRuby()` — per-character pinyin for zh/yue since `2eb07fcc`;
+  word-level for ja)
+- Audit logs: `RUBY-PITCH` (JS), `line-grid-tk1` + `ruby-fit` (iOS native),
+  `line-grid-android` (Android native), `paragraph ruby-height correction` (JS)
 - Incident record: `docs/versioning/build-ledger.md` → "Incident log"
 - Preserved known-good Debug binary (iPad 10):
   `.dev-builds/ipad10-backup/LanguagePlayer3-ipad10-working-debug-3.1.0-b3.app.zip`
