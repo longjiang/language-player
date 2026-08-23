@@ -7,8 +7,10 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { READING_CATEGORIES, getReadingSuggestions } from '@langplayer/shared';
 import { ReaderPanel } from '@/components/reader/reader-panel';
+import type { ReaderLoc } from '@/components/reader/paginated-reader';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/ui/sidebar';
+import { getUrlPosition, saveUrlPosition } from '@/lib/reader-position';
 import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
@@ -159,52 +161,94 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown
   return { markdown, title: sniffedTitle };
 }
 
-/** Split blank-line-separated text runs inside a block element into <p>s.
- *  When the container is itself a <p>, it is replaced by sibling paragraphs
- *  (nesting <p> inside <p> is invalid HTML). */
+/** Block-level elements that terminate a text run when splitting <br>-separated
+ *  paragraphs (a section heading div, nested section, list, table, etc.).
+ *  Inline elements (a, ruby, span, strong, em, code, img) stay inside their run. */
+function isBlockElement(el: Element): boolean {
+  return ['DIV', 'SECTION', 'ARTICLE', 'BLOCKQUOTE', 'TABLE', 'UL', 'OL', 'LI', 'PRE', 'FIGURE', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName);
+}
+
+/** Narrow a ChildNode to Element so `tagName` is accessible. */
+function isElementNode(n: Node): n is Element {
+  return n.nodeType === Node.ELEMENT_NODE;
+}
+
+/** Split blank-line- AND <br>-separated text runs inside a block element into
+ *  <p> paragraphs.
+ *  Sources like Aozora Bunko render the whole body as one <div> of
+ *  <br>-terminated lines with no <p> tags. Turndown turns each <br> into a
+ *  hard break inside a single markdown paragraph, so remark would merge every
+ *  paragraph in a section into one block (rendered as one action menu). Breaking
+ *  on <br> too gives each paragraph its own block. When the container is
+ *  itself a <p>, it is replaced by sibling paragraphs (nesting <p> inside <p>
+ *  is invalid HTML). */
 function splitTextParagraphs(container: Element, doc: Document): void {
   const children = Array.from(container.childNodes);
-  if (!children.some(c => c.nodeType === Node.TEXT_NODE && /\n\s*\n/.test(c.nodeValue ?? ''))) return;
+  const hasBlankLines = children.some(c => c.nodeType === Node.TEXT_NODE && /\n\s*\n/.test(c.nodeValue ?? ''));
+  const hasBr = children.some(c => isElementNode(c) && c.tagName === 'BR');
+  if (!hasBlankLines && !hasBr) return;
 
-  const runs: Node[][] = [];
+  // Each block is a text run (nodes to wrap in a <p>) or a block element
+  // (heading div, etc.) preserved as-is.
+  const blocks: Array<{ nodes?: Node[]; element?: Element }> = [];
   let current: Node[] = [];
-  const closeRun = () => { if (current.length > 0) { runs.push(current); current = []; } };
+  const closeRun = () => {
+    const meaningful = current.filter(n => n.nodeType !== Node.TEXT_NODE || (n.nodeValue ?? '').trim() !== '');
+    if (meaningful.length > 0) blocks.push({ nodes: meaningful });
+    current = [];
+  };
 
   for (const child of children) {
+    if (isElementNode(child) && child.tagName === 'BR') {
+      closeRun();
+      continue;
+    }
+    if (isElementNode(child) && isBlockElement(child)) {
+      closeRun();
+      blocks.push({ element: child });
+      continue;
+    }
     if (child.nodeType !== Node.TEXT_NODE) { current.push(child); continue; }
-    const parts = (child.nodeValue ?? '').split(/\n\s*\n/);
-    if (parts.length === 1) { current.push(child); continue; }
-    parts.forEach((part, i) => {
-      if (i === 0) {
-        if (part.trim()) current.push(doc.createTextNode(part));
-        closeRun();
-      } else if (i === parts.length - 1) {
-        if (part.trim()) current.push(doc.createTextNode(part));
-      } else if (part.trim()) {
-        current.push(doc.createTextNode(part));
-        closeRun();
-      } else {
-        closeRun();
-      }
-    });
+    const v = child.nodeValue ?? '';
+    // Whitespace-only node at a run start (right after a <br>) is a line break
+    // separator, not content — drop it so it doesn't pad the next paragraph.
+    if (v.trim() === '' && current.length === 0) continue;
+    if (hasBlankLines && /\n\s*\n/.test(v)) {
+      const parts = v.split(/\n\s*\n/);
+      parts.forEach((part, i) => {
+        if (i === 0) {
+          if (part.trim()) current.push(doc.createTextNode(part));
+          closeRun();
+        } else if (i === parts.length - 1) {
+          if (part.trim()) current.push(doc.createTextNode(part));
+        } else if (part.trim()) {
+          current.push(doc.createTextNode(part));
+          closeRun();
+        } else {
+          closeRun();
+        }
+      });
+    } else {
+      current.push(child);
+    }
   }
   closeRun();
 
-  const contentRuns = runs.filter(run => run.some(n => n.nodeType !== Node.TEXT_NODE || (n.nodeValue ?? '').trim() !== ''));
   // Guard BEFORE moving nodes into <p>s — the map() below detaches children
   // from the container, so an early return here would drop them entirely.
-  if (contentRuns.length < 2) return;
+  if (blocks.length < 2) return;
 
-  const paragraphs = contentRuns.map(run => {
+  const paragraphs = blocks.map(b => {
+    if (b.element) return b.element;
     const p = doc.createElement('p');
-    run.forEach(n => p.appendChild(n));
+    b.nodes!.forEach(n => p.appendChild(n));
     return p;
   });
 
   if (container.tagName === 'P') {
-    container.replaceWith(...paragraphs);
+    container.replaceWith(...paragraphs as Element[]);
   } else {
-    container.replaceChildren(...paragraphs);
+    container.replaceChildren(...paragraphs as Element[]);
   }
 }
 
@@ -229,6 +273,9 @@ export default function WebReaderPage() {
   const [menuUrl, setMenuUrl] = useState<string | null>(null);
   const [editingUrl, setEditingUrl] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  // Saved reading position (block index) restored per loaded URL, so a refresh
+  // / navigation returns to the same spot in the text instead of page 1.
+  const [initialLocation, setInitialLocation] = useState<ReaderLoc | null>(null);
   // Last URL that was loaded (or synced from the query string). Compared against
   // `?url=` instead of the live input value, so editing the address bar never
   // trips the param-sync effect and snaps the input back.
@@ -292,6 +339,9 @@ export default function WebReaderPage() {
         setBlocks(null);
       }
       if (seq !== loadSeqRef.current) return;
+      // Restore the saved reading position for this URL (block index).
+      const saved = getUrlPosition(targetUrl);
+      setInitialLocation(saved != null ? { blockIndex: saved } : null);
       // Remember the visit (most recent first, capped) in localStorage.
       setVisitedSites(prev => {
         const next = [
@@ -341,6 +391,15 @@ export default function WebReaderPage() {
     }
   }, [l1.code, l2.code]);
 
+  // Persist the reading position (block index) whenever the visible page's
+  // start block changes, so a refresh / navigation returns to the same spot.
+  const handleReaderLocationChange = useCallback((loc: ReaderLoc) => {
+    const u = loadedUrlRef.current;
+    if (u && 'blockIndex' in loc) {
+      saveUrlPosition(u, loc.blockIndex);
+    }
+  }, []);
+
   // Load from URL param — on mount and whenever it changes (e.g. a chevron
   // link inside a block navigates to another article while already here).
   const urlParam = searchParams.get('url');
@@ -358,6 +417,7 @@ export default function WebReaderPage() {
         setError(null);
         setUrl('');
         setLoading(false);
+        setInitialLocation(null);
         document.title = tRef.current('title.web_reader');
       }
       return;
@@ -521,6 +581,8 @@ export default function WebReaderPage() {
           onTabChange={() => {}}
           onTokenize={handleTokenize}
           onFillSample={() => {}}
+          initialLocation={initialLocation}
+          onLocationChange={handleReaderLocationChange}
           onLemmatize={handleLemmatize}
           onPageTranslate={handlePageTranslate}
         />

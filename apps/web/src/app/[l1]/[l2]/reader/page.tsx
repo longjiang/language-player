@@ -15,8 +15,10 @@ import {
   PanelRightClose, PanelRight,
 } from 'lucide-react';
 import { ReaderPanel } from '@/components/reader/reader-panel';
+import type { ReaderLoc } from '@/components/reader/paginated-reader';
 import { NotesSidebar } from '@/components/reader/notes-sidebar';
 import { Sidebar } from '@/components/ui/sidebar';
+import { getNotePosition, saveNotePosition } from '@/lib/reader-position';
 
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -63,6 +65,9 @@ export default function ReaderPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
+  // Saved reading position (block index) restored on note load, so a refresh
+  // / navigation returns to the same spot in the text instead of page 1.
+  const [initialLocation, setInitialLocation] = useState<ReaderLoc | null>(null);
 
   // ── Notes ──
   const { data: session } = useSession();
@@ -99,7 +104,11 @@ export default function ReaderPage() {
       const id = Number(noteIdParam);
       setLoading(true);
       apiClient.get<Note>(`/user-notes/${id}`)
-        .then(note => { setText(note.text || ''); setTranslation(note.translation || ''); setTitle(note.title || ''); setCurrentNoteId(id); setActiveTab('read'); })
+        .then(note => {
+          setText(note.text || ''); setTranslation(note.translation || ''); setTitle(note.title || ''); setCurrentNoteId(id); setActiveTab('read');
+          const saved = getNotePosition(id);
+          setInitialLocation(saved != null ? { blockIndex: saved } : null);
+        })
         .catch((e: any) => setError(e?.message || t('msg.failed_to_load_note')))
         .finally(() => setLoading(false));
     }
@@ -113,6 +122,8 @@ export default function ReaderPage() {
       const note = await apiClient.get<Note>(`/user-notes/${noteId}`);
       setText(note.text || ''); setTranslation(note.translation || ''); setTitle(note.title || '');
       setCurrentNoteId(noteId); setDirty(false); setActiveTab('read');
+      const saved = getNotePosition(noteId);
+      setInitialLocation(saved != null ? { blockIndex: saved } : null);
       router.replace(`/${l1.code}/${l2.code}/reader?noteId=${noteId}`, { scroll: false });
     } catch (e: any) { setError(e?.message || t('msg.failed_to_load_note')); }
     finally { setLoading(false); }
@@ -128,6 +139,7 @@ export default function ReaderPage() {
       setNotes(prev => [{ id: created.id, title: created.title, created_on: created.created_on }, ...prev]);
       setText(''); setTranslation(''); setTitle(t('msg.untitled_note'));
       setCurrentNoteId(created.id); setDirty(false); setActiveTab('edit');
+      setInitialLocation(null);
       router.replace(`/${l1.code}/${l2.code}/reader?noteId=${created.id}`, { scroll: false });
     } catch (e: any) { setError(e?.message || 'Failed to create note'); }
     finally { setLoading(false); }
@@ -182,6 +194,14 @@ export default function ReaderPage() {
 
   const handleTokenize = useCallback(async () => { await saveNow(); setActiveTab('read'); }, [saveNow]);
 
+  // Persist the reading position (block index) whenever the visible page's
+  // start block changes, so a refresh / navigation returns to the same spot.
+  const handleReaderLocationChange = useCallback((loc: ReaderLoc) => {
+    if (currentNoteId != null && 'blockIndex' in loc) {
+      saveNotePosition(currentNoteId, loc.blockIndex);
+    }
+  }, [currentNoteId]);
+
   const handleLemmatize = useCallback(async (texts: string[]) => {
     const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
       method: 'POST',
@@ -230,7 +250,7 @@ export default function ReaderPage() {
 
   // Load from localStorage / URL params
   const loadUrl = useCallback(async (url: string, isMarkdown: boolean) => {
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setInitialLocation(null);
     router.replace(`/${l1.code}/${l2.code}/reader?url=${encodeURIComponent(url)}`, { scroll: false });
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(url)}`);
@@ -247,11 +267,11 @@ export default function ReaderPage() {
     if (storedText) {
       setText(storedText); setTitle(localStorage.getItem(READER_TITLE_KEY) || '');
       localStorage.removeItem(READER_TEXT_KEY); localStorage.removeItem(READER_TITLE_KEY);
-      setActiveTab('read'); return;
+      setActiveTab('read'); setInitialLocation(null); return;
     }
-    if (urlParam) { loadUrl(decodeURIComponent(urlParam), false); return; }
+    if (urlParam) { setInitialLocation(null); loadUrl(decodeURIComponent(urlParam), false); return; }
     if (method && arg) {
-      if (['md', 'html', 'txt'].includes(method)) { setText(decodeURIComponent(arg)); setActiveTab('read'); }
+      if (['md', 'html', 'txt'].includes(method)) { setText(decodeURIComponent(arg)); setActiveTab('read'); setInitialLocation(null); }
       else if (method === 'md-url') loadUrl(arg, true);
       else if (method === 'html-url') loadUrl(arg, false);
     }
@@ -336,6 +356,8 @@ export default function ReaderPage() {
             onTabChange={setActiveTab}
             onTokenize={handleTokenize}
             onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
+            initialLocation={initialLocation}
+            onLocationChange={handleReaderLocationChange}
             onLemmatize={handleLemmatize}
             onPageTranslate={handlePageTranslate}
           />

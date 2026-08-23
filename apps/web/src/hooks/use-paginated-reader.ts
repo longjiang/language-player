@@ -117,6 +117,20 @@ export function computeBackwardStart(
   return 0;
 }
 
+/**
+ * Page index (0-based) whose block range contains `target` (a global block
+ * index). Clamps to the last page when `target` lies beyond the final break,
+ * so a stale saved position never lands off the end of the stream.
+ */
+export function pageIndexForBlock(breaks: number[], target: number): number {
+  let p = 0;
+  for (let b = 0; b < breaks.length; b++) {
+    if (breaks[b]! <= target) p = b + 1;
+    else break;
+  }
+  return Math.min(p, breaks.length);
+}
+
 interface PageBlock {
   loc: BookLocation;
   block: ReaderBlock;
@@ -131,6 +145,9 @@ export interface UsePaginatedReaderOptions {
   location?: BookLocation | null;
   /** Increment to re-apply `location` after a jump. */
   jumpNonce?: number;
+  /** Initial reading location to restore on mount (saved position / jump).
+   *  Markdown readers pass `{ blockIndex }`; applied once per stream. */
+  initialLocation?: ReaderLoc | null;
   /** Called whenever the visible page's start changes. */
   onLocationChange?: (loc: ReaderLoc) => void;
   onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
@@ -164,6 +181,8 @@ export interface UsePaginatedReaderReturn {
   hasNext: boolean;
   nextPage: () => void;
   prevPage: () => void;
+  /** Jump to a page number (1-based) — the "go to page" dialog target. */
+  goToPage: (page: number) => void;
   /** Jump to a location in the stream (EPUB: BookLocation; markdown: block index). */
   jumpTo: (loc: ReaderLoc) => void;
   /** Lemmatized tokens for the visible page, keyed by item key. */
@@ -181,6 +200,7 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     location,
     jumpNonce,
     onLocationChange,
+    initialLocation,
     onLemmatize,
     onPageTranslate,
     showTranslation,
@@ -234,8 +254,15 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
   const [pageIndex, setPageIndex] = useState(0);
   const [hasMeasured, setHasMeasured] = useState(false);
   const prevBlocksRef = useRef<ReaderBlock[] | null | undefined>(undefined);
+  /** Global block index at the start of the visible page — the anchor kept
+   *  across re-measures (layout identity change, resize, sidebar toggle) so
+   *  the reader never resets to page 1 (SPEC-077 §9, §10). */
+  const anchorBlockRef = useRef(0);
+  /** True once the initial `initialLocation` has been applied, so a later
+   *  layout change reuses the anchor instead of re-jumping to the saved spot. */
+  const initialAppliedRef = useRef(false);
 
-  // Reset caches when the stream changes (new note / re-tokenize).
+  // Reset caches when the stream changes (new note / re-tokenize / switch note).
   useEffect(() => {
     if (mode !== 'full') return;
     if (prevBlocksRef.current === blocks) return;
@@ -245,6 +272,10 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     setPageBreaks([]);
     setPageIndex(0);
     setHasMeasured(false);
+    // A new stream invalidates the anchor; re-apply `initialLocation` (the
+    // saved position for the newly-loaded document) on its first measure.
+    anchorBlockRef.current = 0;
+    initialAppliedRef.current = false;
   }, [mode, blocks]);
 
   // Measure the whole stream: render all blocks hidden, walk offsetTop/
@@ -296,12 +327,25 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
           prevBottom = top + h;
         }
         setPageBreaks(breaks);
-        setPageIndex(0);
+        // Preserve the reader's place across re-measures (SPEC-077 §9, §10):
+        // the first measure applies the restored `initialLocation`; later
+        // layout changes (resize / sidebar / settings) reuse the anchor block
+        // so the reader never jumps back to page 1.
+        let targetIdx = 0;
+        if (!initialAppliedRef.current) {
+          targetIdx = initialLocation && 'blockIndex' in initialLocation
+            ? initialLocation.blockIndex
+            : 0;
+          initialAppliedRef.current = true;
+        } else {
+          targetIdx = anchorBlockRef.current;
+        }
+        setPageIndex(pageIndexForBlock(breaks, targetIdx));
         setHasMeasured(true);
       });
     });
     return () => cancelAnimationFrame(raf);
-  }, [mode, blocks, measureNonce, chromeHeight, viewport]);
+  }, [mode, blocks, measureNonce, chromeHeight, viewport, initialLocation]);
 
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, pageBreaks.length));
   const fullPageBlocks = useMemo<ReaderPageItem[]>(() => {
@@ -317,6 +361,10 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
   const fullPrevPage = useCallback(() => {
     setPageIndex(p => Math.max(0, p - 1));
   }, []);
+  const fullGoToPage = useCallback((page: number) => {
+    // page is 1-based; clamp to a valid page index.
+    setPageIndex(Math.max(0, Math.min(page - 1, pageBreaks.length)));
+  }, [pageBreaks.length]);
   const fullJumpTo = useCallback((loc: ReaderLoc) => {
     if (!('blockIndex' in loc)) return;
     const target = loc.blockIndex;
@@ -328,17 +376,20 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     setPageIndex(p);
   }, [pageBreaks]);
 
-  // Report the visible page's first block as the reader location.
+  // Report the visible page's first block as the reader location, and keep it
+  // as the anchor so a later re-measure (resize / sidebar / settings) restores
+  // the same place instead of resetting to page 1 (SPEC-077 §9, §10).
   const lastFullLocKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (mode !== 'full' || !onLocationChange) return;
+    if (mode !== 'full') return;
     const first = fullPageBlocks[0];
     if (!first) return;
     const key = first.key;
     if (lastFullLocKeyRef.current === key) return;
     lastFullLocKeyRef.current = key;
     const streamIndex = (first.loc as { blockIndex: number }).blockIndex;
-    onLocationChange({ blockIndex: streamIndex });
+    anchorBlockRef.current = streamIndex;
+    onLocationChange?.({ blockIndex: streamIndex });
   }, [mode, fullPageBlocks, onLocationChange]);
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -434,6 +485,28 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     epubLog(`estimatePageNumber spine=${loc.spineIndex} block=${loc.blockIndex} → charsBefore=${before} charsPerPage=${divisor} page=${n}`);
     return n;
   }, [charsBefore]);
+
+  /** Approximate BookLocation at `targetChars` chars into the book (walk the
+   *  spine text runs). Used by goToPage to find the block for a page number. */
+  const locationAtChars = useCallback(async (targetChars: number): Promise<BookLocation | null> => {
+    if (!book || book.spine.length === 0) return null;
+    let sum = 0;
+    for (let s = 0; s < book.spine.length; s++) {
+      const { text, starts } = await book.spineTextData(s);
+      if (sum + text.length < targetChars) {
+        sum += text.length;
+        continue;
+      }
+      const within = Math.max(0, targetChars - sum);
+      let b = 0;
+      while (b + 1 < starts.length && (starts[b + 1] ?? 0) <= within) b++;
+      return { spineIndex: s, blockIndex: b, offset: Math.max(0, within - (starts[b] ?? 0)) };
+    }
+    // Past the end → last block of the last spine item.
+    const s = book.spine.length - 1;
+    const { starts } = await book.spineTextData(s);
+    return { spineIndex: s, blockIndex: Math.max(0, starts.length - 1), offset: 0 };
+  }, [book]);
 
   // ── Reset on book change ──
   // Guard with prevBookRef: React 18 dev StrictMode double-invokes mount
@@ -702,6 +775,20 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     });
   }, [book, fetchWindow]);
 
+  /** Jump to an arbitrary 1-based page number (windowed/EPUB). Estimates the
+   *  target block from chars-per-page, then jumps like any location (the
+   *  existing estimate math refines the exact page after the window loads). */
+  const windowedGoToPage = useCallback((page: number) => {
+    if (!book) return;
+    const clamped = Math.max(1, Math.min(page, Math.max(1, totalPagesEstimate)));
+    if (clamped === pageNumber) return;
+    const targetChars = Math.max(0, (clamped - 1) * Math.max(1, charsPerPageRef.current));
+    epubLog(`goToPage page=${clamped} → targetChars=${targetChars}`);
+    void locationAtChars(targetChars).then(loc => {
+      if (loc) windowedJumpTo(loc);
+    });
+  }, [book, totalPagesEstimate, pageNumber, locationAtChars, windowedJumpTo]);
+
   // Re-apply an external jump (restore / TOC / search / links). Also
   // re-applies when the book instance changes: a re-open swaps the EpubBook
   // and the paginator reset invalidates any in-flight fetch, so the new book
@@ -832,6 +919,12 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     }
   }, [mode, fullJumpTo, windowedJumpTo]);
 
+  /** Jump to a 1-based page number in either mode. */
+  const goToPage = useCallback((page: number) => {
+    if (mode === 'full') fullGoToPage(page);
+    else windowedGoToPage(page);
+  }, [mode, fullGoToPage, windowedGoToPage]);
+
   return {
     viewportRef,
     measureRef,
@@ -845,6 +938,7 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
     hasNext: mode === 'full' ? fullHasNext : windowedHasNext,
     nextPage: mode === 'full' ? fullNextPage : windowedNextPage,
     prevPage: mode === 'full' ? fullPrevPage : windowedPrevPage,
+    goToPage,
     jumpTo,
     tokenCache,
     blockTranslations,

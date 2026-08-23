@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import {
   PaginatedReader,
   type BlockRenderCtx,
+  type ReaderLoc,
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
 import {
@@ -58,6 +59,10 @@ export interface ReaderPanelProps {
   onNewNote?: () => void;
   /** Open the notes sidebar from the empty state. */
   onOpenSidebar?: () => void;
+  /** Initial reading location to restore on mount (saved position). */
+  initialLocation?: ReaderLoc | null;
+  /** Called whenever the visible page's start changes (persist the position). */
+  onLocationChange?: (loc: ReaderLoc) => void;
 }
 
 export function ReaderPanel({
@@ -76,6 +81,8 @@ export function ReaderPanel({
   sidebarVisible = false,
   onNewNote,
   onOpenSidebar,
+  initialLocation,
+  onLocationChange,
 }: ReaderPanelProps) {
   const t = useT();
   const router = useRouter();
@@ -297,6 +304,8 @@ export function ReaderPanel({
           l1={l1} l2={l2}
           ctx={ctx}
           measureNonce={measureNonce}
+          initialLocation={initialLocation}
+          onLocationChange={onLocationChange}
           onLemmatize={onLemmatize}
           onPageTranslate={onPageTranslate}
           header={
