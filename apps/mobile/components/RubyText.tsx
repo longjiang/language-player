@@ -256,9 +256,11 @@ export interface RubyTextParagraphProps {
   lineHeight: number;
   /** Line height of the JS measuring text, which drives the measured box AND
    *  the `onLineGrid` used to baseline-align the translation column. Must
-   *  equal the ACTUAL rendered L2 pitch (baseLeading), not the compensated
-   *  native box — otherwise the translation drifts off the L2 lines. Defaults
-   *  to `lineHeight`. */
+   *  equal the ACTUAL rendered L2 pitch — in ruby mode that is `linePitch` =
+   *  `baseLeading + readingBand` (CSS parity: the line box GROWS to include
+   *  the reading; see ruby-layout.ts). When the native renderer also grows
+   *  lines beyond the pin, the native line grid reports the real per-line
+   *  geometry and is used instead (see merge below). */
   gridLineHeight?: number;
   readingSize: number;
   isRtl: boolean;
