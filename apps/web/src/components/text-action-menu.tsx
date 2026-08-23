@@ -124,6 +124,10 @@ export function TextActionMenu({
   // blank column on wide screens (reported against the web readers).
   const showTranslation = display.translation;
   const renderColumn = showTranslation && hasTranslation;
+  // A side column renders either the real translation (`renderColumn`) or the
+  // loading skeleton while a translation is in flight.
+  const loadingColumn = showTranslation && loading && !translation && !aligned;
+  const hasSideColumn = renderColumn || loadingColumn;
   // Translation content is L1, not L2. Tag it explicitly so browsers choose
   // the user's regional glyph domain (e.g. zh-Hans) instead of inheriting the
   // browser/device language, which can make Chinese glyphs render as Japanese.
@@ -144,8 +148,14 @@ export function TextActionMenu({
   // (readers); everything else keeps the fixed default split and no handle.
   const resizable = translationSplit != null && onTranslationSplitChange != null;
   // L2 column flex-grow factor (basis 0% → grow ratio distributes the row).
-  const l2Grow = resizable ? translationSplit! : 3;
-  const trGrow = resizable ? 1 - translationSplit! : 2;
+  // When a side column renders (translation or its loading skeleton), grow the
+  // L2 by `translationSplit` and the side column by `1 - translationSplit`
+  // (the resizable 3:2 split). When NO side column renders (translation off),
+  // the L2 MUST flex-grow: 1 so it fills the row; a fractional grow (0.6264)
+  // with no sibling to absorb the remainder leaves ~37% of the row empty (the
+  // reported "blank column" on the web readers).
+  const l2Grow = hasSideColumn ? (resizable ? translationSplit! : 3) : 1;
+  const trGrow = hasSideColumn ? (resizable ? 1 - translationSplit! : 2) : 0;
   // The split handle occupies 8px of the visible row after its negative
   // margins, so reduce the flex gap by that footprint and keep the requested
   // text-leading gap between the two text columns.
@@ -273,7 +283,7 @@ export function TextActionMenu({
             ) : typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
         )}
-        {showTranslation && loading && !translation && !aligned && (
+        {loadingColumn && (
           <div
             className={centered
               ? `w-full text-center ${translationClass || 'text-sm'}`
