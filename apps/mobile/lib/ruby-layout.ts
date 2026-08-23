@@ -44,6 +44,13 @@ export const RTL_L2S = new Set(['ar', 'fa', 'he', 'ur', 'sd', 'ps', 'dv']);
  *    glyphs' top edge in RubyTextView.kt. */
 export const RUBY_READING_GAP = 2;
 
+/** Reading glyph body in em — ascender + descender of a typical reading font
+ *  (~0.97em ascent + ~0.24em descent for SF/Roboto Latin; kana/CJK fonts are
+ *  smaller). Used to reserve the reading's FULL glyph height in the line box,
+ *  not just its nominal point size — reserving less is what made readings
+ *  poke into the line above (see ARCH-030). */
+export const RUBY_READING_BODY_FACTOR = 1.2;
+
 /** `bg-yellow-200/20` from the View fallback (saved-word highlight), resolved
  *  to a hex base color; the native paragraph applies /20 alpha itself. */
 export const MOBILE_RUBY_SAVED_BG = hslToHex(colors.yellow[200]);
@@ -81,6 +88,18 @@ export interface RubyLayout {
   /** How far the base text is pulled up so the reading gap ≈ RUBY_READING_GAP. */
   rubyPull: number;
   isRubyMode: boolean;
+  /** The reading's full vertical extent that must fit inside the line box
+   *  above the base glyphs: glyph body (ascender + descender) + gap. This is
+   *  the space CSS `rt` occupies inside a ruby line box. */
+  readingBand: number;
+  /** Uniform line pitch of the rendered paragraph in ruby mode:
+   *  `baseLeading + readingBand` (CSS parity — a ruby line box is the base
+   *  line box plus the annotation above it; the browser GROWS the line box to
+   *  fit the reading rather than keeping `fontSize × leading` and letting the
+   *  annotation overlap the previous line). `baseLeading` otherwise. Every
+   *  line — ruby or not — uses this pitch so the grid stays uniform, which is
+   *  what the reader's translation column baseline-aligns to. */
+  linePitch: number;
 }
 
 /**
@@ -101,6 +120,7 @@ export function computeRubyLayout(
   const halfLeading = Math.round((baseLeading - tokenFontSize) / 2);
   const rubyPull = Math.max(0, halfLeading - RUBY_READING_GAP);
   const isRubyMode = input.showPhonetics && input.phoneticsShow === 'ruby';
+  const readingBand = Math.round(readingSize * RUBY_READING_BODY_FACTOR) + RUBY_READING_GAP;
   return {
     isRtl,
     tokenFontSize,
@@ -109,5 +129,7 @@ export function computeRubyLayout(
     halfLeading,
     rubyPull,
     isRubyMode,
+    readingBand,
+    linePitch: isRubyMode ? baseLeading + readingBand : baseLeading,
   };
 }
