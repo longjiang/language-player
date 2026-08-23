@@ -142,6 +142,16 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown
     const src = el.getAttribute('src') ?? '';
     if (!src || /^data:image\/gif;base64,R0lGODlhAQAB/i.test(src)) {
       el.remove();
+      return;
+    }
+    // Resolve relative/absolute image srcs against the page URL (the same
+    // baseUrl rewrite applied to <a> hrefs above) so images render in the
+    // reader instead of showing a broken image — e.g. Aozora Bunko's
+    // ../../../gaiji/2-88/… character tiles resolve to the site's /gaiji/….
+    try {
+      el.setAttribute('src', new URL(src, baseUrl).href);
+    } catch {
+      // Keep the src as-is when it can't be resolved (data: URIs, etc.).
     }
   });
   // Some sites (e.g. Yahoo News) render the article body as raw text nodes inside

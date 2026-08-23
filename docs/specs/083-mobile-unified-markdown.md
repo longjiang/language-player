@@ -271,7 +271,11 @@ for text blocks so L2 tokenization, translations, and formats keep working):
 - **Web turndown → shared `htmlToMarkdown`** — web's web-reader ingestion
   keeps DOMParser+turndown for now (its output quality is well-tested; the
   shared converter serves mobile's two ingestion paths). Adoption is a
-  follow-up with its own fixtures.
+  follow-up with its own fixtures. Web's turndown path resolves relative
+  `<img>` srcs (and `<a>` hrefs) against the page URL via `new URL(src,
+  baseUrl)` — parity with the shared converter's `resolveImgSrc`, so e.g.
+  Aozora Bunko's `../../../gaiji/2-88/…` character tiles render instead of
+  showing a broken image.
 - **Web EPUB ingestion unification** — web keeps its native EpubBlock +
   1:1 bridge (`epub-reader-blocks.ts`); it already ends at the shared block
   stream. A later task can move web EPUB to the shared
