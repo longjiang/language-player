@@ -531,6 +531,18 @@ export default function ReviewScreen() {
         : 'msg.next_review_in_days';
     return t(nextReviewKey, { n: nextReviewInterval.value });
   }, [t]);
+  /** Compact second line for the rating buttons: just the interval, no
+   *  "Next review in" prefix ("1 minute", "3 hours", "2 days"). The toast
+   *  keeps the full label (SPEC-066 §Rating). */
+  const nextReviewShortLabelFor = useCallback((card: { srs: SrsFields }, quality: Rating) => {
+    const nextReviewInterval = getNextReviewInterval(fsrs.rate(card.srs, quality).due);
+    const nextReviewKey = nextReviewInterval.unit === 'minutes'
+      ? 'msg.next_review_minutes'
+      : nextReviewInterval.unit === 'hours'
+        ? 'msg.next_review_hours'
+        : 'msg.next_review_days';
+    return t(nextReviewKey, { n: nextReviewInterval.value });
+  }, [t]);
   const definitionTestAnswered = reviewMode === 'test'
     && testQuestions.some((question, index) => question.kind === 'definition' && Boolean(testAnswers[index]));
   const showContextTranslation = showTabs || definitionTestAnswered;
@@ -1418,8 +1430,8 @@ export default function ReviewScreen() {
                   className="flex-1 items-center rounded-lg py-3"
                   style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: ratingDisabled ? 0.5 : 1 }}
                 >
-                  <Text className="text-sm font-bold text-white">{r.label}</Text>
-                  <Text className="mt-0.5 text-xs text-white/70">{currentCard ? nextReviewLabelFor(currentCard, r.key) : ''}</Text>
+                  <Text className="text-center text-sm font-bold text-white">{r.label}</Text>
+                  <Text className="mt-0.5 text-center text-xs text-white/70">{currentCard ? nextReviewShortLabelFor(currentCard, r.key) : ''}</Text>
                 </Pressable>
               );
             })}
