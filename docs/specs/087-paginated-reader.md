@@ -77,7 +77,23 @@ These are grouped by feature area. Each requirement describes the finished behav
 - **Re-pagination.** Changing the split re-paginates so page breaks match the new column widths.
 - **Hidden when stacked.** On narrow screens (no side-by-side) the handle is not shown.
 
-### 5. Tokenized-text action menu
+### 5. Tokenized Text
+
+- **Words are interactive tokens.** The L2 text is broken into tokens — words and punctuation. Only word tokens respond to a tap (opening the dictionary); punctuation marks are not tappable.
+- **Word tokens reconstruct the source.** Tokens concatenate back to the original text exactly (no missing or doubled spaces, newlines preserved), so selecting/copying gives the true source.
+- **Phonetics (ruby).** A shared per-language display setting controls phonetics: **ruby** (reading shown above the characters), **word** (the word replaced by its reading), or **off**. It applies consistently to language blocks in the reader.
+- **Readings attach to the right characters.** The reading sits above the base characters it belongs to: per-character pinyin/jyutping for Chinese and Cantonese, per-kanji furigana for Japanese, romanization for Korean and other languages with a reading.
+- **Uniform lines with readings.** Words without a reading still reserve the same vertical slot, so a line keeps one pitch whether or not every word carries a reading.
+- **Consistent spacing across languages.** The reading band and the line pitch are identical in every language, so a reading never overlaps the characters or the line above.
+- **Rendered on the native text engine.** Readings use the platform text engine so ruby typography (centering, overhang) matches the platform; the result is layout-neutral whether or not a native renderer is available.
+- **Highlighting.** Saved words and searched/highlighted terms are visually marked, and a reviewed/target word is highlighted even when its inflected surface differs from the saved headword.
+- **Quiz mode.** Words can be blanked and progressively revealed so a reader can self-test.
+- **Script variants.** Where a language has script variants (traditional/simplified Chinese, Korean hanja, Vietnamese hán tự), the text follows the user's display setting.
+- **Hard-words-only.** When the per-language proficiency filter is set, only words the user hasn't yet mastered get a reading.
+- **Karaoke (video).** In video subtitles, the spoken words are highlighted and the not-yet-spoken words are dimmed in time with playback.
+- **RTL scripts.** Right-to-left languages (Arabic, Hebrew, Persian, …) render right-to-left with readings in the correct direction.
+
+### 6. Tokenized-text action menu
 
 - **Per-block menu.** Each L2 text block exposes a "more" (⋮) affordance with:
   - **Copy** — copy the block's text;
@@ -87,13 +103,13 @@ These are grouped by feature area. Each requirement describes the finished behav
 - **Interactive words.** Every word in the tokenized text is tappable: tapping opens the dictionary popup (definition, add to vocabulary, linked examples). Selecting text opens the dictionary for the selected span.
 - **Formatting honored.** Bold/italic/code/links/underline in the source render in the tokenized text; linked phrases open the link.
 
-### 6. Reader chrome
+### 7. Reader chrome
 
 - **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and (for books) table-of-contents and search buttons, plus the current chapter name.
 - **Empty / pending states.** A load state (pulsing skeleton) shows while a page's words and translation are prepared, so the layout doesn't jump.
 - **Notes.** The notes reader has a sidebar to create, rename, delete, and switch between notes.
 
-### 7. Search, table of contents, and place
+### 8. Search, table of contents, and place
 
 - **Search (books).** A whole-book search panel: results show a snippet with the matched span highlighted and a chapter label; clicking a result jumps to and highlights the matching block. Recent searches are remembered (and can be cleared).
 - **Table of contents.** A nested chapter tree highlighting the current chapter and its ancestors; clicking jumps to the chapter. Previous/next chapter controls are available.
