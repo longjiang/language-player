@@ -54,5 +54,20 @@ export function MarkdownExplanation({ text, l2Code, streaming = false }: Markdow
     );
   }
 
-  return <MarkdownBlocks blocks={blocks} l2Code={l2Code} codeSpans="tokenize" />;
+  // The finished render must keep the streaming phase's body typography
+  // (`text-sm leading-relaxed` = 14px / 1.625). MarkdownBlocks defaults to
+  // 16px with a 2.0 leading ratio, so passing textScale 0.875 (14/16) and
+  // lineHeightScale 1.625 keeps the body text size AND leading identical
+  // across the streaming → parsed transition (headings still scale up — that
+  // is the point of parsing). Without this the whole body jumps noticeably
+  // larger when the stream finishes (SPEC-083).
+  return (
+    <MarkdownBlocks
+      blocks={blocks}
+      l2Code={l2Code}
+      codeSpans="tokenize"
+      textScale={0.875}
+      lineHeightScale={1.625}
+    />
+  );
 }
