@@ -58,16 +58,25 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 
 `zh, en, ja, ko, fr, de, es, vi, ru, ar, tr, it, hi, yue, th, id, nl, he, pt`
 
-> **Note — tokenizer test screen layout (2026-08-23):** the mobile
-> *Tokenizer Test* screen (`apps/mobile/app/(tabs)/(me)/tokenizer-test.tsx`)
+> **Note — tokenizer test screen layout (2026-08-23, web parity 2026-08-24):** the
+> mobile *Tokenizer Test* screen (`apps/mobile/app/(tabs)/(me)/tokenizer-test.tsx`)
 > shows one language per line with a **curated first-order** for the
-> ruby-bearing scripts (`zh, ja, ko, ru, ar, yue, hi`) followed by the rest
+> **ruby-bearing scripts** (`zh, ja, ko, ru, ar, yue, hi`) followed by the rest
 > of `POPULAR_L2S` in its original order. It has its own **translation
 > toggle** wired to the shared Display setting (`display.translation`); when
 > on, each card renders the L2 text + its L1 translation exactly like the
 > reader (stacked on narrow screens, side-by-side on md+). `POPULAR_L2S`
 > itself is not reordered — the coverage table below and every language
 > picker still use the ADR-0030 order.
+>
+> The web *Tokenizer Test* page
+> (`apps/web/src/app/[l1]/[l2]/tokenizer/page.tsx`) mirrors this layout: the
+> same curated first-order, a **collapsed settings toggle** (text size +
+> leading), a **show-translation toggle**, and a **long/short sample toggle**
+> (persisted in localStorage, short by default). Each card renders the L2
+> text + its L1 translation like the reader — stacked on narrow screens,
+> side-by-side on md+ with the draggable split handle and sentence hover
+> highlight.
 
 | `POPULAR_L2S` | Test case |
 |---|---|
