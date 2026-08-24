@@ -82,10 +82,47 @@ interface OpenOptions {
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-/** Stable per-file id: sanitized file name (re-uploading updates the handle). */
+/** Stable 32-bit FNV-1a hash of a string, as 8 hex chars. Deterministic in
+ *  pure JS (no crypto), so the same file name always hashes the same way. */
+function fnv1a(str: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
+/**
+ * Stable per-file id: sanitized file name + a hash of the FULL name.
+ *
+ * The ASCII sanitization alone collapses every non-ASCII run to `_`, so three
+ * Japanese volumes differing only by `第１部/第２部/第３部` (full-width digits →
+ * `_`) would all map to the SAME id — the last import overwrites the earlier
+ * library entries. Appending the hash of the full name keeps distinct names
+ * distinct while the same name still maps to the same id (re-uploading updates
+ * the handle). Existing stored entries persist `meta.id` and are never
+ * re-derived, so this only affects NEW imports.
+ */
 export function sanitizeEpubId(fileName: string): string {
-  const base = fileName.replace(/\.epub$/i, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 80);
-  return (base || 'book') + '.epub';
+  const base = fileName.replace(/\.epub$/i, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 60);
+  const hash = fnv1a(fileName);
+  return `${base || 'book'}_${hash}.epub`;
+}
+
+/** Run `fn` over `items` with at most `limit` in flight (used to parallelize
+ *  image extraction without flattening the JS thread). */
+async function mapWithConcurrency<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i]!);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 /**
@@ -258,31 +295,48 @@ export async function openEpubBook(
     href: s.href,
   }));
 
-  // Extract images once per open (RN Image needs file:// URIs).
-  const imageCache = new Map<string, string>();
-  let imgIdx = 0;
-  const tempPaths: string[] = [];
-  const tImg = Date.now();
-  for (const [, item] of manifestItems) {
-    if (item.mediaType && IMAGE_MIME_TYPES.includes(item.mediaType)) {
-      const resolvedPath = resolvePath(opfDir, item.href);
-      const imgFile = zip.file(resolvedPath);
-      if (imgFile) {
-        try {
-          const b64 = await imgFile.async('base64');
-          const ext = ((item.mediaType.split('/')[1] || 'jpg') as string).replace('jpeg', 'jpg');
-          const imgPath = `${tempDir}img_${imgIdx++}.${ext}`;
-          await FileSystem.writeAsStringAsync(imgPath, b64, { encoding: FileSystem.EncodingType.Base64 });
-          // tempDir is already a file:// URI (cacheDirectory) — store it as-is
-          // for RN Image. Prepending 'file://' again yields an unloadable
-          // `file://file:///…` URI (book covers were broken by exactly this).
-          imageCache.set(resolvedPath, imgPath);
-          tempPaths.push(imgPath);
-        } catch { /* skip corrupt images */ }
-      }
+  // Extract images once per open (RN Image needs file:// URIs). Only extract
+  // the images actually referenced by spine <img> tags, and do it in parallel
+  // (capped) — serial base64→file writes for EVERY manifest image dominated
+  // open time on image-heavy books (43 images ≈ 4.4s; many manifests carry
+  // unused assets). The image-URI callback below resolves the SAME paths, so
+  // nothing referenced by a rendered block is skipped.
+  const referencedImages = new Set<string>();
+  const imgTagRe = /<img\b[^>]*\bsrc="([^"]+)"/gi;
+  for (const spine of meta.spine) {
+    const file = zip.file(spine.href);
+    if (!file) continue;
+    const html = await file.async('text');
+    const contentDir = spine.href.substring(0, spine.href.lastIndexOf('/') + 1);
+    let m: RegExpExecArray | null;
+    while ((m = imgTagRe.exec(html)) !== null) {
+      const raw = m[1]!.trim();
+      if (raw && !/^(https?:|data:)/i.test(raw)) referencedImages.add(resolvePath(contentDir, raw));
     }
   }
-  log(`[LP Mobile] ⏱️ epub open "${fileName}": extracted ${imgIdx} images ${Date.now() - tImg}ms`);
+  const imageCache = new Map<string, string>();
+  const tempPaths: string[] = [];
+  const tImg = Date.now();
+  const imageItems = [...manifestItems.entries()]
+    .map(([id, item]) => ({ id, item, mediaType: item.mediaType as string, resolvedPath: resolvePath(opfDir, item.href) }))
+    .filter(({ mediaType, resolvedPath }) => IMAGE_MIME_TYPES.includes(mediaType) && referencedImages.has(resolvedPath));
+  let imgIdx = 0;
+  await mapWithConcurrency(imageItems, 4, async ({ item, mediaType, resolvedPath }) => {
+    const imgFile = zip.file(resolvedPath);
+    if (!imgFile) return;
+    try {
+      const b64 = await imgFile.async('base64');
+      const ext = ((mediaType.split('/')[1] || 'jpg') as string).replace('jpeg', 'jpg');
+      const imgPath = `${tempDir}img_${imgIdx++}.${ext}`;
+      await FileSystem.writeAsStringAsync(imgPath, b64, { encoding: FileSystem.EncodingType.Base64 });
+      // tempDir is already a file:// URI (cacheDirectory) — store it as-is
+      // for RN Image. Prepending 'file://' again yields an unloadable
+      // `file://file:///…` URI (book covers were broken by exactly this).
+      imageCache.set(resolvedPath, imgPath);
+      tempPaths.push(imgPath);
+    } catch { /* skip corrupt images */ }
+  });
+  log(`[LP Mobile] ⏱️ epub open "${fileName}": extracted ${imageCache.size} images ${Date.now() - tImg}ms`);
 
   // Cover — reuse the persisted bookshelf cover when available.
   let coverUrl: string | null = opts.coverUri ?? null;

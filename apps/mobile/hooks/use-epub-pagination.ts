@@ -631,6 +631,13 @@ export function useEpubPagination({
     lemmatizeAbortRef.current = null;
     translateAbortRef.current?.abort();
     translateAbortRef.current = null;
+    // Bump the generation counters too (not just abort): the aborted batch's
+    // .catch fallback checks `tokenLoadGenRef.current !== gen` before writing,
+    // and without a bump the OLD book's tokens could land in the NEW book's
+    // cache (stale-token pollution after a resetKey change). The page-flip
+    // path already bumps them (see applyEstimatedPage).
+    tokenLoadGenRef.current += 1;
+    translateGenRef.current += 1;
     setMeasuring(false);
     // Estimate mode: 0 keeps the hidden measuring view empty until the seek
     // sets the window (MAX would render the whole book for a frame).
