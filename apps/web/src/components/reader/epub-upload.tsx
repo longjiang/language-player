@@ -14,6 +14,22 @@ import {
   type EpubFolderFile,
 } from '@/lib/epub-folder';
 
+/**
+ * True when any item in a drag-drop `DataTransfer` is a directory (an
+ * extracted EPUB folder). A drop of one or more plain files — including a
+ * multi-file selection of `.epub` files — never contains a directory entry,
+ * so it must go through the normal file handler, not the folder-EPUB import.
+ */
+function dropHasDirectory(items: DataTransferItemList | DataTransferItem[]): boolean {
+  const list = Array.from(items);
+  for (const item of list) {
+    const getEntry = (item as unknown as { webkitGetAsEntry?: () => FileSystemEntry | null }).webkitGetAsEntry;
+    const entry = getEntry?.call(item);
+    if (entry?.isDirectory) return true;
+  }
+  return false;
+}
+
 /** A successfully read .epub file, ready to be stored. */
 export interface EpubFileInput {
   data: ArrayBuffer;
@@ -122,16 +138,16 @@ export function EpubUpload({
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const folderFiles = await folderFilesFromDrop(e.dataTransfer.items);
-    if (folderFiles && folderFiles.length > 0) {
-      // A single dropped file (e.g. book.epub or book.epub.zip) isn't an
-      // extracted folder — route it through the normal file handler.
-      const isSingleFile = folderFiles.length === 1 && !folderFiles[0]!.path.includes('/');
-      if (isSingleFile) {
-        handleFiles(e.dataTransfer.files);
-        return;
+    // A drop is a folder-EPUB import only when it actually contains a
+    // directory entry. A single `.epub`/`.zip` file — and, crucially, a
+    // multi-file selection of `.epub` files — never does, so it must go
+    // through the normal file handler. (Previously a multi-file `.epub` drop
+    // was misrouted here and rejected as "not an epub".)
+    if (dropHasDirectory(e.dataTransfer.items)) {
+      const folderFiles = await folderFilesFromDrop(e.dataTransfer.items);
+      if (folderFiles && folderFiles.length > 0) {
+        await importFolderFiles(folderFiles);
       }
-      await importFolderFiles(folderFiles);
       return;
     }
     if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
