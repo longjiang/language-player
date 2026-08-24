@@ -27,6 +27,8 @@ import {
   type SrsTestQuestion,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  validateSrsPronunciationChoices,
+  type TestQuestionKind,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
@@ -35,7 +37,7 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CheckCircle2, BookOpen } from 'lucide-react-native';
+import { CheckCircle2, BookOpen, RefreshCw } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -182,6 +184,8 @@ export default function ReviewScreen() {
   const testAutoLoadKeyRef = useRef<string | null>(null);
   const testRequestVersionRef = useRef(0);
   const testActiveRequestRef = useRef<number | null>(null);
+  /** Which test question kind is currently being regenerated (spinner state). */
+  const [regeneratingKind, setRegeneratingKind] = useState<TestQuestionKind | null>(null);
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     testRequestVersionRef.current += 1;
     testActiveRequestRef.current = null;
@@ -193,6 +197,7 @@ export default function ReviewScreen() {
     testAutoLoadKeyRef.current = null;
     setShowTabs(false);
     setTestError(null);
+    setRegeneratingKind(null);
   }, []);
 
   useEffect(() => {
@@ -550,6 +555,73 @@ export default function ReviewScreen() {
   // ── Handlers ──
 
   /** Reveal the definition + translation for the current card. */
+  const generateTestQuestion = useCallback(async (input: {
+    kind: TestQuestionKind;
+    wordForm: string;
+    context: string;
+    l2Code: string;
+    entryForQuestion: DictionaryEntry | null | undefined;
+    requestVersion: number;
+    /** Fresh-variation request (regenerate/retry): cache-busted prompt. */
+    regenerate?: boolean;
+  }): Promise<SrsTestQuestion> => {
+    const { kind, wordForm, context, l2Code, entryForQuestion, requestVersion, regenerate = false } = input;
+    // Pronunciation confounders are validated against obvious-wrongs (the
+    // correct reading with junk appended/truncated, e.g. つきものぬ from
+    // つきもの). Retry once with a strict hint instead of failing the test;
+    // definition questions validate on the first pass only.
+    const maxAttempts = kind === 'pronunciation' ? 2 : 1;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const prompt = buildSrsQuestionPrompt({
+        word: wordForm,
+        contextSentence: context,
+        l1Code: baseCode(l1Lang.code),
+        l2Code,
+        kind,
+        definition: entryForQuestion?.definitions?.[0],
+        pronunciation: entryForQuestion?.pronunciation,
+      });
+      const hints: string[] = [];
+      if (regenerate) hints.push(`Generate a fresh variation for request ${requestVersion}; do not reuse any previous response.`);
+      if (attempt > 0) {
+        hints.push(
+          'Previous attempt produced obviously-wrong pronunciation confounders: a confounder contained the correct reading with extra syllables appended/truncated, or the written-kana part of a mixed kana/kanji word was changed. Generate strictly better confounders: keep the written-kana part identical and vary only the kanji readings with real or plausible readings of the same kanji; never extend, truncate, or reorder the correct reading.',
+        );
+      }
+      const requestPrompt = hints.length ? `${prompt}\n\n${hints.join('\n\n')}` : prompt;
+      log('[srs-test] request started', { l2Code, word: wordForm, kind, attempt: attempt + 1, cache: !regenerate && attempt === 0, cacheBust: regenerate || attempt > 0 });
+      const { apiClient } = await import('@langplayer/api-client');
+      const payload = await apiClient.post('/chatgpt', {
+        prompt: requestPrompt,
+        cache: !regenerate && attempt === 0,
+        max_tokens: 500,
+      }, regenerate || attempt > 0 ? {
+        headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+      } : undefined);
+      log('[srs-test] response received', { l2Code, word: wordForm, kind, attempt: attempt + 1, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
+      const parsed = parseSrsQuestionResponse((payload as any).response);
+      if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
+      if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer)) throw new Error('Japanese pronunciation must be hiragana');
+      if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
+      const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
+      const rawChoices = [parsed.correct_answer, ...confounders].filter((x): x is string => typeof x === 'string');
+      const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
+      log('[srs-test] choices parsed', { l2Code, word: wordForm, kind, attempt: attempt + 1, rawChoiceCount: rawChoices.length, uniqueChoiceCount: choices.length, confoundersIsArray: Array.isArray(parsed.confounders) });
+      if (choices.length !== 4) throw new Error('Invalid question choices');
+      const question: SrsTestQuestion = { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
+      if (kind === 'pronunciation') {
+        const problem = validateSrsPronunciationChoices(question);
+        if (problem) {
+          log('[srs-test] pronunciation obvious-wrong confounder rejected', { l2Code, word: wordForm, attempt: attempt + 1, problem });
+          if (attempt + 1 < maxAttempts) continue;
+          throw new Error(`Pronunciation confounders are obvious wrongs: ${problem}`);
+        }
+      }
+      return question;
+    }
+    throw new Error('Failed to generate a valid question');
+  }, [l1Lang.code, l2Code]);
+
   const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
     const card = cards[currentIndex];
     if (!card) return;
@@ -570,32 +642,17 @@ export default function ReviewScreen() {
     setTestError(null);
     setTestLoading(true);
     try {
-      const questionResults = await Promise.allSettled(kinds.map(async (kind) => {
-        const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: cards[currentIndex]?.word.context?.text as string | undefined, l1Code: baseCode(l1Lang.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
-        const { apiClient } = await import('@langplayer/api-client');
-        const requestPrompt = options?.retry
-          ? `${prompt}\n\nGenerate a fresh variation for retry ${requestVersion}; do not reuse any previous response.`
-          : prompt;
-        log('[srs-test] request started', { l2Code, word: wordForm, kind, cache: !options?.retry, cacheBust: Boolean(options?.retry) });
-        const payload = await apiClient.post('/chatgpt', {
-          prompt: requestPrompt,
-          cache: !options?.retry,
-          max_tokens: 500,
-        }, options?.retry ? {
-          headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
-        } : undefined);
-        log('[srs-test] response received', { l2Code, word: wordForm, kind, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
-        const parsed = parseSrsQuestionResponse((payload as any).response);
-        if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
-        if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer) ) throw new Error('Japanese pronunciation must be hiragana');
-        if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
-        const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
-        const rawChoices = [parsed.correct_answer, ...confounders].filter((x): x is string => typeof x === 'string');
-        const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
-        log('[srs-test] choices parsed', { l2Code, word: wordForm, kind, rawChoiceCount: rawChoices.length, uniqueChoiceCount: choices.length, confoundersIsArray: Array.isArray(parsed.confounders) });
-        if (choices.length !== 4) throw new Error('Invalid question choices');
-        return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
-      }));
+      const questionResults = await Promise.allSettled(kinds.map(async (kind) =>
+        generateTestQuestion({
+          kind,
+          wordForm,
+          context: cards[currentIndex]?.word.context?.text as string | undefined ?? '',
+          l2Code,
+          entryForQuestion,
+          requestVersion,
+          regenerate: options?.retry,
+        }),
+      ));
       const failedQuestion = questionResults.find((result) => result.status === 'rejected');
       if (failedQuestion) throw failedQuestion.reason;
       const questions = questionResults.map((result) => {
@@ -621,7 +678,7 @@ export default function ReviewScreen() {
       if (requestVersion !== testRequestVersionRef.current) return;
       setTestLoading(false);
     }
-  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, t]);
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, t, generateTestQuestion]);
 
   const handleRetryTestQuestions = useCallback(() => {
     log('[srs-test] retry requested', { l2Code, word: wordForm });
@@ -632,8 +689,80 @@ export default function ReviewScreen() {
     setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestStartedAt(null);
+    setRegeneratingKind(null);
     void loadTestQuestions({ retry: true });
   }, [cards, currentIndex, l2Code, wordForm, loadTestQuestions]);
+
+  /**
+   * Regenerate ONE test question (definition or pronunciation) explicitly.
+   * Re-fetches a fresh question for that kind, replaces it in place, and
+   * restarts the test from it: answers/scores for it and any later question
+   * are cleared and the revealed back side is hidden again.
+   */
+  const handleRegenerateTest = useCallback((kind: TestQuestionKind) => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    if (testActiveRequestRef.current !== null) {
+      log('[srs-test] regenerate ignored — request already active', { l2Code, word: wordForm, kind });
+      return;
+    }
+    const index = testQuestions.findIndex((q) => q.kind === kind);
+    if (index === -1) return;
+    const requestVersion = ++testRequestVersionRef.current;
+    testActiveRequestRef.current = requestVersion;
+    setRegeneratingKind(kind);
+    setTestError(null);
+    const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
+    log('[srs-test] regenerate requested', { l2Code, word: wordForm, kind, index, requestVersion });
+    generateTestQuestion({
+      kind,
+      wordForm,
+      context: card.word.context?.text as string | undefined ?? '',
+      l2Code,
+      entryForQuestion,
+      requestVersion,
+      regenerate: true,
+    })
+      .then((question) => {
+        if (requestVersion !== testRequestVersionRef.current) return;
+        setTestQuestions((prev) => {
+          const next = [...prev];
+          next[index] = question;
+          return next;
+        });
+        // Clear this question's answer and every later one, and reset the
+        // timer — the test restarts from the regenerated question.
+        setTestAnswers((prev) => {
+          const next = [...prev];
+          next.splice(index);
+          return next;
+        });
+        setTestScores((prev) => {
+          const next = [...prev];
+          next.splice(index);
+          return next;
+        });
+        setTestQuestionIndex(index);
+        setTestStartedAt(Date.now());
+        setTestSelectedAnswer(null);
+        setTestAnswerCorrect(null);
+        setTestAnswered(false);
+        setSuggestedRating(null);
+        setShowTabs(false);
+        setTestError(null);
+        log('[srs-test] regenerate succeeded', { l2Code, word: wordForm, kind, index, requestVersion });
+      })
+      .catch((error) => {
+        if (requestVersion !== testRequestVersionRef.current) return;
+        const message = error instanceof Error ? error.message : t('error.unexpected');
+        log('[srs-test] regenerate failed', { l2Code, word: wordForm, kind, error: message });
+        setTestError(message);
+      })
+      .finally(() => {
+        if (testActiveRequestRef.current === requestVersion) testActiveRequestRef.current = null;
+        if (requestVersion === testRequestVersionRef.current) setRegeneratingKind(null);
+      });
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, t, generateTestQuestion, testQuestions]);
 
   useEffect(() => {
     const cardId = cards[currentIndex]?.word.id;
@@ -710,6 +839,7 @@ export default function ReviewScreen() {
     setTestAnswerCorrect(null);
     setTestScores([]);
     setSuggestedRating(null);
+    setRegeneratingKind(null);
 
     const card = cards[currentIndex];
     if (!card) {
@@ -1348,7 +1478,27 @@ export default function ReviewScreen() {
                 const isCurrent = questionIndex === testQuestionIndex;
                 return (
                   <View key={`${question.kind}-${questionIndex}`} className="gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
-                    <Text className="mb-2 font-medium text-foreground">{question.prompt}</Text>
+                    <View className="flex-row items-start justify-between gap-2">
+                      <Text className="mb-2 flex-1 font-medium text-foreground">{question.prompt}</Text>
+                      {/* Explicit per-test regeneration: the user can replace a
+                          problematic definition or pronunciation test on its
+                          own (disabled while any generation is in flight or
+                          after rating). */}
+                      <Pressable
+                        onPress={() => handleRegenerateTest(question.kind)}
+                        disabled={rated || testLoading || regeneratingKind !== null || testActiveRequestRef.current !== null}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('action.regenerate')}
+                        className={`shrink-0 flex-row items-center gap-1 rounded-md px-2 py-1 active:bg-muted ${rated || testLoading || regeneratingKind !== null || testActiveRequestRef.current !== null ? 'opacity-40' : ''}`}
+                      >
+                        {regeneratingKind === question.kind ? (
+                          <ActivityIndicator size="small" color={ICON_MUTED} />
+                        ) : (
+                          <RefreshCw size={12} color={ICON_MUTED} />
+                        )}
+                        <Text className="text-xs font-medium text-muted-foreground">{t('action.regenerate')}</Text>
+                      </Pressable>
+                    </View>
                     {question.choices.map((choice, index) => {
                       const isSelected = result?.answer === choice;
                       const isCorrectChoice = Boolean(result) && choice === question.correctAnswer;
