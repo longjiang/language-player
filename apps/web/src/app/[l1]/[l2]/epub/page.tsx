@@ -248,13 +248,24 @@ export default function EpubPage() {
     void handleClose();
   }, [handleClose]);
 
+  // Keep the current close handler in a ref so the registration effect below
+  // can run once. `handleClose` is recreated on every render (it closes over
+  // the `useEpub` object, which is returned fresh each render), so depending
+  // on it in the effect would re-run it every render and re-register a fresh
+  // handler each time. The registered wrapper always calls the latest handler
+  // through the ref.
+  const closeReaderRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    closeReaderRef.current = () => { void handleClose(); };
+  });
+
   // Register the book's close handler so the nav menu's "Epub Reader" item can
   // close it (an alternative to the close button) when the reader is already
   // open — the Header calls requestCloseReader on a same-route nav click.
   useEffect(() => {
-    registerCloseReader(() => { void handleClose(); });
+    registerCloseReader(() => closeReaderRef.current());
     return () => registerCloseReader(null);
-  }, [registerCloseReader, handleClose]);
+  }, [registerCloseReader]);
 
   // Back: undo the last in-book jump (e.g. a footnote link); when there is
   // nothing to return to, close the book and go back to the bookshelf.
