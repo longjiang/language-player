@@ -93,13 +93,15 @@ export function TranslationSplitHandle({
         accessibilityRole="adjustable"
         accessibilityLabel="Language text and translation divider"
       >
-        {(!hidden || active) && (
-          <View
-            pointerEvents="none"
-            className="absolute inset-y-0 left-1 right-1 rounded-sm"
-            style={{ backgroundColor: active ? ICON_PRIMARY : ICON_MUTED, opacity: active ? 0.5 : 0.15 }}
-          />
-        )}
+        {/* Invisible until the user starts dragging — the divider only appears
+            while adjusting (SPEC-087 §4): no permanent line between the
+            columns. The touch target stays the full width so the drag is
+            still discoverable at the boundary. */}
+        <View
+          pointerEvents="none"
+          className="absolute inset-y-0 left-1 right-1 rounded-sm"
+          style={{ backgroundColor: active ? ICON_PRIMARY : ICON_MUTED, opacity: active ? 0.5 : 0 }}
+        />
       </View>
     </GestureDetector>
   );
