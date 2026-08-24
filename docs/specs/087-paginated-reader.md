@@ -58,13 +58,13 @@ These are grouped by feature area. Each requirement describes the finished behav
 - **Images.** An image inside a paragraph is split into its own block, and book/embedded images are resolved to a displayable source.
 - **Books (EPUB).** Each chapter's XHTML is parsed into these blocks, preserving heading hierarchy, lists, tables, images, and code. Internal links resolve to in-book targets. **Each chapter starts a new page.**
 - **Plain pasted text.** Newlines become paragraphs.
-- **Paragraph indent.** Book paragraphs can be indented by one full-width ideographic space; when shown, the stacked translation mirrors the same indent.
+- **Paragraph indent.** Book paragraphs are indented by one full-width ideographic space. When shown, the stacked translation mirrors the same indent — and this mirroring is the **same behavior in every reader** (books and the notes/web reader alike), not just for books.
 
 ### 3. Translation display
 
 - **Toggle.** A shared Display setting turns the L1 translation on or off for the tokenized text, everywhere (the reader and the settings screen agree). Turning it on/off re-paginates the page.
-- **Stacked (narrow screens).** When there isn't room for two columns, the translation renders directly under the L2 text with the same line spacing (leading) and the same paragraph indentation.
-- **Side-by-side (wide screens).** On wide screens the translation renders in a column to the right of the L2 text. The L2 column takes the larger share of the width and the translation the remainder.
+- **Stacked (narrow screens).** When there isn't room for two columns, the translation renders directly under the L2 text with the same line spacing (leading). It mirrors the L2 paragraph's first-line indent by default — the **same behavior in every reader** (books and the notes/web reader alike).
+- **Side-by-side (wide screens and portrait tablets).** The translation renders in a column to the right of the L2 text on wide screens **and on portrait tablets** (e.g., an iPad), not only on desktop-wide displays. The L2 column takes the larger share of the width and the translation the remainder.
 - **Baseline alignment (requirement).** In the side-by-side layout every translation line must baseline-align with the corresponding tokenized L2 line **whether or not ruby phonetics are on**. The reading (furigana/pinyin) bands on the L2 must not push the translation off its line.
 - **Line-for-line pairing.** Each translation line sits on its L2 line's baseline. The translation column stays the same height as the L2 column: extra translation lines beyond the L2's line count are not stacked below it, and L2 lines without a translation leave an empty space so nothing drifts out of alignment.
 - **Sentence highlight.** Tapping a L2 sentence highlights the matching translation sentence; the dictionary popup can present a linked source sentence.
@@ -103,7 +103,7 @@ These are grouped by feature area. Each requirement describes the finished behav
 
 - The **feature set is identical** on web and mobile.
 - **Input differs by device**: web uses mouse/keyboard/trackpad; mobile uses touch. Both support the same set of gestures logically (page turn by swipe/flick on touch, keyboard and pointer-flick on web).
-- **Layout differs by width**: side-by-side translation + the drag handle appear on wide screens; stacked translation (no handle) on narrow ones.
+- **Layout differs by width**: side-by-side translation + the drag handle appear on wide screens and on portrait tablets; stacked translation (no handle) appears only on narrow screens.
 - **Chrome**: books support immersive (chrome-hiding) mode on both; the overlay/muted labels differ only in how they're sized.
 
 ## Acceptance Criteria
@@ -130,7 +130,6 @@ These are grouped by feature area. Each requirement describes the finished behav
 - SPEC-084 — native selection dictionary over ruby/plain text.
 - ARCH-030 — native ruby rendering and the line grid that underpins baseline alignment.
 
-## Open Questions
-
-- Should the side-by-side layout also appear on medium-width tablets in portrait, or only when a fixed wide threshold is met? (Currently it follows a responsive breakpoint on both platforms.)
-- Should the stacked translation mirror the first-line indent by default, or only for books? (Behavior currently differs from the web notes reader.)
+> **Behavior gap note:** two requirements above are not yet fully met by the current implementation and are tracked here so they aren't lost:
+> - *Side-by-side on portrait tablets* — both apps currently key side-by-side (and the drag handle) to a fixed `md`-width breakpoint (`768`). Most portrait iPads are ≥ `768` and already get side-by-side, but the smallest portrait iPad (`iPad mini`, 744pt) falls below it. The requirement above says portrait tablets get side-by-side; the breakpoint should be lowered/adjusted so even the smallest portrait iPad qualifies.
+> - *Stacked translation mirrors first-line indent in every reader* — the mobile EPUB reader already mirrors the indent for stacked translation, but the web notes reader does not match it. These should be unified so all readers behave identically.
