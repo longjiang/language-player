@@ -71,6 +71,37 @@ export function normalizeTestChoice(choice: string): string {
 }
 
 /**
+ * True when a pronunciation confounder is an "obvious wrong": it contains the
+ * correct reading as a substring with extra characters (e.g. つきものぬ or
+ * つきものだ from つきもの) or is a truncated fragment of it (e.g. もの or
+ * つきも). A learner can dismiss these instantly, so they make the test
+ * useless. Duplicates are already filtered before this runs.
+ */
+export function isObviousPronunciationWrong(choice: string, correctAnswer: string): boolean {
+  const a = normalizeTestChoice(choice);
+  const b = normalizeTestChoice(correctAnswer);
+  if (!a || !b || a === b) return false;
+  return (a.includes(b) && a.length > b.length) || (b.includes(a) && b.length > a.length);
+}
+
+/**
+ * Validate a generated pronunciation question against the obvious-wrong rule.
+ * Returns a human-readable reason when invalid, null when OK.
+ */
+export function validateSrsPronunciationChoices(question: {
+  correctAnswer: string;
+  choices: string[];
+}): string | null {
+  for (const choice of question.choices) {
+    if (choice === question.correctAnswer) continue;
+    if (isObviousPronunciationWrong(choice, question.correctAnswer)) {
+      return `confounder "${choice}" is an obvious wrong — it extends or truncates the correct reading "${question.correctAnswer}"`;
+    }
+  }
+  return null;
+}
+
+/**
  * Build the model instruction for a contextual question. The model must return
  * strict JSON so both clients can render the same question and randomize only
  * the answer order locally.
@@ -94,6 +125,8 @@ export function buildSrsQuestionPrompt(input: {
     : [
       'This is the PRONUNCIATION question. Ask how the target word is pronounced/read, using the context only to identify the intended word and sense.',
       'For Japanese, correct_answer and every confounder MUST each be written only in hiragana characters U+3040–U+309F, plus the long-vowel mark ー and spaces. Convert katakana readings to hiragana before returning them. Never use romaji, Latin letters, kanji, katakana, definitions, translations, or explanations in Japanese pronunciation choices. For Chinese, use pinyin or the appropriate standard romanization. Do not return definitions, translations, or explanations.',
+      'MIXED KANA/KANJI WORDS: when the target word mixes kana and kanji (e.g. 憑き物), the parts written in kana (e.g. き) are fixed — every confounder MUST keep those written-kana parts identical to the correct reading. Vary ONLY the reading of the kanji part(s), using real or plausible readings of those same kanji characters (e.g. for 憑き物 = つきもの: つきぶつ, つきもつ, つきもち), or real words that share the same written-kana part. Never change, drop, or reorder the written-kana part.',
+      'Never form a confounder by appending, prepending, or deleting characters from the correct reading (e.g. for the correct つきもの, never つきものぬ, つきものだ, or もの). No confounder may contain the correct reading as a substring, and the correct reading may not contain a confounder as a substring.',
     ];
   return [
     'Generate one multiple-choice question for a language-learning SRS review card.',

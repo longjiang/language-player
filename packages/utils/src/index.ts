@@ -108,6 +108,8 @@ export {
   buildSrsQuestionPrompt,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  isObviousPronunciationWrong,
+  validateSrsPronunciationChoices,
 } from './srs-test-mode';
 export type { SrsTestQuestion, TestQuestionKind } from './srs-test-mode';
 export type { HighlightToken, KanaEntryForm } from './highlight-match';
