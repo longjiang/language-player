@@ -38,8 +38,9 @@ internal final class RubyTextView: ExpoView {
   /// metrics and does NOT follow `baselineOffset`, so this moves only the base:
   /// positive raises the base toward the reading (tightens the gap), 0 leaves
   /// the natural Core Text gap (the web-browser default), negative widens it.
-  /// Tuned to 0 (2026-08-22) to match web's small browser-default ruby gap.
-  private let rubyBaseTextOffset: CGFloat = 0
+  /// Tuned to +2 (2026-08-23) — readings rendered ~2px too high above the base
+  /// (gap too wide); raising the base 2px closes it.
+  private let rubyBaseTextOffset: CGFloat = 2
 
   private var attributedString: NSAttributedString?
 
