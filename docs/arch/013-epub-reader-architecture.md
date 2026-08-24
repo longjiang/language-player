@@ -544,3 +544,24 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 6. **Whole-book pagination is lazy** — Page breaks are computed around the current page; the displayed total is an estimate until the full pagination pass runs (background).
 7. **No embedded font support** — EPUBs with embedded fonts for CJK characters won't render correctly.
 8. **No CSS/formatting preservation** — Rich formatting (bold, italic, colors, alignment) is largely lost; the reader renders text-flow blocks with markdown-level structure (headings, paragraphs, lists, blockquotes).
+
+## Resolved issues (2026-08-25)
+
+- **Mobile library id collision** — `sanitizeEpubId` collapsed every non-ASCII
+  run to `_`, so Japanese volumes differing only by `第１部/第２部/第３部` all
+  produced the same id and the last import overwrote the earlier entries. It
+  now appends a stable FNV-1a hash of the full file name (same name → same id,
+  distinct names → distinct ids); `pickFile` reuses an existing entry's id by
+  file name so pre-hash imports still update in place.
+- **Mobile open-then-return race** — the mount-time auto-open and a manual
+  book tap both passed the stale `openingId` state guard, launching two
+  concurrent opens; the losing one's error path kicked the reader back to the
+  bookshelf. Fixed with a synchronous `openingIdRef` guard in `handleOpenBook`
+  (web parity), an in-flight `openLoadingRef` guard in `useEpub.openBook`, and
+  a `tokenLoadGenRef`/`translateGenRef` bump in the pagination reset effect so
+  the aborted batch's fallback can't write the old book's tokens into the new
+  book's cache.
+- **Mobile slow open** — image extraction was serial base64→file writes for
+  every manifest image; it now pre-scans spine `<img src>` and extracts only
+  referenced images, in parallel (capped at 4). Rendered images load as before
+  (the URI callback resolves the same paths).
