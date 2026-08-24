@@ -3,6 +3,7 @@ import {
   isObviousPronunciationWrong,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  scoreTestResult,
   validateSrsPronunciationChoices,
 } from './srs-test-mode';
 
@@ -76,5 +77,44 @@ describe('validateSrsPronunciationChoices', () => {
       correctAnswer: 'つきもの',
       choices: ['つきもの', 'つきぶつ', 'つきもつ', 'つきがみ'],
     })).toBeNull();
+  });
+});
+
+describe('scoreTestResult', () => {
+  it('both correct and fast (<10s for 2 tests) → easy', () => {
+    expect(scoreTestResult(2, 2, 8_000)).toBe('easy');
+  });
+
+  it('both correct mid-speed (10–20s for 2 tests) → good', () => {
+    expect(scoreTestResult(2, 2, 15_000)).toBe('good');
+  });
+
+  it('both correct and slow (>20s for 2 tests) → hard', () => {
+    expect(scoreTestResult(2, 2, 25_000)).toBe('hard');
+  });
+
+  it('one of two correct → hard (no time adjustment)', () => {
+    expect(scoreTestResult(1, 2, 5_000)).toBe('hard');
+    expect(scoreTestResult(1, 2, 50_000)).toBe('hard');
+  });
+
+  it('none correct → again', () => {
+    expect(scoreTestResult(0, 2, 5_000)).toBe('again');
+  });
+
+  it('single test correct and fast (<5s) → easy (scaled to 2, fast → easy)', () => {
+    expect(scoreTestResult(1, 1, 4_000)).toBe('easy');
+  });
+
+  it('single test correct mid-speed (5–10s) → good', () => {
+    expect(scoreTestResult(1, 1, 7_000)).toBe('good');
+  });
+
+  it('single test correct and slow (>10s) → hard', () => {
+    expect(scoreTestResult(1, 1, 12_000)).toBe('hard');
+  });
+
+  it('single test wrong → again', () => {
+    expect(scoreTestResult(0, 1, 4_000)).toBe('again');
   });
 });

@@ -51,6 +51,37 @@ export function testScoreToRating(score: number): 'again' | 'hard' | 'good' | 'e
   return (['again', 'hard', 'good', 'easy'] as const)[normalized - 1]!;
 }
 
+/**
+ * Grade a test result with the SPEC-066 marking rules:
+ *
+ * - each test scores 0 (wrong) or 1 (right);
+ * - the total is scaled so a perfect score would be 2
+ *   (`round(correctCount * 2 / numTests)`), so single- and multi-test cards
+ *   share one 0–2 scale;
+ * - a scaled score above 1 (i.e. 2, all tests correct) is time-adjusted:
+ *   slower than 10s per test deducts a point, faster than 5s per test adds
+ *   one;
+ * - map points → again(0) / hard(1) / good(2) / easy(3).
+ *
+ * `correctCount` is the number of tests answered correctly; `totalTests` is
+ * the number of tests shown (1 or 2); `totalMs` is the total time to complete
+ * them.
+ */
+export function scoreTestResult(
+  correctCount: number,
+  totalTests: number,
+  totalMs: number,
+): 'again' | 'hard' | 'good' | 'easy' {
+  const numTests = Math.max(1, totalTests);
+  let points = Math.round((correctCount * 2) / numTests);
+  if (points > 1) {
+    if (totalMs > 10_000 * numTests) points -= 1;
+    else if (totalMs < 5_000 * numTests) points += 1;
+  }
+  points = Math.max(0, Math.min(3, points));
+  return (['again', 'hard', 'good', 'easy'] as const)[points]!;
+}
+
 /** Languages whose native orthography does not reliably reveal pronunciation. */
 export const DEEP_ORTHOGRAPHY_LANGUAGES = new Set([
   'zh', 'yue', 'ja', 'ko', 'ar', 'fa', 'he', 'hi', 'th', 'my', 'km', 'lo', 'ta', 'te', 'ml', 'bn',

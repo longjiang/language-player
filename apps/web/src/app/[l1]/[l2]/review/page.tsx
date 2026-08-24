@@ -20,7 +20,7 @@ import {
   buildSrsQuestionPrompt,
   needsPronunciationTest,
   scoreTestAnswer,
-  testScoreToRating,
+  scoreTestResult,
   type SrsTestQuestion,
   normalizeTestChoice,
   parseSrsQuestionResponse,
@@ -133,6 +133,10 @@ export default function ReviewPage() {
   const testAutoLoadKeyRef = useRef<string | null>(null);
   const testRequestVersionRef = useRef(0);
   const testActiveRequestRef = useRef<number | null>(null);
+  /** Wall-clock start of the current test (for the 10s/test slow + 5s/test fast
+   *  time adjustments in scoreTestResult). Set when a test begins, NOT reset per
+   *  question. */
+  const testSessionStartRef = useRef(0);
 
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     testRequestVersionRef.current += 1;
@@ -143,6 +147,7 @@ export default function ReviewPage() {
     setTestQuestions([]);
     setTestAnswers([]);
     setTestStartedAt(null);
+    testSessionStartRef.current = 0;
     testAutoLoadKeyRef.current = null;
     setShowDefinition(false);
     setTestError(null);
@@ -409,6 +414,7 @@ export default function ReviewPage() {
     setTestQuestions([]);
     setTestAnswers([]);
     setTestStartedAt(null);
+    testSessionStartRef.current = 0;
     testAutoLoadKeyRef.current = null;
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
@@ -631,6 +637,7 @@ export default function ReviewPage() {
       setTestAnswers([]);
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
+      testSessionStartRef.current = Date.now();
       log('[SRS Test] question generation succeeded', { l2Code, word: wordForm, requestVersion, questionCount: questions.length });
     } catch (error) {
       if (requestVersion !== testRequestVersionRef.current) {
@@ -669,6 +676,7 @@ export default function ReviewPage() {
     setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestStartedAt(null);
+    testSessionStartRef.current = 0;
     setRegeneratingKind(null);
     void loadTestQuestions({ retry: true });
   }, [cards, currentIndex, l2Code, wordForm, loadTestQuestions]);
@@ -717,6 +725,7 @@ export default function ReviewPage() {
         });
         setTestQuestionIndex(index);
         setTestStartedAt(Date.now());
+        testSessionStartRef.current = Date.now();
         setTestSelectedAnswer(null);
         setTestAnswerCorrect(null);
         setTestAnswered(false);
@@ -784,8 +793,13 @@ export default function ReviewPage() {
       setTestAnswered(false);
       return;
     }
-    const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
-    const rating = testScoreToRating(finalScore);
+    // SPEC-066 marking: each test 0/1 (wrong/right), scaled so perfect = 2,
+    // then time-adjusted (10s/test slow, 5s/test fast) → again/hard/good/easy.
+    const numTests = testQuestions.length;
+    const correctCount =
+      testAnswers.reduce((n, a) => (a.correct ? n + 1 : n), 0) + (isCorrect ? 1 : 0);
+    const totalMs = Date.now() - testSessionStartRef.current;
+    const rating = scoreTestResult(correctCount, numTests, totalMs);
     // Always reveal the dictionary back after the final answer, correct or wrong.
     setSuggestedRating(rating);
     setTestScores([]);
@@ -809,6 +823,7 @@ export default function ReviewPage() {
     setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestStartedAt(null);
+    testSessionStartRef.current = 0;
     setTestSelectedAnswer(null);
     setTestAnswerCorrect(null);
     setTestScores([]);
