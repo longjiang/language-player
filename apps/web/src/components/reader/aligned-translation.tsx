@@ -474,6 +474,14 @@ export function AlignedTranslation({
     flex: 'none',
     display: 'inline-block',
     width: 0,
+    // `min-width: auto` (the flexbox default) would otherwise resolve to the
+    // anchor's content min-content width ("Ag中" at the L2 size ≈ 34px), so
+    // the anchor occupies real space and the translation span (`flex-1`) gets
+    // column width − ~34px. Every line slice is computed on a `w-full` probe
+    // at the FULL column width, so each slice clips that ~34px at the right
+    // edge. Pin min-width to 0 so the anchor is truly 0-wide and the span gets
+    // the full column width, matching the probe.
+    minWidth: 0,
     lineHeight: 1,
     overflow: 'visible',
     visibility: 'hidden',
