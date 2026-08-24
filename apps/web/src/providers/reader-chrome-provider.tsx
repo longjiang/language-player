@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 
 interface ReaderChromeValue {
   /**
@@ -50,7 +50,13 @@ export function ReaderChromeProvider({
 }) {
   const parent = useContext(ReaderChromeContext);
   const [immersed, setImmersedState] = useState(false);
-  const [closeReader, setCloseReader] = useState<(() => void) | null>(null);
+  // The registered close handler is only ever *read* when requestCloseReader()
+  // is invoked, so it lives in a ref rather than state. Keeping it as state
+  // meant every register/unregister from a reader page's effect re-rendered
+  // this provider, which re-rendered the consumers (and recreated their
+  // callbacks), which re-triggered the effect → "Cannot update a component
+  // while rendering a different component" / maximum-update-depth loop.
+  const closeReaderRef = useRef<(() => void) | null>(null);
 
   const setImmersed = useCallback((v: boolean) => setImmersedState(v), []);
 
@@ -58,13 +64,13 @@ export function ReaderChromeProvider({
   // reader screen registers its close handler on the outer provider and the
   // overlay Header (under the forced provider) reaches it through the parent.
   const requestCloseReader = useCallback(() => {
-    if (closeReader) closeReader();
+    if (closeReaderRef.current) closeReaderRef.current();
     else parent.requestCloseReader();
-  }, [closeReader, parent.requestCloseReader]);
+  }, [parent.requestCloseReader]);
 
   const registerCloseReader = useCallback((fn: (() => void) | null) => {
     if (forcedImmersed !== undefined) parent.registerCloseReader(fn);
-    else setCloseReader(fn);
+    else closeReaderRef.current = fn;
   }, [forcedImmersed, parent.registerCloseReader]);
 
   const value = useMemo<ReaderChromeValue>(() => ({
