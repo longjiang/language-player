@@ -35,10 +35,11 @@ interface TabbedPanelProps {
 
 type DisplayMode = 'full' | 'compact' | 'icon';
 
-/** Whether a tab shows its label in the given display mode. */
+/** Whether a tab shows its label in the given display mode. The active tab's
+ *  label ALWAYS shows in full; the rest collapse to icon-only in compact mode. */
 function shouldShowLabel(tab: TabDef, mode: DisplayMode, activeKey: string): boolean {
   if (!tab.icon) return true;
-  return mode === 'full' || (mode === 'compact' && tab.key === activeKey);
+  return mode === 'full' || tab.key === activeKey;
 }
 
 /**
@@ -117,12 +118,15 @@ export function TabbedPanel({
   };
 
   // Pick the widest mode that still fits. The +2px tolerance keeps the mode
-  // from flapping at the exact boundary (mirrors apps/web).
+  // from flapping at the exact boundary (mirrors apps/web). We only ever pick
+  // 'full' or 'compact' — the active tab's label must ALWAYS show in full, so
+  // there is no pure icon-only fallback (the previous 'icon' mode hid even the
+  // current tab's label, which the user reported as truncation on narrow
+  // screens).
   const mode: DisplayMode = useMemo(() => {
     if (!measurements || containerWidth === 0) return 'full';
     if (containerWidth + 2 >= measurements.full) return 'full';
-    if (containerWidth + 2 >= measurements.compact) return 'compact';
-    return 'icon';
+    return 'compact';
   }, [measurements, containerWidth]);
 
   useEffect(() => {
@@ -171,7 +175,14 @@ export function TabbedPanel({
                 key={tab.key}
                 testID={`tab-${tab.key}`}
                 onPress={() => handleTabChange(tab.key)}
-                className={`flex-1 items-center px-2 py-2.5 active:bg-muted ${
+                // Content-sized (no `flex-1`): the width-mode logic (full →
+                // compact → icon) measures NATURAL widths, so the render must
+                // match or a long active label truncates (the equal-width
+                // flex-1 distribution gave the active tab only 1/N of the
+                // container, clipping e.g. "让 DeepSeek 説"). Content-sized tabs
+                // never truncate their label; the chosen mode guarantees the
+                // bar fits.
+                className={`items-center px-2 py-2.5 active:bg-muted ${
                   activeTab === tab.key ? 'border-b-2 border-primary' : ''
                 }`}
               >
