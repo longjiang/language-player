@@ -47,9 +47,10 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 28 | 5011c677 | 2026-08-23 | — | dev 19 (Debug; archived; lp-dev-19-ios-device-5011c677be81.zip; 410b96dc73a7187329876a65956d1343d1fad95024643c51377947f59ac432eb) |
 | 29 | febdb84a | 2026-08-24 | — | dev 20 (Debug; archived; lp-dev-20-ios-device-febdb84a1a50.zip; 7db6d5b7562dacc20b47513526a7a865e98b46af5f9ecb00782a965e78cfc4e0) |
 | 30 | 344c2155 | 2026-08-24 | — | dev 21 (Debug; archived; lp-dev-21-ios-device-344c2155386c.zip; 2811bfe49f91c7bc627f97ccf6c14f1d1855c26c8257acf00286d1136c889af6) |
-| 31 | f5f87142 | 2026-08-24 | — | dev 22 (Debug; active; lp-dev-22-ios-device-f5f87142beb1.zip; d95a96fd83492dbb0562ae2ffb3c3097b120c541638c0c3a0b7fd3a9e284b885) |
+| 31 | f5f87142 | 2026-08-24 | — | dev 22 (Debug; archived; lp-dev-22-ios-device-f5f87142beb1.zip; d95a96fd83492dbb0562ae2ffb3c3097b120c541638c0c3a0b7fd3a9e284b885) |
 | 32 | dbfce4ad | 2026-08-24 | — | dev 23 (Debug; active; lp-dev-23-ios-device-dbfce4ad8dbb.zip; 02466cb84819cd3f4ae47f95c21c24907fd73ef44753191fbcb4fee1b929a7ea) |
 | 33 | 2d8ccd39 | 2026-08-24 | — | dev 24 (Debug; active; lp-dev-24-ios-device-2d8ccd39c37a.zip; a5bc9f26aa34c4b4881a2ab3e168e843b817ec4341a81d587ec44c38e232c60e) |
+| 34 | c0d1bedc | 2026-08-24 | — | dev 25 (Debug; active; lp-dev-25-ios-device-c0d1bedccc4d.zip; 2241bd1761b0742f6f3062261cc8a92371ee430de039d5ee7f28b67a4bdb0fe9) |
 
 ## Preserved working builds
 
