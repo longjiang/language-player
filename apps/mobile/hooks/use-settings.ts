@@ -15,7 +15,7 @@ import {
   normalizeSettingsV2,
   L2_DEFAULTS,
 } from '@langplayer/shared';
-import { pushSettingsDiag, readSettingsDiag } from '@langplayer/utils';
+import { pushSettingsDiag, readSettingsDiag, getOrCreateDeviceId } from '@langplayer/utils';
 import type { KeyValueStorage } from '@langplayer/utils';
 import type {
   SettingsV2,
@@ -243,18 +243,20 @@ export function useSettings() {
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
       try {
+        const deviceId = await getOrCreateDeviceId(diagStorage);
         log('[settings] enqueue sync — payload keys:', Object.keys(s).join(', '),
-          '— offlineMode present:', 'offlineMode' in s);
+          '— offlineMode present:', 'offlineMode' in s, '— deviceId:', deviceId);
         void pushSettingsDiag(diagStorage, 'enqueue sync (outbox)', {
           ts: s.ts,
           updatedAt: Date.parse(s.ts) || Date.now(),
           review: s.review,
+          deviceId,
         });
         await enqueueSyncOp({
           entity: 'settings',
           entityId: 'v2',
           op: 'upsert',
-          payload: { settings_v2: s, ts: s.ts },
+          payload: { settings_v2: s, ts: s.ts, deviceId },
           updatedAt: Date.parse(s.ts) || Date.now(),
         });
       } catch (err) {

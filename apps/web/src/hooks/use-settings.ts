@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { log, logwarn } from '@/lib/logger';
-import { pushSettingsDiag, readSettingsDiag } from '@langplayer/utils';
+import { pushSettingsDiag, readSettingsDiag, getOrCreateDeviceId } from '@langplayer/utils';
 import type { KeyValueStorage } from '@langplayer/utils';
 import {
   createSettingsV2,
@@ -91,15 +91,18 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
-        log('[settings] PUT /user-settings', { ts: s.ts, updatedAt: Date.parse(s.ts) || Date.now() });
+        const deviceId = await getOrCreateDeviceId(diagStorage);
+        log('[settings] PUT /user-settings', { ts: s.ts, updatedAt: Date.parse(s.ts) || Date.now(), deviceId });
         void pushSettingsDiag(diagStorage, 'PUT /user-settings', {
           ts: s.ts,
           updatedAt: Date.parse(s.ts) || Date.now(),
           review: s.review,
+          deviceId,
         });
         await putUserSettings({
           settings_v2: s,
           updatedAt: Date.parse(s.ts) || Date.now(),
+          deviceId,
         });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);

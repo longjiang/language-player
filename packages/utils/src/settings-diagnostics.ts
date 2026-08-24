@@ -56,3 +56,27 @@ export async function readSettingsDiag(storage: KeyValueStorage): Promise<Settin
     return [];
   }
 }
+
+/** Storage key for the stable per-install device id (survives logout wipes). */
+export const SETTINGS_DEVICE_ID_KEY = 'lp_device_id';
+
+/**
+ * Stable per-install device id used to attribute settings_v2 writes in the
+ * server logs. Generated once and persisted under its own key — deliberately
+ * NOT included in the logout wipe lists — so a reset that originates on this
+ * device can still be attributed to it afterward, even across a wipe.
+ * Platform-agnostic: the caller supplies the storage adapter (localStorage on
+ * web, SecureStore on mobile). Never throws; degrades to a per-call id on
+ * storage failure so writes are never blocked.
+ */
+export async function getOrCreateDeviceId(storage: KeyValueStorage): Promise<string> {
+  try {
+    const existing = await storage.getItem(SETTINGS_DEVICE_ID_KEY);
+    if (existing) return existing;
+    const id = `d_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    await storage.setItem(SETTINGS_DEVICE_ID_KEY, id);
+    return id;
+  } catch {
+    return `d_${Date.now().toString(36)}`;
+  }
+}

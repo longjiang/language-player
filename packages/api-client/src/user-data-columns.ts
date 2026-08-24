@@ -68,6 +68,8 @@ export const putUserSettings = (body: {
   settings_classic?: Record<string, unknown>;
   /** Client timestamp (ms) used for server-side last-write-wins. */
   updatedAt?: number;
+  /** Stable per-install device id — logged server-side for write attribution. */
+  deviceId?: string;
 }) => apiClient.put<{ success: boolean }>('/user-settings', body);
 
 export function useUserDataColumns() {
