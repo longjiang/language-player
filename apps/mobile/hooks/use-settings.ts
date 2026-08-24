@@ -15,6 +15,8 @@ import {
   normalizeSettingsV2,
   L2_DEFAULTS,
 } from '@langplayer/shared';
+import { pushSettingsDiag, readSettingsDiag } from '@langplayer/utils';
+import type { KeyValueStorage } from '@langplayer/utils';
 import type {
   SettingsV2,
   TokenizedTextSettings,
@@ -29,6 +31,12 @@ const { log, logwarn } = bootLogger;
 
 const STORAGE_KEY = 'lp_settings';
 const SYNC_DEBOUNCE_MS = 3000;
+
+/** SecureStore adapter for the settings diagnostics ring buffer. */
+const diagStorage: KeyValueStorage = {
+  getItem: (key) => SecureStore.getItemAsync(key),
+  setItem: (key, value) => SecureStore.setItemAsync(key, value),
+};
 
 /**
  * Unified settings hook (SPEC-039 5.2 row API).
@@ -82,16 +90,33 @@ export function useSettings() {
             hydratedFromSource.current = true;
             log('[settings] loaded local blob — ts:', restored.ts,
               'review:', JSON.stringify(restored.review));
+            void pushSettingsDiag(diagStorage, 'loaded local blob', { ts: restored.ts, review: restored.review });
             setSettings(restored);
           } else {
             log('[settings] local blob has v !== 2 — starting from defaults');
+            void pushSettingsDiag(diagStorage, 'local blob has v !== 2 — starting from defaults');
           }
         } else {
           log('[settings] no local blob — starting from defaults');
+          void pushSettingsDiag(diagStorage, 'no local blob — starting from defaults');
         }
-      } catch { /* corrupted or not found */ }
+      } catch {
+        logwarn('[settings] local blob corrupted — starting from defaults');
+        void pushSettingsDiag(diagStorage, 'local blob corrupted — starting from defaults');
+      }
       setLoaded(true);
     })();
+  }, []);
+
+  // ── Boot: log the recent settings diagnostics history (survives reloads,
+  //    so a reset that happened in a previous session is still explainable) ──
+  useEffect(() => {
+    void readSettingsDiag(diagStorage).then((events) => {
+      const tail = events.slice(-12);
+      if (tail.length > 0) {
+        log('[settings] recent diagnostics:', tail);
+      }
+    });
   }, []);
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
@@ -123,6 +148,7 @@ export function useSettings() {
           'cloud v:', cloud?.v, 'cloud ts:', cloud?.ts,
           'cloud review:', JSON.stringify(cloud?.review ?? null));
         if (!cloud || cloud.v !== 2) {
+          void pushSettingsDiag(diagStorage, 'GET /user-settings ok — no settings_v2 row', {});
           setCloudHydrated(true);
           return;
         }
@@ -130,6 +156,11 @@ export function useSettings() {
           if (cloud.ts <= prev.ts) {
             log('[settings] hydrate SKIP cloud — cloud.ts <= local.ts',
               { cloudTs: cloud.ts, localTs: prev.ts, localReview: prev.review });
+            void pushSettingsDiag(diagStorage, 'hydrate SKIP cloud (cloud.ts <= local.ts)', {
+              cloudTs: cloud.ts,
+              localTs: prev.ts,
+              localReview: prev.review,
+            });
             return prev;
           }
           const merged = normalizeSettingsV2({
@@ -141,12 +172,18 @@ export function useSettings() {
           log('[settings] hydrate APPLY cloud — dailyNewLimit:',
             merged.review.dailyNewLimit, 'dayStartHour:', merged.review.dayStartHour,
             'new ts:', merged.ts);
+          void pushSettingsDiag(diagStorage, 'hydrate APPLY cloud', {
+            cloudTs: cloud.ts,
+            localTs: prev.ts,
+            review: merged.review,
+          });
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
           return merged;
         });
         setCloudHydrated(true);
       } catch (err) {
         logwarn('[settings] GET /user-settings failed — user:', user.id, err);
+        void pushSettingsDiag(diagStorage, 'GET /user-settings FAILED', { error: String(err) });
         cloudLoadedUserId.current = null;
         setCloudHydrated(true);
       }
@@ -167,6 +204,10 @@ export function useSettings() {
       setCloudHydrated(next === null || offlineMode);
       log('[settings] user changed — resetting local settings',
         { from: prev, to: next });
+      void pushSettingsDiag(diagStorage, 'user changed — resetting local settings', {
+        from: prev,
+        to: next,
+      });
       setSettings(createSettingsV2());
       if (syncTimer.current) clearTimeout(syncTimer.current);
       if (next === null) {
@@ -190,6 +231,10 @@ export function useSettings() {
         ts: s.ts,
         review: s.review,
       });
+      void pushSettingsDiag(diagStorage, 'persist SKIPPED (pristine defaults)', {
+        ts: s.ts,
+        review: s.review,
+      });
       return;
     }
     SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(s)).catch(() => {});
@@ -200,6 +245,11 @@ export function useSettings() {
       try {
         log('[settings] enqueue sync — payload keys:', Object.keys(s).join(', '),
           '— offlineMode present:', 'offlineMode' in s);
+        void pushSettingsDiag(diagStorage, 'enqueue sync (outbox)', {
+          ts: s.ts,
+          updatedAt: Date.parse(s.ts) || Date.now(),
+          review: s.review,
+        });
         await enqueueSyncOp({
           entity: 'settings',
           entityId: 'v2',
@@ -209,6 +259,7 @@ export function useSettings() {
         });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
+        void pushSettingsDiag(diagStorage, 'enqueue sync FAILED', { error: String(err) });
       }
     }, SYNC_DEBOUNCE_MS);
   }, [user]);
@@ -245,6 +296,11 @@ export function useSettings() {
             log('[settings] pull bridge APPLY cloud — dailyNewLimit:',
               merged.review.dailyNewLimit, 'dayStartHour:', merged.review.dayStartHour,
               'new ts:', merged.ts);
+            void pushSettingsDiag(diagStorage, 'pull bridge APPLY cloud', {
+              cloudTs: cloud.ts,
+              localTs: prev.ts,
+              review: merged.review,
+            });
             SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
             return merged;
           });

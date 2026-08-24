@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { log, logwarn } from '@/lib/logger';
+import { pushSettingsDiag, readSettingsDiag } from '@langplayer/utils';
+import type { KeyValueStorage } from '@langplayer/utils';
 import {
   createSettingsV2,
   normalizeSettingsV2,
@@ -21,6 +23,15 @@ import type {
 
 const STORAGE_KEY = 'lp_settings';
 const SYNC_DEBOUNCE_MS = 3000;
+
+/** localStorage adapter for the settings diagnostics ring buffer. */
+const diagStorage: KeyValueStorage = {
+  getItem: (key) => Promise.resolve(localStorage.getItem(key)),
+  setItem: (key, value) => {
+    localStorage.setItem(key, value);
+    return Promise.resolve();
+  },
+};
 
 /**
  * Unified settings hook (SPEC-039 5.2 row API).
@@ -64,6 +75,10 @@ export function useSettings() {
         ts: s.ts,
         review: s.review,
       });
+      void pushSettingsDiag(diagStorage, 'persist SKIPPED (pristine defaults)', {
+        ts: s.ts,
+        review: s.review,
+      });
       return;
     }
     try {
@@ -77,12 +92,18 @@ export function useSettings() {
       isSyncing.current = true;
       try {
         log('[settings] PUT /user-settings', { ts: s.ts, updatedAt: Date.parse(s.ts) || Date.now() });
+        void pushSettingsDiag(diagStorage, 'PUT /user-settings', {
+          ts: s.ts,
+          updatedAt: Date.parse(s.ts) || Date.now(),
+          review: s.review,
+        });
         await putUserSettings({
           settings_v2: s,
           updatedAt: Date.parse(s.ts) || Date.now(),
         });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
+        void pushSettingsDiag(diagStorage, 'PUT /user-settings FAILED', { error: String(err) });
       } finally {
         isSyncing.current = false;
       }
@@ -151,7 +172,10 @@ export function useSettings() {
         const parsed = JSON.parse(raw);
         if (parsed && parsed.v === 2) {
           hydratedFromSource.current = true;
-          setSettings(normalizeSettingsV2(parsed));
+          const restored = normalizeSettingsV2(parsed);
+          log('[settings] loaded local blob — ts:', restored.ts, 'review:', JSON.stringify(restored.review));
+          void pushSettingsDiag(diagStorage, 'loaded local blob', { ts: restored.ts, review: restored.review });
+          setSettings(restored);
           setLoaded(true);
           return;
         }
@@ -161,12 +185,39 @@ export function useSettings() {
         // A real migration is a real write — safe to persist even before the
         // cloud hydrate (it carries the user's legacy values).
         hydratedFromSource.current = true;
+        log('[settings] migrated legacy keys — ts:', migrated.ts);
+        void pushSettingsDiag(diagStorage, 'migrated legacy keys', { ts: migrated.ts, review: migrated.review });
         setSettings(migrated);
         persist(migrated);
+      } else {
+        log('[settings] no local blob — starting from defaults');
+        void pushSettingsDiag(diagStorage, 'no local blob — starting from defaults');
       }
-    } catch { /* corrupted — defaults */ }
+    } catch {
+      logwarn('[settings] local blob corrupted — starting from defaults');
+      void pushSettingsDiag(diagStorage, 'local blob corrupted — starting from defaults');
+    }
     setLoaded(true);
   }, [status, loaded, migrateFromLegacy, persist]);
+
+  // ── Boot: log the recent settings diagnostics history (survives reloads,
+  //    so a reset that happened in a previous session is still explainable) ──
+  useEffect(() => {
+    void readSettingsDiag(diagStorage).then((events) => {
+      const tail = events.slice(-12);
+      if (tail.length > 0) {
+        log('[settings] recent diagnostics:', tail);
+      }
+    });
+    // Expose an on-demand dump for DevTools: window.__settingsDiag()
+    if (typeof window !== 'undefined') {
+      (window as any).__settingsDiag = () =>
+        readSettingsDiag(diagStorage).then((events) => {
+          log('[settings] diag history (window.__settingsDiag):', JSON.stringify(events));
+          return events;
+        });
+    }
+  }, []);
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
@@ -190,6 +241,7 @@ export function useSettings() {
         hydratedFromSource.current = true;
         const cloud = res.settings_v2;
         if (!cloud || cloud.v !== 2) {
+          void pushSettingsDiag(diagStorage, 'GET /user-settings ok — no settings_v2 row', {});
           setCloudHydrated(true);
           return;
         }
@@ -200,6 +252,11 @@ export function useSettings() {
           if (cloud.ts <= prev.ts) {
             log('[settings] hydrate SKIP cloud — cloud.ts <= local.ts',
               { cloudTs: cloud.ts, localTs: prev.ts });
+            void pushSettingsDiag(diagStorage, 'hydrate SKIP cloud (cloud.ts <= local.ts)', {
+              cloudTs: cloud.ts,
+              localTs: prev.ts,
+              localReview: prev.review,
+            });
             return prev;
           }
           const merged = normalizeSettingsV2({
@@ -214,12 +271,18 @@ export function useSettings() {
             dailyNewLimit: merged.review.dailyNewLimit,
             dayStartHour: merged.review.dayStartHour,
           });
+          void pushSettingsDiag(diagStorage, 'hydrate APPLY cloud', {
+            cloudTs: cloud.ts,
+            localTs: prev.ts,
+            review: merged.review,
+          });
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
           return merged;
         });
         setCloudHydrated(true);
       } catch (err) {
         logwarn('[settings] Could not load from server:', err);
+        void pushSettingsDiag(diagStorage, 'GET /user-settings FAILED', { error: String(err) });
         setCloudHydrated(true);
       }
     })();
