@@ -1387,8 +1387,11 @@ export default function ReviewScreen() {
         </View>
       </View>
 
-      {/* Rating buttons — pinned to bottom with safe area */}
-      {!rated && (
+      {/* Rating buttons — pinned to bottom with safe area.
+          Only shown once the card back is revealed (web parity, SPEC-066):
+          recall mode reveals via Show Definition; test mode reveals after the
+          final question is answered. */}
+      {!rated && showTabs && (
         <View className="px-4" style={{ paddingBottom: insets.bottom + 8 }}>
           {!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP && (
             <View className="mb-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 items-center">
