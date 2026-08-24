@@ -107,6 +107,23 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const onStateChangeRef = useRef(onStateChange);
     onStateChangeRef.current = onStateChange;
 
+    // Cue to the requested startTime once the player is ready.
+    // `initialPlayerParams.start` is reliable only on the very first load and is
+    // treated as an integer; on a video change (prev/next in the subs-search
+    // player) or for a fractional start time it can be missed, leaving the
+    // video at 0 instead of the matched line. web applies the same seek in
+    // `onReady` (ARCH-004 §YouTube Player Integration) — mirror it here, once
+    // per (video, startTime). No-op when no startTime, or startTime is 0.
+    const lastSeekKeyRef = useRef<string | null>(null);
+    useEffect(() => {
+      if (!ready || startTime == null || startTime < 0) return;
+      const key = `${youtubeId}:${startTime}`;
+      if (lastSeekKeyRef.current === key) return;
+      lastSeekKeyRef.current = key;
+      log('[youtube-player] cue seek', { youtubeId, startTime });
+      playerRef.current?.seekTo(startTime, true);
+    }, [ready, startTime, youtubeId]);
+
     // Time polling while playing or paused (to catch seeks).
     // Only polls once the iframe is ready: react-native-youtube-iframe adds an
     // internal 'getCurrentTime' listener per call, and calls before the iframe
