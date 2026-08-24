@@ -1223,6 +1223,7 @@ setting.kana_only,Kana Only,仅假名,僅假名,كانا فقط,Nur Kana,Solo Ka
 setting.leading,Line Spacing,行距,行距,تباعد الأسطر,Zeilenabstand,Interlineado,Interligne,Spasi baris,Interlinea,行間,줄 간격,Regelafstand,Odstęp między wierszami,Espaçamento entre linhas,Межстрочный интервал,ระยะห่างบรรทัด,Satır aralığı,Giãn dòng
 setting.learning,Learning,学习,學習,التعلم,Lernen,Aprendizaje,Apprentissage,Pembelajaran,Apprendimento,学習,학습,Leren,Nauka,Aprendizagem,Обучение,การเรียนรู้,Öğrenme,Học tập
 setting.light,Light,浅色,淺色,فاتح,Hell,Claro,Clair,Terang,Chiaro,ライト,라이트,Licht,Jasny,Claro,Светлая,สว่าง,Açık,Sáng
+setting.long_sample_text,Long sample text,长示例文本,長範例文字,نص عينة طويل,Langer Beispieltext,Texto de muestra largo,Texte d'exemple long,Teks contoh panjang,Testo di esempio lungo,長いサンプルテキスト,긴 샘플 텍스트,Lange voorbeeldtekst,Długi tekst przykładowy,Texto de exemplo longo,Длинный пример текста,ข้อความตัวอย่างแบบยาว,Uzun örnek metin,Văn bản mẫu dài
 setting.network,Network,网络,網路,الشبكة,Netzwerk,Red,Réseau,Jaringan,Rete,ネットワーク,네트워크,Netwerk,Sieć,Rede,Сеть,เครือข่าย,Ağ,Mạng
 setting.never,Never,从不,從不,أبدًا,Nie,Nunca,Jamais,Tidak pernah,Mai,表示しない,안 함,Nooit,Nigdy,Nunca,Никогда,ไม่เลย,Asla,Không bao giờ
 setting.off,Off,关闭,關閉,إيقاف,Aus,Apagado,Désactivé,Mati,Spento,オフ,끄기,Uit,Wył.,Desligado,Выкл.,ปิด,Kapalı,Tắt
