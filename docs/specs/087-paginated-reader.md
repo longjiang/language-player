@@ -115,6 +115,39 @@ These are grouped by feature area. Each requirement describes the finished behav
 - **Table of contents.** A nested chapter tree highlighting the current chapter and its ancestors; clicking jumps to the chapter. Previous/next chapter controls are available.
 - **Position restore.** The reader remembers where you were (the block you were reading) and restores it when you reopen the same note, book, or URL — and survives a reload or a window resize.
 
+## Glossary of Terms
+
+Terms used throughout this spec, in plain language.
+
+- **L1 / L2** — L1 is your native/interface language; L2 is the language you are learning. The reader shows L2 text (the thing you're reading) and its L1 translation.
+- **Tokenized text** — the L2 text split into individual words and punctuation marks so each word can be tapped.
+- **Token** — one word (or punctuation mark) unit after tokenization.
+- **Lemma** — the dictionary/base form a word reduces to (e.g. *went* → *go*).
+- **Ruby / reading** — the small pronunciation guide shown above characters: furigana for Japanese, pinyin for Chinese, jyutping for Cantonese, romanization for Korean and other languages. *Ruby mode* shows the reading above; *word mode* replaces the word with its reading; *off* hides it.
+- **Reading band** — the vertical space reserved above the characters to hold the reading.
+- **Line pitch** — the distance from one line's top to the next line's top; i.e. each line's full height including its reading band. A larger line pitch means the lines are farther apart.
+- **Baseline** — the invisible horizontal line a line of text sits on (roughly the bottom of most letters). Two lines are *baseline-aligned* when their baselines sit at the same height.
+- **Baseline alignment (translation ↔ L2)** — a translation line's baseline is placed at the same height as the L2 line it pairs with, so the two columns line up when you read across.
+- **Block** — one unit of content in the reader: a heading, paragraph, list item, blockquote, code block, image, table, or horizontal rule. The reader pages and lays out these blocks.
+- **Block model** — the set of block types plus inline formatting the parser turns markdown/HTML into.
+- **GFM table** — a table written in GitHub-flavored Markdown syntax.
+- **Thematic break (`hr`)** — a horizontal rule separating sections.
+- **Hard page start** — a point where a new page must begin regardless of leftover space, e.g. the start of each chapter.
+- **Spine item** — one chapter/section in an EPUB book.
+- **Side-by-side** — the L2 text and translation shown as two columns next to each other (on wide screens and portrait tablets).
+- **Stacked** — the translation shown directly below the L2 text (on narrow screens).
+- **Split** — the share of the row's width given to the L2 column vs the translation column in side-by-side layout.
+- **Clamp** — the allowed range (roughly 3:7 to 7:3) past which the drag handle won't resize a column.
+- **First-line indent** — a paragraph's first line pushed in by one full-width ideographic space (a typographic indent used in books).
+- **Immersive mode** — hiding the reader chrome so only the text shows, with floating page/chapter labels.
+- **Karaoke** — highlighting the word being spoken and dimming the not-yet-spoken words, in time with playback.
+- **Hard-words-only** — showing readings only on words above your chosen proficiency level.
+- **Script variant** — an alternate script for the same language (traditional vs simplified Chinese, hanja, hán tự).
+- **RTL** — right-to-left writing direction (Arabic, Hebrew, Persian, and others).
+- **TTS / Speak** — reading text aloud with text-to-speech.
+- **AI Explain** — an AI-generated explanation of a block of text.
+- **Skeleton** — a pulsing placeholder shown while a page's words and translation are being prepared.
+
 ## Cross-Platform Parity
 
 - The **feature set is identical** on web and mobile.
