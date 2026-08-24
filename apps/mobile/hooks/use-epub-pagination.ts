@@ -286,6 +286,8 @@ interface UseEpubPaginationReturn {
   flipping: boolean;
   /** True while an exact re-measure is in flight (hidden window mounted). */
   measuring: boolean;
+  /** Total measured content height (sum of block heights), 0 until measured. */
+  contentHeight: number;
 }
 
 export function useEpubPagination({
@@ -1416,5 +1418,9 @@ export function useEpubPagination({
     flipping: !renderCommitted,
     /** True while an exact re-measure is in flight. */
     measuring,
+    /** Total measured content height (sum of block heights) once measured — the
+     *  tokenizer test uses it to clamp the card height so short text doesn't
+     *  leave a tall blank pane (SPEC-087). 0 when not measured. */
+    contentHeight: hasMeasured ? blockHeightsRef.current.reduce<number>((acc, h) => acc + (h ?? 0), 0) : 0,
   };
 }
