@@ -40,7 +40,7 @@ function MeasureBar({
   return (
     <>
       {tabs.map((tab) => {
-        const showLabel = mode === 'full' || (mode === 'compact' && tab.key === activeKey);
+        const showLabel = !tab.icon || mode === 'full' || (mode === 'compact' && tab.key === activeKey);
         return (
           <span
             key={tab.key}
@@ -128,12 +128,14 @@ export function TabbedPanel<T extends string = string>({
   }, []);
 
   // Pick the widest mode that still fits. The +2px tolerance keeps the mode
-  // from flapping at the exact boundary.
+  // from flapping at the exact boundary. We only ever pick 'full' or 'compact'
+  // — the active tab's label must ALWAYS show in full, so there is no pure
+  // icon-only fallback (the previous 'icon' mode hid even the current tab's
+  // label, which the mobile screenshot reported as truncation).
   const mode: DisplayMode = useMemo(() => {
     if (!measurements) return 'full';
     if (containerWidth + 2 >= measurements.full) return 'full';
-    if (containerWidth + 2 >= measurements.compact) return 'compact';
-    return 'icon';
+    return 'compact';
   }, [measurements, containerWidth]);
 
   return (
@@ -142,9 +144,15 @@ export function TabbedPanel<T extends string = string>({
       <Tabs value={activeTab} onValueChange={(v) => onTabClick ? onTabClick(v as T) : onTabChange(v as T)} className="flex-1 min-h-0 flex-col">
         <TabsList className="border-b border-border w-full">
           {tabs.map((tab) => {
-            const showLabel = mode === 'full' || (mode === 'compact' && tab.key === activeTab);
+            const showLabel = !tab.icon || mode === 'full' || (mode === 'compact' && tab.key === activeTab);
             return (
-              <TabsTrigger key={tab.key} value={tab.key} className="flex-1">
+              // Content-sized (`flex-none` overrides the base `flex-1`): the
+              // width-mode selection (full → compact → icon) measures NATURAL
+              // widths, so the render must match or a long active label
+              // truncates (the equal-width flex-1 distribution gave the active
+              // tab only 1/N of the container). Content-sized triggers never
+              // truncate their label; the chosen mode guarantees the bar fits.
+              <TabsTrigger key={tab.key} value={tab.key} className="flex-none">
                 {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
                 {showLabel && <span className="truncate min-w-0">{tab.label}</span>}
               </TabsTrigger>
