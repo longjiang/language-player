@@ -162,15 +162,18 @@ export function SubsSearchPlaybackModal({
   // Pre-parsed subtitle lines for SubtitleDisplay. Uses `playerSubLines` (the
   // full transcript once "Load Full Subtitles" runs, otherwise the limited
   // search range) so the loaded full subs flow straight into the display.
-  const subtitleInitialLines = useMemo(
-    () =>
-      playerSubLines.map((l) => ({
-        starttime: l.starttime,
-        l2Line: l.line,
-        l1Line: '',
-      })) ?? [],
-    [playerSubLines],
-  );
+  const subtitleInitialLines = useMemo(() => {
+    const lines = (playerSubLines ?? []).map((l) => ({
+      starttime: l.starttime,
+      l2Line: l.line,
+      l1Line: '',
+    }));
+    // Sort by starttime ascending — SubtitleDisplay's active-index logic
+    // iterates sequentially and breaks on the first line > currentTime, so
+    // lines MUST be in chronological order (web parity, ARCH-004 §Caveats).
+    lines.sort((a, b) => a.starttime - b.starttime);
+    return lines;
+  }, [playerSubLines]);
 
   // Compute active line index from currentTime
   const subtitleStartTimes = useMemo(
@@ -178,6 +181,27 @@ export function SubsSearchPlaybackModal({
     [subtitleInitialLines],
   );
   const activeLineIndex = useActiveLineIndex(subtitleStartTimes, currentTime);
+
+  // ── Diagnostic logging (subs-search playback modal) ──
+  // Confirms the subtitle data feeding the display + prev/next-line seeks and
+  // the active-line computation, so the "no subtitles / wrong line / dead
+  // controls" sync bug can be traced from Metro. Runs once per video open.
+  useEffect(() => {
+    if (!currentVideo) return;
+    log('[subsSearch] playback modal video', {
+      youtubeId: currentVideo.youtube_id,
+      matchLineIndex: currentVideo.matchLineIndex,
+      matchLineStart: matchLine?.starttime,
+      subLineCount: playerSubLines.length,
+      firstStart: playerSubLines[0]?.starttime,
+      lastStart: playerSubLines[playerSubLines.length - 1]?.starttime,
+      sorted: subtitleInitialLines.every((l, i) => i === 0 || subtitleInitialLines[i - 1]!.starttime <= l.starttime),
+      activeLineIndex,
+      currentTime,
+      defaultSubtitleStart: defaultSubtitleLine?.starttime,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVideo?.youtube_id, currentVideo?.matchLineIndex]);
 
   const goToPreviousVideo = useCallback(() => {
     if (index !== null && index > 0) onIndexChange(index - 1);
@@ -192,6 +216,7 @@ export function SubsSearchPlaybackModal({
     const subs = currentVideo.subs_l2;
     for (let i = subs.length - 1; i >= 0; i--) {
       if (subs[i]!.starttime < currentTime - 0.3) {
+        log('[subsSearch] prev line seek', { youtubeId: currentVideo.youtube_id, currentTime, target: subs[i]!.starttime });
         playerRef.current?.seekTo(subs[i]!.starttime);
         return;
       }
@@ -203,6 +228,7 @@ export function SubsSearchPlaybackModal({
     const subs = currentVideo.subs_l2;
     for (let i = 0; i < subs.length; i++) {
       if (subs[i]!.starttime > currentTime + 0.3) {
+        log('[subsSearch] next line seek', { youtubeId: currentVideo.youtube_id, currentTime, target: subs[i]!.starttime });
         playerRef.current?.seekTo(subs[i]!.starttime);
         return;
       }
