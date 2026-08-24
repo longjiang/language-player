@@ -63,6 +63,13 @@ internal final class RubyTextParagraphView: ExpoView {
   var isRtl = false { didSet { rebuild() } }
   var textAlign = "left" { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
+  /// BCP-47 language of the base text (e.g. "ja", "zh-Hans", "zh-Hant", "ko").
+  /// Applied as the language attribute on both base and reading runs so the
+  /// system font's CJK fallback picks the CORRECT script font and glyph
+  /// variants per language (SPEC-087 — the system font has no CJK glyphs and
+  /// falls back per language; pure-hanzi Chinese needs this tag to avoid the
+  /// Japanese/wrong-variant forms).
+  var language: String? { didSet { rebuild() } }
   /// Optional separate font for the READINGS only (furigana/kana). When nil,
   /// readings use `fontFamily`. Diagnostic: lets us compare Hiragino vs e.g.
   /// the system font for the reading to reduce per-script line growth.
@@ -374,6 +381,11 @@ internal final class RubyTextParagraphView: ExpoView {
         // Yellow box over the base glyphs — its height is the base's space.
         attributes[.backgroundColor] = UIColor.systemYellow.withAlphaComponent(0.25)
       }
+      if let language, !language.isEmpty {
+        // Tag the language so Core Text's CJK font fallback picks the right
+        // script font + glyph variants (SPEC-087 — system-font CJK).
+        attributes[NSAttributedString.Key(kCTLanguageAttributeName as String)] = language
+      }
       if run.underline {
         attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
       }
@@ -393,6 +405,9 @@ internal final class RubyTextParagraphView: ExpoView {
           kCTFontAttributeName as String: readingFont,
           kCTForegroundColorAttributeName as String: run.readingColor.withAlphaComponent(CGFloat(run.opacity)),
         ]
+        if let language, !language.isEmpty {
+          readingAttributes[kCTLanguageAttributeName as String] = language
+        }
         if diagnosticMetrics {
           // Cyan box over the reading glyphs — its height is the ruby's space.
           readingAttributes[kCTBackgroundColorAttributeName as String] =

@@ -136,6 +136,10 @@ public final class RubyTextModule: Module {
         view.fontFamily = family
       }
 
+      Prop("language") { (view: RubyTextParagraphView, language: String?) in
+        view.language = language
+      }
+
       Prop("rubyFontFamily") { (view: RubyTextParagraphView, family: String?) in
         view.rubyFontFamily = family
       }

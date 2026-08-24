@@ -355,6 +355,8 @@ interface RubyTextParagraphBlockProps {
   gridLineHeight?: number;
   readingSize: number;
   fontFamily: string | null;
+  /** BCP-47 language of the base text — for the system-font CJK fallback. */
+  language?: string | null;
   /** Optional separate font for READINGS only (furigana/kana). */
   rubyFontFamily?: string | null;
   /** Paint base (yellow) vs reading (cyan) backgrounds — SPEC-087 diagnostic. */
@@ -387,6 +389,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
     gridLineHeight,
     readingSize,
     fontFamily,
+    language,
     rubyFontFamily,
     diagnosticMetrics,
     isRtl,
@@ -428,6 +431,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
       gridLineHeight={gridLineHeight}
       readingSize={readingSize}
       fontFamily={fontFamily}
+      language={language ?? null}
       rubyFontFamily={rubyFontFamily ?? null}
       diagnosticMetrics={diagnosticMetrics}
       isRtl={isRtl}

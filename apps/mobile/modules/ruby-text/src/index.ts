@@ -91,6 +91,10 @@ export interface NativeRubyTextParagraphProps {
   /** Horizontal paragraph alignment. */
   textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
+  /** BCP-47 language of the base text (ja / zh-Hans / zh-Hant / ko …). Applied
+   *  as the language attribute on base + reading runs so the system font's CJK
+   *  fallback picks the correct script font and glyph variants (SPEC-087). */
+  language?: string | null;
   /** Optional separate font for READINGS only (furigana/kana). When not set,
    *  readings use `fontFamily`. Diagnostic: compare Hiragino vs the system
    *  font for the reading to reduce per-script line growth. */
