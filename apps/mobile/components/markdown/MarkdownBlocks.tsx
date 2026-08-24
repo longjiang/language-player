@@ -29,6 +29,14 @@ export interface MarkdownBlocksProps {
   onOpenLink?: (href: string) => void;
   /** Text scale multiplier for headings/paragraphs. */
   textScale?: number;
+  /**
+   * Line-height multiplier relative to the font size for paragraph text
+   * (default 2.0, the `leading-loose` look). Pass 1.625 (Tailwind's
+   * `leading-relaxed`) to match a surface that renders plain `text-sm
+   * leading-relaxed` text while streaming — the finished parsed render then
+   * keeps the same size AND leading (AI explanations, SPEC-083).
+   */
+  lineHeightScale?: number;
   /** Per-kind render overrides (e.g. docs TOC heading onLayout hooks). */
   ruleOverrides?: {
     /** Wrap (or replace) a rendered heading; `text` is the plain heading
@@ -51,6 +59,7 @@ export function MarkdownBlocks({
   codeSpans = 'code',
   onOpenLink,
   textScale = 1,
+  lineHeightScale = 2,
   ruleOverrides,
 }: MarkdownBlocksProps) {
   const { width: windowWidth } = useWindowDimensions();
@@ -84,6 +93,7 @@ export function MarkdownBlocks({
                 codeSpans={codeSpans}
                 onOpenLink={onOpenLink}
                 textScale={textScale}
+                lineHeightScale={lineHeightScale}
                 ruleOverrides={ruleOverrides}
                 orderedNumber={orderedNumbers.get(i)}
               />
@@ -170,6 +180,7 @@ function TextBlockView({
   codeSpans,
   onOpenLink,
   textScale,
+  lineHeightScale,
   ruleOverrides,
   orderedNumber,
 }: {
@@ -178,6 +189,7 @@ function TextBlockView({
   codeSpans: 'code' | 'tokenize';
   onOpenLink?: (href: string) => void;
   textScale: number;
+  lineHeightScale: number;
   ruleOverrides?: MarkdownBlocksProps['ruleOverrides'];
   orderedNumber?: number;
 }) {
@@ -194,6 +206,7 @@ function TextBlockView({
         onOpenLink={onOpenLink}
         fontSize={(isHeading ? HEADING_FONT[block.depth ?? 1] : 16) * textScale * headingFactor}
         textScale={textScale * headingFactor}
+        lineHeightScale={lineHeightScale}
       />
     ) : (
       <TokenizedTextLazy
@@ -210,6 +223,7 @@ function TextBlockView({
       text={block.text}
       formats={block.formats}
       fontSize={(isHeading ? HEADING_FONT[block.depth ?? 1] : 16) * textScale}
+      lineHeightScale={lineHeightScale}
       bold={isHeading}
     />
   );
@@ -325,12 +339,14 @@ function TokenizedCodeSpans({
   onOpenLink,
   fontSize,
   textScale,
+  lineHeightScale,
 }: {
   block: TextBlock;
   l2Code: string;
   onOpenLink?: (href: string) => void;
   fontSize: number;
   textScale: number;
+  lineHeightScale: number;
 }) {
   const segments = useMemo(
     () => splitByCodeFormats(block.text, block.formats),
@@ -339,7 +355,7 @@ function TokenizedCodeSpans({
   return (
     <Text
       className="text-foreground"
-      style={{ fontSize, lineHeight: fontSize * 2 }}
+      style={{ fontSize, lineHeight: fontSize * lineHeightScale }}
     >
       {segments.map((seg, i) =>
         seg.isCode ? (
@@ -360,7 +376,7 @@ function TokenizedCodeSpans({
             />
           </Suspense>
         ) : (
-          <FormattedText key={i} text={seg.text} formats={seg.formats} fontSize={fontSize} />
+          <FormattedText key={i} text={seg.text} formats={seg.formats} fontSize={fontSize} lineHeightScale={lineHeightScale} />
         ),
       )}
     </Text>
@@ -372,11 +388,13 @@ function FormattedText({
   text,
   formats,
   fontSize,
+  lineHeightScale,
   bold,
 }: {
   text: string;
   formats: FormatRange[];
   fontSize: number;
+  lineHeightScale: number;
   bold?: boolean;
 }) {
   const spans = useMemo(() => {
@@ -402,7 +420,7 @@ function FormattedText({
   return (
     <Text
       className="text-foreground"
-      style={{ fontSize, lineHeight: fontSize * 2, fontWeight: bold ? '700' : undefined }}
+      style={{ fontSize, lineHeight: fontSize * lineHeightScale, fontWeight: bold ? '700' : undefined }}
     >
       {spans.map((span, i) => {
         const style: {
