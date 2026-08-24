@@ -20,6 +20,12 @@ export {
   formatNextDueLabel,
   getNextReviewInterval,
 } from './format';
+export {
+  pushSettingsDiag,
+  readSettingsDiag,
+  SETTINGS_DIAG_KEY,
+} from './settings-diagnostics';
+export type { KeyValueStorage, SettingsDiagEvent } from './settings-diagnostics';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
 export { clampDifficulty, levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
