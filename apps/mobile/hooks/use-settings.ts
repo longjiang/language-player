@@ -47,6 +47,17 @@ export function useSettings() {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cloudLoadedUserId = useRef<string | null>(null);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
+  /**
+   * True once the in-memory settings came from a real source (a saved
+   * SecureStore blob or a successful cloud hydrate). While false the state is
+   * the pristine `createSettingsV2()` defaults (e.g. after the user-change
+   * reset or a fresh install) and persisting it — with a fresh ts — would
+   * overwrite the saved copy locally and, via the outbox, destroy it
+   * server-side (the same failure mode 32154e91 fixed on web, still reachable
+   * through persist-before-hydration vectors like `ensureL2`). The guard in
+   * `persist` drops those writes and logs them.
+   */
+  const hydratedFromSource = useRef(false);
 
   // Local-only network kill switch: stored separately from SettingsV2 and
   // never included in the cloud PUT, so it never syncs to the account.
@@ -68,6 +79,7 @@ export function useSettings() {
           const parsed = JSON.parse(raw) as Partial<SettingsV2>;
           if (parsed.v === 2) {
             const restored = normalizeSettingsV2(parsed);
+            hydratedFromSource.current = true;
             log('[settings] loaded local blob — ts:', restored.ts,
               'review:', JSON.stringify(restored.review));
             setSettings(restored);
@@ -103,6 +115,9 @@ export function useSettings() {
       try {
         const res = await getUserSettings();
         if (cancelled) return;
+        // A definitive answer — even "no row yet" — means the current
+        // defaults are a legitimate baseline (nothing saved to destroy).
+        hydratedFromSource.current = true;
         const cloud = res.settings_v2;
         log('[settings] GET /user-settings ok — user:', user.id,
           'cloud v:', cloud?.v, 'cloud ts:', cloud?.ts,
@@ -148,6 +163,7 @@ export function useSettings() {
     if (prev === undefined) return; // initial boot — keep locally loaded state
     if (prev !== next) {
       cloudLoadedUserId.current = null;
+      hydratedFromSource.current = false; // in-memory state is fresh defaults again
       setCloudHydrated(next === null || offlineMode);
       log('[settings] user changed — resetting local settings',
         { from: prev, to: next });
@@ -162,6 +178,20 @@ export function useSettings() {
 
   // ── Persist + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
+    // Guard: never persist/sync a settings blob that was never backed by a
+    // real source (saved SecureStore blob or hydrated cloud row). A pristine
+    // defaults blob stamped with a fresh ts would overwrite the saved copy
+    // locally and, via the outbox, destroy it server-side (the same failure
+    // mode 32154e91 fixed on web, still reachable through persist-before-
+    // hydration vectors like ensureL2 on the settings display page). Log the
+    // drop so the window is visible.
+    if (!hydratedFromSource.current && user) {
+      log('[settings] persist SKIPPED — settings still pristine defaults (no local blob / hydration pending)', {
+        ts: s.ts,
+        review: s.review,
+      });
+      return;
+    }
     SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(s)).catch(() => {});
 
     if (!user) return;
@@ -211,6 +241,7 @@ export function useSettings() {
               v: 2 as const,
               ts: new Date().toISOString(),
             });
+            hydratedFromSource.current = true;
             log('[settings] pull bridge APPLY cloud — dailyNewLimit:',
               merged.review.dailyNewLimit, 'dayStartHour:', merged.review.dayStartHour,
               'new ts:', merged.ts);
@@ -226,10 +257,17 @@ export function useSettings() {
   }, []);
 
   // ── SSR-safe updates (write-through) ──
+  // `update` accepts either a patch or a patch-builder receiving the latest
+  // `prev`, so section setters never build their patch from a stale render
+  // closure (two rapid updates to the same section used to lose the first).
   const update = useCallback(
-    (patch: Partial<SettingsV2>) => {
+    (patch: Partial<SettingsV2> | ((prev: SettingsV2) => Partial<SettingsV2>)) => {
       setSettings((prev) => {
-        const next = { ...prev, ...patch, ts: new Date().toISOString() };
+        const applied = typeof patch === 'function' ? patch(prev) : patch;
+        // No-op patch (e.g. ensureL2 when the section already exists) — do
+        // not bump ts or re-persist, which would re-rank LWW for nothing.
+        if (Object.keys(applied).length === 0) return prev;
+        const next = { ...prev, ...applied, ts: new Date().toISOString() };
         persist(next);
         return next;
       });
@@ -239,32 +277,32 @@ export function useSettings() {
 
   const updateTokenizedText = useCallback(
     (patch: Partial<TokenizedTextSettings>) =>
-      update({ tokenizedText: { ...settings.tokenizedText, ...patch } }),
-    [update, settings.tokenizedText],
+      update((prev) => ({ tokenizedText: { ...prev.tokenizedText, ...patch } })),
+    [update],
   );
 
   const updateDisplay = useCallback(
     (patch: Partial<DisplaySettings>) =>
-      update({ display: { ...settings.display, ...patch } }),
-    [update, settings.display],
+      update((prev) => ({ display: { ...prev.display, ...patch } })),
+    [update],
   );
 
   const updatePlayback = useCallback(
     (patch: Partial<PlaybackSettings>) =>
-      update({ playback: { ...settings.playback, ...patch } }),
-    [update, settings.playback],
+      update((prev) => ({ playback: { ...prev.playback, ...patch } })),
+    [update],
   );
 
   const updateReview = useCallback(
     (patch: Partial<ReviewSettings>) =>
-      update({ review: { ...settings.review, ...patch } }),
-    [update, settings.review],
+      update((prev) => ({ review: { ...prev.review, ...patch } })),
+    [update],
   );
 
   const updateSearch = useCallback(
     (patch: Partial<SearchSettings>) =>
-      update({ search: { ...settings.search, ...patch } }),
-    [update, settings.search],
+      update((prev) => ({ search: { ...prev.search, ...patch } })),
+    [update],
   );
 
   const getL2 = useCallback(
@@ -274,22 +312,23 @@ export function useSettings() {
 
   const updateL2 = useCallback(
     (code: string, patch: Partial<L2Settings>) =>
-      update({
+      update((prev) => ({
         l2: {
-          ...settings.l2,
-          [code]: { ...getL2(code), ...patch },
+          ...prev.l2,
+          [code]: { ...(prev.l2[code] ?? L2_DEFAULTS), ...patch },
         },
-      }),
-    [update, settings.l2, getL2],
+      })),
+    [update],
   );
 
   const ensureL2 = useCallback(
     (code: string) => {
-      if (!settings.l2[code]) {
-        update({ l2: { ...settings.l2, [code]: { ...L2_DEFAULTS } } });
-      }
+      update((prev) => {
+        if (prev.l2[code]) return {};
+        return { l2: { ...prev.l2, [code]: { ...L2_DEFAULTS } } };
+      });
     },
-    [update, settings.l2],
+    [update],
   );
 
   return {
