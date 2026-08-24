@@ -172,6 +172,15 @@ export interface TokenizedTextProps {
    *  (SPEC-082 web AlignedTranslation parity). Must be identity-stable: the
    *  component is memoized and this prop is compared by reference. */
   onLineGrid?: (lines: GridLine[]) => void;
+  /** Diagnostic (SPEC-087): override the BASE text font for this block, so the
+   *  tokenizer test can compare scripts. Passed straight to the native view. */
+  debugFontFamily?: string | null;
+  /** Diagnostic (SPEC-087): override the READING (furigana) font separately so
+   *  the ruby's line contribution can be compared across fonts. */
+  debugRubyFontFamily?: string | null;
+  /** Diagnostic (SPEC-087): paint base runs yellow and readings cyan so the
+   *  vertical space each takes is visible. */
+  debugRubyMetrics?: boolean;
 }
 
 /**
@@ -188,7 +197,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -1560,7 +1569,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     lineHeight={paragraphLineHeight}
                     gridLineHeight={gridLineHeight}
                     readingSize={readingSize}
-                    fontFamily={textStyle.fontFamily ?? null}
+                    fontFamily={debugFontFamily ?? textStyle.fontFamily ?? null}
+                    rubyFontFamily={debugRubyFontFamily ?? null}
+                    diagnosticMetrics={debugRubyMetrics}
                     isRtl={isRtl}
                     textAlign={textAlign}
                     fontWeight={textStyle.fontWeight === 'bold' ? 'bold' : 'normal'}
@@ -1758,7 +1769,10 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.leadingIndent === next.leadingIndent &&
     prev.highlightTerms === next.highlightTerms &&
     prev.tokenCacheLoaded === next.tokenCacheLoaded &&
-    prev.onLineGrid === next.onLineGrid
+    prev.onLineGrid === next.onLineGrid &&
+    prev.debugFontFamily === next.debugFontFamily &&
+    prev.debugRubyFontFamily === next.debugRubyFontFamily &&
+    prev.debugRubyMetrics === next.debugRubyMetrics
   );
 }
 

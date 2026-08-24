@@ -135,6 +135,12 @@ interface PaginatedReaderProps {
   /** First-line indent (1 em) for body paragraphs — EPUB typography
    *  (SPEC-082 Task 5, web `[&_p]:indent-[1em]` parity). */
   firstLineIndent?: boolean;
+  /** Diagnostic (SPEC-087): base-text font override for the tokenized text. */
+  debugFontFamily?: string | null;
+  /** Diagnostic (SPEC-087): readings-only font override. */
+  debugRubyFontFamily?: string | null;
+  /** Diagnostic (SPEC-087): paint base yellow / reading cyan to show space. */
+  debugRubyMetrics?: boolean;
   /** True while the user is actively flipping pages: visible blocks render as
    *  plain text (fast) even when tokens are cached; the tokenized/translated
    *  render returns once flipping stops. */
@@ -196,6 +202,9 @@ export function PaginatedReader({
   hideSplitHandle = false,
   selectionDictionary = false,
   firstLineIndent = false,
+  debugFontFamily,
+  debugRubyFontFamily,
+  debugRubyMetrics,
   flipping = false,
   measuring = false,
   lazyPagination = false,
@@ -744,7 +753,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}>
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics),
           )}
         </View>
         {onToggleTranslation && (
@@ -804,7 +813,7 @@ export function PaginatedReader({
                     {/* loadingTokens indicator removed — no "making text
                         interactive" row; content shows when ready */}
                     {visibleBlocks.map((block, bi) =>
-                      renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
+                      renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics),
                     )}
                   </ScrollView>
                 </GestureDetector>
@@ -1030,6 +1039,9 @@ function renderBlock(
   hideSplitHandle = false,
   selectionDictionary = false,
   translationLeading = 1.625,
+  debugFontFamily: string | null = null,
+  debugRubyFontFamily: string | null = null,
+  debugRubyMetrics = false,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -1160,6 +1172,9 @@ function renderBlock(
             onLineGrid={getLineGridHandler?.(globalIdx)}
             leadingIndent={firstLineIndent && block.type === 'paragraph'}
             textScale={scale * headingFactor}
+            debugFontFamily={debugFontFamily}
+            debugRubyFontFamily={debugRubyFontFamily}
+            debugRubyMetrics={debugRubyMetrics}
             bold={block.type === 'heading'}
             selectionDictionary={selectionDictionary}
           />

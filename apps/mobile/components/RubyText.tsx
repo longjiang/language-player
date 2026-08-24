@@ -266,6 +266,10 @@ export interface RubyTextParagraphProps {
   isRtl: boolean;
   textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
+  /** Optional separate font for READINGS only (furigana/kana). */
+  rubyFontFamily?: string | null;
+  /** Paint base (yellow) vs reading (cyan) backgrounds — SPEC-087 diagnostic. */
+  diagnosticMetrics?: boolean;
   /** Bold the measuring text too — bold glyphs are wider and wrap differently. */
   fontWeight?: 'normal' | 'bold';
   /** Reported with the tapped token's index. */
@@ -302,6 +306,8 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     isRtl,
     textAlign = 'left',
     fontFamily,
+    rubyFontFamily,
+    diagnosticMetrics,
     fontWeight,
     onTokenTap,
     onSelectionChange,
@@ -483,6 +489,8 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               isRtl={isRtl}
               textAlign={textAlign}
               fontFamily={fontFamily ?? null}
+              rubyFontFamily={rubyFontFamily ?? null}
+              diagnosticMetrics={diagnosticMetrics}
               onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
               onSelection={(event) =>
                 onSelectionChange?.({ start: event.nativeEvent.start, end: event.nativeEvent.end })

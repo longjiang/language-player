@@ -63,6 +63,14 @@ internal final class RubyTextParagraphView: ExpoView {
   var isRtl = false { didSet { rebuild() } }
   var textAlign = "left" { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
+  /// Optional separate font for the READINGS only (furigana/kana). When nil,
+  /// readings use `fontFamily`. Diagnostic: lets us compare Hiragino vs e.g.
+  /// the system font for the reading to reduce per-script line growth.
+  var rubyFontFamily: String? { didSet { rebuild() } }
+  /** When true, paints the base runs with a translucent yellow background and
+   *  the readings with a translucent cyan background so the JS side can see
+   *  the vertical space each takes (base vs ruby) — SPEC-087 diagnostic. */
+  var diagnosticMetrics = false { didSet { rebuild() } }
 
   /// Vertical nudge of every base run, which sets the visible furigana↔base
   /// gap. The Core Text ruby annotation is anchored to the base run's original
@@ -362,6 +370,10 @@ internal final class RubyTextParagraphView: ExpoView {
         // stays aligned.
         .baselineOffset: rubyBaseTextOffset,
       ]
+      if diagnosticMetrics {
+        // Yellow box over the base glyphs — its height is the base's space.
+        attributes[.backgroundColor] = UIColor.systemYellow.withAlphaComponent(0.25)
+      }
       if run.underline {
         attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
       }
@@ -377,10 +389,15 @@ internal final class RubyTextParagraphView: ExpoView {
 
       if let reading = run.reading, !reading.isEmpty {
         let readingFont = makeReadingFont()
-        let readingAttributes: [String: Any] = [
+        var readingAttributes: [String: Any] = [
           kCTFontAttributeName as String: readingFont,
           kCTForegroundColorAttributeName as String: run.readingColor.withAlphaComponent(CGFloat(run.opacity)),
         ]
+        if diagnosticMetrics {
+          // Cyan box over the reading glyphs — its height is the ruby's space.
+          readingAttributes[kCTBackgroundColorAttributeName as String] =
+            UIColor.systemCyan.withAlphaComponent(0.35)
+        }
 #if DEBUG
         let syllables = reading.split(separator: " ").count
         print("[LP Mobile] [RubyTextParagraph] attach-ruby run=\(runIndex) range=\(range.location)..<\(range.location + range.length) baseChars=\(range.length) syllables=\(syllables) reading=\"\(reading)\"")
@@ -404,6 +421,12 @@ internal final class RubyTextParagraphView: ExpoView {
 
   private func makeFont(size: CGFloat, weight: UIFont.Weight) -> UIFont {
     if let family = fontFamily, !family.isEmpty {
+      // "__system__" sentinel (SPEC-087 font picker): force the system font so
+      // the tokenizer test can compare the script font vs the system font's
+      // line metrics.
+      if family == "__system__" {
+        return UIFont.systemFont(ofSize: size, weight: weight)
+      }
       if weight == .bold, let boldFont = UIFont(name: "\(family)-Bold", size: size) {
         return boldFont
       }
@@ -418,8 +441,13 @@ internal final class RubyTextParagraphView: ExpoView {
    *  back to the system font when no family is set. Missing glyphs (e.g. kana
    *  in Georgia) cascade through Core Text's font fallback. */
   private func makeReadingFont() -> UIFont {
-    if let family = fontFamily, !family.isEmpty, let font = UIFont(name: family, size: CGFloat(readingSize)) {
-      return font
+    if let family = rubyFontFamily ?? fontFamily, !family.isEmpty {
+      if family == "__system__" {
+        return UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
+      }
+      if let font = UIFont(name: family, size: CGFloat(readingSize)) {
+        return font
+      }
     }
     return UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
   }

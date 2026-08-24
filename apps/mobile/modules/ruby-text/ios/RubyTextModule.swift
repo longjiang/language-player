@@ -136,6 +136,14 @@ public final class RubyTextModule: Module {
         view.fontFamily = family
       }
 
+      Prop("rubyFontFamily") { (view: RubyTextParagraphView, family: String?) in
+        view.rubyFontFamily = family
+      }
+
+      Prop("diagnosticMetrics") { (view: RubyTextParagraphView, on: Bool) in
+        view.diagnosticMetrics = on
+      }
+
       Prop("clearSelection") { (view: RubyTextParagraphView, nonce: Int) in
         view.clearSelection = nonce
       }
