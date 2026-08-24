@@ -91,6 +91,14 @@ export interface NativeRubyTextParagraphProps {
   /** Horizontal paragraph alignment. */
   textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
+  /** Optional separate font for READINGS only (furigana/kana). When not set,
+   *  readings use `fontFamily`. Diagnostic: compare Hiragino vs the system
+   *  font for the reading to reduce per-script line growth. */
+  rubyFontFamily?: string | null;
+  /** When true, paints base runs with a yellow background and readings with a
+   *  cyan background so the JS side can see the vertical space each takes
+   *  (base vs ruby) — SPEC-087 metrics diagnostic. */
+  diagnosticMetrics?: boolean;
   /** Dispatched with { tokenId } when a tappable run is tapped. */
   onTokenTap?: (event: { nativeEvent: { tokenId: number } }) => void;
   /** Dispatched with the base-text line grid once the paragraph lays out

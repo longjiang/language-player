@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -26,6 +26,10 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
   const t = useT();
 
   const [sample, setSample] = useState<{ text: string; title: string } | null>(null);
+  // SPEC-087 diagnostic: font overrides (Script = the language's own font,
+  // System = the system font) + base-yellow / ruby-cyan space visualization.
+  const [baseSystem, setBaseSystem] = useState(false);
+  const [rubySystem, setRubySystem] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +66,14 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
         <Text className="text-base font-semibold text-foreground">
           {flagEmoji(code)} {nativeLanguageName(code)}
         </Text>
+        <View className="ml-auto flex-row items-center gap-2">
+          <Pressable onPress={() => setBaseSystem((v) => !v)} className="rounded border border-border px-2 py-1">
+            <Text className="text-xs text-muted-foreground">{t('label.base_font')}: {baseSystem ? 'System' : 'Script'}</Text>
+          </Pressable>
+          <Pressable onPress={() => setRubySystem((v) => !v)} className="rounded border border-border px-2 py-1">
+            <Text className="text-xs text-muted-foreground">{t('label.ruby_font')}: {rubySystem ? 'System' : 'Script'}</Text>
+          </Pressable>
+        </View>
       </View>
       <View className="flex-1">
         {sample ? (
@@ -94,6 +106,9 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
             l1Code={l1Lang.code}
             showTranslation={display.translation}
             translationSideBySide={isMd}
+            debugFontFamily={baseSystem ? '__system__' : null}
+            debugRubyFontFamily={rubySystem ? '__system__' : null}
+            debugRubyMetrics
             showTextActions
             t={t}
           />
