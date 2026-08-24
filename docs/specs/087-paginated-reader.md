@@ -72,6 +72,7 @@ These are grouped by feature area. Each requirement describes the finished behav
 ### 4. Resizable text/translation column
 
 - **Draggable divider.** In the side-by-side layout a slim vertical handle sits between the L2 and translation columns.
+- **Invisible until dragged.** The handle's divider line is **invisible by default** (no permanent line between the columns); it appears only once the user starts adjusting it — while dragging (touch) / on hover-drag (web). The boundary area stays a full draggable touch/pointer target so the drag remains discoverable.
 - **Live resize.** Dragging it resizes both columns as you move, clamped to a range (an approximate 3:7 to 7:3 split) so neither column collapses away.
 - **Persisted and shared.** The chosen split is saved and reused across page turns and sessions, and shared by all the readers.
 - **Re-pagination.** Changing the split re-paginates so page breaks match the new column widths.
