@@ -673,7 +673,22 @@ export class EpubBook {
     return this.markersPromise;
   }
 
-  /** Normalized plain text + per-block start offsets for one spine item. */
+  /**
+   * Normalized plain text + per-block start offsets for one spine item.
+   *
+   * `starts` has one entry PER BLOCK (including image/pre/code blocks),
+   * index-aligned with the reader block stream. `epubBlocksToReaderBlocks`
+   * converts blocks 1:1 (no reordering), so `starts[i]` is the char offset of
+   * reader-block `i` in `text`. Non-text blocks (images) contribute no
+   * characters, so they repeat the current position — this keeps
+   * `BookLocation.blockIndex` identical whether it came from the search index,
+   * navigation, TOC, or the paginated reader (ARCH-013 / epub-reader-blocks).
+   *
+   * NOTE: previously `starts` skipped image blocks entirely, rebasing the
+   * index to text-blocks-only. In a spine that began with an image, the search
+   * index's blockIndex was therefore too small by the number of preceding
+   * images, so a search highlight landed one (or more) page *early*.
+   */
   spineTextData(spineIndex: number): Promise<{ text: string; starts: number[] }> {
     const cached = this.textCache.get(spineIndex);
     if (cached) return cached;
@@ -683,10 +698,14 @@ export class EpubBook {
       const starts: number[] = [];
       let pos = 0;
       for (const block of blocks) {
-        if (block.kind !== 'text') continue;
-        parts.push(block.text);
+        // Every block gets a `starts` entry (reader-aligned). Only text blocks
+        // contribute characters to `text`; images occupy a block index but add
+        // none, so they repeat the current char position.
         starts.push(pos);
-        pos += block.text.length + 1;
+        if (block.kind === 'text') {
+          parts.push(block.text);
+          pos += block.text.length + 1;
+        }
       }
       return { text: parts.join('\n'), starts };
     })();
