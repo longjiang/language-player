@@ -111,6 +111,7 @@ export function useEpub(): UseEpubReturn {
 
   const modelRef = useRef<EpubBookModel | null>(null);
   const openBookIdRef = useRef<string | null>(null);
+  const openLoadingRef = useRef(false);
   const migratedRef = useRef(false);
 
   const setCurrentModel = useCallback((m: EpubBookModel, id: string, skipCover: boolean, resume: BookLocation | null) => {
@@ -218,7 +219,11 @@ export function useEpub(): UseEpubReturn {
           let displayName = isZipName
             ? `${asset.name.replace(/\.epub\.zip$/i, '').replace(/\.zip$/i, '')}.epub`
             : asset.name;
-          const id = sanitizeEpubId(displayName);
+          // Reuse an existing shelf entry's id when the same file name is
+          // re-uploaded, so pre-hash imports (stored under a non-hashed id)
+          // update their handle in place instead of duplicating the entry.
+          const existingEntry = books.find((b) => b.fileName === displayName);
+          const id = existingEntry ? existingEntry.id : sanitizeEpubId(displayName);
           const dest = libraryFileUri(id);
           const assetInfo = await FileSystem.getInfoAsync(asset.uri);
           const existing = await FileSystem.getInfoAsync(dest);
@@ -303,7 +308,7 @@ export function useEpub(): UseEpubReturn {
     } finally {
       setLoading(false);
     }
-  }, [setCurrentModel]);
+  }, [books, setCurrentModel]);
 
   /** Open a stored book; returns the location to resume at. */
   const openBook = useCallback(async (id: string, opts?: { skipCover?: boolean }): Promise<BookLocation | null> => {
@@ -312,6 +317,12 @@ export function useEpub(): UseEpubReturn {
       setCoverTapped(skipCover);
       return initialLocation;
     }
+    // In-flight guard (a ref, not state): a concurrent openBook for another id
+    // (e.g. the mount-time auto-open racing a manual tap) would run two
+    // openEpubBook passes and the losing one's error path kicks the reader
+    // back to the bookshelf. Reject the second while one is loading.
+    if (openLoadingRef.current) return null;
+    openLoadingRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -332,6 +343,7 @@ export function useEpub(): UseEpubReturn {
       setError(localizedError(t, e, 'error.general'));
       return null;
     } finally {
+      openLoadingRef.current = false;
       setLoading(false);
     }
   }, [books, initialLocation, setCurrentModel]);

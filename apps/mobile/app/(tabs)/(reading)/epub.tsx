@@ -48,6 +48,12 @@ export default function EpubReaderScreen() {
   const BOTTOM_CHROME_RESERVE = 59 + insets.bottom;
 
   const [openingId, setOpeningId] = useState<string | null>(null);
+  /** Synchronous open guard — the `openingId` STATE is stale in the render
+   *  closure, so a tap landing before the state commit (or the mount-time
+   *  auto-open racing a manual tap) would launch two concurrent opens, and the
+   *  losing one's error path kicks the reader back to the bookshelf. A ref is
+   *  set before the state update closes that window (web parity). */
+  const openingIdRef = useRef<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
   const [seekBlock, setSeekBlock] = useState<number | null>(null);
   /** Active search-match highlight (block + char range), if any. */
@@ -168,7 +174,10 @@ export default function EpubReaderScreen() {
   }, [pushHistory, jumpToBlock]);
 
   const handleOpenBook = useCallback(async (id: string) => {
-    if (openingId) return;
+    // Ref guard (not just the `openingId` state) so a tap racing the
+    // mount-time auto-open can't launch two concurrent opens (web parity).
+    if (openingIdRef.current) return;
+    openingIdRef.current = id;
     setOpeningId(id);
     setLocation(null);
     historyRef.current = [];
@@ -176,9 +185,10 @@ export default function EpubReaderScreen() {
       const start = await epub.openBook(id, { skipCover: true });
       if (start) setLocation(start);
     } finally {
+      openingIdRef.current = null;
       setOpeningId(null);
     }
-  }, [epub, openingId]);
+  }, [epub]);
 
   // Auto-open the last-read book in the current L2 once the shelf is ready —
   // returning to the epub screen resumes reading instead of showing the
