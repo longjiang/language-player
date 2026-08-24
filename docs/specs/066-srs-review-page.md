@@ -244,9 +244,12 @@ platforms share this algorithm through the same utility implementation, so a
 card rated on web and a card rated on mobile follow identical scheduling.
 
 The rating buttons and the post-rating toast show the rating label on the first
-line and the newly scheduled interval on the second line (for example,
-“Next review in 3 days”). The interval rounds up and uses minutes, hours, or
-days as appropriate.
+line and the newly scheduled interval on the second line. The interval rounds
+up and uses minutes, hours, or days as appropriate. The **toast** keeps the
+full form ("Next review in 3 days"); the **mobile rating buttons** use the
+compact form without the prefix ("1 minute", "3 hours", "2 days" —
+`msg.next_review_minutes` / `msg.next_review_hours` / `msg.next_review_days`,
+2026-08-24).
 
 ## Routes
 
@@ -408,7 +411,10 @@ today" message.
   splits the surface form. Multi-token selections saved from the web text
   selection feature (e.g. "got even with me" saved under the canonical "to get
   even with someone") are merged into atomic tokens and highlighted from the
-  per-instance surface forms.
+  per-instance surface forms. The highlighted keyword gets a **text
+  background** for notability, matching the rest of the app (web:
+  `bg-primary/15` + ring in `token-span.tsx`; mobile: `bg-primary/20` in all
+  `TokenizedText` render paths, parity added 2026-08-24).
 - A text-action menu (copy / speak / AI explain / translate) on the context.
 - Source attribution (video/book title + localized date).
 - SRS info line: `{interval}d` (or "new") and reviewed count.
@@ -490,6 +496,10 @@ today" message.
 
 - Four buttons: Again (red), Hard (orange), Good (green), Easy (blue), each
   with a hint.
+- **Buttons appear only after the card back is revealed** — never while the
+  front is showing. Recall mode reveals via Show Definition; test mode reveals
+  after the final question is answered. (Web gates on `showDefinition`; mobile
+  gates on the back being shown, parity added 2026-08-24.)
 - After a rating: `ts-fsrs` updates the card's memory state, the card leaves
   the due queue, and a colored toast offers Undo for 3 seconds.
 - Undo restores the card's previous scheduling state (memory state and step),
