@@ -37,7 +37,7 @@ translationSplit: number; // 0–1, fraction of the row given to the L2 column
 
 - Default `0.6` in `DISPLAY_DEFAULTS`, which reproduces the legacy 3:2 `flex-[3]`/`flex-[2]` split.
 - `createSettingsV2()` / `normalizeSettingsV2()` carry it automatically, so older/localStorage/cloud blobs get the default with no migration.
-- Persisted through the existing `updateDisplay({ translationSplit })` path (localStorage immediately + debounced cloud sync). Both web and mobile share the type but only web renders the splitter.
+- Persisted through the existing `updateDisplay({ translationSplit })` path (localStorage immediately + debounced cloud sync). Both web and mobile share the type; web renders the splitter in the web readers (SPEC-078) and mobile renders it in the mobile reader (SPEC-082 Task 3).
 
 ### 4.2 The handle
 
