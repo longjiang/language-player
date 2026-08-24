@@ -275,6 +275,17 @@ Today (single source of truth, `apps/mobile/lib/ruby-layout.ts` →
   inside its span box; the pitch math (≥ base glyph body + reading glyph body)
   makes it fit.
 
+### Base font / CJK glyphs (2026-08-24)
+
+The base text uses the **system font**, and each base + reading run is tagged
+with the L2 BCP-47 language (`kCTLanguageAttributeName`), so Core Text's CJK
+fallback picks the correct script font and glyph variants (spec: SPEC-088).
+`glyphFontFamily` is no longer forced on the base — forcing Hiragino for ja
+grew the line pitch (45 vs the 39 pin) and broke consistent spacing across
+scripts; the system font's tight, uniform metrics keep every script on the
+pin, and the language tag renders the correct simplified/traditional/Japanese/
+Korean forms.
+
 **Verification logs** (keep these; they are the audit trail):
 
 - JS: `RUBY-PITCH` (one-shot per layout; global logger) — every input plus
