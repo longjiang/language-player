@@ -58,6 +58,17 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 
 `zh, en, ja, ko, fr, de, es, vi, ru, ar, tr, it, hi, yue, th, id, nl, he, pt`
 
+> **Note — tokenizer test screen layout (2026-08-23):** the mobile
+> *Tokenizer Test* screen (`apps/mobile/app/(tabs)/(me)/tokenizer-test.tsx`)
+> shows one language per line with a **curated first-order** for the
+> ruby-bearing scripts (`zh, ja, ko, ru, ar, yue, hi`) followed by the rest
+> of `POPULAR_L2S` in its original order. It has its own **translation
+> toggle** wired to the shared Display setting (`display.translation`); when
+> on, each card renders the L2 text + its L1 translation exactly like the
+> reader (stacked on narrow screens, side-by-side on md+). `POPULAR_L2S`
+> itself is not reordered — the coverage table below and every language
+> picker still use the ADR-0030 order.
+
 | `POPULAR_L2S` | Test case |
 |---|---|
 | `zh` | TC-03 / TC-04 |
