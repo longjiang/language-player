@@ -308,11 +308,6 @@ export function ReaderPanel({
           onLocationChange={onLocationChange}
           onLemmatize={onLemmatize}
           onPageTranslate={onPageTranslate}
-          header={
-            <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-              <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
-            </div>
-          }
           contentClassName="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
             [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
             [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
