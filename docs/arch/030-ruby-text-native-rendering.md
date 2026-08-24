@@ -79,15 +79,15 @@ measured, and replaced by the native view of the same size.
   real bounds exist (`hasLaidOutText`).
 - Taps are mapped from `UITextView` input geometry back to run/token ids.
 - **Line grid (translation baseline alignment)**: the paragraph measures its
-  own base-text line grid on an **in-memory TextKit 1 replica** of the exact
+  own base-text line grid on an **in-memory TextKit 2 replica** of the exact
   live layout (same attributed string, same pinned paragraph style, same
-  container width) — the live view is TextKit 1, so the replica's fragment
-  boxes and base baselines ARE the rendered geometry. Per line it reports
-  `y`/`height` (fragment rect) and `ascender` (base baseline offset from the
-  line top = the line's last glyph origin; annotation glyphs, when the engine
-  emits them, precede the base glyphs, so max(first, last) is the base
-  baseline). The grid goes to JS through `onLineGrid` and drives the reader's
-  baseline-aligned translation column. The Android paragraph (`RubyTextParagraphView.kt`)
+  container width) — the live view is TextKit 2 (`textLayoutManager` present,
+  confirmed 2026-08-23), so the replica's fragment boxes and base baselines
+  ARE the rendered geometry. Per line it reports `y`/`height` (fragment rect)
+  and `ascender` (base baseline offset from the line top =
+  `textLineFragments.first!.glyphOrigin.y`, the base run's origin). The grid
+  goes to JS through `onLineGrid` and drives the reader's baseline-aligned
+  translation column. The Android paragraph (`RubyTextParagraphView.kt`)
   reports the same shape straight from its live `TextView` layout
   (`onLayoutChanged`). Never touches the live view's layout manager
   ([incident](#the-2026-08-16-incident-readings-silently-stop-painting-in-debug)).
@@ -264,9 +264,13 @@ Today (single source of truth, `apps/mobile/lib/ruby-layout.ts` →
 - The native paragraph pins `min = max = linePitch`; the JS measuring text,
   the plain/loading fallback, and the line grid all use the same `linePitch`
   (no pin/grid divergence — `gridLineHeight` == the pin).
-- The line grid is measured on the **TextKit 1 replica** (live engine), not a
-  TextKit 2 layout — the two engines size ruby lines differently, and every
-  TextKit-2-derived grid drifted the translation column 2–5 px per line.
+- The line grid is measured on the **TextKit 2 replica** — the live engine
+  (confirmed `textKit="2"` 2026-08-23). Earlier tuning used a TextKit 2
+  in-memory measurement while the code was being switched to a TextKit 1
+  replica; both must match the live view, which is TextKit 2. Japanese
+  word-level annotations grew lines (ja ~37 vs zh ~29 at the same settings);
+  per-kanji Japanese furigana (`buildRuby`, 2026-08-23) equalizes the
+  annotation size across scripts so the engine sizes every line the same.
 - The Android paragraph gets the same `lineHeight` and draws the reading
   inside its span box; the pitch math (≥ base glyph body + reading glyph body)
   makes it fit.
@@ -275,22 +279,19 @@ Today (single source of truth, `apps/mobile/lib/ruby-layout.ts` →
 
 - JS: `RUBY-PITCH` (one-shot per layout; global logger) — every input plus
   the pinned `paragraphLineHeight`/`gridLineHeight`.
-- iOS native: `line-grid-tk1` (per-line y/height/ascender of the replica),
+- iOS native: `line-grid-tk2` (per-line y/height/ascender of the replica),
   `ruby-fit` (line 0: fragment top/height vs base baseline vs reading
-  top/bottom, `readingFitsInBox`, and the with-ruby vs ruby-free H/B deltas —
-  `readingFitsInBox=0` is the evidence if readings ever overlap again).
-- Diagnostics dict: `tk1Line0` (same numbers via
+  top/bottom, overlap, and the with-ruby vs ruby-free H/B deltas — this is
+  the evidence if readings ever overlap or a line grows out of the pin).
+- Diagnostics dict: `line0` (same numbers via
   `getParagraphDiagnosticsForTag`).
 - Android native: `line-grid-android` (its own live layout).
-- **Furigana↔base gap (tuned 2026-08-22):** the iOS ruby paragraph rendered the
-  furigana flush on the base (tighter than web's browser `<ruby>`). Root cause:
-  the base run's `baselineOffset` (`rubyBaseTextOffset`) was `+2`, which raises
-  the base toward the Core Text ruby annotation and closes the gap. Since the
-  annotation is anchored to the base's original metrics (it doesn't follow
-  `baselineOffset`), setting `rubyBaseTextOffset` to `0` leaves the base at its
-  natural position and opens the gap to the web-browser default. Applies to
-  `RubyTextParagraphView.swift` and `RubyTextView.swift`. The `diagnostics` dict
-  reports base/reading ascender/descender/capHeight, `lineHeight`, and
+- **Furigana↔base gap (tuned 2026-08-23):** the readings rendered ~2px too high
+  (gap too wide) on zh/yue/ru/ar. `rubyBaseTextOffset` is now `+2`, which
+  raises the base toward the Core Text ruby annotation and closes the gap
+  (previously `0` — tuned 2026-08-22 to the natural gap). Applies to
+  `RubyTextParagraphView.swift` and `RubyTextView.swift`. The `diagnostics`
+  dict reports base/reading ascender/descender/capHeight, `lineHeight`, and
   `rubyBaseTextOffset` so the gap can be verified from the Metro log.
 
 ---
