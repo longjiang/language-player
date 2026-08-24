@@ -132,8 +132,8 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
             baseline-aligns with the word text at the bottom of the segment columns. */}
         <View
           className={`flex-row items-end${
-            NATIVE_RUBY_ACTIVE && !isBlanked && (isSearchHighlight || isSavedWord)
-              ? ` ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim()
+            NATIVE_RUBY_ACTIVE && !isBlanked && (isHighlighted || isSearchHighlight || isSavedWord)
+              ? ` ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim()
               : ''
           }`}
         >
@@ -159,7 +159,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
                   ? 'text-foreground'
                   : isTokenSelected
                     ? highlightTextClass
-                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
               }
               fallbackReadingClassName={isTokenSelected ? highlightTextClass : (textColor ?? 'text-muted-foreground')}
             />
@@ -282,7 +282,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
               ? 'text-foreground'
                 : isTokenSelected
                 ? highlightTextClass
-                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
           }
           fallbackReadingClassName={isTokenSelected ? highlightTextClass : (textColor ?? 'text-muted-foreground')}
         />
@@ -523,7 +523,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
       {isBlanked ? (
         <Text className={textColor}>▯</Text>
       ) : (
-        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
       {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}

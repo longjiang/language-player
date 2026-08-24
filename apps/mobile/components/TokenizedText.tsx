@@ -1468,7 +1468,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     bold: (!isBlanked && (isHighlighted || isBoldFormat)) || textStyle.fontWeight === 'bold',
                     underline: !isBlanked && isLink,
                     italic: !isBlanked && isItalicFormat,
-                    ...(isSearchHighlight
+                    ...(isHighlighted || isSearchHighlight
                       ? { background: rubyColors.primary, backgroundAlpha: 0.2 }
                       : isSavedWord
                         ? { background: MOBILE_RUBY_SAVED_BG, backgroundAlpha: 0.2 }
