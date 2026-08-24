@@ -634,6 +634,19 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             const lower = match.line.toLowerCase();
             return !excludeList.some((x) => lower.includes(x));
           });
+          // Diagnostic: confirm the parsed subs_l2 + matchLineIndex feeding the
+          // player (matches the playback-modal log for the sync-bug trace).
+          log('[subsSearch] fetched', {
+            term: searchTerm,
+            matched: parsed.length,
+            sample: parsed[0]
+              ? {
+                  youtube_id: parsed[0].youtube_id,
+                  matchLineIndex: parsed[0].matchLineIndex,
+                  subsLen: parsed[0].subs_l2.length,
+                }
+              : null,
+          });
         applyVideos(parsed);
         setCurrentIndex(0);
         setLoading(false);
