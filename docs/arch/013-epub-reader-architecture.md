@@ -50,6 +50,8 @@ Every book the user opens gets its own persistent handle on web (an IndexedDB re
 
 On screens narrower than 1024px, the sidebar collapses to a top bar that expands on tap.
 
+**Close via the nav menu (web + mobile):** when a book is already open in the reader, selecting `Reading → ePub Reader` from the nav menu closes it and returns to the bookshelf — an alternative to the reader's own close button and the escape hatch when the reader's chrome is hidden. The reader screen registers its close handler on the `ReaderChrome` context (`registerCloseReader`); the Header / nav drawer / NavBar call `requestCloseReader` instead of a no-op same-route navigation when the epub nav item is tapped while already on the epub screen. Nested immersive-overlay readers inherit the registered handler so the reader's overlay chrome can close it too.
+
 ### Mobile Layout
 
 ```

@@ -438,7 +438,6 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.subscription_expired` | Your subscription has expired. |
 | `msg.subscription_explanation` | Currently, monthly and annual subscriptions are not supported as in-app purchase because our server can only handle one-time payments from Apple. To continue the purchase, please choose the Lifetime Plan. |
 | `msg.swap_languages` | Swap languages |
-| `msg.tap_any_word_to_lookup` | Tap any word to look it up |
 | `msg.time_spent_learning` | Spent learning {language} in Language Player |
 | `msg.today` | Today |
 | `msg.tokenizer_desc` | Tokenization + lemmatization for {l2}. See how text breaks down into individual words and their base forms. |

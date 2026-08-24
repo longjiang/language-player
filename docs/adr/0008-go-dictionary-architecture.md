@@ -425,7 +425,6 @@ The offline dictionary UI introduces ~15 new translation keys. All follow the ex
 | `action.hide` | Hide | Hide button during background download |
 | `action.more` | More | "Learn more" link in L1≠en callout |
 | `label.saved` | Saved | Download status indicator ("Downloaded Jul 15") |
-| `msg.tap_any_word_to_lookup` | Tap any word to see its definition | Used in `msg.dictionary_ready_desc` for consistency |
 | `{$lang.xx}` | (language name) | Language name display — already in CSV for 207 languages |
 
 ### Key Naming Conventions
