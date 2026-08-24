@@ -19,23 +19,25 @@ const { log: appLog } = bootLogger;
  * imports the language's sample chunk. Same lazy-load contract as the web
  * tokenizer page.
  */
-export function TokenizerLanguageCard({ code, height }: { code: string; height: number }) {
+export function TokenizerLanguageCard({ code, height, longSample }: { code: string; height: number; longSample: boolean }) {
   const { l1Lang } = useLanguage();
   const { display } = useSettingsContext();
   const { isMd } = useResponsive();
   const t = useT();
 
-  const [longSample, setLongSample] = useState<{ text: string; title: string } | null>(null);
+  const [sample, setSample] = useState<{ text: string; title: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    appLog(`tokenizer card loading l2=${code}`);
+    appLog(`tokenizer card loading l2=${code} long=${longSample}`);
     loadSampleContent(code)
       .then((c) => {
         if (cancelled) return;
-        const text = c.long ?? c.short;
-        appLog(`tokenizer card sample loaded l2=${code} chars=${text.length}`);
-        setLongSample({ text, title: c.title });
+        // Short by default; long sample when the toggle is on (falls back to
+        // the short paragraph when the language has no long sample authored).
+        const text = longSample ? (c.long ?? c.short) : c.short;
+        appLog(`tokenizer card sample loaded l2=${code} long=${longSample} chars=${text.length}`);
+        setSample({ text, title: c.title });
       })
       .catch(() => {
         logwarn(`tokenizer card sample load failed l2=${code}`);
@@ -43,15 +45,15 @@ export function TokenizerLanguageCard({ code, height }: { code: string; height: 
     return () => {
       cancelled = true;
     };
-  }, [code]);
+  }, [code, longSample]);
 
-  const sampleMarkdown = longSample?.text ?? '';
+  const sampleMarkdown = sample?.text ?? '';
   const samplePagination = useEpubPagination({
     text: sampleMarkdown,
     l1Code: l1Lang.code,
     l2Code: code,
     showTranslation: display.translation,
-    resetKey: `${code}:${longSample ? 'long' : 'loading'}`,
+    resetKey: `${code}:${longSample ? 'long' : 'short'}:${sample ? 'ready' : 'loading'}`,
   });
 
   return (
@@ -62,7 +64,7 @@ export function TokenizerLanguageCard({ code, height }: { code: string; height: 
         </Text>
       </View>
       <View className="flex-1">
-        {longSample ? (
+        {sample ? (
           <PaginatedReader
             blocks={samplePagination.blocks}
             visibleBlocks={samplePagination.visibleBlocks}
