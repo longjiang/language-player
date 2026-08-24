@@ -401,7 +401,17 @@ export function SubsSearchPlaybackModal({
                   // grow space), so the band overflows the card's
                   // overflow-hidden clip and the subtitle is invisible.
                   'min-h-32'
-                : 'min-h-0 flex-1'
+                : // Narrow multiline: keep this column content-sized (NOT
+                  // `min-h-0 flex-1`) for the same reason as the single-line
+                  // band — the content-sized card gives a flex-1 child no grow
+                  // space, so it collapses to 0 and the fixed-height transcript
+                  // wrapper below overflows the card's overflow-hidden clip,
+                  // making the multiline subs invisible on narrow screens
+                  // (iPad portrait). Content-sized, the wrapper's explicit
+                  // height (min(40% of the screen, 320)) makes the card grow
+                  // to include the panel — multiline subs below the video,
+                  // matching apps/web.
+                  'min-h-0'
           }
         >
           {subtitleMode === 'singleline' ? (
@@ -428,6 +438,18 @@ export function SubsSearchPlaybackModal({
                   : { height: Math.min(screenHeight * 0.4, 320) }
               }
               className={isWide && subtitleMode === 'multiline' ? 'flex-1' : ''}
+              onLayout={(e) => {
+                // Diagnostic: confirms the narrow multiline panel has a real
+                // (non-collapsed) height inside the modal card (SPEC-082 Task
+                // 15 — multiline subs below the video on narrow screens).
+                log('[subsSearch] multiline panel layout', {
+                  youtubeId: currentVideo?.youtube_id,
+                  isWide,
+                  width: Math.round(e.nativeEvent.layout.width),
+                  height: Math.round(e.nativeEvent.layout.height),
+                  requestedHeight: isWide && subtitleMode === 'multiline' ? undefined : Math.min(screenHeight * 0.4, 320),
+                });
+              }}
             >
               <TranscriptQueuePanel
                 key={subtitleMode}
