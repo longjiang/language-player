@@ -3,10 +3,83 @@
 ## Metadata
 - **Arch ID**: ARCH-011
 - **Feature**: Settings storage, mutation, and synchronization
-- **Status**: draft
+- **Status**: as-built (web + mobile); the V2 design below is implemented —
+  see [Current Implementation](#current-implementation-web--mobile-2026-08-24)
+  and the
+  [known issue](#known-issue-settings_v2-resets-to-default-debug-in-progress-2026-08-24)
+  at the top of this page
 - **Created**: 2026-07-17
+- **Last updated**: 2026-08-24
 - **ROADMAP Phase**: Cross-cutting (all phases)
-- **Scope**: Classic (legacy), GO (reference), Next.js Web (active)
+- **Scope**: Classic (legacy, `settings_classic` only), GO (reference),
+  Next.js Web (active, `settings_v2`), React Native Mobile (active,
+  `settings_v2`)
+
+---
+
+## ⚠️ Known Issue — settings_v2 resets to default (debug in progress, 2026-08-24)
+
+**Symptom:** settings intermittently reset to defaults ("from time to time")
+across devices sharing the `settings_v2` column (web + mobile).
+
+**Ruled out so far:**
+- **Classic Nuxt** — only reads/writes `settings_classic`; never touches
+  `settings_v2` (verified: `store/settings.js` + server `upsert_settings`
+  `coalesce` keeps the columns independent). Classic's own reset bug is
+  isolated to classic.
+- **Chrome extension** — device-local `chrome.storage.local`, no backend sync.
+
+**Root cause (first pass, fixed):** the confirmed production root cause
+(commit `32154e91`, 2026-08-18) was `createSettingsV2()` stamping fresh
+defaults with `ts = now`, which outranked the user's saved copy in LWW and,
+via the debounced PUT / outbox, destroyed the cloud row. The fix made fresh
+defaults carry an **epoch ts** so they lose LWW. The same failure mode was
+still reachable through **persist-before-hydration** vectors and was closed in
+commit `c90214e8` (2026-08-24): `persist()` drops+logs writes while the
+in-memory state is pristine defaults, Settings → Display gates `ensureL2` on
+`cloudHydrated`, and mobile's `update*` setters no longer build patches from
+stale render closures.
+
+**Diagnostics shipped (2026-08-24):**
+- `ab8efbb9` — durable `lp_settings_diag` ring buffer
+  (`packages/utils/src/settings-diagnostics.ts`) recording every settings
+  event (local load, hydrate apply/skip, persist-skip, PUT/outbox, user-change
+  reset, `clearUserData` wipe). Deliberately NOT wiped on logout. Web:
+  reload reads `[settings] recent diagnostics:`, or run
+  `window.__settingsDiag()` in DevTools. Mobile: boot log via Metro
+  (SecureStore-backed).
+- `ae5fa87e` (monorepo) + `9080cea` (python server repo) — stable per-install
+  device id (`lp_device_id`) sent with every settings write, and server-side
+  **write-attribution logging** on both write paths.
+
+### Debug protocol — what to do when the reset happens next
+
+1. **Server logs first (authoritative cross-device view).** Both settings_v2
+   write paths now log attribution:
+   - web → `PUT /user-settings`: `[user_data_columns] PUT /user-settings ok
+     user=… device=… ts=… settings_v2.ts=… dailyNewLimit=… dayStartHour=…`
+     (`routes/user_data_columns.py`)
+   - mobile → `/sync/push` outbox: `[sync] settings upsert user=… device=…
+     ts=… settings_v2.ts=… dailyNewLimit=… dayStartHour=…` (`utils_sync.py`
+     `_h_settings`)
+   Look for the last few writes before the reset. A **defaults push** shows
+   `dailyNewLimit=20 dayStartHour=4` — that line names the `device=` that
+   wrote it and the client `ts=` that beat the saved copy in LWW.
+2. **Correlate with the client ring buffer** on the affected device: boot log
+   `[settings] recent diagnostics:` or `window.__settingsDiag()` (web).
+   `hydrate APPLY cloud … review: {dailyNewLimit:20,…}` means the cloud row was
+   already defaults when it arrived; `persist SKIPPED` lines mark the
+   protected window from `c90214e8`.
+3. **If the culprit is still unexplained**, capture: the full
+   `[settings]`/`[sync]` console lines around the reset, the server log window,
+   and which platform(s)/device(s) were in use. The next agent should read
+   this section plus the implemented hooks below.
+
+**Note:** the diagnostics require the updated builds — web/mobile clients
+must be rebuilt/redeployed (device id + ring buffer) and the Flask server
+restarted (write-attribution logs) for the lines above to appear.
+
+---
 
 ## Overview
 
@@ -90,6 +163,12 @@ This document analyzes how settings are stored, mutated, and synced across all t
 ---
 
 ## Current Web App State (Problem Statement)
+
+> **Historical (2026-07, pre-consolidation).** This section described the
+> three independent settings mechanisms that the V2 design below replaced.
+> As of 2026-08-24 the unified `useSettings()` hook/provider is implemented on
+> both web and mobile — see [Current Implementation](#current-implementation-web--mobile-2026-08-24)
+> for the as-built state.
 
 The Next.js Web app currently has **three independent settings mechanisms** with no shared architecture:
 
@@ -175,6 +254,10 @@ The Web middleware lists `'settings'` in `AUTH_REQUIRED_SEGMENTS`. Guest users c
 
 ## Migration Path (Classic → Web)
 
+> **Historical.** The migration described here was completed: the unified
+> `useSettings()` hook now exists on both platforms (see
+> [Current Implementation](#current-implementation-web--mobile-2026-08-24)).
+
 When migrating settings from Classic to the Next.js Web app:
 
 1. **Unify storage** — Create a single `useSettings()` hook/provider with:
@@ -191,6 +274,54 @@ When migrating settings from Classic to the Next.js Web app:
 5. **Port missing settings** — Prioritize: `darkMode`, `quizMode`, `showQuickGloss`, `autoPronounce`, `zoomLevel`
 
 6. **Consider guest access** — Either allow settings without auth (store in localStorage only) or clearly communicate why auth is required
+
+---
+
+## Current Implementation (web + mobile, 2026-08-24)
+
+The V2 design below is implemented and is the as-built architecture. The
+details that follow ("V2 Data Structure Design", "Sync Strategy", "Conflict
+Resolution", "Storage Layout") describe the design; this section records what
+is actually in the tree.
+
+**Storage & sync, per platform:**
+
+| | Web | Mobile |
+|---|---|---|
+| Local store | `localStorage` key `lp_settings` | SecureStore key `lp_settings` |
+| Hook | `apps/web/src/hooks/use-settings.ts` (context: `providers/settings-provider.tsx`) | `apps/mobile/hooks/use-settings.ts` (context: `contexts/SettingsContext.tsx`) |
+| Cloud hydrate | `GET /user-settings` → `settings_v2`, ts-based LWW (`cloud.ts > local.ts` applies) | same, plus a pull-merge bridge from the sync engine (`subscribeEntity('settings')`) |
+| Cloud write | Debounced 3s `PUT /user-settings` with `settings_v2` + `updatedAt` | Debounced 3s `enqueueSyncOp` (`settings`/`v2` outbox op) → `/sync/push` |
+| Server | `routes/user_data_columns.py` `settings_put` | `utils_sync.py` `_h_settings` |
+| DB | `user_settings.settings_v2` (jsonb), `updated_at` bigint — server-side LWW: `where excluded.updated_at >= public.user_settings.updated_at` | same |
+
+**Canonical types/factory:** `packages/shared/src/types.ts` — `SettingsV2`,
+section defaults (`*_DEFAULTS`), `createSettingsV2()` (stamps an **epoch ts** so
+fresh defaults lose LWW — commit `32154e91`), `normalizeSettingsV2()`.
+
+**Anti-reset guards (commit `c90214e8`, 2026-08-24):**
+- `persist()` drops (and logs) any write while the in-memory state is still
+  pristine defaults (`hydratedFromSource` ref) — a fresh-ts defaults blob would
+  otherwise outrank the saved copy in LWW and destroy the cloud row.
+- Settings → Display gates `ensureL2` on `cloudHydrated` (both platforms).
+- Mobile `update*` setters build patches from the functional updater's `prev`,
+  not a stale render closure.
+
+**Diagnostics (2026-08-24):**
+- `lp_settings_diag` ring buffer (`packages/utils/src/settings-diagnostics.ts`,
+  commit `ab8efbb9`) — every settings event, survives reloads and logout wipes.
+  Web: `[settings] recent diagnostics:` boot log or `window.__settingsDiag()`.
+- Per-install `lp_device_id` + server write-attribution logs (commit
+  `ae5fa87e` + python `9080cea`). See the
+  [Known Issue](#known-issue-settings_v2-resets-to-default-debug-in-progress-2026-08-24)
+  section at the top for the debug protocol.
+
+**Not implemented (differences from the V2 design below):**
+- Per-section `ts` conflict resolution — still a single top-level `ts`.
+- Cross-tab `storage`-event propagation is not wired (single-tab per device).
+- `darkMode`/`theme` lives in `display.theme` on both apps; the V2 design
+  sketched `global.theme` — the shipped `DisplaySettings.theme` is the
+  canonical location.
 
 ---
 
@@ -419,15 +550,20 @@ However, this adds complexity. **Start simple with a single `ts`.** If merge con
 
 ### Storage Layout Summary
 
+> **Updated 2026-08-24:** settings live in Supabase `public.user_settings`
+> (via the Flask row API), not Directus `user_data`.
+
 | What | Where | Key / Field |
 |---|---|---|
-| **Settings (v2)** | `localStorage` | `lp_settings` |
-| **Settings (v2)** | Directus `user_data` | `settings_v2` (JSON text — **new column**) |
-| **Settings (Classic)** | Directus `user_data` | `settings` (JSON text — **unchanged, Classic-only**) |
-| **SRS Cards** | `localStorage` | `zthSrsProgress` (unchanged) |
-| **SRS Cards** | Directus `user_data` | `srs_progress` (unchanged) |
-| **Saved Words** | `localStorage` | `zthSavedWords` (unchanged) |
-| **Saved Words** | Directus `user_data` | `saved_words` (unchanged) |
+| **Settings (v2)** | web: `localStorage` / mobile: SecureStore | `lp_settings` |
+| **Settings (v2)** | Supabase `user_settings` | `settings_v2` (jsonb) + `updated_at` (ms, server LWW) |
+| **Settings (Classic)** | Supabase `user_settings` | `settings_classic` (jsonb — unchanged, Classic-only) |
+| **SRS Cards** | web: `localStorage` / mobile: SecureStore | `zthSrsProgress` |
+| **SRS Cards** | Supabase | `srs_progress` (unchanged) |
+| **Saved Words** | web: `localStorage` / mobile: SecureStore | `zthSavedWords` |
+| **Saved Words** | Supabase | `saved_words` (unchanged) |
+| **Settings diagnostics** | web: `localStorage` / mobile: SecureStore | `lp_settings_diag` (ring buffer, never wiped) |
+| **Device id** | web: `localStorage` / mobile: SecureStore | `lp_device_id` (write attribution, never wiped) |
 | **Old keys (deprecated)** | `localStorage` | `lp_show_translation`, `lp_use_traditional`, `lp_show_phonetics`, `zthSpeechSettings` |
 
 ### Backward Compatibility with Classic (Production)
@@ -457,24 +593,38 @@ When Classic is eventually retired, the `settings` column is dropped and `settin
 
 ### File Layout
 
+> **Implemented (2026-08-24).** The tree below matches the shipped layout; the
+> `NEW`/`REMOVE`/`SIMPLIFY` annotations are the original migration plan and are
+> now done (web) or mirrored in mobile.
+
 ```
 packages/shared/src/
 ├── types.ts           ← GlobalSettings, L2Settings, SettingsV2,
 │                         all _DEFAULTS constants, createSettingsV2() [CANONICAL]
+├── settings.test.ts   ← LWW epoch-ts + normalize tests
+
+packages/utils/src/
+├── settings-diagnostics.ts  ← lp_settings_diag ring buffer + getOrCreateDeviceId
+│                              (commit ab8efbb9 / ae5fa87e)
+
+packages/api-client/src/
+├── user-data-columns.ts     ← getUserSettings / putUserSettings (settings_v2 row API)
 
 apps/web/src/
 ├── hooks/
-│   └── use-settings.ts     ← NEW: unified settings hook/provider
+│   └── use-settings.ts     ← unified settings hook (implemented)
 ├── lib/
-│   └── settings.ts         ← REMOVE (replaced by use-settings.ts)
-├── hooks/
-│   └── use-speech.ts       ← SIMPLIFY: read voiceURI/rate from useSettings().l2.speech
-│   └── use-srs.ts          ← SIMPLIFY: read dailyNewLimit from useSettings().global.review,
-│                              remove embedded settings field from SRS store
+│   ├── settings.ts         ← REMOVED (replaced by use-settings.ts)
+│   └── user-data-wipe.ts   ← logout wipe; records a diag event (keeps lp_settings_diag)
 ├── providers/
-│   └── settings-provider.tsx  ← NEW: wraps useSettings() in React context
+│   └── settings-provider.tsx  ← wraps useSettings() in React context (implemented)
 └── app/[l1]/[l2]/
-    └── layout.tsx          ← ADD: <SettingsProvider> to provider tree
+    └── layout.tsx          ← <SettingsProvider> in provider tree (implemented)
+
+apps/mobile/
+├── hooks/use-settings.ts       ← mobile twin of the web hook (SecureStore + outbox)
+├── contexts/SettingsContext.tsx ← SettingsProvider / useSettingsContext
+└── lib/user-data-wipe.ts       ← logout wipe (keeps lp_settings_diag / lp_device_id)
 ```
 
 ---
