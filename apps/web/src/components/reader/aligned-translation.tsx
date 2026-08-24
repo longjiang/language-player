@@ -357,24 +357,36 @@ export function AlignedTranslation({
         probeRange.selectNodeContents(probe);
         const rects = Array.from(probeRange.getClientRects());
         log(`[AlignedTranslation] measure:probe tag="${tag}" fontFamily="${rcs.fontFamily}" trSize=${Math.round(trSize * 10) / 10} lh=${Math.round(lh2r)} probeRects=${rects.length} probeWidth=${Math.round(probe.getBoundingClientRect().width)} probeTextLen=${node.length}`);
-        let start = 0;
-        for (const rect of rects) {
-          // Last offset whose char still sits on this line.
-          let lo = start;
-          let hi = node.length;
-          while (lo < hi) {
-            const mid = (lo + hi + 1) >> 1;
-            if (mid >= node.length || charTop(node, mid) < rect.bottom - 0.5) lo = mid;
-            else hi = mid - 1;
-          }
+        // Slice by grouping consecutive chars whose computed top is the same
+        // VISUAL line. The previous implementation binary-searched each
+        // getClientRects() rect and used `rect.bottom` as the line boundary,
+        // but the first rect's bottom spans TWO visual lines for CJK text (a
+        // getClientRects() quirk), so two lines merged into slice 0 — the
+        // first rendered line was ~2× the column width and clipped at the
+        // right edge (only line 0 was affected, since later rects happened to
+        // be one line each). Probing each char's own top is independent of the
+        // rect geometry and gives exactly one slice per line.
+        const pushLine = (s: number, e: number) => {
           // Trim leading/trailing whitespace (incl. newlines) from the slice.
-          let s = start;
-          let e = lo;
           while (s < e && /\s/.test(text[s]!)) s++;
           while (e > s && /\s/.test(text[e - 1]!)) e--;
           if (e > s) lines.push({ start: s, end: e });
-          start = lo;
+        };
+        let lineStart = 0;
+        let lineTop: number | null = null;
+        for (let i = 0; i < node.length; i++) {
+          const t = charTop(node, i);
+          if (lineTop === null) {
+            lineTop = t;
+          } else if (Math.abs(t - lineTop) > 1) {
+            // The char moved to a new visual line (its top jumped by ~one
+            // line box). Close the current line and start a new one.
+            pushLine(lineStart, i);
+            lineStart = i;
+            lineTop = t;
+          }
         }
+        pushLine(lineStart, node.length);
         log(`[AlignedTranslation] measure:slices tag="${tag}" count=${lines.length} ${lines.map((l, i) => `${i}:${l.start}-${l.end}:"${text.slice(l.start, l.end).slice(0, 18)}"`).join(' | ')}`);
       } else {
         log(`[AlignedTranslation] measure:slices tag="${tag}" probeEmptyOrNoText`);
