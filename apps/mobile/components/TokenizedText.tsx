@@ -1570,6 +1570,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     gridLineHeight={gridLineHeight}
                     readingSize={readingSize}
                     fontFamily={debugFontFamily ?? textStyle.fontFamily ?? null}
+                    language={glyphLang}
                     rubyFontFamily={debugRubyFontFamily ?? null}
                     diagnosticMetrics={debugRubyMetrics}
                     isRtl={isRtl}

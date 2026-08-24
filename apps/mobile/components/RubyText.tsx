@@ -266,6 +266,9 @@ export interface RubyTextParagraphProps {
   isRtl: boolean;
   textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
+  /** BCP-47 language of the base text — tags the runs so the system font's CJK
+   *  fallback picks the correct script font + glyph variants. */
+  language?: string | null;
   /** Optional separate font for READINGS only (furigana/kana). */
   rubyFontFamily?: string | null;
   /** Paint base (yellow) vs reading (cyan) backgrounds — SPEC-087 diagnostic. */
@@ -306,6 +309,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     isRtl,
     textAlign = 'left',
     fontFamily,
+    language,
     rubyFontFamily,
     diagnosticMetrics,
     fontWeight,
@@ -489,6 +493,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               isRtl={isRtl}
               textAlign={textAlign}
               fontFamily={fontFamily ?? null}
+              language={language ?? null}
               rubyFontFamily={rubyFontFamily ?? null}
               diagnosticMetrics={diagnosticMetrics}
               onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
