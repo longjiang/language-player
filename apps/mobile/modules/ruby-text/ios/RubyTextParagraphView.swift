@@ -246,17 +246,29 @@ internal final class RubyTextParagraphView: ExpoView {
     let range = contentStorage.documentRange
     layoutManager.ensureLayout(for: range)
     var grid: [[String: Double]] = []
+    // Enumerate per TEXT LINE (fragment.textLineFragments), not per layout
+    // fragment: a layout fragment is a whole paragraph, so a multi-line
+    // paragraph previously collapsed into ONE grid entry (h = the whole
+    // paragraph) and the reader's per-line translation baseline alignment
+    // only saw a single "line". Each text line fragment is one visual line.
     layoutManager.enumerateTextLayoutFragments(from: range.location, options: [.ensuresLayout]) { fragment in
-      let frame = fragment.layoutFragmentFrame
-      var ascender = Double(frame.size.height)
-      if let line = fragment.textLineFragments.first {
-        ascender = Double(line.glyphOrigin.y)
+      // Enumerate per TEXT LINE (fragment.textLineFragments), not per layout
+      // fragment: a layout fragment is a whole paragraph, so a multi-line
+      // paragraph previously collapsed into ONE grid entry. Per line:
+      //   y      = fragment origin + typographicBounds.origin.y (stacks lines)
+      //   height = typographicBounds.size.height (≈ the line pitch)
+      //   ascender = glyphOrigin.y — the base baseline offset from the line's
+      //              own top (line-fragment coordinate system), which is what
+      //              the reader's translation column baseline-aligns to.
+      let fragOriginY = fragment.layoutFragmentFrame.origin.y
+      for line in fragment.textLineFragments {
+        let tb = line.typographicBounds
+        grid.append([
+          "y": Double(fragOriginY + tb.origin.y),
+          "height": Double(tb.size.height),
+          "ascender": Double(line.glyphOrigin.y),
+        ])
       }
-      grid.append([
-        "y": Double(frame.origin.y),
-        "height": Double(frame.size.height),
-        "ascender": ascender,
-      ])
       return true
     }
     return grid
