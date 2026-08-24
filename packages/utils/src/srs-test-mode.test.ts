@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeTestChoice, parseSrsQuestionResponse } from './srs-test-mode';
+import {
+  isObviousPronunciationWrong,
+  normalizeTestChoice,
+  parseSrsQuestionResponse,
+  validateSrsPronunciationChoices,
+} from './srs-test-mode';
 
 describe('parseSrsQuestionResponse', () => {
   const json = JSON.stringify({
@@ -27,5 +32,49 @@ describe('parseSrsQuestionResponse', () => {
 
   it('normalizes internal whitespace when deduplicating choices', () => {
     expect(normalizeTestChoice('  very   good  ')).toBe('very good');
+  });
+});
+
+describe('isObviousPronunciationWrong', () => {
+  it('flags a confounder that appends junk to the correct reading', () => {
+    expect(isObviousPronunciationWrong('つきものぬ', 'つきもの')).toBe(true);
+    expect(isObviousPronunciationWrong('つきものだ', 'つきもの')).toBe(true);
+  });
+
+  it('flags a confounder that truncates the correct reading', () => {
+    expect(isObviousPronunciationWrong('もの', 'つきもの')).toBe(true);
+    expect(isObviousPronunciationWrong('つきも', 'つきもの')).toBe(true);
+  });
+
+  it('accepts real alternative readings that differ from the correct one', () => {
+    // Mixed kana/kanji: kana part つき held constant, only the kanji reading
+    // varies (the user-requested confound style).
+    expect(isObviousPronunciationWrong('つきぶつ', 'つきもの')).toBe(false);
+    expect(isObviousPronunciationWrong('つきもつ', 'つきもの')).toBe(false);
+    expect(isObviousPronunciationWrong('つきもち', 'つきもの')).toBe(false);
+    expect(isObviousPronunciationWrong('つきがみ', 'つきもの')).toBe(false);
+  });
+
+  it('accepts the correct answer itself and empty strings', () => {
+    expect(isObviousPronunciationWrong('つきもの', 'つきもの')).toBe(false);
+    expect(isObviousPronunciationWrong('', 'つきもの')).toBe(false);
+    expect(isObviousPronunciationWrong('つきもの', '')).toBe(false);
+  });
+});
+
+describe('validateSrsPronunciationChoices', () => {
+  it('returns a reason when any confounder is an obvious wrong', () => {
+    const problem = validateSrsPronunciationChoices({
+      correctAnswer: 'つきもの',
+      choices: ['つきもの', 'つきぶつ', 'つきものぬ', 'つきがみ'],
+    });
+    expect(problem).toContain('つきものぬ');
+  });
+
+  it('returns null when every confounder is plausible', () => {
+    expect(validateSrsPronunciationChoices({
+      correctAnswer: 'つきもの',
+      choices: ['つきもの', 'つきぶつ', 'つきもつ', 'つきがみ'],
+    })).toBeNull();
   });
 });
