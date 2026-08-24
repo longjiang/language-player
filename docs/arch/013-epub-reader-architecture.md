@@ -52,6 +52,23 @@ On screens narrower than 1024px, the sidebar collapses to a top bar that expands
 
 **Close via the nav menu (web + mobile):** when a book is already open in the reader, selecting `Reading → ePub Reader` from the nav menu closes it and returns to the bookshelf — an alternative to the reader's own close button and the escape hatch when the reader's chrome is hidden. The reader screen registers its close handler on the `ReaderChrome` context (`registerCloseReader`); the Header / nav drawer / NavBar call `requestCloseReader` instead of a no-op same-route navigation when the epub nav item is tapped while already on the epub screen. Nested immersive-overlay readers inherit the registered handler so the reader's overlay chrome can close it too.
 
+**Navigation rules (mobile) — two intentionally-different behaviors that must coexist:**
+
+- **Cross-nav keep-open (Rule B):** if a book is open and the user navigates away
+  from the epub screen (e.g. to another tab) and returns, the book stays open at
+  its reading position. When the screen stays mounted (tab switch) the open
+  `EpubBookModel` is simply kept; on a fresh mount the screen auto-opens the
+  last-read book (the auto-open effect) so returning "resumes".
+- **Same-route close (Rule A):** tapping the nav `Reading → ePub Reader` while
+  **already on** the epub screen closes the open book and returns to the
+  bookshelf (`requestCloseReader` → the registered close handler). This is a
+  deliberate escape hatch, distinct from cross-nav.
+
+These must not be conflated: a same-route re-tap of the nav item is the *only*
+nav trigger for a close; navigating away and back never closes the book. (The
+epub reader has no "home" breadcrumb/back navigation of its own beyond the
+reader close button and this nav escape hatch.)
+
 ### Mobile Layout
 
 ```

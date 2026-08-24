@@ -20,7 +20,7 @@ import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeCo
 import { X, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { translationLogger } from '@/lib/logger';
+import { translationLogger, log } from '@/lib/logger';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
 /** Persist the reading location this long after the last page turn. Rapid
@@ -176,13 +176,18 @@ export default function EpubReaderScreen() {
   const handleOpenBook = useCallback(async (id: string) => {
     // Ref guard (not just the `openingId` state) so a tap racing the
     // mount-time auto-open can't launch two concurrent opens (web parity).
-    if (openingIdRef.current) return;
+    if (openingIdRef.current) {
+      log('[epub] handleOpenBook ignored — a book is already opening', { id, openingIdRef: openingIdRef.current });
+      return;
+    }
     openingIdRef.current = id;
     setOpeningId(id);
     setLocation(null);
     historyRef.current = [];
+    log('[epub] handleOpenBook start', { id, label: epub.books.find((b) => b.id === id)?.fileName ?? null });
     try {
       const start = await epub.openBook(id, { skipCover: true });
+      log('[epub] handleOpenBook finish', { id, gotStart: Boolean(start) });
       if (start) setLocation(start);
     } finally {
       openingIdRef.current = null;
@@ -202,6 +207,13 @@ export default function EpubReaderScreen() {
     const last = [...epub.books]
       .sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0))
       .find((b) => !b.language || baseCode(b.language) === l2Primary);
+    log('[epub] auto-open (keep book open on return)', {
+      ready: epub.ready,
+      openBookId: epub.openBookId,
+      lastId: last?.id ?? null,
+      lastLabel: last?.fileName ?? null,
+      books: epub.books.length,
+    });
     if (last) void handleOpenBook(last.id);
   }, [epub.ready, epub.books, epub.openBookId, l2Lang.code, handleOpenBook]);
 
@@ -217,6 +229,7 @@ export default function EpubReaderScreen() {
   }, [epub]);
 
   const handleClose = useCallback(async () => {
+    log('[epub] handleClose (book close / return to bookshelf)', { openBookId: epub.openBookId });
     flushSaveLocation(); // persist the final position before the book closes
     setLocation(null);
     historyRef.current = [];

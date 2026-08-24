@@ -115,6 +115,7 @@ export function useEpub(): UseEpubReturn {
   const migratedRef = useRef(false);
 
   const setCurrentModel = useCallback((m: EpubBookModel, id: string, skipCover: boolean, resume: BookLocation | null) => {
+    log('[epub] setCurrentModel', { id, skipCover, hadModel: Boolean(modelRef.current), prevId: openBookIdRef.current });
     modelRef.current?.close().catch(() => {});
     modelRef.current = m;
     openBookIdRef.current = id;
@@ -321,10 +322,14 @@ export function useEpub(): UseEpubReturn {
     // (e.g. the mount-time auto-open racing a manual tap) would run two
     // openEpubBook passes and the losing one's error path kicks the reader
     // back to the bookshelf. Reject the second while one is loading.
-    if (openLoadingRef.current) return null;
+    if (openLoadingRef.current) {
+      log('[epub] openBook rejected — another open in flight', { id, openBookIdRef: openBookIdRef.current });
+      return null;
+    }
     openLoadingRef.current = true;
     setLoading(true);
     setError(null);
+    log('[epub] openBook start', { id });
     try {
       const meta = books.find((b) => b.id === id) ?? (await listEpubs()).find((b) => b.id === id);
       if (!meta) { setError('Book not found'); return null; }
@@ -338,8 +343,10 @@ export function useEpub(): UseEpubReturn {
       setCurrentModel(m, id, skipCover, resume);
       await updateEpubMeta(id, { lastReadAt: Date.now() });
       setBooks(prev => prev.map((b) => (b.id === id ? { ...b, lastReadAt: Date.now() } : b)));
+      log('[epub] openBook finish', { id, openBookIdRef: openBookIdRef.current, skipCover });
       return resume;
     } catch (e: any) {
+      log('[epub] openBook error', { id, message: e?.message ?? String(e) });
       setError(localizedError(t, e, 'error.general'));
       return null;
     } finally {
@@ -349,6 +356,7 @@ export function useEpub(): UseEpubReturn {
   }, [books, initialLocation, setCurrentModel]);
 
   const close = useCallback(async () => {
+    log('[epub] close() — reset open book', { openBookIdRef: openBookIdRef.current });
     await modelRef.current?.close().catch(() => {});
     modelRef.current = null;
     openBookIdRef.current = null;
