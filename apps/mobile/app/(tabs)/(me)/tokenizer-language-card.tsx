@@ -8,6 +8,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { loadSampleContent, nativeLanguageName, flagEmoji } from '@langplayer/shared';
 import { bootLogger, logwarn } from '@/lib/logger';
+import { useResponsive } from '@/hooks/use-responsive';
 
 const { log: appLog } = bootLogger;
 
@@ -21,6 +22,7 @@ const { log: appLog } = bootLogger;
 export function TokenizerLanguageCard({ code, height }: { code: string; height: number }) {
   const { l1Lang } = useLanguage();
   const { display } = useSettingsContext();
+  const { isMd } = useResponsive();
   const t = useT();
 
   const [longSample, setLongSample] = useState<{ text: string; title: string } | null>(null);
@@ -88,6 +90,8 @@ export function TokenizerLanguageCard({ code, height }: { code: string; height: 
             measuring={samplePagination.measuring}
             l2Code={code}
             l1Code={l1Lang.code}
+            showTranslation={display.translation}
+            translationSideBySide={isMd}
             showTextActions
             t={t}
           />
