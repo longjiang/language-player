@@ -395,7 +395,13 @@ export function SubsSearchPlaybackModal({
           className={
             isWide && subtitleMode === 'multiline'
               ? 'min-h-0 w-[320px] border-l border-border'
-              : 'min-h-0 flex-1'
+              : subtitleMode === 'singleline'
+                ? // Single-line band: must keep its own height. `min-h-0 flex-1`
+                  // collapses to 0 here (the content-sized parent gives it no
+                  // grow space), so the band overflows the card's
+                  // overflow-hidden clip and the subtitle is invisible.
+                  'min-h-32'
+                : 'min-h-0 flex-1'
           }
         >
           {subtitleMode === 'singleline' ? (
