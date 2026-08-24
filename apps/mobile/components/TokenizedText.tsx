@@ -61,7 +61,8 @@ import { useEffectiveHighlightTerms, useHighlightKanaForms, useSavedPhraseCandid
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
 import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
-import { glyphFontFamily } from '@/lib/glyph-font';
+// (glyphFontFamily from '@/lib/glyph-font' no longer used — the base uses the
+// system font and the L2 language tag drives the correct CJK fallback.)
 import { buildSelectionMap, selectionSourceOffset, selectionTermAt } from '@/lib/selection-map';
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
@@ -379,10 +380,13 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
     const family = typeFaceFontFamily(tokenSettings.typeFace);
     if (family) style.fontFamily = family;
-    else {
-      const glyphFamily = glyphFontFamily(glyphLang);
-      if (glyphFamily) style.fontFamily = glyphFamily;
-    }
+    // else: no fontFamily → the __system__ font. The L2 language tag (the
+    // `language`/`lang` attributes on the paragraph and RN Text) drives Core
+    // Text's CJK font fallback, which picks the correct script font and glyph
+    // variants per language (SPEC-087). We do NOT force a per-script glyph
+    // font here anymore — forcing Hiragino for ja made the line pitch grow
+    // (45px vs the 39px pin) and broke consistent spacing across languages.
+    // The system font's tighter metrics keep all languages on the same pitch.
     if (bold) {
       style.fontWeight = 'bold';
     }
