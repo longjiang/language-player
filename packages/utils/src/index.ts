@@ -103,6 +103,7 @@ export { tokenMatchesAnyTerm, tokenMatchesAnyForm, kanaFormsForEntries } from '.
 export {
   scoreTestAnswer,
   testScoreToRating,
+  scoreTestResult,
   needsPronunciationTest,
   DEEP_ORTHOGRAPHY_LANGUAGES,
   buildSrsQuestionPrompt,

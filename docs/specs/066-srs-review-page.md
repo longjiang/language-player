@@ -517,6 +517,16 @@ sentence via `buildSrsQuestionPrompt` (shared `packages/utils/src/
 srs-test-mode.ts`). Questions render one at a time; answering the final
 question reveals the card back and the rating buttons.
 
+- **Marking rules (2026-08-25)** — `scoreTestResult(correctCount,
+  totalTests, totalMs)` (shared `packages/utils/src/srs-test-mode.ts`):
+  - each test scores **0 (wrong) / 1 (right)**;
+  - the total is **scaled so a perfect score would be 2**
+    (`round(correctCount * 2 / totalTests)`), so single- and multi-test cards
+    share one 0–2 scale;
+  - a scaled score above 1 (all tests correct) is **time-adjusted**:
+    slower than **10 s × totalTests** deducts a point (slow), faster than
+    **5 s × totalTests** adds one point (fast);
+  - map the points → **again (0) / hard (1) / good (2) / easy (3)**.
 - **Regeneration (2026-08-25)** — each question block carries its own
   "Regenerate" control (web + mobile). Tapping it replaces **that** test
   (definition or pronunciation) with a fresh cache-busted variation, clears
@@ -714,6 +724,10 @@ types count while unexpired — there is no `status` filter.
   `951f6f1d` + the two review pages): obvious-wrong confounders are rejected
   and auto-retried, and mixed kana/kanji words keep their written-kana part
   constant across choices.
+- ✅ **Test-mode marking rules** — implemented (2026-08-25, shared
+  `scoreTestResult` + both review pages): each test 0/1, scaled so perfect = 2,
+  time-adjusted via the 10 s/test slow and 5 s/test fast thresholds → again /
+  hard / good / easy.
 
 ## Known Issues & Resolutions (2026-08-13)
 
