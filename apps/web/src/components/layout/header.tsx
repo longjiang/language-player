@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
@@ -64,7 +64,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   'local-media': <Upload className="h-4 w-4" />,
 };
 
-function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: string; l2Code: string }) {
+function NavDropdown({ group, l1Code, l2Code, onNavItemClick }: { group: NavGroup; l1Code: string; l2Code: string; onNavItemClick?: (href: string, e: React.MouseEvent<HTMLAnchorElement>) => void }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -121,7 +121,7 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
             <Link
               key={link.href}
               href={`/${l1Code}/${l2Code}/${link.href}`}
-              onClick={() => setOpen(false)}
+              onClick={(e) => { setOpen(false); onNavItemClick?.(link.href, e); }}
               className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <span className="flex-shrink-0 opacity-60">{NAV_ICONS[link.href]}</span>
@@ -137,7 +137,7 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
 export function Header() {
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const { immersed } = useReaderChrome();
+  const { immersed, requestCloseReader } = useReaderChrome();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const exploreHref = `/${l1.code}/${l2.code}/explore`;
@@ -145,6 +145,18 @@ export function Header() {
     pathname === exploreHref || pathname === `${exploreHref}/`
       ? '/?landing=1'
       : exploreHref;
+
+  // When the nav menu's "Epub Reader" item is tapped while already on the epub
+  // reader, close the open book (an alternative to the reader's close button)
+  // instead of a no-op same-route navigation.
+  const handleNavItemClick = useCallback((href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    const epubPath = `/${l1.code}/${l2.code}/epub`;
+    const onEpubSelfNav = href === 'epub' && (pathname === epubPath || pathname === `${epubPath}/`);
+    if (onEpubSelfNav) {
+      e.preventDefault();
+      requestCloseReader();
+    }
+  }, [l1.code, l2.code, pathname, requestCloseReader]);
 
   // An immersive reader (EPUB) is open — the header hides so the book fills
   // the screen; the reader shows its own chrome (including this same Header
@@ -169,6 +181,7 @@ export function Header() {
               group={group}
               l1Code={l1.code}
               l2Code={l2.code}
+              onNavItemClick={handleNavItemClick}
             />
           ))}
         </nav>
@@ -216,7 +229,7 @@ export function Header() {
                       <Link
                         key={link.href}
                         href={`/${l1.code}/${l2.code}/${link.href}`}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={(e) => { setMobileOpen(false); handleNavItemClick(link.href, e); }}
                         className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
                         <span className="flex-shrink-0 opacity-60">{NAV_ICONS[link.href]}</span>

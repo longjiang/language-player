@@ -45,7 +45,7 @@ export default function EpubPage() {
   const t = useT();
   const router = useRouter();
   const epub = useEpub();
-  const { setImmersed } = useReaderChrome();
+  const { setImmersed, registerCloseReader } = useReaderChrome();
 
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
@@ -247,6 +247,14 @@ export default function EpubPage() {
   const handleCloseReader = useCallback(() => {
     void handleClose();
   }, [handleClose]);
+
+  // Register the book's close handler so the nav menu's "Epub Reader" item can
+  // close it (an alternative to the close button) when the reader is already
+  // open — the Header calls requestCloseReader on a same-route nav click.
+  useEffect(() => {
+    registerCloseReader(() => { void handleClose(); });
+    return () => registerCloseReader(null);
+  }, [registerCloseReader, handleClose]);
 
   // Back: undo the last in-book jump (e.g. a footnote link); when there is
   // nothing to return to, close the book and go back to the bookshelf.
