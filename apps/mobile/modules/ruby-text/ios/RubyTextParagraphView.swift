@@ -69,11 +69,12 @@ internal final class RubyTextParagraphView: ExpoView {
   /// metrics and does NOT follow `baselineOffset`, so this constant moves only
   /// the base: a positive value raises the base toward the reading (tightens
   /// the gap), 0 leaves the natural Core Text gap (the web-browser default),
-  /// negative lowers the base further (widens it). Tuned to 0 (2026-08-22) —
-  /// the previous +2 raised the base and closed the gap; 0 matches web's small
-  /// browser-default ruby gap. Applied to every base run (whitespace, byeonggi,
-  /// gloss included) so the whole line keeps one baseline.
-  private let rubyBaseTextOffset: CGFloat = 0
+  /// negative lowers the base further (widens it). Tuned to +2 (2026-08-23) —
+  /// the readings were rendering ~2px too high above the base (pinyin/furigana
+  /// gap too wide) on zh/yue/ru/ar; raising the base 2px closes the gap.
+  /// Applied to every base run (whitespace, byeonggi, gloss included) so the
+  /// whole line keeps one baseline.
+  private let rubyBaseTextOffset: CGFloat = 2
 
   private var attributedString: NSAttributedString?
   /// Whether the current attributed string has been applied to a real

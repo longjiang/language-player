@@ -906,6 +906,13 @@ export function useEpubPagination({
     if (estimate || !blocks || blocks.length === 0) return;
     const heights = blockHeightsRef.current;
     if (heights.length < blocks.length || heights.some(h => h == null)) return;
+    // A split-drag / width change re-measures blocks, which can clear (or
+    // partially populate) blockMetricsRef while blockHeightsRef still passes
+    // the guard above. Accessing an undefined metric here crashed
+    // ('Cannot read property height of undefined') on every split drag, so
+    // mirror the heights guard on the metrics array before reading it.
+    const mets = blockMetricsRef.current;
+    if (mets.length < blocks.length || mets.some(m => m == null)) return;
 
     const breaks: number[] = [];
     let accumulated = 0;
