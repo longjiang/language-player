@@ -212,7 +212,14 @@ internal final class RubyTextParagraphView: ExpoView {
       textView.attributedText = attributedString
       hasLaidOutText = true
     }
-    print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight) readingSize=\(readingSize) fontFamily=\(fontFamily ?? "nil") readingFont=\(makeReadingFont().fontName)")
+    // Reading-length stats: max kana count per single annotation + count of
+    // annotated runs — the suspected driver of TextKit 2's per-language line
+    // growth (word-level ja annotations vs per-char pinyin). If per-char
+    // annotations don't equalize the pitch, these numbers identify the cause.
+    let readLens = runs.compactMap { $0.reading.map { ($0 as NSString).length } }
+    let maxReadLen = readLens.max() ?? 0
+    let nReads = readLens.count
+    print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight) readingSize=\(readingSize) fontFamily=\(fontFamily ?? "nil") readingFont=\(makeReadingFont().fontName) maxReadLen=\(maxReadLen) nReads=\(nReads)")
     emitLineGridIfChanged()
   }
 

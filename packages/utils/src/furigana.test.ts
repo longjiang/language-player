@@ -1,6 +1,41 @@
 import { describe, expect, it } from 'vitest';
 import { buildRuby } from './furigana';
 
+describe('buildRuby Japanese per-kanji segmentation', () => {
+  it('splits a multi-kanji run into one segment per kanji with the reading distributed', () => {
+    // 富士 → ふ/じ, 山 → さん (textbook per-kanji furigana)
+    expect(buildRuby('富士山', 'ふじさん', 'ja')).toEqual([
+      { text: '富', reading: 'ふ' },
+      { text: '士', reading: 'じ' },
+      { text: '山', reading: 'さん' },
+    ]);
+  });
+
+  it('distributes longer readings evenly across the kanji', () => {
+    // 象徴 → しょう/ちょう (4 kana over 2 kanji — even 2/2)
+    expect(buildRuby('象徴', 'しょうちょう', 'ja')).toEqual([
+      { text: '象', reading: 'しょう' },
+      { text: '徴', reading: 'ちょう' },
+    ]);
+  });
+
+  it('keeps kana readings out of kana-only words', () => {
+    expect(buildRuby('は', 'は', 'ja')).toEqual([{ text: 'は' }]);
+  });
+
+  it('keeps mixed kanji+kana words intact with kana left plain', () => {
+    // 食べる → 食/た + べる (kana run stays plain)
+    expect(buildRuby('食べる', 'たべる', 'ja')).toEqual([
+      { text: '食', reading: 'た' },
+      { text: 'べる' },
+    ]);
+  });
+
+  it('falls back to a word-level segment when the reading has fewer mora than characters', () => {
+    expect(buildRuby('明日', 'あ', 'ja')).toEqual([{ text: '明日', reading: 'あ' }]);
+  });
+});
+
 describe('buildRuby Chinese/Cantonese per-character segmentation', () => {
   it('splits zh pinyin into one segment per hanzi', () => {
     expect(buildRuby('不到长城非好汉', 'bú dào cháng chéng fēi hǎo hàn', 'zh')).toEqual([

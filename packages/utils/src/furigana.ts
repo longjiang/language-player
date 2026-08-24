@@ -295,12 +295,41 @@ export function buildRuby(
       return [{ text }];
     }
     const segments = matchHiragana({ text, reading: pronunciation });
-    return segments.map((seg) => ({
-      text: seg.text,
-      reading: seg.type === 'kanji' && seg.pronunciation !== seg.text
+    const out: RubySegment[] = [];
+    for (const seg of segments) {
+      const reading = seg.type === 'kanji' && seg.pronunciation !== seg.text
         ? seg.pronunciation
-        : undefined,
-    }));
+        : undefined;
+      if (reading && seg.text.length > 1) {
+        // Per-kanji furigana: split a multi-character kanji run into
+        // individual characters and distribute the run's reading across them
+        // (standard textbook style — 象徴→象/しょう, 徴/ちょう). Besides being
+        // the more common learning-format, per-character annotations keep every
+        // ruby annotation small, so the native text engines size a Japanese
+        // line exactly like per-character pinyin — one uniform line pitch and
+        // ruby↔base gap across ALL scripts (SPEC-087 §5 consistent spacing).
+        const chars = [...seg.text];
+        const kana = [...reading];
+        if (kana.length >= chars.length) {
+          // Even distribution, with any extra mora going to the LAST chars so
+          // the reading reads naturally left-to-right (富士山→ふ/じ/さん).
+          const per = Math.floor(kana.length / chars.length);
+          const excess = kana.length - per * chars.length;
+          let pos = 0;
+          for (let i = 0; i < chars.length; i++) {
+            const take = per + (i >= chars.length - excess ? 1 : 0);
+            out.push({ text: chars[i]!, reading: kana.slice(pos, pos + take).join('') });
+            pos += take;
+          }
+          continue;
+        }
+        // Can't align (reading shorter than characters) — word-level fallback.
+        out.push({ text: seg.text, reading });
+        continue;
+      }
+      out.push({ text: seg.text, ...(reading ? { reading } : {}) });
+    }
+    return out;
   }
 
   // ── Chinese / Cantonese: per-character pinyin/jyutping ──
