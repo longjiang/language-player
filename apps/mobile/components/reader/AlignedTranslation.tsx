@@ -199,7 +199,15 @@ function AlignedTranslationImpl({
     <View>
       {probeEl}
       {naturalProbeEl}
-      {probe!.lines.map((ln, j) => {
+      {/* Render AT MOST as many translation rows as the L2 has lines (1:1
+          pairing). The translation is sliced by its OWN width-wraps, which
+          usually wrap to MORE lines than the L2 paragraph; every extra wrap
+          was given a full lh2-tall row (clamped to the last L2 line) and
+          piled up below the L2 column, spreading the translation across huge
+          gaps. Capping to l2Lines.length keeps each translation line
+          baseline-aligned to its L2 line AND stops the overflow pile-up —
+          the two columns now have the same height. */}
+      {probe!.lines.slice(0, l2Lines.length).map((ln, j) => {
         const off = offsets[j] ?? { start: 0, end: 0 };
         const lineText = text.slice(off.start, off.end);
         // This row pairs with L2 line j (per-line — the ruby band can shift
@@ -211,7 +219,7 @@ function AlignedTranslationImpl({
         const shift = lineBaselineOffset(l2Line) - naturalAscent!;
         if (j === 0) {
           const l2Prev = j + 1 < l2Lines.length ? lineBaselineOffset(l2Lines[j + 1]!) : null;
-          log(`[AlignedTranslation] trLines=${probe!.lines.length} trFontSize=${trFontSize} lh2=${lh2} l2Asc0=${lineBaselineOffset(l2Lines[0]!)} l2Asc1=${l2Prev} trNaturalAsc=${naturalAscent} shift0=${shift}`);
+          log(`[AlignedTranslation] trLines=${probe!.lines.length} l2Lines=${l2Lines.length} trFontSize=${trFontSize} lh2=${lh2} l2Asc0=${lineBaselineOffset(l2Lines[0]!)} l2Asc1=${l2Prev} trNaturalAsc=${naturalAscent} shift0=${shift}`);
         }
         const hl = highlight && highlight.start < off.end && highlight.end > off.start;
         return (
