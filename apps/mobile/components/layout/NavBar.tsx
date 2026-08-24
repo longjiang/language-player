@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, Platform } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { useReaderChrome } from '@/contexts/ReaderChromeContext';
 import { ChevronDown } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
@@ -49,8 +50,20 @@ const NAV_GROUPS: NavGroup[] = [
  */
 export function NavBar() {
   const t = useT();
+  const { requestCloseReader } = useReaderChrome();
+  const pathname = usePathname();
 
-  const navigate = (href: string) => router.push(href as any);
+  const navigate = (href: string) => {
+    // Tapping "Epub Reader" while already on the epub reader closes the open
+    // book (an alternative to the close button) instead of a no-op same-route
+    // navigation.
+    const onEpubSelfNav = href === '/(tabs)/(reading)/epub' && (pathname === '/epub' || pathname.endsWith('/epub'));
+    if (onEpubSelfNav) {
+      requestCloseReader();
+      return;
+    }
+    router.push(href as any);
+  };
 
   return (
     <View className="flex-row items-center gap-1">

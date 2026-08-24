@@ -34,7 +34,7 @@ export default function EpubReaderScreen() {
   const epub = useEpub();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { setImmersed } = useReaderChrome();
+  const { setImmersed, registerCloseReader } = useReaderChrome();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
 
@@ -221,6 +221,14 @@ export default function EpubReaderScreen() {
   const handleCloseReader = useCallback(() => {
     void handleClose();
   }, [handleClose]);
+
+  // Register the book's close handler so the nav menu's "Epub Reader" item can
+  // close it (an alternative to the close button) when the reader is already
+  // open — the NavBar/drawer call requestCloseReader on a same-route tap.
+  useEffect(() => {
+    registerCloseReader(() => { void handleClose(); });
+    return () => registerCloseReader(null);
+  }, [registerCloseReader, handleClose]);
 
   const handleChapterSelect = useCallback((href: string) => {
     setTocOpen(false);
