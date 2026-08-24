@@ -38,9 +38,34 @@ export function useSettings() {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
   const cloudLoadedUserId = useRef<string | null>(null);
+  /**
+   * True once the in-memory settings came from a real source (a saved local
+   * blob, a legacy migration, or a successful cloud hydrate). While false the
+   * state is the pristine `createSettingsV2()` defaults and persisting it —
+   * with a fresh `ts` — would overwrite the user's saved copy locally and,
+   * via the debounced PUT, destroy it server-side (the exact failure mode
+   * fixed in 32154e91, still reachable through persist-before-hydration
+   * vectors like `ensureL2`). The guard in `persist` drops those writes.
+   */
+  const hydratedFromSource = useRef(false);
 
   // ── Helper: persist to localStorage + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
+    // Guard: never persist/sync a settings blob that was never backed by a
+    // real source (saved blob, migration, or hydrated cloud row). A pristine
+    // defaults blob stamped with a fresh ts would overwrite the user's saved
+    // copy locally (the newer ts makes the next hydrate SKIP the cloud row)
+    // and, via the debounced PUT (updatedAt = now), destroy it server-side —
+    // the same failure mode 32154e91 fixed for the load effect, still
+    // reachable through persist-before-hydration vectors (e.g. ensureL2 on
+    // the settings display page). Log the drop so the window is visible.
+    if (!hydratedFromSource.current && session) {
+      log('[settings] persist SKIPPED — settings still pristine defaults (no local blob / hydration pending)', {
+        ts: s.ts,
+        review: s.review,
+      });
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
     } catch { /* quota exceeded */ }
@@ -51,6 +76,7 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
+        log('[settings] PUT /user-settings', { ts: s.ts, updatedAt: Date.parse(s.ts) || Date.now() });
         await putUserSettings({
           settings_v2: s,
           updatedAt: Date.parse(s.ts) || Date.now(),
@@ -124,6 +150,7 @@ export function useSettings() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && parsed.v === 2) {
+          hydratedFromSource.current = true;
           setSettings(normalizeSettingsV2(parsed));
           setLoaded(true);
           return;
@@ -131,6 +158,9 @@ export function useSettings() {
       }
       const migrated = migrateFromLegacy();
       if (migrated) {
+        // A real migration is a real write — safe to persist even before the
+        // cloud hydrate (it carries the user's legacy values).
+        hydratedFromSource.current = true;
         setSettings(migrated);
         persist(migrated);
       }
@@ -155,6 +185,9 @@ export function useSettings() {
       try {
         const res = await getUserSettings();
         if (cancelled) return;
+        // A definitive answer — even "no row yet" — means the current
+        // defaults are a legitimate baseline (nothing saved to destroy).
+        hydratedFromSource.current = true;
         const cloud = res.settings_v2;
         if (!cloud || cloud.v !== 2) {
           setCloudHydrated(true);
@@ -174,6 +207,12 @@ export function useSettings() {
             ...cloud,
             v: 2 as const,
             ts: new Date().toISOString(),
+          });
+          log('[settings] hydrate APPLY cloud', {
+            cloudTs: cloud.ts,
+            localTs: prev.ts,
+            dailyNewLimit: merged.review.dailyNewLimit,
+            dayStartHour: merged.review.dayStartHour,
           });
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
           return merged;

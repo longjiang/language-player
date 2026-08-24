@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Select } from './ui/select';
 import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
-import { t } from '../i18n';
+import { t, log, logerr } from '../i18n';
 
 type Theme = 'light' | 'dark' | 'system';
 type PhoneticsMode = 'above' | 'replace' | 'off';
@@ -44,6 +44,8 @@ export function SettingsModal({ open, l2Code, onOpenChange, onThemeChange }: Set
       'extensionDisplaySettings', 'theme', 'showTranslation', 'textSizePx', 'translationSize',
       'leading', 'typeFace', 'phoneticsMode', 'phoneticsScope',
     ]).then((stored: any) => {
+      log('[LP Extension] SettingsModal read chrome.storage.local keys:',
+        Object.keys(stored).join(', ') || '(empty — settings will show defaults)');
       setSettings({
         ...DEFAULTS,
         ...(stored.extensionDisplaySettings || {}),
@@ -56,7 +58,12 @@ export function SettingsModal({ open, l2Code, onOpenChange, onThemeChange }: Set
         phoneticsMode: stored.phoneticsMode || stored.extensionDisplaySettings?.phoneticsMode || DEFAULTS.phoneticsMode,
         phoneticsScope: stored.phoneticsScope || stored.extensionDisplaySettings?.phoneticsScope || DEFAULTS.phoneticsScope,
       });
-    }).catch(() => setSettings(DEFAULTS));
+    }).catch((err) => {
+      // chrome.storage read failure is one of the few ways extension settings
+      // can "reset to default" without the user clearing browser data.
+      logerr('[LP Extension] SettingsModal chrome.storage.local read failed — falling back to defaults:', err);
+      setSettings(DEFAULTS);
+    });
     setSearch('');
     setCategory('display');
   }, [open, l2Code]);
@@ -65,6 +72,10 @@ export function SettingsModal({ open, l2Code, onOpenChange, onThemeChange }: Set
     setSettings((current) => {
       const next = { ...current, ...patch };
       const textScale = Math.max(0, Math.min(4, Math.round(((next.textSize - 16) / 20) * 4)));
+      log('[LP Extension] SettingsModal write chrome.storage.local', {
+        extensionDisplaySettings: next,
+        textScale,
+      });
       chrome.storage.local.set({
         extensionDisplaySettings: next,
         theme: next.theme,

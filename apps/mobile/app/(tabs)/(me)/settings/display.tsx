@@ -26,12 +26,18 @@ export function DisplaySettings() {
     updateL2,
     ensureL2,
     loaded,
+    cloudHydrated,
   } = useSettingsContext();
   const t = useT();
 
+  // ensureL2 persists the whole settings blob with a fresh ts. Running it
+  // before the cloud copy is hydrated would write a defaults-based blob that
+  // outranks the user's saved settings in LWW (locally and server-side) —
+  // the periodic "settings reset to default" failure mode. Wait for
+  // hydration; `getL2()` already falls back to L2_DEFAULTS meanwhile.
   React.useEffect(() => {
-    if (loaded) ensureL2(l2Lang.code);
-  }, [l2Lang.code, loaded]);
+    if (loaded && cloudHydrated) ensureL2(l2Lang.code);
+  }, [l2Lang.code, loaded, cloudHydrated, ensureL2]);
 
   const l2Settings = getL2(l2Lang.code);
   const popupEnabled = tokenizedText.enabled;

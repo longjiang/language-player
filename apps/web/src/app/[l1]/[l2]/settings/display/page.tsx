@@ -45,7 +45,7 @@ export default function DisplaySettingsPage() {
     tokenizedText, updateTokenizedText,
     display, updateDisplay,
     getL2, updateL2, ensureL2,
-    loaded,
+    loaded, cloudHydrated,
   } = useSettingsContext();
   const { setTheme } = useTheme();
   const t = useT();
@@ -54,7 +54,12 @@ export default function DisplaySettingsPage() {
   const isKorean = l2.code === 'ko';
   const isVietnamese = l2.code === 'vi';
 
-  useEffect(() => { if (loaded) ensureL2(l2.code); }, [l2.code, loaded, ensureL2]);
+  // ensureL2 persists the whole settings blob with a fresh ts. Running it
+  // before the cloud copy is hydrated would write a defaults-based blob that
+  // outranks the user's saved settings in LWW (locally and server-side) —
+  // the periodic "settings reset to default" failure mode. Wait for
+  // hydration; `getL2()` already falls back to L2_DEFAULTS meanwhile.
+  useEffect(() => { if (loaded && cloudHydrated) ensureL2(l2.code); }, [l2.code, loaded, cloudHydrated, ensureL2]);
 
   const l2Settings = getL2(l2.code);
   const popupEnabled = tokenizedText.enabled;
