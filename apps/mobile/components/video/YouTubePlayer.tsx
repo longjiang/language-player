@@ -114,12 +114,14 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     // video at 0 instead of the matched line. web applies the same seek in
     // `onReady` (ARCH-004 §YouTube Player Integration) — mirror it here, once
     // per (video, startTime). No-op when no startTime, or startTime is 0.
-    const lastSeekKeyRef = useRef<string | null>(null);
+    // Keyed on the (youtubeId, startTime) PAIR (not a monotonically stored
+    // string): navigating next → prev back to an already-seen video has a
+    // different pair, so the seek fires again instead of being skipped.
+    const lastSeekRef = useRef<{ youtubeId: string; startTime: number } | null>(null);
     useEffect(() => {
       if (!ready || startTime == null || startTime < 0) return;
-      const key = `${youtubeId}:${startTime}`;
-      if (lastSeekKeyRef.current === key) return;
-      lastSeekKeyRef.current = key;
+      if (lastSeekRef.current?.youtubeId === youtubeId && lastSeekRef.current?.startTime === startTime) return;
+      lastSeekRef.current = { youtubeId, startTime };
       log('[youtube-player] cue seek', { youtubeId, startTime });
       playerRef.current?.seekTo(startTime, true);
     }, [ready, startTime, youtubeId]);
