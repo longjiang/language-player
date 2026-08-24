@@ -262,6 +262,25 @@ test) on every page.
   - **Popup interactivity fix**: the web modal root sets `pointer-events-auto`. While a Radix modal dialog (e.g. the dictionary popup) is open, `react-remove-scroll` (Radix's scroll lock) puts `pointer-events: none` on `<body>` and re-enables events only on the dialog content; a portal to `document.body` would otherwise render on top yet be click-transparent (clicks passing through to the popup behind). The mobile dialog container sets `pointerEvents="auto"` for the same defense against the popup sheet.
 - **Test**: open an AI example chip → toggle multiline → rotate to landscape: subtitles appear beside the player with info below it; rotate back to portrait: subtitles return below the player with the info tab restored.
 
+## Task 19 — Subs search modal: multiline subs below the video on narrow screens (resolved)
+
+- **Symptom**: on a narrow screen (iPad portrait), toggling the sidebar in the
+  subs-search playback modal showed no multiline subs at all.
+- **Root cause**: the modal card is content-sized with `overflow-hidden`; the
+  narrow multiline subtitle column used `min-h-0 flex-1`, which collapses to
+  0 height in a content-sized parent (Yoga gives a `flex: 1` child no grow
+  space). The fixed-height transcript wrapper (min(40% of the screen, 320px))
+  then overflowed the card's clip and was invisible — the same collapse the
+  single-line band had (fixed in `82a8b357`).
+- **Fix** (`9079dac0`): keep the narrow multiline column content-sized
+  (`min-h-0`, no `flex-1`) so the card grows to include the transcript panel —
+  multiline subs below the video, matching apps/web. The wide (landscape)
+  side-by-side layout is unchanged. A `[subsSearch] multiline panel layout`
+  diagnostic log reports the panel's measured height for confirmation.
+- **Related**: the player now re-cues to the matched subtitle line when a
+  video is revisited via prev/next (`0fb2433a`, ARCH-004 — the cue-seek guard
+  keys on the (youtubeId, startTime) pair instead of a monotonic string).
+
 ---
 
 ## Shared Logic (move to `packages/` per AGENTS.md "share logic, not views")

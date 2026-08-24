@@ -508,6 +508,33 @@ today" message.
 - When all due cards are rated, show "No more cards to review" plus the next
   review time (current behavior).
 
+### Test mode
+
+Test mode asks one multiple-choice question per aspect — a **definition
+question** and, for deep-orthography L2s (`needsPronunciationTest`, e.g. ja
+with kanji), a **pronunciation question** — generated from the context
+sentence via `buildSrsQuestionPrompt` (shared `packages/utils/src/
+srs-test-mode.ts`). Questions render one at a time; answering the final
+question reveals the card back and the rating buttons.
+
+- **Regeneration (2026-08-25)** — each question block carries its own
+  "Regenerate" control (web + mobile). Tapping it replaces **that** test
+  (definition or pronunciation) with a fresh cache-busted variation, clears
+  the regenerated question's answer and every later answer/score, restarts
+  the test from that question, and hides the revealed back so the user
+  re-answers before rating. The whole-test retry (Try Again) remains for
+  generation failures.
+- **Pronunciation confounders (2026-08-25)** — confounders are validated
+  against `isObviousPronunciationWrong()` / `validateSrsPronunciationChoices()`:
+  a confounder that contains the correct reading as a substring (e.g.
+  `つきものぬ`/`つきものだ` from `つきもの`) or is a truncated fragment is
+  rejected, and the pronunciation question is auto-retried once with a strict
+  hint. The prompt additionally instructs: for **mixed kana/kanji words** the
+  written-kana part is fixed — confounders must keep it identical and vary
+  only the kanji readings with real or plausible readings of the same kanji
+  (e.g. `憑き物` = `つきもの` → `つきぶつ`, `つきもつ`, `つきもち`), and must
+  never extend/truncate/reorder the correct reading.
+
 ### Interaction & input
 
 **Web**
@@ -680,6 +707,13 @@ types count while unexpired — there is no `status` filter.
   so over-cap ratings never surface as Sync Status errors.
 - ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
   restores the card and releases the rating back to the local-day budget.
+- ✅ **Per-test regeneration** — implemented (2026-08-25, web `367f211e`,
+  mobile `1d2f784f`): each test question (definition / pronunciation) has its
+  own Regenerate control that replaces just that test.
+- ✅ **Pronunciation confounder intelligence** — implemented (2026-08-25,
+  `951f6f1d` + the two review pages): obvious-wrong confounders are rejected
+  and auto-retried, and mixed kana/kanji words keep their written-kana part
+  constant across choices.
 
 ## Known Issues & Resolutions (2026-08-13)
 
