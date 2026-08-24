@@ -271,10 +271,29 @@ internal final class RubyTextParagraphView: ExpoView {
     guard let attributedString, let first = grid.first else { return }
     let fragTop = first["y"] ?? 0
     let fragHeight = first["height"] ?? 0
-    let baseBaseline = (first["ascender"] ?? 0) + fragTop
+    let baseFont = makeFont(size: CGFloat(fontSize), weight: .regular)
     let readingFont = makeReadingFont()
-    let readingTop = baseBaseline - readingFont.ascender
-    let readingBottom = baseBaseline + readingFont.descender
+    // ACTUAL glyph origins for line 0 of the real string: the engine emits the
+    // annotation glyphs before the base glyphs, so the FIRST origin is the
+    // reading baseline and the LAST is the base baseline (a plain line has one
+    // origin for both). This is ground truth — the reading's true vertical
+    // position vs the base, not an estimate.
+    let glyphs = lineGlyphMetrics(attributedString: attributedString).first
+    var positionInfo = "noGlyphs"
+    var readingAboveBase = -1
+    var overlap = -1.0
+    if let g = glyphs {
+      let baseBaseline = g.lastY
+      let baseGlyphTop = baseBaseline - Double(baseFont.ascender)
+      let readingBaseline = g.firstY
+      let readingBottom = readingBaseline + Double(readingFont.descender)
+      overlap = readingBottom - baseGlyphTop // >0 => reading descends INTO the base glyphs
+      readingAboveBase = (overlap <= 0) ? 1 : 0
+      positionInfo = String(
+        format: "baseBaseline=%.1f baseAscender=%.1f baseGlyphTop=%.1f readBaseline=%.1f readBottom=%.1f baseReadBaselineDelta=%.1f",
+        baseBaseline, Double(baseFont.ascender), baseGlyphTop, readingBaseline, readingBottom, baseBaseline - readingBaseline
+      )
+    }
     // Same string without ruby annotations -> the base-only fragment height
     // and baseline (the engine's augment = withRby − withoutRuby).
     let stripped = NSMutableAttributedString(attributedString: attributedString)
@@ -287,20 +306,45 @@ internal final class RubyTextParagraphView: ExpoView {
     if let plain0 = plainGrid.first {
       let plainHeight = plain0["height"] ?? 0
       let plainBaseline = (plain0["ascender"] ?? 0) + (plain0["y"] ?? 0)
+      let actualBase = glyphs?.lastY ?? ((first["ascender"] ?? 0) + fragTop)
       augmentInfo = String(
         format: "plainH=%.1f rubyH=%.1f Hdelta=%.1f baseBaseline=%.1f plainBaseline=%.1f Bdelta=%.1f",
-        plainHeight, fragHeight, fragHeight - plainHeight, baseBaseline, plainBaseline, baseBaseline - plainBaseline
+        plainHeight, fragHeight, fragHeight - plainHeight, actualBase, plainBaseline,
+        actualBase - plainBaseline
       )
     }
     print(
       String(
-        format: "[LP Mobile] [RubyTextParagraph] ruby-fit line0 fragTop=%.1f fragH=%.1f baseBaseline=%.1f readingTop=%.1f readingBottom=%.1f readingBody=%.1f readingFitsInBox=%d %@",
-        fragTop, fragHeight, baseBaseline, readingTop, readingBottom,
-        readingFont.ascender + readingFont.descender,
-        (readingTop >= fragTop && readingTop >= 0) ? 1 : 0,
-        augmentInfo
+        format: "[LP Mobile] [RubyTextParagraph] ruby-fit line0 fragTop=%.1f fragH=%.1f readingAboveBase=%d overlap=%.1f %@ %@",
+        fragTop, fragHeight, readingAboveBase, overlap, augmentInfo, positionInfo
       )
     )
+  }
+
+  /// First/last glyph origin (y in container coords) and fragment top for every
+  /// line of an in-memory TextKit 1 replica. FIRST origin = reading baseline
+  /// when a line has ruby (annotation glyphs precede base glyphs); LAST origin
+  /// = base baseline. Ground truth for the ruby-fit audit.
+  private func lineGlyphMetrics(attributedString: NSAttributedString) -> [(top: Double, firstY: Double, lastY: Double)] {
+    let storage = NSTextStorage(attributedString: attributedString)
+    let layoutManager = NSLayoutManager()
+    storage.addLayoutManager(layoutManager)
+    let container = NSTextContainer(size: CGSize(width: bounds.width, height: .greatestFiniteMagnitude))
+    container.lineFragmentPadding = 0
+    layoutManager.addTextContainer(container)
+    let glyphCount = layoutManager.numberOfGlyphs
+    guard glyphCount > 0 else { return [] }
+    var out: [(top: Double, firstY: Double, lastY: Double)] = []
+    layoutManager.enumerateLineFragments(
+      forGlyphRange: NSRange(location: 0, length: glyphCount),
+      using: { rect, _, _, glyphRange, _ in
+        let top = Double(rect.origin.y)
+        guard glyphRange.length > 0 else { return }
+        let firstY = Double(layoutManager.location(forGlyphAt: glyphRange.location).y)
+        let lastY = Double(layoutManager.location(forGlyphAt: glyphRange.location + glyphRange.length - 1).y)
+        out.append((top, min(firstY, lastY), max(firstY, lastY)))
+      })
+    return out
   }
 
   /// Line grid (same shape as makeLineGrid) for an arbitrary attributed string
