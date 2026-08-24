@@ -217,7 +217,7 @@ for text blocks so L2 tokenization, translations, and formats keep working):
 |---|---|
 | Readers (`PaginatedReader`) | consumes the extended model (code/hr/html render; EPUB `pre` blocks fixed; heading formats; strikethrough; depth-aware lists) |
 | Docs (`MarkdownText.tsx`) | thin wrapper: `parseMarkdownBlocks(content)` → `<MarkdownBlocks ruleOverrides>`; `react-native-markdown-display` removed |
-| AI explain (`MarkdownExplanation.tsx`) | streaming phase unchanged (plain lines); finished → `parseMarkdownBlocks` → `<MarkdownBlocks>` with `codeSpans: 'tokenize'` (backticked L2 spans stay interactive) |
+| AI explain (`MarkdownExplanation.tsx`) | streaming phase unchanged (plain lines); finished → `parseMarkdownBlocks` → `<MarkdownBlocks>` with `codeSpans: 'tokenize'` (backticked L2 spans stay interactive); the finished render passes `textScale={0.875}` + `lineHeightScale={1.625}` so the body text keeps the streaming phase's `text-sm leading-relaxed` size and leading (14px / 1.625) instead of jumping to MarkdownBlocks' 16px / 2.0 defaults — web renders both phases through the same prose styles, so the size must not change when the stream finishes (`4725d6bc`; `MarkdownBlocks` gained a `lineHeightScale` prop, default 2.0) |
 | Translations | `renderInlineMarkdown` wraps shared `parseInlineRanges` (identical output) |
 | Web reader | `parse-markdown.ts` re-exports shared core; ReactMarkdown raw path unchanged |
 | EPUB (mobile) | `htmlToMarkdown({preserveIds, resolveImage})` → shared parser (single path) |
