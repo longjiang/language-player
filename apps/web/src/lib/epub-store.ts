@@ -14,7 +14,7 @@ const STORE_NAME = 'epubs';
 /** Per-book whole-book search index (one record per spine item). */
 const INDEX_STORE_NAME = 'book-index';
 /** Bump when the search index format changes — stale caches are rebuilt. */
-const SEARCH_INDEX_VERSION = 2;
+const SEARCH_INDEX_VERSION = 3;
 /** Key used by the previous single-book version — migrated to a per-book key. */
 const LEGACY_KEY = 'current';
 
@@ -72,9 +72,11 @@ export type EpubSummary = EpubMeta;
 /** Whole-book search index record — one per spine item. */
 export interface SpineIndexRecord {
   spineIndex: number;
-  /** Normalized plain text of the spine item (blocks joined with '\n'). */
+  /** Normalized plain text of the spine item (text blocks joined with '\n'). */
   text: string;
-  /** Char offset of each text block's start inside `text`. */
+  /** Char offset of each reader block's start inside `text`. One entry per
+   *  block (index-aligned with the reader block stream); image/pre/code
+   *  blocks contribute no characters and repeat the current position. */
   starts: number[];
 }
 
