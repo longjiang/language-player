@@ -108,7 +108,6 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
             translationSideBySide={isMd}
             debugFontFamily={baseSystem ? '__system__' : null}
             debugRubyFontFamily={rubySystem ? '__system__' : null}
-            debugRubyMetrics
             showTextActions
             t={t}
           />
