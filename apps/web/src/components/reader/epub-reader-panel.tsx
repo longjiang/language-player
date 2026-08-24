@@ -26,6 +26,29 @@ import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
 import type { EpubSearchMatch } from '@/hooks/use-epub';
 
+/**
+ * URL transform for ReactMarkdown in the EPUB reader.
+ *
+ * epubjs resolves in-book images to `blob:` URLs and covers to `data:image/…`
+ * URLs. react-markdown v10's default `urlTransform` only allows schemes in
+ * `safeProtocol` (`https?|ircs?|mailto|xmpp`), so it silently rewrites every
+ * `blob:`/`data:` image URL to `""` — React then renders `<img src="">`, which
+ * warns and can make the browser re-fetch the page. Preserve the schemes the
+ * reader legitimately emits (images, internal links) while still rejecting
+ * executable ones (`javascript:`, `vbscript:`, `data:text/html`, …).
+ */
+function readerUrlTransform(url: string): string {
+  if (!url) return url;
+  const colon = url.indexOf(':');
+  // No protocol → relative (e.g. `#anchor`, `./file.html`) — safe as-is.
+  if (colon === -1) return url;
+  const scheme = url.slice(0, colon).toLowerCase();
+  // Only allow `data:` URLs that are images (published EPUB content images and
+  // covers); a `data:text/html` URL would be an injection vector.
+  if (scheme === 'data') return /^data:image\//i.test(url) ? url : '';
+  return /^(https?|blob|mailto|ircs?|xmpp)$/.test(scheme) ? url : '';
+}
+
 interface EpubReaderPanelProps {
   book: EpubBook;
   /** Desired reading location (restore / TOC / search / link jumps). */
@@ -169,7 +192,7 @@ export function EpubReaderPanel({
     if (item.kind === 'markdown') {
       return (
         <div key={item.key}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents} urlTransform={readerUrlTransform}>
             {item.block.raw}
           </ReactMarkdown>
         </div>
@@ -230,7 +253,7 @@ export function EpubReaderPanel({
     if (item.kind === 'markdown') {
       return (
         <div key={item.key} className="mb-4">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents} urlTransform={readerUrlTransform}>
             {item.block.raw}
           </ReactMarkdown>
           {showTranslation && <div className="h-6" />}
