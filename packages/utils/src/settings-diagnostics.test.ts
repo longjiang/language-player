@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   pushSettingsDiag,
   readSettingsDiag,
+  getOrCreateDeviceId,
   SETTINGS_DIAG_KEY,
+  SETTINGS_DEVICE_ID_KEY,
   type KeyValueStorage,
 } from './settings-diagnostics';
 
@@ -65,5 +67,28 @@ describe('settings diagnostics ring buffer', () => {
     };
     await expect(pushSettingsDiag(broken, 'boom')).resolves.toBeUndefined();
     await expect(readSettingsDiag(broken)).resolves.toEqual([]);
+  });
+});
+
+describe('getOrCreateDeviceId', () => {
+  it('creates a stable id once and reuses it on subsequent calls', async () => {
+    const storage = memoryStorage();
+    const first = await getOrCreateDeviceId(storage);
+    const second = await getOrCreateDeviceId(storage);
+    expect(first).toBe(second);
+    expect(first.startsWith('d_')).toBe(true);
+    expect(storage.store.get(SETTINGS_DEVICE_ID_KEY)).toBe(first);
+  });
+
+  it('never throws when storage fails — falls back to a per-call id', async () => {
+    const broken: KeyValueStorage = {
+      getItem: async () => {
+        throw new Error('storage unavailable');
+      },
+      setItem: async () => {
+        throw new Error('storage unavailable');
+      },
+    };
+    await expect(getOrCreateDeviceId(broken)).resolves.toMatch(/^d_/);
   });
 });

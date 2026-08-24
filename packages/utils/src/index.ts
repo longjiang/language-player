@@ -23,7 +23,9 @@ export {
 export {
   pushSettingsDiag,
   readSettingsDiag,
+  getOrCreateDeviceId,
   SETTINGS_DIAG_KEY,
+  SETTINGS_DEVICE_ID_KEY,
 } from './settings-diagnostics';
 export type { KeyValueStorage, SettingsDiagEvent } from './settings-diagnostics';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
