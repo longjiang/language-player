@@ -1534,6 +1534,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 byeonggiText,
                 showQuickGloss,
                 quickGlossDef,
+                quickGlossLang: l1Lang.code,
                 showDefinition,
                 showInterlinear,
                 trimmedDef,
@@ -1675,6 +1676,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   byeonggiText={byeonggiText}
                   showQuickGloss={showQuickGloss}
                   quickGlossDef={quickGlossDef}
+                  quickGlossLang={l1Lang.code}
                   firstLemma={firstLemma}
                   tokenPron={tokenPron}
                   linkUrl={linkUrl}
