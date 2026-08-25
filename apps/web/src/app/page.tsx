@@ -201,7 +201,11 @@ function useLandingPlatforms() {
     {
       titleKey: 'platform.chrome_title',
       descKey: 'platform.chrome_desc',
-      statusKey: 'label.coming_soon',
+      statusKey: 'label.available',
+      href: 'https://chromewebstore.google.com/detail/language-player/cbkhenammkocfidciagbbibkleoenbej',
+      external: true,
+      actionKey: 'action.download',
+      actionIcon: Download,
       icon: Chrome,
     },
   ];
