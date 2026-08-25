@@ -8,6 +8,7 @@ import type { SavedWordContext } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { EpubReaderPanel } from '@/components/reader/epub-reader-panel';
+import { PdfReaderPanel } from '@/components/reader/pdf-reader-panel';
 import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
 import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
@@ -373,6 +374,9 @@ export default function EpubPage() {
   // The book reader is active (book open, cover dismissed, content located).
   const readerActive =
     epub.openBookId !== null && epub.coverTapped && !!epub.book && !!location;
+  // PDF reader active — a format: 'pdf' entry opened (thumbnails grid + AI
+  // page conversion). Keeps the regular app chrome (non-immersive).
+  const pdfActive = !!epub.pdfDoc && !imageSession;
 
   // Immerse while the book reader is open — the global app header hides so the
   // book fills the screen; the reader renders its own chrome as overlays.
@@ -498,6 +502,24 @@ export default function EpubPage() {
                   {total > 0 ? ` / ${isEstimate ? '~' : ''}${total}` : ''}
                 </span>
               )}
+            />
+          </div>
+        </>
+      ) : pdfActive ? (
+        /* ── PDF reader — thumbnails grid + AI page conversion ── */
+        <>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <PdfReaderPanel
+              data={epub.pdfDoc!.data}
+              pageCount={epub.pdfDoc!.pageCount}
+              outline={epub.pdfDoc!.outline}
+              fileName={epub.fileName ?? 'book.pdf'}
+              l1={l1}
+              l2={l2}
+              ctx={ctx}
+              onLemmatize={handleLemmatize}
+              onPageTranslate={handlePageTranslate}
+              onClose={handleClose}
             />
           </div>
         </>

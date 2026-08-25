@@ -84,6 +84,16 @@ export function EpubUpload({
         }
         continue;
       }
+      // PDFs live on the same shelf — the first page becomes the cover.
+      if (f.name.toLowerCase().endsWith('.pdf')) {
+        try {
+          const data = await f.arrayBuffer();
+          loaded.push({ data, fileName: f.name, fileSize: f.size });
+        } catch {
+          failures.push({ fileName: f.name, fileSize: f.size, reasonKey: 'msg.epub_file_unreadable' });
+        }
+        continue;
+      }
       // .epub.zip / .zip — an EPUB (or extracted EPUB folder) wrapped in a
       // ZIP container; unwrap it before importing.
       if (/\.(epub\.)?zip$/i.test(f.name)) {
@@ -157,7 +167,7 @@ export function EpubUpload({
     <input
       ref={fileInputRef}
       type="file"
-      accept=".epub,.epub.zip,.zip"
+      accept=".epub,.pdf,.epub.zip,.zip"
       multiple
       hidden
       onChange={(e) => {

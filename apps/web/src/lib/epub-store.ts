@@ -36,6 +36,9 @@ export interface EpubMeta {
   id: string;
   fileName: string;
   fileSize: number;
+  /** Book container format. PDFs live on the same shelf with their first
+   *  page as the cover; legacy entries default to 'epub'. */
+  format?: 'epub' | 'pdf';
   /** L2 the book was uploaded under (normalized primary subtag), or null
    *  for legacy books imported before per-L2 tagging. */
   language: string | null;
@@ -98,6 +101,7 @@ function baseMeta(id: string, fileName: string, fileSize: number): EpubMeta {
     id,
     fileName,
     fileSize,
+    format: 'epub',
     language: null,
     coverUrl: null,
     lastLocation: null,

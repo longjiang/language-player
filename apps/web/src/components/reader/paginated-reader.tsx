@@ -26,7 +26,7 @@ import type { ReaderBlock } from '@/lib/parse-markdown';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
 import { READER_DEFAULT_LEADING, readerHorizontalPadding as defaultReaderHorizontalPadding } from '@/lib/reader-layout';
-import { ArrowDown, ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react';
+import { ArrowDown, ChevronLeft, ChevronRight, LayoutGrid, List, Loader2, Search } from 'lucide-react';
 
 export type { BlockRenderCtx, ReaderLoc, ReaderPageItem } from '@/hooks/use-paginated-reader';
 
@@ -126,6 +126,9 @@ export interface PaginatedReaderProps {
   onOpenToc?: () => void;
   /** Immersive: renders the Search button in the bottom bar. */
   onOpenSearch?: () => void;
+  /** Immersive: renders a "thumbnails" button in the bottom bar (PDF reader —
+   *  returns to the page-thumbnails grid). */
+  onOpenThumbnails?: () => void;
   /** Immersive: overlay rendered in the top reserved strip (muted chapter title). */
   topOverlay?: ReactNode;
   /** Immersive: overlay rendered in the bottom reserved strip (muted page count). */
@@ -172,6 +175,7 @@ export function PaginatedReader({
   onToggleChrome,
   onOpenToc,
   onOpenSearch,
+  onOpenThumbnails,
   topOverlay,
   pageInfoOverlay,
   disableKeyboardPaging = false,
@@ -642,6 +646,16 @@ export function PaginatedReader({
             title={t('action.search')}
           >
             <Search className="h-4 w-4" />
+          </button>
+        )}
+        {onOpenThumbnails && (
+          <button
+            onClick={onOpenThumbnails}
+            className="rounded p-1 hover:bg-muted"
+            aria-label={t('action.thumbnails')}
+            title={t('action.thumbnails')}
+          >
+            <LayoutGrid className="h-4 w-4" />
           </button>
         )}
       </div>
