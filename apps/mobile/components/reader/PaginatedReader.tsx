@@ -1227,6 +1227,7 @@ function renderBlock(
           text={translation ?? ''}
           l2Lines={l2Grid}
           trFontSize={trFontSize}
+          trLineHeight={trLineHeight}
           className="text-muted-foreground"
           highlight={trHighlightRange}
         />
