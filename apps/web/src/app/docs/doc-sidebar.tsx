@@ -6,6 +6,7 @@ import Fuse from 'fuse.js';
 import { List, ChevronDown, Search } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { stripMarkdown } from '@langplayer/utils';
+import { AskAiButton } from '@/components/docs/ask-ai-dialog';
 
 interface TocItem {
   level: number;
@@ -150,6 +151,9 @@ export function DocSidebar({ toc, docs, l1, currentSlug, searchIndex, categoryTi
         `}
       >
         <nav className="space-y-4">
+          {/* Ask AI — ask a question about how to use the app */}
+          <AskAiButton className="flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-2 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90" />
+
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
