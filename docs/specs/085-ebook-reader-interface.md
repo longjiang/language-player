@@ -53,7 +53,7 @@ All numbers are as-built at the time of writing (`apps/web/src/app/[l1]/[l2]/epu
 4. **Persistent overlays are never interactive** (`pointer-events: none`) — they never block taps or clicks on the surface beneath them.
 5. **Modals take over input.** While the TOC or Search modal is open, its backdrop absorbs all touches; the reader's tap surface is inert underneath.
 6. **The reader frame fills the viewport.** Once a book is open, the web and mobile reader roots occupy the full available screen height; the text viewport is the screen height minus the constant reserved strips, even when the current page has very little text.
-7. **Horizontal reader geometry follows typography.** The left page margin equals the rendered L2 body-text leading, and the side-by-side L2/L1 gap uses the same leading value. The visible reader, measuring mirror, calibration probe, and pagination width calculations use identical horizontal geometry.
+7. **Horizontal reader geometry follows typography.** The left page margin equals the rendered L2 body-text leading, and the side-by-side L2/L1 gap uses the same leading value. The visible reader, measuring mirror, and pagination width calculations use identical horizontal geometry.
 
 ## 5. The tap surface
 
@@ -155,7 +155,7 @@ space below the bottom bar.
 
 The EPUB reader's horizontal padding must derive from `L`, not a fixed `px-1` class.
 The same left/right padding must be applied to the visible content, the hidden measuring
-mirror, the calibration probe, and any width used for pagination so adding the margin
+mirror, and any width used for pagination so adding the margin
 does not change the measured-vs-rendered line wraps.
 
 **Mobile** (`epub.tsx`, `PaginatedReader.tsx`):
@@ -358,7 +358,7 @@ Elements:
 - **RTL books:** no change — the tap surface and the overlay geometry are direction-agnostic; page-order mirroring is out of scope (unchanged from SPEC-032).
 - **Book with no TOC:** the TOC button/modal is omitted; everything else (tap surface, strips, counter, search) is unaffected.
 - **The close button's hit area when chrome is OFF:** it is hidden (`pointer-events: none` / `opacity: 0`), so the area it would occupy is part of the tap surface.
-- **Measuring mirror / calibration probe:** already `pointer-events: none`; must stay that way so the full-screen surface works.
+- **The hidden measuring mirror:** already `pointer-events: none`; must stay that way so the full-screen surface works.
 - **Dictionary popup open:** it is a body-portaled dialog (web) / its own overlay; taps inside it never reach the reader surface.
 - **Strip constants drift:** if the header or bar is ever resized in a later change, `T`/`B` must be re-derived from the formulas; keep the constants next to their components with a comment, and log a mismatch if a runtime measurement disagrees.
 
