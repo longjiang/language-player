@@ -1139,6 +1139,7 @@
         "enter_title": "제목을 입력하세요...",
         "exclude_terms": "제외할 검색어(쉼표로 구분)…",
         "filter": "필터...",
+        "filter_books": "이름으로 필터링…",
         "filter_by_title": "제목으로 필터링...",
         "filter_videos": "동영상 {n}개 필터링",
         "first_name": "이름",

@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { BookOpen, Loader2, MoreVertical, Trash2, X } from 'lucide-react';
+import { BookOpen, Loader2, MoreVertical, Search, Trash2, X } from 'lucide-react';
 import type { EpubSummary } from '@/lib/epub-store';
 import type { EpubUploadResult } from '@/components/reader/epub-upload';
 import { normalizeLanguageCode } from '@/lib/epub-book';
@@ -86,9 +86,19 @@ export function EpubBookshelf({
   // Books are tagged with the L2 they were uploaded under — no OPF language
   // sniffing. Only legacy untagged books still show in every language so
   // they can never silently disappear from the shelf.
+  const [filter, setFilter] = useState('');
   const visibleBooks = books.filter(
     b => !b.language || normalizeLanguageCode(b.language) === l2Primary,
   );
+  // Name filter: case-insensitive match against the file name with the
+  // extension stripped, so "Botchan" finds "botchan.epub".
+  const q = filter.trim().toLowerCase();
+  const filteredBooks = q
+    ? visibleBooks.filter((b) => {
+        const name = b.fileName.replace(/\.[^.]+$/, '').toLowerCase();
+        return name.includes(q) || b.fileName.toLowerCase().includes(q);
+      })
+    : visibleBooks;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-auto">
@@ -111,8 +121,36 @@ export function EpubBookshelf({
       ) : (
         <section>
           <h2 className="mb-3 text-lg font-semibold text-foreground">{t('title.my_books')}</h2>
+
+          {/* Filter the shelf by book name */}
+          <div className="relative mb-3 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder={t('placeholder.filter_books')}
+              aria-label={t('placeholder.filter_books')}
+              className="w-full rounded-md border border-border bg-background py-1.5 pl-8 pr-8 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+            />
+            {filter && (
+              <button
+                type="button"
+                onClick={() => setFilter('')}
+                aria-label={t('action.clear')}
+                title={t('action.clear')}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          {q && filteredBooks.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">{t('msg.no_results')}</p>
+          ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-            {visibleBooks.map(book => {
+            {filteredBooks.map(book => {
               const pct = book.totalChars > 0
                 ? Math.min(100, Math.round((book.readChars / book.totalChars) * 100))
                 : null;
@@ -181,6 +219,7 @@ export function EpubBookshelf({
             {/* Add-a-book slot — dashed tile after the last book */}
             <EpubUpload onFilesProcessed={onFilesProcessed} error={error} slot />
           </div>
+          )}
         </section>
       )}
     </div>

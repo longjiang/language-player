@@ -1139,6 +1139,7 @@
         "enter_title": "Nhập tiêu đề...",
         "exclude_terms": "Từ loại trừ, phân tách bằng dấu phẩy…",
         "filter": "Lọc...",
+        "filter_books": "Lọc theo tên…",
         "filter_by_title": "Lọc theo tiêu đề...",
         "filter_videos": "Lọc {n} video",
         "first_name": "Tên",

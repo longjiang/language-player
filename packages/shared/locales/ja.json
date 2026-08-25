@@ -1139,6 +1139,7 @@
         "enter_title": "タイトルを入力...",
         "exclude_terms": "除外する語（カンマ区切り）…",
         "filter": "フィルター…",
+        "filter_books": "名前で絞り込む…",
         "filter_by_title": "タイトルで絞り込む...",
         "filter_videos": "{n} 件の動画を絞り込む",
         "first_name": "名",
