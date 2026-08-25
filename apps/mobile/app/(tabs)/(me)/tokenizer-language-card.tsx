@@ -62,11 +62,11 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
   // the remaining height with one page.
   const clampUsed = !longSample && sample && samplePagination.contentHeight > 0;
   const readerHeight = clampUsed
-    ? Math.max(0, Math.min(height, samplePagination.contentHeight)) + 44
+    ? Math.max(240, Math.min(height, samplePagination.contentHeight + 44))
     : height;
 
   return (
-    <View style={{ height: readerHeight, flex: 1 }} className="overflow-hidden rounded-lg border border-border bg-card">
+    <View style={{ height: readerHeight, flex: 1 }} className="overflow-hidden rounded-lg border border-border bg-card p-3">
       <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
         <Text className="text-base font-semibold text-foreground">
           {flagEmoji(code)} {nativeLanguageName(code)}

@@ -76,7 +76,9 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 > (persisted in localStorage, short by default). Each card renders the L2
 > text + its L1 translation like the reader — stacked on narrow screens,
 > side-by-side on md+ with the draggable split handle and sentence hover
-> highlight.
+> highlight. Each card has internal padding. Short samples use a content-sized
+> card with a 240px minimum and the normal card height as the maximum; long
+> samples retain the normal card height.
 
 | `POPULAR_L2S` | Test case |
 |---|---|
