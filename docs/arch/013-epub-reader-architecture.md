@@ -582,3 +582,65 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
   every manifest image; it now pre-scans spine `<img src>` and extracts only
   referenced images, in parallel (capped at 4). Rendered images load as before
   (the URI callback resolves the same paths).
+
+---
+
+## Additions (2026-08-25) — PDFs, images, alt formats, reader UX
+
+### PDF reader (web + mobile)
+PDFs live on the same bookshelf (an `EpubMeta.format: 'pdf'` entry; the first
+page is rendered at import as the shelf cover — pdf.js on web, a hidden
+WebView hosting pdf.js on mobile). Opening a PDF shows a grid of page
+thumbnails (lazy-rendered). Tapping a page renders it and sends the page
+image to the DeepSeek Vision endpoint (`POST /vision`,
+`deepseek-v4-flash-vision-exp`, cached server-side) with a "page → markdown"
+prompt; the returned markdown is parsed into blocks and read in the shared
+paginated reader (tokenized words, translation, text actions). The bottom bar
+carries a **TOC** button (the PDF outline/bookmarks) and a **Thumbnails**
+button (back to the grid). Web rendering: `apps/web/src/lib/pdf-book.ts` +
+`components/reader/pdf-reader-panel.tsx`; mobile: `lib/pdf-viewer.tsx`
+(WebView + pdf.js via data: URLs — no native modules) +
+`components/reader/PdfReaderPanel.tsx`.
+
+### Image reader (web + mobile)
+"Open image" on the epub reader's bookshelf reads the image and sends it to
+`POST /vision` with an OCR prompt; the markdown is read in the paginated
+reader as a non-persistent session.
+
+### Epub-like formats (.fb2 / .mobi / .azw3)
+`packages/utils/src/alt-formats.ts` (pure TS, shared) converts FictionBook
+(FB2 XML) and MOBI/AZW3 (PDB + MOBI header + PalmDOC LZ77 decompression per
+the canonical libmobi algorithm; HUFF/CDIC-compressed and encrypted books are
+rejected) into a normalized `{ title, toc, xhtml }`, then packs a minimal
+valid EPUB 3 zip (`buildMinimalEpub`) so both apps' existing book models
+(epubjs web / JSZip mobile) handle spine, pagination, search, and position
+persistence unchanged. TOC extraction is best-effort for MOBI (guide/toc page
+links, falling back to headings).
+
+### Paginated reader UX changes
+- **Space scrolls the page** (Shift+Space scrolls up); it never turns the
+  page (SPEC-087 keyboard section updated).
+- **Short pages mid-align** vertically (immersive epub reader).
+- **Translation-sentence highlight** strengthened (`bg-primary/25 text-primary`)
+  for dark-mode visibility.
+- **Page-width clamp**: content column clamped to `READER_PAGE_WIDTH` (720)
+  with leading margins on BOTH sides (was left=leading/right=16px).
+- **Chromeless controls**: chromeless mode shows "show toolbars" + "close"
+  icon buttons top-right aligned with the chapter title; chrome-visible mode
+  has NO close button (SPEC-085 §7.1/8.1 updated).
+- **Long-page arrow**: a floating down-arrow above the page counter scrolls
+  an overflowing page to the bottom.
+
+### Popup dictionary context sentence
+The popup dictionary shows the sentence the tapped word came from behind a
+collapsible "Context sentence" button — expanded as tokenized text wrapped in
+the text action menu (copy/speak/AI explain/translate) plus its L1
+translation (fetched once). `TokenizedText` gained a `disablePopup` prop so
+the in-popup sentence can't stack a nested popup.
+
+### Mobile file handling
+OS file-open (iOS CFBundleDocumentTypes / Android VIEW intent filters) and an
+in-app routing layer (`apps/mobile/lib/file-open.ts`) send audio/video (+.srt)
+to the local media player, ebooks/PDFs to the ebook reader, .txt/.md to the
+notes reader (as a new note), and images to the image reader. Requires a
+dev-build rebuild for the native document types to take effect.

@@ -185,3 +185,12 @@ Terms used throughout this spec, in plain language.
 > **Behavior gap note:** two requirements above are not yet fully met by the current implementation and are tracked here so they aren't lost:
 > - *Side-by-side on portrait tablets* — both apps currently key side-by-side (and the drag handle) to a fixed `md`-width breakpoint (`768`). Most portrait iPads are ≥ `768` and already get side-by-side, but the smallest portrait iPad (`iPad mini`, 744pt) falls below it. The requirement above says portrait tablets get side-by-side; the breakpoint should be lowered/adjusted so even the smallest portrait iPad qualifies.
 > - *Stacked translation mirrors first-line indent in every reader* — the mobile EPUB reader already mirrors the indent for stacked translation, but the web notes reader does not match it. These should be unified so all readers behave identically.
+
+## Revision (2026-08-25) — Space scrolls instead of paging
+
+The §1 keyboard rule "…`Space` next" is superseded: **Space scrolls the
+current page down by one viewport** (Shift+Space scrolls up) and never turns
+the page (product decision). Page turns stay on `←/↑/PageUp` and
+`→/↓/PageDown` plus buttons/swipes. On a non-scrollable page Space is a
+no-op. Long pages additionally show a floating down-arrow above the page
+counter that scrolls to the bottom.
