@@ -24,6 +24,7 @@ import {
 } from '@/lib/epub-store';
 import type { TocItem } from '@/lib/epub-parser';
 import type { ContentBlock } from '@/lib/parse-markdown';
+import { convertAltBookFormat, buildMinimalEpub } from '@langplayer/utils';
 import { log } from '@/lib/logger';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';
@@ -50,6 +51,24 @@ async function copyDirectoryContents(srcDir: string, destDir: string): Promise<v
       await FileSystem.copyAsync({ from: src, to: dst });
     }
   }
+}
+
+/** Base64 → Uint8Array (Hermes provides atob). */
+function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/** Uint8Array → base64 (Hermes provides btoa). */
+function bytesToBase64(bytes: Uint8Array): string {
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode(...Array.from(bytes.subarray(i, i + CHUNK)));
+  }
+  return btoa(bin);
 }
 
 export interface UseEpubReturn {
@@ -86,6 +105,10 @@ export interface UseEpubReturn {
   pickFile: (importLanguage?: string) => Promise<void>;
   /** Open a stored book; returns the location to resume at. */
   openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
+  /** PDF reading session (format: 'pdf' entries) — file uri + name. */
+  pdfDoc: { id: string; uri: string; fileName: string } | null;
+  /** Persist a rendered cover (e.g. a PDF's first page) for a shelf entry. */
+  updateCover: (id: string, coverUrl: string | null) => Promise<void>;
   /** Close the book and return to the bookshelf (the handle is kept). */
   close: () => Promise<void>;
   /** Enter the reader after the cover has been tapped. */
@@ -108,6 +131,7 @@ export function useEpub(): UseEpubReturn {
   const [coverTapped, setCoverTapped] = useState(false);
   const [initialLocation, setInitialLocation] = useState<BookLocation | null>(null);
   const [ready, setReady] = useState(false);
+  const [pdfDoc, setPdfDoc] = useState<{ id: string; uri: string; fileName: string } | null>(null);
 
   const modelRef = useRef<EpubBookModel | null>(null);
   const openBookIdRef = useRef<string | null>(null);
@@ -209,6 +233,7 @@ export function useEpub(): UseEpubReturn {
     let firstError: string | null = null;
     let lastModel: EpubBookModel | null = null;
     let lastId = '';
+    let lastPdf: { id: string; uri: string; fileName: string } | null = null;
 
     try {
       await ensureLibraryDir();
@@ -249,6 +274,52 @@ export function useEpub(): UseEpubReturn {
             // Use the unwrapped file's name (e.g. "X.epub", or the inner
             // .epub's own name when the zip wraps a single book file).
             displayName = unwrappedName;
+          }
+
+          // Epub-like formats (.fb2/.mobi/.azw3) → convert to a minimal EPUB
+          // in place; the shelf keeps the original file name.
+          if (/\.(fb2|mobi|azw3)$/i.test(displayName)) {
+            const b64 = await FileSystem.readAsStringAsync(dest, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            const content = convertAltBookFormat(base64ToBytes(b64).buffer as ArrayBuffer, displayName);
+            if (!content) throw new Error('Unsupported alt book format');
+            const epubBytes = await buildMinimalEpub(content);
+            await FileSystem.writeAsStringAsync(dest, bytesToBase64(new Uint8Array(epubBytes)), {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            log('[epub] alt format converted to epub', { name: displayName, title: content.title });
+          }
+
+          // PDF: copy done above — the first page becomes the shelf cover
+          // (rendered lazily by the reader screen; stored once available).
+          if (/\.pdf$/i.test(displayName)) {
+            const info2 = await FileSystem.getInfoAsync(dest);
+            const existingEntry2 = books.find((b) => b.id === id);
+            const fallbackLanguage2 = importLanguage
+              ? importLanguage.trim().split(/[-_]/)[0]?.toLowerCase() || null
+              : null;
+            const pdfMeta: EpubMeta = {
+              id,
+              fileName: displayName,
+              fileSize: info2.exists ? (info2 as { size: number }).size : 0,
+              format: 'pdf',
+              language: fallbackLanguage2,
+              coverUrl: existingEntry2?.coverUrl ?? null,
+              title: displayName.replace(/\.pdf$/i, ''),
+              author: '',
+              lastLocation: null,
+              totalChars: 0,
+              readChars: 0,
+              lastReadAt: Date.now(),
+              addedAt: Date.now(),
+            };
+            await saveEpub(pdfMeta);
+            importedCount++;
+            lastId = id;
+            lastPdf = { id, uri: dest, fileName: displayName };
+            log(`[LP Mobile] 📄 pdf import done "${asset.name}"`);
+            continue;
           }
 
           const m = await openEpubBook(dest, displayName);
@@ -300,6 +371,12 @@ export function useEpub(): UseEpubReturn {
 
       if (importedCount === 0) {
         setError(firstError ?? 'Failed to import EPUB');
+      } else if (importedCount === 1 && lastPdf) {
+        // Single PDF import → open the thumbnails grid directly.
+        setPdfDoc(lastPdf);
+        setOpenBookId(lastPdf.id);
+        setCoverTapped(true);
+        log('[epub] pdf auto-open', { id: lastPdf.id });
       } else if (importedCount === 1 && lastModel) {
         const start: BookLocation | null =
           lastModel.markers[0]?.location ??
@@ -336,6 +413,16 @@ export function useEpub(): UseEpubReturn {
       const fileUri = libraryFileUri(id);
       const info = await FileSystem.getInfoAsync(fileUri);
       if (!info.exists) { setError('Book file missing'); return null; }
+
+      // PDF entries: no block model — the reader shows the thumbnails grid.
+      if (meta.format === 'pdf') {
+        setPdfDoc({ id, uri: fileUri, fileName: meta.fileName });
+        setOpenBookId(id);
+        setCoverTapped(true);
+        await updateEpubMeta(id, { lastReadAt: Date.now() });
+        return null;
+      }
+
       const m = await openEpubBook(fileUri, meta.fileName, { coverUri: await coverUriIfExists(meta.coverUrl) });
       const resume = meta.lastLocation && meta.lastLocation.blockIndex < m.blocks.length
         ? meta.lastLocation
@@ -361,10 +448,17 @@ export function useEpub(): UseEpubReturn {
     modelRef.current = null;
     openBookIdRef.current = null;
     setModel(null);
+    setPdfDoc(null);
     setOpenBookId(null);
     setCoverTapped(false);
     setInitialLocation(null);
     setError(null);
+  }, []);
+
+  /** Persist a rendered cover (e.g. a PDF's first page) for a shelf entry. */
+  const updateCover = useCallback(async (id: string, coverUrl: string | null) => {
+    await updateEpubMeta(id, { coverUrl });
+    setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, coverUrl } : b)));
   }, []);
 
   const dismissCover = useCallback(() => setCoverTapped(true), []);
@@ -416,6 +510,8 @@ export function useEpub(): UseEpubReturn {
     refreshBooks,
     pickFile,
     openBook,
+    pdfDoc,
+    updateCover,
     close,
     dismissCover,
     saveLocation,

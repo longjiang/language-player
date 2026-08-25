@@ -16,6 +16,9 @@ import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
+import { PdfReaderPanel } from '@/components/reader/PdfReaderPanel';
+import { PdfViewer, type PdfViewerHandle } from '@/lib/pdf-viewer';
+import { libraryFileUri } from '@/lib/epub-store';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
@@ -73,6 +76,27 @@ export default function EpubReaderScreen() {
     md: string;
     converting: boolean;
   } | null>(null);
+
+  // ── PDF shelf covers: render each PDF's first page once (hidden WebView),
+  // then persist it so the bookshelf tile shows the real cover. ──
+  const pdfWithoutCover = useMemo(
+    () => epub.books.find((b) => b.format === 'pdf' && !b.coverUrl) ?? null,
+    [epub.books],
+  );
+  const [pdfCoverState, setPdfCoverState] = useState<{ id: string; uri: string } | null>(null);
+  const pdfCoverViewerRef = useRef<PdfViewerHandle>(null);
+  useEffect(() => {
+    if (!pdfWithoutCover || pdfCoverState?.id === pdfWithoutCover.id) return;
+    setPdfCoverState({ id: pdfWithoutCover.id, uri: libraryFileUri(pdfWithoutCover.id) });
+  }, [pdfWithoutCover, pdfCoverState]);
+  const handlePdfCoverReady = useCallback(() => {
+    void pdfCoverViewerRef.current?.renderPage(1, 0.6).then((url) => {
+      if (!url || !pdfCoverState) return;
+      log('[epub] pdf cover rendered', { id: pdfCoverState.id });
+      void epub.updateCover(pdfCoverState.id, url);
+      setPdfCoverState(null);
+    });
+  }, [pdfCoverState, epub]);
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   const pendingJumpRef = useRef<BookLocation | null>(null);
@@ -431,6 +455,24 @@ export default function EpubReaderScreen() {
   // Blank-space tap in the reader toggles the immersive chrome.
   const toggleChrome = useCallback(() => setChromeVisible(v => !v), []);
 
+  // ── PDF reader (format: 'pdf' shelf entry open) ──
+  if (epub.pdfDoc) {
+    return (
+      <View className="flex-1 bg-background">
+        <PdfReaderPanel
+          uri={epub.pdfDoc.uri}
+          fileName={epub.pdfDoc.fileName}
+          onClose={() => void handleClose()}
+        />
+        {/* Hidden cover renderer — background first-page covers for PDF shelf
+            tiles that don't have one yet. */}
+        {pdfCoverState && pdfCoverState.id !== epub.pdfDoc.id && (
+          <PdfViewer uri={pdfCoverState.uri} ref={pdfCoverViewerRef} onInfo={handlePdfCoverReady} />
+        )}
+      </View>
+    );
+  }
+
   // ── Bookshelf (no book open) ──
   if (imageSession && !hasBook) {
     // Image reader session — OCR'd markdown in the paginated reader.
@@ -534,6 +576,10 @@ export default function EpubReaderScreen() {
           onRemoveBook={handleRemoveBook}
           onAddBook={handleAddBook}
         />
+        {/* Hidden cover renderer — background first-page covers for PDF tiles. */}
+        {pdfCoverState && (
+          <PdfViewer uri={pdfCoverState.uri} ref={pdfCoverViewerRef} onInfo={handlePdfCoverReady} />
+        )}
       </View>
     );
   }
