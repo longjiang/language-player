@@ -572,8 +572,12 @@ EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
 > `ios/LanguagePlayer3.xcworkspace` and the scheme is `LanguagePlayer3`.
 > Env vars alone (`DEVELOPMENT_TEAM=9CS9PCBX32 CODE_SIGN_STYLE=Automatic
 > CODE_SIGN_IDENTITY="Apple Development"` on the command line) were **not**
-> sufficient on Xcode 26 — the archive still failed the team check. After
-> every prebuild, also write these two settings into
+> sufficient on the original Xcode 26 — the archive still failed the team
+> check. **Updated 2026-08-25:** on Xcode 26.6 the command-line
+> `DEVELOPMENT_TEAM=9CS9PCBX32` alone (with `-allowProvisioningUpdates`) is
+> enough — the archive signs with `Apple Development` and exports cleanly. If a
+> future Xcode regresses and rejects the env var again, after every prebuild
+> also write these two settings into
 > `ios/LanguagePlayer3.xcodeproj/project.pbxproj` (both the Debug and Release
 > build configurations, next to `CODE_SIGN_IDENTITY[sdk=iphoneos*]`):
 
