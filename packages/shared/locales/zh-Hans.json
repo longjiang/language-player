@@ -1116,6 +1116,7 @@
         "enter_title": "输入标题...",
         "exclude_terms": "要排除的词，逗号分隔…",
         "filter": "筛选...",
+        "filter_books": "按名称筛选…",
         "filter_by_title": "按标题筛选...",
         "filter_videos": "筛选 {n} 个视频",
         "first_name": "名",

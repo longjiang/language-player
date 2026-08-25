@@ -1111,6 +1111,7 @@
         "enter_title": "輸入標題...",
         "exclude_terms": "要排除的詞，逗號分隔…",
         "filter": "篩選…",
+        "filter_books": "按名稱篩選…",
         "filter_by_title": "按標題篩選...",
         "filter_videos": "篩選 {n} 個影片",
         "first_name": "名",

@@ -1139,6 +1139,7 @@
         "enter_title": "Wpisz tytuł...",
         "exclude_terms": "Terminy do wykluczenia oddzielone przecinkami…",
         "filter": "Filtr...",
+        "filter_books": "Filtruj po nazwie…",
         "filter_by_title": "Filtruj według tytułu...",
         "filter_videos": "Filtruj {n} filmów",
         "first_name": "Imię",

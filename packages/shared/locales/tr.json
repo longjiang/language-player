@@ -1139,6 +1139,7 @@
         "enter_title": "Bir başlık girin...",
         "exclude_terms": "Hariç tutulacak terimler, virgülle ayrılmış…",
         "filter": "Filtrele...",
+        "filter_books": "Ada göre filtrele…",
         "filter_by_title": "Başlığa göre filtrele...",
         "filter_videos": "{n} videoyu filtrele",
         "first_name": "Ad",

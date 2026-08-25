@@ -1139,6 +1139,7 @@
         "enter_title": "Introduce un título...",
         "exclude_terms": "Términos a excluir separados por comas…",
         "filter": "Filtrar...",
+        "filter_books": "Filtrar por nombre…",
         "filter_by_title": "Filtrar por título...",
         "filter_videos": "Filtrar {n} videos",
         "first_name": "Nombre",

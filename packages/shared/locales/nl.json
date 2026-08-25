@@ -1139,6 +1139,7 @@
         "enter_title": "Voer een titel in...",
         "exclude_terms": "Uit te sluiten termen, gescheiden door komma's…",
         "filter": "Filter...",
+        "filter_books": "Filteren op naam…",
         "filter_by_title": "Filter op titel...",
         "filter_videos": "{n} video's filteren",
         "first_name": "Voornaam",

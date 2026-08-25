@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Platform, TextInput } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { BookOpen, MoreVertical, Upload } from 'lucide-react-native';
+import { BookOpen, MoreVertical, Search, Upload, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { baseCode } from '@langplayer/utils';
@@ -54,6 +54,8 @@ export function EpubBookshelf({
   // Covers whose file:// URI can't be resolved (e.g. a purged temp cover)
   // fall back to the placeholder icon instead of an empty tile.
   const [coverFailedIds, setCoverFailedIds] = useState<Set<string>>(new Set());
+  /** Bookshelf name filter — case-insensitive match on the file name. */
+  const [filter, setFilter] = useState('');
 
   // iOS SF Symbol for a menu item; Android's PopupMenu renders text-only, so
   // no image is passed there. `imageColor` is REQUIRED on New-Architecture
@@ -68,6 +70,16 @@ export function EpubBookshelf({
   const visibleBooks = books.filter(
     (b) => !b.language || baseCode(b.language) === baseCode(l2Code),
   );
+
+  // Name filter: case-insensitive match against the file name with the
+  // extension stripped, so "Botchan" finds "botchan.epub".
+  const q = filter.trim().toLowerCase();
+  const filteredBooks = q
+    ? visibleBooks.filter((b) => {
+        const name = b.fileName.replace(/\.[^.]+$/, '').toLowerCase();
+        return name.includes(q) || b.fileName.toLowerCase().includes(q);
+      })
+    : visibleBooks;
 
   if (loading) {
     return (
@@ -113,8 +125,38 @@ export function EpubBookshelf({
       ) : (
         <>
           <Text className="mb-3 text-lg font-semibold text-foreground">{t('title.my_books')}</Text>
+
+          {/* Filter the shelf by book name */}
+          <View className="mb-3 flex-row items-center rounded-md border border-border bg-background px-2.5">
+            <Search size={14} color={ICON_MUTED} />
+            <TextInput
+              value={filter}
+              onChangeText={setFilter}
+              placeholder={t('placeholder.filter_books')}
+              placeholderTextColor={ICON_MUTED}
+              className="ml-2 h-9 flex-1 py-1 text-xs text-foreground"
+              accessibilityLabel={t('placeholder.filter_books')}
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            {filter.length > 0 && (
+              <Pressable
+                onPress={() => setFilter('')}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('action.clear')}
+                className="rounded p-1 active:bg-muted"
+              >
+                <X size={14} color={ICON_MUTED} />
+              </Pressable>
+            )}
+          </View>
+
+          {q && filteredBooks.length === 0 ? (
+            <Text className="py-8 text-center text-sm text-muted-foreground">{t('msg.no_results')}</Text>
+          ) : (
           <View className="flex-row flex-wrap" style={{ gap }}>
-            {visibleBooks.map((book) => {
+            {filteredBooks.map((book) => {
               const pct = book.totalChars > 0
                 ? Math.min(100, Math.round((book.readChars / book.totalChars) * 100))
                 : null;
@@ -212,6 +254,7 @@ export function EpubBookshelf({
             {/* Add-a-book slot — dashed tile after the last book */}
             <AddBookTile width={cardWidth} onPress={onAddBook} t={t} />
           </View>
+          )}
         </>
       )}
     </ScrollView>
