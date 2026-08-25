@@ -26,6 +26,7 @@
         "advanced_search": "고급 검색",
         "all_results": "모든 결과",
         "apply": "적용",
+        "ask_ai": "AI에게 묻기",
         "back": "뒤로",
         "back_to_documentation": "문서로 돌아가기",
         "back_to_home_page": "홈페이지로 돌아가기",
@@ -187,6 +188,7 @@
         "related_to": "말뭉치 - '{word}' 관련"
     },
     "docs": {
+        "ask_ai_placeholder": "앱 사용 방법에 대해 질문하기…",
         "guides_reference": "가이드, 참조 및 자주 묻는 질문",
         "no_docs_yet": "아직 문서가 없습니다.",
         "no_results": "결과 없음",
@@ -316,6 +318,7 @@
         "coming_soon": "출시 예정",
         "commit": "커밋",
         "conjugation": "활용",
+        "context_sentence": "문맥 문장",
         "cover": "표지",
         "created": "생성일",
         "current_plan": "현재 요금제",

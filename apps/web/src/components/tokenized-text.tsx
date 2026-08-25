@@ -173,6 +173,10 @@ export interface TokenizedTextProps {
   /** When true, selecting text inside the tokenized text opens the dictionary
    *  popup with the selected substring fed in as the lookup term (no lemma). */
   selectionDictionary?: boolean;
+  /** When true, token taps do NOT open the dictionary popup. Used for
+   *  tokenized text rendered inside the popup itself (the context-sentence
+   *  card) where a nested dialog would stack on top of the popup. */
+  disablePopup?: boolean;
   /** Called when the pointer enters/leaves a token: the token's char range in
    *  `text` on enter (null when ranges can't be reconstructed), null on leave.
    *  Used by the readers to highlight the matching translation sentence. */
@@ -216,6 +220,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   selectionDictionary = false,
   onTokenHover,
   typeFace,
+  disablePopup = false,
 }) => {
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
@@ -839,7 +844,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       </span>
 
       {/* Dictionary popup */}
-      {selectedToken && (
+      {!disablePopup && selectedToken && (
         <DictionaryPopup
           token={selectedToken}
           l1Code={l1.code}

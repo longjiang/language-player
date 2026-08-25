@@ -26,6 +26,7 @@
         "advanced_search": "Avanzado",
         "all_results": "Todos los resultados",
         "apply": "Aplicar",
+        "ask_ai": "Preguntar a la IA",
         "back": "Atrás",
         "back_to_documentation": "Volver a la documentación",
         "back_to_home_page": "Volver a la página de inicio",
@@ -187,6 +188,7 @@
         "related_to": "Corpus - Relacionado con '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "Haz una pregunta sobre cómo usar la app…",
         "guides_reference": "Guías, referencia y preguntas frecuentes",
         "no_docs_yet": "Aún no hay documentación disponible.",
         "no_results": "Sin resultados",
@@ -316,6 +318,7 @@
         "coming_soon": "Próximamente",
         "commit": "Commit",
         "conjugation": "Conjugación",
+        "context_sentence": "Frase de contexto",
         "cover": "Portada",
         "created": "Creado",
         "current_plan": "Plan Actual",

@@ -26,6 +26,7 @@
         "advanced_search": "Zaawansowane",
         "all_results": "Wszystkie wyniki",
         "apply": "Zastosuj",
+        "ask_ai": "Zapytaj AI",
         "back": "Wstecz",
         "back_to_documentation": "Wróć do dokumentacji",
         "back_to_home_page": "Wróć do strony głównej",
@@ -187,6 +188,7 @@
         "related_to": "Korpus - Powiązane z '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "Zadaj pytanie o korzystanie z aplikacji…",
         "guides_reference": "Przewodniki, materiały referencyjne i często zadawane pytania",
         "no_docs_yet": "Brak jeszcze dostępnej dokumentacji.",
         "no_results": "Brak wyników",
@@ -316,6 +318,7 @@
         "coming_soon": "Wkrótce",
         "commit": "Commit",
         "conjugation": "Odmiana",
+        "context_sentence": "Zdanie kontekstowe",
         "cover": "Okładka",
         "created": "Utworzono",
         "current_plan": "Obecny Plan",

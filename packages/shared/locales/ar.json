@@ -26,6 +26,7 @@
         "advanced_search": "متقدم",
         "all_results": "جميع النتائج",
         "apply": "تطبيق",
+        "ask_ai": "اسأل الذكاء الاصطناعي",
         "back": "رجوع",
         "back_to_documentation": "العودة إلى التوثيق",
         "back_to_home_page": "العودة إلى الصفحة الرئيسية",
@@ -187,6 +188,7 @@
         "related_to": "المدوّنة - مرتبط بـ «{word}»"
     },
     "docs": {
+        "ask_ai_placeholder": "اطرح سؤالًا حول استخدام التطبيق…",
         "guides_reference": "أدلة ومراجع وأسئلة شائعة",
         "no_docs_yet": "لا توجد وثائق متاحة بعد.",
         "no_results": "لا توجد نتائج",
@@ -316,6 +318,7 @@
         "coming_soon": "قريبًا",
         "commit": "الالتزام",
         "conjugation": "تصريف",
+        "context_sentence": "جملة السياق",
         "cover": "غلاف",
         "created": "تاريخ الإنشاء",
         "current_plan": "الخطة الحالية",

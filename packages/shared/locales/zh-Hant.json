@@ -26,6 +26,7 @@
         "advanced_search": "進階搜尋",
         "all_results": "所有結果",
         "apply": "套用",
+        "ask_ai": "問AI",
         "back": "返回",
         "back_to_documentation": "返回文件",
         "back_to_home_page": "返回首頁",
@@ -180,6 +181,7 @@
         "related_to": "語料庫 - 與「{word}」相關"
     },
     "docs": {
+        "ask_ai_placeholder": "詢問有關使用應用程式的問題…",
         "guides_reference": "指南、參考和常見問題解答",
         "no_docs_yet": "暫無文件。",
         "no_results": "無結果",
@@ -308,6 +310,7 @@
         "coming_soon": "即將推出",
         "commit": "提交",
         "conjugation": "變位",
+        "context_sentence": "上下文句子",
         "cover": "封面",
         "created": "建立時間",
         "current_plan": "當前方案",

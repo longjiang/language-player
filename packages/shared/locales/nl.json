@@ -26,6 +26,7 @@
         "advanced_search": "Geavanceerd",
         "all_results": "Alle resultaten",
         "apply": "Toepassen",
+        "ask_ai": "Vraag AI",
         "back": "Terug",
         "back_to_documentation": "Terug naar documentatie",
         "back_to_home_page": "Terug naar de startpagina",
@@ -187,6 +188,7 @@
         "related_to": "Corpus - Verwant aan '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "Stel een vraag over het gebruik van de app…",
         "guides_reference": "Handleidingen, naslag en veelgestelde vragen",
         "no_docs_yet": "Nog geen documentatie beschikbaar.",
         "no_results": "Geen resultaten",
@@ -316,6 +318,7 @@
         "coming_soon": "Binnenkort beschikbaar",
         "commit": "Commit",
         "conjugation": "Vervoeging",
+        "context_sentence": "Contextzin",
         "cover": "Omslag",
         "created": "Aangemaakt",
         "current_plan": "Huidig Abonnement",

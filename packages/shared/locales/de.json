@@ -26,6 +26,7 @@
         "advanced_search": "Erweitert",
         "all_results": "Alle Ergebnisse",
         "apply": "Übernehmen",
+        "ask_ai": "KI fragen",
         "back": "Zurück",
         "back_to_documentation": "Zurück zur Dokumentation",
         "back_to_home_page": "Zurück zur Startseite",
@@ -187,6 +188,7 @@
         "related_to": "Korpus - Verwandt mit '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "Stelle eine Frage zur Nutzung der App…",
         "guides_reference": "Anleitungen, Referenz und häufig gestellte Fragen",
         "no_docs_yet": "Noch keine Dokumentation verfügbar.",
         "no_results": "Keine Ergebnisse",
@@ -316,6 +318,7 @@
         "coming_soon": "Demnächst",
         "commit": "Commit",
         "conjugation": "Konjugation",
+        "context_sentence": "Kontextsatz",
         "cover": "Cover",
         "created": "Erstellt",
         "current_plan": "Aktueller Plan",

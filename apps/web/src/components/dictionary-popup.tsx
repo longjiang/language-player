@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo, type CSSProperties } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, ImageIcon } from 'lucide-react';
+import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
+import { TokenizedText } from '@/components/tokenized-text';
+import { TextActionMenu } from '@/components/text-action-menu';
+import { translateText } from '@/lib/translate';
 import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { removeCardFromStorage } from '@/hooks/use-srs';
@@ -43,6 +46,72 @@ interface DictionaryPopupProps {
    *  alongside whatever the standard lookup returns. */
   extractPhrases?: boolean;
   onClose: () => void;
+}
+
+/**
+ * Collapsible "context sentence" card: the L2 sentence the tapped word came
+ * from, rendered as tokenized text wrapped in the text action menu (copy /
+ * speak / AI explain / translate), plus its L1 translation (fetched once on
+ * first expand). Hidden behind a toggle button so the popup stays compact.
+ */
+function ContextSentenceCard({
+  context,
+  l2Code,
+  l1Code,
+}: {
+  context: string;
+  l2Code: string;
+  l1Code: string;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const fetchedRef = useRef(false);
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && !fetchedRef.current) {
+      fetchedRef.current = true;
+      setTranslating(true);
+      translateText(context, l1Code, l2Code)
+        .then((tr) => setTranslation(tr && tr !== context ? tr : null))
+        .finally(() => setTranslating(false));
+    }
+  };
+
+  return (
+    <div className="mb-3 overflow-hidden rounded-lg border border-border bg-muted/30">
+      <button
+        type="button"
+        onClick={toggle}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/60"
+        aria-expanded={open}
+      >
+        <span className="flex-1 text-xs font-semibold text-muted-foreground">
+          {t('label.context_sentence')}
+        </span>
+        {open
+          ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+          : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="border-t border-border px-3 py-2">
+          <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
+            <TokenizedText text={context} l2Code={l2Code} textScale={1} disablePopup />
+          </TextActionMenu>
+          {translating ? (
+            <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.loading')}
+            </p>
+          ) : translation ? (
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{translation}</p>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** Fetches dictionary entries for a token and displays them in a popover. */
@@ -456,6 +525,16 @@ export function DictionaryPopup({
               )}
             </div>
           )}
+
+          {/* Context sentence + translation, tokenized, behind a collapsible
+              button (popup dictionary requirement). */}
+          {context?.text ? (
+            <ContextSentenceCard
+              context={context.text}
+              l2Code={l2Code}
+              l1Code={l1Code}
+            />
+          ) : null}
 
           {/* AI Explanation — placed above dictionary entries, matching Classic */}
           <AiExplanation

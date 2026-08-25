@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
 import { Button, buttonTextClass } from '@/components/ui/button';
+import { Pressable } from '@/components/ui/pressable';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,10 +29,96 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExternalLink, ImageIcon, X } from 'lucide-react-native';
+import { ExternalLink, ImageIcon, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { TokenizedText } from '@/components/TokenizedText';
+import { TextActionMenu } from '@/components/TextActionMenu';
 
 const { log } = popupLogger;
+
+/**
+ * Collapsible "context sentence" card for the popup dictionary: the L2
+ * sentence the tapped word came from, rendered as tokenized text wrapped in
+ * the text action menu (copy / speak / AI explain / translate), plus its L1
+ * translation (fetched once on first expand). Hidden behind a toggle button
+ * so the popup stays compact by default.
+ */
+function ContextSentenceCard({
+  context,
+  l2Code,
+  l1Code,
+}: {
+  context: string;
+  l2Code: string;
+  l1Code: string;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const translationFetchedRef = useRef(false);
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && !translationFetchedRef.current) {
+      translationFetchedRef.current = true;
+      setTranslating(true);
+      fetch(`${PYTHON_API_URL}/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: context, l1: l1Code, l2: l2Code }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          const tr = data?.translated_text ?? data?.translation ?? data?.text ?? null;
+          setTranslation(typeof tr === 'string' ? tr : null);
+        })
+        .catch(() => setTranslation(null))
+        .finally(() => setTranslating(false));
+    }
+  };
+
+  return (
+    <View className="mb-3 overflow-hidden rounded-lg border border-border bg-muted/30">
+      <Pressable
+        onPress={toggle}
+        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+        accessibilityRole="button"
+        accessibilityLabel={t('label.context_sentence')}
+      >
+        <Text className="flex-1 text-xs font-semibold text-muted-foreground">
+          {t('label.context_sentence')}
+        </Text>
+        {open
+          ? <ChevronUp size={14} color={ICON_MUTED} />
+          : <ChevronDown size={14} color={ICON_MUTED} />}
+      </Pressable>
+      {open && (
+        <View className="border-t border-border px-3 py-2">
+          <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
+            <TokenizedText
+              text={context}
+              l2Code={l2Code}
+              textScale={1}
+              disablePopup
+            />
+          </TextActionMenu>
+          {translating ? (
+            <View className="mt-2 flex-row items-center gap-2">
+              <ActivityIndicator size="small" color={ICON_MUTED} />
+              <Text className="text-xs text-muted-foreground">{t('msg.loading')}</Text>
+            </View>
+          ) : translation ? (
+            <Text className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {translation}
+            </Text>
+          ) : null}
+        </View>
+      )}
+    </View>
+  );
+}
 
 interface DictionaryPopupProps {
   visible: boolean;
@@ -582,6 +669,16 @@ export function DictionaryPopup({
                     <ExternalLink size={14} color={ICON_PRIMARY} />
                     <Text className={buttonTextClass('outline')}>{t('action.open_in_reader')}</Text>
                   </Button>
+                ) : null}
+
+                {/* Context sentence + translation, tokenized, behind a
+                    collapsible button (popup dictionary requirement). */}
+                {context ? (
+                  <ContextSentenceCard
+                    context={context}
+                    l2Code={l2}
+                    l1Code={baseCode(l1Lang.code)}
+                  />
                 ) : null}
 
                 {/* AI + image sections need the network — hide while offline. */}

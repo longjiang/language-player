@@ -26,6 +26,7 @@
         "advanced_search": "Nâng cao",
         "all_results": "Tất cả kết quả",
         "apply": "Áp dụng",
+        "ask_ai": "Hỏi AI",
         "back": "Quay lại",
         "back_to_documentation": "Quay lại tài liệu",
         "back_to_home_page": "Quay lại trang chủ",
@@ -187,6 +188,7 @@
         "related_to": "Kho ngữ liệu - Liên quan đến '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "Đặt câu hỏi về cách sử dụng ứng dụng…",
         "guides_reference": "Hướng dẫn, tham khảo và câu hỏi thường gặp",
         "no_docs_yet": "Chưa có tài liệu hướng dẫn.",
         "no_results": "Không có kết quả",
@@ -316,6 +318,7 @@
         "coming_soon": "Sắp ra mắt",
         "commit": "Commit",
         "conjugation": "Cách chia",
+        "context_sentence": "Câu ngữ cảnh",
         "cover": "Bìa",
         "created": "Đã tạo",
         "current_plan": "Gói Hiện Tại",
