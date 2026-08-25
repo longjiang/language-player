@@ -7,7 +7,7 @@ import {
 import { Pressable } from '@/components/ui/pressable';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isPhoneticsEligible, translationSizeFactor, buildSentenceMap, sentenceIndexAt } from '@langplayer/utils';
+import { baseCode, isPhoneticsEligible, translationSizeFactor, buildSentenceMap, sentenceIndexAt } from '@langplayer/utils';
 import type { SentenceMap } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
 import { AlignedTranslation, lineBaselineOffset } from '@/components/reader/AlignedTranslation';
@@ -25,13 +25,7 @@ import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
-import {
-  calibrationSignature,
-  cacheCalibration,
-  deriveCalibration,
-  getCachedCalibration,
-  type TokenizedTextCalibration,
-} from '@/lib/tokenized-text-calibration';
+import { computeRubyLayout } from '@/lib/ruby-layout';
 
 const { log } = readerLogger;
 const displayLoggedState = new WeakMap<ContentBlock, boolean>();
@@ -507,40 +501,32 @@ export function PaginatedReader({
     : tokenSettings.typeFace === 'sans-serif'
       ? (Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif')
       : undefined;
-  // Tokenized ruby rows are taller than plain text; the web reader uses
-  // ~2.25× leading when ruby is on for every word and 2× for hard-words-only.
-  // Interlinear definitions add another per-line slot below the base text.
-  const rubyLineScale = isPhoneticsEligible(l2Code) && phonetics.show === 'ruby'
-    ? (phonetics.conditions === 'always' ? 2.25 : 2)
-    : 2;
-  const definitionExtraScale = showDefinition ? 0.7 : 0;
-  const estimateLineScale = rubyLineScale + definitionExtraScale;
-  const calibrationSignatureValue = useMemo(
-    () => calibrationSignature({
-      l2Code,
-      textScale,
-      zoom: tokenSettings.zoom,
-      typeFace: tokenSettings.typeFace,
-      phoneticsShow: phonetics.show,
-      phoneticsConditions: phonetics.conditions,
-      definitionShow: showDefinition,
-    }),
-    [l2Code, textScale, tokenSettings.zoom, tokenSettings.typeFace, phonetics.show, phonetics.conditions, showDefinition],
-  );
-  const [calibration, setCalibration] = useState<TokenizedTextCalibration | null>(
-    () => getCachedCalibration(calibrationSignatureValue),
-  );
-  const calibrationRatio = Math.max(1, calibration?.ratio ?? (estimateLineScale / 2));
-  const measureLineHeight = Math.round(measureFontSize * 2 * calibrationRatio);
+  // The L2 body line pitch the TOKENIZED reader actually renders: the native
+  // ruby paragraph pins every line to `computeRubyLayout().linePitch` (base
+  // leading + reading band when ruby is on). The hidden measuring view must
+  // use the SAME pitch so page breaks land exactly where the visible text
+  // sits. The old `round(fontSize * 2 * ratio)` heuristic used a flat 2× base
+  // that under-measured BOTH plain text (the real leading is the user's
+  // `leading` ratio, ~1.625×, not 2×) and ruby text (the reading band was
+  // missing) — so pages overflowed (measured too short: contentH > viewport)
+  // or left a gap (measured too tall). Derive the pitch deterministically from
+  // the same inputs TokenizedText uses instead of the dev-only calibration.
+  const l2BodyLeading = tokenSettings.leading ?? 1.625;
+  const rubyLayout = computeRubyLayout(baseCode(l2Code), {
+    fontSize: measureFontSize,
+    lineHeight: Math.round(measureFontSize * l2BodyLeading),
+    showPhonetics: isPhoneticsEligible(l2Code),
+    phoneticsShow: phonetics.show,
+  });
+  // Interlinear definitions reserve an extra per-line slot below the base
+  // text (~0.7× the base leading, matching TokenizedText's definition row).
+  const definitionSlot = showDefinition ? Math.round(measureFontSize * l2BodyLeading * 0.7) : 0;
+  const measureLineHeight = rubyLayout.linePitch + definitionSlot;
   const measureTextStyle = useMemo(() => ({
     fontSize: measureFontSize,
     lineHeight: measureLineHeight,
     ...(measureFontFamily ? { fontFamily: measureFontFamily } : {}),
   }), [measureFontSize, measureLineHeight, measureFontFamily]);
-
-  useEffect(() => {
-    setCalibration(getCachedCalibration(calibrationSignatureValue));
-  }, [calibrationSignatureValue]);
 
   // ── Swipe/flick left/right page turns (drag follows the finger) ──
   // The pan is tuned for flicks: it activates on a small horizontal offset,
@@ -650,39 +636,6 @@ export function PaginatedReader({
     lastPageShownLogKeyRef.current = key;
     appLog(`[Reader] ✅ page content shown page=${page} blocks=${visibleBlocksProp.length} t=${Date.now()}`);
   }, [hasMeasured, page, visibleBlocksProp]);
-
-  const handleCalibrationComplete = useCallback((c: TokenizedTextCalibration) => {
-    cacheCalibration(c);
-    setCalibration(c);
-    log(
-      `[Reader] 🧪 tokenized-text calibration signature=${c.signature} samples=${c.sampleCount}`
-      + ` l2=${l2Code} textScale=${textScale} zoom=${tokenSettings.zoom} typeFace=${tokenSettings.typeFace}`
-      + ` phonetics=${phonetics.show ?? 'off'}/${phonetics.conditions} definition=${showDefinition}`
-      + ` plainLH=${c.plainLineHeight} tokenizedLH=${c.tokenizedLineHeight} ratio=${c.ratio.toFixed(3)}`
-      + ` extraPerLine=${c.extraPerLine}px t=${Date.now()}`,
-    );
-  }, [l2Code, textScale, tokenSettings.zoom, tokenSettings.typeFace, phonetics.show, phonetics.conditions, showDefinition]);
-
-  // One-off dev experiment: measure real TokenizedText vs plain Text with the
-  // user's actual settings, then cache a line-height ratio for the session.
-  const calibrationSamples = useMemo(() => {
-    if (!__DEV__) return null;
-    if (flipping) return null; // never run the probe mid-flip — it renders heavy tokenized samples
-    if (!hasMeasured || !visibleBlocksProp || !blocks) return null;
-    if (getCachedCalibration(calibrationSignatureValue)) return null;
-    const samples: { block: TextBlock; tokens: LemmatizedToken[] }[] = [];
-    for (const block of visibleBlocksProp) {
-      if (block.kind !== 'text'
-        || (block.type !== 'paragraph' && block.type !== 'blockquote' && block.type !== 'list-item')) {
-        continue;
-      }
-      const globalIdx = blocks.indexOf(block);
-      const tokens = tokenCache[globalIdx];
-      if (tokens && tokens.length > 0) samples.push({ block, tokens });
-      if (samples.length >= 8) break;
-    }
-    return samples.length >= 3 ? samples : null;
-  }, [hasMeasured, visibleBlocksProp, blocks, tokenCache, calibrationSignatureValue, flipping]);
 
   // ── Progressive tokenized upgrade after the user stops flipping ──
   // While flipping, visible pages render as plain text. Once the user commits
@@ -955,23 +908,6 @@ export function PaginatedReader({
             );
           })()}
         </View>
-      )}
-
-      {calibrationSamples && (
-        <TokenizedTextCalibrationProbe
-          samples={calibrationSamples}
-          l2Code={l2Code}
-          textScale={textScale}
-          plainTextStyle={{
-            fontSize: measureFontSize,
-            lineHeight: Math.round(measureFontSize * 2),
-            ...(measureFontFamily ? { fontFamily: measureFontFamily } : {}),
-          }}
-          paddingLeft={readerPad.left}
-          paddingRight={readerPad.right}
-          signature={calibrationSignatureValue}
-          onComplete={handleCalibrationComplete}
-        />
       )}
     </TapSurfaceView>
   );
@@ -1359,77 +1295,6 @@ function MeasuringSkeleton({ text }: { text: string }) {
     <View className="gap-y-1.5">
       {Array.from({ length: Math.max(1, Math.ceil(text.length / 50)) }).map((_, li) => (
         <View key={li} className="h-3.5 rounded bg-muted" style={{ width: widths[li % widths.length] }} />
-      ))}
-    </View>
-  );
-}
-
-interface TokenizedTextCalibrationProbeProps {
-  samples: { block: TextBlock; tokens: LemmatizedToken[] }[];
-  l2Code: string;
-  textScale: number;
-  plainTextStyle: { fontSize: number; lineHeight: number; fontFamily?: string };
-  /** Reader content horizontal padding — the probe mirrors the visible
-   *  ScrollView's padding so measured wrap widths match (reader layout rule:
-   *  left margin = the text's leading). */
-  paddingLeft: number;
-  paddingRight: number;
-  signature: string;
-  onComplete: (calibration: TokenizedTextCalibration) => void;
-}
-
-/** Hidden dev-only probe: measures real TokenizedText vs plain Text with the
- *  user's current settings so pagination can use a grounded height ratio. */
-function TokenizedTextCalibrationProbe({
-  samples, l2Code, textScale, plainTextStyle, paddingLeft, paddingRight, signature, onComplete,
-}: TokenizedTextCalibrationProbeProps) {
-  const heightsRef = useRef<Record<number, { plain?: number; tokenized?: number }>>({});
-  const [version, setVersion] = useState(0);
-
-  const handleMeasure = useCallback((
-    index: number,
-    kind: 'plain' | 'tokenized',
-    height: number,
-  ) => {
-    const prev = heightsRef.current[index]?.[kind];
-    if (prev === height) return;
-    heightsRef.current[index] = { ...heightsRef.current[index], [kind]: height };
-    setVersion(v => v + 1);
-  }, []);
-
-  useEffect(() => {
-    const measured = samples
-      .map((_, i) => heightsRef.current[i])
-      .filter((e): e is { plain: number; tokenized: number } => !!e?.plain && !!e?.tokenized);
-    if (measured.length !== samples.length) return;
-    const derived = deriveCalibration(
-      signature,
-      plainTextStyle.lineHeight,
-      measured.map(e => ({ plainHeight: e.plain, tokenizedHeight: e.tokenized })),
-    );
-    if (derived) onComplete(derived);
-  }, [version, samples, signature, plainTextStyle.lineHeight, onComplete]);
-
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0, paddingLeft, paddingRight }}>
-      {samples.map((s, i) => (
-        <View key={`cal-${i}`}>
-          <View className="mb-3">
-            <Text
-              style={plainTextStyle}
-              className="text-foreground"
-              onLayout={(e) => handleMeasure(i, 'plain', e.nativeEvent.layout.height)}
-            >
-              {s.block.text}
-            </Text>
-          </View>
-          <View
-            className="mb-3"
-            onLayout={(e) => handleMeasure(i, 'tokenized', e.nativeEvent.layout.height)}
-          >
-            <TokenizedText text={s.block.text} l2Code={l2Code} tokens={s.tokens} textScale={textScale} />
-          </View>
-        </View>
       ))}
     </View>
   );
