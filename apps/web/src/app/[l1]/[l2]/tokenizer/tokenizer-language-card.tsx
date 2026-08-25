@@ -262,7 +262,7 @@ export function TokenizerLanguageCard({
     <section
       ref={ref}
       style={{ height }}
-      className="flex min-h-0 flex-col rounded-lg border border-border bg-card"
+      className="flex min-h-0 flex-col rounded-lg border border-border bg-card p-3"
     >
       <h2 className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3 text-base font-semibold text-foreground">
         <span>{flagEmoji(code)}</span>
