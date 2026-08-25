@@ -94,6 +94,17 @@ export function EpubUpload({
         }
         continue;
       }
+      // Epub-like formats (.fb2/.mobi/.azw3) — converted to a minimal EPUB
+      // by the book model before storage.
+      if (/\.(fb2|mobi|azw3)$/i.test(f.name)) {
+        try {
+          const data = await f.arrayBuffer();
+          loaded.push({ data, fileName: f.name, fileSize: f.size });
+        } catch {
+          failures.push({ fileName: f.name, fileSize: f.size, reasonKey: 'msg.epub_file_unreadable' });
+        }
+        continue;
+      }
       // .epub.zip / .zip — an EPUB (or extracted EPUB folder) wrapped in a
       // ZIP container; unwrap it before importing.
       if (/\.(epub\.)?zip$/i.test(f.name)) {
@@ -167,7 +178,7 @@ export function EpubUpload({
     <input
       ref={fileInputRef}
       type="file"
-      accept=".epub,.pdf,.epub.zip,.zip"
+      accept=".epub,.pdf,.fb2,.mobi,.azw3,.epub.zip,.zip"
       multiple
       hidden
       onChange={(e) => {

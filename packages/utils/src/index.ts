@@ -160,3 +160,13 @@ export {
   parseAiExamplesResponse,
 } from './subs-ai-examples';
 export type { AiVideoExample, AiUsagePatternResult } from './subs-ai-examples';
+export {
+  decompressPalmDoc,
+  mobiToHtml,
+  mobiHtmlToXhtml,
+  parseFb2,
+  detectAltBookFormat,
+  convertAltBookFormat,
+  buildMinimalEpub,
+} from './alt-formats';
+export type { AltBookContent } from './alt-formats';
