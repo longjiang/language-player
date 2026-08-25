@@ -61,6 +61,8 @@ interface RubyTokenSpanProps {
   byeonggiText: string | null;
   showQuickGloss: boolean;
   quickGlossDef: string | null;
+  /** BCP-47 language of the quick gloss, which is L1 rather than L2. */
+  quickGlossLang: string;
   showDefinition: boolean;
   showInterlinear: boolean;
   trimmedDef: string | null;
@@ -84,7 +86,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
     isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, karaokeDimOpacity, showByeonggi, byeonggiText,
-    showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
+    showQuickGloss, quickGlossDef, quickGlossLang, showDefinition, showInterlinear, trimmedDef, firstLemma,
     linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle, textColor,
     onOpenLink, onPressWord, onReveal,
   } = props;
@@ -185,7 +187,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
               otherwise the word's large lineHeight applies to the gloss text too,
               creating a tall invisible box that breaks baseline alignment. */}
           {showQuickGloss && (
-            <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }}>
+            <Text lang={quickGlossLang} style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }}>
               <Text
                 style={{
                   fontSize: textStyle.fontSize ?? 16,
@@ -468,6 +470,8 @@ interface PlainTokenSpanProps {
   byeonggiText: string | null;
   showQuickGloss: boolean;
   quickGlossDef: string | null;
+  /** BCP-47 language of the quick gloss, which is L1 rather than L2. */
+  quickGlossLang: string;
   firstLemma: string | null;
   tokenPron: string | null;
   linkUrl: string | null;
@@ -486,7 +490,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
   const {
     index, word, displayText, isWordToken, isBlanked, isHighlighted, isLink, isSearchHighlight,
     isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, karaokeDimOpacity, showByeonggi, byeonggiText,
-    showQuickGloss, quickGlossDef, firstLemma, tokenPron, linkUrl, quizMode, popupEnabled,
+    showQuickGloss, quickGlossDef, quickGlossLang, firstLemma, tokenPron, linkUrl, quizMode, popupEnabled,
     textColor, textStyle, onOpenLink, onPressWord, onReveal, onPressIn, onPressOut,
   } = props;
 
@@ -526,7 +530,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
         <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
-      {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
+      {showQuickGloss ? <Text lang={quickGlossLang} style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
     </Text>
   );
 });

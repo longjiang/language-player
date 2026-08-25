@@ -321,6 +321,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   //    Prefer L1-translated definition (fetched per-word) over the saved entry's
   //    cached definition, then the first cached match. ──
   const quickGlossDef = (isSaved && quickGloss && (quickGlossOnHighlight || !isHighlighted)) ? (l1GlossDef ?? savedFirstDef ?? firstDef) : null;
+  // Quick glosses are L1 definitions, so tag them separately from the L2 word.
+  // This is especially important when L1 is CJK: the browser must choose the
+  // L1 regional glyph variant rather than inheriting the L2 language.
+  const quickGlossLang = l1Code;
   // ── Interlinear definition: for all words (when enabled). Saved words show
   //    the definition of the entry the user saved (same source as the quick
   //    gloss), matching mobile — unsaved words keep the first cached match. ──
@@ -566,7 +570,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     <>
       {annotatedWord}
       {quickGlossDef && !isQuizBlanking && (
-        <QuickGloss def={quickGlossDef} needsTrailingSpace={nextTokenIsSeparator !== true} />
+        <QuickGloss def={quickGlossDef} needsTrailingSpace={nextTokenIsSeparator !== true} lang={quickGlossLang} />
       )}
     </>
   );
@@ -603,8 +607,8 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
  *  parentheses and typographic single quotes at the same size and color as normal text.
  *  A leading space separates it from the word; a trailing space separates it from the
  *  next word unless the next token is whitespace or punctuation. */
-const QuickGloss: React.FC<{ def: string; needsTrailingSpace: boolean }> = ({ def, needsTrailingSpace }) => (
-  <span className="font-normal select-none">
+const QuickGloss: React.FC<{ def: string; needsTrailingSpace: boolean; lang: string }> = ({ def, needsTrailingSpace, lang }) => (
+  <span lang={lang} className="font-normal select-none">
     {' (‘'}
     {def}
     {'’)'}
