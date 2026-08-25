@@ -39,9 +39,9 @@
  * lineHeight-free probe) so the reference exactly matches how the row paints.
  */
 
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
-import type { TextLayoutEvent } from 'react-native';
+import type { LayoutChangeEvent, TextLayoutEvent } from 'react-native';
 import { lineOffsets, type GridLine, type TextLayoutLine } from '@/lib/aligned-translation';
 import { readerLogger } from '@/lib/logger';
 
@@ -103,6 +103,15 @@ function AlignedTranslationImpl({
   // target. Kept on state so the sliced render is only committed once the
   // alignment reference is known.
   const [naturalAscent, setNaturalAscent] = useState<number | null>(null);
+  // TEMP DIAG (issue: intermittent extra paragraph gap in the side-by-side
+  // EPUB reader): capture the rendered column height so we can compare the
+  // stand-in (pre-measure) vs aligned (post-measure) heights against the L2
+  // grid height. Remove once the cause is confirmed.
+  const [diagH, setDiagH] = useState<number | null>(null);
+  const handleDiagLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = Math.round(e.nativeEvent.layout.height);
+    setDiagH((prev) => (prev === h ? prev : h));
+  }, []);
 
   // L2 line pitch: consecutive line tops (probe spacing + stand-in line
   // height). For a single-line block the only measure is the line's height.
@@ -137,6 +146,20 @@ function AlignedTranslationImpl({
     () => (ready ? lineOffsets(text, probe!.lines) : []),
     [ready, text, probe],
   );
+
+  // TEMP DIAG (issue: intermittent extra paragraph gap in the side-by-side
+  // EPUB reader). Logs the render mode (stand-in pre-measure vs aligned) and
+  // the rendered column height vs the L2 grid height. When the translation
+  // column is taller than the L2 grid the block is inflated and the next
+  // paragraph is pushed down — an apparent "extra line between paragraphs".
+  useEffect(() => {
+    if (!__DEV__) return;
+    const aligned = ready && naturalAscent != null;
+    const gridH = l2Lines.length > 0
+      ? Math.round(l2Lines[l2Lines.length - 1]!.y + l2Lines[l2Lines.length - 1]!.height)
+      : 0;
+    log(`[AlignedTranslation] DIAG mode=${aligned ? 'aligned' : 'standIn'} textLen=${text.length} trLines=${probe?.lines.length ?? 'n/a'} l2Lines=${l2Lines.length} lh2=${Math.round(lh2)} alignRows=${aligned ? Math.min(probe!.lines.length, l2Lines.length) : 'n/a'} colH=${diagH ?? 'n/a'} l2GridH=${gridH}`);
+  }, [ready, naturalAscent, text, probe, l2Lines, lh2, diagH]);
 
   if (!text || lh2 <= 0) {
     return <Text className={className} style={{ fontSize: trFontSize }}>{text}</Text>;
@@ -193,7 +216,7 @@ function AlignedTranslationImpl({
     // One-frame stand-in: same size and line spacing as the aligned rows, so
     // the swap to sliced rows is layout-neutral.
     return (
-      <View>
+      <View onLayout={handleDiagLayout}>
         {probeEl}
         {naturalProbeEl}
         <Text className={className} style={{ fontSize: trFontSize, lineHeight: lh2 }}>{text}</Text>
@@ -222,7 +245,7 @@ function AlignedTranslationImpl({
       : null;
 
   return (
-    <View>
+    <View onLayout={handleDiagLayout}>
       {probeEl}
       {naturalProbeEl}
       {probe!.lines.slice(0, alignedCount).map((ln, j) => {
