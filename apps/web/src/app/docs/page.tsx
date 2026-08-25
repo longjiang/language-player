@@ -10,6 +10,7 @@ import { DocSearch } from './doc-search';
 import { CategoryTitle } from './category-title';
 import { DocPageHeading } from './doc-page-heading';
 import { DocEmptyState } from './doc-empty-state';
+import { AskAiButton } from '@/components/docs/ask-ai-dialog';
 
 export const metadata: Metadata = {
   title: 'Documentation',
@@ -230,7 +231,10 @@ export default async function DocsPage(props: Props) {
   return (
     <div className="flex flex-col items-center px-4 py-12">
       <div className="w-full max-w-2xl">
-        <DocPageHeading />
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <DocPageHeading />
+          <AskAiButton className="flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90" />
+        </div>
 
         {/* Search + Doc list */}
         {docs.length === 0 ? (
