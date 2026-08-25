@@ -3,9 +3,13 @@
 ## Metadata
 - **Spec ID**: SPEC-074
 - **Feature**: Publish the Language Player Chrome extension to the Chrome Web Store
-- **Status**: in-progress
+- **Status**: published — live on the Chrome Web Store
 - **Created**: 2026-08-12
 - **ROADMAP Phase**: Chrome Extension
+
+> ✅ **Published 2026-08-25.** The extension is approved and live on the Chrome Web Store at
+> `https://chromewebstore.google.com/detail/language-player/cbkhenammkocfidciagbbibkleoenbej`
+> (item ID `cbkhenammkocfidciagbbibkleoenbej`, manifest version `1.0.110.14`).
 
 ## Overview
 
@@ -190,6 +194,8 @@ Filled and saved on the item's Privacy page:
 - [ ] **Screenshots** (≥1, max 5; 1280×800 or 640×400, JPEG or 24-bit PNG no-alpha) — **THE ONLY remaining blocker**; "Why can't I submit?" says "At least one screenshot or video is required." None exist; capture the extension UI in action (transcript panel on a streaming show, dictionary popup on word click, popup UI).
 - [ ] **Small promo tile 440×280** (JPEG/PNG no-alpha) — recommended.
 - [ ] **Submit for review** (button enabled once screenshots added; verification approval also gates publishing).
+
+> ✅ **Submitted + approved 2026-08-25.** The extension was approved by Google and is now live on the Chrome Web Store (item ID `cbkhenammkocfidciagbbibkleoenbej`, manifest version `1.0.110.14`). The historical checklist above is retained as a record of what was pending at the time.
 
 ## Update Process (future versions)
 
