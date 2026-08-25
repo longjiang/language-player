@@ -23,6 +23,7 @@ import {
   type EpubSummary,
   type SpineIndexRecord,
 } from '@/lib/epub-store';
+import { pdfInfo, renderPdfPage, type PdfOutlineItem } from '@/lib/pdf-book';
 import { epubLog, epubWarn, epubErr } from '@/lib/epub-log';
 
 /** A single in-book search hit, located in the book flow. */
@@ -71,6 +72,9 @@ export interface UseEpubReturn {
   books: EpubSummary[];
   /** Id of the currently open book, or null when showing the bookshelf. */
   openBookId: string | null;
+  /** PDF reading session (format: 'pdf' entries): the binary + page/outline
+   *  info, so the reader can render thumbnails and convert pages. */
+  pdfDoc: { id: string; data: ArrayBuffer; pageCount: number; outline: PdfOutlineItem[] } | null;
   /** Reload the bookshelf list from IndexedDB. */
   refreshBooks: () => Promise<EpubSummary[]>;
   /** Open a stored book; returns the location to resume at (or null). */
@@ -164,6 +168,12 @@ export function useEpub(): UseEpubReturn {
   const [pageProgressionDir, setPageProgressionDir] = useState<'ltr' | 'rtl'>('ltr');
   const [books, setBooks] = useState<EpubSummary[]>([]);
   const [openBookId, setOpenBookId] = useState<string | null>(null);
+  const [pdfDoc, setPdfDoc] = useState<{
+    id: string;
+    data: ArrayBuffer;
+    pageCount: number;
+    outline: PdfOutlineItem[];
+  } | null>(null);
 
   const bookRef = useRef<EpubBook | null>(null);
   const currentBookIdRef = useRef<string | null>(null);
@@ -284,11 +294,40 @@ export function useEpub(): UseEpubReturn {
   ): Promise<BookLocation | null> => {
     const stored = await loadEpub(id);
     if (!stored) return null;
+    currentBookIdRef.current = id;
+    setOpenBookId(id);
+    setFileName(stored.meta.fileName);
+
+    // PDF entries: no spine/block model — the reader shows the thumbnails
+    // grid and converts tapped pages to markdown via the vision model.
+    if (stored.meta.format === 'pdf') {
+      setPdfDoc({
+        id,
+        data: stored.data,
+        pageCount: 1,
+        outline: [],
+      });
+      // Resolve the real page count + outline in the background (rendering
+      // the first page for the reader's cover is already done at import).
+      void pdfInfo(stored.data).then((info) => {
+        setPdfDoc((prev) =>
+          prev && prev.id === id
+            ? { ...prev, pageCount: info.pageCount, outline: info.outline }
+            : prev,
+        );
+      });
+      setBook(null);
+      setToc([]);
+      setMarkers(null);
+      setCoverTapped(true);
+      await updateEpubMeta(id, { lastReadAt: Date.now() });
+      return null;
+    }
+
     const parsed = await parseAndStore(stored.data, stored.meta.fileName);
     if (!parsed) return null;
     const { b } = parsed;
-    currentBookIdRef.current = id;
-    setOpenBookId(id);
+    setPdfDoc(null);
     setOpenBook(b);
     setFileName(stored.meta.fileName);
 
@@ -320,6 +359,37 @@ export function useEpub(): UseEpubReturn {
     fName: string,
     importLanguage?: string | null,
   ): Promise<{ id: string } | null> => {
+    if (/\.pdf$/i.test(fName)) {
+      // PDF: first page rendered at import becomes the shelf cover; the
+      // reader opens the thumbnails grid and converts pages on demand.
+      let id: string;
+      try {
+        id = await sha256Hex(data);
+      } catch {
+        id = `fn-${fName}-${data.byteLength}`;
+      }
+      const existing = await loadEpub(id);
+      let coverUrl: string | null = existing?.meta.coverUrl ?? null;
+      if (!coverUrl) {
+        try {
+          coverUrl = await renderPdfPage(data, 1, 1.2);
+        } catch (err) {
+          epubWarn(`PDF cover render failed: ${(err as Error)?.message ?? err}`);
+        }
+      }
+      await saveEpub(id, data, {
+        id,
+        fileName: fName,
+        format: 'pdf',
+        language: importLanguage
+          ? normalizeLanguageCode(importLanguage)
+          : existing?.meta.language ?? null,
+        coverUrl,
+        lastReadAt: Date.now(),
+      });
+      await refreshBooks();
+      return { id };
+    }
     const parsed = await parseAndStore(data, fName, importLanguage);
     if (!parsed) return null;
     await refreshBooks();
@@ -407,6 +477,7 @@ export function useEpub(): UseEpubReturn {
     markersRef.current = null;
     indexRef.current = null;
     setBook(null);
+    setPdfDoc(null);
     setToc([]);
     setMarkers(null);
     setCoverUrl(null);
@@ -447,6 +518,7 @@ export function useEpub(): UseEpubReturn {
     pageProgressionDir,
     books,
     openBookId,
+    pdfDoc,
     refreshBooks,
     openBook,
     searchBook,
