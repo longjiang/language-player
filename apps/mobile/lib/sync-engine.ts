@@ -24,6 +24,7 @@ import {
   getEntityCache,
   getEntityCacheRow,
   getOutboxStats,
+  getOutboxEntityBreakdown,
   getSyncMeta,
   listPendingOutbox,
   markOutboxError,
@@ -40,6 +41,16 @@ const { log, logwarn } = syncLogger;
 const MAX_PUSH_ATTEMPTS = 5;
 const FLUSH_DEBOUNCE_MS = 1500;
 const RETRY_INTERVAL_MS = 30000;
+/**
+ * Hard cap for one sync fetch (pull or push). RN's fetch has NO default
+ * timeout: a stalled connection used to hang the cycle forever — `syncing`
+ * stayed true (the Sync-now spinner spins forever) and, because in-flight
+ * outbox rows are never coalesced into, every new save during the hang
+ * inserted a fresh outbox row (the "long queue of mostly saved words").
+ */
+const FETCH_TIMEOUT_MS = 60_000;
+/** Log a warning when one sync cycle takes this long (stuck-cycle probe). */
+const CYCLE_WARN_MS = 30_000;
 
 export interface SyncStatusSnapshot {
   connectivity: 'online' | 'offline' | 'unknown';
@@ -106,6 +117,31 @@ function publishStatus(): void {
   for (const cb of statusListeners) cb(snapshot);
 }
 
+/** fetch() with a hard timeout (AbortController) — see FETCH_TIMEOUT_MS. */
+async function fetchWithTimeout(
+  input: string,
+  init?: RequestInit,
+  label = 'sync',
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const started = Date.now();
+  try {
+    const res = await authenticatedFetch(input, { ...init, signal: controller.signal });
+    log(`[sync] ${label} http=${res.status} elapsed=${Date.now() - started}ms`);
+    return res;
+  } catch (err) {
+    const aborted = (err as Error)?.name === 'AbortError';
+    logwarn(
+      `[sync] ${label} ${aborted ? 'TIMED OUT' : 'failed'} after ${Date.now() - started}ms`,
+      (err as Error)?.message ?? err,
+    );
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function refreshPendingCount(): Promise<void> {
   const stats = await getOutboxStats();
   status.pendingCount = stats.pending;
@@ -164,8 +200,10 @@ async function pullChanges(userId: string): Promise<void> {
 
   for (let page = 0; page < 20; page++) {
     log(`[sync] pull page ${page} user=${userId} cursor=${next} limit=500`);
-    const res = await authenticatedFetch(
+    const res = await fetchWithTimeout(
       `${PYTHON_API_URL}/sync/pull?cursor=${next}&limit=500`,
+      undefined,
+      'pull',
     );
     if (!res.ok) {
       if (res.status === 401) throw new Error('Unauthorized');
@@ -251,40 +289,44 @@ async function pushOutbox(): Promise<number> {
   for (const r of rows) inFlightOutboxIds.add(r.id);
 
   try {
-    const res = await authenticatedFetch(`${PYTHON_API_URL}/sync/push`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ops: await Promise.all(rows.map(async (r) => {
-          let payload = JSON.parse(r.payload) as Record<string, unknown>;
-          // Self-heal legacy partial payloads (queued before the whole-row
-          // contract) so strict server validation can't strand them forever.
-          if (r.op === 'upsert') {
-            try {
-              const cached = await getEntityCacheRow(r.entity, r.entity_id);
-              const source = cached && cached.deleted_at == null
-                ? JSON.parse(cached.payload) as Record<string, unknown>
-                : null;
-              const repaired = repairSyncPayload(r.entity, payload, source);
-              if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
-                log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
+    const res = await fetchWithTimeout(
+      `${PYTHON_API_URL}/sync/push`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ops: await Promise.all(rows.map(async (r) => {
+            let payload = JSON.parse(r.payload) as Record<string, unknown>;
+            // Self-heal legacy partial payloads (queued before the whole-row
+            // contract) so strict server validation can't strand them forever.
+            if (r.op === 'upsert') {
+              try {
+                const cached = await getEntityCacheRow(r.entity, r.entity_id);
+                const source = cached && cached.deleted_at == null
+                  ? JSON.parse(cached.payload) as Record<string, unknown>
+                  : null;
+                const repaired = repairSyncPayload(r.entity, payload, source);
+                if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
+                  log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
+                }
+                payload = repaired;
+              } catch {
+                // Unrepairable — leave as-is; the server will reject loudly.
               }
-              payload = repaired;
-            } catch {
-              // Unrepairable — leave as-is; the server will reject loudly.
             }
-          }
-          return {
-            idempotency_key: r.idempotency_key,
-            entity: r.entity,
-            entity_id: r.entity_id,
-            op: r.op,
-            payload,
-            updated_at: r.updated_at,
-          };
-        })),
-      }),
-    });
+            return {
+              idempotency_key: r.idempotency_key,
+              entity: r.entity,
+              entity_id: r.entity_id,
+              op: r.op,
+              payload,
+              updated_at: r.updated_at,
+            };
+          })),
+        }),
+      },
+      'push',
+    );
     if (!res.ok) {
       if (res.status === 401) throw new Error('Unauthorized');
       throw new Error(`push failed: HTTP ${res.status}`);
@@ -385,6 +427,20 @@ export async function runSyncNow(): Promise<void> {
   syncing = true;
   status.syncing = true;
   publishStatus();
+  const cycleStarted = Date.now();
+  const cycleTimer = setTimeout(() => {
+    logwarn(`[sync] ⚠️ cycle STILL RUNNING after ${CYCLE_WARN_MS / 1000}s — stuck fetch? userId=${userId}`);
+  }, CYCLE_WARN_MS);
+  // Queue composition diagnostic: which entities are pending/error (the
+  // "long queue of mostly saved words" question).
+  try {
+    const breakdown = await getOutboxEntityBreakdown();
+    if (breakdown.length > 0) {
+      log(`[sync] queue: ${breakdown.map((b) => `${b.entity}:${b.status}=${b.cnt}`).join(' ')}`);
+    }
+  } catch {
+    // Non-fatal diagnostic.
+  }
   log(`[sync] ▶ cycle start user=${userId} pending=${status.pendingCount}`);
   try {
     await pullChanges(userId);
@@ -397,11 +453,12 @@ export async function runSyncNow(): Promise<void> {
     if (status.pendingCount === 0 && status.errorCount === 0) {
       log('[sync] ✅ outbox empty — all changes synced');
     }
-    log(`[sync] ✅ cycle done pushed=${pushed} lastSyncAt=${status.lastSyncAt}`);
+    log(`[sync] ✅ cycle done pushed=${pushed} lastSyncAt=${status.lastSyncAt} elapsed=${Date.now() - cycleStarted}ms`);
   } catch (e) {
     status.lastError = (e as Error)?.message ?? String(e);
     logwarn('[sync] sync cycle failed:', status.lastError);
   } finally {
+    clearTimeout(cycleTimer);
     syncing = false;
     status.syncing = false;
     await refreshPendingCount();
