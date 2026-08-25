@@ -24,6 +24,7 @@ import {
   type SpineIndexRecord,
 } from '@/lib/epub-store';
 import { pdfInfo, renderPdfPage, type PdfOutlineItem } from '@/lib/pdf-book';
+import { convertAltBookFormat, buildMinimalEpub } from '@langplayer/utils';
 import { epubLog, epubWarn, epubErr } from '@/lib/epub-log';
 
 /** A single in-book search hit, located in the book flow. */
@@ -389,6 +390,17 @@ export function useEpub(): UseEpubReturn {
       });
       await refreshBooks();
       return { id };
+    }
+    // Epub-like formats (.fb2/.mobi/.azw3) → convert to a minimal EPUB and
+    // store the result; the shelf keeps the original file name.
+    const alt = convertAltBookFormat(data, fName);
+    if (alt) {
+      epubLog(`alt format "${fName}" → ${alt.toc.length} TOC entries, ${alt.xhtml.length} chars`);
+      const epubData = await buildMinimalEpub(alt);
+      const parsed = await parseAndStore(epubData, fName, importLanguage);
+      if (!parsed) return null;
+      await refreshBooks();
+      return { id: parsed.id };
     }
     const parsed = await parseAndStore(data, fName, importLanguage);
     if (!parsed) return null;
