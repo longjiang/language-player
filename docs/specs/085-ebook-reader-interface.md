@@ -429,3 +429,37 @@ Elements:
 1. **Blank chrome surfaces toggle:** this spec treats the top/bottom bars' blank backgrounds as part of the tap surface (their buttons excluded). If product prefers bars to be fully inert, exclude the bar regions wholesale — a one-line guard.
 2. **Strip constants vs. runtime measurement:** the formulas assume constant `H`/`BAR_H`. If the header/bottom bar ever become responsive (e.g., different heights at breakpoints), the strips should derive from measured heights with a mismatch log instead of hard-coded constants.
 3. **Search modal height cap:** `min(70vh, 560 px)` (web) / `70%` (mobile) are starting points; confirm against tablet sizes (iPad landscape) where the modal might feel short or tall.
+
+## 17. Revision (2026-08-25) — chromeless controls and horizontal geometry
+
+### 17.1 Close button now lives in CHROMELESS mode only
+
+§7.1/§8.1 previously had the close button visible only when the chrome is ON.
+Per product direction (paginated reader requirements), the affordance flipped:
+
+- **Chrome OFF (chromeless):** two icon-only buttons sit top-right, aligned
+  with the chapter title (web: `top = HEADER_HEIGHT + 8`; mobile:
+  `top = insets.top + 65`): **"show toolbars"** (reveals the chrome) and
+  **"close"** (leaves the reader).
+- **Chrome ON:** no close button. Escape hatches are the chromeless close and
+  the nav-menu same-route close (`requestCloseReader`).
+
+### 17.2 Horizontal geometry — page-width clamp + symmetric leading margins
+
+§6.2 previously specified `padding-left: L` / `padding-right: 16px`. The
+reader now clamps the content column to a book measure and uses **leading
+margins on both sides**:
+
+- `READER_PAGE_WIDTH = 720` (web `lib/reader-layout.ts`, mobile
+  `lib/reader-layout.ts`); the outer box is `READER_PAGE_WIDTH + 2 × L`.
+- Web: the shared `readerHorizontalPadding(zoom, leading)` style object now
+  returns `{ paddingLeft: L, paddingRight: L, maxWidth: READER_PAGE_WIDTH +
+  2L, marginLeft: 'auto', marginRight: 'auto' }` — applied to the visible
+  content AND the hidden measuring mirror so measured line wraps match.
+- Mobile: `readerClampedContentWidth(available)` clamps the pagination
+  hook's `contentWidth`; the visible ScrollView wraps blocks in a centered
+  View of that width and the measuring mirror is set to
+  `contentWidth + 2 × L`.
+- Vertically, short pages (immersive epub) are centered like a book page
+  (web: `flex min-h-full flex-col justify-center` on the visible column;
+  mobile: `contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}`).
