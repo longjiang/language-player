@@ -248,6 +248,47 @@ an **IPA** (Xcode Organizer → Distribute App, or `xcodebuild -exportArchive`),
 and verify the embedded bundle contains the production URL and no localhost
 (SPEC-048 § 3.2).
 
+> **Signing — two things to know before you build (verified 2026-08-25):**
+>
+> 1. **`expo prebuild` drops the development team.** After any prebuild, the
+>    archive fails with *"Signing for LanguagePlayer3 requires a development
+>    team"*. In practice, passing `DEVELOPMENT_TEAM=9CS9PCBX32` on the
+>    `xcodebuild archive` command line (together with `-allowProvisioningUpdates`)
+>    was sufficient on Xcode 26.6 and produced a Development-signed archive that
+>    exported cleanly. If a future Xcode ever rejects the env var alone
+>    (SPEC-048 § 3.1 once documented this on an earlier Xcode 26), fall back to
+>    writing `CODE_SIGN_STYLE = Automatic;` + `DEVELOPMENT_TEAM = 9CS9PCBX32;`
+>    into both Debug and Release build configurations of
+>    `ios/LanguagePlayer3.xcodeproj/project.pbxproj` (keep the env vars too).
+>
+> 2. **TestFlight export uses *Cloud Managed Apple Distribution* — no local
+>    Apple Distribution certificate required.** The machine has only the
+>    `Apple Development` identity in the keychain, yet the archive exports to a
+>    TestFlight-ready IPA because Xcode signs with a *cloud-managed* Apple
+>    Distribution certificate (see `DistributionSummary.plist` →
+>    `certificate.type = "Cloud Managed Apple Distribution"`). Use the
+>    `app-store-connect` export options
+>    (`method=app-store-connect`, `signingStyle=automatic`, `teamID=9CS9PCBX32`),
+>    exactly as produced by a prior export (e.g. `~/Desktop/LP-Export/ExportOptions.plist`),
+>    and do **not** chase a missing local Distribution cert — that is expected.
+
+Reference commands (from the repo root):
+
+```bash
+cd apps/mobile
+EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
+  xcodebuild -workspace ios/LanguagePlayer3.xcworkspace -scheme LanguagePlayer3 \
+    -configuration Release -destination 'generic/platform=iOS' \
+    -allowProvisioningUpdates DEVELOPMENT_TEAM=9CS9PCBX32 \
+    -archivePath ~/Desktop/LanguagePlayer3-<version>.xcarchive archive
+
+# Export the TestFlight IPA (reuse a known-good app-store-connect ExportOptions):
+xcodebuild -exportArchive \
+  -archivePath ~/Desktop/LanguagePlayer3-<version>.xcarchive \
+  -exportOptionsPlist ~/Desktop/LP-Export/ExportOptions.plist \
+  -exportPath ~/Desktop/LP3-<version>-export
+```
+
 ### 4.3 Upload (no EAS needed)
 
 ```bash
