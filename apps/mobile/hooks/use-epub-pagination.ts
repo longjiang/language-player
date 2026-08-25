@@ -326,8 +326,9 @@ export function useEpubPagination({
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
   // Reader horizontal padding: both margins equal the text's leading (reader
   // layout rule). The content width is the viewport minus that padding,
-  // clamped to the book measure (READER_PAGE_WIDTH), so it always matches the
-  // visible ScrollView (and the hidden measuring mirror).
+  // clamped to the content container width (CONTENT_CONTAINER_WIDTH), so it
+  // always matches the visible ScrollView (and the hidden measuring mirror).
+  // The text column is at most min(CONTENT_CONTAINER_WIDTH, viewport − 2 × L).
   const { total: readerPadX } = readerHorizontalPadding(
     tokenizedText.zoom,
     tokenizedText.leading ?? 1.625,
