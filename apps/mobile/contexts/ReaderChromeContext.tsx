@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { log } from '@/lib/logger';
 
 interface ReaderChromeValue {
   /**
@@ -56,11 +57,13 @@ export function ReaderChromeProvider({
   // reader screen registers its close handler on the outer provider and the
   // overlay Header (under the forced provider) reaches it through the parent.
   const requestCloseReader = useCallback(() => {
+    log('[readerChrome] requestCloseReader', { hasCloseReader: Boolean(closeReader), forcedImmersed });
     if (closeReader) closeReader();
     else parent.requestCloseReader();
   }, [closeReader, parent.requestCloseReader]);
 
   const registerCloseReader = useCallback((fn: (() => void) | null) => {
+    log('[readerChrome] registerCloseReader', { forcedImmersed, hasFn: Boolean(fn) });
     if (forcedImmersed !== undefined) parent.registerCloseReader(fn);
     else setCloseReader(fn);
   }, [forcedImmersed, parent.registerCloseReader]);

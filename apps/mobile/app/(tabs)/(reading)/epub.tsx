@@ -248,10 +248,23 @@ export default function EpubReaderScreen() {
   // Register the book's close handler so the nav menu's "Epub Reader" item can
   // close it (an alternative to the close button) when the reader is already
   // open — the NavBar/drawer call requestCloseReader on a same-route tap.
+  //
+  // Register a STABLE handler backed by a ref: `handleClose` depends on the
+  // freshly-created `useEpub()` object, so it changes identity every render.
+  // Depending on it here (a) re-registers on every render and (b) each
+  // `registerCloseReader(fn)` calls `setCloseReader(fn)` in ReaderChromeProvider
+  // — both drive an unbounded re-render loop between the reader screen and the
+  // provider (the "Cannot update EpubReaderScreen while rendering
+  // ReaderChromeProvider" error), which is what caused the reader to be torn
+  // down to the bookshelf. Register once on mount with a stable close wrapper
+  // that reads the latest handler from a ref.
+  const handleCloseRef = useRef(handleClose);
+  handleCloseRef.current = handleClose;
   useEffect(() => {
-    registerCloseReader(() => { void handleClose(); });
+    registerCloseReader(() => { void handleCloseRef.current(); });
     return () => registerCloseReader(null);
-  }, [registerCloseReader, handleClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registerCloseReader]);
 
   const handleChapterSelect = useCallback((href: string) => {
     setTocOpen(false);
