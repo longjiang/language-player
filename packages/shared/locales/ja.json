@@ -26,6 +26,7 @@
         "advanced_search": "詳細検索",
         "all_results": "すべての結果",
         "apply": "適用",
+        "ask_ai": "AIに質問",
         "back": "戻る",
         "back_to_documentation": "ドキュメントに戻る",
         "back_to_home_page": "ホームページに戻る",
@@ -187,6 +188,7 @@
         "related_to": "コーパス - 「{word}」に関連"
     },
     "docs": {
+        "ask_ai_placeholder": "アプリの使い方について質問する…",
         "guides_reference": "ガイド、リファレンス、よくある質問",
         "no_docs_yet": "まだドキュメントはありません。",
         "no_results": "結果なし",
@@ -316,6 +318,7 @@
         "coming_soon": "近日公開",
         "commit": "コミット",
         "conjugation": "活用",
+        "context_sentence": "文脈の文",
         "cover": "表紙",
         "created": "作成日",
         "current_plan": "現在のプラン",

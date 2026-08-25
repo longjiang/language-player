@@ -26,6 +26,7 @@
         "advanced_search": "Gelişmiş",
         "all_results": "Tüm sonuçlar",
         "apply": "Uygula",
+        "ask_ai": "Yapay Zekâya Sor",
         "back": "Geri",
         "back_to_documentation": "Dokümantasyona geri dön",
         "back_to_home_page": "Ana Sayfaya Dön",
@@ -187,6 +188,7 @@
         "related_to": "Derlem - '{word}' ile ilgili"
     },
     "docs": {
+        "ask_ai_placeholder": "Uygulamanın nasıl kullanılacağı hakkında soru sorun…",
         "guides_reference": "Kılavuzlar, referans ve sık sorulan sorular",
         "no_docs_yet": "Henüz belge mevcut değil.",
         "no_results": "Sonuç yok",
@@ -316,6 +318,7 @@
         "coming_soon": "Çok yakında",
         "commit": "Commit",
         "conjugation": "Çekim",
+        "context_sentence": "Bağlam cümlesi",
         "cover": "Kapak",
         "created": "Oluşturulma",
         "current_plan": "Mevcut Plan",

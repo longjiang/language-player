@@ -26,6 +26,7 @@
         "advanced_search": "Lanjutan",
         "all_results": "Semua hasil",
         "apply": "Terapkan",
+        "ask_ai": "Tanya AI",
         "back": "Kembali",
         "back_to_documentation": "Kembali ke Dokumentasi",
         "back_to_home_page": "Kembali ke Beranda",
@@ -187,6 +188,7 @@
         "related_to": "Korpus - Terkait dengan '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "Ajukan pertanyaan tentang penggunaan aplikasi…",
         "guides_reference": "Panduan, referensi, dan pertanyaan umum",
         "no_docs_yet": "Belum ada dokumentasi yang tersedia.",
         "no_results": "Tidak ada hasil",
@@ -316,6 +318,7 @@
         "coming_soon": "Segera hadir",
         "commit": "Komit",
         "conjugation": "Konjugasi",
+        "context_sentence": "Kalimat konteks",
         "cover": "Sampul",
         "created": "Dibuat",
         "current_plan": "Paket Saat Ini",

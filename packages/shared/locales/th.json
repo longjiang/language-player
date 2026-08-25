@@ -26,6 +26,7 @@
         "advanced_search": "ขั้นสูง",
         "all_results": "ผลลัพธ์ทั้งหมด",
         "apply": "นำไปใช้",
+        "ask_ai": "ถาม AI",
         "back": "กลับ",
         "back_to_documentation": "กลับไปยังเอกสาร",
         "back_to_home_page": "กลับไปหน้าแรก",
@@ -187,6 +188,7 @@
         "related_to": "คลังข้อมูลภาษา - เกี่ยวข้องกับ '{word}'"
     },
     "docs": {
+        "ask_ai_placeholder": "ถามคำถามเกี่ยวกับการใช้แอป…",
         "guides_reference": "คู่มือ เอกสารอ้างอิง และคำถามที่พบบ่อย",
         "no_docs_yet": "ยังไม่มีเอกสารประกอบ",
         "no_results": "ไม่พบผลลัพธ์",
@@ -316,6 +318,7 @@
         "coming_soon": "เร็วๆ นี้",
         "commit": "คอมมิต",
         "conjugation": "การผัน",
+        "context_sentence": "ประโยคบริบท",
         "cover": "ปก",
         "created": "สร้างเมื่อ",
         "current_plan": "แผนปัจจุบัน",

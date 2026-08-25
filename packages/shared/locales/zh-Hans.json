@@ -26,6 +26,7 @@
         "advanced_search": "高级搜索",
         "all_results": "所有结果",
         "apply": "应用",
+        "ask_ai": "问AI",
         "back": "返回",
         "back_to_documentation": "返回文档",
         "back_to_home_page": "返回首页",
@@ -180,6 +181,7 @@
         "related_to": "语料库 - 与“{word}”相关"
     },
     "docs": {
+        "ask_ai_placeholder": "询问有关使用应用的问题…",
         "guides_reference": "指南、参考和常见问题解答",
         "no_docs_yet": "暂无文档。",
         "no_results": "无结果",
@@ -308,6 +310,7 @@
         "coming_soon": "即将推出",
         "commit": "提交",
         "conjugation": "变位",
+        "context_sentence": "上下文句子",
         "cover": "封面",
         "created": "创建时间",
         "current_plan": "当前方案",
