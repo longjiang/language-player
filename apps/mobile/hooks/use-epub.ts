@@ -103,6 +103,8 @@ export interface UseEpubReturn {
   refreshBooks: () => Promise<void>;
   /** Import one EPUB from the document picker and open it at its cover. */
   pickFile: (importLanguage?: string) => Promise<void>;
+  /** Import a file by URI (OS file-open / in-app routing) — epub/fb2/mobi/azw3/pdf. */
+  importExternalFile: (uri: string, name: string, importLanguage?: string | null) => Promise<string | null>;
   /** Open a stored book; returns the location to resume at. */
   openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
   /** PDF reading session (format: 'pdf' entries) — file uri + name. */
@@ -461,6 +463,85 @@ export function useEpub(): UseEpubReturn {
     setBooks((prev) => prev.map((b) => (b.id === id ? { ...b, coverUrl } : b)));
   }, []);
 
+  /** Import a file by URI (OS file-open / in-app routing) without opening it.
+   *  Handles .epub, .fb2/.mobi/.azw3 (converted), and .pdf. Returns the id. */
+  const importExternalFile = useCallback(async (
+    uri: string,
+    name: string,
+    importLanguage?: string | null,
+  ): Promise<string | null> => {
+    try {
+      await ensureLibraryDir();
+      const displayName = name;
+      const existingEntry = books.find((b) => b.fileName === displayName);
+      const id = existingEntry ? existingEntry.id : sanitizeEpubId(displayName);
+      const dest = libraryFileUri(id);
+      await FileSystem.deleteAsync(dest, { idempotent: true }).catch(() => {});
+      await FileSystem.copyAsync({ from: uri, to: dest });
+
+      // Epub-like formats (.fb2/.mobi/.azw3) → convert to a minimal EPUB.
+      if (/\.(fb2|mobi|azw3)$/i.test(displayName)) {
+        const b64 = await FileSystem.readAsStringAsync(dest, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const content = convertAltBookFormat(base64ToBytes(b64).buffer as ArrayBuffer, displayName);
+        if (!content) throw new Error('Unsupported alt book format');
+        const epubBytes = await buildMinimalEpub(content);
+        await FileSystem.writeAsStringAsync(dest, bytesToBase64(new Uint8Array(epubBytes)), {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        log('[epub] external alt format converted', { name: displayName, title: content.title });
+      }
+
+      const fallbackLanguage = importLanguage
+        ? importLanguage.trim().split(/[-_]/)[0]?.toLowerCase() || null
+        : null;
+
+      // PDF: no parse; the reader renders the thumbnails grid.
+      if (/\.pdf$/i.test(displayName)) {
+        const info = await FileSystem.getInfoAsync(dest);
+        await saveEpub({
+          id,
+          fileName: displayName,
+          fileSize: info.exists ? (info as { size: number }).size : 0,
+          format: 'pdf',
+          language: fallbackLanguage,
+          coverUrl: existingEntry?.coverUrl ?? null,
+          title: displayName.replace(/\.pdf$/i, ''),
+          author: '',
+          lastLocation: null,
+          totalChars: 0,
+          readChars: 0,
+          lastReadAt: Date.now(),
+          addedAt: Date.now(),
+        });
+      } else {
+        const m = await openEpubBook(dest, displayName);
+        const info = await FileSystem.getInfoAsync(dest);
+        await saveEpub({
+          id,
+          fileName: displayName,
+          fileSize: info.exists ? (info as { size: number }).size : 0,
+          language: fallbackLanguage,
+          coverUrl: null,
+          title: m.title,
+          author: m.author,
+          lastLocation: null,
+          totalChars: m.totalChars,
+          readChars: 0,
+          lastReadAt: Date.now(),
+          addedAt: Date.now(),
+        });
+      }
+      await refreshBooks();
+      log('[epub] external import done', { name: displayName, id });
+      return id;
+    } catch (e) {
+      log('[epub] external import failed', { name, message: (e as Error)?.message ?? String(e) });
+      return null;
+    }
+  }, [books, refreshBooks]);
+
   const dismissCover = useCallback(() => setCoverTapped(true), []);
 
   /** Persist the current reading location + progress (chars before block). */
@@ -512,6 +593,7 @@ export function useEpub(): UseEpubReturn {
     openBook,
     pdfDoc,
     updateCover,
+    importExternalFile,
     close,
     dismissCover,
     saveLocation,

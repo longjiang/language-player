@@ -10,6 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
@@ -174,23 +175,15 @@ export default function EpubReaderScreen() {
     estimate: true,
   });
 
-  /** Open an image, OCR it via DeepSeek Vision, and read the markdown in the
-   *  paginated reader (image reader requirement). */
-  const handleOpenImage = useCallback(async () => {
-    const pick = await DocumentPicker.getDocumentAsync({
-      type: ['image/*'],
-      copyToCacheDirectory: true,
-      multiple: false,
-    });
-    if (pick.canceled || !pick.assets?.[0]) return;
-    const asset = pick.assets[0];
-    const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+  /** Open an image file (by URI) → OCR via DeepSeek Vision → paginated reader. */
+  const runImageOcr = useCallback(async (uri: string, name: string) => {
+    const base64 = await FileSystem.readAsStringAsync(uri, {
       encoding: FileSystem.EncodingType.Base64,
     });
-    const mime = asset.mimeType ?? 'image/jpeg';
+    const mime = /\.png$/i.test(name) ? 'image/png' : /\.(gif|webp|heic)$/i.test(name) ? 'image/webp' : 'image/jpeg';
     const dataUrl = `data:${mime};base64,${base64}`;
-    setImageSession({ fileName: asset.name ?? 'image', md: '', converting: true });
-    log('[epub] image reader OCR start', { fileName: asset.name ?? 'image' });
+    setImageSession({ fileName: name, md: '', converting: true });
+    log('[epub] image reader OCR start', { fileName: name });
     try {
       const res = await fetch(`${PYTHON_API_URL}/vision`, {
         method: 'POST',
@@ -205,12 +198,24 @@ export default function EpubReaderScreen() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      setImageSession({ fileName: asset.name ?? 'image', md, converting: false });
+      setImageSession({ fileName: name, md, converting: false });
     } catch (err) {
       logwarn('[epub] image reader OCR failed:', (err as Error)?.message ?? err);
-      setImageSession({ fileName: asset.name ?? 'image', md: '', converting: false });
+      setImageSession({ fileName: name, md: '', converting: false });
     }
   }, []);
+
+  /** Open an image via the document picker (image reader entry). */
+  const handleOpenImage = useCallback(async () => {
+    const pick = await DocumentPicker.getDocumentAsync({
+      type: ['image/*'],
+      copyToCacheDirectory: true,
+      multiple: false,
+    });
+    if (pick.canceled || !pick.assets?.[0]) return;
+    const asset = pick.assets[0];
+    await runImageOcr(asset.uri, asset.name ?? 'image');
+  }, [runImageOcr]);
 
   // ── Navigation ──
   const pushHistory = useCallback(() => {
@@ -439,6 +444,27 @@ export default function EpubReaderScreen() {
       setSearchOpen(false);
     }
   }, [readerActive]);
+
+  // OS file-open (file handling): ebooks/PDFs import into the shelf and open;
+  // images run through the vision OCR image reader.
+  useFocusEffect(
+    useCallback(() => {
+      const f = peekPendingOpen();
+      if (!f) return;
+      if (f.kind === 'ebook' || f.kind === 'pdf') {
+        consumePendingOpen();
+        log('[epub] file-open → import', { name: f.name, kind: f.kind });
+        void (async () => {
+          const id = await epub.importExternalFile(f.uri, f.name, l2Lang.code);
+          if (id) await handleOpenBook(id);
+        })();
+      } else if (f.kind === 'image') {
+        consumePendingOpen();
+        void runImageOcr(f.uri, f.name);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [epub, l2Lang.code, handleOpenBook, runImageOcr]),
+  );
 
   // ── Immersive chrome animations: the app header slides down from the top
   // when the chrome is shown (pure overlay, no reflow). The chromeless
