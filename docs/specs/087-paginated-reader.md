@@ -66,7 +66,7 @@ These are grouped by feature area. Each requirement describes the finished behav
 - **Stacked (narrow screens).** When there isn't room for two columns, the translation renders directly under the L2 text with the same line spacing (leading). It mirrors the L2 paragraph's first-line indent by default — the **same behavior in every reader** (books and the notes/web reader alike).
 - **Side-by-side (wide screens and portrait tablets).** The translation renders in a column to the right of the L2 text on wide screens **and on portrait tablets** (e.g., an iPad), not only on desktop-wide displays. The L2 column takes the larger share of the width and the translation the remainder.
 - **Baseline alignment (requirement).** In the side-by-side layout every translation line must baseline-align with the corresponding tokenized L2 line **whether or not ruby phonetics are on**. The reading (furigana/pinyin) bands on the L2 must not push the translation off its line.
-- **Line-for-line pairing.** Each translation line sits on its L2 line's baseline. The translation column stays the same height as the L2 column: extra translation lines beyond the L2's line count are not stacked below it, and L2 lines without a translation leave an empty space so nothing drifts out of alignment.
+- **Line-for-line pairing.** Each translation line sits on its L2 line's baseline. If translation is available for some of the L2 lines and not for others, then the L2 lines without a translation leave an empty space so nothing drifts out of alignment. If none of the L2 lines have translation, then translation display simply does not apply. When the translation wraps to more lines than the L2 has, the first lines stay baseline-aligned and the remaining translation lines flow directly below, so the whole translation is always shown.
 - **Sentence highlight.** Tapping a L2 sentence highlights the matching translation sentence; the dictionary popup can present a linked source sentence.
 
 ### 4. Resizable text/translation column
@@ -164,7 +164,7 @@ Terms used throughout this spec, in plain language.
 - Page turns work by buttons, swipe/flick (mobile), keyboard and pointer-flick (web).
 - Toggling translation, changing text size/zoom/leading, changing translation size, or dragging the split re-paginates **without losing the current place**.
 - Every word is tappable (dictionary popup) and every text block shows Copy / Speak / AI Explain / Translation.
-- On wide screens, each translation line baseline-aligns to its L2 line **whether or not ruby phonetics are on**, and the translation column is no taller than the L2 column.
+- On wide screens, each translation line baseline-aligns to its L2 line **whether or not ruby phonetics are on**. When the translation wraps to more lines than the L2, the extra translation lines flow below the aligned lines (the whole translation is always shown); when some L2 lines have no translation, those lines leave an empty space.
 - The drag handle resizes live (within the clamp) and the split persists across turns and sessions.
 - Books render headings, lists, blockquotes, tables, images, and code; each chapter starts a new page; search jumps to a match with highlight; the TOC highlights the current chapter.
 - Reopening the same note/book/URL restores the position.

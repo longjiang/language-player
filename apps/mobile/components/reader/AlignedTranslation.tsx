@@ -54,6 +54,10 @@ export interface AlignedTranslationProps {
   l2Lines: GridLine[];
   /** Translation font size (px) — the column's existing size. */
   trFontSize: number;
+  /** Translation line height (px) — used for translation lines that flow
+   *  below the aligned L2 grid (when the translation wraps to more lines than
+   *  the L2 paragraph). Defaults to `round(trFontSize × READER_DEFAULT_LEADING)`. */
+  trLineHeight?: number;
   /** Tailwind color class for the translation text (e.g. text-muted-foreground). */
   className?: string;
   /** Active translation-sentence char range in `text` (SPEC-082 Task 4 tap
@@ -82,9 +86,11 @@ function AlignedTranslationImpl({
   text,
   l2Lines,
   trFontSize,
+  trLineHeight,
   className = 'text-muted-foreground',
   highlight = null,
 }: AlignedTranslationProps) {
+  const naturalTrLineHeight = trLineHeight ?? Math.round(trFontSize * 1.625);
   const [probe, setProbe] = useState<ProbeState | null>(null);
   // The TRANSLATION font's raw single-line ascent. The wrapping probe below
   // pins `lineHeight: lh2`, so its reported per-line `ascender` includes the
@@ -195,19 +201,31 @@ function AlignedTranslationImpl({
     );
   }
 
+  // The translation typically wraps to MORE visual lines than the L2
+  // paragraph (the L2 column is wider and the translation is narrower). Pair
+  // the first `l2Lines.length` translation lines 1:1 with the L2 lines so
+  // they stay baseline-aligned, and let any REMAINING translation lines flow
+  // tightly below at the translation's natural line height. This shows the
+  // whole translation (SPEC-087 §3) without the old all-rows-at-lh2 pile-up
+  // that produced huge blank gaps between lines.
+  const alignedCount = Math.min(probe!.lines.length, l2Lines.length);
+  const leftoverStart = alignedCount < probe!.lines.length
+    ? (offsets[alignedCount - 1]?.end ?? text.length)
+    : text.length;
+  const leftover = leftoverStart < text.length ? text.slice(leftoverStart) : '';
+  const leftoverHl =
+    highlight && leftoverStart < text.length && highlight.end > leftoverStart
+      ? {
+          start: Math.max(0, highlight.start - leftoverStart),
+          end: Math.min(leftover.length, highlight.end - leftoverStart),
+        }
+      : null;
+
   return (
     <View>
       {probeEl}
       {naturalProbeEl}
-      {/* Render AT MOST as many translation rows as the L2 has lines (1:1
-          pairing). The translation is sliced by its OWN width-wraps, which
-          usually wrap to MORE lines than the L2 paragraph; every extra wrap
-          was given a full lh2-tall row (clamped to the last L2 line) and
-          piled up below the L2 column, spreading the translation across huge
-          gaps. Capping to l2Lines.length keeps each translation line
-          baseline-aligned to its L2 line AND stops the overflow pile-up —
-          the two columns now have the same height. */}
-      {probe!.lines.slice(0, l2Lines.length).map((ln, j) => {
+      {probe!.lines.slice(0, alignedCount).map((ln, j) => {
         const off = offsets[j] ?? { start: 0, end: 0 };
         const lineText = text.slice(off.start, off.end);
         // This row pairs with L2 line j (per-line — the ruby band can shift
@@ -257,6 +275,21 @@ function AlignedTranslationImpl({
           </View>
         );
       })}
+      {leftover ? (
+        <Text className={className} style={{ fontSize: trFontSize, lineHeight: naturalTrLineHeight }}>
+          {leftoverHl ? (
+            <>
+              {leftoverHl.start > 0 && <Text>{leftover.slice(0, leftoverHl.start)}</Text>}
+              <Text className="bg-primary/15">
+                {leftover.slice(leftoverHl.start, leftoverHl.end)}
+              </Text>
+              {leftoverHl.end < leftover.length && <Text>{leftover.slice(leftoverHl.end)}</Text>}
+            </>
+          ) : (
+            leftover
+          )}
+        </Text>
+      ) : null}
     </View>
   );
 }
