@@ -327,7 +327,7 @@ The shared panel. Renders the viewport + active/pending pagers, the page-nav bar
 
 ## 13. Mobile parity note
 
-`apps/mobile/components/reader/PaginatedReader.tsx` keeps its measurement-based pagination (RN has no CSS multicol). Parity obligations from this spec: the same layout-identity set (§9), anchor restore on settings/resize, and location-based navigation — the mobile readers already derive their own calibration signature covering zoom/typeface/phonetics/definition, which is the same input set. No mobile code changes are required by this spec; align the identity set when the mobile paginator next touches its `measureNonce` equivalent.
+`apps/mobile/components/reader/PaginatedReader.tsx` keeps its measurement-based pagination (RN has no CSS multicol). Parity obligations from this spec: the same layout-identity set (§9), anchor restore on settings/resize, and location-based navigation — the mobile readers derive their measured line pitch from `computeRubyLayout()` over the same zoom/typeface/phonetics/definition input set. No mobile code changes are required by this spec; align the identity set when the mobile paginator next touches its `measureNonce` equivalent.
 
 ## 14. Implementation plan
 
