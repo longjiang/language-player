@@ -4,12 +4,14 @@ import { ZOOM_TO_REM } from '@/lib/text-scale';
 export const READER_DEFAULT_LEADING = 1.625;
 
 /**
- * Page-width clamp for the reader content column: the text column never
- * exceeds this many px, so tablets keep a book-like measure. The clamp is
- * applied on top of the leading margins (both sides), i.e. the outer box is
- * READER_PAGE_WIDTH + 2 × leading.
+ * Content container width — the horizontal measure of the app's top bar
+ * content (logo → avatar): the `max-w-7xl` (1280 px) container minus its
+ * 16 px horizontal padding on each side → 1248 px. The reader text column is
+ * clamped to this width (never wider than the header's content span), and on
+ * narrow screens the "screen width − 2 × leading" bound wins instead — the
+ * column's maximum width is min(CONTENT_CONTAINER_WIDTH, screen − 2 × L).
  */
-export const READER_PAGE_WIDTH = 720;
+export const CONTENT_CONTAINER_WIDTH = 1280 - 32; // 1248
 
 /**
  * The L2 body text's rendered line-height in px — its typographic "leading".
@@ -18,7 +20,7 @@ export const READER_PAGE_WIDTH = 720;
  * 1.625 → 26px at zoom 1).
  *
  * Reader layout rule: the side-by-side text|translation gap and the reader's
- * side margins (device edge → text edge) both equal this value, so text rows
+ * side margins (text edge → screen edge) both equal this value, so text rows
  * and the translation column share a single visual pitch.
  */
 export function readerLeadingPx(zoom: number, leading: number, textScale = 1): number {
@@ -28,7 +30,7 @@ export function readerLeadingPx(zoom: number, leading: number, textScale = 1): n
 
 /**
  * Reader content horizontal padding: BOTH margins equal the text's leading
- * (the distance from the device edge to the text edge equals the text's
+ * (the distance from the text edge to the screen edge equals the text's
  * leading). `total` feeds the pagination content-width math so measured
  * widths match the visible ScrollView.
  */
@@ -42,11 +44,14 @@ export function readerHorizontalPadding(
 }
 
 /**
- * Clamp the available content width to the book measure: the text column is
- * never wider than READER_PAGE_WIDTH, so on tablets the column is centered
- * with the leftover width distributed equally (the visible ScrollView wraps
- * the column in a centered View of this width).
+ * Clamp the available content width: the text column is never wider than
+ * CONTENT_CONTAINER_WIDTH (the top bar's content span), so on tablets the
+ * column is centered with the leftover width distributed equally (the visible
+ * ScrollView wraps the column in a centered View of this width). Together
+ * with the leading padding, the column ends up at most
+ * min(CONTENT_CONTAINER_WIDTH, screen width − 2 × leading) — on phones it
+ * fills the screen minus a leading margin on each side.
  */
 export function readerClampedContentWidth(availableWidth: number): number {
-  return Math.min(Math.max(0, availableWidth), READER_PAGE_WIDTH);
+  return Math.min(Math.max(0, availableWidth), CONTENT_CONTAINER_WIDTH);
 }

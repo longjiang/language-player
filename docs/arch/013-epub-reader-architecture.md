@@ -623,8 +623,11 @@ links, falling back to headings).
 - **Short pages mid-align** vertically (immersive epub reader).
 - **Translation-sentence highlight** strengthened (`bg-primary/25 text-primary`)
   for dark-mode visibility.
-- **Page-width clamp**: content column clamped to `READER_PAGE_WIDTH` (720)
-  with leading margins on BOTH sides (was left=leading/right=16px).
+- **Content-container clamp**: the text column's maximum width is
+  `min(CONTENT_CONTAINER_WIDTH, screen − 2 × L)` — the container width
+  (1248 px = the top bar's max-w-7xl content span, logo → avatar) on wide
+  screens, or the screen minus a leading margin per side on phones — with
+  leading margins on BOTH sides (was left=leading/right=16px).
 - **Chromeless controls**: chromeless mode shows "show toolbars" + "close"
   icon buttons top-right aligned with the chapter title; chrome-visible mode
   has NO close button (SPEC-085 §7.1/8.1 updated).

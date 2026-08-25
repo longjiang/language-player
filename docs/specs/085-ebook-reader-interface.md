@@ -444,22 +444,31 @@ Per product direction (paginated reader requirements), the affordance flipped:
 - **Chrome ON:** no close button. Escape hatches are the chromeless close and
   the nav-menu same-route close (`requestCloseReader`).
 
-### 17.2 Horizontal geometry — page-width clamp + symmetric leading margins
+### 17.2 Horizontal geometry — content-container clamp + symmetric leading margins
 
 §6.2 previously specified `padding-left: L` / `padding-right: 16px`. The
-reader now clamps the content column to a book measure and uses **leading
-margins on both sides**:
+reader now clamps the text column to the **content container width** (the
+top bar's content span, logo → avatar) and uses **leading margins on both
+sides**:
 
-- `READER_PAGE_WIDTH = 720` (web `lib/reader-layout.ts`, mobile
-  `lib/reader-layout.ts`); the outer box is `READER_PAGE_WIDTH + 2 × L`.
-- Web: the shared `readerHorizontalPadding(zoom, leading)` style object now
-  returns `{ paddingLeft: L, paddingRight: L, maxWidth: READER_PAGE_WIDTH +
-  2L, marginLeft: 'auto', marginRight: 'auto' }` — applied to the visible
-  content AND the hidden measuring mirror so measured line wraps match.
+- `CONTENT_CONTAINER_WIDTH = 1248` (web `lib/reader-layout.ts`, mobile
+  `lib/reader-layout.ts`) — the `max-w-7xl` (1280 px) container minus its
+  16 px horizontal padding on each side.
+- **Rule:** the text column's maximum width is
+  `min(CONTENT_CONTAINER_WIDTH, screen width − 2 × L)`, where `L` is the
+  rendered L2 body-text leading. On phones the "screen − 2L" bound wins (the
+  column fills the screen with a leading margin on each side); on wide
+  screens the container width wins (the column matches the header's
+  logo→avatar span).
+- Web: the shared `readerHorizontalPadding(zoom, leading)` style object
+  returns `{ paddingLeft: L, paddingRight: L, maxWidth:
+  CONTENT_CONTAINER_WIDTH + 2L, marginLeft: 'auto', marginRight: 'auto' }` —
+  applied to the visible content AND the hidden measuring mirror so measured
+  line wraps match.
 - Mobile: `readerClampedContentWidth(available)` clamps the pagination
-  hook's `contentWidth`; the visible ScrollView wraps blocks in a centered
-  View of that width and the measuring mirror is set to
-  `contentWidth + 2 × L`.
+  hook's `contentWidth` to `CONTENT_CONTAINER_WIDTH`; the visible ScrollView
+  wraps blocks in a centered View of that width and the measuring mirror is
+  set to `contentWidth + 2 × L`.
 - Vertically, short pages (immersive epub) are centered like a book page
   (web: `flex min-h-full flex-col justify-center` on the visible column;
   mobile: `contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}`).

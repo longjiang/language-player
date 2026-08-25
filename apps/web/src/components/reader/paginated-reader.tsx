@@ -97,8 +97,9 @@ export interface PaginatedReaderProps {
   /** Applied to the hidden measuring mirror; defaults to `contentClassName`. */
   measureClassName?: string;
   /** Reader horizontal geometry — leading margins (both sides) plus the
-   *  page-width clamp; applied to visible and measured content. Defaults to
-   *  the shared reader layout (leading margins + READER_PAGE_WIDTH clamp). */
+   *  content-container width clamp; applied to visible and measured content.
+   *  Defaults to the shared reader layout (leading margins +
+   *  CONTENT_CONTAINER_WIDTH clamp). */
   readerHorizontalPadding?: {
     paddingLeft: number;
     paddingRight: number;
@@ -187,9 +188,10 @@ export function PaginatedReader({
   const glyphLang = useGlyphLang(l2.code);
   const showTranslation = display.translation;
   // Every paginated reader uses the shared horizontal geometry — the text
-  // column is padded by the L2 leading on both sides and clamped to the page
-  // width (READER_PAGE_WIDTH) with auto margins, so visible content and the
-  // measuring mirror wrap identically. Readers may override via the prop.
+  // column is padded by the L2 leading on both sides and clamped to the
+  // content container width (CONTENT_CONTAINER_WIDTH) with auto margins, so
+  // visible content and the measuring mirror wrap identically. Readers may
+  // override via the prop.
   const defaultHorizontalPadding = defaultReaderHorizontalPadding(
     tokenizedText.zoom,
     tokenizedText.leading ?? READER_DEFAULT_LEADING,
