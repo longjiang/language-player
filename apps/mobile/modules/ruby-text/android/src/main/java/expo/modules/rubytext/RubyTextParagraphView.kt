@@ -166,8 +166,8 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
    *  span's own baseline). The reader's translation column baseline-aligns to
    *  this (SPEC-082 parity; iOS emits the same shape from its TextKit 1
    *  replica). */
-  override fun onLayoutChanged(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-    super.onLayoutChanged(changed, left, top, right, bottom)
+  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    super.onLayout(changed, left, top, right, bottom)
     emitLineGrid()
   }
 
