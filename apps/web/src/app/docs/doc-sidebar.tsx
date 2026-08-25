@@ -48,11 +48,12 @@ function DocLink({ href, title, active, onClick }: { href: string; title: string
 }
 
 /** Renders a category node (expandable). Auto-expands if any child is active. */
-function DocCategory({ category, l1, currentSlug, onClick }: {
+function DocCategory({ category, l1, currentSlug, onClick, categoryTitles }: {
   category: DocMeta;
   l1: string;
   currentSlug: string;
   onClick: () => void;
+  categoryTitles?: Record<string, string>;
 }) {
   const t = useT();
   const hasActiveChild = category.children?.some(
@@ -61,8 +62,10 @@ function DocCategory({ category, l1, currentSlug, onClick }: {
   const [expanded, setExpanded] = useState(!!hasActiveChild);
   const key = categoryKey(category.slug);
   const translated = t(key);
-  // Fall back to server-provided title if no translation exists for this key
-  const title = translated !== key ? translated : category.title;
+  // Category labels respect the ?l1= query (server-resolved for that l1),
+  // falling back to the app-locale translation, then the server title.
+  const title = categoryTitles?.[category.slug] ??
+    (translated !== key ? translated : category.title);
 
   return (
     <div>
@@ -96,12 +99,14 @@ function DocCategory({ category, l1, currentSlug, onClick }: {
   );
 }
 
-export function DocSidebar({ toc, docs, l1, currentSlug, searchIndex }: {
+export function DocSidebar({ toc, docs, l1, currentSlug, searchIndex, categoryTitles }: {
   toc: TocItem[];
   docs: DocMeta[];
   l1: string;
   currentSlug: string;
   searchIndex: DocEntry[];
+  /** Category labels resolved for the ?l1= query (slug → translated title). */
+  categoryTitles?: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -194,7 +199,7 @@ export function DocSidebar({ toc, docs, l1, currentSlug, searchIndex }: {
                     if (doc.children && doc.children.length > 0) {
                       return (
                         <li key={doc.slug}>
-                          <DocCategory category={doc} l1={l1} currentSlug={currentSlug} onClick={close} />
+                          <DocCategory category={doc} l1={l1} currentSlug={currentSlug} onClick={close} categoryTitles={categoryTitles} />
                         </li>
                       );
                     }
