@@ -25,7 +25,8 @@ import {
 import type { ReaderBlock } from '@/lib/parse-markdown';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
-import { ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react';
+import { READER_DEFAULT_LEADING, readerHorizontalPadding as defaultReaderHorizontalPadding } from '@/lib/reader-layout';
+import { ArrowDown, ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react';
 
 export type { BlockRenderCtx, ReaderLoc, ReaderPageItem } from '@/hooks/use-paginated-reader';
 
@@ -95,8 +96,16 @@ export interface PaginatedReaderProps {
   contentClassName?: string;
   /** Applied to the hidden measuring mirror; defaults to `contentClassName`. */
   measureClassName?: string;
-  /** EPUB reader horizontal geometry; applied to visible and measured content. */
-  readerHorizontalPadding?: { paddingLeft: number; paddingRight: number };
+  /** Reader horizontal geometry — leading margins (both sides) plus the
+   *  page-width clamp; applied to visible and measured content. Defaults to
+   *  the shared reader layout (leading margins + READER_PAGE_WIDTH clamp). */
+  readerHorizontalPadding?: {
+    paddingLeft: number;
+    paddingRight: number;
+    maxWidth?: number;
+    marginLeft?: 'auto';
+    marginRight?: 'auto';
+  };
 
   // ── Immersive reader mode (EPUB) ──
   /**
@@ -170,9 +179,18 @@ export function PaginatedReader({
   renderMeasureBlock,
 }: PaginatedReaderProps) {
   const t = useT();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, tokenizedText, updateDisplay } = useSettingsContext();
   const glyphLang = useGlyphLang(l2.code);
   const showTranslation = display.translation;
+  // Every paginated reader uses the shared horizontal geometry — the text
+  // column is padded by the L2 leading on both sides and clamped to the page
+  // width (READER_PAGE_WIDTH) with auto margins, so visible content and the
+  // measuring mirror wrap identically. Readers may override via the prop.
+  const defaultHorizontalPadding = defaultReaderHorizontalPadding(
+    tokenizedText.zoom,
+    tokenizedText.leading ?? READER_DEFAULT_LEADING,
+  );
+  const hPad = readerHorizontalPadding ?? defaultHorizontalPadding;
 
   const pager = usePaginatedReader({
     blocks,
@@ -201,8 +219,10 @@ export function PaginatedReader({
     setJumpOpen(false);
   }, [jumpValue, pager.goToPage]);
 
-  // Keyboard paging (arrows, PageUp/Down, space) — never while typing in an
+  // Keyboard paging (arrows, PageUp/Down) — never while typing in an
   // input/textarea/select/contenteditable (e.g. the sidebar search box).
+  // Space is NOT a page turn: it scrolls the current page down by a viewport
+  // (see below), so a long page is read by scrolling before advancing.
   const { prevPage, nextPage } = pager;
   useEffect(() => {
     if (disableKeyboardPaging) return;
@@ -210,7 +230,7 @@ export function PaginatedReader({
       const target = e.target as HTMLElement | null;
       if (target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') prevPage();
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') {
         e.preventDefault();
         nextPage();
       }
@@ -218,6 +238,52 @@ export function PaginatedReader({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [prevPage, nextPage, disableKeyboardPaging]);
+
+  // ── Space scrolls the page (never turns it) ──
+  // A page that overflows the viewport (a tall block, or a translation taller
+  // than measured) is read by scrolling; Space scrolls down one viewport and
+  // Shift+Space scrolls up. At the top/bottom nothing else happens — page
+  // turns stay on the arrow keys and buttons.
+  useEffect(() => {
+    if (disableKeyboardPaging) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== ' ') return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+      const vp = pager.viewportRef.current;
+      if (!vp) return;
+      e.preventDefault();
+      const dir = e.shiftKey ? -1 : 1;
+      vp.scrollBy({ top: dir * Math.max(1, vp.clientHeight * 0.9), behavior: 'smooth' });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [disableKeyboardPaging, pager.viewportRef]);
+
+  // ── Long-page scroll affordance (down-arrow) ──
+  // When the current page overflows the viewport, a floating down-arrow sits
+  // just above the page counter; tapping it scrolls to the bottom. Hidden at
+  // the bottom (or when the page fits) so it never blocks a page turn.
+  const [canScrollDown, setCanScrollDown] = useState(false);
+  const [atPageBottom, setAtPageBottom] = useState(false);
+  const updateScrollState = useCallback(() => {
+    const vp = pager.viewportRef.current;
+    if (!vp) return;
+    const overflow = vp.scrollHeight - vp.clientHeight;
+    setCanScrollDown(overflow > 8);
+    setAtPageBottom(overflow > 8 && vp.scrollTop >= overflow - 8);
+  }, [pager.viewportRef]);
+  // Re-check after every page renders, when the viewport resizes, and on scroll.
+  useEffect(() => {
+    updateScrollState();
+    window.addEventListener('resize', updateScrollState);
+    return () => window.removeEventListener('resize', updateScrollState);
+  }, [updateScrollState, pager.page, pager.measureWindow, showTranslation]);
+  const scrollPageToBottom = useCallback(() => {
+    const vp = pager.viewportRef.current;
+    if (!vp) return;
+    vp.scrollTo({ top: vp.scrollHeight, behavior: 'smooth' });
+  }, [pager.viewportRef]);
 
   // ── Swipe/flick left/right page turns (mobile parity) ──
   // Pointer-based horizontal drag on the scroll viewport: the page follows
@@ -485,11 +551,12 @@ export function PaginatedReader({
         ref={pager.viewportRef}
         className="min-h-0 flex-1 overflow-auto touch-pan-y"
         style={{ overscrollBehaviorX: 'contain' }}
+        onScroll={updateScrollState}
       >
         <div
           ref={dragRef}
-          className={contentClassName}
-          style={readerHorizontalPadding}
+          className={`${contentClassName} ${immersive ? 'flex min-h-full flex-col justify-center' : ''}`}
+          style={hPad}
           lang={glyphLang}
           dir={dir}
         >
@@ -607,6 +674,26 @@ export function PaginatedReader({
         </>
       )}
 
+      {/* Long-page scroll affordance: a floating down-arrow just above the
+          page counter (or the bottom bar) when the current page overflows
+          the viewport. Tapping scrolls to the bottom; hidden at the bottom
+          and when the page fits. */}
+      {canScrollDown && !atPageBottom && (
+        <div
+          className="pointer-events-none absolute inset-x-0 z-10 flex justify-center"
+          style={{ bottom: immersive ? (immersiveReserve?.bottom ?? 0) - 32 : 56 }}
+        >
+          <button
+            onClick={scrollPageToBottom}
+            aria-label={t('action.scroll_down')}
+            title={t('action.scroll_down')}
+            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Hidden measuring mirror — mirrors the current window exactly,
           including per-block spacing, the translation column (when on) and
           the text-zoom + ruby/furigana height estimates. Each block must be
@@ -618,7 +705,7 @@ export function PaginatedReader({
         ref={pager.measureRef}
         aria-hidden="true"
         className={`absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none ${measureClassName ?? contentClassName}`}
-        style={readerHorizontalPadding}
+        style={hPad}
         lang={glyphLang} dir={dir}
       >
         {pager.measureWindow.map((item, i) => renderMeasureBlock(item, i))}

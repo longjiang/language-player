@@ -78,7 +78,10 @@ export function SegmentedTranslation({
       {map.tr.map((seg, i) => (
         <span
           key={i}
-          className={i === activeTrIndex ? 'rounded-sm bg-primary/10' : undefined}
+          // The active translation sentence must read clearly in dark mode:
+          // a stronger primary background plus a primary-colored foreground
+          // (bg-primary/10 alone was invisible on dark backgrounds).
+          className={i === activeTrIndex ? 'rounded-sm bg-primary/25 text-primary' : undefined}
         >
           {renderInlineMarkdown(text.slice(seg.start, seg.end))}
         </span>

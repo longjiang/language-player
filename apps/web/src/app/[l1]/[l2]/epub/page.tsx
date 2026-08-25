@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Header } from '@/components/layout/header';
 import { ReaderChromeProvider, useReaderChrome } from '@/providers/reader-chrome-provider';
 import {
-  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, X,
+  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelTopOpen, X,
 } from 'lucide-react';
 import { epubLog } from '@/lib/epub-log';
 
@@ -381,21 +381,35 @@ export default function EpubPage() {
             </ReaderChromeProvider>
           </div>
 
-          {/* Close button (chrome): X in a 24px circle, top right — fades in
-              with the chrome. top = HEADER_HEIGHT + 8 keeps it ≥ 8px below
-              the site top bar and centers the 24px circle on the chapter-
-              title line (SPEC-085 §6.2). */}
-          <button
-            onClick={handleCloseReader}
-            aria-label={t('action.close')}
-            title={t('action.close')}
-            style={{ top: HEADER_HEIGHT + 8 }}
-            className={`absolute right-3 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-opacity duration-300 hover:text-foreground ${
-              chromeVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
-            }`}
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          {/* Chromeless controls: when the chrome is hidden, two icon-only
+              buttons sit top right, vertically aligned with the chapter
+              title (top = HEADER_HEIGHT + 8, the title line box) — "show
+              toolbars" reveals the chrome and "close" leaves the reader.
+              Chrome-visible mode deliberately has NO close button (the
+              escape hatches are the chromeless close and the nav menu). */}
+          {!chromeVisible && (
+            <div
+              className="absolute right-3 z-40 flex items-center gap-2"
+              style={{ top: HEADER_HEIGHT + 8 }}
+            >
+              <button
+                onClick={toggleChrome}
+                aria-label={t('action.show_toolbars')}
+                title={t('action.show_toolbars')}
+                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+              >
+                <PanelTopOpen className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={handleCloseReader}
+                aria-label={t('action.close')}
+                title={t('action.close')}
+                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* The reader — top/bottom strips are reserved for the chrome and
               the muted chapter title / page count, so toggling the chrome
