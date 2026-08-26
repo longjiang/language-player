@@ -52,7 +52,9 @@ body,
   justify-content: center;
   box-sizing: border-box;
   padding: 1rem;
-  background: hsl(var(--foreground) / 0.5);
+  /* Web-parity dim: fixed semi-transparent black (not the theme foreground,
+     which is white in dark mode). */
+  background: hsl(0 0% 0% / 0.5);
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog {
