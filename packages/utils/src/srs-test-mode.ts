@@ -167,20 +167,21 @@ export function normalizeTestChoice(choice: string): string {
  * For EDICT (Japanese) the `pronunciation` field is ROMAJI (e.g. "soru"), not
  * the kana reading the test needs — the reading lives in `alternate` / the
  * `phonetic_detail.kana`. For CEDICT (Chinese) `pronunciation` is the pinyin,
- * so we fall back to it. Prefer the script-appropriate field, then the entry
- * `pronunciation`, then the head word itself.
+ * so we use that. For Japanese we never fall back to romaji: the test is
+ * hiragana-only, so a romaji "correct answer" would be rejected and the whole
+ * question would fail. A Japanese entry with no kana reading returns '' so the
+ * caller skips the pronunciation test rather than generating a broken one.
  */
 export function pronunciationReadingOf(entry: {
   alternate?: string | null;
   pronunciation?: string;
-  phonetic_detail?: { kana?: string; pinyin?: string; romaji?: string } | null;
+  phonetic_detail?: { kana?: string; pinyin?: string; romanization?: string; ipa?: string } | null;
 } | null | undefined, l2Code: string): string {
   if (!entry) return '';
   const base = (l2Code.split('-')[0] ?? '').toLowerCase();
-  // Japanese: the kana reading is `alternate`, or the phonetic_detail.kana.
   if (base === 'ja') {
-    const kana = entry.phonetic_detail?.kana ?? entry.alternate ?? '';
-    if (kana) return kana.trim();
+    const kana = entry.alternate ?? entry.phonetic_detail?.kana ?? '';
+    return typeof kana === 'string' ? kana.trim() : '';
   }
   if (base === 'zh' || base === 'yue') {
     const pinyin = entry.phonetic_detail?.pinyin ?? entry.pronunciation ?? '';
@@ -303,10 +304,14 @@ export function buildSrsQuestionPrompt(input: {
     ].filter(Boolean).join('\n');
   }
 
-  // Pronunciation — the answer notation is language-specific. The correct
-  // answer is supplied by the app (the headword's ground-truth reading), so the
-  // model returns ONLY 3 distractor readings. The question text is composed by
-  // the app via buildPronunciationQuestionText(), never by the model.
+  // Pronunciation — the answer notation is language-specific. When the app has
+  // a ground-truth kana reading it is anchored to the LEMMA headword and the
+  // model returns ONLY distractor readings (so the correct answer is never the
+  // model's guess — homographs like 反る = そる vs かえる). When NO kana reading
+  // is available (e.g. an LLM entry carrying only romaji), the model generates
+  // BOTH the correct_answer and the confounders, still anchored to the lemma.
+  // The question text is always composed by the app via
+  // buildPronunciationQuestionText().
   const notation = baseL2 === 'ja'
     ? 'hiragana only (katakana→hiragana); no romaji/kanji'
     : baseL2 === 'zh' || baseL2 === 'yue'
@@ -315,15 +320,26 @@ export function buildSrsQuestionPrompt(input: {
   const extraRule = baseL2 === 'ja'
     ? ' For mixed kana+kanji words, keep the written kana identical in every choice and vary only the kanji reading.'
     : '';
+  const hasGroundTruth = Boolean(input.pronunciation);
+  const answerInstruction = hasGroundTruth
+    ? 'The correct_answer is given. Generate ONLY 3 confounder (wrong) readings — do NOT write a question, do NOT repeat the correct_answer.'
+    : `correct_answer + 3 confounders: ${notation}; all 4 distinct.`;
+  const countRule = hasGroundTruth
+    ? `3 confounders: ${notation}; exactly 3 distinct, none equal to the correct_answer.`
+    : `4 choices total: ${notation}; all distinct.`;
+  const confounderRule = 'Confounders: plausible wrong readings or near-misses — never a valid reading of the target, never containing (or contained by) the correct_answer, and never derived/inflected forms of it.' + extraRule;
+  const outputShape = hasGroundTruth
+    ? `Output valid JSON only, no markdown: {"kind":"pronunciation","confounders":["...","...","..."]}`
+    : `Output valid JSON only, no markdown: {"kind":"pronunciation","correct_answer":"...","confounders":["...","...","..."]}`;
 
   return [
-    `Write a multiple-choice quiz that tests the pronunciation of a ${langName} phrase.`,
-    'The correct_answer is given. Generate ONLY 3 confounder (wrong) readings — do NOT write a question, do NOT repeat the correct_answer.',
-    `3 confounders: ${notation}; exactly 3 distinct, none equal to the correct_answer.`,
-    'Confounders: plausible wrong readings or near-misses — never a valid reading of the target, never containing (or contained by) the correct_answer, and never derived/inflected forms of it.' + extraRule,
-    `Word: ${input.word}`,
+    `Write a multiple-choice quiz that tests the pronunciation of the ${langName} headword "${input.word}" — the lemma, never the surface form or a sub-component of a compound.`,
+    answerInstruction,
+    countRule,
+    confounderRule,
+    `Word (lemma): ${input.word}`,
     `Context: ${context}`,
-    input.pronunciation ? `correct_answer (the headword's reading): ${input.pronunciation}` : '(No correct_answer supplied — pick the most plausible reading.)',
-    `Output valid JSON only, no markdown: {"kind":"pronunciation","confounders":["...","...","..."]}`,
+    hasGroundTruth ? `correct_answer (the headword's reading): ${input.pronunciation}` : '',
+    outputShape,
   ].filter(Boolean).join('\n');
 }

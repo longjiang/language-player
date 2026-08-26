@@ -225,7 +225,13 @@ export class SrsTestManager {
    */
   private cacheKey(cardKey: string, input: SrsTestGenerationInput): string {
     const contextHash = md5(`${input.wordForm}|${input.context}`).slice(0, 8);
-    return `${cardKey}:${input.kind}:${contextHash}`;
+    // The pronunciation mode matters: when the app supplies a kana reading it
+    // owns the correct answer and the model returns confounders only; when it
+    // does not, the model also supplies the correct answer. These are different
+    // questions, so they must never share a cache entry (otherwise a prefetch
+    // without ground truth could collide with a grounded loadSlot).
+    const gt = input.kind === 'pronunciation' ? `|gt=${input.pronunciation ?? ''}` : '';
+    return `${cardKey}:${input.kind}:${contextHash}${gt}`;
   }
 
   private log(event: string, data?: Record<string, unknown>): void {
@@ -455,27 +461,42 @@ export class SrsTestManager {
       throw new Error('LLM returned the wrong question type');
     }
 
-    // ── Pronunciation: the app owns the question text and the correct answer
-    // (the headword's ground-truth reading). The LLM supplies ONLY the 3
-    // distractor readings, so the correct option is never the model's guess.
+    // ── Pronunciation. When the app supplies a ground-truth kana reading
+    // (Japanese EDICT has alternate/phonetic_detail.kana) it owns the correct
+    // answer and the LLM supplies ONLY the 3 distractor readings — so the
+    // correct option is never the model's guess (homographs like 反る = そる vs
+    // かえる). When NO reading is available (e.g. an LLM entry with only
+    // romaji), the model generates both correct_answer and confounders, so the
+    // word still gets a pronunciation question. The question text is always
+    // app-owned via buildPronunciationQuestionText().
     if (input.kind === 'pronunciation') {
-      const tokenize = (x: string) => x.trim();
-      const correct = tokenize(input.pronunciation ?? '');
       const baseL2 = (input.l2Code.split('-')[0] ?? '').toLowerCase();
+      const groundTruth = (input.pronunciation ?? '').trim();
+      const confounders = (Array.isArray(parsed.confounders) ? parsed.confounders : [])
+        .filter((x): x is string => typeof x === 'string');
+      let correct: string;
+      let rawChoices: string[];
+      if (groundTruth) {
+        correct = groundTruth;
+        rawChoices = [correct, ...confounders];
+      } else {
+        correct = typeof parsed.correct_answer === 'string' ? parsed.correct_answer.trim() : '';
+        rawChoices = [parsed.correct_answer, ...confounders];
+      }
       if (!correct) {
         throw new Error('Missing ground-truth pronunciation');
       }
       if (baseL2 === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(correct)) {
         throw new Error('Japanese pronunciation must be hiragana');
       }
-      const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
-      const rawChoices = [correct, ...confounders].filter((x): x is string => typeof x === 'string' && !!x.trim());
-      const deduped = rawChoices.filter(
-        (choice, index) =>
-          rawChoices.findIndex(
-            (candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice),
-          ) === index,
-      );
+      const deduped = rawChoices
+        .filter((x): x is string => typeof x === 'string' && !!x.trim())
+        .filter(
+          (choice, index) =>
+            rawChoices.findIndex(
+              (candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice),
+            ) === index,
+        );
       if (deduped.length !== 4) {
         throw new Error('Invalid question choices');
       }

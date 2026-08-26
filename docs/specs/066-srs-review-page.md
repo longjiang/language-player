@@ -583,19 +583,26 @@ question reveals the card back and the rating buttons.
   short directive. The auto-retry hint in the manager is equally terse and
   language-specific.
 - **Pronunciation question is app-owned (2026-08-26)** — for the
-  pronunciation test the app composes **both** the question text and the
-  correct answer; the LLM only supplies the 3 distractor readings. The
-  question text is deterministic via `buildPronunciationQuestionText` (always
-  the headword, L1-localized via `PRONUNCIATION_QUESTION_I18N`), so it can
-  never drift into asking about a compound's components (e.g. 「手」和「落ち」
-  for 手落ち). The correct answer is the headword's ground-truth reading from
-  `pronunciationReadingOf` — for EDICT it reads `alternate` /
-  `phonetic_detail.kana` (the `pronunciation` field is romaji like "soru",
-  not the kana the test needs); CEDICT uses pinyin. The manager assembles
-  `correctAnswer` from the supplied reading and `prompt` from
-  `buildPronunciationQuestionText`, and **rejects** generation without a
-  ground-truth reading instead of letting the model invent one (which
-  produced wrong answers such as そら for 反る = そる). The definition test is
+  pronunciation test the app composes the question text and, when the
+  dictionary has a kana reading, the correct answer; the LLM supplies only the
+  3 distractor readings. The question text is deterministic via
+  `buildPronunciationQuestionText` (always the headword, L1-localized via
+  `PRONUNCIATION_QUESTION_I18N`), so it can never drift into asking about a
+  compound's components (e.g. 「手」和「落ち」 for 手落ち). The correct answer is
+  the headword's ground-truth reading from `pronunciationReadingOf` — for EDICT
+  it reads `alternate` / `phonetic_detail.kana` (the `pronunciation` field is
+  romaji like "soru", not the kana the test needs); CEDICT uses pinyin. The
+  manager assembles `correctAnswer` from the supplied reading and `prompt` from
+  `buildPronunciationQuestionText`.
+- **Pronunciation hybrid (2026-08-26)** — when a Japanese word has NO kana
+  reading (e.g. an LLM entry whose only reading is romaji, like 羽交い締め), the
+  app cannot supply a ground-truth answer, so the model generates BOTH the
+  `correct_answer` and the confounders — still anchored to the lemma headword
+  (the prompt always names the lemma, never the surface form or a compound's
+  sub-components). This keeps a pronunciation question for every deep-orthography
+  word instead of dropping it. The manager keys the test cache on the
+  ground-truth mode (`gt=<reading>`) so a grounded and an ungrounded question
+  never collide. The definition test is
   unchanged — the model still returns question + correct answer + confounders,
   since a word has several definitions and the model must pick the
   contextually appropriate one.

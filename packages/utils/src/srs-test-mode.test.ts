@@ -237,29 +237,41 @@ describe('surfaceFormOf / lemmaFormOf', () => {
 });
 
 describe('buildSrsQuestionPrompt (terse, language-specific)', () => {
-  it('names the language and uses the L2-specific notation, distractor-only', () => {
+  it('anchors the pronunciation prompt on the lemma headword (grounded = confounders only)', () => {
     const ja = buildSrsQuestionPrompt({
       word: '押し切る', contextSentence: '彼は反対を押し切って決行した。',
       l1Code: 'en', l2Code: 'ja', kind: 'pronunciation', pronunciation: 'おしきる',
     });
-    expect(ja).toContain('tests the pronunciation of a Japanese phrase');
+    expect(ja).toContain('tests the pronunciation of the Japanese headword');
     expect(ja).toContain('hiragana only');
     expect(ja).toContain('never derived/inflected forms of it');
     expect(ja).toContain('correct_answer (the headword\'s reading): おしきる');
     expect(ja).toContain('Generate ONLY 3 confounder');
     expect(ja).toContain('Output valid JSON only, no markdown');
-    // The model is NOT asked to write the question or the correct answer.
-    expect(ja).not.toContain('"question"');
-    // The model is not asked to compose the question text.
-    expect(ja).not.toMatch(/Ask how the target word is pronounced/);
+    // Grounded → the model must NOT write the correct answer.
+    expect(ja).not.toContain('correct_answer + 3 confounders');
     expect(ja).not.toContain('pinyin');
     expect(ja).not.toContain('Chinese');
+  });
 
+  it('falls back to model-supplied correct answer when no ground-truth reading', () => {
+    const ja = buildSrsQuestionPrompt({
+      word: '羽交い締め', contextSentence: '後ろから羽交い締めにされ、もう一人にクロロホルムを嗅がされた。',
+      l1Code: 'en', l2Code: 'ja', kind: 'pronunciation', // no pronunciation ground truth
+    });
+    expect(ja).toContain('tests the pronunciation of the Japanese headword');
+    expect(ja).toContain('correct_answer + 3 confounders');
+    expect(ja).toContain('"correct_answer"');
+    expect(ja).not.toContain('Generate ONLY 3 confounder');
+    expect(ja).toContain('hiragana only');
+  });
+
+  it('uses pinyin for Chinese pronunciation', () => {
     const zh = buildSrsQuestionPrompt({
       word: '决定', contextSentence: '我决定明天去北京。',
       l1Code: 'en', l2Code: 'zh', kind: 'pronunciation',
     });
-    expect(zh).toContain('tests the pronunciation of a Chinese phrase');
+    expect(zh).toContain('tests the pronunciation of the Chinese headword');
     expect(zh).toContain('pinyin with tone marks');
     expect(zh).not.toContain('hiragana');
     expect(zh).not.toContain('kana');

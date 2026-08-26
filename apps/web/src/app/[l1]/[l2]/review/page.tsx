@@ -582,16 +582,6 @@ export default function ReviewPage() {
     const targetWord = kind === 'pronunciation'
       ? lemmaFormOf(card.word, wordForm)
       : wordForm;
-    // The pronunciation question is app-owned: its correct answer is the
-    // headword's ground-truth reading, so we must never generate it without a
-    // known reading — otherwise the model invents one (e.g. そら for 反る → そる).
-    if (kind === 'pronunciation' && !pronunciationReadingOf(entryForQuestion, l2Code)) {
-      log('[SRS Test] pronunciation skipped — no ground-truth reading', { word: targetWord, index });
-      setTestSlots((prev) => prev.map((slot, i) => (
-        i === index ? { ...slot, status: 'error', diagnostic: { kind, prompt: '', response: null, error: 'No ground-truth reading for this word — retry once it loads.' } } : slot
-      )));
-      return;
-    }
     setTestSlots((prev) => {
       if (!prev[index]) return prev;
       const next = [...prev];
@@ -610,8 +600,10 @@ export default function ReviewPage() {
         l2Code,
         regenerate,
         definition: entryForQuestion?.definitions?.[0],
-        // The pronunciation ground truth is the headword's KANA reading
-        // (EDICT's `pronunciation` field is romaji, not the kana test needs).
+        // The pronunciation ground truth is the headword's KANA reading when the
+        // dictionary has one (EDICT's `pronunciation` field is romaji, not the
+        // kana the test needs). When absent (LLM entry with only romaji) the
+        // manager falls back to the model-supplied correct answer.
         pronunciation: kind === 'pronunciation'
           ? pronunciationReadingOf(entryForQuestion, l2Code)
           : entryForQuestion?.pronunciation,
@@ -715,12 +707,27 @@ export default function ReviewPage() {
       // uses the surface form. Both must match loadSlot exactly so the
       // prefetched test is a cache hit when the card is tested.
       const lemma = lemmaFormOf(card.word, word);
+      // Resolve the headword's kana reading the same way loadSlot does, so the
+      // prefetched utterance uses the identical ground-truth mode (and cache
+      // key). If the entry is not resolved yet, leave it empty — the manager
+      // falls back to the model-supplied correct answer.
+      const prefetchEntry = getCachedEntries(baseCode(l2.code), lemma)?.[0]
+        ?? getCachedEntries(baseCode(l2.code), word)?.[0];
       const kinds: TestQuestionKind[] = getTestKinds(l2Code, surfaceFormOf(card.word, word));
       for (const kind of kinds) {
         void manager.requestTest({
           cardKey,
           priority: 'prefetch',
-          input: { kind, wordForm: kind === 'pronunciation' ? lemma : word, context, l1Code: baseCode(l1.code), l2Code },
+          input: {
+            kind,
+            wordForm: kind === 'pronunciation' ? lemma : word,
+            context,
+            l1Code: baseCode(l1.code),
+            l2Code,
+            pronunciation: kind === 'pronunciation'
+              ? pronunciationReadingOf(prefetchEntry, l2Code)
+              : undefined,
+          },
         }).catch(() => {});
       }
     }

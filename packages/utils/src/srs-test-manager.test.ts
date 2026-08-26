@@ -90,19 +90,25 @@ describe('SrsTestManager cache', () => {
     expect(res.question.choices).toHaveLength(4);
   });
 
-  it('pronunciation: rejects generation without a ground-truth reading', async () => {
-    const { transport } = recordingTransport();
+  it('pronunciation: model supplies the correct answer when no kana ground truth exists', async () => {
+    const { transport } = recordingTransport(async () => JSON.stringify({
+      kind: 'pronunciation',
+      correct_answer: 'はがいじめ',
+      confounders: ['はねまじりじめ', 'はねこういしめ', 'はがいたい'],
+    }));
     const manager = new SrsTestManager(transport);
-    // No `pronunciation` ground truth → the app must never generate (the model
-    // would invent a wrong reading, e.g. そら for 反る = そる).
-    const missing = await manager.requestTest({
+    const res = await manager.requestTest({
       cardKey: 'k',
       priority: 'current',
-      input: input('pronunciation'),
+      input: { kind: 'pronunciation', wordForm: '羽交い締め', context: '後ろから羽交い締めにされ…', l1Code: 'en', l2Code: 'ja' },
     });
-    expect(missing.ok).toBe(false);
-    if (missing.ok) return;
-    expect(missing.diagnostic.error).toMatch(/ground-truth pronunciation/i);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    // Without a ground-truth kana reading, the model's own correct_answer is used
+    // so the word still gets a pronunciation question.
+    expect(res.question.correctAnswer).toBe('はがいじめ');
+    expect(res.question.prompt).toBe('How is "羽交い締め" pronounced?');
+    expect(res.question.choices).toHaveLength(4);
   });
 
   it('regenerate bypasses the cache', async () => {
