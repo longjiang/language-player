@@ -82,7 +82,7 @@ function ContextSentenceCard({
   };
 
   return (
-    <View className="mb-3">
+    <View>
       {/* The toggle is styled like the "Let DeepSeek explain" / "Search
           images" buttons (outline) so the popup's controls read as one
           family: same size, centered icon + label, chevron at the right. */}
@@ -693,46 +693,58 @@ export function DictionaryPopup({
                   </Button>
                 ) : null}
 
-                {/* Context sentence + translation, tokenized, behind a
-                    collapsible button (popup dictionary requirement). */}
-                {context ? (
-                  <ContextSentenceCard
-                    context={context}
-                    l2Code={l2}
-                    l1Code={baseCode(l1Lang.code)}
-                  />
-                ) : null}
-
                 {/* AI + image sections need the network — hide while offline. */}
                 {!status.effectiveOffline && (
                   <>
-                    {/* AI Explanation — inside scrollable area, matching web + Classic */}
+                    {/* AI Explanation — the popup's primary action, matching
+                        web + Classic. */}
                     <AiExplanation
                       word={word}
                       contextText={context}
                       entryFound={(results?.length ?? 0) > 0}
                     />
-
-                    {/* Search Google Images — opens the in-app browser (replaces
-                        the in-popup gallery), styled to match the "Let DeepSeek
-                        explain" button (outline Pressable, centered). */}
-                    <Button
-                      onPress={() => setShowImageSearch(true)}
-                      variant="outline"
-                      className="mb-3"
-                      accessibilityRole="button"
-                      accessibilityLabel={t('action.search_images')}
-                    >
-                      <ImageIcon size={16} color={ICON_PRIMARY} />
-                      <Text className={buttonTextClass('outline')}>{t('action.search_images')}</Text>
-                    </Button>
-                    <WebViewSheet
-                      visible={showImageSearch}
-                      url={googleImagesUrl}
-                      title={t('action.search_images')}
-                      onClose={() => setShowImageSearch(false)}
-                    />
                   </>
+                )}
+
+                {/* Context sentence (collapsible) + Search Google Images
+                    (icon-only) on one row — the popup's secondary action row.
+                    The context sentence card expands beneath the row. */}
+                {(context || !status.effectiveOffline) && (
+                  <View className="mb-3 flex-row gap-2">
+                    {context ? (
+                      <View className="min-w-0 flex-1">
+                        <ContextSentenceCard
+                          context={context}
+                          l2Code={l2}
+                          l1Code={baseCode(l1Lang.code)}
+                        />
+                      </View>
+                    ) : null}
+                    {!status.effectiveOffline && (
+                      /* Search Google Images — opens the in-app browser
+                         (replaces the in-popup gallery), icon-only, same
+                         outline button family as the row. */
+                      <Button
+                        onPress={() => setShowImageSearch(true)}
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0"
+                        accessibilityRole="button"
+                        accessibilityLabel={t('action.search_images')}
+                      >
+                        <ImageIcon size={16} color={ICON_PRIMARY} />
+                      </Button>
+                    )}
+                  </View>
+                )}
+
+                {!status.effectiveOffline && (
+                  <WebViewSheet
+                    visible={showImageSearch}
+                    url={googleImagesUrl}
+                    title={t('action.search_images')}
+                    onClose={() => setShowImageSearch(false)}
+                  />
                 )}
 
                 {error && (
