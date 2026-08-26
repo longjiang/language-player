@@ -70,6 +70,14 @@ body,
   text-align: left;
 }
 
+/* The dictionary lookup popup is clamped to the web dictionary popup's width
+   (apps/web dictionary-popup.tsx: w-[28rem] max-w-[90vw]) so it does not render
+   as an oversized sheet on top of the page. Other dialogs (settings/help/about/
+   account) keep the wider 52rem treatment. */
+#lpv-page-dictionary-root .lpv-ui-dialog.lpv-dictionary-dialog {
+  width: min(28rem, calc(100vw - 2rem));
+}
+
 #lpv-page-dictionary-root .lpv-settings-layout,
 #lpv-page-dictionary-root .lpv-help-layout {
   min-height: min(32rem, calc(100vh - 8rem));
