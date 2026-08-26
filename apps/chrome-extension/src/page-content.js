@@ -97,6 +97,24 @@ function isHidden(el) {
   }
 }
 
+/** True when `el` has a descendant matching BLOCK_SELECTOR that is NOT hidden.
+ *  Used as the "is this a nested wrapper?" test. Hidden descendant blocks do
+ *  NOT make `el` nested — otherwise a wrapper that only contains hidden
+ *  sub-blocks (e.g. YouTube's always-hidden paid-comment-chip <div> inside a
+ *  comment body) would be skipped as "nested", orphaning its *visible* text
+ *  (the comment body <span>). */
+function hasVisibleBlockDescendant(el) {
+  try {
+    const descendants = el.querySelectorAll(BLOCK_SELECTOR);
+    for (const child of descendants) {
+      if (!isHidden(child)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Detect the page's language before tokenizing (SPEC-…): `<html lang>`
  * first, then meta content-language / name=language. Returns the ISO 639-1
@@ -256,7 +274,7 @@ function getPageTranslationSnapshot() {
   const blocks = [];
   let totalChars = 0;
   for (const el of document.querySelectorAll(BLOCK_SELECTOR)) {
-    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || el.querySelector(BLOCK_SELECTOR)) continue;
+    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
     const text = normalizeBlockText(el.innerText || el.textContent || '');
     if (!text || text.length < 2) continue;
     const clipped = text.slice(0, 2000);
@@ -316,7 +334,7 @@ function onIntersect(entries) {
     const el = entry.target;
     if (tokenizedBlocks.has(el) || pendingBlocks.has(el)) continue;
     if (isHidden(el) || isInsideSkipped(el)) continue;
-    if (el.querySelector(BLOCK_SELECTOR)) continue; // became nested — children tokenize as their own leaf blocks
+    if (hasVisibleBlockDescendant(el)) continue; // became nested — children tokenize as their own leaf blocks
     pendingBlocks.add(el);
     queued = true;
   }
@@ -346,7 +364,7 @@ async function flushPending() {
     const emptyBlocks = [];
     for (const block of blocks) {
       if (tokenizedBlocks.has(block)) continue;
-      if (block.querySelector(BLOCK_SELECTOR)) continue; // became nested — leave to its leaf children
+      if (hasVisibleBlockDescendant(block)) continue; // became nested — leave to its leaf children
       if (block.__lpvOriginalHtml === undefined) block.__lpvOriginalHtml = block.innerHTML;
       if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
       const nodes = getTextNodes(block);
@@ -431,7 +449,7 @@ async function tokenizePage() {
     } else if (isInsideSkipped(el)) {
       insideSkippedCount++;
       if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:insideSkipped`);
-    } else if (el.querySelector(BLOCK_SELECTOR)) {
+    } else if (hasVisibleBlockDescendant(el)) {
       nestedCount++;
       if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:nested`);
     } else {
