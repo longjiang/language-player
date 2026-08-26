@@ -958,6 +958,15 @@ body.lpv-panel-open disney-web-player-ui {
   flex-wrap: wrap;
 }
 
+/* Level/CEFR badges push to the top-right of the entry-card header (web parity). */
+.lpv-dict-entry-badges {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
 .lpv-dict-head {
   font-size: 15px;
   font-weight: 600;
@@ -1113,19 +1122,24 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-entry-save-btn {
   flex-shrink: 0;
-  width: 28px;
   height: 28px;
-  padding: 0;
+  padding: 0 8px;
   margin: 6px 8px 0 4px;
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
   color: hsl(var(--lpv-muted-foreground));
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.lpv-entry-save-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .lpv-entry-save-btn:hover {
