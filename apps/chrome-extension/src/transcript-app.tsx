@@ -7,8 +7,8 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import type { LemmatizedToken } from '@langplayer/shared';
-import { buildRuby, baseCode } from '@langplayer/utils';
+import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
+import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
@@ -17,6 +17,7 @@ import { apiFetch } from './api-fetch';
 import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
+import { useLazyCueWindow, computeCueWindow, WINDOW_LOOKAHEAD_LINES } from './lazy-window';
 import type { SubCue } from './use-translate-lines';
 import { t, getLocaleVersion, log, logwarn } from './i18n';
 
@@ -32,6 +33,14 @@ function logFurigana(key: string, message: string): void {
   if (furiganaDebugLogged.has(key)) return;
   furiganaDebugLogged.add(key);
   log(`[FURIGANA] ${message}`);
+}
+
+/** Re-render the transcript when the shared dictionary cache is populated by
+ *  the lazy batch lookup, so quick glosses appear without a manual refresh. */
+function useDictionaryCacheVersion(): number {
+  const [version, setVersion] = useState(0);
+  useEffect(() => subscribeToCache(() => setVersion((v) => v + 1)), []);
+  return version;
 }
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -90,10 +99,12 @@ interface TokenizedLineProps {
   showPhonetics: boolean;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
+  /** Bumped when the shared dictionary cache is populated (batch lookup). */
+  cacheVersion?: number;
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, onClickLine, onTokenClick }) => {
+  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, onClickLine, onTokenClick, cacheVersion }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
     const { getTokens, isQueued, enqueue } = useBatchLemmatize();
@@ -109,6 +120,38 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
       if (getTokens(text, l2Code) || isQueued(text, l2Code)) return;
       enqueue(text, l2Code);
     }, [shouldTokenize, text, l2Code, getTokens, isQueued, enqueue]);
+
+    // ── Lazy dictionary batch lookup ──
+    // Once this line's tokens arrive (it is visible or inside the rolling
+    // window), enqueue its unique lemmas for /dictionary/lookup-batch through
+    // the shared @langplayer/utils cache — the same stage apps/web + apps/mobile
+    // run. Identical words across lines are looked up once; off-window lines
+    // never enqueue anything, so the lookup is lazy like tokenization.
+    useEffect(() => {
+      if (!tokens || tokens.length === 0) return;
+      const base = baseCode(l2Code);
+      const unique: string[] = [];
+      const seen = new Set<string>();
+      const add = (t: string) => {
+        const trimmed = t.trim();
+        if (!trimmed || /^[\s\p{P}]+$/u.test(trimmed) || seen.has(trimmed)) return;
+        seen.add(trimmed);
+        unique.push(trimmed);
+      };
+      for (const token of tokens) {
+        for (const lemma of token.lemmas) add(lemma.lemma);
+        add(token.text);
+      }
+      if (unique.length === 0) return;
+      enqueueLookupWords(
+        unique.map((word) => ({ text: word, l2Code: base })),
+        API_BASE,
+      )
+        .then((queuedBatch) => {
+          if (queuedBatch) log(`[DICT] batch lookup queued ${unique.length} words for "${text.slice(0, 20)}"`);
+        })
+        .catch(() => {});
+    }, [tokens, l2Code, text]);
 
     // ── Lazy visibility: show raw text until scrolled near viewport ──
     useEffect(() => {
@@ -147,6 +190,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
               showPhonetics={showPhonetics}
               onClickLine={onClickLine}
               onTokenClick={onTokenClick}
+              cacheVersion={cacheVersion}
             />
           ))
         ) : queued ? (
@@ -169,10 +213,12 @@ interface TokenSpanProps {
   showPhonetics: boolean;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
+  /** Bumped when the shared dictionary cache is populated (batch lookup). */
+  cacheVersion?: number;
 }
 
 const TokenSpan: React.FC<TokenSpanProps> = React.memo(
-  ({ token, l2Code, isActive, showPhonetics, onClickLine, onTokenClick }) => {
+  ({ token, l2Code, isActive, showPhonetics, onClickLine, onTokenClick, cacheVersion }) => {
     const { savedFormSet } = useSavedWords();
 
     // Structural tokens
@@ -214,10 +260,24 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
 
     const lemmaTitle = token.lemmas.map((l) => l.lemma).join(', ');
 
+    // Quick gloss from the shared dictionary cache (populated lazily by the
+    // batch lookup for window/visible lines). cacheVersion triggers a recompute
+    // when the async batch lookup resolves. Falls back to the lemma list.
+    let quickGloss = '';
+    if (cacheVersion !== undefined) {
+      const base = baseCode(l2Code);
+      const entries: DictionaryEntry[] | undefined =
+        token.lemmas.length > 0
+          ? getCachedEntries(base, token.lemmas[0]!.lemma)
+          : getCachedEntries(base, token.text);
+      quickGloss = entries?.[0]?.definitions?.[0] ?? '';
+    }
+    const title = quickGloss ? `${lemmaTitle} — ${quickGloss}` : lemmaTitle;
+
     return (
       <span
         className={`lpv-token ${isActive ? 'lpv-token-active' : ''} ${isSaved ? 'lpv-token-saved' : ''}`}
-        title={lemmaTitle}
+        title={title}
         onClick={(e) => {
           e.stopPropagation();
           onTokenClick(token);
@@ -261,10 +321,12 @@ interface CueLineProps {
   explainLoading: boolean;
   /** Changes on locale switch to force React.memo re-render */
   localeVersion?: number;
+  /** Bumped when the shared dictionary cache is populated (batch lookup). */
+  cacheVersion?: number;
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
+  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -321,6 +383,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             showPhonetics={showPhonetics}
             onClickLine={handleClick}
             onTokenClick={handleTokenClickWithCue}
+            cacheVersion={cacheVersion}
           />
           {showTranslation && translation && (
             <div className="lpv-cue-translation">{translation}</div>
@@ -369,9 +432,6 @@ const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
 
 // ── Transcript App ────────────────────────────────────────────────────────
 
-/** Number of cues ahead of the active cue to tokenize/render proactively. */
-const TOKENIZE_LOOKAHEAD = 5;
-
 /** Font size percentages for text scale levels 0–4. */
 const TEXT_SCALE_SIZES = [87, 100, 112, 125, 150] as const;
 
@@ -397,6 +457,11 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
 
   const { isPro } = useSubscription();
   const { preFetch } = useBatchLemmatize();
+
+  // Shared lazy window: tokenization, batch lookup, and translation all work
+  // on the rolling window around the active cue (lazy-window.ts).
+  const cacheVersion = useDictionaryCacheVersion();
+  const { isInWindow } = useLazyCueWindow(activeCueIdx, cues.length);
 
   // Translation between a language and itself is meaningless (l1 === l2),
   // so it is disabled entirely and the toggle is hidden in that case.
@@ -493,10 +558,12 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     const activeChanged = activeCueIdx !== prevActiveRef.current;
     prevActiveRef.current = activeCueIdx;
 
-    // Before playback starts, tokenize the first few cues so the panel isn't
-    // showing raw text when the video begins.
+    const win = computeCueWindow(activeCueIdx, cues.length);
+
+    // Before playback starts, tokenize the window so the panel isn't showing
+    // raw text when the video begins.
     if (activeCueIdx < 0) {
-      const texts = cues.slice(0, TOKENIZE_LOOKAHEAD).map(c => c.text);
+      const texts = cues.slice(win.start, win.end + 1).map(c => c.text);
       if (texts.length > 0) preFetch(texts, l2Code);
       return;
     }
@@ -510,17 +577,15 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     }
 
     // Only pre-fetch when the active cue crosses into a new window boundary.
-    // Window size = TOKENIZE_LOOKAHEAD / 2 so we re-fetch roughly when
-    // the "next 5" window has advanced by ~2-3 cues.
-    const windowSize = Math.max(1, Math.floor(TOKENIZE_LOOKAHEAD / 2));
+    // Window size = WINDOW_LOOKAHEAD_LINES / 2 so we re-fetch roughly when the
+    // window has advanced by ~half its size (avoids a call every timeupdate).
+    const windowSize = Math.max(1, Math.floor(WINDOW_LOOKAHEAD_LINES / 2));
     const windowIdx = Math.floor(activeCueIdx / windowSize);
     if (windowIdx === prefetchWindowRef.current) return;
     prefetchWindowRef.current = windowIdx;
 
-    const start = Math.max(0, activeCueIdx);
-    const end = Math.min(cues.length, activeCueIdx + TOKENIZE_LOOKAHEAD);
     const texts: string[] = [];
-    for (let i = start; i < end; i++) {
+    for (let i = win.start; i <= win.end; i++) {
       texts.push(cues[i].text);
     }
     if (texts.length > 0) {
@@ -544,7 +609,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             cue={cue}
             index={i}
             isActive={i === activeCueIdx}
-            tokenizeAhead={activeCueIdx < 0 ? i < TOKENIZE_LOOKAHEAD : i >= activeCueIdx && i <= activeCueIdx + TOKENIZE_LOOKAHEAD}
+            tokenizeAhead={isInWindow(i)}
             isPro={isPro}
             l2Code={l2Code}
             showPhonetics={showPhonetics}
@@ -555,6 +620,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             onExplainLine={handleExplainLine}
             explainLoading={false}
             localeVersion={localeVersion}
+            cacheVersion={cacheVersion}
           />
         ))}
 
