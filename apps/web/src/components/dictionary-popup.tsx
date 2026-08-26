@@ -89,7 +89,7 @@ function ContextSentenceCard({
   };
 
   return (
-    <div className="mb-3">
+    <div>
       {/* The toggle is styled like the "Let DeepSeek explain" / "Search
           images" buttons (outline) so the popup's controls read as one
           family: same size, centered icon + label, chevron at the right. */}
@@ -551,35 +551,39 @@ export function DictionaryPopup({
             </div>
           )}
 
-          {/* Context sentence + translation, tokenized, behind a collapsible
-              button (popup dictionary requirement). */}
-          {context?.text ? (
-            <ContextSentenceCard
-              context={context.text}
-              l2Code={l2Code}
-              l1Code={l1Code}
-            />
-          ) : null}
-
-          {/* AI Explanation — placed above dictionary entries, matching Classic */}
+          {/* AI Explanation — the popup's primary action, matching Classic */}
           <AiExplanation
             word={token.text}
             contextText={context?.text}
             entryFound={entries.length > 0}
           />
 
-          {/* Search Google Images — external link (replaces the in-popup gallery),
-              styled to match the "Let DeepSeek explain" button (outline variant). */}
-          <a
-            href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full')}
-            title={t('action.search_images')}
-          >
-            <ImageIcon className="h-4 w-4" />
-            {t('action.search_images')}
-          </a>
+          {/* Context sentence (collapsible) + Search Google Images (icon-only)
+              on one row — the popup's secondary action row. The context
+              sentence card expands beneath the row. */}
+          <div className="mb-3 flex gap-2">
+            {context?.text ? (
+              <div className="min-w-0 flex-1">
+                <ContextSentenceCard
+                  context={context.text}
+                  l2Code={l2Code}
+                  l1Code={l1Code}
+                />
+              </div>
+            ) : null}
+            {/* Search Google Images — icon-only external link (replaces the
+                in-popup gallery), same outline button family as the row. */}
+            <a
+              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-9 shrink-0 px-0')}
+              title={t('action.search_images')}
+              aria-label={t('action.search_images')}
+            >
+              <ImageIcon className="h-4 w-4" />
+            </a>
+          </div>
 
           {/* Entry cards are loading — show a stable card skeleton instead of
               a spinner so the popup's shape (and fixed top) doesn't shift. */}
