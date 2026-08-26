@@ -1187,7 +1187,8 @@ body.lpv-panel-open disney-web-player-ui {
   justify-content: center;
   padding: 1rem;
   box-sizing: border-box;
-  background: hsl(222 47% 11% / 0.5);
+  /* Web-parity dim: fixed semi-transparent black. */
+  background: hsl(0 0% 0% / 0.5);
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog {

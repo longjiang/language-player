@@ -651,7 +651,9 @@ button:focus-visible,
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: hsl(var(--foreground) / 0.5);
+  /* Web-parity dim: a fixed semi-transparent black (not the theme foreground,
+     which is white in dark mode and would wash the page behind the dialog). */
+  background: hsl(0 0% 0% / 0.5);
 }
 
 .lpv-ui-dialog {
