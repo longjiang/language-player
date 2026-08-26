@@ -12,7 +12,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { baseCode, formatPronunciation } from '@langplayer/utils';
+import { baseCode, formatPronunciation, getCachedEntries, setCachedEntries, getL1CachedEntries, setL1CachedEntry } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
@@ -289,28 +289,59 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     log('Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
 
     const search = async () => {
-      const searchTerms = [
+      const texts = [
         ...token.lemmas.map((l) => l.lemma),
         token.text,
       ].filter((t, i, a) => a.indexOf(t) === i);
+      const l2 = baseCode(l2Code);
+      const cacheBase = baseCode(l2Code);
 
       let allEntries: DictionaryEntry[] = [];
+      let cacheHit = false;
 
-      for (const term of searchTerms) {
-        if (cancelled) break;
-        try {
-          const results = await fetchEntries(term, l2Code, l1Code, controller.signal);
-          if (!cancelled && results.length > 0) {
-            for (const e of results) {
-              if (!e.match_type) {
-                e.match_type = term === token.text ? 'exact' : 'lemma';
-              }
+      // 1. Check the shared batch cache first. The transcript lazily prefetches
+      //    dictionary entries (enqueueLookupWords → /dictionary/lookup-batch,
+      //    English defs) as lines are tokenized, so clicking a word can render
+      //    instantly from cache instead of waiting on a fresh network request.
+      for (const text of texts) {
+        const cached = getCachedEntries(cacheBase, text);
+        if (cached && cached.length > 0) {
+          for (const e of cached) {
+            if (!e.match_type) {
+              e.match_type = text === token.text ? 'exact' : 'lemma';
             }
-            allEntries = results;
-            break;
           }
-        } catch {
-          // Try next term
+          allEntries.push(...cached);
+          cacheHit = true;
+          break;
+        }
+      }
+
+      // 2. Cache miss — fetch from the server. fetchEntries sends l1, so when
+      //    l1 ≠ en the results are already L1-translated.
+      if (!cacheHit) {
+        for (const text of texts) {
+          if (cancelled) break;
+          try {
+            const results = await fetchEntries(text, l2Code, l1Code, controller.signal);
+            if (!cancelled && results.length > 0) {
+              for (const e of results) {
+                if (!e.match_type) {
+                  e.match_type = text === token.text ? 'exact' : 'lemma';
+                }
+              }
+              // Cache for future use; index the L1 entry by id so other
+              // surfaces reuse the exact same translation.
+              setCachedEntries(cacheBase, text, results);
+              if (l1Code !== 'en') {
+                for (const e of results) setL1CachedEntry(l2, l1Code, e);
+              }
+              allEntries = results;
+              break;
+            }
+          } catch {
+            // Try the next term
+          }
         }
       }
 
@@ -321,9 +352,40 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           seen.add(e.id);
           return true;
         });
-        log('Dictionary results:', deduped.length, 'entries');
         setEntries(deduped);
         setLoading(false);
+      }
+
+      // 3. Cache hit + non-English L1: the batch cache holds English defs for
+      //    speed. Show those instantly (done above), then swap in the
+      //    L1-translated definitions once they load — the same behavior as
+      //    apps/web and apps/mobile.
+      if (cacheHit && l1Code !== 'en' && !cancelled) {
+        // Reuse L1-translated entries already fetched (e.g. by another surface)
+        // — keyed by entry id so the same entry's definitions translate once.
+        const currentIds = allEntries.map((e) => e.id).filter(Boolean);
+        const cachedL1 = getL1CachedEntries(l2, l1Code, currentIds);
+        if (cachedL1.length > 0) {
+          const cachedL1Ids = new Set(cachedL1.map((e) => e.id));
+          setEntries([
+            ...cachedL1,
+            ...allEntries.filter((e) => !cachedL1Ids.has(e.id)),
+          ]);
+        } else {
+          for (const text of texts) {
+            if (cancelled) break;
+            try {
+              const results = await fetchEntries(text, l2Code, l1Code, controller.signal);
+              if (cancelled || results.length === 0) continue;
+              for (const e of results) setL1CachedEntry(l2, l1Code, e);
+              const byId = new Map(results.map((e) => [e.id, e]));
+              setEntries(allEntries.map((e) => byId.get(e.id) ?? e));
+              break;
+            } catch {
+              // Keep the English defs already shown.
+            }
+          }
+        }
       }
     };
 
