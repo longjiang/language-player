@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "Tìm kiếm hình ảnh"
   },
+  "contextSentence": {
+    "message": "Câu ngữ cảnh"
+  },
+  "openInDictionary": {
+    "message": "Mở trong từ điển"
+  },
   "startPlaying": {
     "message": "Bắt đầu phát video."
   },

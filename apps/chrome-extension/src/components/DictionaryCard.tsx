@@ -1,26 +1,29 @@
 /**
- * DictionaryCard — Inline dictionary lookup card for the extension.
+ * DictionaryCard — Web-parity dictionary lookup card for the extension.
  *
- * Renders inside the transcript panel when a word token is clicked.
- * Fetches entries from POST /dictionary/lookup and shows full details:
- * pronunciation, part of speech, definitions, proficiency levels.
- * Each entry links to the Language Player web app for full details.
- * Includes a Save/Unsave button backed by the Supabase row API (SPEC-034)
- * and a Pro-gated AI explanation (ADR-0034 D3).
+ * Mirrors apps/web's DictionaryPopup + DictionaryEntryCard:
+ * - Only the head word navigates to the entry detail page (headOnlyLink), the
+ *   rest of the card never navigates.
+ * - Loading renders compact entry-card skeletons (not a spinner) so the popup's
+ *   shape and fixed top stay stable.
+ * - Entries from the shared batch cache render instantly (even for l1 ≠ en),
+ *   then hot-swap to L1-translated cards once they arrive.
+ * - Supports the collapsible "Context sentence" card and a "Search images" link.
+ * - Save/bookmark gated on auth, matching web's redirect-to-login behaviour.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
-import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel, isHanLanguage, glyphLangTag } from '@langplayer/shared';
-import { baseCode, formatPronunciation, getCachedEntries, setCachedEntries, getL1CachedEntries, setL1CachedEntry } from '@langplayer/utils';
+import { baseCode, formatPronunciation, getCachedEntries, setCachedEntries, getL1CachedEntries, setL1CachedEntry, subscribeToCache } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
 import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
-import { Bookmark, BookmarkCheck, ExternalLink, Volume2, X } from './Icons';
+import { Bookmark, BookmarkCheck, ChevronDown, ChevronUp, Image, Loader, Sparkles, Volume2, X } from './Icons';
 import { Button } from './ui/button';
-import { log, logerr, t } from '../i18n';
+import { log, logwarn, logerr, t } from '../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -32,7 +35,7 @@ interface DictionaryCardProps {
   l1Name?: string;
   /** Human-readable L2 name (e.g., "Japanese", "français") */
   l2Name?: string;
-  /** The full subtitle line text — used as save context. */
+  /** The full subtitle/page line text — used as save context + context sentence. */
   contextText?: string;
   /** Start time of the cue (seconds), used as save context. */
   cueStartTime?: number;
@@ -80,7 +83,97 @@ async function fetchEntries(
   return (data.results ?? []) as DictionaryEntry[];
 }
 
-// ── Entry Row ──────────────────────────────────────────────────────────────
+/** Extract a YouTube video ID from a URL if present. */
+function extractYoutubeId(url: string): string | undefined {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m?.[1];
+}
+
+// ── Loading skeleton (matches apps/web DictionaryEntryCardSkeleton) ─────────
+
+function EntryCardSkeleton() {
+  return (
+    <div className="lpv-dict-skeleton" aria-busy="true" aria-hidden="true">
+      <div className="lpv-dict-skeleton-head">
+        <span className="lpv-dict-skeleton-bar" style={{ width: '6rem' }} />
+        <span className="lpv-dict-skeleton-bar" style={{ width: '4rem' }} />
+        <span className="lpv-dict-skeleton-badge" />
+      </div>
+      <div className="lpv-dict-skeleton-defs">
+        <span className="lpv-dict-skeleton-bar" style={{ width: '100%' }} />
+        <span className="lpv-dict-skeleton-bar" style={{ width: '80%' }} />
+        <span className="lpv-dict-skeleton-bar" style={{ width: '66%' }} />
+      </div>
+      <div className="lpv-dict-skeleton-foot">
+        <span className="lpv-dict-skeleton-bar" style={{ width: '5rem' }} />
+        <span className="lpv-dict-skeleton-btn" />
+      </div>
+    </div>
+  );
+}
+
+// ── Collapsible context sentence (matches apps/web ContextSentenceCard) ─────
+
+interface ContextCardProps {
+  contextText: string;
+  l1Code: string;
+  l2Code: string;
+}
+
+function ContextSentenceCard({ contextText, l1Code, l2Code }: ContextCardProps) {
+  const [open, setOpen] = useState(false);
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const fetchedRef = useRef(false);
+
+  const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && !fetchedRef.current && canTranslate) {
+      fetchedRef.current = true;
+      setTranslating(true);
+      apiFetch(`${API_BASE}/translate_array`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: [contextText], l1: l1Code, l2: l2Code }),
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const value = Array.isArray(data.translated_texts) ? data.translated_texts[0] : undefined;
+          setTranslation(value && value !== contextText ? value : null);
+        })
+        .catch((err: any) => {
+          logwarn('[DICT] context translation failed', { message: err?.message });
+          setTranslation(null);
+        })
+        .finally(() => setTranslating(false));
+    }
+  };
+
+  return (
+    <div className="lpv-dict-context">
+      <button type="button" onClick={toggle} className="lpv-dict-context-toggle" aria-expanded={open}>
+        <span>{t('contextSentence')}</span>
+        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
+      {open && (
+        <div className="lpv-dict-context-body">
+          <p className="lpv-dict-context-l2" dir="auto">{contextText}</p>
+          {canTranslate && (translating ? (
+            <span className="lpv-dict-context-loading"><Loader size={12} /> {t('translating')}</span>
+          ) : translation ? (
+            <p className="lpv-dict-context-l1">{translation}</p>
+          ) : null)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Entry card (head-only link, matches apps/web compact DictionaryEntryCard) ─
 
 interface EntryRowProps {
   entry: DictionaryEntry;
@@ -91,12 +184,6 @@ interface EntryRowProps {
   cueStartTime?: number;
   videoTitle?: string;
   pageUrl?: string;
-}
-
-/** Extract a YouTube video ID from a URL if present. */
-function extractYoutubeId(url: string): string | undefined {
-  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  return m?.[1];
 }
 
 const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl }) => {
@@ -113,10 +200,6 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     .map((level) => formatProficiencyLevel(level, primaryScale(l2Base)));
 
   // ── Alternate script display (matches apps/web useScriptPreference) ──────
-  // Chinese (zh/yue/lzh) shows the opposite script to the user's
-  // traditional/simplified preference (swapping head ↔ alternate); Vietnamese
-  // and Korean show chữ Hán / hanja from han_script.han. `useTraditional` is
-  // read from storage (set by the language picker), so this resolves on load.
   const [useTraditional, setUseTraditional] = useState(false);
   useEffect(() => {
     chrome.storage.local.get('useTraditional').then((result) => {
@@ -126,7 +209,6 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const isHanScript = l2Base === 'vi' || l2Base === 'ko';
   const isChinese = isHanLanguage(l2Base);
   const glyphLang = glyphLangTag(l2Base, useTraditional);
-  // apply(): for Chinese + useTraditional, make the traditional form the head.
   let displayHead = entry.head;
   let displayAlternate: string | null = entry.alternate ?? null;
   if (useTraditional && isChinese && displayAlternate && displayAlternate !== displayHead) {
@@ -134,11 +216,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     displayHead = displayAlternate;
     displayAlternate = swapped;
   }
-  // getAlternateScript(): pick the alternate form to show next to the head.
   if (isHanScript && entry.han_script?.han) {
     displayAlternate = entry.han_script.han;
   } else if (!(isChinese && displayAlternate && displayAlternate !== displayHead)) {
-    // Non-Chinese/non-han-script languages have no alternate to show.
     displayAlternate = null;
   }
 
@@ -147,12 +227,21 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const handleSave = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!isLoggedIn || wordsLoading) return;
+    // Web parity: a save needs an account. Log it so "save does nothing" is
+    // diagnosable, and let the optimistic store update + PUT run when authed.
+    if (wordsLoading) {
+      logwarn('[SAVE] click ignored while saved-words still loading');
+      return;
+    }
+    if (!isLoggedIn) {
+      log('[SAVE] not logged in — save skipped (no network request)');
+      return;
+    }
 
     setSaving(true);
     try {
       if (isSaved) {
-        removeSavedWord(l2Code, entry.id);
+        await removeSavedWord(l2Code, entry.id);
       } else {
         const allForms = await fetchInflectedForms(entry.head, l2Code);
         const youtubeId = pageUrl ? extractYoutubeId(pageUrl) : undefined;
@@ -167,7 +256,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             starttime: cueStartTime,
             youtube_id: youtubeId,
             videoTitle,
-          },
+          } as SavedWordContext,
           instances: [{
             timestamp: Date.now(),
             form: tokenForm,
@@ -178,12 +267,14 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               starttime: cueStartTime,
               youtube_id: youtubeId,
               videoTitle,
-            },
+            } as SavedWordContext,
           }],
         };
-        log('[SAVE] Saving word:', JSON.stringify(record, null, 2));
-        saveWord(l2Code, record);
+        log('[SAVE] saving word:', JSON.stringify(record, null, 2));
+        await saveWord(l2Code, record as any);
       }
+    } catch (err: any) {
+      logerr('[SAVE] save failed', err?.message ?? String(err));
     } finally {
       setSaving(false);
     }
@@ -203,16 +294,19 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   }, [webAppUrl]);
 
   return (
-    <div
-      className="lpv-dict-entry-row lpv-dict-entry-card"
-      role="link"
-      tabIndex={0}
-      onClick={openEntry}
-      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openEntry(); } }}
-    >
+    <div className="lpv-dict-entry-row lpv-dict-entry-card">
       <div className="lpv-dict-entry">
         <div className="lpv-dict-entry-header">
-          <span className="lpv-dict-head" lang={glyphLang}>{displayHead}</span>
+          {/* Head word is the ONLY link to the detail page (web headOnlyLink). */}
+          <button
+            type="button"
+            className="lpv-dict-head lpv-dict-head-link"
+            lang={glyphLang}
+            title={t('openInDictionary')}
+            onClick={(e) => { e.stopPropagation(); openEntry(); }}
+          >
+            {displayHead}
+          </button>
           {displayAlternate && (
             <span className="lpv-dict-alternate" lang={glyphLang}>{displayAlternate}</span>
           )}
@@ -222,8 +316,6 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           {formattedPronunciation && (
             <span className="lpv-dict-pron-small">{formattedPronunciation}</span>
           )}
-          {/* Level badges sit in the top-right of the card header, matching
-              apps/web's entry card (ml-auto pushes them right). */}
           {levelBadges.length > 0 && (
             <span className="lpv-dict-entry-badges">
               {levelBadges.map((level, i) => (
@@ -250,11 +342,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               className="lpv-dict-images-link"
               onClick={(event) => event.stopPropagation()}
             >
-              <ExternalLink size={12} /> {t('searchImages')}
+              <Image size={12} /> {t('searchImages')}
             </a>
           </div>
-          {/* Save/bookmark — always visible like apps/web; the click handler
-              gates on login. */}
           <button
             onClick={handleSave}
             disabled={saving || wordsLoading}
@@ -262,7 +352,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             title={isSaved ? t('removeFromSaved') : t('save')}
             aria-label={isSaved ? t('removeFromSaved') : t('save')}
           >
-            {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+            {saving ? <Loader size={14} /> : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
             <span className="lpv-entry-save-label">{isSaved ? t('saved') : t('save')}</span>
           </button>
         </div>
@@ -303,6 +393,12 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [showExplain, setShowExplain] = useState(false);
   const [followUpLoading, setFollowUpLoading] = useState<FollowUpKind | null>(null);
   const [usedFollowUps, setUsedFollowUps] = useState<FollowUpKind[]>([]);
+  const [cacheVersion, setCacheVersion] = useState(0);
+
+  useEffect(() => subscribeToCache(() => setCacheVersion((v) => v + 1)), []);
+  // Surface a cacheVersion bump re-render (e.g. an L1 entry arriving from
+  // another surface) without re-fetching.
+  void cacheVersion;
 
   // DeepSeek responses are per-word — never carry them over to a new lookup.
   useEffect(() => {
@@ -319,6 +415,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     const controller = new AbortController();
     setLoading(true);
     setError(null);
+    setEntries([]);
 
     log('Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
 
@@ -333,10 +430,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       let allEntries: DictionaryEntry[] = [];
       let cacheHit = false;
 
-      // 1. Check the shared batch cache first. The transcript lazily prefetches
-      //    dictionary entries (enqueueLookupWords → /dictionary/lookup-batch,
-      //    English defs) as lines are tokenized, so clicking a word can render
-      //    instantly from cache instead of waiting on a fresh network request.
+      // 1. Shared batch cache first (English defs). Show instantly even for
+      //    l1 ≠ en — the L1 swap below hot-swaps the displayed cards.
       for (const text of texts) {
         const cached = getCachedEntries(cacheBase, text);
         if (cached && cached.length > 0) {
@@ -351,8 +446,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         }
       }
 
-      // 2. Cache miss — fetch from the server. fetchEntries sends l1, so when
-      //    l1 ≠ en the results are already L1-translated.
+      // 2. Cache miss — fetch from the server (already L1-translated when l1≠en).
       if (!cacheHit) {
         for (const text of texts) {
           if (cancelled) break;
@@ -364,8 +458,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
                   e.match_type = text === token.text ? 'exact' : 'lemma';
                 }
               }
-              // Cache for future use; index the L1 entry by id so other
-              // surfaces reuse the exact same translation.
               setCachedEntries(cacheBase, text, results);
               if (l1Code !== 'en') {
                 for (const e of results) setL1CachedEntry(l2, l1Code, e);
@@ -390,13 +482,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         setLoading(false);
       }
 
-      // 3. Cache hit + non-English L1: the batch cache holds English defs for
-      //    speed. Show those instantly (done above), then swap in the
-      //    L1-translated definitions once they load — the same behavior as
-      //    apps/web and apps/mobile.
+      // 3. Cache hit + non-English L1: show the cached English cards (already
+      //    rendered above), then hot-swap in the L1-translated definitions.
       if (cacheHit && l1Code !== 'en' && !cancelled) {
-        // Reuse L1-translated entries already fetched (e.g. by another surface)
-        // — keyed by entry id so the same entry's definitions translate once.
         const currentIds = allEntries.map((e) => e.id).filter(Boolean);
         const cachedL1 = getL1CachedEntries(l2, l1Code, currentIds);
         if (cachedL1.length > 0) {
@@ -445,7 +533,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     }
     setShowExplain(true);
 
-    // If already fetched, just toggle visibility
     if (explainText || explainError) return;
 
     setExplainLoading(true);
@@ -457,7 +544,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       const hasContext = !!contextText;
       const hasInflectedForm = hasContext && token.text !== lemma;
 
-      // Build prompt using translated CSV keys (matches web app's AiExplanation)
       let prompt: string;
       if (hasInflectedForm) {
         prompt = t('explainWordContextForm', [l1Name, l2Name, code, lemma, token.text, contextText!]);
@@ -467,7 +553,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         prompt = t('explainWord', [l1Name, l2Name, code, token.text]);
       }
 
-      // Add morphology for inflecting languages
       const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
       if (!nonInflecting.includes(code)) {
         prompt += t('explainMorphology');
@@ -495,13 +580,14 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     const language = l2Name || l2Code;
     const context = contextText?.replace(/[.。！!？?…]+$/, '');
     const contextForm = token.text !== word ? token.text : undefined;
+    const l2Base = baseCode(l2Code);
     let prompt = '';
     if (kind === 'examples') {
       setFollowUpLoading(kind);
       setShowExplain(true);
       setExplainError(null);
       try {
-        const response = await fetch(`${API_BASE}/subs-search?terms=${encodeURIComponent(word)}&l2=${encodeURIComponent(l2Base)}&limit=5&context=2`);
+        const response = await apiFetch(`${API_BASE}/subs-search?terms=${encodeURIComponent(word)}&l2=${encodeURIComponent(l2Base)}&limit=5&context=2`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const results = await response.json();
         const lines = Array.isArray(results)
@@ -606,25 +692,44 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </button>
       )}
 
-      {/* AI explanation — Pro-only (ADR-0034 D3). Free users see the prompt. */}
-      {!subLoading && isPro && !showExplain && (
-        <Button
-          onClick={handleExplain}
-          variant="outline"
-          size="sm"
-          className="lpv-explain-btn"
-          title={t('explainPro')}
-        >
-          <span aria-hidden="true">✦</span> {t('explain')}
-        </Button>
-      )}
-      {!subLoading && !isPro && (
-        <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
-      )}
-
       {/* Card body */}
       <div className="lpv-dict-card-body">
-        {/* AI Explanation */}
+        {/* AI explanation — Pro-only (ADR-0034 D3). Free users see the prompt. */}
+        {!subLoading && isPro && !showExplain && (
+          <Button
+            onClick={handleExplain}
+            variant="outline"
+            size="sm"
+            className="lpv-explain-btn"
+            title={t('explainPro')}
+          >
+            <Sparkles size={14} /> {t('explain')}
+          </Button>
+        )}
+        {!subLoading && !isPro && (
+          <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
+        )}
+
+        {/* Context sentence (collapsible) + Search images — web popup parity */}
+        {contextText && (
+          <div className="lpv-dict-context-row">
+            <div className="lpv-dict-context-col">
+              <ContextSentenceCard contextText={contextText} l1Code={l1Code} l2Code={l2Code} />
+            </div>
+            <a
+              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lpv-dict-images-link lpv-dict-images-icon"
+              title={t('searchImages')}
+              aria-label={t('searchImages')}
+            >
+              <Image size={14} />
+            </a>
+          </div>
+        )}
+
+        {/* AI Explanation content */}
         {showExplain && (
           <div className="lpv-explain-section">
             {explainLoading && (
@@ -654,14 +759,18 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           </div>
         )}
 
-        {loading && (
-          <div className="lpv-dict-loading"><span className="lpv-spinner" /> {t('lookingUpWord', [token.text])}</div>
-        )}
-
         {error && (
           <div className="lpv-dict-error">
             {t('dictLoadFailed', [error])}
           </div>
+        )}
+
+        {/* Loading → stable entry-card skeletons (web parity), not a spinner */}
+        {loading && (
+          <>
+            <EntryCardSkeleton />
+            <EntryCardSkeleton />
+          </>
         )}
 
         {!loading && !error && entries.length === 0 && (
@@ -682,7 +791,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           <>
             {entries.map((entry) => (
               <EntryRow
-                key={entry.id}
+                key={`${entry.dictionary?.id ?? 'llm'}-${entry.id}`}
                 entry={entry}
                 l1Code={l1Code}
                 l2Code={l2Code}

@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "Cari gambar"
   },
+  "contextSentence": {
+    "message": "Kalimat konteks"
+  },
+  "openInDictionary": {
+    "message": "Buka di Kamus"
+  },
   "startPlaying": {
     "message": "Mulai putar video."
   },

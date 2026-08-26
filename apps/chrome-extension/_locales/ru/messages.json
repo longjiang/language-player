@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "Поиск изображений"
   },
+  "contextSentence": {
+    "message": "Предложение из контекста"
+  },
+  "openInDictionary": {
+    "message": "Открыть в словаре"
+  },
   "startPlaying": {
     "message": "Начните воспроизведение видео."
   },

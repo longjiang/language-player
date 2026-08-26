@@ -706,9 +706,13 @@ button:focus-visible,
 
 /* DictionaryPopup parity: compact entry cards use the same information
  * hierarchy as apps/web while retaining the extension's semantic tokens. The
- * width matches apps/web dictionary-popup.tsx (w-[28rem] max-w-[90vw]). */
+ * width matches apps/web dictionary-popup.tsx (w-[28rem] max-w-[90vw]). The
+ * popup is anchored to the top and grows downward only (apps/web POPUP_TOP),
+ * so loading skeletons/entries never reflow the dialog vertically. */
 .lpv-dictionary-dialog {
   width: min(100%, 28rem);
+  align-self: flex-start;
+  margin-top: 2rem;
 }
 
 .lpv-dictionary-dialog .lpv-ui-dialog-body {
@@ -882,6 +886,157 @@ button:focus-visible,
 .lpv-dictionary-dialog .lpv-entry-save-btn:hover,
 .lpv-dictionary-dialog .lpv-entry-save-btn-saved {
   color: hsl(var(--primary));
+}
+
+/* ── Web-parity entry cards ────────────────────────────────────────────── */
+
+/* The compact entry card no longer navigates (head-only link, apps/web
+   headOnlyLink), so it should not show a card hover like a link. */
+.lpv-dictionary-dialog .lpv-dict-entry-row:hover,
+.lpv-dictionary-dialog .lpv-dict-entry:hover {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+/* Only the head word is the link to the detail page. Reset the button chrome
+   so it reads as the word, with a link affordance on hover. */
+.lpv-dictionary-dialog .lpv-dict-head-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.lpv-dictionary-dialog .lpv-dict-head-link:hover {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Loading skeleton — mirrors apps/web DictionaryEntryCardSkeleton so the
+   popup keeps a stable shape (and fixed top) instead of a spinner. */
+.lpv-dictionary-dialog .lpv-dict-skeleton {
+  margin-top: 0.625rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  padding: 0.75rem;
+  animation: lpv-dict-skeleton-pulse 1.5s ease-in-out infinite;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-bar {
+  display: block;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-badge {
+  margin-left: auto;
+  height: 1rem;
+  width: 2.5rem;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-defs {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-foot {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-btn {
+  height: 1.5rem;
+  width: 5rem;
+  border-radius: 0.375rem;
+  background: hsl(var(--muted));
+}
+@keyframes lpv-dict-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Context sentence (collapsible) + Search images row — apps/web popup parity. */
+.lpv-dictionary-dialog .lpv-dict-context-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+}
+.lpv-dictionary-dialog .lpv-dict-context-col {
+  flex: 1;
+  min-width: 0;
+}
+.lpv-dictionary-dialog .lpv-dict-context-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.lpv-dictionary-dialog .lpv-dict-context-toggle:hover {
+  border-color: hsl(var(--ring));
+  color: hsl(var(--foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-context-body {
+  margin-top: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.3);
+}
+.lpv-dictionary-dialog .lpv-dict-context-l2,
+.lpv-dictionary-dialog .lpv-dict-context-l1 {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.lpv-dictionary-dialog .lpv-dict-context-l2 {
+  color: hsl(var(--foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-context-l1 {
+  margin-top: 0.25rem;
+  color: hsl(var(--muted-foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-context-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-images-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-images-icon:hover {
+  border-color: hsl(var(--ring));
+  color: hsl(var(--foreground));
 }
 
 .lpv-ui-input,

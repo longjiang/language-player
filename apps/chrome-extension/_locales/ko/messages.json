@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "이미지 검색"
   },
+  "contextSentence": {
+    "message": "문맥 문장"
+  },
+  "openInDictionary": {
+    "message": "사전에서 열기"
+  },
   "startPlaying": {
     "message": "동영상을 재생하세요."
   },
