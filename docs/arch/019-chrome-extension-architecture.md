@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR overlap normalization, clear-on-navigation, iframe theme sync)
+- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR overlap normalization, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -481,13 +481,17 @@ Key behaviors:
   button) live in `content.css`, so the isolated frame must load it too or the
   card renders unstyled; `page-dictionary.css` aliases the `--lpv-*` tokens to
   the frame's semantic `--background`/`--border`/… so the card follows the
-  extension theme instead of content.css's `prefers-color-scheme`. The entry
-  card matches apps/web's layout: level/CEFR badges top-right, labeled
-  save/bookmark button always visible (click gates on login), and the alternate
-  script next to the headword — Chinese (zh/yue/lzh) shows the opposite script
-  to the user's traditional/simplified preference (head ↔ alternate swap), and
-  Vietnamese/Korean show chữ Hán / hanja from `han_script.han`, mirroring
-  apps/web's `useScriptPreference`.
+  extension theme instead of content.css's `prefers-color-scheme`. The dialog
+  backdrop dims with a fixed semi-transparent black (`hsl(0 0% 0% / 0.5)`) in
+  every dialog surface rather than the theme foreground (which is white in dark
+  mode), and the dictionary lookup dialog is clamped to `min(28rem, …)`
+  (apps/web dictionary-popup `w-[28rem]`) so it does not render as an oversized
+  sheet on the page. The entry card matches apps/web's layout: level/CEFR
+  badges top-right, labeled save/bookmark button always visible (click gates on
+  login), and the alternate script next to the headword — Chinese (zh/yue/lzh)
+  shows the opposite script to the user's traditional/simplified preference
+  (head ↔ alternate swap), and Vietnamese/Korean show chữ Hán / hanja from
+  `han_script.han`, mirroring apps/web's `useScriptPreference`.
 - **Dictionary iframe locale**: `page-dictionary-frame.tsx` calls `setLocale()`
   with the saved `l1Language` on init and re-applies it on `storage` changes, so
   the popup renders the user's selected interface language rather than falling
@@ -515,7 +519,11 @@ Key behaviors:
   (`.lpv-cta-pulse`, a keyframe named distinctly from the cue-loading opacity
   pulse so the amber ring is never applied to loading lines) once playback
   reaches the last free line (`activeCueIdx >= FREE_TRANSCRIPT_LINES - 1`) so
-  the learner notices the prompt exactly when the free content runs out.
+  the learner notices the prompt exactly when the free content runs out. Both
+  this banner and the dictionary's Pro-feature prompt (`.lpv-explain-pro-banner`)
+  render as bordered, rounded cards set inside the panel/card padding rather
+  than full-width edge-to-edge strips, matching apps/web's `subtitle-display`
+  upgrade banner and `ai-explanation` free-user prompt.
 - **Auto-generated (ASR) caption alignment**: YouTube ASR captions lag the audio,
   so at a given `currentTime` the panel highlighted the previous line. For an
   ASR track, `fetchYTTrack` shifts every cue earlier by `YT_ASR_LEAD_OFFSET_SEC`
