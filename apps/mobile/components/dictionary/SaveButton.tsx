@@ -6,7 +6,7 @@ import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
-import { ICON_ON_PRIMARY, ICON_SAVED, ICON_UNSAVED } from '@/lib/theme-colors';
+import { ICON_ON_PRIMARY, ICON_UNSAVED } from '@/lib/theme-colors';
 import { Bookmark } from 'lucide-react-native';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 
