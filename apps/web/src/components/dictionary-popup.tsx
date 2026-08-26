@@ -83,22 +83,23 @@ function ContextSentenceCard({
   };
 
   return (
-    <div className="mb-3 overflow-hidden rounded-lg border border-border bg-muted/30">
+    <div className="mb-3">
+      {/* The toggle is styled like the "Let DeepSeek explain" / "Search
+          images" buttons (w-full outline) so the popup's controls read as
+          one family. */}
       <button
         type="button"
         onClick={toggle}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/60"
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full justify-between')}
         aria-expanded={open}
       >
-        <span className="flex-1 text-xs font-semibold text-muted-foreground">
-          {t('label.context_sentence')}
-        </span>
+        <span className="text-xs font-medium">{t('label.context_sentence')}</span>
         {open
-          ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-          : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+          ? <ChevronUp className="h-3.5 w-3.5" />
+          : <ChevronDown className="h-3.5 w-3.5" />}
       </button>
       {open && (
-        <div className="border-t border-border px-3 py-2">
+        <div className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
           <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
             <TokenizedText text={context} l2Code={l2Code} textScale={1} disablePopup />
           </TextActionMenu>
