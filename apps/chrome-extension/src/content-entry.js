@@ -1672,6 +1672,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // async response
   }
 
+  // Actions owned by the page-content script (page translation, page lookup,
+  // page modals, tokenization toggles) are NOT handled here. Do not respond to
+  // them: content scripts are co-injected on video hosts, and
+  // chrome.tabs.sendMessage resolves with the FIRST responder. Responding here
+  // makes the side panel see this content-entry response and mask the real
+  // page-content.js result — e.g. getPageTranslationSnapshot would resolve as
+  // { received: true } and surface "this page cannot be translated".
+  const PAGE_SCRIPT_ACTIONS = new Set([
+    'pageTranslationVisibility',
+    'pageTranslationStart',
+    'getPageTranslationSnapshot',
+    'pageTokenizationOn',
+    'pageTokenizationOff',
+    'openPageModal',
+    'pageLookup',
+    'pageFollowLink',
+  ]);
+  if (PAGE_SCRIPT_ACTIONS.has(message.action)) {
+    // No sendResponse — page-content.js owns this message.
+    return;
+  }
+
   sendResponse({ received: true });
 });
 
