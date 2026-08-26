@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
@@ -206,6 +207,7 @@ export function DictionaryPopup({
   const router = useRouter();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { isMd } = useResponsive();
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -602,11 +604,17 @@ export function DictionaryPopup({
           />
         </Animated.View>
 
-        {/* Bottom sheet on narrow screens; centered dialog on md+ */}
+        {/* Bottom sheet on narrow screens (unchanged — exempt from the
+            fixed-top requirement); top-anchored dialog on md+: pinned a fixed
+            distance below the top and growing downward only, so the popup's
+            top edge never shifts as content loads. */}
         <Animated.View
           pointerEvents="box-none"
-          className={isMd ? 'absolute inset-0 items-center justify-center px-4' : 'absolute inset-x-0 bottom-0'}
-          style={{ transform: isMd ? undefined : [{ translateY: slideAnim }] }}
+          className={isMd ? 'absolute inset-x-0 items-center px-4' : 'absolute inset-x-0 bottom-0'}
+          style={{
+            ...(isMd ? { paddingTop: insets.top + 64 } : {}),
+            transform: isMd ? undefined : [{ translateY: slideAnim }],
+          }}
         >
           <View
             testID="dictionary-popup"
