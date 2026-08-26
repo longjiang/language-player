@@ -322,7 +322,7 @@ export function DictionaryEntryCard({
           <View className="mt-2 flex-row items-center justify-between">
             {displaySource ? <View className="flex-1">{sourceLine}</View> : <View className="flex-1" />}
             {saveButton
-              ? <View className="-mr-1">{saveButton as any}</View>
+              ? <View className="ml-1">{saveButton as any}</View>
               : saveContext ? (
                 <Button
                   onPress={(e) => { e.stopPropagation(); toggleSave(); }}

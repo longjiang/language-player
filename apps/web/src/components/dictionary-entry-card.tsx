@@ -207,7 +207,10 @@ export function DictionaryEntryCard({
   );
 
   // ── Shared: save button ──
-  const saveBtn = (size: 'icon' | 'default' = 'icon') => saveContext ? (
+  // Compact cards use the small labeled variant (bookmark + "Save Word") so
+  // the touch target is bigger than a bare icon; the full variant keeps the
+  // default labeled button.
+  const saveBtn = (size: 'sm' | 'icon' | 'default' = 'icon') => saveContext ? (
     <div onClick={(e) => e.stopPropagation()}>
       <SaveButton
         wordId={entry.id}
@@ -328,7 +331,7 @@ export function DictionaryEntryCard({
         {/* Footer */}
         <div className="mt-auto flex items-center gap-2 pt-2 text-[10px]">
           {sourceLine}
-          {saveContext && <div className="ml-auto">{saveBtn()}</div>}
+          {saveContext && <div className="ml-auto">{saveBtn('sm')}</div>}
         </div>
       </div>
     );
