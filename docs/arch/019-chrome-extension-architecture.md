@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (subtitle sync fixes: ASR alignment, clear-on-navigation, pro-banner message+pulse, page translation on video hosts)
+- **Last Updated**: 2026-08-26 (subtitle sync fixes: ASR alignment + overlap normalization, clear-on-navigation via yt-navigate-finish, page-dictionary theme sync, pro-banner message+pulse, page translation on video hosts)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -306,11 +306,15 @@ The extension supports six platforms. Each has a different mechanism for detecti
 8. Parses as timedtext XML or JSON3 format
 9. **ASR alignment**: if the selected track is auto-generated (`kind === 'asr'`),
    all cues are shifted earlier by `YT_ASR_LEAD_OFFSET_SEC` (2.0s) so the active
-   line matches the audio rather than the lagging on-screen caption
-10. setupYouTubeNavigationObserver() watches for SPA navigation
-    (video ID changes): it immediately clears the cue list, active cue, subtitle
-    URL, and pushes a `detecting` state so the panel never shows the previous
-    video's subtitles, then reloads subtitles after a 1.5s delay
+   line matches the audio rather than the lagging on-screen caption. ASR cues
+   frequently overlap (rolling recognition windows), so each shifted end is also
+   clamped to the next cue's start — otherwise clicking a line could seek to the
+   previous overlapping line.
+10. setupYouTubeNavigationObserver() watches for SPA navigation via a DOM
+    MutationObserver **and** YouTube's `yt-navigate-finish` event (video ID
+    changes): it immediately clears the cue list, active cue, subtitle URL, and
+    pushes a `detecting` state so the panel never shows the previous video's
+    subtitles, then reloads subtitles after a 1.5s delay
 ```
 
 ---
@@ -485,18 +489,22 @@ Key behaviors:
   *inside* the scrollable cue list immediately below the last line, so it scrolls
   with the transcript instead of being pinned above the control bar (ADR-0034).
   It is led by the "You've reached the end of free subtitle lines." message
-  (`freeSubtitleLimitReached`), and the Upgrade to Pro link pulses (`.lpv-pulse`)
-  once playback reaches the last free line (`activeCueIdx >= FREE_TRANSCRIPT_LINES - 1`)
-  so the learner notices the prompt exactly when the free content runs out.
+  (`freeSubtitleLimitReached`), and the Upgrade to Pro link pulses
+  (`.lpv-cta-pulse`, a keyframe named distinctly from the cue-loading opacity
+  pulse so the amber ring is never applied to loading lines) once playback
+  reaches the last free line (`activeCueIdx >= FREE_TRANSCRIPT_LINES - 1`) so
+  the learner notices the prompt exactly when the free content runs out.
 - **Auto-generated (ASR) caption alignment**: YouTube ASR captions lag the audio,
   so at a given `currentTime` the panel highlighted the previous line. For an
   ASR track, `fetchYTTrack` shifts every cue earlier by `YT_ASR_LEAD_OFFSET_SEC`
-  (default 2.0s, preserve inter-cue gaps, drop zero-length cues) so the first
-  word of a line aligns with when it is first spoken. Manual caption tracks are
-  left untouched.
+  (default 2.0s, preserving inter-cue gaps and dropping zero-length cues), then
+  clamps each cue's end to the next cue's start so ASR windows don't overlap and
+  click-to-seek always lands on the clicked line. Manual caption tracks are left
+  untouched.
 - **Subtitle clear on YouTube SPA navigation**: `setupYouTubeNavigationObserver`
   resets `STATE.cues`/`activeCueIdx`/`subtitleUrl` and pushes a `detecting` state
-  the moment the video ID changes, so the panel never shows the previous video's
+  the moment the video ID changes (via a DOM MutationObserver and YouTube's
+  `yt-navigate-finish` event), so the panel never shows the previous video's
   subtitles while the new video's track loads or resolves to none.
 - **l1 === l2 disables translation**: when `baseCode(l1) === baseCode(l2)`,
   translation is disabled for both subtitles and page translation and the
@@ -527,7 +535,10 @@ with `position:fixed`. They render in the browser's own side panel:
   dictionary, and line explanation dialogs. The modal therefore appears over
   the webpage, has room for the web-parity two-panel layouts, and cannot be
   changed by webpage CSS. The same iframe also renders ordinary webpage
-  dictionary lookups and the restored Follow Link action.
+  dictionary lookups and the restored Follow Link action. The iframe resolves
+  the extension's saved display theme (`chrome.storage.local.theme`) on init and
+  re-applies it on storage changes, so word-lookup popups match the extension
+  theme on any page instead of defaulting to light.
 - **Message flow**:
   - Content script → side panel: `chrome.runtime.sendMessage` → background
     relays over a runtime port named `lpv-sidepanel` (tagged with the sender's
