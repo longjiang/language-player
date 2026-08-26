@@ -490,9 +490,10 @@ button:focus-visible,
 }
 
 .lpv-page-translation-block.is-highlighted {
-  border-radius: var(--radius);
-  background: hsl(var(--primary) / 0.1);
-  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35);
+  /* Match the subtitles active-cue treatment (.lpv-cue.lpv-active): a light
+     primary wash plus a solid primary left border. */
+  background: hsl(var(--primary) / 0.12);
+  border-left: 3px solid hsl(var(--primary));
 }
 
 .lpv-page-translation-skeleton {
