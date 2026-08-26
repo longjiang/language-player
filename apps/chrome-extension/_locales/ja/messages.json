@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Proにアップグレードして、完全なトランスクリプト、無制限の単語例などをご利用ください。"
   },
+  "freeSubtitleLimitReached": {
+    "message": "無料字幕行の末尾に達しました。"
+  },
   "confirm": {
     "message": "確認"
   },

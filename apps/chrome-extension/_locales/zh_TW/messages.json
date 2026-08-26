@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "升級至專業版以取得完整逐字稿、不限數量的單字範例等更多功能。"
   },
+  "freeSubtitleLimitReached": {
+    "message": "您已到達免費字幕行的末尾。"
+  },
   "confirm": {
     "message": "確認"
   },

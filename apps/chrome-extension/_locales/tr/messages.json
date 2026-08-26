@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Tam transkriptler, sınırsız sözcük örneği ve daha fazlası için Pro'ya yükseltin."
   },
+  "freeSubtitleLimitReached": {
+    "message": "Ücretsiz altyazı satırlarının sonuna ulaştınız."
+  },
   "confirm": {
     "message": "Onayla"
   },

@@ -737,6 +737,27 @@ body.lpv-panel-open disney-web-player-ui {
   background: hsl(var(--lpv-warning) / 0.12);
 }
 
+/* Pulse the upgrade CTA once playback reaches the last free transcript line,
+   drawing the learner's eye to the Pro prompt. Respects reduced motion. */
+@keyframes lpv-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--lpv-warning) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px hsl(var(--lpv-warning) / 0);
+  }
+}
+
+.lpv-pro-banner-link.lpv-pulse {
+  animation: lpv-pulse 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lpv-pro-banner-link.lpv-pulse {
+    animation: none;
+  }
+}
+
 .lpv-explain-text {
   font-size: 13px;
   color: hsl(var(--lpv-foreground) / 0.88);

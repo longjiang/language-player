@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Upgrade naar Pro voor volledige transcripties, onbeperkte woordvoorbeelden en meer."
   },
+  "freeSubtitleLimitReached": {
+    "message": "Je hebt het einde van de gratis ondertitelregels bereikt."
+  },
   "confirm": {
     "message": "Bevestigen"
   },

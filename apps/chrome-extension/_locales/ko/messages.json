@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Pro로 업그레이드하여 전체 대본, 무제한 단어 예시 등을 이용하세요."
   },
+  "freeSubtitleLimitReached": {
+    "message": "무료 자막 줄의 끝에 도달했습니다."
+  },
   "confirm": {
     "message": "확인"
   },

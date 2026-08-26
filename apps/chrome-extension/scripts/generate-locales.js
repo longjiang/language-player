@@ -108,6 +108,7 @@ const CSV_LOOKUP = {
   'translating': 'subtitle.translating',
   'upgradeToPro': 'action.upgrade_to_pro',
   'upgradeToProBanner': 'msg.upgrade_to_pro_banner',
+  'freeSubtitleLimitReached': 'msg.free_subtitle_limit_reached',
   'popupEmailPlaceholder': 'placeholder.email',
   'popupPasswordPlaceholder': 'placeholder.password',
   'noTranscriptFound': 'subtitle.subtitles_unavailable',

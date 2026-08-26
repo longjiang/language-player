@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "升级至 Pro 以获取完整字幕、无限单词示例及更多功能。"
   },
+  "freeSubtitleLimitReached": {
+    "message": "您已到达免费字幕行的末尾。"
+  },
   "confirm": {
     "message": "确认"
   },
