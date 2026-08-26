@@ -1,7 +1,20 @@
 /**
  * Subtitle parsers — self-contained parsing utilities.
  * No shared state, no platform dependencies.
+ *
+ * Entity decoding is provided by the shared @langplayer/utils
+ * `decodeHtmlEntities` so the extension, web, and mobile all resolve HTML
+ * entities (including YouTube's double-encoded ones) identically and DRY.
  */
+
+import { decodeHtmlEntities } from '@langplayer/utils';
+import { logwarn } from './i18n';
+
+// Bounded diagnostic: confirm whether subtitle sources ship DOUBLE-encoded
+// entities (e.g. `&amp;#39;`) that a single decode pass leaves as `&#39;`.
+// Logs at most a few examples so the console stays quiet during playback.
+const _doubleEncodedSamples = [];
+const DOUBLE_ENCODED_LOG_LIMIT = 3;
 
 /** Parse a TTML time string like "00:01:23.456" or "1.5s" to seconds */
 export function parseTimeToSeconds(timeStr) {
@@ -138,10 +151,22 @@ export function stripTags(text) {
 }
 
 export function decodeEntities(text) {
-  if (!text) return '';
-  const txt = document.createElement('textarea');
-  txt.innerHTML = text;
-  return txt.value;
+  // Delegate to the shared, cross-platform decoder. It handles both
+  // single-encoded (`&#39;`) and double-encoded (`&amp;#39;`) entities, so
+  // YouTube timedtext captions that ship double-encoded apostrophes no longer
+  // show as the literal `&#39;`.
+  const decoded = decodeHtmlEntities(text);
+
+  // Diagnostic: if the raw text contained a double-encoded entity — an
+  // ampersand-entity whose expansion is itself an entity (e.g. `&amp;#39;`),
+  // which is exactly what leaves `&#39;` visible — record a bounded sample for
+  // `[LP Extension]` debugging. This is silent unless LOG_LEVEL=3.
+  const hadDoubleEncoded = /&amp;(?:#\d+|#x[0-9a-f]+|[a-zA-Z][a-zA-Z0-9]*);/.test(text);
+  if (hadDoubleEncoded && _doubleEncodedSamples.length < DOUBLE_ENCODED_LOG_LIMIT) {
+    _doubleEncodedSamples.push(text.slice(0, 80));
+    logwarn('subtitle text contained a double-encoded entity — decoded to', JSON.stringify(decoded.slice(0, 80)));
+  }
+  return decoded;
 }
 
 export function parseTTML(xmlText) {

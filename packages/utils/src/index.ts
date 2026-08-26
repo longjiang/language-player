@@ -186,3 +186,4 @@ export {
   buildMinimalEpub,
 } from './alt-formats';
 export type { AltBookContent } from './alt-formats';
+export { decodeHtmlEntities } from './entities';

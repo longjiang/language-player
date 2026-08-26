@@ -1,18 +1,17 @@
 import type { SubtitleLine, SubtitleSyncedLine } from '@langplayer/shared';
-import { parseSubtitleCSV } from '@langplayer/utils';
+import { parseSubtitleCSV, decodeHtmlEntities } from '@langplayer/utils';
 
 // ── HTML entity decoding ─────────────────────────────────────────────────
 
 /**
  * Decode the HTML entities that Directus 8 encodes in CSV text fields.
+ * Delegates to the shared `decodeHtmlEntities` so web, mobile, and the
+ * Chrome extension all resolve entities identically (including YouTube's
+ * double-encoded ones) — kept DRY here rather than shipping a private
+ * `.replace()` chain.
  */
 function decodeHTMLEntities(text: string): string {
-  return text
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+  return decodeHtmlEntities(text);
 }
 
 // ── Public API ───────────────────────────────────────────────────────────
