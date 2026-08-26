@@ -91,7 +91,22 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     try {
       let response: any = null;
       for (let attempt = 1; attempt <= 4; attempt += 1) {
-        response = await chrome.tabs.sendMessage(tabId, { action: 'getPageTranslationSnapshot' });
+        try {
+          response = await chrome.tabs.sendMessage(tabId, { action: 'getPageTranslationSnapshot' });
+        } catch (sendErr: any) {
+          // No content script is running on this tab (e.g. the tab predates a
+          // reload of the extension, or the page isn't a supported one). The
+          // message channel has no receiver, so retrying is pointless — the
+          // outer catch turns this into a friendly error, not Chrome's raw
+          // "Could not establish connection. Receiving end does not exist."
+          logwarn('[PAGE] no content script on tab for translation snapshot', {
+            tabId,
+            generation,
+            message: sendErr?.message,
+            name: sendErr?.name,
+          });
+          break;
+        }
         log('[PAGE] translation snapshot response', {
           generation,
           attempt,
@@ -112,10 +127,18 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     } catch (err: any) {
       if (generation !== requestGenerationRef.current) return;
       setStatus('error');
-      setError(err?.message || t('pageUnavailable'));
+      // Never surface internal protocol tokens (e.g. "page translation is not
+      // active") or Chrome's generic "Could not establish connection. Receiving
+      // end does not exist." — map both to a friendly, translated message.
+      const raw = err?.message || '';
+      const friendly = raw === 'page translation is not active'
+        || /Receiving end does not exist/i.test(raw)
+        ? t('pageUnavailable')
+        : (raw || t('pageUnavailable'));
+      setError(friendly);
       logwarn('[PAGE] translation snapshot failed', {
         generation,
-        message: err?.message,
+        message: raw,
         name: err?.name,
       });
     }

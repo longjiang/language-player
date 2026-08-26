@@ -16,6 +16,7 @@ import type { AuthState } from './auth';
 import { SavedWordsProvider } from './components/SavedWordsProvider';
 import { TranscriptAppInner, type DictionaryModalRequest, type LineExplanationRequest, type PageLookupDetail } from './transcript-app';
 import { PageTranslationPanel } from './components/PageTranslationPanel';
+import { LanguagePicker } from './components/LanguagePicker';
 import { UserMenu } from './components/UserMenu';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
@@ -86,6 +87,7 @@ function SidePanelApp() {
   const [selectedTab, setSelectedTab] = useState<SidePanelTab>('subtitles');
   const [theme, setTheme] = useState<Theme>('system');
   const [subtitleRequesting, setSubtitleRequesting] = useState(false);
+  const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const pageModalEventRef = useRef<(event: any) => void>(() => {});
 
   const tabIdRef = useRef<number | null>(null);
@@ -362,6 +364,7 @@ function SidePanelApp() {
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
 
   const handleLanguageConfirm = useCallback(async (nextL1: string, nextL2: string, traditional: boolean) => {
+    setLanguagePickerOpen(false);
     await chrome.storage.local.set({ l1Language: nextL1, l2Language: nextL2, useTraditional: traditional });
     if (nextL1 !== l1Code) {
       setL1Code(nextL1);
@@ -405,7 +408,7 @@ function SidePanelApp() {
             size="sm"
             className="lpv-language-trigger"
             aria-haspopup="dialog"
-            onClick={() => openPageModal({ kind: 'language', l1Code, l2Code: currentL2Code })}
+            onClick={() => setLanguagePickerOpen(true)}
           >
             {languageName(currentL2Code, l1Code)}
             <span aria-hidden="true">⌄</span>
@@ -454,6 +457,14 @@ function SidePanelApp() {
           {pageTranslationContent}
         </TabsContent>
       </Tabs>
+
+      <LanguagePicker
+        open={languagePickerOpen}
+        l1Code={l1Code}
+        l2Code={currentL2Code}
+        onOpenChange={setLanguagePickerOpen}
+        onConfirm={handleLanguageConfirm}
+      />
     </div>
   );
 }
