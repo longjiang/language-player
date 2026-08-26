@@ -140,6 +140,7 @@
         "sign_in": "ลงชื่อเข้าใช้",
         "sign_out": "ออกจากระบบ",
         "sign_up": "สมัครสมาชิก",
+        "skip": "ข้าม",
         "speak": "พูด",
         "start_learning": "เริ่มเรียนรู้",
         "start_learning_lang": "เริ่มเรียน{name}",
@@ -1264,6 +1265,7 @@
         "answer_correct": "ถูกต้อง",
         "answer_incorrect": "ไม่ถูกต้อง",
         "context_label": "บริบท",
+        "diagnostic": "การวินิจฉัย",
         "easy": "ง่าย",
         "easy_hint": "นึกออกทันที",
         "good": "ดี",
@@ -1278,7 +1280,10 @@
         "srs_new": "ใหม่",
         "srs_review": "{count, plural, other {ทบทวนแล้ว # ครั้ง}}",
         "start_test": "เริ่มการทดสอบ",
-        "test_mode": "โหมดทดสอบ"
+        "test_error": "เกิดปัญหาในการสร้างแบบทดสอบนี้",
+        "test_mode": "โหมดทดสอบ",
+        "test_skipped": "ข้ามแล้ว",
+        "trying_again": "เกิดปัญหาขึ้น กำลังลองอีกครั้ง..."
     },
     "setting": {
         "all_words": "ทุกคำ",

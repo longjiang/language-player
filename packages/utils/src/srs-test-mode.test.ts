@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildSrsQuestionPrompt,
+  getTestKinds,
   isObviousPronunciationWrong,
+  lemmaFormOf,
+  needsPronunciationTest,
   normalizeTestChoice,
   parseSrsQuestionResponse,
   scoreTestResult,
+  surfaceFormOf,
   validateSrsPronunciationChoices,
 } from './srs-test-mode';
 
@@ -116,5 +121,139 @@ describe('scoreTestResult', () => {
 
   it('single test wrong → again', () => {
     expect(scoreTestResult(0, 1, 4_000)).toBe('again');
+  });
+});
+
+describe('needsPronunciationTest (surface-form contract)', () => {
+  it('suppresses the Japanese pronunciation test when the surface form is kana-only', () => {
+    expect(needsPronunciationTest('ja', 'しかるべき')).toBe(false);
+    expect(needsPronunciationTest('ja', 'おしきられる')).toBe(false);
+  });
+
+  it('shows the Japanese pronunciation test when the surface form contains kanji', () => {
+    expect(needsPronunciationTest('ja', '然るべき')).toBe(true);
+    expect(needsPronunciationTest('ja', '押し切られ')).toBe(true);
+  });
+
+  it('always tests pronunciation for other deep-orthography L2s', () => {
+    expect(needsPronunciationTest('zh', '他')).toBe(true);
+    expect(needsPronunciationTest('ko', '한국어')).toBe(true);
+  });
+
+  it('never tests pronunciation for shallow orthographies', () => {
+    expect(needsPronunciationTest('en', 'word')).toBe(false);
+    expect(needsPronunciationTest('es', 'palabra')).toBe(false);
+  });
+
+  it('falls back to testing when no surface form is available', () => {
+    expect(needsPronunciationTest('ja')).toBe(true);
+  });
+});
+
+describe('getTestKinds (pronunciation first)', () => {
+  it('orders pronunciation before definition when both tests run', () => {
+    expect(getTestKinds('ja', '然るべき')).toEqual(['pronunciation', 'definition']);
+    expect(getTestKinds('zh', '他')).toEqual(['pronunciation', 'definition']);
+  });
+
+  it('returns a single definition test when pronunciation is suppressed', () => {
+    expect(getTestKinds('ja', 'しかるべき')).toEqual(['definition']);
+    expect(getTestKinds('en', 'word')).toEqual(['definition']);
+  });
+
+  it('matches needsPronunciationTest for the same inputs', () => {
+    for (const [l2, surface] of [
+      ['ja', '然るべき'],
+      ['ja', 'しかるべき'],
+      ['zh', '他'],
+      ['en', 'word'],
+      ['ja', undefined],
+    ] as const) {
+      const kinds = getTestKinds(l2, surface);
+      const expectPron = needsPronunciationTest(l2, surface);
+      expect(kinds.includes('pronunciation')).toBe(expectPron);
+      if (expectPron) {
+        expect(kinds[0]).toBe('pronunciation');
+        expect(kinds[1]).toBe('definition');
+      } else {
+        expect(kinds).toEqual(['definition']);
+      }
+    }
+  });
+});
+
+describe('surfaceFormOf / lemmaFormOf', () => {
+  const word = {
+    head: '押し切る',
+    forms: ['押し切る', '押し切られ'],
+    context: { form: '押し切られ' },
+    instances: [{ form: '押し切られ' }],
+  };
+
+  it('surfaceFormOf returns the form as it appears in the context', () => {
+    expect(surfaceFormOf(word, 'fallback')).toBe('押し切られ');
+  });
+
+  it('surfaceFormOf falls back through instances, then the fallback', () => {
+    expect(surfaceFormOf({ ...word, context: undefined }, 'fallback')).toBe('押し切られ');
+    expect(surfaceFormOf({ head: 'x', forms: ['x'] }, 'fallback')).toBe('fallback');
+    expect(surfaceFormOf(undefined, 'fallback')).toBe('fallback');
+  });
+
+  it('lemmaFormOf prefers the head form', () => {
+    expect(lemmaFormOf(word, 'fallback')).toBe('押し切る');
+  });
+
+  it('lemmaFormOf falls back to forms[0], then the fallback', () => {
+    expect(lemmaFormOf({ forms: ['押し切る', '押し切られ'] }, 'fallback')).toBe('押し切る');
+    expect(lemmaFormOf({ forms: [] }, 'fallback')).toBe('fallback');
+    expect(lemmaFormOf(undefined, 'fallback')).toBe('fallback');
+  });
+
+  it('lemmaFormOf skips placeholder heads and forms', () => {
+    expect(lemmaFormOf({ head: '?', forms: ['押し切る'] }, 'fallback')).toBe('押し切る');
+    expect(lemmaFormOf({ head: '押し切る', forms: ['?'] }, 'fallback')).toBe('押し切る');
+  });
+});
+
+describe('buildSrsQuestionPrompt (terse, language-specific)', () => {
+  it('names the language and uses the L2-specific notation, distractor-only', () => {
+    const ja = buildSrsQuestionPrompt({
+      word: '押し切る', contextSentence: '彼は反対を押し切って決行した。',
+      l1Code: 'en', l2Code: 'ja', kind: 'pronunciation', pronunciation: 'おしきる',
+    });
+    expect(ja).toContain('tests the pronunciation of a Japanese phrase');
+    expect(ja).toContain('hiragana only');
+    expect(ja).toContain('never derived/inflected forms of it');
+    expect(ja).toContain('correct_answer (the headword\'s reading): おしきる');
+    expect(ja).toContain('Generate ONLY 3 confounder');
+    expect(ja).toContain('Output valid JSON only, no markdown');
+    // The model is NOT asked to write the question or the correct answer.
+    expect(ja).not.toContain('"question"');
+    // The model is not asked to compose the question text.
+    expect(ja).not.toMatch(/Ask how the target word is pronounced/);
+    expect(ja).not.toContain('pinyin');
+    expect(ja).not.toContain('Chinese');
+
+    const zh = buildSrsQuestionPrompt({
+      word: '决定', contextSentence: '我决定明天去北京。',
+      l1Code: 'en', l2Code: 'zh', kind: 'pronunciation',
+    });
+    expect(zh).toContain('tests the pronunciation of a Chinese phrase');
+    expect(zh).toContain('pinyin with tone marks');
+    expect(zh).not.toContain('hiragana');
+    expect(zh).not.toContain('kana');
+    expect(zh).not.toContain('kanji');
+  });
+
+  it('definition prompt names the language and L1 for the answers', () => {
+    const def = buildSrsQuestionPrompt({
+      word: '押し切る', contextSentence: '彼は反対を押し切って決行した。',
+      l1Code: 'en', l2Code: 'ja', kind: 'definition',
+    });
+    expect(def).toContain('tests the meaning of a Japanese phrase');
+    expect(def).toContain('concise en definitions');
+    expect(def).not.toContain('hiragana');
+    expect(def).not.toContain('pronunciation');
   });
 });

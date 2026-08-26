@@ -231,7 +231,12 @@ definition.
 `remainingNewCardsToday()` counts the remaining daily budget: `max(0,
 dailyNewLimit − cards introduced today − older unrated cards still in the blue
 deck)`. It drives both the blue count and the "no more new cards today"
-message.
+message. "Older unrated cards still in the blue deck" means cards that were
+in the blue deck at the start of the local day — a pre-existing blue card
+keeps occupying its slot for the whole day even after it is rated, so rating
+it does not open a slot for a replacement card (`getNewCardBudget()` counts a
+card minted before today if it is still new or has been rated at any point
+today, keeping the budget monotone for the local day).
 
 ### Undo and the free cap
 
@@ -327,7 +332,11 @@ recomputes the queue on the next store change (rating, removal) or page reload.
 3. Blue cards outside the newest-`dailyNewLimit` window are soft-deactivated
    for review selection. They remain persisted as unrated cards, so changing
    the limit does not issue one DELETE request per card and raising the limit
-   later can restore them without recreating their state.
+   later can restore them without recreating their state. The review window
+   (`getActiveNewCardIds()`) selects only saved words that already have a
+   `state: new` card — a cardless saved word is a creation candidate, never a
+   window occupant, so newer cardless words cannot push real blue cards out
+   of review selection.
 4. Rated cards (green/red) are never displaced.
 5. Due cards = saved words whose card has `due <= now`, sorted by
    `due` ascending (oldest due first).
@@ -517,6 +526,89 @@ sentence via `buildSrsQuestionPrompt` (shared `packages/utils/src/
 srs-test-mode.ts`). Questions render one at a time; answering the final
 question reveals the card back and the rating buttons.
 
+- **Start Test gate (2026-08-25)** — in test mode the card front shows the
+  context sentence plus a "Start Test" button; no test question is shown
+  (and no questions are generated for the current card) until the user taps
+  it, so they can read the context and reflect on the word's usage first.
+  Tapping the card or pressing Space/Enter also starts the test.
+- **Progress bar (2026-08-25)** — after Start Test, a progress bar counts
+  down a total budget of **T = 10 s × totalTests** (totalTests = the number
+  of test slots for the card, 1 or 2). It is **blue** while more than
+  **5 s × totalTests** remain — i.e. still inside the fast window that earns
+  the +1 bonus — and **green** once past that threshold (racing the
+  10 s/test slow mark). The bar follows the same session timer
+  (`testSessionStartRef`) used by `scoreTestResult`, so per-test
+  regeneration restarts it.
+- **Pronunciation targets the lemma (2026-08-25)** — the pronunciation test
+  asks for the reading of the **lemma** (dictionary/head form, e.g. 押し切る),
+  never the inflected surface form (押し切られ). The definition test keeps the
+  surface form as its target. Shared helpers: `lemmaFormOf` (lemma) and
+  `surfaceFormOf` (surface). Both the current-card generation and the
+  prefetch use the same target, so prefetched pronunciation tests are cache
+  hits when the card is tested.
+- **Japanese surface-form gate (2026-08-25)** — for Japanese, the
+  pronunciation test only appears when the **surface form as it appears in
+  the context sentence** contains kanji (e.g. 然るべき). A kana-only surface
+  (しかるべき) suppresses the test even when the lemma (然るべき) contains
+  kanji — the learner reads the surface, which already reveals the reading.
+- **One test at a time (2026-08-25)** — tests are handled **strictly
+  sequentially, both generated and answered one at a time**: the pronunciation
+  test is loaded (from the cache or fresh) and answered first; the definition
+  test is only loaded after the pronunciation one is answered, then answered
+  itself; only then can the card be rated. Only ONE generation
+  request is ever in flight for the card, so an error in one test is
+  isolated to that test — the other test's loading/answering is never
+  blocked by it (and no tokens are wasted on a parallel request that would
+  be discarded). A test that fails after the automatic retry shows its error
+  box and must be retried (or skipped) before the card can be rated; the
+  already-answered pronunciation test is not affected.
+- **Error display (2026-08-25)** — on a generation error the UI
+  automatically shows "There was a problem, trying again…" and retries
+  **exactly once**. If it still fails, the test shows a generic error
+  (no error specifics) with a **Retry** button and a **Skip** button, plus a
+  very small **Diagnostic** link that reveals — in plain text — the prompt
+  sent to the LLM, the raw LLM response, and the error.
+- **Skip (2026-08-25)** — a failed test can be **skipped** instead of
+  retried. The skipped test is excluded from the flow and **does not count
+  toward the scoring** (`totalTests` is the number of non-skipped tests), so
+  the card can be rated on the remaining tests alone. Skipped slots render a
+  "Skipped" label.
+- **Terse language-specific prompts (2026-08-25)** — `buildSrsQuestionPrompt`
+  is kept short and names the L2 in the opening line ("…tests the
+  pronunciation of a Japanese phrase"); the answer notation is chosen from
+  the L2 (hiragana for Japanese, pinyin for Chinese), so a Japanese prompt
+  never mentions Chinese rules and vice versa. Each client-side rejection
+  (bad JSON, wrong kind, blank question, non-hiragana, duplicate choices,
+  substring "obvious wrongs", derived/inflected forms) is prevented by one
+  short directive. The auto-retry hint in the manager is equally terse and
+  language-specific.
+- **Pronunciation question is app-owned (2026-08-26)** — for the
+  pronunciation test the app composes **both** the question text and the
+  correct answer; the LLM only supplies the 3 distractor readings. The
+  question text is deterministic via `buildPronunciationQuestionText` (always
+  the headword, L1-localized via `PRONUNCIATION_QUESTION_I18N`), so it can
+  never drift into asking about a compound's components (e.g. 「手」和「落ち」
+  for 手落ち). The correct answer is the headword's ground-truth reading from
+  `pronunciationReadingOf` — for EDICT it reads `alternate` /
+  `phonetic_detail.kana` (the `pronunciation` field is romaji like "soru",
+  not the kana the test needs); CEDICT uses pinyin. The manager assembles
+  `correctAnswer` from the supplied reading and `prompt` from
+  `buildPronunciationQuestionText`, and **rejects** generation without a
+  ground-truth reading instead of letting the model invent one (which
+  produced wrong answers such as そら for 反る = そる). The definition test is
+  unchanged — the model still returns question + correct answer + confounders,
+  since a word has several definitions and the model must pick the
+  contextually appropriate one.
+- **Card-test cache + prefetch (2026-08-25)** — all test generation,
+  regeneration, and retry requests route through the shared
+  `SrsTestManager` (`packages/utils/src/srs-test-manager.ts`): a
+  **single-flight priority queue** (one LLM call at a time; precedence
+  user-initiated regeneration > current card > prefetch), a **per-card test
+  cache** (keyed `l2:l1:cardId:kind`, persisted per platform — localStorage
+  on web, AsyncStorage on mobile) used throughout, **automatic one-shot
+  retries**, and **prefetching of the next two cards' tests** whenever test
+  mode is active, so the next Start Test is instant. Stale prefetches for
+  cards the user has left behind are cancelled instead of burning tokens.
 - **Marking rules (2026-08-25)** — `scoreTestResult(correctCount,
   totalTests, totalMs)` (shared `packages/utils/src/srs-test-mode.ts`):
   - each test scores **0 (wrong) / 1 (right)**;
@@ -728,6 +820,40 @@ types count while unexpired — there is no `status` filter.
   `scoreTestResult` + both review pages): each test 0/1, scaled so perfect = 2,
   time-adjusted via the 10 s/test slow and 5 s/test fast thresholds → again /
   hard / good / easy.
+- ✅ **Start Test gate + progress bar** — implemented (2026-08-25, both review
+  pages): the card front in test mode shows the context + a "Start Test"
+  button; after Start Test a blue/green progress bar counts down T =
+  10 s × totalTests (blue while more than 5 s × totalTests remain).
+- ✅ **Sequential one-test-at-a-time flow** — implemented (2026-08-25,
+  both review pages); pronunciation-first ordering added 2026-08-26: the
+  pronunciation test is loaded and answered first; the definition test is
+  only loaded after it, then answered, then the card is rated. An error in
+  one test is isolated to that test and never blocks the other's
+  loading/answering.
+- ✅ **Pronunciation targets the lemma; Japanese surface-form gate** —
+  implemented (2026-08-25, shared `lemmaFormOf`/`surfaceFormOf` + both
+  review pages): the pronunciation test asks for the lemma's reading, and
+  for Japanese it only appears when the surface form in the context
+  contains kanji.
+- ✅ **Terse language-specific prompts** — implemented (2026-08-25, shared
+  `buildSrsQuestionPrompt` + manager retry hints): prompts are short, name
+  the L2 in the opening line, use L2-specific answer notation, and each
+  short directive prevents one client-side rejection (including the
+  "derived/inflected forms" confounder rule).
+- ✅ **Skip a failed test** — implemented (2026-08-25, both review pages):
+  the error box gains a Skip button next to Retry; a skipped test is
+  excluded from the flow and from the scoring (`totalTests` counts only
+  non-skipped tests).
+- ✅ **Auto-retry-once + generic error + Diagnostic link** — implemented
+  (2026-08-25, both review pages): on error, "There was a problem, trying
+  again…" + exactly one automatic retry; a second failure shows a generic
+  error + Retry and a tiny Diagnostic link (prompt / raw response / error).
+- ✅ **Card-test cache, prefetch, single-flight queue** — implemented
+  (2026-08-25, shared `SrsTestManager` + both review pages): all test
+  generation/regeneration routes through one priority queue
+  (user > current > prefetch), the card-test cache is used throughout
+  (persisted per platform), the next two cards' tests are prefetched in test
+  mode, and stale prefetches are cancelled.
 
 ## Known Issues & Resolutions (2026-08-13)
 
@@ -941,6 +1067,9 @@ in ADR-0040:
   Spaced Repetition community; the same algorithm Anki uses today).
 - `packages/utils/src/fsrs-scheduler.ts` — the `ts-fsrs` wrapper
   (`newCard`, `rate`, `isDue`, `planNewDeck`, migration, LWW merge).
+- `packages/utils/src/srs-test-manager.ts` — the card-test cache +
+  single-flight priority queue + auto-retry + diagnostics shared by both
+  review pages (2026-08-25).
 - `packages/utils/src/dictionary-cache.ts` — shared batched lookup + entry
   cache.
 - `apps/web/src/hooks/use-srs.ts` / `apps/mobile/hooks/use-srs.ts` — store +

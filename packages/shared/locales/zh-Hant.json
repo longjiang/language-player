@@ -136,6 +136,7 @@
         "sign_in": "登入",
         "sign_out": "登出",
         "sign_up": "註冊",
+        "skip": "跳過",
         "speak": "朗讀",
         "start_learning": "開始學習囉",
         "start_learning_lang": "開始學習{name}",
@@ -1231,6 +1232,7 @@
         "again": "重來",
         "answer_correct": "正確",
         "answer_incorrect": "錯誤",
+        "diagnostic": "診斷",
         "easy": "簡單",
         "good": "良好",
         "hard": "困難",
@@ -1240,7 +1242,10 @@
         "shortcut_hint": "按<space></space>翻轉，<k1></k1>–<k2></k2>評分，<enter></enter>繼續",
         "srs_review": "{count, plural, other {已複習 # 次}}",
         "start_test": "開始測試",
-        "test_mode": "測試模式"
+        "test_error": "生成此測試時出現問題。",
+        "test_mode": "測試模式",
+        "test_skipped": "已跳過",
+        "trying_again": "出現問題，正在重試…"
     },
     "setting": {
         "all_words": "所有單字",

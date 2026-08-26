@@ -140,6 +140,7 @@
         "sign_in": "Anmelden",
         "sign_out": "Abmelden",
         "sign_up": "Registrieren",
+        "skip": "Überspringen",
         "speak": "Sprechen",
         "start_learning": "Lernen beginnen",
         "start_learning_lang": "{name} lernen",
@@ -1264,6 +1265,7 @@
         "answer_correct": "Richtig",
         "answer_incorrect": "Falsch",
         "context_label": "Kontext",
+        "diagnostic": "Diagnose",
         "easy": "Leicht",
         "easy_hint": "Sofort abrufbar",
         "good": "Gut",
@@ -1278,7 +1280,10 @@
         "srs_new": "neu",
         "srs_review": "{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}",
         "start_test": "Test starten",
-        "test_mode": "Testmodus"
+        "test_error": "Beim Erstellen dieses Tests gab es ein Problem.",
+        "test_mode": "Testmodus",
+        "test_skipped": "Übersprungen",
+        "trying_again": "Es gab ein Problem, versuche es erneut..."
     },
     "setting": {
         "all_words": "Alle Wörter",

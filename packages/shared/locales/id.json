@@ -140,6 +140,7 @@
         "sign_in": "Masuk",
         "sign_out": "Keluar",
         "sign_up": "Daftar",
+        "skip": "Lewati",
         "speak": "Bicara",
         "start_learning": "Mulai Belajar",
         "start_learning_lang": "Mulai belajar {name}",
@@ -1264,6 +1265,7 @@
         "answer_correct": "Benar",
         "answer_incorrect": "Salah",
         "context_label": "Konteks",
+        "diagnostic": "Diagnostik",
         "easy": "Mudah",
         "easy_hint": "Ingatan seketika",
         "good": "Baik",
@@ -1278,7 +1280,10 @@
         "srs_new": "baru",
         "srs_review": "{count, plural, other {diulas # kali}}",
         "start_test": "Mulai tes",
-        "test_mode": "Mode tes"
+        "test_error": "Terjadi masalah saat membuat tes ini.",
+        "test_mode": "Mode tes",
+        "test_skipped": "Dilewati",
+        "trying_again": "Ada masalah, mencoba lagi..."
     },
     "setting": {
         "all_words": "Semua kata",
