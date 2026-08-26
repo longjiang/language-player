@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
 import { Button, buttonTextClass } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -81,22 +80,24 @@ function ContextSentenceCard({
   };
 
   return (
-    <View className="mb-3 overflow-hidden rounded-lg border border-border bg-muted/30">
-      <Pressable
+    <View className="mb-3">
+      {/* The toggle is styled like the "Let DeepSeek explain" / "Search
+          images" buttons (w-full outline) so the popup's controls read as
+          one family. */}
+      <Button
         onPress={toggle}
-        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+        variant="outline"
+        className="w-full justify-between"
         accessibilityRole="button"
         accessibilityLabel={t('label.context_sentence')}
       >
-        <Text className="flex-1 text-xs font-semibold text-muted-foreground">
-          {t('label.context_sentence')}
-        </Text>
+        <Text className={buttonTextClass('outline')}>{t('label.context_sentence')}</Text>
         {open
           ? <ChevronUp size={14} color={ICON_MUTED} />
           : <ChevronDown size={14} color={ICON_MUTED} />}
-      </Pressable>
+      </Button>
       {open && (
-        <View className="border-t border-border px-3 py-2">
+        <View className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
           <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
             <TokenizedText
               text={context}
