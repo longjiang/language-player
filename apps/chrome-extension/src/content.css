@@ -738,8 +738,10 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 /* Pulse the upgrade CTA once playback reaches the last free transcript line,
-   drawing the learner's eye to the Pro prompt. Respects reduced motion. */
-@keyframes lpv-pulse {
+   drawing the learner's eye to the Pro prompt. Named distinctly from the
+   cue-loading opacity pulse (also `lpv-pulse`-style) so the box-shadow ring
+   is NOT applied to loading subtitle lines. Respects reduced motion. */
+@keyframes lpv-cta-pulse {
   0%, 100% {
     box-shadow: 0 0 0 0 hsl(var(--lpv-warning) / 0.5);
   }
@@ -748,12 +750,12 @@ body.lpv-panel-open disney-web-player-ui {
   }
 }
 
-.lpv-pro-banner-link.lpv-pulse {
-  animation: lpv-pulse 1.6s ease-out infinite;
+.lpv-pro-banner-link.lpv-cta-pulse {
+  animation: lpv-cta-pulse 1.6s ease-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lpv-pro-banner-link.lpv-pulse {
+  .lpv-pro-banner-link.lpv-cta-pulse {
     animation: none;
   }
 }

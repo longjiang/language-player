@@ -636,7 +636,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
               href={`${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/go-pro`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`lpv-pro-banner-link${activeCueIdx >= FREE_TRANSCRIPT_LINES - 1 ? ' lpv-pulse' : ''}`}
+              className={`lpv-pro-banner-link${activeCueIdx >= FREE_TRANSCRIPT_LINES - 1 ? ' lpv-cta-pulse' : ''}`}
             >
               {t('upgradeToPro')}
             </a>
