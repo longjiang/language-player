@@ -349,7 +349,8 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-token:hover {
-  background: hsl(var(--lpv-primary) / 0.2);
+  background: hsl(var(--lpv-primary) / 0.24);
+  box-shadow: 0 0 0 1px hsl(var(--lpv-primary) / 0.4);
 }
 
 .lpv-token-saved {
