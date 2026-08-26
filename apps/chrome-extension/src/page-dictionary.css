@@ -104,7 +104,8 @@ body,
 #lpv-page-dictionary-root .lpv-dict-card-pron,
 #lpv-page-dictionary-root .lpv-dict-pron-small,
 #lpv-page-dictionary-root .lpv-dict-card-lemma,
-#lpv-page-dictionary-root .lpv-dict-def {
+#lpv-page-dictionary-root .lpv-dict-def,
+#lpv-page-dictionary-root .lpv-dict-alternate {
   color: var(--lpv-frame-muted);
 }
 

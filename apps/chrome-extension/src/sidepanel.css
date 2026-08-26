@@ -724,7 +724,8 @@ button:focus-visible,
 .lpv-dictionary-dialog .lpv-dict-card-pron,
 .lpv-dictionary-dialog .lpv-dict-pron-small,
 .lpv-dictionary-dialog .lpv-dict-pos,
-.lpv-dictionary-dialog .lpv-dict-def {
+.lpv-dictionary-dialog .lpv-dict-def,
+.lpv-dictionary-dialog .lpv-dict-alternate {
   color: hsl(var(--muted-foreground));
 }
 
@@ -773,6 +774,10 @@ button:focus-visible,
 .lpv-dictionary-dialog .lpv-dict-head {
   font-size: 1.125rem;
   font-weight: 700;
+}
+
+.lpv-dictionary-dialog .lpv-dict-alternate {
+  font-size: 0.9375rem;
 }
 
 .lpv-dictionary-dialog .lpv-dict-def {
