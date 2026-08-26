@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { baseCode } from '@langplayer/utils';
 import { API_BASE } from '../api-config';
 import { apiFetch } from '../api-fetch';
 import { log, logwarn, t } from '../i18n';
@@ -66,6 +67,10 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   const requestGenerationRef = useRef(0);
   const translateBlocksRef = useRef<(ids: string[], generation: number) => void>(() => {});
   const highlightTimerRef = useRef<number | null>(null);
+
+  // Translating a language into itself is meaningless (l1 === l2) — disable
+  // page translation entirely in that case.
+  const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
 
   const loadSnapshot = useCallback(async () => {
     const generation = ++requestGenerationRef.current;
@@ -145,6 +150,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   }, [l1Code, l2Code, pageUrl, tabId]);
 
   useEffect(() => {
+    if (!canTranslate) return;
     loadSnapshot();
     return () => {
       requestGenerationRef.current += 1;
@@ -153,7 +159,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
       inFlightRef.current.clear();
       if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
     };
-  }, [loadSnapshot]);
+  }, [canTranslate, loadSnapshot]);
 
   const translateBlocks = useCallback(async (ids: string[], generation: number) => {
     if (generation !== requestGenerationRef.current) return;
@@ -300,6 +306,10 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     highlightTimerRef.current = window.setTimeout(() => setHighlightedBlockId(null), 1800);
   }, [blocks, lookup?.blockId, lookup?.token?.text]);
 
+  if (!canTranslate) {
+    // l1 === l2: translating a page into its own language is meaningless.
+    return <div className="lpv-ui-empty-state" role="status"><p>{t('pageUnavailable')}</p></div>;
+  }
   if (status === 'loading' || status === 'idle') {
     return <div className="lpv-ui-empty-state" role="status" aria-live="polite"><span className="lpv-ui-spinner" aria-hidden="true" /><p>{t('loadingSubtitles')}</p></div>;
   }

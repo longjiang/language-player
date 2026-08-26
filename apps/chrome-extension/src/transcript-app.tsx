@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { buildRuby } from '@langplayer/utils';
+import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
@@ -398,6 +398,11 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const { isPro } = useSubscription();
   const { preFetch } = useBatchLemmatize();
 
+  // Translation between a language and itself is meaningless (l1 === l2),
+  // so it is disabled entirely and the toggle is hidden in that case.
+  const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
+  const effectiveShowTranslation = showTranslation && canTranslate;
+
   // Load saved preferences
   useEffect(() => {
     try {
@@ -445,7 +450,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     l1Code,
     l2Code,
     activeCueIdx,
-    showTranslation,
+    effectiveShowTranslation,
   );
 
   const handleSeekTo = useCallback((timeSec: number) => {
@@ -546,7 +551,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             onSeekTo={handleSeekTo}
             onTokenClick={handleTokenClick}
             translation={translated.get(i) || ''}
-            showTranslation={showTranslation}
+            showTranslation={effectiveShowTranslation}
             onExplainLine={handleExplainLine}
             explainLoading={false}
             localeVersion={localeVersion}
@@ -583,15 +588,17 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
           <span className="lpv-switch-slider" />
           <span className="lpv-switch-label">あ</span>
         </label>
-        <label className="lpv-translate-switch" title={t('showTranslation')}>
-          <input
-            type="checkbox"
-            checked={showTranslation}
-            onChange={(e) => handleTranslationToggle(e.target.checked)}
-          />
-          <span className="lpv-switch-slider" />
-          <span className="lpv-switch-label">{t('translate')}</span>
-        </label>
+        {canTranslate && (
+          <label className="lpv-translate-switch" title={t('showTranslation')}>
+            <input
+              type="checkbox"
+              checked={showTranslation}
+              onChange={(e) => handleTranslationToggle(e.target.checked)}
+            />
+            <span className="lpv-switch-slider" />
+            <span className="lpv-switch-label">{t('translate')}</span>
+          </label>
+        )}
         <div className="lpv-stepper">
           <button
             className="lpv-stepper-btn"
@@ -657,6 +664,10 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   const [textScale, setTextScale] = useState(2);
   const { isPro } = useSubscription();
 
+  // Translation between a language and itself (l1 === l2) is disabled.
+  const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
+  const effectiveShowTranslation = showTranslation && canTranslate;
+
   useEffect(() => {
     try {
       chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale'], (result) => {
@@ -683,8 +694,8 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   }, [lookup]);
 
   useEffect(() => {
-    if (!selectedToken || !showTranslation || !blockText) {
-      log(`[PAGE] translate skipped: token=${!!selectedToken}, showTranslation=${showTranslation}, blockText=${blockText.length} chars`);
+    if (!selectedToken || !effectiveShowTranslation || !blockText) {
+      log(`[PAGE] translate skipped: token=${!!selectedToken}, showTranslation=${showTranslation}, canTranslate=${canTranslate}, blockText=${blockText.length} chars`);
       translatedBlockIdRef.current = null;
       setTranslation('');
       return;
@@ -720,7 +731,7 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
       })
       .finally(() => setTranslationLoading(false));
     return () => controller.abort();
-  }, [selectedToken, showTranslation, blockText, blockId, l1Code, l2Code]);
+  }, [selectedToken, effectiveShowTranslation, blockText, blockId, l1Code, l2Code, canTranslate]);
 
   const handlePhoneticsToggle = (checked: boolean) => {
     log(`[FURIGANA] page mode phonetics toggle → ${checked}`);
@@ -777,15 +788,17 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
           <span className="lpv-switch-slider" />
           <span className="lpv-switch-label">あ</span>
         </label>
-        <label className="lpv-translate-switch" title={t('showTranslation')}>
-          <input
-            type="checkbox"
-            checked={showTranslation}
-            onChange={(e) => handleTranslationToggle(e.target.checked)}
-          />
-          <span className="lpv-switch-slider" />
-          <span className="lpv-switch-label">{t('translate')}</span>
-        </label>
+        {canTranslate && (
+          <label className="lpv-translate-switch" title={t('showTranslation')}>
+            <input
+              type="checkbox"
+              checked={showTranslation}
+              onChange={(e) => handleTranslationToggle(e.target.checked)}
+            />
+            <span className="lpv-switch-slider" />
+            <span className="lpv-switch-label">{t('translate')}</span>
+          </label>
+        )}
         <div className="lpv-stepper">
           <button
             className="lpv-stepper-btn"
