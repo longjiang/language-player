@@ -638,6 +638,7 @@ The only remaining structural gap between web and mobile is **lazy loading**. Re
 |---|---|---|---|
 | `packages/shared/src/types.ts` | Shared | — | `LemmatizedToken`, `Lemma`, `DictionaryEntry`, `LexicalEntry` types |
 | `packages/utils/src/token-cache.ts` | Shared | 48 | `TokenCache` class (md5-keyed, used by both platforms) |
+| `packages/utils/src/entities.ts` | Shared | ~190 | `decodeHtmlEntities()` — cross-platform, iterates to collapse double-encoded entities (YouTube); used by web `subtitle-csv.ts` + Chrome extension subtitle parsers |
 | `packages/utils/src/furigana.ts` | Shared | ~330 | `buildRuby()`, `matchHiragana()` — language-aware ruby segmentation |
 | `zerotohero-python-server/lemmatize_unified.py` | Backend | ~350 | Unified lemmatizer dispatch: registry, normalizers, space recovery, romanization |
 | `zerotohero-python-server/lemmatize_japanese.py` | Backend | ~70 | MeCab + IPADIC lemmatizer for Japanese |
