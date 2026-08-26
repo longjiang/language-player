@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-21 (SPEC-086 web-parity side-panel redesign implementation)
+- **Last Updated**: 2026-08-26 (subtitle sync fixes: ASR alignment, clear-on-navigation, pro-banner message+pulse, page translation on video hosts)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -304,8 +304,13 @@ The extension supports six platforms. Each has a different mechanism for detecti
    chrome.scripting.executeScript in MAIN world to bypass CORS)
 7. Falls back to unsigned timedtext API if first fetch is empty
 8. Parses as timedtext XML or JSON3 format
-9. setupYouTubeNavigationObserver() watches for SPA navigation
-   (video ID changes) and reloads subtitles after 1.5s delay
+9. **ASR alignment**: if the selected track is auto-generated (`kind === 'asr'`),
+   all cues are shifted earlier by `YT_ASR_LEAD_OFFSET_SEC` (2.0s) so the active
+   line matches the audio rather than the lagging on-screen caption
+10. setupYouTubeNavigationObserver() watches for SPA navigation
+    (video ID changes): it immediately clears the cue list, active cue, subtitle
+    URL, and pushes a `detecting` state so the panel never shows the previous
+    video's subtitles, then reloads subtitles after a 1.5s delay
 ```
 
 ---
@@ -479,6 +484,20 @@ Key behaviors:
 - **Pro-gated transcript banner**: for free users the upgrade banner renders
   *inside* the scrollable cue list immediately below the last line, so it scrolls
   with the transcript instead of being pinned above the control bar (ADR-0034).
+  It is led by the "You've reached the end of free subtitle lines." message
+  (`freeSubtitleLimitReached`), and the Upgrade to Pro link pulses (`.lpv-pulse`)
+  once playback reaches the last free line (`activeCueIdx >= FREE_TRANSCRIPT_LINES - 1`)
+  so the learner notices the prompt exactly when the free content runs out.
+- **Auto-generated (ASR) caption alignment**: YouTube ASR captions lag the audio,
+  so at a given `currentTime` the panel highlighted the previous line. For an
+  ASR track, `fetchYTTrack` shifts every cue earlier by `YT_ASR_LEAD_OFFSET_SEC`
+  (default 2.0s, preserve inter-cue gaps, drop zero-length cues) so the first
+  word of a line aligns with when it is first spoken. Manual caption tracks are
+  left untouched.
+- **Subtitle clear on YouTube SPA navigation**: `setupYouTubeNavigationObserver`
+  resets `STATE.cues`/`activeCueIdx`/`subtitleUrl` and pushes a `detecting` state
+  the moment the video ID changes, so the panel never shows the previous video's
+  subtitles while the new video's track loads or resolves to none.
 - **l1 === l2 disables translation**: when `baseCode(l1) === baseCode(l2)`,
   translation is disabled for both subtitles and page translation and the
   translation toggle is hidden; the stored preference is preserved so it
@@ -533,6 +552,13 @@ with `position:fixed`. They render in the browser's own side panel:
   browser's native ✕ restores the original page immediately; switching to
   Subtitles does the same. A later Page Translation tab open re-reads the page
   snapshot and lazily tokenizes only near-viewport page blocks.
+- **Page translation on video hosts**: `page-content.js` no longer skips video
+  hosts. When the Page Translation tab is active on a YouTube/Netflix/… page it
+  tokenizes the page (title/description/comments) for the popup dictionary and
+  serves the `getPageTranslationSnapshot` feed, so the Page Translation tab works
+  there too. `pushPageModeState()` returns early on a video host so the side
+  panel is never flipped out of the Subtitles/video mode; the panel still gets
+  page lookups via the dedicated `pageLookup` message.
 - **What moved out of content scripts**: `createPanelUI`/`createPanel`, the
   mismatch banner DOM, the header (logo/open-in-web/close), `setPanelVisible`,
   `togglePanel`, `updateStatus` (now log-only), and the `autoOpenPanel` pref.
