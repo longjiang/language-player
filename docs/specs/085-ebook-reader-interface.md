@@ -360,6 +360,7 @@ Elements:
 - **The close button's hit area when chrome is OFF:** it is hidden (`pointer-events: none` / `opacity: 0`), so the area it would occupy is part of the tap surface.
 - **The hidden measuring mirror:** already `pointer-events: none`; must stay that way so the full-screen surface works.
 - **Dictionary popup open:** it is a body-portaled dialog (web) / its own overlay; taps inside it never reach the reader surface.
+- **Quitting a dialog must not toggle the chrome:** the click that DISMISSES a dialog (popup dictionary, TOC, Search) can fall through to the tap surface after the overlay unmounts — web: a slow click-and-hold whose `click` fires after the Radix overlay is removed re-targets to the reader surface; mobile: the dismissing tap can land on the surface once the overlay's pointerEvents flip to `'none'`. A shared reader-tap-guard (`apps/web/src/lib/reader-tap-guard.ts`, `apps/mobile/lib/reader-tap-guard.ts`) arms `suppressReaderTap()` on every reader-dialog close; the tap handlers (`paginated-reader.tsx`, the epub page's root `onClick`, mobile `toggleChrome`) ignore taps inside the window. On web, taps are also ignored while any dialog overlay is still mounted (open or animating out) — see §11 "Tap while a modal is open".
 - **Strip constants drift:** if the header or bar is ever resized in a later change, `T`/`B` must be re-derived from the formulas; keep the constants next to their components with a comment, and log a mismatch if a runtime measurement disagrees.
 
 ## 13. Implementation notes

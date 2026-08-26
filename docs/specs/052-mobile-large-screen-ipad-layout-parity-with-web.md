@@ -204,7 +204,7 @@ was fixed by making dialog mode size to content.
 |---|---|---|
 | Language switcher (`variant="dialog"`) | bottom sheet | centered `Dialog.Content` (`max-w-md`) |
 | Subtitle-search video list | bottom sheet | centered dialog (`max-w-lg`, capped height) |
-| Dictionary popup | bottom sheet | centered dialog (`max-w-lg`, capped height) |
+| Dictionary popup | bottom sheet | **top-anchored dialog** — fixed top (`insets.top + 64`), grows downward only, capped height |
 | WebView sheet | bottom sheet | centered dialog (`max-w-2xl`, capped height) |
 | Context menu | bottom sheet | centered dialog (`max-w-sm`) |
 | Right sidebar / hamburger drawer | drawer / sheet (nav only) | persistent sidebar / removed |
@@ -223,7 +223,7 @@ was fixed by making dialog mode size to content.
 - `apps/mobile/app/(tabs)/(media)/local-media.tsx` — lg player/transcript columns + `max-w-7xl` content cap
 - `apps/mobile/app/(tabs)/(me)/settings/index.tsx` — 1024 split + Display default
 - `apps/mobile/components/layout/LanguageSwitcher.tsx` — centered dialog ≥768, bottom sheet below
-- Bottom-sheet policy — `LanguageSwitcher`, `SubsSearchResults`, `WebViewSheet`, `DictionaryPopup`, `ui/context-menu`: bottom sheets <768, centered dialogs ≥768
+- Bottom-sheet policy — `LanguageSwitcher`, `SubsSearchResults`, `WebViewSheet`, `DictionaryPopup`, `ui/context-menu`: bottom sheets <768, centered dialogs ≥768. **Exception (2026-08-25):** the `DictionaryPopup`'s ≥768 dialog is **top-anchored** (fixed `insets.top + 64`, grows downward only) instead of centered, so its top edge never shifts as entries load.
 
 ---
 
@@ -287,7 +287,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Component | Web | Mobile | Required change |
 |---|---|---|---|
 | `TextActionMenu` translation | Original + translation side-by-side at lg | Always stacked | Add `lg`-equivalent side-by-side mode at ≥1024 |
-| `DictionaryPopup` | ~448px centered dialog | Bottom sheet | ✅ Centered dialog ≥768, bottom sheet below (bottom-sheet policy) |
+| `DictionaryPopup` | ~448px centered dialog | Bottom sheet | ✅ Top-anchored dialog ≥768 (fixed `insets.top + 64`, grows downward), bottom sheet below |
 | Subs-search list modal | Bottom sheet <640, centered ≥640 | Always bottom sheet | ✅ Centered dialog ≥768, bottom sheet below (bottom-sheet policy) |
 | `ImageSearchResults` | 3 columns <640, 4 ≥640 | Always 3 columns | ✅ 4 columns at ≥640, tiles sized from measured container |
 | Hamburger drawer | `w-64` | `min(256, width*0.6)` | Keep cap (it's better for split view); align when drawer is removed ≥md |
@@ -400,7 +400,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] Hamburger drawer: capped at `min(256, width*0.6)`; drawer never renders at ≥768.
 - [ ] Auth screens: centered at `max-w-md` (448px) at every width.
 - [ ] Language switcher dialog: bottom sheet below 768; centered `max-w-md` dialog at ≥768 (picker remains `variant="dialog"`).
-- [ ] Dictionary popup, subtitle-search list, WebView sheet, and context menus: bottom sheet below 768; centered dialogs at ≥768 (no stretched full-width sheets on iPad).
+- [ ] Dictionary popup: bottom sheet below 768; **top-anchored dialog at ≥768** (fixed top, grows downward). Subtitle-search list, WebView sheet, and context menus: bottom sheet below 768; centered dialogs at ≥768 (no stretched full-width sheets on iPad).
 
 ### Media screens
 

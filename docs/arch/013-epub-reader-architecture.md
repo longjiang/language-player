@@ -639,7 +639,34 @@ The popup dictionary shows the sentence the tapped word came from behind a
 collapsible "Context sentence" button — expanded as tokenized text wrapped in
 the text action menu (copy/speak/AI explain/translate) plus its L1
 translation (fetched once). `TokenizedText` gained a `disablePopup` prop so
-the in-popup sentence can't stack a nested popup.
+the in-popup sentence can't stack a nested popup. The toggle is styled like
+the "Let DeepSeek explain" / "Search images" buttons (w-full outline).
+
+### Popup dictionary position & loading
+The popup dictionary is anchored a **fixed distance from the top of the
+screen** and grows downward only, so its top edge (and the header/word under
+it) never shifts as entries load: web pins the dialog at `POPUP_TOP = 96`
+(horizontally centered; the spawn-from-token enter animation settles at the
+anchored position); mobile keeps the bottom sheet below 768 but anchors the
+md+ dialog at `insets.top + 64` instead of centering it (SPEC-052's
+bottom-sheet policy updated accordingly). While entries or phrase cards load,
+the popup shows **dictionary-card skeletons** (`DictionaryEntryCardSkeleton`,
+web + mobile) instead of spinners. Only the **head word** of an entry card
+navigates to the detail page in the popup (`headOnlyLink`); sidebar/search
+cards keep whole-card navigation. The save control is a small labeled
+"Save Word" button (icon + text) rather than a bare bookmark icon.
+
+### Reader chrome guard on dialog close
+Quitting a dialog that overlays the reader (popup dictionary, TOC, Search)
+never toggles the immersive chrome. The click that dismisses a Radix dialog
+(web) can fall through to the reader's blank-tap surface after the overlay
+unmounts (a slow click-and-hold), and on mobile the dismissing tap can land
+on the surface once the overlay's pointerEvents flip to 'none'. A shared
+reader-tap-guard (web `lib/reader-tap-guard.ts`, mobile `lib/reader-tap-guard.ts`)
+arms `suppressReaderTap()` whenever a reader dialog closes; the tap
+handlers/`toggleChrome` ignore taps inside the window. On web, taps are also
+ignored while any dialog overlay is still mounted (open or animating out),
+matching SPEC-085 §11.
 
 ### Mobile file handling
 OS file-open (iOS CFBundleDocumentTypes / Android VIEW intent filters) and an
