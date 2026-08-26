@@ -700,9 +700,10 @@ button:focus-visible,
 }
 
 /* DictionaryPopup parity: compact entry cards use the same information
- * hierarchy as apps/web while retaining the extension's semantic tokens. */
+ * hierarchy as apps/web while retaining the extension's semantic tokens. The
+ * width matches apps/web dictionary-popup.tsx (w-[28rem] max-w-[90vw]). */
 .lpv-dictionary-dialog {
-  width: min(100%, 30rem);
+  width: min(100%, 28rem);
 }
 
 .lpv-dictionary-dialog .lpv-ui-dialog-body {
