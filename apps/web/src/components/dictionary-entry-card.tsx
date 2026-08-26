@@ -29,6 +29,10 @@ interface DictionaryEntryCardProps {
   srsDot?: React.ReactNode;
   /** Context for the save/bookmark button. Omit to hide (compact) or show (full). */
   saveContext?: SavedWordContext;
+  /** Size of the compact card's labeled "Save Word" button. Defaults to 'sm'
+   *  (the dictionary popup passes 'xs' for a smaller popup footprint). The
+   *  full variant always uses the default size. */
+  saveButtonSize?: 'xs' | 'sm' | 'default';
   /** Pre-formatted pronunciation string. Uses centralized formatPronunciation if omitted. */
   pronunciation?: string | null;
   /** ISO 639-1 code of the target language (for script preference + font rendering). */
@@ -83,6 +87,7 @@ export function DictionaryEntryCard({
   headOnlyLink = false,
   srsDot,
   saveContext,
+  saveButtonSize,
   pronunciation,
   l2Code,
   l1Code,
@@ -209,8 +214,9 @@ export function DictionaryEntryCard({
   // ── Shared: save button ──
   // Compact cards use the small labeled variant (bookmark + "Save Word") so
   // the touch target is bigger than a bare icon; the full variant keeps the
-  // default labeled button.
-  const saveBtn = (size: 'sm' | 'icon' | 'default' = 'icon') => saveContext ? (
+  // default labeled button. The popup opts into the extra-small size via
+  // `saveButtonSize="xs"`.
+  const saveBtn = (size: 'xs' | 'sm' | 'icon' | 'default' = 'icon') => saveContext ? (
     <div onClick={(e) => e.stopPropagation()}>
       <SaveButton
         wordId={entry.id}
@@ -331,7 +337,7 @@ export function DictionaryEntryCard({
         {/* Footer */}
         <div className="mt-auto flex items-center gap-2 pt-2 text-[10px]">
           {sourceLine}
-          {saveContext && <div className="ml-auto">{saveBtn('sm')}</div>}
+          {saveContext && <div className="ml-auto">{saveBtn(saveButtonSize ?? 'sm')}</div>}
         </div>
       </div>
     );

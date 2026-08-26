@@ -609,6 +609,7 @@ export function DictionaryPopup({
                     onClick={handleEntryClick}
                     headOnlyLink
                     saveContext={context}
+                    saveButtonSize="xs"
                     pronunciation={formatPronunciation(entry, l2Code)}
                     l2Code={l2Code}
                   />
@@ -668,6 +669,7 @@ export function DictionaryPopup({
                 onClick={handleEntryClick}
                 headOnlyLink
                 saveContext={context}
+                saveButtonSize="xs"
                 pronunciation={formatPronunciation(entry, l2Code)}
                 l2Code={l2Code}
               />
@@ -679,6 +681,7 @@ export function DictionaryPopup({
                 onClick={handleEntryClick}
                 headOnlyLink
                 saveContext={context}
+                saveButtonSize="xs"
                 pronunciation={formatPronunciation(entry, l2Code)}
                 l2Code={l2Code}
               />
