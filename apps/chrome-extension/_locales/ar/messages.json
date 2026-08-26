@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "فشل تحميل القاموس: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "لم يتم العثور على مدخل قاموس لـ $word$.",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "تمت تجربة الأشكال الأساسية التالية:"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "البحث في Language Player ←"
+  },
+  "lookupFailed": {
+    "message": "فشل البحث"
+  },
+  "explainFailed": {
+    "message": "فشل الشرح"
+  },
+  "examplesFailed": {
+    "message": "فشل الحصول على الأمثلة"
+  },
+  "followUpFailed": {
+    "message": "فشل المتابعة"
+  },
+  "noSubtitleExamples": {
+    "message": "لم يتم العثور على أمثلة من الترجمة"
   }
 }

@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Gagal memuat kamus: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "Tidak ada entri kamus yang ditemukan untuk $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Lemma yang sudah dicoba"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Cari di Language Player →"
+  },
+  "lookupFailed": {
+    "message": "Pencarian gagal"
+  },
+  "explainFailed": {
+    "message": "Penjelasan gagal"
+  },
+  "examplesFailed": {
+    "message": "Gagal memuat contoh"
+  },
+  "followUpFailed": {
+    "message": "Pertanyaan lanjutan gagal"
+  },
+  "noSubtitleExamples": {
+    "message": "Tidak ada contoh subtitle yang ditemukan"
   }
 }

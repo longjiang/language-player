@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Error al cargar el diccionario: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "No se encontró ninguna entrada de diccionario para $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Lemas probados"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Buscar en Language Player →"
+  },
+  "lookupFailed": {
+    "message": "La búsqueda falló"
+  },
+  "explainFailed": {
+    "message": "La explicación falló"
+  },
+  "examplesFailed": {
+    "message": "No se pudieron cargar los ejemplos"
+  },
+  "followUpFailed": {
+    "message": "La consulta de seguimiento falló"
+  },
+  "noSubtitleExamples": {
+    "message": "No se encontraron ejemplos de subtítulos"
   }
 }

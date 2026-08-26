@@ -21,7 +21,7 @@ import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { Dialog } from './components/ui/dialog';
 import { Markdown } from './components/Markdown';
-import { logwarn, t } from './i18n';
+import { logwarn, setLocale, t } from './i18n';
 
 const MESSAGE_SOURCE = 'language-player-page-dictionary';
 type Theme = 'light' | 'dark' | 'system';
@@ -145,6 +145,34 @@ Text: ${cue.text}`;
 function PageDictionaryFrame() {
   const [lookup, setLookup] = useState<PageDictionaryLookup | null>(null);
   const [modal, setModal] = useState<ModalPayload | null>(null);
+  // Bump on locale load so the modal re-renders with the user's L1 strings
+  // instead of falling back to chrome.i18n (browser UI language) — the same
+  // mechanism the native side panel uses (see src/sidepanel.tsx).
+  const [, setLocaleVersion] = useState(0);
+
+  // Load the user's selected interface language (L1) into the runtime i18n
+  // cache. Without this, t() falls back to chrome.i18n.getMessage(), which
+  // resolves against the browser UI language and shows the wrong language in
+  // the popup. Mirror the side panel: resolve on init and re-apply whenever
+  // the stored L1 changes.
+  useEffect(() => {
+    (async () => {
+      const { l1Language } = await chrome.storage.local.get(['l1Language']);
+      await setLocale(l1Language || 'en');
+      setLocaleVersion((v) => v + 1);
+    })();
+    const onChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string,
+    ) => {
+      if (area !== 'local' || !changes.l1Language) return;
+      setLocale(changes.l1Language.newValue || 'en').then(() => {
+        setLocaleVersion((v) => v + 1);
+      });
+    };
+    chrome.storage.onChanged.addListener(onChange);
+    return () => chrome.storage.onChanged.removeListener(onChange);
+  }, []);
 
   // Keep the iframe theme in sync with the extension's display theme. Without
   // this the modal defaults to light, so a word lookup on a dark page renders

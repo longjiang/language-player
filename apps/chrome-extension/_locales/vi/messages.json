@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Không thể tải từ điển: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "Không tìm thấy mục từ điển nào cho $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Đã thử các dạng gốc"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Tìm trên Language Player →"
+  },
+  "lookupFailed": {
+    "message": "Tra cứu thất bại"
+  },
+  "explainFailed": {
+    "message": "Giải thích thất bại"
+  },
+  "examplesFailed": {
+    "message": "Không thể tải ví dụ"
+  },
+  "followUpFailed": {
+    "message": "Câu hỏi tiếp theo thất bại"
+  },
+  "noSubtitleExamples": {
+    "message": "Không tìm thấy ví dụ từ phụ đề"
   }
 }

@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "辞書の読み込みに失敗しました: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "$word$の辞書エントリは見つかりませんでした",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "試したレンマ"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "言語プレイヤーで検索 →"
+  },
+  "lookupFailed": {
+    "message": "検索に失敗しました"
+  },
+  "explainFailed": {
+    "message": "説明に失敗しました"
+  },
+  "examplesFailed": {
+    "message": "例文の取得に失敗しました"
+  },
+  "followUpFailed": {
+    "message": "フォローアップに失敗しました"
+  },
+  "noSubtitleExamples": {
+    "message": "字幕の例が見つかりません"
   }
 }

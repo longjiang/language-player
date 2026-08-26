@@ -142,6 +142,10 @@ const CSV_LOOKUP = {
   'synonyms': 'action.synonyms',
   'examples': 'title.examples_from_videos',
   'subsAiExamples': 'prompt.subs_ai_examples',
+  // Dictionary card states (reuse existing CSV keys)
+  'dictLoadFailed': 'log.failed_load_dictionary',
+  'noDictionaryEntry': 'msg.no_dictionary_entry',
+  'triedLemmas': 'msg.tried_lemmas',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.
@@ -839,6 +843,54 @@ const MANUAL = {
     'ko': '{days}일 남음', 'nl': 'Nog {days} dagen', 'pl': 'Pozostało {days} dni',
     'pt': 'Restam {days} dias', 'ru': 'Осталось дней: {days}', 'th': 'เหลืออีก {days} วัน',
     'tr': '{days} gün kaldı', 'vi': 'Còn {days} ngày',
+  },
+  'searchOnLanguagePlayer': {
+    'zh-Hans': '在语言学习器中搜索 →', 'zh-Hant': '在語言學習器中搜尋 →', 'ar': 'البحث في Language Player ←',
+    'de': 'Auf Language Player suchen →', 'es': 'Buscar en Language Player →', 'fr': 'Rechercher sur Language Player →',
+    'id': 'Cari di Language Player →', 'it': 'Cerca su Language Player →', 'ja': '言語プレイヤーで検索 →',
+    'ko': 'Language Player에서 검색 →', 'nl': 'Zoeken op Language Player →', 'pl': 'Szukaj w Language Player →',
+    'pt': 'Pesquisar no Language Player →', 'ru': 'Искать в Language Player →', 'th': 'ค้นหาใน Language Player →',
+    'tr': "Language Player'de ara →", 'vi': 'Tìm trên Language Player →',
+  },
+  'lookupFailed': {
+    'zh-Hans': '查询失败', 'zh-Hant': '查詢失敗', 'ar': 'فشل البحث',
+    'de': 'Suche fehlgeschlagen', 'es': 'La búsqueda falló', 'fr': 'La recherche a échoué',
+    'id': 'Pencarian gagal', 'it': 'Ricerca non riuscita', 'ja': '検索に失敗しました',
+    'ko': '검색 실패', 'nl': 'Zoeken mislukt', 'pl': 'Wyszukiwanie nie powiodło się',
+    'pt': 'A pesquisa falhou', 'ru': 'Поиск не удался', 'th': 'การค้นหาล้มเหลว',
+    'tr': 'Arama başarısız oldu', 'vi': 'Tra cứu thất bại',
+  },
+  'explainFailed': {
+    'zh-Hans': '解释失败', 'zh-Hant': '解釋失敗', 'ar': 'فشل الشرح',
+    'de': 'Erklärung fehlgeschlagen', 'es': 'La explicación falló', 'fr': "L'explication a échoué",
+    'id': 'Penjelasan gagal', 'it': 'Spiegazione non riuscita', 'ja': '説明に失敗しました',
+    'ko': '설명 실패', 'nl': 'Uitleg mislukt', 'pl': 'Wyjaśnienie nie powiodło się',
+    'pt': 'A explicação falhou', 'ru': 'Объяснение не удалось', 'th': 'คำอธิบายล้มเหลว',
+    'tr': 'Açıklama başarısız oldu', 'vi': 'Giải thích thất bại',
+  },
+  'examplesFailed': {
+    'zh-Hans': '示例获取失败', 'zh-Hant': '範例取得失敗', 'ar': 'فشل الحصول على الأمثلة',
+    'de': 'Beispiele konnten nicht geladen werden', 'es': 'No se pudieron cargar los ejemplos', 'fr': "L'obtention d'exemples a échoué",
+    'id': 'Gagal memuat contoh', 'it': 'Impossibile caricare gli esempi', 'ja': '例文の取得に失敗しました',
+    'ko': '예시 로드 실패', 'nl': 'Voorbeelden laden mislukt', 'pl': 'Nie udało się załadować przykładów',
+    'pt': 'Falha ao carregar exemplos', 'ru': 'Не удалось загрузить примеры', 'th': 'โหลดตัวอย่างไม่สำเร็จ',
+    'tr': 'Örnekler yüklenemedi', 'vi': 'Không thể tải ví dụ',
+  },
+  'followUpFailed': {
+    'zh-Hans': '追问失败', 'zh-Hant': '追問失敗', 'ar': 'فشل المتابعة',
+    'de': 'Folgeanfrage fehlgeschlagen', 'es': 'La consulta de seguimiento falló', 'fr': 'Le suivi a échoué',
+    'id': 'Pertanyaan lanjutan gagal', 'it': "La domanda di approfondimento non è riuscita", 'ja': 'フォローアップに失敗しました',
+    'ko': '후속 질문 실패', 'nl': 'Vervolgvraag mislukt', 'pl': 'Pytanie uzupełniające nie powiodło się',
+    'pt': 'A pergunta de acompanhamento falhou', 'ru': 'Уточняющий вопрос не удался', 'th': 'คำถามต่อเนื่องล้มเหลว',
+    'tr': 'Takip sorusu başarısız oldu', 'vi': 'Câu hỏi tiếp theo thất bại',
+  },
+  'noSubtitleExamples': {
+    'zh-Hans': '未找到字幕示例', 'zh-Hant': '找不到字幕範例', 'ar': 'لم يتم العثور على أمثلة من الترجمة',
+    'de': 'Keine Untertitel-Beispiele gefunden', 'es': 'No se encontraron ejemplos de subtítulos', 'fr': 'Aucun exemple de sous-titres trouvé',
+    'id': 'Tidak ada contoh subtitle yang ditemukan', 'it': 'Nessun esempio di sottotitolo trovato', 'ja': '字幕の例が見つかりません',
+    'ko': '자막 예시를 찾을 수 없습니다', 'nl': 'Geen voorbeelden uit ondertitels gevonden', 'pl': 'Nie znaleziono przykładów z napisów',
+    'pt': 'Nenhum exemplo de legendas encontrado', 'ru': 'Примеры из субтитров не найдены', 'th': 'ไม่พบตัวอย่างจากคำบรรยาย',
+    'tr': 'Altyazı örneği bulunamadı', 'vi': 'Không tìm thấy ví dụ từ phụ đề',
   },
 };
 

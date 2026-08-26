@@ -393,7 +393,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     search().catch((err) => {
       if (!cancelled && err.name !== 'AbortError') {
         logerr('Dictionary lookup error:', err);
-        setError(err?.message ?? 'Lookup failed');
+        setError(err?.message ?? t('lookupFailed'));
         setLoading(false);
       }
     });
@@ -450,7 +450,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       const text = data.response || data.text || data.result || JSON.stringify(data);
       setExplainText(text);
     } catch (err: any) {
-      setExplainError(err?.message || 'Explain failed');
+      setExplainError(err?.message || t('explainFailed'));
     } finally {
       setExplainLoading(false);
     }
@@ -474,7 +474,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         const lines = Array.isArray(results)
           ? results.flatMap((result: any) => String(result.subs_l2 || '').split('\n').slice(0, 2)).filter(Boolean)
           : [];
-        if (lines.length === 0) throw new Error('No subtitle examples found');
+        if (lines.length === 0) throw new Error(t('noSubtitleExamples'));
         const prompt = `${t('subsAiExamples', [String(results.length), language, word])}\n\n${lines.join('\n')}`;
         const res = await apiFetch(`${API_BASE}/chatgpt`, {
           method: 'POST',
@@ -486,7 +486,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         setExplainText(data.response || data.text || data.result || JSON.stringify(data));
         setUsedFollowUps((current) => current.includes(kind) ? current : [...current, kind]);
       } catch (err: any) {
-        setExplainError(err?.message || 'Examples failed');
+        setExplainError(err?.message || t('examplesFailed'));
       } finally {
         setFollowUpLoading(null);
       }
@@ -528,7 +528,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       setExplainText(data.response || data.text || data.result || JSON.stringify(data));
       setUsedFollowUps((current) => current.includes(kind) ? current : [...current, kind]);
     } catch (err: any) {
-      setExplainError(err?.message || 'Follow-up failed');
+      setExplainError(err?.message || t('followUpFailed'));
     } finally {
       setFollowUpLoading(null);
     }
@@ -627,19 +627,19 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
         {error && (
           <div className="lpv-dict-error">
-            Could not load dictionary entries: {error}
+            {t('dictLoadFailed', [error])}
           </div>
         )}
 
         {!loading && !error && entries.length === 0 && (
           <div className="lpv-dict-empty">
-            No dictionary entries found for &ldquo;{token.text}&rdquo;.
+            <span>{t('noDictionaryEntry', [token.text])}</span>
             {token.lemmas.length > 0 && (
-              <span> Tried lemmas: {token.lemmas.map((l) => l.lemma).join(', ')}.</span>
+              <span> {t('triedLemmas')}: {token.lemmas.map((l) => l.lemma).join(', ')}</span>
             )}
             <div className="lpv-dict-empty-link">
               <a href={searchUrl} target="_blank" rel="noopener noreferrer">
-                Search on Language Player →
+                {t('searchOnLanguagePlayer')}
               </a>
             </div>
           </div>
