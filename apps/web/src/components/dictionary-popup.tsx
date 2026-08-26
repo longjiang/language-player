@@ -18,6 +18,7 @@ import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
+import { suppressReaderTap } from '@/lib/reader-tap-guard';
 import { getCachedEntries, setCachedEntries, subscribeToCache, getL1CachedEntries, setL1CachedEntry } from '@/lib/dictionary-cache';
 import { lookupL1Text } from '@/lib/l1-lookup';
 import { WordList } from '@/components/dictionary/word-list';
@@ -457,7 +458,7 @@ export function DictionaryPopup({
   };
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) { setDialogOpen(false); setTimeout(onClose, 200); } }}>
+    <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) { suppressReaderTap(); setDialogOpen(false); setTimeout(onClose, 200); } }}>
       <DialogContent
         showCloseButton={false}
         className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4 gap-1"
@@ -485,7 +486,7 @@ export function DictionaryPopup({
             )}
           </div>
           <button
-            onClick={onClose}
+            onClick={() => { suppressReaderTap(); onClose(); }}
             className="rounded-full p-1 hover:bg-muted"
           >
             <X className="h-4 w-4" />
