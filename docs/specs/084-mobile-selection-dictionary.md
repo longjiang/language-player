@@ -17,7 +17,7 @@ Mobile is **not** a blank slate:
 
 - **Phrase retokenization is already ported** — `TokenizedText` calls shared `mergePhraseTokens` (`apps/mobile/components/TokenizedText.tsx:452`), so saved multi-token phrases already collapse into atomic tokens.
 - **Sentence context helpers exist** — `sentenceContaining(text, offset, locale)` is in shared utils (`packages/utils/src/sentence.ts:149`); the token popup already uses its sibling `sentenceForToken`.
-- **The popup needs no anchoring** — mobile `DictionaryPopup` is a modal (bottom sheet on narrow, centered dialog on md+), so the web hook's entire selection-rect machinery (`use-selection-popup.ts` range rect) is unnecessary.
+- **The popup needs no anchoring** — mobile `DictionaryPopup` is a modal (bottom sheet on narrow, **top-anchored dialog on md+** — fixed `insets.top + 64`, grows downward; see SPEC-052), so the web hook's entire selection-rect machinery (`use-selection-popup.ts` range rect) is unnecessary.
 
 The genuine work is **native text selection on RN**, which differs from the browser in three platform-specific ways. All three are analyzed below (Tasks 1–3); the JS wiring and the Phrases section are Tasks 4–5. Expo Go is explicitly out of scope — dev/release builds only (user decision; SPEC-048 §1.4 already bans Expo Go for physical devices).
 
