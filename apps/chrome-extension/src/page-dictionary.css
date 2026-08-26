@@ -11,6 +11,23 @@
   --lpv-frame-secondary: hsl(var(--secondary));
 }
 
+/* The .lpv-dict-* base rules loaded from content.css use --lpv-* HSL tokens.
+ * content.css resolves those with its own prefers-color-scheme, which does NOT
+ * follow the extension's light/dark choice in this iframe. Point them at the
+ * frame's semantic tokens so the card stays theme-consistent. */
+:root {
+  --lpv-background: var(--background);
+  --lpv-foreground: var(--foreground);
+  --lpv-card: var(--card);
+  --lpv-primary: var(--primary);
+  --lpv-primary-foreground: var(--primary-foreground);
+  --lpv-secondary: var(--secondary);
+  --lpv-muted-foreground: var(--muted-foreground);
+  --lpv-border: var(--border);
+  --lpv-warning: var(--accent);
+  --lpv-destructive: var(--destructive);
+}
+
 html,
 body,
 #lpv-page-dictionary-root {
