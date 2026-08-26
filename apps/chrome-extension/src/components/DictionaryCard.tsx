@@ -11,7 +11,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
-import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
+import { formatProficiencyLevel, primaryScale, shouldShowLevel, isHanLanguage, glyphLangTag } from '@langplayer/shared';
 import { baseCode, formatPronunciation, getCachedEntries, setCachedEntries, getL1CachedEntries, setL1CachedEntry } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
@@ -112,6 +112,36 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     .filter((level) => level.numeric != null && shouldShowLevel(level, l2Base))
     .map((level) => formatProficiencyLevel(level, primaryScale(l2Base)));
 
+  // ── Alternate script display (matches apps/web useScriptPreference) ──────
+  // Chinese (zh/yue/lzh) shows the opposite script to the user's
+  // traditional/simplified preference (swapping head ↔ alternate); Vietnamese
+  // and Korean show chữ Hán / hanja from han_script.han. `useTraditional` is
+  // read from storage (set by the language picker), so this resolves on load.
+  const [useTraditional, setUseTraditional] = useState(false);
+  useEffect(() => {
+    chrome.storage.local.get('useTraditional').then((result) => {
+      setUseTraditional(result.useTraditional === true);
+    }).catch(() => {});
+  }, []);
+  const isHanScript = l2Base === 'vi' || l2Base === 'ko';
+  const isChinese = isHanLanguage(l2Base);
+  const glyphLang = glyphLangTag(l2Base, useTraditional);
+  // apply(): for Chinese + useTraditional, make the traditional form the head.
+  let displayHead = entry.head;
+  let displayAlternate: string | null = entry.alternate ?? null;
+  if (useTraditional && isChinese && displayAlternate && displayAlternate !== displayHead) {
+    const swapped = displayHead;
+    displayHead = displayAlternate;
+    displayAlternate = swapped;
+  }
+  // getAlternateScript(): pick the alternate form to show next to the head.
+  if (isHanScript && entry.han_script?.han) {
+    displayAlternate = entry.han_script.han;
+  } else if (!(isChinese && displayAlternate && displayAlternate !== displayHead)) {
+    // Non-Chinese/non-han-script languages have no alternate to show.
+    displayAlternate = null;
+  }
+
   const isSaved = isLoggedIn && (savedWords[l2Code] || []).some(w => w.id === entry.id);
 
   const handleSave = useCallback(async (e: React.MouseEvent) => {
@@ -162,11 +192,11 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const handleSpeak = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
     window.speechSynthesis?.cancel();
-    const utterance = new SpeechSynthesisUtterance(entry.head);
+    const utterance = new SpeechSynthesisUtterance(displayHead);
     utterance.lang = l2Base;
     utterance.rate = 0.75;
     window.speechSynthesis?.speak(utterance);
-  }, [entry.head, l2Base]);
+  }, [displayHead, l2Base]);
 
   const openEntry = useCallback(() => {
     window.open(webAppUrl, '_blank', 'noopener,noreferrer');
@@ -182,7 +212,10 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     >
       <div className="lpv-dict-entry">
         <div className="lpv-dict-entry-header">
-          <span className="lpv-dict-head">{entry.head}</span>
+          <span className="lpv-dict-head" lang={glyphLang}>{displayHead}</span>
+          {displayAlternate && (
+            <span className="lpv-dict-alternate" lang={glyphLang}>{displayAlternate}</span>
+          )}
           <button className="lpv-dict-speak" type="button" onClick={handleSpeak} title={t('speak')} aria-label={t('speak')}>
             <Volume2 size={14} />
           </button>

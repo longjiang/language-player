@@ -978,6 +978,13 @@ body.lpv-panel-open disney-web-player-ui {
   color: hsl(var(--lpv-muted-foreground));
 }
 
+/* Alternate script form (traditional/simplified, chữ Hán, hanja) shown next
+   to the headword — matches apps/web dictionary-entry-card. */
+.lpv-dict-alternate {
+  font-size: 12px;
+  color: hsl(var(--lpv-muted-foreground));
+}
+
 .lpv-dict-pos {
   font-size: 11px;
   color: hsl(var(--lpv-muted-foreground));
