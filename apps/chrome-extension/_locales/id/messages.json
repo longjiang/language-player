@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Tingkatkan ke Pro untuk transkrip lengkap, contoh kata tanpa batas, dan lainnya."
   },
+  "freeSubtitleLimitReached": {
+    "message": "Anda telah mencapai akhir baris subtitle gratis."
+  },
   "confirm": {
     "message": "Konfirmasi"
   },

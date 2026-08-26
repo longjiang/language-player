@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Nâng cấp lên Pro để có bản ghi đầy đủ, ví dụ từ không giới hạn và nhiều hơn nữa."
   },
+  "freeSubtitleLimitReached": {
+    "message": "Bạn đã đến cuối các dòng phụ đề miễn phí."
+  },
   "confirm": {
     "message": "Xác nhận"
   },

@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "قم بالترقية إلى برو للحصول على نصوص كاملة، وأمثلة غير محدودة للكلمات، والمزيد."
   },
+  "freeSubtitleLimitReached": {
+    "message": "لقد وصلت إلى نهاية أسطر الترجمة المجانية."
+  },
   "confirm": {
     "message": "تأكيد"
   },

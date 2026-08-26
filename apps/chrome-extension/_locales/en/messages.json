@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Upgrade to Pro for complete transcripts, unlimited word examples, and more."
   },
+  "freeSubtitleLimitReached": {
+    "message": "You've reached the end of free subtitle lines."
+  },
   "confirm": {
     "message": "Confirm"
   },

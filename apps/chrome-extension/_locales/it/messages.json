@@ -207,6 +207,9 @@
   "upgradeToProBanner": {
     "message": "Passa a Pro per trascrizioni complete, esempi di parole illimitati e altro."
   },
+  "freeSubtitleLimitReached": {
+    "message": "Hai raggiunto la fine delle righe di sottotitoli gratuiti."
+  },
   "confirm": {
     "message": "Conferma"
   },
