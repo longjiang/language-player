@@ -41,7 +41,12 @@ const YT_ASR_LEAD_OFFSET_SEC = 2.0;
 
 /** Shift every cue earlier by `offsetSec` so ASR captions align with the audio
  *  the speaker utters. Subtracting a constant preserves inter-cue gaps (no new
- *  overlaps); cues that would collapse to zero/negative length are dropped. */
+ *  overlaps); cues that would collapse to zero/negative length are dropped.
+ *
+ *  ASR cues also overlap (rolling recognition windows): the previous line's
+ *  `end` can run past the next line's `start`. After the shift, clamp each
+ *  `end` to the next `start` so `findActiveCueIndex` picks exactly one line —
+ *  otherwise clicking a line seeks to the previous overlapping line. */
 function applyASRSubtitleOffset(cues, offsetSec) {
   if (!Array.isArray(cues) || !offsetSec) return cues;
   const shifted = [];
@@ -50,7 +55,13 @@ function applyASRSubtitleOffset(cues, offsetSec) {
     const end = Math.max(0, cue.end - offsetSec);
     if (end - start > 0.02) shifted.push({ start, end, text: cue.text });
   }
-  return shifted;
+  shifted.sort((a, b) => a.start - b.start);
+  for (let i = 0; i < shifted.length - 1; i++) {
+    if (shifted[i].end > shifted[i + 1].start) {
+      shifted[i].end = shifted[i + 1].start - 0.001;
+    }
+  }
+  return shifted.filter((c) => c.end - c.start > 0.02);
 }
 
 /** Trace logging helper — labels each step with a unique phase tag so
