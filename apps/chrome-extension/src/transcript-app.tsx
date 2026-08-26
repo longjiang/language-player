@@ -552,22 +552,25 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             localeVersion={localeVersion}
           />
         ))}
-      </div>
 
-      {/* ADR-0034: free users get 10 lines, then an upgrade prompt */}
-      {!isPro && cues.length > FREE_TRANSCRIPT_LINES && (
-        <div className="lpv-pro-banner">
-          <span>{t('upgradeToProBanner')}</span>
-          <a
-            href={`${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/go-pro`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lpv-pro-banner-link"
-          >
-            {t('upgradeToPro')}
-          </a>
-        </div>
-      )}
+        {/* ADR-0034: free users get 10 lines, then an upgrade prompt. Rendered
+            INSIDE the scrollable cue list so it sits immediately below the last
+            line (and scrolls with it) rather than being pinned to the bottom of
+            the side panel above the control bar. */}
+        {!isPro && cues.length > FREE_TRANSCRIPT_LINES && (
+          <div className="lpv-pro-banner">
+            <span>{t('upgradeToProBanner')}</span>
+            <a
+              href={`${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/go-pro`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lpv-pro-banner-link"
+            >
+              {t('upgradeToPro')}
+            </a>
+          </div>
+        )}
+      </div>
 
       {/* Bottom bar — phonetics | translation | text size | progress */}
       <div className="lpv-bottom-bar">
