@@ -140,6 +140,7 @@
         "sign_in": "サインイン",
         "sign_out": "ログアウト",
         "sign_up": "登録",
+        "skip": "スキップ",
         "speak": "読み上げ",
         "start_learning": "学習を開始する",
         "start_learning_lang": "{name}の学習を始める",
@@ -1264,6 +1265,7 @@
         "answer_correct": "正解",
         "answer_incorrect": "不正解",
         "context_label": "文脈",
+        "diagnostic": "診断",
         "easy": "簡単",
         "easy_hint": "即座に思い出せる",
         "good": "良い",
@@ -1278,7 +1280,10 @@
         "srs_new": "新しい",
         "srs_review": "{count, plural, other {# 回復習済み}}",
         "start_test": "テストを開始",
-        "test_mode": "テストモード"
+        "test_error": "このテストの生成中に問題が発生しました。",
+        "test_mode": "テストモード",
+        "test_skipped": "スキップ済み",
+        "trying_again": "問題が発生しました。もう一度試しています…"
     },
     "setting": {
         "all_words": "すべての単語",

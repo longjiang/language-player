@@ -136,6 +136,7 @@
         "sign_in": "登录",
         "sign_out": "退出登录",
         "sign_up": "注册",
+        "skip": "跳过",
         "speak": "朗读",
         "start_learning": "开始学习",
         "start_learning_lang": "开始学习{name}",
@@ -1241,6 +1242,7 @@
         "answer_correct": "正确",
         "answer_incorrect": "错误",
         "context_label": "上下文",
+        "diagnostic": "诊断",
         "easy": "简单",
         "easy_hint": "立即想起",
         "good": "良好",
@@ -1255,7 +1257,10 @@
         "srs_new": "新",
         "srs_review": "{count, plural, other {已复习 # 次}}",
         "start_test": "开始测试",
-        "test_mode": "测试模式"
+        "test_error": "生成此测试时出现问题。",
+        "test_mode": "测试模式",
+        "test_skipped": "已跳过",
+        "trying_again": "出现问题，正在重试…"
     },
     "setting": {
         "all_words": "所有单词",

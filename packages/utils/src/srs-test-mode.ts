@@ -1,4 +1,6 @@
 /** Multiple-choice test scoring shared by web and mobile review screens. */
+import { languageNameFromCode } from './language';
+
 export type TestQuestionKind = 'definition' | 'pronunciation';
 
 export interface SrsTestQuestion {
@@ -87,6 +89,15 @@ export const DEEP_ORTHOGRAPHY_LANGUAGES = new Set([
   'zh', 'yue', 'ja', 'ko', 'ar', 'fa', 'he', 'hi', 'th', 'my', 'km', 'lo', 'ta', 'te', 'ml', 'bn',
 ]);
 
+/**
+ * Should this card include a pronunciation test?
+ *
+ * `word` is the **surface form as it appears in the context sentence** (may
+ * be inflected): for Japanese, a kana-only surface (e.g. しかるべき) already
+ * reveals its reading in the context, so the test is suppressed even when
+ * the lemma (然るべき) contains kanji — the learner reads the surface, not
+ * the lemma. Other deep-orthography L2s always test pronunciation.
+ */
 export function needsPronunciationTest(l2Code: string, word?: string): boolean {
   const base = (l2Code.split('-')[0] ?? '').toLowerCase();
   if (!DEEP_ORTHOGRAPHY_LANGUAGES.has(base)) return false;
@@ -96,9 +107,86 @@ export function needsPronunciationTest(l2Code: string, word?: string): boolean {
   return true;
 }
 
+/**
+ * Ordered test kinds for a card, pronunciation before definition.
+ *
+ * The pronunciation (reading) question comes first so the learner recalls the
+ * sound of the word before the meaning; the definition question follows, then
+ * the card is rated. Cards whose L2/orthography does not reveal pronunciation
+ * get a single definition test only.
+ */
+export function getTestKinds(l2Code: string, word?: string): TestQuestionKind[] {
+  return needsPronunciationTest(l2Code, word)
+    ? ['pronunciation', 'definition']
+    : ['definition'];
+}
+
+/** Minimal saved-word shape the review pages pass to the form helpers below. */
+export interface SrsWordFormInfo {
+  head?: string;
+  forms?: string[];
+  context?: { form?: string };
+  instances?: Array<{ form?: string }>;
+}
+
+/**
+ * The surface form as it appears in the saved context sentence (may be
+ * inflected, e.g. 押し切られ). Used for the Japanese pronunciation-test
+ * presence check: the learner reads this exact form in the context.
+ */
+export function surfaceFormOf(word: SrsWordFormInfo | undefined, fallback: string): string {
+  if (!word) return fallback;
+  return (
+    word.context?.form
+    ?? word.instances?.[word.instances.length - 1]?.form
+    ?? fallback
+  );
+}
+
+/**
+ * The lemma (dictionary/head form) of a saved word, e.g. 押し切る for a
+ * saved surface 押し切られ. The pronunciation test targets the lemma, never
+ * the surface form — the learner is asked to recall the canonical reading.
+ */
+export function lemmaFormOf(word: SrsWordFormInfo | undefined, fallback: string): string {
+  if (!word) return fallback;
+  const head = word.head;
+  if (typeof head === 'string' && head && head !== '?') return head;
+  const first = word.forms?.[0];
+  return typeof first === 'string' && first && first !== '?' ? first : fallback;
+}
+
 /** Normalize an answer for duplicate-choice detection without changing display text. */
 export function normalizeTestChoice(choice: string): string {
   return choice.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+}
+
+/**
+ * The ground-truth reading of a word for a pronunciation question.
+ *
+ * For EDICT (Japanese) the `pronunciation` field is ROMAJI (e.g. "soru"), not
+ * the kana reading the test needs — the reading lives in `alternate` / the
+ * `phonetic_detail.kana`. For CEDICT (Chinese) `pronunciation` is the pinyin,
+ * so we fall back to it. Prefer the script-appropriate field, then the entry
+ * `pronunciation`, then the head word itself.
+ */
+export function pronunciationReadingOf(entry: {
+  alternate?: string | null;
+  pronunciation?: string;
+  phonetic_detail?: { kana?: string; pinyin?: string; romaji?: string } | null;
+} | null | undefined, l2Code: string): string {
+  if (!entry) return '';
+  const base = (l2Code.split('-')[0] ?? '').toLowerCase();
+  // Japanese: the kana reading is `alternate`, or the phonetic_detail.kana.
+  if (base === 'ja') {
+    const kana = entry.phonetic_detail?.kana ?? entry.alternate ?? '';
+    if (kana) return kana.trim();
+  }
+  if (base === 'zh' || base === 'yue') {
+    const pinyin = entry.phonetic_detail?.pinyin ?? entry.pronunciation ?? '';
+    if (pinyin) return pinyin.trim();
+  }
+  return (entry.pronunciation ?? '').trim();
 }
 
 /**
@@ -133,9 +221,53 @@ export function validateSrsPronunciationChoices(question: {
 }
 
 /**
+ * Localized prompt wording for the pronunciation question. The app composes the
+ * question text deterministically (always the headword's reading) so the LLM is
+ * never asked to phrase it — it only supplies distractors. Fallback is English.
+ */
+const PRONUNCIATION_QUESTION_I18N: Record<string, string> = {
+  en: 'How is "{word}" pronounced?',
+  'zh-Hans': '「{word}」怎么读？',
+  'zh-Hant': '「{word}」怎麼讀？',
+  ja: '「{word}」はどう読みますか？',
+  ko: '"{word}"은(는) 어떻게 읽나요?',
+  es: '¿Cómo se pronuncia "{word}"?',
+  fr: 'Comment prononce-t-on « {word} » ?',
+  de: 'Wie wird "{word}" ausgesprochen?',
+  it: 'Come si pronuncia "{word}"?',
+  pt: 'Como se pronuncia "{word}"?',
+  ru: 'Как произносится «{word}»?',
+  ar: 'كيف تُنطق «{word}»؟',
+  th: 'ออกเสียง "{word}" อย่างไร?',
+  vi: 'Từ "{word}" phát âm thế nào?',
+  id: 'Bagaimana cara membaca "{word}"?',
+  nl: 'Hoe wordt "{word}" uitgesproken?',
+  pl: 'Jak wymawia się "{word}"?',
+  tr: '"{word}" nasıl okunur?',
+};
+
+/**
+ * Deterministic, app-owned question text for a pronunciation test — always
+ * probes the headword's reading, never a compound's components or the surface
+ * form. This is what keeps the question predictable and on-spec.
+ */
+export function buildPronunciationQuestionText(word: string, l1Code: string): string {
+  const base = (l1Code.split('-')[0] ?? '').toLowerCase();
+  const template = PRONUNCIATION_QUESTION_I18N[base] ?? PRONUNCIATION_QUESTION_I18N.en ?? 'How is "{word}" pronounced?';
+  return template.replace('{word}', word);
+}
+
+/**
  * Build the model instruction for a contextual question. The model must return
  * strict JSON so both clients can render the same question and randomize only
  * the answer order locally.
+ *
+ * Kept intentionally terse and language-specific: the opening names the L2 and
+ * the answer notation is chosen from the L2 (hiragana for Japanese, pinyin for
+ * Chinese), so a Japanese prompt never mentions Chinese rules and vice versa.
+ * Each client-side rejection (bad JSON, wrong kind, blank question, non-hiragana,
+ * duplicate choices, substring "obvious wrongs", derived forms) is prevented by
+ * one short directive instead of defensive paragraphs.
  */
 export function buildSrsQuestionPrompt(input: {
   word: string;
@@ -146,41 +278,44 @@ export function buildSrsQuestionPrompt(input: {
   definition?: string;
   pronunciation?: string;
 }): string {
-  const context = input.contextSentence?.trim() || '(No context sentence is available.)';
-  const target = input.kind === 'definition' ? 'meaning/definition' : 'pronunciation/reading';
-  const taskRules = input.kind === 'definition'
-    ? [
-      'This is the DEFINITION question. Ask what the target word means in this specific sentence.',
-      'All five answer-related fields must be meanings/definitions in the learner UI language. Do not ask for or return pronunciation, transliteration, kana, romaji, pinyin, or readings.',
-    ]
-    : [
-      'This is the PRONUNCIATION question. Ask how the target word is pronounced/read, using the context only to identify the intended word and sense.',
-      'For Japanese, correct_answer and every confounder MUST each be written only in hiragana characters U+3040–U+309F, plus the long-vowel mark ー and spaces. Convert katakana readings to hiragana before returning them. Never use romaji, Latin letters, kanji, katakana, definitions, translations, or explanations in Japanese pronunciation choices. For Chinese, use pinyin or the appropriate standard romanization. Do not return definitions, translations, or explanations.',
-      'MIXED KANA/KANJI WORDS: when the target word mixes kana and kanji (e.g. 憑き物), the parts written in kana (e.g. き) are fixed — every confounder MUST keep those written-kana parts identical to the correct reading. Vary ONLY the reading of the kanji part(s), using real or plausible readings of those same kanji characters (e.g. for 憑き物 = つきもの: つきぶつ, つきもつ, つきもち), or real words that share the same written-kana part. Never change, drop, or reorder the written-kana part.',
-      'Never form a confounder by appending, prepending, or deleting characters from the correct reading (e.g. for the correct つきもの, never つきものぬ, つきものだ, or もの). No confounder may contain the correct reading as a substring, and the correct reading may not contain a confounder as a substring.',
-    ];
+  const context = input.contextSentence?.trim() || '(No context available.)';
+  const baseL2 = (input.l2Code.split('-')[0] ?? '').toLowerCase();
+  const langName = languageNameFromCode(baseL2);
+
+  if (input.kind === 'definition') {
+    return [
+      `Write a multiple-choice quiz that tests the meaning of a ${langName} phrase.`,
+      'Ask what the target word means in THIS sentence.',
+      `correct_answer + 3 confounders: concise ${input.l1Code} definitions; all 4 distinct.`,
+      'Confounders: plausible but clearly wrong for this sentence — never synonyms or other acceptable glosses.',
+      `Word: ${input.word}`,
+      `Context: ${context}`,
+      input.definition ? `Ground truth: ${input.definition}` : '',
+      `Output valid JSON only, no markdown: {"kind":"definition","question":"<in ${input.l1Code}>","correct_answer":"...","confounders":["...","...","..."]}`,
+    ].filter(Boolean).join('\n');
+  }
+
+  // Pronunciation — the answer notation is language-specific. The correct
+  // answer is supplied by the app (the headword's ground-truth reading), so the
+  // model returns ONLY 3 distractor readings. The question text is composed by
+  // the app via buildPronunciationQuestionText(), never by the model.
+  const notation = baseL2 === 'ja'
+    ? 'hiragana only (katakana→hiragana); no romaji/kanji'
+    : baseL2 === 'zh' || baseL2 === 'yue'
+      ? 'pinyin with tone marks; no Chinese characters'
+      : `the standard ${input.l2Code} script`;
+  const extraRule = baseL2 === 'ja'
+    ? ' For mixed kana+kanji words, keep the written kana identical in every choice and vary only the kanji reading.'
+    : '';
+
   return [
-    'Generate one multiple-choice question for a language-learning SRS review card.',
-    `Test the ${target} of the target word in the context sentence.`,
-    ...taskRules,
-    `Target word: ${input.word}`,
-    `Context sentence: ${context}`,
-    `Learner UI language (L1): ${input.l1Code}`,
-    `Learning language (L2): ${input.l2Code}`,
-    input.definition ? `Known correct definition: ${input.definition}` : '',
-    input.pronunciation ? `Known correct pronunciation: ${input.pronunciation}` : '',
-    input.kind === 'definition'
-      ? 'Make the question explicitly refer to the sentence above, for example: “What does this word mean in the text shown above?”'
-      : 'Make the question explicitly ask for the target word’s pronunciation/reading, for example: “How is this word pronounced in the text shown above?”',
-    `Return JSON only with exactly these fields: kind, question, correct_answer, confounders. Set kind to exactly "${input.kind}".`,
-    'question must be a natural question in L1. For definition questions, correct_answer must be one concise answer in L1; for pronunciation questions, correct_answer must be the standard L2 pronunciation only.',
-    'confounders must contain exactly three plausible but incorrect answers of the same type and length as the correct answer.',
-    input.kind === 'definition'
-      ? 'There must be exactly one defensible answer for this exact sentence. Confounders must be clearly incompatible with the sentence, not synonyms, near-synonyms, paraphrases, broader or narrower versions, translations that could also fit, or alternate acceptable glosses of the target word. Do not use two answers that a native speaker could reasonably accept.'
-      : 'There must be exactly one valid pronunciation for the target word in this sentence. Confounders must be readings of other words or deliberate near-misses, never alternate valid readings of the target word.',
-    'Before returning JSON, evaluate every choice against the context sentence. If a confounder could also answer the question reasonably, discard it and generate a different one.',
-    'Every confounder must be distinct from the correct_answer and from every other confounder after trimming, collapsing whitespace, and ignoring letter case. Never repeat, paraphrase only by formatting, or include the correct answer among the confounders.',
-    'Before returning JSON, verify that correct_answer plus the three confounders are four unique strings and that only correct_answer fits the context.',
-    'Do not include answer labels, markdown, commentary, or the target word in the answer choices.',
+    `Write a multiple-choice quiz that tests the pronunciation of a ${langName} phrase.`,
+    'The correct_answer is given. Generate ONLY 3 confounder (wrong) readings — do NOT write a question, do NOT repeat the correct_answer.',
+    `3 confounders: ${notation}; exactly 3 distinct, none equal to the correct_answer.`,
+    'Confounders: plausible wrong readings or near-misses — never a valid reading of the target, never containing (or contained by) the correct_answer, and never derived/inflected forms of it.' + extraRule,
+    `Word: ${input.word}`,
+    `Context: ${context}`,
+    input.pronunciation ? `correct_answer (the headword's reading): ${input.pronunciation}` : '(No correct_answer supplied — pick the most plausible reading.)',
+    `Output valid JSON only, no markdown: {"kind":"pronunciation","confounders":["...","...","..."]}`,
   ].filter(Boolean).join('\n');
 }

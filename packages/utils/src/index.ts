@@ -105,14 +105,30 @@ export {
   testScoreToRating,
   scoreTestResult,
   needsPronunciationTest,
+  getTestKinds,
   DEEP_ORTHOGRAPHY_LANGUAGES,
   buildSrsQuestionPrompt,
+  buildPronunciationQuestionText,
+  pronunciationReadingOf,
   normalizeTestChoice,
   parseSrsQuestionResponse,
   isObviousPronunciationWrong,
   validateSrsPronunciationChoices,
+  surfaceFormOf,
+  lemmaFormOf,
 } from './srs-test-mode';
-export type { SrsTestQuestion, TestQuestionKind } from './srs-test-mode';
+export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo } from './srs-test-mode';
+export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
+export type {
+  SrsTestCacheStorage,
+  SrsTestDiagnostic,
+  SrsTestGenerationInput,
+  SrsTestManagerOptions,
+  SrsTestPriority,
+  SrsTestRequestParams,
+  SrsTestRequestResult,
+  SrsTestTransport,
+} from './srs-test-manager';
 export type { HighlightToken, KanaEntryForm } from './highlight-match';
 export { pickSavedEntry } from './saved-gloss';
 export {

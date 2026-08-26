@@ -140,6 +140,7 @@
         "sign_in": "로그인",
         "sign_out": "로그아웃",
         "sign_up": "가입하기",
+        "skip": "건너뛰기",
         "speak": "말하기",
         "start_learning": "학습 시작",
         "start_learning_lang": "{name} 학습 시작하기",
@@ -1264,6 +1265,7 @@
         "answer_correct": "정답",
         "answer_incorrect": "오답",
         "context_label": "문맥",
+        "diagnostic": "진단",
         "easy": "쉬움",
         "easy_hint": "즉시 기억",
         "good": "좋음",
@@ -1278,7 +1280,10 @@
         "srs_new": "새로 배우기",
         "srs_review": "{count, plural, other {#회 복습함}}",
         "start_test": "테스트 시작",
-        "test_mode": "테스트 모드"
+        "test_error": "이 테스트를 생성하는 중 문제가 발생했습니다.",
+        "test_mode": "테스트 모드",
+        "test_skipped": "건너뜀",
+        "trying_again": "문제가 발생했습니다. 다시 시도하는 중..."
     },
     "setting": {
         "all_words": "모든 단어",

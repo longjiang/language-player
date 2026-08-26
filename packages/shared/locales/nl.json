@@ -140,6 +140,7 @@
         "sign_in": "Inloggen",
         "sign_out": "Uitloggen",
         "sign_up": "Registreren",
+        "skip": "Overslaan",
         "speak": "Spreken",
         "start_learning": "Begin met leren",
         "start_learning_lang": "Begin met {name} leren",
@@ -1264,6 +1265,7 @@
         "answer_correct": "Correct",
         "answer_incorrect": "Onjuist",
         "context_label": "Context",
+        "diagnostic": "Diagnose",
         "easy": "Makkelijk",
         "easy_hint": "Directe herinnering",
         "good": "Goed",
@@ -1278,7 +1280,10 @@
         "srs_new": "nieuw",
         "srs_review": "{count, plural, one {1 keer herhaald} other {# keer herhaald}}",
         "start_test": "Test starten",
-        "test_mode": "Testmodus"
+        "test_error": "Er is een probleem opgetreden bij het genereren van deze test.",
+        "test_mode": "Testmodus",
+        "test_skipped": "Overgeslagen",
+        "trying_again": "Er is een probleem opgetreden, opnieuw proberen..."
     },
     "setting": {
         "all_words": "Alle woorden",

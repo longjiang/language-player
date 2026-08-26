@@ -262,6 +262,42 @@ describe('fsrs-scheduler: deck budgeting', () => {
     expect(getActiveNewCardIds(savedWords, cards, 3)).toEqual(['new', 'mid', 'old']);
   });
 
+  it('never lets cardless saved words occupy active-window slots', () => {
+    // 40 words have NEW cards; 40 NEWER saved words have no card yet (their
+    // daily budget was exhausted, so no card was created for them). The active
+    // window must still select the 40 real blue cards — otherwise the review
+    // queue would be empty while the header still counts 40 new cards.
+    const newerWords = Array.from({ length: 40 }, (_, i) => ({
+      id: `cardless-${i}`,
+      date: NOW + (i + 1) * 1000,
+    }));
+    const cardedWords = Array.from({ length: 40 }, (_, i) => ({
+      id: `carded-${i}`,
+      date: NOW - (40 - i) * 1000,
+    }));
+    const cards: Record<string, FsrsCard> = {};
+    for (let i = 0; i < 40; i++) cards[`carded-${i}`] = newCard(NOW);
+
+    const active = getActiveNewCardIds([...newerWords, ...cardedWords], cards, 40);
+    expect(active).toHaveLength(40);
+    for (const id of active) {
+      expect(cards[id]?.state).toBe(State.New);
+    }
+    expect(active.some((id) => id.startsWith('cardless-'))).toBe(false);
+  });
+
+  it('does not soft-deactivate blue cards displaced by cardless words', () => {
+    const carded = Array.from({ length: 40 }, (_, i) => ({
+      id: `carded-${i}`,
+      date: NOW - (40 - i) * 1000,
+    }));
+    const cards: Record<string, FsrsCard> = {};
+    for (let i = 0; i < 40; i++) cards[`carded-${i}`] = newCard(NOW);
+    const plan = planNewDeck(carded, cards, 40, NOW, 0);
+    expect(plan.toCreate).toEqual([]);
+    expect(plan.toRemove).toEqual([]);
+  });
+
   it('counts the remaining daily new-card budget', () => {
     const cards: Record<string, FsrsCard> = {
       new: newCard(NOW),
@@ -273,6 +309,45 @@ describe('fsrs-scheduler: deck budgeting', () => {
     // Older unrated cards still in the blue deck count against today's budget.
     const older = { ...newCard(NOW - 86_400_000), createdAt: NOW - 86_400_000 };
     expect(remainingNewCardsToday(savedWords, { old: older }, 2, NOW, 0)).toBe(1);
+  });
+
+  it('does not free a blue slot when a pre-existing new card is rated', () => {
+    // Two blue cards minted YESTERDAY fill today's budget of 2. Rating one
+    // today must not open a slot for a replacement card (SPEC-066: the blue
+    // count counts down and does not refill until the next local day).
+    const saved = [
+      { id: 'a', date: NOW - 86_400_000 },
+      { id: 'b', date: NOW - 86_400_000 },
+      { id: 'c', date: NOW - 86_400_000 }, // cardless — the refill candidate
+    ];
+    const cards: Record<string, FsrsCard> = {
+      a: { ...newCard(NOW - 86_400_000), createdAt: NOW - 86_400_000 },
+      b: { ...newCard(NOW - 86_400_000), createdAt: NOW - 86_400_000 },
+    };
+    expect(remainingNewCardsToday(saved, cards, 2, NOW, 0)).toBe(0);
+
+    // User rates 'a' today (its first rating — it was still new at day start).
+    const cardA = cards.a!;
+    const ratedA = rate(cardA, 'good', NOW);
+    expect(ratedA.createdAt).toBe(NOW - 86_400_000);
+    const afterCards = { ...cards, a: ratedA };
+    expect(remainingNewCardsToday(saved, afterCards, 2, NOW, 0)).toBe(0);
+    // planNewDeck must not mint 'c' as a replacement.
+    expect(planNewDeck(saved, afterCards, 2, NOW, 0).toCreate).toEqual([]);
+
+    // A SECOND rating today (e.g. graduating a learning step) must also keep
+    // the slot occupied — the budget never frees up during the local day.
+    const ratedA2 = rate(ratedA, 'good', NOW + 10 * 60_000);
+    const afterCards2 = { ...cards, a: ratedA2 };
+    expect(remainingNewCardsToday(saved, afterCards2, 2, NOW, 0)).toBe(0);
+    expect(planNewDeck(saved, afterCards2, 2, NOW, 0).toCreate).toEqual([]);
+
+    // The slot DOES free up on the next local day: 'a' was rated yesterday
+    // (before tomorrow's day start), so only the still-new 'b' keeps a slot
+    // and the cardless 'c' becomes mintable again.
+    const tomorrow = NOW + 86_400_000;
+    expect(remainingNewCardsToday(saved, afterCards2, 2, tomorrow, 0)).toBe(1);
+    expect(planNewDeck(saved, afterCards2, 2, tomorrow, 0).toCreate).toEqual(['c']);
   });
 });
 

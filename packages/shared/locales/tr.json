@@ -140,6 +140,7 @@
         "sign_in": "Oturum Aç",
         "sign_out": "Çıkış yap",
         "sign_up": "Kaydol",
+        "skip": "Atla",
         "speak": "Konuş",
         "start_learning": "Öğrenmeye Başla",
         "start_learning_lang": "{name} öğrenmeye başla",
@@ -1264,6 +1265,7 @@
         "answer_correct": "Doğru",
         "answer_incorrect": "Yanlış",
         "context_label": "Bağlam",
+        "diagnostic": "Teşhis",
         "easy": "Kolay",
         "easy_hint": "Anında hatırlama",
         "good": "İyi",
@@ -1278,7 +1280,10 @@
         "srs_new": "yeni",
         "srs_review": "{count, plural, one {# kez gözden geçirildi} other {# kez gözden geçirildi}}",
         "start_test": "Testi başlat",
-        "test_mode": "Test modu"
+        "test_error": "Bu test oluşturulurken bir sorun oluştu.",
+        "test_mode": "Test modu",
+        "test_skipped": "Atlandı",
+        "trying_again": "Bir sorun oluştu, tekrar deneniyor..."
     },
     "setting": {
         "all_words": "Tüm Kelimeler",

@@ -140,6 +140,7 @@
         "sign_in": "Đăng nhập",
         "sign_out": "Đăng xuất",
         "sign_up": "Đăng ký",
+        "skip": "Bỏ qua",
         "speak": "Nói",
         "start_learning": "Bắt đầu học",
         "start_learning_lang": "Bắt đầu học {name}",
@@ -1264,6 +1265,7 @@
         "answer_correct": "Đúng",
         "answer_incorrect": "Sai",
         "context_label": "Ngữ cảnh",
+        "diagnostic": "Chẩn đoán",
         "easy": "Dễ",
         "easy_hint": "Nhớ ngay lập tức",
         "good": "Tốt",
@@ -1278,7 +1280,10 @@
         "srs_new": "mới",
         "srs_review": "{count, plural, other {đã ôn tập # lần}}",
         "start_test": "Bắt đầu kiểm tra",
-        "test_mode": "Chế độ kiểm tra"
+        "test_error": "Đã xảy ra sự cố khi tạo bài kiểm tra này.",
+        "test_mode": "Chế độ kiểm tra",
+        "test_skipped": "Đã bỏ qua",
+        "trying_again": "Có sự cố, đang thử lại..."
     },
     "setting": {
         "all_words": "Tất cả các từ",
