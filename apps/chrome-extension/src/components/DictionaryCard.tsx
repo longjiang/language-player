@@ -189,21 +189,21 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           {formattedPronunciation && (
             <span className="lpv-dict-pron-small">{formattedPronunciation}</span>
           )}
+          {/* Level badges sit in the top-right of the card header, matching
+              apps/web's entry card (ml-auto pushes them right). */}
+          {levelBadges.length > 0 && (
+            <span className="lpv-dict-entry-badges">
+              {levelBadges.map((level, i) => (
+                <span key={i} className="lpv-dict-level">{level.short}</span>
+              ))}
+            </span>
+          )}
         </div>
         {(entry.part_of_speech || entry.definitions?.length) && (
           <div className="lpv-dict-def">
             {entry.part_of_speech && <em>{entry.part_of_speech}</em>}
             {entry.definitions?.map((definition, index) => (
               <span key={index}>{entry.part_of_speech || index > 0 ? '  ' : ''}<strong>{index + 1}</strong> {definition}</span>
-            ))}
-          </div>
-        )}
-        {levelBadges.length > 0 && (
-          <div className="lpv-dict-levels">
-            {levelBadges.map((level, i) => (
-              <span key={i} className="lpv-dict-level">
-                {level.short}
-              </span>
             ))}
           </div>
         )}
@@ -220,17 +220,18 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               <ExternalLink size={12} /> {t('searchImages')}
             </a>
           </div>
-          {isLoggedIn && !wordsLoading && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
-              title={isSaved ? t('removeFromSaved') : t('save')}
-              aria-label={isSaved ? t('removeFromSaved') : t('save')}
-            >
-              {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-            </button>
-          )}
+          {/* Save/bookmark — always visible like apps/web; the click handler
+              gates on login. */}
+          <button
+            onClick={handleSave}
+            disabled={saving || wordsLoading}
+            className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
+            title={isSaved ? t('removeFromSaved') : t('save')}
+            aria-label={isSaved ? t('removeFromSaved') : t('save')}
+          >
+            {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+            <span className="lpv-entry-save-label">{isSaved ? t('saved') : t('save')}</span>
+          </button>
         </div>
       </div>
     </div>
