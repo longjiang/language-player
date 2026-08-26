@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR overlap normalization, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling)
+- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR overlap normalization, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling, web-parity dictionary popup, page-reader subtitle-style translation list)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -665,6 +665,17 @@ also shows the alternate script next to the headword, and — because the modal
 host (the `page-dictionary-frame` iframe) loads the user's L1 locale — every
 dict-popup string follows the selected interface language rather than the
 browser UI language.
+
+The dictionary popup is a web-parity surface (SPEC-086 §8): only the head word
+links to the entry detail page (`headOnlyLink`), with an underline-on-hover
+link affordance; the rest of the card never navigates. Loading renders stable
+entry-card skeletons (not a spinner) and the dialog is anchored to the top and
+grows downward, so entries loading never reflow it. Entries already in the
+shared batch cache render instantly even for `l1 ≠ en`, then hot-swap to the
+L1-translated cards. The card exposes a collapsible "Context sentence" card and
+a "Search images" button, and the bookmark toggle logs every branch (not
+logged in / still loading / saved result) so "save does nothing" is
+diagnosable from the extension console.
 
 The manifest permission budget is frozen by
 `scripts/check-extension-permissions.mjs`. SPEC-086 adds no permission,
