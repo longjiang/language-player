@@ -27,6 +27,7 @@ import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Loader2, PanelTopOpen, X,
 } from 'lucide-react';
 import { epubLog } from '@/lib/epub-log';
+import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
 
 /** Height of the app header (h-14 content + border-b) — the reader's top
  *  chrome bar. */
@@ -417,6 +418,10 @@ export default function EpubPage() {
           : 'mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)]'
       }`}
       onClick={readerActive ? (event) => {
+        // Quitting a dialog must never toggle the chrome: the click that
+        // dismisses a Radix dialog can fall through to the reader surface
+        // after the overlay unmounts (reader-tap-guard).
+        if (isReaderTapSuppressed()) return;
         if (window.getSelection()?.toString()) return;
         const target = event.target as HTMLElement | null;
         if (target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;
@@ -645,7 +650,10 @@ export default function EpubPage() {
 
       {/* ── TOC modal (replaces the sidebar) ── */}
       {epub.toc.length > 0 && (
-        <Dialog open={tocOpen} onOpenChange={setTocOpen}>
+        <Dialog open={tocOpen} onOpenChange={(o) => {
+          if (!o) suppressReaderTap(); // the dismissing click must not toggle the chrome
+          setTocOpen(o);
+        }}>
           <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
             <DialogHeader className="flex-row items-center justify-between pr-10">
               <DialogTitle>{t('title.chapters')}</DialogTitle>
@@ -688,7 +696,10 @@ export default function EpubPage() {
           search bar stays pinned at the top and the results area reserves
           its space even when empty, so the bar sits well above the software
           keyboard. */}
-      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+      <Dialog open={searchOpen} onOpenChange={(o) => {
+        if (!o) suppressReaderTap(); // the dismissing click must not toggle the chrome
+        setSearchOpen(o);
+      }}>
         <DialogContent className="flex h-[min(70vh,560px)] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
           <DialogHeader>
             <DialogTitle>{t('action.search')}</DialogTitle>

@@ -26,6 +26,7 @@ import type { ReaderBlock } from '@/lib/parse-markdown';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
 import { READER_DEFAULT_LEADING, readerHorizontalPadding as defaultReaderHorizontalPadding } from '@/lib/reader-layout';
+import { isReaderTapSuppressed } from '@/lib/reader-tap-guard';
 import { ArrowDown, ChevronLeft, ChevronRight, LayoutGrid, List, Loader2, Search } from 'lucide-react';
 
 export type { BlockRenderCtx, ReaderLoc, ReaderPageItem } from '@/hooks/use-paginated-reader';
@@ -528,6 +529,11 @@ export function PaginatedReader({
     const el = tapSurfaceRef.current;
     if (!el) return;
     const onTap = (e: MouseEvent) => {
+      // A dialog that overlays the reader (popup dictionary, TOC, Search)
+      // never reaches the reader surface while open, but the click that
+      // DISMISSES it can fall through after the overlay unmounts — ignore it
+      // so quitting a dialog never toggles the chrome (reader-tap-guard).
+      if (isReaderTapSuppressed()) return;
       if (window.getSelection()?.toString()) return;
       const target = e.target as HTMLElement | null;
       if (target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;

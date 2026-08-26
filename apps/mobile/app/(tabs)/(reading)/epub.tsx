@@ -27,6 +27,7 @@ import { PanelTopOpen, X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-re
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger, log, logwarn } from '@/lib/logger';
+import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
@@ -478,8 +479,17 @@ export default function EpubReaderScreen() {
     }).start();
   }, [chromeVisible, topChromeTranslateY]);
 
-  // Blank-space tap in the reader toggles the immersive chrome.
-  const toggleChrome = useCallback(() => setChromeVisible(v => !v), []);
+  // Blank-space tap in the reader toggles the immersive chrome. Quitting a
+  // dialog must never toggle it: the tap that dismissed the dialog can land
+  // on the tap surface right after the overlay disappears (reader-tap-guard),
+  // so ignore taps inside the suppression window.
+  const toggleChrome = useCallback(() => {
+    if (isReaderTapSuppressed()) {
+      log('[epub] blank-tap ignored — dialog recently closed (chrome guard)');
+      return;
+    }
+    setChromeVisible(v => !v);
+  }, []);
 
   // ── PDF reader (format: 'pdf' shelf entry open) ──
   if (epub.pdfDoc) {
@@ -766,7 +776,7 @@ export default function EpubReaderScreen() {
           visible={tocOpen}
           transparent
           animationType="fade"
-          onRequestClose={() => setTocOpen(false)}
+          onRequestClose={() => { suppressReaderTap(); setTocOpen(false); }}
         >
         <View className="flex-1 items-center justify-center bg-black/40 px-6">
           <View className="max-h-[85%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
@@ -795,7 +805,7 @@ export default function EpubReaderScreen() {
                 <ChevronRight size={16} color={ICON_MUTED} />
               </Button>
               <Pressable
-                onPress={() => setTocOpen(false)}
+                onPress={() => { suppressReaderTap(); setTocOpen(false); }}
                 className="rounded p-1 active:bg-muted"
                 accessibilityLabel={t('action.close')}
               >
@@ -830,7 +840,7 @@ export default function EpubReaderScreen() {
         visible={searchOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setSearchOpen(false)}
+        onRequestClose={() => { suppressReaderTap(); setSearchOpen(false); }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -841,7 +851,7 @@ export default function EpubReaderScreen() {
               <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
                 <Text className="flex-1 text-base font-semibold text-foreground">{t('action.search')}</Text>
                 <Pressable
-                  onPress={() => setSearchOpen(false)}
+                  onPress={() => { suppressReaderTap(); setSearchOpen(false); }}
                   className="rounded p-1 active:bg-muted"
                   accessibilityLabel={t('action.close')}
                 >
