@@ -31,7 +31,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExternalLink, ImageIcon, X, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { ExternalLink, ImageIcon, X, ChevronDown, ChevronUp, Quote } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
@@ -84,19 +84,22 @@ function ContextSentenceCard({
   return (
     <View className="mb-3">
       {/* The toggle is styled like the "Let DeepSeek explain" / "Search
-          images" buttons (w-full outline) so the popup's controls read as
-          one family. */}
+          images" buttons (outline) so the popup's controls read as one
+          family: same size, centered icon + label, chevron at the right. */}
       <Button
         onPress={toggle}
         variant="outline"
-        className="w-full justify-between"
+        className="relative w-full pr-9"
         accessibilityRole="button"
         accessibilityLabel={t('label.context_sentence')}
       >
+        <Quote size={16} color={ICON_PRIMARY} />
         <Text className={buttonTextClass('outline')}>{t('label.context_sentence')}</Text>
-        {open
-          ? <ChevronUp size={14} color={ICON_MUTED} />
-          : <ChevronDown size={14} color={ICON_MUTED} />}
+        <View className="absolute right-3">
+          {open
+            ? <ChevronUp size={14} color={ICON_MUTED} />
+            : <ChevronDown size={14} color={ICON_MUTED} />}
+        </View>
       </Button>
       {open && (
         <View className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
