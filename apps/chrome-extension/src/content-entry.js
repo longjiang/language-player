@@ -1125,26 +1125,35 @@ function setupYouTubeNavigationObserver() {
 
   let lastVideoId = getYTVideoId();
 
-  ytNavObserver = new MutationObserver(() => {
-    const currentId = getYTVideoId();
-    if (currentId && currentId !== lastVideoId) {
-      lastVideoId = currentId;
-      log(`Navigated to video: ${currentId}`);
-      // Clear the previous video's transcript immediately so the side panel
-      // doesn't keep showing the prior video's subtitles while the new video's
-      // caption track loads (or while it resolves to "no subtitles").
-      STATE.cues = [];
-      STATE.activeCueIdx = -1;
-      STATE.subtitleUrl = null;
-      STATE.subtitleError = null;
-      ytCaptionTracks = [];
-      ytPlayerResponse = null;
-      setSubtitleDetectionState('detecting');
-      setTimeout(() => loadYouTubeSubtitles(), 1500);
-    }
-  });
+  const handleNavigation = (currentId) => {
+    if (!currentId || currentId === lastVideoId) return;
+    lastVideoId = currentId;
+    log(`Navigated to video: ${currentId}`);
+    // Clear the previous video's transcript immediately so the side panel
+    // doesn't keep showing the prior video's subtitles while the new video's
+    // caption track loads (or while it resolves to "no subtitles").
+    STATE.cues = [];
+    STATE.activeCueIdx = -1;
+    STATE.subtitleUrl = null;
+    STATE.subtitleError = null;
+    ytCaptionTracks = [];
+    ytPlayerResponse = null;
+    setSubtitleDetectionState('detecting');
+    setTimeout(() => loadYouTubeSubtitles(), 1500);
+  };
 
+  ytNavObserver = new MutationObserver(() => {
+    handleNavigation(getYTVideoId());
+  });
   ytNavObserver.observe(document.body, { childList: true, subtree: true });
+
+  // YouTube dispatches yt-navigate-finish after its SPA routing swaps the
+  // player. This catches navigation the DOM mutation observer can miss (e.g.
+  // an in-place player swap without a subtree change), so the transcript is
+  // cleared before the new video's captions render.
+  window.addEventListener('yt-navigate-finish', () => {
+    handleNavigation(getYTVideoId());
+  });
 }
 
 /** Notify background script to set/unset badge */
