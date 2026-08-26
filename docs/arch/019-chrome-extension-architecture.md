@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (subtitle sync fixes: ASR alignment + overlap normalization, clear-on-navigation via yt-navigate-finish, page-dictionary theme sync, pro-banner message+pulse, page translation on video hosts)
+- **Last Updated**: 2026-08-26 (dictionary batch-cache + L1 swap, content-entry page-action silence, page-translation snapshot diagnostics, ASR overlap normalization, clear-on-navigation, iframe theme sync)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -471,6 +471,10 @@ Key behaviors:
   `enqueueLookupWords` (the shared `/dictionary/lookup-batch` cache used by web
   + mobile). Token tooltips surface the first cached definition once the batch
   resolves (`cacheVersion` subscription). Off-window lines never enqueue.
+  `DictionaryCard` reads that same cache (`getCachedEntries`) first so a word
+  click renders instantly from the batch's English defs, then swaps in the
+  L1-translated definitions (`getL1CachedEntries` / `/dictionary/lookup` with
+  `l1`) once they load when `l1 ≠ en` — matching apps/web and apps/mobile.
 - **Token cache**: `tokenCache = new Map<string, LemmatizedToken[]>()` — prevents re-fetching tokens for the same text
 - **Translated lines**: subtitle translation is chunked through
   `useTranslateLines`, which translates the same shared window around the active
@@ -551,6 +555,12 @@ with `position:fixed`. They render in the browser's own side panel:
     current theme to the active tab; the page content script dispatches it to
     the iframe bridge. Background → content scripts: `panelOpenState` on panel
     open/close/tab switch (gates ArrowUp/Down cue seeking).
+  - `content-entry.js` stays silent on page-content-owned actions
+    (`getPageTranslationSnapshot`, `pageTranslationVisibility`, `pageLookup`,
+    modals, tokenization toggles). Both scripts are co-injected on video hosts,
+    and `chrome.tabs.sendMessage` resolves with the **first** responder, so a
+    catch-all `{ received: true }` from content-entry would mask page-content's
+    real result (previously surfacing "this page cannot be translated").
 - **Opening the panel**: `chrome.sidePanel.open({ tabId })` requires a user
   gesture, so auto-open on subtitle load is gone. It opens from the extension
   action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token
