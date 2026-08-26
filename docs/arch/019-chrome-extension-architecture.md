@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (dictionary batch-cache + L1 swap, content-entry page-action silence, page-translation snapshot diagnostics, ASR overlap normalization, clear-on-navigation, iframe theme sync)
+- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR overlap normalization, clear-on-navigation, iframe theme sync)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -475,6 +475,15 @@ Key behaviors:
   click renders instantly from the batch's English defs, then swaps in the
   L1-translated definitions (`getL1CachedEntries` / `/dictionary/lookup` with
   `l1`) once they load when `l1 ≠ en` — matching apps/web and apps/mobile.
+- **Dictionary iframe styles**: `page-dictionary-frame.html` loads
+  `content.css`, `sidepanel.css`, and `page-dictionary.css`. The `.lpv-dict-*`
+  card base styles (flex header, close-button placement, pro banner, save
+  button) live in `content.css`, so the isolated frame must load it too or the
+  card renders unstyled; `page-dictionary.css` aliases the `--lpv-*` tokens to
+  the frame's semantic `--background`/`--border`/… so the card follows the
+  extension theme instead of content.css's `prefers-color-scheme`. The entry
+  card matches apps/web's layout: level/CEFR badges top-right, labeled
+  save/bookmark button always visible (click gates on login).
 - **Token cache**: `tokenCache = new Map<string, LemmatizedToken[]>()` — prevents re-fetching tokens for the same text
 - **Translated lines**: subtitle translation is chunked through
   `useTranslateLines`, which translates the same shared window around the active
