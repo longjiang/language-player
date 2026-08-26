@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef, type CSSProperties }
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, ImageIcon, ChevronDown, ChevronUp, Quote } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
@@ -91,18 +91,21 @@ function ContextSentenceCard({
   return (
     <div className="mb-3">
       {/* The toggle is styled like the "Let DeepSeek explain" / "Search
-          images" buttons (w-full outline) so the popup's controls read as
-          one family. */}
+          images" buttons (outline) so the popup's controls read as one
+          family: same size, centered icon + label, chevron at the right. */}
       <button
         type="button"
         onClick={toggle}
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full justify-between')}
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative w-full pr-9')}
         aria-expanded={open}
       >
-        <span className="text-xs font-medium">{t('label.context_sentence')}</span>
+        <span className="flex items-center gap-2">
+          <Quote className="h-4 w-4" />
+          <span className="text-sm font-medium">{t('label.context_sentence')}</span>
+        </span>
         {open
-          ? <ChevronUp className="h-3.5 w-3.5" />
-          : <ChevronDown className="h-3.5 w-3.5" />}
+          ? <ChevronUp className="absolute right-3 h-3.5 w-3.5" />
+          : <ChevronDown className="absolute right-3 h-3.5 w-3.5" />}
       </button>
       {open && (
         <div className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
