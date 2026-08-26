@@ -146,6 +146,26 @@ function PageDictionaryFrame() {
   const [lookup, setLookup] = useState<PageDictionaryLookup | null>(null);
   const [modal, setModal] = useState<ModalPayload | null>(null);
 
+  // Keep the iframe theme in sync with the extension's display theme. Without
+  // this the modal defaults to light, so a word lookup on a dark page renders
+  // a light card — it looks jarring and "not styled". Resolve the saved theme
+  // on init and re-apply whenever it changes (side panel / Settings).
+  useEffect(() => {
+    chrome.storage.local.get(['theme'], (res) => {
+      applyTheme((res?.theme === 'light' || res?.theme === 'dark') ? res.theme : 'system');
+    });
+    const onChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string,
+    ) => {
+      if (area !== 'local' || !changes.theme) return;
+      const next = changes.theme.newValue;
+      applyTheme((next === 'light' || next === 'dark') ? next : 'system');
+    };
+    chrome.storage.onChanged.addListener(onChange);
+    return () => chrome.storage.onChanged.removeListener(onChange);
+  }, []);
+
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.source !== window.parent) return;
