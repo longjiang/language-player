@@ -26,6 +26,33 @@ const isDisneyPlus = /disneyplus\.com/.test(location.hostname);
 const isHulu = /hulu\.com/.test(location.hostname);
 const isHBOMax = /max\.com|hbonow\.com|hbomax\.com/.test(location.hostname);
 
+/**
+ * YouTube auto-generated (ASR) caption alignment offset.
+ *
+ * YouTube's timedtext/json3 timestamps for auto-generated captions lag behind
+ * the actual audio: the caption for a line appears in the player AFTER the
+ * speaker has started the line, so at a given currentTime the panel highlights
+ * the previous line ("one line behind"). Shifting these cues EARLIER by this
+ * offset makes the first word of the line align with when it is first spoken.
+ * Manual caption tracks are accurate and are left untouched. Tune this value
+ * if the panel drifts ahead/behind on a particular auto-caption video.
+ */
+const YT_ASR_LEAD_OFFSET_SEC = 2.0;
+
+/** Shift every cue earlier by `offsetSec` so ASR captions align with the audio
+ *  the speaker utters. Subtracting a constant preserves inter-cue gaps (no new
+ *  overlaps); cues that would collapse to zero/negative length are dropped. */
+function applyASRSubtitleOffset(cues, offsetSec) {
+  if (!Array.isArray(cues) || !offsetSec) return cues;
+  const shifted = [];
+  for (const cue of cues) {
+    const start = Math.max(0, cue.start - offsetSec);
+    const end = Math.max(0, cue.end - offsetSec);
+    if (end - start > 0.02) shifted.push({ start, end, text: cue.text });
+  }
+  return shifted;
+}
+
 /** Trace logging helper — labels each step with a unique phase tag so
  *  you can follow the full pipeline from subtitle fetch to rendered tokens.
  *  Usage: trace('TOKENS_LOADED', '120 texts enqueued') → "[LP Extension] [FETCH] ..."
@@ -886,6 +913,14 @@ async function fetchYTTrack(track, requestGeneration = detectionGeneration) {
     }
 
     log('Parsed', cues.length, 'cues');
+
+    // Auto-generated (ASR) captions lag the audio by roughly one line. Shift
+    // them earlier so the active line matches what the speaker is saying now,
+    // rather than remaining on the previous line.
+    if (track.kind === 'asr') {
+      log(`[TIME] ASR caption offset: shifting ${cues.length} cues earlier by ${YT_ASR_LEAD_OFFSET_SEC}s to align with audio`);
+      cues = applyASRSubtitleOffset(cues, YT_ASR_LEAD_OFFSET_SEC);
+    }
 
     if (requestGeneration !== detectionGeneration) return;
     STATE.cues = cues;
