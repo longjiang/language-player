@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Nie udało się załadować słownika: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "Nie znaleziono wpisu słownikowego dla $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Próbowane lematy"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Szukaj w Language Player →"
+  },
+  "lookupFailed": {
+    "message": "Wyszukiwanie nie powiodło się"
+  },
+  "explainFailed": {
+    "message": "Wyjaśnienie nie powiodło się"
+  },
+  "examplesFailed": {
+    "message": "Nie udało się załadować przykładów"
+  },
+  "followUpFailed": {
+    "message": "Pytanie uzupełniające nie powiodło się"
+  },
+  "noSubtitleExamples": {
+    "message": "Nie znaleziono przykładów z napisów"
   }
 }

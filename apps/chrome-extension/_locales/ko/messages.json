@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "사전 로딩 실패: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "$word$에 대한 사전 항목을 찾을 수 없습니다",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "시도한 표제어"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Language Player에서 검색 →"
+  },
+  "lookupFailed": {
+    "message": "검색 실패"
+  },
+  "explainFailed": {
+    "message": "설명 실패"
+  },
+  "examplesFailed": {
+    "message": "예시 로드 실패"
+  },
+  "followUpFailed": {
+    "message": "후속 질문 실패"
+  },
+  "noSubtitleExamples": {
+    "message": "자막 예시를 찾을 수 없습니다"
   }
 }

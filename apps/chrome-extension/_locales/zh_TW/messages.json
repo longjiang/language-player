@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "字典載入失敗：$error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "找不到「$word$」的字典條目",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "已嘗試以下詞條："
+  },
+  "searchOnLanguagePlayer": {
+    "message": "在語言學習器中搜尋 →"
+  },
+  "lookupFailed": {
+    "message": "查詢失敗"
+  },
+  "explainFailed": {
+    "message": "解釋失敗"
+  },
+  "examplesFailed": {
+    "message": "範例取得失敗"
+  },
+  "followUpFailed": {
+    "message": "追問失敗"
+  },
+  "noSubtitleExamples": {
+    "message": "找不到字幕範例"
   }
 }

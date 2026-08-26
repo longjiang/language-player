@@ -722,5 +722,44 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Kon woordenboek niet laden: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "Geen woordenboekinvoer gevonden voor $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Geprobeerde lemma's"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Zoeken op Language Player →"
+  },
+  "lookupFailed": {
+    "message": "Zoeken mislukt"
+  },
+  "explainFailed": {
+    "message": "Uitleg mislukt"
+  },
+  "examplesFailed": {
+    "message": "Voorbeelden laden mislukt"
+  },
+  "followUpFailed": {
+    "message": "Vervolgvraag mislukt"
+  },
+  "noSubtitleExamples": {
+    "message": "Geen voorbeelden uit ondertitels gevonden"
   }
 }
