@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildPronunciationQuestionText,
   buildSrsQuestionPrompt,
   getTestKinds,
   isObviousPronunciationWrong,
@@ -179,6 +180,25 @@ describe('getTestKinds (pronunciation first)', () => {
         expect(kinds).toEqual(['definition']);
       }
     }
+  });
+});
+
+describe('buildPronunciationQuestionText', () => {
+  it('keeps the headword and renders in the L1', () => {
+    expect(buildPronunciationQuestionText('反る', 'zh-Hans')).toBe('「反る」怎么读？');
+    expect(buildPronunciationQuestionText('反る', 'en')).toBe('How is "反る" pronounced?');
+  });
+  it('resolves the base L1 code (review pages pass baseCode(l1.code))', () => {
+    // baseCode("zh-Hans") → "zh"; the review page passes that as l1Code, so the
+    // pronunciation question must render in Chinese — not fall back to English.
+    expect(buildPronunciationQuestionText('痛烈', 'zh')).toBe('「痛烈」怎么读？');
+    expect(buildPronunciationQuestionText('痛烈', 'ja')).toBe('「痛烈」はどう読みますか？');
+  });
+  it('prefers a full script key when present (zh-Hant varies)', () => {
+    expect(buildPronunciationQuestionText('反る', 'zh-Hant')).toBe('「反る」怎麼讀？');
+  });
+  it('falls back to English for unmapped L1', () => {
+    expect(buildPronunciationQuestionText('word', 'xx')).toBe('How is "word" pronounced?');
   });
 });
 

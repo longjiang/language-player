@@ -227,6 +227,10 @@ export function validateSrsPronunciationChoices(question: {
  */
 const PRONUNCIATION_QUESTION_I18N: Record<string, string> = {
   en: 'How is "{word}" pronounced?',
+  // Keyed on the BASE L1 code (e.g. "zh"), matching `baseCode()` — the review
+  // pages pass `baseCode(l1.code)` as the l1Code, so "zh-Hans"/"zh-Hant" both
+  // arrive as "zh". Keep the full-script keys too as a safety net.
+  zh: '「{word}」怎么读？',
   'zh-Hans': '「{word}」怎么读？',
   'zh-Hant': '「{word}」怎麼讀？',
   ja: '「{word}」はどう読みますか？',
@@ -253,7 +257,11 @@ const PRONUNCIATION_QUESTION_I18N: Record<string, string> = {
  */
 export function buildPronunciationQuestionText(word: string, l1Code: string): string {
   const base = (l1Code.split('-')[0] ?? '').toLowerCase();
-  const template = PRONUNCIATION_QUESTION_I18N[base] ?? PRONUNCIATION_QUESTION_I18N.en ?? 'How is "{word}" pronounced?';
+  const template =
+    PRONUNCIATION_QUESTION_I18N[l1Code]
+    ?? PRONUNCIATION_QUESTION_I18N[base]
+    ?? PRONUNCIATION_QUESTION_I18N.en
+    ?? 'How is "{word}" pronounced?';
   return template.replace('{word}', word);
 }
 
