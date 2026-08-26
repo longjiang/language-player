@@ -60,7 +60,7 @@ interface SaveButtonProps {
   /** Additional alternate forms. When omitted, auto-fetches inflected forms. */
   forms?: string[];
   /** Visual size */
-  size?: 'sm' | 'default' | 'icon';
+  size?: 'xs' | 'sm' | 'default' | 'icon';
 }
 
 /**
