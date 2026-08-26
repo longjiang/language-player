@@ -5,6 +5,7 @@ import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { DictionaryEntryCardSkeleton } from '@/components/dictionary/DictionaryEntryCardSkeleton';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
 import { WebViewSheet } from '@/components/WebViewSheet';
@@ -782,17 +783,15 @@ export function DictionaryPopup({
                   </View>
                 )}
                 {extractPhrases && phraseLoading && (
-                  <View className="items-center py-6">
-                    <ActivityIndicator size="small" className="text-primary" />
-                  </View>
+                  <DictionaryEntryCardSkeleton />
                 )}
 
+                {/* Entry cards are loading — show a stable card skeleton
+                    instead of a spinner so the popup doesn't shift. */}
                 {loading && (
-                  <View className="items-center py-12">
-                    <ActivityIndicator size="large" className="text-primary" />
-                    <Text className="mt-3 text-sm text-muted-foreground">
-                      {t('msg.loading')}
-                    </Text>
+                  <View className="gap-2">
+                    <DictionaryEntryCardSkeleton />
+                    <DictionaryEntryCardSkeleton />
                   </View>
                 )}
               </ScrollView>

@@ -22,6 +22,7 @@ import { suppressReaderTap } from '@/lib/reader-tap-guard';
 import { getCachedEntries, setCachedEntries, subscribeToCache, getL1CachedEntries, setL1CachedEntry } from '@/lib/dictionary-cache';
 import { lookupL1Text } from '@/lib/l1-lookup';
 import { WordList } from '@/components/dictionary/word-list';
+import { DictionaryEntryCardSkeleton } from '@/components/dictionary/dictionary-entry-card-skeleton';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { buttonVariants } from '@/components/ui/button';
@@ -558,7 +559,17 @@ export function DictionaryPopup({
             {t('action.search_images')}
           </a>
 
+          {/* Entry cards are loading — show a stable card skeleton instead of
+              a spinner so the popup's shape (and fixed top) doesn't shift. */}
+          {loading && (
+            <div className="space-y-3">
+              <DictionaryEntryCardSkeleton />
+              <DictionaryEntryCardSkeleton />
+            </div>
+          )}
+
           {/* Canonical phrase cards from /extract-phrases (selection popup) */}
+          {extractPhrases && phraseLoading && <DictionaryEntryCardSkeleton />}
           {extractPhrases && !phraseLoading && visiblePhraseCards.length > 0 && (
             <div className="pt-1">
               <div className="mb-1 flex items-center justify-between">
@@ -647,12 +658,6 @@ export function DictionaryPopup({
               />
             ))}
           </WordList>
-
-          {(loading || phraseLoading) && (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
