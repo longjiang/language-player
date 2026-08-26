@@ -163,7 +163,10 @@ export function DictionaryPopup({
   // anchored position; the exit is a plain fade/scale (the shared
   // DialogContent's -50%/-50% exit translate is neutralized inline).
   const anchoredStyle = useMemo<CSSProperties>(() => {
-    const base: CSSProperties = {
+    // CSS custom properties (--tw-enter/exit-*) drive the shared dialog's
+    // enter/exit keyframes; they aren't members of CSSProperties, so the
+    // object is built loosely and cast (same pattern as the old spawn style).
+    const base: Record<string, string | number> = {
       top: POPUP_TOP,
       transform: 'translateX(-50%)',
       '--tw-exit-translate-x': '-50%',
@@ -179,7 +182,7 @@ export function DictionaryPopup({
     } else {
       base['--tw-enter-translate-y'] = '0px';
     }
-    return base;
+    return base as CSSProperties;
   }, [position]);
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
