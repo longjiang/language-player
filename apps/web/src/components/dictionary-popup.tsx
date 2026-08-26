@@ -50,6 +50,11 @@ interface DictionaryPopupProps {
   onClose: () => void;
 }
 
+/** Fixed distance of the popup's top edge from the viewport top. The popup is
+ *  anchored here and grows downward only — its top never moves, so loading
+ *  content (skeleton cards) never shifts the whole dialog. */
+const POPUP_TOP = 96;
+
 /**
  * Collapsible "context sentence" card: the L2 sentence the tapped word came
  * from, rendered as tokenized text wrapped in the text action menu (copy /
@@ -151,19 +156,30 @@ export function DictionaryPopup({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Spawn-point animation: pin the enter transform so the dialog's center
-  // starts at the clicked token's center, then settles into viewport center
-  // (the shared DialogContent already pins -50% translate for a plain fade).
-  const enterOriginStyle = useMemo<CSSProperties | undefined>(() => {
-    if (!position || typeof window === 'undefined') return undefined;
-    const cx = position.x + (position.width ?? 0) / 2;
-    const cy = position.y + (position.height ?? 0) / 2;
-    return {
-      '--tw-enter-translate-x': `${cx - window.innerWidth / 2}px`,
-      '--tw-enter-translate-y': `${cy - window.innerHeight / 2}px`,
-      '--tw-enter-scale': '0.9',
-      animationDuration: '200ms',
-    } as CSSProperties;
+  // Fixed-top anchoring + spawn-point animation: the dialog is horizontally
+  // centered but pinned POPUP_TOP px from the viewport top, so it grows
+  // downward only (its top edge never shifts as entries load). The enter
+  // transform starts at the clicked token's center (spawn) and settles at the
+  // anchored position; the exit is a plain fade/scale (the shared
+  // DialogContent's -50%/-50% exit translate is neutralized inline).
+  const anchoredStyle = useMemo<CSSProperties>(() => {
+    const base: CSSProperties = {
+      top: POPUP_TOP,
+      transform: 'translateX(-50%)',
+      '--tw-exit-translate-x': '-50%',
+      '--tw-exit-translate-y': '0px',
+    };
+    if (position && typeof window !== 'undefined') {
+      const cx = position.x + (position.width ?? 0) / 2;
+      const cy = position.y + (position.height ?? 0) / 2;
+      base['--tw-enter-translate-x'] = `${cx - window.innerWidth / 2}px`;
+      base['--tw-enter-translate-y'] = `${cy - POPUP_TOP}px`;
+      base['--tw-enter-scale'] = '0.9';
+      base.animationDuration = '200ms';
+    } else {
+      base['--tw-enter-translate-y'] = '0px';
+    }
+    return base;
   }, [position]);
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
@@ -464,7 +480,7 @@ export function DictionaryPopup({
       <DialogContent
         showCloseButton={false}
         className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4 gap-1"
-        style={enterOriginStyle}
+        style={anchoredStyle}
       >
         <DialogTitle className="sr-only">{t('title.dictionary')}</DialogTitle>
         {/* Header */}
