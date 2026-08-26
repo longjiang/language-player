@@ -483,7 +483,16 @@ Key behaviors:
   the frame's semantic `--background`/`--border`/… so the card follows the
   extension theme instead of content.css's `prefers-color-scheme`. The entry
   card matches apps/web's layout: level/CEFR badges top-right, labeled
-  save/bookmark button always visible (click gates on login).
+  save/bookmark button always visible (click gates on login), and the alternate
+  script next to the headword — Chinese (zh/yue/lzh) shows the opposite script
+  to the user's traditional/simplified preference (head ↔ alternate swap), and
+  Vietnamese/Korean show chữ Hán / hanja from `han_script.han`, mirroring
+  apps/web's `useScriptPreference`.
+- **Dictionary iframe locale**: `page-dictionary-frame.tsx` calls `setLocale()`
+  with the saved `l1Language` on init and re-applies it on `storage` changes, so
+  the popup renders the user's selected interface language rather than falling
+  back to `chrome.i18n` (the browser UI language). Same mechanism as the native
+  side panel; without it the popup showed English regardless of the selected L1.
 - **Token cache**: `tokenCache = new Map<string, LemmatizedToken[]>()` — prevents re-fetching tokens for the same text
 - **Translated lines**: subtitle translation is chunked through
   `useTranslateLines`, which translates the same shared window around the active
@@ -642,7 +651,11 @@ uses shared level filtering/formatting. Its Pro AI surface includes the web's
 five language follow-ups plus Examples from Videos, which samples the existing
 subtitle-search endpoint before sending context to chat. Entry cards keep
 speaker, bookmark, and image-search events separate from card navigation, and
-route to the canonical Language Player dictionary entry URL.
+route to the canonical Language Player dictionary entry URL. The entry card
+also shows the alternate script next to the headword, and — because the modal
+host (the `page-dictionary-frame` iframe) loads the user's L1 locale — every
+dict-popup string follows the selected interface language rather than the
+browser UI language.
 
 The manifest permission budget is frozen by
 `scripts/check-extension-permissions.mjs`. SPEC-086 adds no permission,
