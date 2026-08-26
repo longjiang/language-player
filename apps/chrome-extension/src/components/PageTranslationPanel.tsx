@@ -66,7 +66,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   const flushTimerRef = useRef<number | null>(null);
   const requestGenerationRef = useRef(0);
   const translateBlocksRef = useRef<(ids: string[], generation: number) => void>(() => {});
-  const highlightTimerRef = useRef<number | null>(null);
 
   // Translating a language into itself is meaningless (l1 === l2) — disable
   // page translation entirely in that case.
@@ -157,7 +156,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
       if (flushTimerRef.current !== null) window.clearTimeout(flushTimerRef.current);
       queueRef.current = [];
       inFlightRef.current.clear();
-      if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
     };
   }, [canTranslate, loadSnapshot]);
 
@@ -301,9 +299,11 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     }
     log('[PAGE] scrolling translation to lookup block', { blockId, token: lookup?.token?.text });
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Keep the current-line marker on the block the learner is reading until
+    // they tap a different token (matching the subtitles active-cue behavior,
+    // which does not auto-clear). No timer here — a clear would make the
+    // indicator flash in and out.
     setHighlightedBlockId(blockId);
-    if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = window.setTimeout(() => setHighlightedBlockId(null), 1800);
   }, [blocks, lookup?.blockId, lookup?.token?.text]);
 
   if (!canTranslate) {
