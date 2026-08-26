@@ -21,6 +21,10 @@ interface DictionaryEntryCardProps {
   variant?: 'compact' | 'full';
   /** Called when the card is clicked (navigates to entry detail page) */
   onClick?: (entry: DictionaryEntry) => void;
+  /** Popup mode: only the head word is the link to the detail page — tapping
+   *  anywhere else on the card (definitions, source, save) does not navigate.
+   *  Defaults to false (whole card navigates). */
+  headOnlyLink?: boolean;
   /** Optional indicator rendered beside the level badges in compact mode (e.g. SRS review dot). */
   srsDot?: React.ReactNode;
   /** Context for the save/bookmark button. Omit to hide (compact) or show (full). */
@@ -76,6 +80,7 @@ export function DictionaryEntryCard({
   entry,
   variant = 'compact',
   onClick,
+  headOnlyLink = false,
   srsDot,
   saveContext,
   pronunciation,
@@ -217,13 +222,27 @@ export function DictionaryEntryCard({
   if (!isFull) {
     return (
       <div
-        className="flex flex-col rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
-        onClick={() => onClick?.(entry)}
+        className={`flex flex-col rounded-lg border bg-card p-3 text-sm shadow-sm ${
+          onClick && !headOnlyLink ? 'transition-colors hover:bg-muted/30 cursor-pointer' : ''
+        }`}
+        onClick={!headOnlyLink ? () => onClick?.(entry) : undefined}
       >
         {/* Header */}
         <div className="flex items-start gap-2">
           <div className="flex-1 flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-bold text-foreground" lang={glyphLang}>{head}</span>
+            {headOnlyLink && onClick ? (
+              /* Popup mode: only the head word navigates to the detail page. */
+              <button
+                type="button"
+                onClick={() => onClick(entry)}
+                className="cursor-pointer text-lg font-bold text-foreground hover:underline underline-offset-2"
+                lang={glyphLang}
+              >
+                {head}
+              </button>
+            ) : (
+              <span className="text-lg font-bold text-foreground" lang={glyphLang}>{head}</span>
+            )}
             {displayAlternate && (
               <span className="text-xs text-muted-foreground" lang={glyphLang}>{displayAlternate}</span>
             )}

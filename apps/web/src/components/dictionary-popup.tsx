@@ -569,6 +569,7 @@ export function DictionaryPopup({
                     key={entry.id}
                     entry={entry}
                     onClick={handleEntryClick}
+                    headOnlyLink
                     saveContext={context}
                     pronunciation={formatPronunciation(entry, l2Code)}
                     l2Code={l2Code}
@@ -627,6 +628,7 @@ export function DictionaryPopup({
                 key={entry.id}
                 entry={entry}
                 onClick={handleEntryClick}
+                headOnlyLink
                 saveContext={context}
                 pronunciation={formatPronunciation(entry, l2Code)}
                 l2Code={l2Code}
@@ -637,6 +639,7 @@ export function DictionaryPopup({
                 key={entry.id}
                 entry={entry}
                 onClick={handleEntryClick}
+                headOnlyLink
                 saveContext={context}
                 pronunciation={formatPronunciation(entry, l2Code)}
                 l2Code={l2Code}
