@@ -461,6 +461,12 @@ async function tokenizePage() {
  *  can render the PagePanel when opened on this tab. Includes the page-lang
  *  vs L2 mismatch so the panel can warn before the user taps a token. */
 function pushPageModeState() {
+  // On a video host the side panel already owns the video mode (subtitles).
+  // Pushing a page-mode state would flip the panel out of video mode and hide
+  // the subtitles tab, so the page content script must not claim the mode. The
+  // side panel still gets page data through the dedicated pageLookup message
+  // and getPageTranslationSnapshot response.
+  if (isVideoHost()) return;
   try {
     chrome.runtime.sendMessage({
       action: 'pageModeState',
@@ -533,9 +539,19 @@ async function init() {
   if (initialized) return;
   initialized = true;
   const generation = lifecycleGeneration;
-  if (isVideoHost() || isOwnHost() || isLocalhost()) {
-    log(`[PAGE] init skipped: host=${location.hostname} (${isVideoHost() ? 'video' : isOwnHost() ? 'own asset' : 'localhost'})`);
+  // Page translation is a feature of the page, not of the video player, so it
+  // must run on video hosts too (SPEC-086 §2.2: available on every ordinary
+  // http/https page). Only Language Player's own assets and localhost are
+  // skipped. On a video host the page content script tokenizes the page
+  // (title/description/comments) for the popup dictionary and provides the
+  // page-translation snapshot, while content-entry.js keeps owning the video
+  // subtitles mode.
+  if (isOwnHost() || isLocalhost()) {
+    log(`[PAGE] init skipped: host=${location.hostname} (${isOwnHost() ? 'own asset' : 'localhost'})`);
     return;
+  }
+  if (isVideoHost()) {
+    log(`[PAGE] init on video host ${location.hostname}: page translation + tokenization enabled`);
   }
   if (!panelOpen || !pageTranslationTabOpen) {
     log(`[PAGE] init skipped: panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}`);
