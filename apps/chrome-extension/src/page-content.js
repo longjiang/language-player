@@ -653,10 +653,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.action === 'getPageTranslationSnapshot') {
     if (!enabled || !panelOpen || !pageTranslationTabOpen) {
+      log(`[PAGE] snapshot rejected: enabled=${enabled}, panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}, host=${location.hostname}`);
       sendResponse({ ok: false, error: 'page translation is not active' });
       return true;
     }
-    sendResponse({ ok: true, pageUrl: location.href, blocks: getPageTranslationSnapshot() });
+    const blocks = getPageTranslationSnapshot();
+    log(`[PAGE] snapshot returned ${blocks.length} blocks (l2=${l2Code}, l1=${l1Code})`);
+    sendResponse({ ok: true, pageUrl: location.href, blocks });
     return true;
   }
   if (message.action === 'changeLanguage') {
