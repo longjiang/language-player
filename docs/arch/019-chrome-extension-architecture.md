@@ -533,6 +533,7 @@ Key behaviors:
   translation toggle is hidden; the stored preference is preserved so it
   re-applies once different languages are selected.
 - **Page-mode lifecycle**: tokenization requires both `panelOpenState.open === true` and `pageTranslationVisibility.open === true`. Switching tabs or closing the side panel calls `cleanup()`, restores each block's original HTML, clears token listeners/cache, and closes the webpage dictionary modal
+- **Leaf-block filter ignores hidden sub-blocks**: a page block is "nested" (skipped) only when it contains a *visible* descendant matching `BLOCK_SELECTOR`; hidden descendants do not make it nested. Without this, a wrapper with only hidden sub-blocks (e.g. YouTube's always-hidden paid-comment-chip `<div>` inside a comment body) was skipped, orphaning the comment's *visible* body text — the Korean comment body `<span>` was never tokenized while the author/Reply labels were. Tokenization, page-translation snapshots, and the scroll-in observer all use the same rule (`hasVisibleBlockDescendant`).
 - **State flow**: `content-entry.js` `pushPanelState()` → `chrome.runtime.sendMessage({action:'panelState'})` → background tags `sender.tab.id` → `sidePanelPort.postMessage()` → `SidePanelApp` re-renders `TranscriptAppInner` with new props (React preserves scroll/selection state across pushes). The side panel pulls the current state on open/tab-switch via `getPanelState`, and sends `panelSeek` back to seek the player.
 
 ---
