@@ -83,7 +83,8 @@ apps/chrome-extension/
     ├── auth.ts                        ← Auth helpers (Flask → Supabase GoTrue proxy, refresh rotation)
     ├── api-config.ts                  ← Shared Flask API base (single gateway, SPEC-024)
     ├── saved-words.ts                 ← Saved words row API (GET/PUT/DELETE /saved-words via Flask)
-    ├── use-translate-lines.ts         ← React hook: batch subtitle translation
+    ├── use-translate-lines.ts         ← React hook: batch subtitle translation (shared lazy window)
+    ├── lazy-window.ts                 ← Shared rolling-window logic for tokenization/batch-lookup/translation
     ├── use-subscription.ts            ← React hook: check Pro subscription status (JWT, /user-subscription)
     └── components/
         ├── ui/                          ← Extension-local Shadcn-compatible primitives
@@ -446,11 +447,42 @@ back through the bridge and navigate the parent page, not the iframe.
 ```
 
 Key behaviors:
-- **Lazy tokenization**: `TokenizedLine` tokenizes the active line plus the next
-  5 lines proactively (`TOKENIZE_LOOKAHEAD`), while `IntersectionObserver`
-  covers manual scroll beyond that window
+- **Unified lazy window** (`src/lazy-window.ts`): tokenization, dictionary batch
+  lookup, and translation all work on the same rolling window of lines around the
+  active cue — chunks of 5, ±3 chunks (`WINDOW_LOOKAHEAD_CHUNKS`) in each
+  direction = ±15 lines, matching apps/web + apps/mobile (SPEC-021). Before this,
+  tokenization used a forward-only `TOKENIZE_LOOKAHEAD` and translation had its
+  own forward-only lookahead, so lines before the playhead were never processed.
+- **Lazy tokenization**: `TokenizedLine` tokenizes any line inside the shared
+  window (`tokenizeAhead` = `isInWindow(i)`) or scrolled into view
+  (`IntersectionObserver`, `rootMargin: '200px'`). `preFetch` eagerly
+  tokenizes the whole window when the active cue crosses a window boundary.
+- **Lazy dictionary batch lookup**: when a line's tokens arrive (visible or in
+  the window), its unique lemmas are enqueued through `@langplayer/utils`
+  `enqueueLookupWords` (the shared `/dictionary/lookup-batch` cache used by web
+  + mobile). Token tooltips surface the first cached definition once the batch
+  resolves (`cacheVersion` subscription). Off-window lines never enqueue.
 - **Token cache**: `tokenCache = new Map<string, LemmatizedToken[]>()` — prevents re-fetching tokens for the same text
-- **Translated lines**: `PageTranslationPanel` batch-translates only blocks that intersect its scrollport, in chunks of 5 via `/translate_array`; unloaded blocks show a skeleton sized from their source length
+- **Translated lines**: subtitle translation is chunked through
+  `useTranslateLines`, which translates the same shared window around the active
+  cue and preserves already-translated chunks as the playhead moves. It resets
+  on a **content + language signature** rather than the `cues` array reference,
+  because the side panel structured-clones `cues` over the messaging port on
+  every panel-state push — resetting on the reference cleared all translations
+  each time the video advanced. `PageTranslationPanel` batch-translates only
+  page blocks that intersect its scrollport, in batches of 5 via
+  `/translate_array`; unloaded blocks show a skeleton sized from their source length.
+- **HTML entity decoding**: crop/subtitle text is decoded with the shared
+  `@langplayer/utils` `decodeHtmlEntities`, which iterates so double-encoded
+  entities (e.g. `&amp;#39;` from YouTube timedtext) collapse to `'` while a
+  literal `&` is preserved. Web's `subtitle-csv.ts` uses the same helper (DRY).
+- **Pro-gated transcript banner**: for free users the upgrade banner renders
+  *inside* the scrollable cue list immediately below the last line, so it scrolls
+  with the transcript instead of being pinned above the control bar (ADR-0034).
+- **l1 === l2 disables translation**: when `baseCode(l1) === baseCode(l2)`,
+  translation is disabled for both subtitles and page translation and the
+  translation toggle is hidden; the stored preference is preserved so it
+  re-applies once different languages are selected.
 - **Page-mode lifecycle**: tokenization requires both `panelOpenState.open === true` and `pageTranslationVisibility.open === true`. Switching tabs or closing the side panel calls `cleanup()`, restores each block's original HTML, clears token listeners/cache, and closes the webpage dictionary modal
 - **State flow**: `content-entry.js` `pushPanelState()` → `chrome.runtime.sendMessage({action:'panelState'})` → background tags `sender.tab.id` → `sidePanelPort.postMessage()` → `SidePanelApp` re-renders `TranscriptAppInner` with new props (React preserves scroll/selection state across pushes). The side panel pulls the current state on open/tab-switch via `getPanelState`, and sends `panelSeek` back to seek the player.
 
