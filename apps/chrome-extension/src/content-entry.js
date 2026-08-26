@@ -1084,8 +1084,16 @@ function setupYouTubeNavigationObserver() {
     if (currentId && currentId !== lastVideoId) {
       lastVideoId = currentId;
       log(`Navigated to video: ${currentId}`);
+      // Clear the previous video's transcript immediately so the side panel
+      // doesn't keep showing the prior video's subtitles while the new video's
+      // caption track loads (or while it resolves to "no subtitles").
+      STATE.cues = [];
+      STATE.activeCueIdx = -1;
+      STATE.subtitleUrl = null;
+      STATE.subtitleError = null;
       ytCaptionTracks = [];
       ytPlayerResponse = null;
+      setSubtitleDetectionState('detecting');
       setTimeout(() => loadYouTubeSubtitles(), 1500);
     }
   });
