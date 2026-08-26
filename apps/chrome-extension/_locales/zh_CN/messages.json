@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "搜索图片"
   },
+  "contextSentence": {
+    "message": "上下文句子"
+  },
+  "openInDictionary": {
+    "message": "在词典中打开"
+  },
   "startPlaying": {
     "message": "开始播放视频。"
   },

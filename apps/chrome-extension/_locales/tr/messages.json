@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "Görsel ara"
   },
+  "contextSentence": {
+    "message": "Bağlam cümlesi"
+  },
+  "openInDictionary": {
+    "message": "Sözlükte Aç"
+  },
   "startPlaying": {
     "message": "Bir video oynatmaya başlayın."
   },

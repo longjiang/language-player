@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "ค้นหารูปภาพ"
   },
+  "contextSentence": {
+    "message": "ประโยคบริบท"
+  },
+  "openInDictionary": {
+    "message": "เปิดในพจนานุกรม"
+  },
   "startPlaying": {
     "message": "เริ่มเล่นวิดีโอ"
   },

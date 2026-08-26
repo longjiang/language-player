@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "画像を検索"
   },
+  "contextSentence": {
+    "message": "文脈の文"
+  },
+  "openInDictionary": {
+    "message": "辞書で開く"
+  },
   "startPlaying": {
     "message": "動画を再生してください。"
   },

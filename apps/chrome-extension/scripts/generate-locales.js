@@ -34,6 +34,8 @@ const CSV_LOOKUP = {
   'retry': 'action.retry',
   'speak': 'action.speak',
   'searchImages': 'action.search_images',
+  'contextSentence': 'label.context_sentence',
+  'openInDictionary': 'action.open_in_dictionary',
   'zoomOut': 'action.zoom_out',
   'zoomIn': 'action.zoom_in',
   'profile': 'title.profile',

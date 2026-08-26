@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "Afbeeldingen zoeken"
   },
+  "contextSentence": {
+    "message": "Contextzin"
+  },
+  "openInDictionary": {
+    "message": "Openen in woordenboek"
+  },
   "startPlaying": {
     "message": "Start een video met afspelen."
   },

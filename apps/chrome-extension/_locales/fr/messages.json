@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "Rechercher des images"
   },
+  "contextSentence": {
+    "message": "Phrase de contexte"
+  },
+  "openInDictionary": {
+    "message": "Ouvrir dans le dictionnaire"
+  },
   "startPlaying": {
     "message": "Lancez une vidéo."
   },

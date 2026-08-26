@@ -183,6 +183,12 @@
   "searchImages": {
     "message": "البحث عن صور"
   },
+  "contextSentence": {
+    "message": "جملة السياق"
+  },
+  "openInDictionary": {
+    "message": "فتح في القاموس"
+  },
   "startPlaying": {
     "message": "ابدأ تشغيل فيديو."
   },
