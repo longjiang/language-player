@@ -739,6 +739,7 @@ export function DictionaryPopup({
                     <DictionaryEntryCard
                       entry={entry}
                       variant="compact"
+                      headOnlyLink
                       onPress={(e) => handleCardPress(e, results ?? [])}
                       l2Code={l2}
                       saveButton={
@@ -764,6 +765,7 @@ export function DictionaryPopup({
                         <DictionaryEntryCard
                           entry={entry}
                           variant="compact"
+                          headOnlyLink
                           onPress={(e) => handleCardPress(e, phraseCards)}
                           l2Code={l2}
                           saveButton={
