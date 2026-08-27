@@ -759,9 +759,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
   if (message.action === 'getPanelState') {
-    // Side panel pulled state (open, tab switch, navigation).
+    // Video hosts co-inject content-entry.js, which owns the mode: 'video'
+    // answer for getPanelState. chrome.tabs.sendMessage resolves with the FIRST
+    // responder, so answering here (even with state: null) can mask
+    // content-entry's real video result and leave the side panel stuck
+    // resolving mode. Stay silent on video hosts — mirrors content-entry's own
+    // PAGE_SCRIPT_ACTIONS silence for page-owned actions (commit 391272c1).
+    if (isVideoHost()) {
+      log('[PAGE] getPanelState: video host → staying silent (content-entry owns video mode)');
+      return;
+    }
+    // Ordinary page: answer page mode when the panel is open.
+    log('[PAGE] getPanelState answered (page mode)', { panelOpen, pageTranslationStatus });
     sendResponse({
-      state: panelOpen && !isVideoHost() && !isOwnHost() && !isLocalhost()
+      state: panelOpen && !isOwnHost() && !isLocalhost()
         ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup, mismatch: pageLangMismatch(), pageTranslationStatus, pageTranslationError }
         : null,
     });
