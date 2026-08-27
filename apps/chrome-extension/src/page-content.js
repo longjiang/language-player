@@ -273,11 +273,26 @@ function normalizeBlockText(text) {
  *  around YouTube's `<script type="application/ld+json">` VideoObject that
  *  would otherwise surface as a page-translation line. Walking text nodes
  *  through the same SKIP_SELECTOR / hidden filter as the tokenizer excludes
- *  scripts, styles, templates, and hidden subtrees. */
+ *  scripts, styles, templates, and hidden subtrees; ruby `<rt>` readings are
+ *  excluded too so the text matches what the learner sees (no glosses). */
 function getVisibleBlockText(el) {
-  const nodes = getTextNodes(el);
-  if (nodes.length === 0) return '';
-  return normalizeBlockText(nodes.map((node) => node.nodeValue || '').join(' '));
+  try {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+        const value = (node.nodeValue || '').trim();
+        if (!value) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const parts = [];
+    while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+    return normalizeBlockText(parts.join(' '));
+  } catch {
+    return normalizeBlockText(el.textContent || '');
+  }
 }
 
 /** Return source blocks for the side-panel translation view. This reads the
@@ -339,29 +354,6 @@ function onTokenClick(e, token, textNodeParent) {
   });
 }
 
-/** Visible text of a block excluding ruby readings (`<rt>`) and select-none
- *  annotations, so it matches the offset returned by selectionStartOffset
- *  (SPEC-033 page-selection context). */
-function getVisibleTextNoRuby(el) {
-  try {
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
-      acceptNode(node) {
-        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
-        const value = (node.nodeValue || '').trim();
-        if (!value) return NodeFilter.FILTER_REJECT;
-        const parent = node.parentElement;
-        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      },
-    });
-    const parts = [];
-    while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
-    return normalizeBlockText(parts.join(' '));
-  } catch {
-    return normalizeBlockText(el.textContent || '');
-  }
-}
-
 let pageSelectionHandler = null;
 
 /** Drag-select → dictionary popup on tokenized page text (SPEC-033). Selecting
@@ -383,7 +375,7 @@ function attachPageSelectionListener() {
     if (!text) return;
     const tokenEl = anchorEl.closest('.lpv-page-token');
     const block = anchorEl.closest?.(BLOCK_SELECTOR) || tokenEl;
-    const blockText = getVisibleTextNoRuby(block);
+    const blockText = getVisibleBlockText(block);
     const offset = selectionStartOffset(block, range);
     const hit = offset !== null && blockText.slice(offset).startsWith(text)
       ? offset
