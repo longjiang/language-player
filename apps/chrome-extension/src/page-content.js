@@ -639,62 +639,6 @@ function detachPageSelectionListener() {
   pageSelectionHandler = null;
 }
 
-let pageHoverHandler = null;
-let lastHoverKey = '';
-
-/** Token hover → scroll + highlight the translation. While the side-panel page
- *  translation tab is open, hovering a page token tells the panel to scroll the
- *  corresponding translation into view and highlight the translation SENTENCE
- *  that contains the token (apps/web reader parity). Deduped to one message per
- *  (block, sentence) so moving across a single sentence doesn't flood the panel
- *  with identical scroll requests. */
-function attachPageHoverListener() {
-  if (pageHoverHandler) return;
-  pageHoverHandler = (e) => {
-    if (!enabled || !panelOpen || !pageTranslationTabOpen) return;
-    const span = e.target?.closest?.('.lpv-page-token');
-    if (!span) {
-      // Pointer left tokenized text — allow the next token to re-trigger.
-      if (lastHoverKey) lastHoverKey = '';
-      return;
-    }
-    const block = span.closest?.(BLOCK_SELECTOR) || span;
-    const tokenText = span.dataset.tokenText || '';
-    // Resolve the paragraph RUN the token belongs to, so the sentence index is
-    // scoped to one paragraph (stable across multiple hovered runs).
-    const run = resolveRunForSpan(span);
-    const blockText = run?.text || block?.__lpvSourceText || getVisibleBlockText(block);
-    const blockId = run?.runId || block?.__lpvBlockId || null;
-    const offset = blockText.indexOf(tokenText);
-    const sentenceIndex = offset >= 0
-      ? sentenceIndexAtOffset(blockText, offset, baseCode(l2Code))
-      : 0;
-    const key = `${blockId || ''}:${sentenceIndex}`;
-    if (key === lastHoverKey) return;
-    lastHoverKey = key;
-    log(`[PAGE] token hover → translation scroll: block=${blockId || '?'} sentence=${sentenceIndex} token="${tokenText}"`);
-    try {
-      chrome.runtime.sendMessage({
-        action: 'pageTokenHover',
-        blockId,
-        sentenceIndex,
-        tokenOffset: offset >= 0 ? offset : null,
-        blockText,
-        tokenText,
-      }).catch(() => {});
-    } catch {}
-  };
-  // mouseover is delegated; pointerover is used so it also fires on touch/pen.
-  document.addEventListener('pointerover', pageHoverHandler, true);
-}
-
-function detachPageHoverListener() {
-  if (!pageHoverHandler) return;
-  document.removeEventListener('pointerover', pageHoverHandler, true);
-  pageHoverHandler = null;
-  lastHoverKey = '';
-}
-
 function onIntersect(entries) {
   if (!enabled || !panelOpen) return;
   let queued = false;
@@ -922,7 +866,6 @@ function cleanup() {
   pendingBlocks.clear();
   tokenizing = false;
   detachPageSelectionListener();
-  detachPageHoverListener();
   restoreTokens();
   tokenCache.clear();
   lastLookup = null;
@@ -1002,7 +945,6 @@ async function init() {
   }
   await tokenizePage();
   attachPageSelectionListener();
-  attachPageHoverListener();
   pushPageModeState();
   startObserver();
 }

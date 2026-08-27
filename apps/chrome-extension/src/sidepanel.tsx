@@ -130,15 +130,6 @@ function SidePanelApp() {
   const [videoState, setVideoState] = useState<VideoPanelState | null>(null);
   const [pageState, setPageState] = useState<PagePanelState | null>(null);
   const [lookup, setLookup] = useState<PageLookupDetail | null>(null);
-  /** Latest token hover (page reader) — tells the page-translation tab to scroll
-   *  to and highlight the translation sentence under the cursor. */
-  const [translationHover, setTranslationHover] = useState<{
-    blockId: string | null;
-    sentenceIndex: number;
-    tokenOffset?: number | null;
-    blockText?: string;
-    tokenText?: string;
-  } | null>(null);
   const [mismatchDismissed, setMismatchDismissed] = useState(false);
   const [localeVersion, setLocaleVersion] = useState(0);
   const [l1Code, setL1Code] = useState('en');
@@ -337,8 +328,6 @@ function SidePanelApp() {
         if (msg.state?.lookup) setLookup(msg.state.lookup);
       } else if (msg.action === 'pageLookup') {
         setLookup(msg.payload);
-      } else if (msg.action === 'pageTokenHover') {
-        setTranslationHover(msg.payload);
       } else if (msg.action === 'pageModalEvent') {
         pageModalEventRef.current(msg.event);
       }
@@ -566,7 +555,6 @@ function SidePanelApp() {
         l2Code={pageState?.l2Code || l2Code}
         pageUrl={pageState?.pageUrl}
         lookup={lookup}
-        hover={translationHover}
       />
   ) : null;
 
