@@ -34,6 +34,8 @@ export { cn } from './cn';
 export { cleanPronunciation, formatPronunciation } from './pronunciation';
 export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
 export type { FuriganaSegment, RubySegment } from './furigana';
+export { getWordDifficulty, shouldShowPhonetics } from './phonetics-gate';
+export type { WordDifficulty, PhoneticsGateInput } from './phonetics-gate';
 export type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 export {
   rate,
