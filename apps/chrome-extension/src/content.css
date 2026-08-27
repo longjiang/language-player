@@ -1046,6 +1046,44 @@ body.lpv-panel-open disney-web-player-ui {
   line-height: 1.5;
 }
 
+/* ── Saved metadata (apps/web DictionaryEntryCard parity) ──────────────
+   Shown under a saved word's card: save date, source type + title, and the
+   context sentence it was saved from (with the surface form highlighted). */
+.lpv-dict-saved-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: hsl(var(--lpv-muted-foreground));
+}
+.lpv-dict-saved-meta-icon {
+  flex-shrink: 0;
+  vertical-align: -2px;
+}
+.lpv-dict-saved-date {
+  white-space: nowrap;
+}
+.lpv-dict-saved-sep {
+  color: hsl(var(--lpv-muted-foreground) / 0.8);
+}
+.lpv-dict-saved-source {
+  color: hsl(var(--lpv-muted-foreground));
+}
+.lpv-dict-saved-context {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: hsl(var(--lpv-muted-foreground));
+}
+.lpv-dict-saved-hit {
+  font-weight: 700;
+  color: hsl(var(--lpv-foreground));
+}
+
 /* ── Entry Row with per-entry Save button ──────────────────────────── */
 
 .lpv-dict-entry-row {
