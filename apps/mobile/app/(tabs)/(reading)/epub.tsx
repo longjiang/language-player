@@ -2,13 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, ActivityIndicator, Modal, Animated, ScrollView, useWindowDimensions, Linking, KeyboardAvoidingView, Platform } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
-import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system/legacy';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { useEpub } from '@/hooks/use-epub';
@@ -23,12 +21,11 @@ import { libraryFileUri } from '@/lib/epub-store';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
-import { PanelTopOpen, X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react-native';
+import { PanelTopOpen, X, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger, log, logwarn } from '@/lib/logger';
 import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
 /** Persist the reading location this long after the last page turn. Rapid
@@ -43,6 +40,7 @@ export default function EpubReaderScreen() {
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { setImmersed, registerCloseReader } = useReaderChrome();
+  const router = useRouter();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
 
@@ -71,13 +69,6 @@ export default function EpubReaderScreen() {
   /** TOC and Search are modals now (the sidebar is gone). */
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  /** Image reader session: an image OCR'd via DeepSeek Vision, read in the
-   *  paginated reader (no book open). */
-  const [imageSession, setImageSession] = useState<{
-    fileName: string;
-    md: string;
-    converting: boolean;
-  } | null>(null);
 
   // ── PDF shelf covers: render each PDF's first page once (hidden WebView),
   // then persist it so the bookshelf tile shows the real cover. ──
@@ -164,59 +155,8 @@ export default function EpubReaderScreen() {
     setSeekBlock(epub.coverTapped ? (epub.initialLocation?.blockIndex ?? null) : null);
   }, [epub.openBookId, epub.coverTapped, epub.initialLocation]);
 
-  /** Image reader pagination — a separate session from the book: text is the
-   *  OCR'd markdown of the opened image (idle when no session). */
-  const imagePagination = useEpubPagination({
-    text: imageSession?.md ?? '',
-    l1Code: l1Lang.code,
-    l2Code: l2Lang.code,
-    showTranslation: display.translation,
-    translationSplit: display.translationSplit,
-    resetKey: imageSession ? 'image-session' : null,
-    estimate: true,
-  });
-
-  /** Open an image file (by URI) → OCR via DeepSeek Vision → paginated reader. */
-  const runImageOcr = useCallback(async (uri: string, name: string) => {
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-    const mime = /\.png$/i.test(name) ? 'image/png' : /\.(gif|webp|heic)$/i.test(name) ? 'image/webp' : 'image/jpeg';
-    const dataUrl = `data:${mime};base64,${base64}`;
-    setImageSession({ fileName: name, md: '', converting: true });
-    log('[epub] image reader OCR start', { fileName: name });
-    try {
-      const res = await fetch(`${PYTHON_API_URL}/vision`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: dataUrl,
-          prompt:
-            'Extract all text from this image as clean markdown. Preserve headings, ' +
-            'paragraphs, lists, bold/italic emphasis, and code blocks. Output only ' +
-            'the markdown, with no commentary.',
-        }),
-      });
-      const data = res.ok ? await res.json() : null;
-      const md = typeof data?.response === 'string' ? data.response : '';
-      setImageSession({ fileName: name, md, converting: false });
-    } catch (err) {
-      logwarn('[epub] image reader OCR failed:', (err as Error)?.message ?? err);
-      setImageSession({ fileName: name, md: '', converting: false });
-    }
-  }, []);
-
-  /** Open an image via the document picker (image reader entry). */
-  const handleOpenImage = useCallback(async () => {
-    const pick = await DocumentPicker.getDocumentAsync({
-      type: ['image/*'],
-      copyToCacheDirectory: true,
-      multiple: false,
-    });
-    if (pick.canceled || !pick.assets?.[0]) return;
-    const asset = pick.assets[0];
-    await runImageOcr(asset.uri, asset.name ?? 'image');
-  }, [runImageOcr]);
+  /** Image reader now lives on its own screen (…/image-reader) — the epub
+   *  reader only handles books and PDFs. */
 
   // ── Navigation ──
   const pushHistory = useCallback(() => {
@@ -460,11 +400,13 @@ export default function EpubReaderScreen() {
           if (id) await handleOpenBook(id);
         })();
       } else if (f.kind === 'image') {
-        consumePendingOpen();
-        void runImageOcr(f.uri, f.name);
+        // Images now open in the standalone image reader — route there and
+        // leave the pending open for the image reader to consume on focus.
+        log('[epub] file-open → image reader', { name: f.name, kind: f.kind });
+        router.push('/(tabs)/(reading)/image-reader' as any);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [epub, l2Lang.code, handleOpenBook, runImageOcr]),
+    }, [epub, l2Lang.code, handleOpenBook, router]),
   );
 
   // ── Immersive chrome animations: the app header slides down from the top
@@ -510,76 +452,6 @@ export default function EpubReaderScreen() {
   }
 
   // ── Bookshelf (no book open) ──
-  if (imageSession && !hasBook) {
-    // Image reader session — OCR'd markdown in the paginated reader.
-    return (
-      <View className="flex-1 bg-background">
-        <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
-          <Text numberOfLines={1} className="flex-1 text-lg font-bold text-foreground">
-            {imageSession.fileName}
-          </Text>
-          <Pressable
-            onPress={() => setImageSession(null)}
-            className="rounded-md p-1.5 active:bg-muted"
-            accessibilityRole="button"
-            accessibilityLabel={t('action.close')}
-          >
-            <X size={18} color={ICON_MUTED} />
-          </Pressable>
-        </View>
-        {imageSession.converting ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color={ICON_MUTED} />
-            <Text className="mt-3 text-sm text-muted-foreground">
-              {t('msg.making_words_interactive')}
-            </Text>
-          </View>
-        ) : (
-          <PaginatedReader
-            blocks={imagePagination.blocks}
-            visibleBlocks={imagePagination.visibleBlocks}
-            page={imagePagination.page}
-            totalPages={imagePagination.totalPages}
-            hasMeasured={imagePagination.hasMeasured}
-            loadingTokens={imagePagination.loadingTokens}
-            tokenCache={imagePagination.tokenCache}
-            blockTranslations={imagePagination.blockTranslations}
-            isTranslating={imagePagination.isTranslating}
-            prevPage={imagePagination.prevPage}
-            nextPage={imagePagination.nextPage}
-            goToPage={imagePagination.goToPage}
-            handleMeasureBlock={imagePagination.handleMeasureBlock}
-            onVisibleBlocksChange={imagePagination.onVisibleBlocksChange}
-            contentWidth={imagePagination.contentWidth}
-            measureStart={imagePagination.measureStart}
-            measureEnd={imagePagination.measureEnd}
-            measureNonce={imagePagination.measureNonce}
-            onViewportLayout={imagePagination.handleViewportLayout}
-            hasPrev={imagePagination.hasPrev}
-            hasNext={imagePagination.hasNext}
-            flipping={imagePagination.flipping}
-            measuring={imagePagination.measuring}
-            l2Code={l2Lang.code}
-            l1Code={l1Lang.code}
-            showTranslation={display.translation}
-            onToggleTranslation={() => {
-              const next = !display.translation;
-              translationLogger.log(`toggle translation → ${next ? 'on' : 'off'}`);
-              updateDisplay({ translation: next });
-            }}
-            showTextActions
-            translationSideBySide={isMd}
-            selectionDictionary
-            firstLineIndent
-            onOpenLink={handleOpenLink}
-            textScale={1}
-            t={t}
-          />
-        )}
-      </View>
-    );
-  }
-
   if (!hasBook) {
     if (!epub.ready || (epub.loading && !epub.error)) {
       return (
@@ -592,15 +464,6 @@ export default function EpubReaderScreen() {
       <View className="flex-1 bg-background">
         <View className="flex-row items-center justify-between px-4 py-5">
           <Text className="text-xl font-bold text-foreground">{t('title.epub_reader')}</Text>
-          <Pressable
-            onPress={() => void handleOpenImage()}
-            className="flex-row items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
-            accessibilityRole="button"
-            accessibilityLabel={t('action.open_image')}
-          >
-            <ImageIcon size={14} color={ICON_MUTED} />
-            <Text className="text-xs font-medium text-foreground">{t('action.open_image')}</Text>
-          </Pressable>
         </View>
         <EpubBookshelf
           books={epub.books}
