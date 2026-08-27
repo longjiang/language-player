@@ -4,7 +4,7 @@
  * from changing the Language Player UI.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { AuthState } from './auth';
@@ -67,10 +67,11 @@ function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
 }
 
-function DictionarySurface({ lookup, modal, onClose }: {
+function DictionarySurface({ lookup, modal, onClose, onRequireLogin }: {
   lookup?: PageDictionaryLookup;
   modal?: Extract<ModalPayload, { kind: 'dictionary' }>;
   onClose: () => void;
+  onRequireLogin?: () => void;
 }) {
   const { isPro, loading: subLoading } = useSubscription();
   const token = modal?.token || lookup?.token || null;
@@ -91,6 +92,7 @@ function DictionarySurface({ lookup, modal, onClose }: {
         isPro={isPro}
         subLoading={subLoading}
         onClose={onClose}
+        onRequireLogin={onRequireLogin}
       />
     </SavedWordsProvider>
   );
@@ -145,6 +147,10 @@ Text: ${cue.text}`;
 function PageDictionaryFrame() {
   const [lookup, setLookup] = useState<PageDictionaryLookup | null>(null);
   const [modal, setModal] = useState<ModalPayload | null>(null);
+  // Preserve the surface (dictionary modal or page lookup) that was showing
+  // when the user tapped Save while logged out, so a successful login returns
+  // them to it instead of dropping the lookup.
+  const prevSurfaceRef = useRef<{ modal: ModalPayload | null; lookup: PageDictionaryLookup | null }>({ modal: null, lookup: null });
   // Bump on locale load so the modal re-renders with the user's L1 strings
   // instead of falling back to chrome.i18n (browser UI language) — the same
   // mechanism the native side panel uses (see src/sidepanel.tsx).
@@ -226,8 +232,17 @@ function PageDictionaryFrame() {
     postModalEvent({ action: 'close' });
   };
 
+  // Save → login prompt: stash the active dictionary surface so a successful
+  // login restores it (web parity — a save needs an account, and the learner
+  // shouldn't have to re-locate the word after signing in).
+  const openLoginFromDictionary = useCallback(() => {
+    prevSurfaceRef.current = { modal, lookup };
+    setLookup(null);
+    setModal({ kind: 'login' });
+  }, [modal, lookup]);
+
   const modalContent = modal?.kind === 'dictionary'
-    ? <DictionarySurface modal={modal} onClose={close} />
+    ? <DictionarySurface modal={modal} onClose={close} onRequireLogin={openLoginFromDictionary} />
     : modal?.kind === 'line-explanation'
       ? <LineExplanationSurface modal={modal} onClose={close} />
       : modal?.kind === 'language'
@@ -239,12 +254,19 @@ function PageDictionaryFrame() {
             : modal?.kind === 'about'
               ? <AboutModal open onOpenChange={(open) => { if (!open) close(); }} />
               : modal?.kind === 'login'
-                ? <LoginDialog open onOpenChange={(open) => { if (!open) close(); }} onLoggedIn={() => { postModalEvent({ action: 'loggedIn' }); setModal(null); }} />
+                ? <LoginDialog open onOpenChange={(open) => { if (!open) close(); }} onLoggedIn={() => {
+                    postModalEvent({ action: 'loggedIn' });
+                    // Restore the dictionary surface the save tap came from.
+                    const prev = prevSurfaceRef.current;
+                    prevSurfaceRef.current = { modal: null, lookup: null };
+                    setModal(prev.modal);
+                    setLookup(prev.lookup);
+                  }} />
                 : modal?.kind === 'account'
                   ? <AccountModal open auth={modal.auth} l1Code={modal.l1Code} l2Code={modal.l2Code} onOpenChange={(open) => { if (!open) close(); }} onLoggedOut={() => { postModalEvent({ action: 'loggedOut' }); setModal(null); }} />
                   : null;
 
-  return <div id="lpv-page-dictionary-frame-root">{modalContent || (lookup && <DictionarySurface lookup={lookup} onClose={close} />)}</div>;
+  return <div id="lpv-page-dictionary-frame-root">{modalContent || (lookup && <DictionarySurface lookup={lookup} onClose={close} onRequireLogin={openLoginFromDictionary} />)}</div>;
 }
 
 const container = document.getElementById('lpv-page-dictionary-root');

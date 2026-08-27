@@ -17,6 +17,8 @@ interface DictionaryModalProps {
   isPro: boolean;
   subLoading: boolean;
   onClose: () => void;
+  /** Opens the login dialog when the user taps Save while logged out. */
+  onRequireLogin?: () => void;
 }
 
 /**
@@ -37,6 +39,7 @@ export const DictionaryModal: React.FC<DictionaryModalProps> = ({
   isPro,
   subLoading,
   onClose,
+  onRequireLogin,
 }) => {
   return (
     <Dialog
@@ -61,6 +64,7 @@ export const DictionaryModal: React.FC<DictionaryModalProps> = ({
           isPro={isPro}
           subLoading={subLoading}
           onClose={onClose}
+          onRequireLogin={onRequireLogin}
         />
       )}
     </Dialog>

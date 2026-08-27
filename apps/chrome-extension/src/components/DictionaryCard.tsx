@@ -51,6 +51,9 @@ interface DictionaryCardProps {
   isPro: boolean;
   subLoading: boolean;
   onClose: () => void;
+  /** Called when the user taps Save/Bookmark while logged out — the host
+   *  opens the login dialog (web parity: a save requires an account). */
+  onRequireLogin?: () => void;
 }
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -184,9 +187,11 @@ interface EntryRowProps {
   cueStartTime?: number;
   videoTitle?: string;
   pageUrl?: string;
+  /** Opens the login dialog when the user taps Save while logged out. */
+  onRequireLogin?: () => void;
 }
 
-const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl }) => {
+const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, onRequireLogin }) => {
   const { savedWords, saveWord, removeSavedWord, isLoggedIn, loading: wordsLoading } = useSavedWords();
   const [saving, setSaving] = useState(false);
 
@@ -234,7 +239,8 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
       return;
     }
     if (!isLoggedIn) {
-      log('[SAVE] not logged in — save skipped (no network request)');
+      log('[SAVE] not logged in — prompting login (web parity: save needs an account)');
+      onRequireLogin?.();
       return;
     }
 
@@ -278,7 +284,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     } finally {
       setSaving(false);
     }
-  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord]);
+  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord, onRequireLogin]);
 
   const handleSpeak = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
@@ -379,6 +385,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   isPro,
   subLoading,
   onClose,
+  onRequireLogin,
 }) => {
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -800,6 +807,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
                 cueStartTime={cueStartTime}
                 videoTitle={videoTitle}
                 pageUrl={pageUrl}
+                onRequireLogin={onRequireLogin}
               />
             ))}
           </>
