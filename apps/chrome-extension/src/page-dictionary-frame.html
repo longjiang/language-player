@@ -3,13 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- content.css carries the .lpv-dict-* card base styles (flex header,
-         structure, save button, pro banner). The dictionary renders in this
-         isolated extension-origin iframe, so it must load them here too —
-         otherwise the card renders unstyled (misplaced close button, plain
-         "Pro feature" text, missing layout). It is safety-scoped: stream-page
-         rules (body.lpv-panel-open, player selectors) do not apply in a frame. -->
-    <link rel="stylesheet" href="../dist/content.css" />
     <link rel="stylesheet" href="../dist/sidepanel.css" />
     <link rel="stylesheet" href="../dist/page-dictionary.css" />
   </head>

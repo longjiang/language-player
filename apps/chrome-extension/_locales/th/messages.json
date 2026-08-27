@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "รหัสผ่าน"
   },
-  "welcomeBack": {
-    "message": "ยินดีต้อนรับกลับ"
-  },
-  "logInToContinue": {
-    "message": "เข้าสู่ระบบเพื่อเรียนรู้ต่อ"
-  },
-  "forgotPassword": {
-    "message": "ลืมรหัสผ่าน?"
-  },
-  "signUp": {
-    "message": "สมัครสมาชิก"
-  },
-  "dontHaveAccount": {
-    "message": "ยังไม่มีบัญชี?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "หากต้องการสร้างบัญชีหรือรีเซ็ตรหัสผ่าน โปรดไปที่ languageplayer.io แล้วกลับมาที่นี่เพื่อเข้าสู่ระบบ"
-  },
   "popupSaveWords": {
     "message": "<strong>บันทึก</strong> คำศัพท์ลงในบัญชี Language Player ของคุณ"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "ค้นหารูปภาพ"
-  },
-  "contextSentence": {
-    "message": "ประโยคบริบท"
-  },
-  "openInDictionary": {
-    "message": "เปิดในพจนานุกรม"
   },
   "startPlaying": {
     "message": "เริ่มเล่นวิดีโอ"
@@ -330,27 +306,6 @@
   "review": {
     "message": "ทบทวน"
   },
-  "smoothScroll": {
-    "message": "เลื่อนอย่างนุ่มนวล"
-  },
-  "voice": {
-    "message": "เสียง"
-  },
-  "rate": {
-    "message": "อัตรา"
-  },
-  "speed": {
-    "message": "ความเร็ว"
-  },
-  "defaultVoice": {
-    "message": "อัตโนมัติ (ที่ดีที่สุดที่มี)"
-  },
-  "textAppearance": {
-    "message": "ลักษณะข้อความ"
-  },
-  "testVoice": {
-    "message": "ทดสอบเสียง"
-  },
   "settingsUnavailable": {
     "message": "หมวดหมู่การตั้งค่านี้จะพร้อมใช้งานเร็วๆ นี้"
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "ระดับ"
-  },
-  "levelName1": {
-    "message": "ระดับเริ่มต้น I"
-  },
-  "levelName2": {
-    "message": "ระดับเริ่มต้น II"
-  },
-  "levelName3": {
-    "message": "ระดับเริ่มต้น III"
-  },
-  "levelName4": {
-    "message": "ระดับกลาง I"
-  },
-  "levelName5": {
-    "message": "ระดับกลาง II"
-  },
-  "levelName6": {
-    "message": "ระดับสูง I"
-  },
-  "levelName7": {
-    "message": "ระดับสูง II"
-  },
-  "lemma": {
-    "message": "รากศัพท์"
   },
   "subscription": {
     "message": "การสมัครสมาชิก"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "ไม่สามารถโหลดพจนานุกรมได้: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "ไม่พบรายการในพจนานุกรมสำหรับ $word$",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "รากศัพท์ที่ทดลองแล้ว"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "ค้นหาใน Language Player →"
-  },
-  "lookupFailed": {
-    "message": "การค้นหาล้มเหลว"
-  },
-  "explainFailed": {
-    "message": "คำอธิบายล้มเหลว"
-  },
-  "examplesFailed": {
-    "message": "โหลดตัวอย่างไม่สำเร็จ"
-  },
-  "followUpFailed": {
-    "message": "คำถามต่อเนื่องล้มเหลว"
-  },
-  "noSubtitleExamples": {
-    "message": "ไม่พบตัวอย่างจากคำบรรยาย"
-  },
-  "measureWord": {
-    "message": "วัด:"
-  },
-  "genderLabel": {
-    "message": "เพศ:"
-  },
-  "nounClass": {
-    "message": "คลาส:"
   }
 }

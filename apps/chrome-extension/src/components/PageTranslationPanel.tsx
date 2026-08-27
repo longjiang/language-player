@@ -66,6 +66,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   const flushTimerRef = useRef<number | null>(null);
   const requestGenerationRef = useRef(0);
   const translateBlocksRef = useRef<(ids: string[], generation: number) => void>(() => {});
+  const highlightTimerRef = useRef<number | null>(null);
 
   // Translating a language into itself is meaningless (l1 === l2) — disable
   // page translation entirely in that case.
@@ -94,7 +95,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
 
     try {
       let response: any = null;
-      for (let attempt = 1; attempt <= 5; attempt += 1) {
+      for (let attempt = 1; attempt <= 4; attempt += 1) {
         try {
           response = await chrome.tabs.sendMessage(tabId, { action: 'getPageTranslationSnapshot' });
         } catch (sendErr: any) {
@@ -119,16 +120,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
           blocks: Array.isArray(response?.blocks) ? response.blocks.length : null,
         });
         if (response?.ok || response?.error !== 'page translation is not active') break;
-        // The page content script reports the lifecycle is not active (its
-        // panelOpen/enabled state was lost, e.g. the tab navigated and the
-        // background hasn't re-asserted panel-open yet). Re-assert the
-        // page-translation lifecycle — the same message the tab switch sends —
-        // so a retry recovers instead of spinning on "not active".
-        if (attempt === 1) {
-          try {
-            await chrome.tabs.sendMessage(tabId, { action: 'pageTranslationVisibility', open: true });
-          } catch {}
-        }
         await new Promise((resolve) => window.setTimeout(resolve, RETRY_DELAY_MS));
       }
       if (generation !== requestGenerationRef.current) return;
@@ -166,6 +157,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
       if (flushTimerRef.current !== null) window.clearTimeout(flushTimerRef.current);
       queueRef.current = [];
       inFlightRef.current.clear();
+      if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
     };
   }, [canTranslate, loadSnapshot]);
 
@@ -309,11 +301,9 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     }
     log('[PAGE] scrolling translation to lookup block', { blockId, token: lookup?.token?.text });
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Keep the current-line marker on the block the learner is reading until
-    // they tap a different token (matching the subtitles active-cue behavior,
-    // which does not auto-clear). No timer here — a clear would make the
-    // indicator flash in and out.
     setHighlightedBlockId(blockId);
+    if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = window.setTimeout(() => setHighlightedBlockId(null), 1800);
   }, [blocks, lookup?.blockId, lookup?.token?.text]);
 
   if (!canTranslate) {

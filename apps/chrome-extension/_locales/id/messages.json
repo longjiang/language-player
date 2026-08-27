@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Kata Sandi"
   },
-  "welcomeBack": {
-    "message": "Selamat datang kembali"
-  },
-  "logInToContinue": {
-    "message": "Masuk untuk melanjutkan belajar."
-  },
-  "forgotPassword": {
-    "message": "Lupa kata sandi?"
-  },
-  "signUp": {
-    "message": "Daftar"
-  },
-  "dontHaveAccount": {
-    "message": "Belum punya akun?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Untuk membuat akun atau mengatur ulang kata sandi, kunjungi languageplayer.io lalu kembali ke sini untuk masuk."
-  },
   "popupSaveWords": {
     "message": "<strong>Simpan</strong> kata ke akun Language Player Anda"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Cari gambar"
-  },
-  "contextSentence": {
-    "message": "Kalimat konteks"
-  },
-  "openInDictionary": {
-    "message": "Buka di Kamus"
   },
   "startPlaying": {
     "message": "Mulai putar video."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Tinjauan"
   },
-  "smoothScroll": {
-    "message": "Gulir Halus"
-  },
-  "voice": {
-    "message": "Suara"
-  },
-  "rate": {
-    "message": "Laju"
-  },
-  "speed": {
-    "message": "Kecepatan"
-  },
-  "defaultVoice": {
-    "message": "Otomatis (terbaik yang tersedia)"
-  },
-  "textAppearance": {
-    "message": "Tampilan teks"
-  },
-  "testVoice": {
-    "message": "Uji Suara"
-  },
   "settingsUnavailable": {
     "message": "Kategori pengaturan ini akan segera hadir."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Level"
-  },
-  "levelName1": {
-    "message": "Pemula I"
-  },
-  "levelName2": {
-    "message": "Pemula II"
-  },
-  "levelName3": {
-    "message": "Pemula III"
-  },
-  "levelName4": {
-    "message": "Menengah I"
-  },
-  "levelName5": {
-    "message": "Menengah II"
-  },
-  "levelName6": {
-    "message": "Lanjutan I"
-  },
-  "levelName7": {
-    "message": "Lanjutan II"
-  },
-  "lemma": {
-    "message": "Lemma"
   },
   "subscription": {
     "message": "Langganan"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Gagal memuat kamus: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "Tidak ada entri kamus yang ditemukan untuk $word$",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Lemma yang sudah dicoba"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Cari di Language Player →"
-  },
-  "lookupFailed": {
-    "message": "Pencarian gagal"
-  },
-  "explainFailed": {
-    "message": "Penjelasan gagal"
-  },
-  "examplesFailed": {
-    "message": "Gagal memuat contoh"
-  },
-  "followUpFailed": {
-    "message": "Pertanyaan lanjutan gagal"
-  },
-  "noSubtitleExamples": {
-    "message": "Tidak ada contoh subtitle yang ditemukan"
-  },
-  "measureWord": {
-    "message": "Ukuran:"
-  },
-  "genderLabel": {
-    "message": "Jenis kelamin:"
-  },
-  "nounClass": {
-    "message": "Kelas:"
   }
 }

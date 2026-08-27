@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Passwort"
   },
-  "welcomeBack": {
-    "message": "Willkommen zurück"
-  },
-  "logInToContinue": {
-    "message": "Melden Sie sich an, um weiter zu lernen."
-  },
-  "forgotPassword": {
-    "message": "Passwort vergessen?"
-  },
-  "signUp": {
-    "message": "Registrieren"
-  },
-  "dontHaveAccount": {
-    "message": "Sie haben noch kein Konto?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Um ein Konto zu erstellen oder dein Passwort zurückzusetzen, besuche languageplayer.io und melde dich dann hier wieder an."
-  },
   "popupSaveWords": {
     "message": "<strong>Speichere</strong> Wörter in deinem Language Player-Konto"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Bilder suchen"
-  },
-  "contextSentence": {
-    "message": "Kontextsatz"
-  },
-  "openInDictionary": {
-    "message": "Im Wörterbuch öffnen"
   },
   "startPlaying": {
     "message": "Starte die Wiedergabe eines Videos."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Wiederholung"
   },
-  "smoothScroll": {
-    "message": "Sanftes Scrollen"
-  },
-  "voice": {
-    "message": "Stimme"
-  },
-  "rate": {
-    "message": "Tempo"
-  },
-  "speed": {
-    "message": "Geschwindigkeit"
-  },
-  "defaultVoice": {
-    "message": "Automatisch (am besten verfügbar)"
-  },
-  "textAppearance": {
-    "message": "Textdarstellung"
-  },
-  "testVoice": {
-    "message": "Teststimme"
-  },
   "settingsUnavailable": {
     "message": "Diese Einstellungskategorie kommt bald."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Stufe"
-  },
-  "levelName1": {
-    "message": "Anfänger I"
-  },
-  "levelName2": {
-    "message": "Anfänger II"
-  },
-  "levelName3": {
-    "message": "Anfänger III"
-  },
-  "levelName4": {
-    "message": "Mittelstufe I"
-  },
-  "levelName5": {
-    "message": "Mittelstufe II"
-  },
-  "levelName6": {
-    "message": "Fortgeschritten I"
-  },
-  "levelName7": {
-    "message": "Fortgeschritten II"
-  },
-  "lemma": {
-    "message": "Lemma"
   },
   "subscription": {
     "message": "Abonnement"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Fehler beim Laden des Wörterbuchs: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "Kein Wörterbucheintrag für $word$ gefunden",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Ausprobiert: Lemmata"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Auf Language Player suchen →"
-  },
-  "lookupFailed": {
-    "message": "Suche fehlgeschlagen"
-  },
-  "explainFailed": {
-    "message": "Erklärung fehlgeschlagen"
-  },
-  "examplesFailed": {
-    "message": "Beispiele konnten nicht geladen werden"
-  },
-  "followUpFailed": {
-    "message": "Folgeanfrage fehlgeschlagen"
-  },
-  "noSubtitleExamples": {
-    "message": "Keine Untertitel-Beispiele gefunden"
-  },
-  "measureWord": {
-    "message": "Maß:"
-  },
-  "genderLabel": {
-    "message": "Geschlecht:"
-  },
-  "nounClass": {
-    "message": "Klasse:"
   }
 }
