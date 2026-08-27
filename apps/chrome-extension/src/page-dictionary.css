@@ -154,13 +154,13 @@ body,
 
 #lpv-page-dictionary-root .lpv-page-follow-link {
   display: block;
-  width: calc(100% - 2rem);
-  margin: 0 1rem 0.5rem;
+  width: 100%;
+  margin: 0.75rem 0;
   padding: 0.375rem 0.75rem;
   border: 1px solid var(--lpv-frame-border);
-  border-radius: 0.375rem;
-  background: transparent;
-  color: var(--lpv-frame-primary);
+  border-radius: var(--radius);
+  background: var(--lpv-frame-background);
+  color: var(--lpv-frame-foreground);
   cursor: pointer;
   font: inherit;
   font-size: 0.8125rem;
@@ -173,17 +173,21 @@ body,
 
 #lpv-page-dictionary-root .lpv-explain-btn {
   display: inline-flex;
-  width: calc(100% - 2rem);
+  width: 100%;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin: 0 1rem 0.5rem;
+  /* Regular (neutral) outline button, matching apps/web's "Let DeepSeek
+     Explain" action — not the purple primary tint. The card body already pads
+     1.25rem horizontally, so a uniform 0.75rem vertical gap is all that's
+     needed (matches the Pro banner). */
+  margin: 0.75rem 0;
   padding: 0.375rem 0.75rem;
-  border: 1px solid hsl(var(--primary) / 0.35);
-  border-radius: 0.375rem;
-  background: transparent;
-  color: var(--lpv-frame-primary);
+  border: 1px solid var(--lpv-frame-border);
+  border-radius: var(--radius);
+  background: var(--lpv-frame-background);
+  color: var(--lpv-frame-foreground);
   cursor: pointer;
   font: inherit;
   font-size: 0.8125rem;
@@ -191,5 +195,5 @@ body,
 }
 
 #lpv-page-dictionary-root .lpv-explain-btn:hover {
-  background: hsl(var(--primary) / 0.08);
+  background: var(--lpv-frame-secondary);
 }

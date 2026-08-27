@@ -532,15 +532,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     };
   }, [token, l1Code, l2Code]);
 
-  const handleExplain = useCallback(async () => {
-    if (showExplain) {
-      setShowExplain(false);
-      return;
-    }
-    setShowExplain(true);
-    if (!isPro) return; // ADR-0034 D3: AI explanations are Pro-only — the
-    // explain section renders the upgrade prompt (web parity).
-
+  const fetchExplanation = useCallback(async () => {
     if (explainText || explainError) return;
 
     setExplainLoading(true);
@@ -580,7 +572,25 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     } finally {
       setExplainLoading(false);
     }
-  }, [isPro, showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
+  }, [explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
+
+  const handleExplain = useCallback(() => {
+    if (showExplain) {
+      setShowExplain(false);
+      return;
+    }
+    setShowExplain(true);
+  }, [showExplain]);
+
+  // Stream the explanation once the subscription check resolves and the user is
+  // Pro. The button is shown immediately (not deferred until the subscription
+  // loads) so the card renders stably; for a free user the explain section
+  // renders the upgrade prompt instead. Matches apps/web's AiExplanation.
+  useEffect(() => {
+    if (!showExplain || subLoading || !isPro) return;
+    if (explainText || explainError || explainLoading) return;
+    void fetchExplanation();
+  }, [showExplain, subLoading, isPro, explainText, explainError, explainLoading, fetchExplanation]);
 
   const handleFollowUp = useCallback(async (kind: FollowUpKind) => {
     if (!isPro || followUpLoading) return;
@@ -703,9 +713,10 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       {/* Card body */}
       <div className="lpv-dict-card-body">
         {/* AI explanation — always show the "Let DeepSeek Explain" button
-            (web parity). Non-Pro users get the upgrade prompt inside the
-            explain section instead of a hidden/disabled item (ADR-0034). */}
-        {!subLoading && !showExplain && (
+            immediately (not deferred until the subscription check). Non-Pro
+            users get the upgrade prompt inside the explain section after they
+            tap it (ADR-0034, web parity). */}
+        {!showExplain && (
           <Button
             onClick={handleExplain}
             variant="outline"
@@ -739,6 +750,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         {/* AI Explanation content */}
         {showExplain && (
           <div className="lpv-explain-section">
+            {subLoading && (
+              <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
+            )}
             {!subLoading && !isPro && (
               <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
             )}
