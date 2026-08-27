@@ -533,12 +533,13 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   }, [token, l1Code, l2Code]);
 
   const handleExplain = useCallback(async () => {
-    if (!isPro) return; // ADR-0034 D3: AI explanations are hard Pro-only
     if (showExplain) {
       setShowExplain(false);
       return;
     }
     setShowExplain(true);
+    if (!isPro) return; // ADR-0034 D3: AI explanations are Pro-only — the
+    // explain section renders the upgrade prompt (web parity).
 
     if (explainText || explainError) return;
 
@@ -701,8 +702,10 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
       {/* Card body */}
       <div className="lpv-dict-card-body">
-        {/* AI explanation — Pro-only (ADR-0034 D3). Free users see the prompt. */}
-        {!subLoading && isPro && !showExplain && (
+        {/* AI explanation — always show the "Let DeepSeek Explain" button
+            (web parity). Non-Pro users get the upgrade prompt inside the
+            explain section instead of a hidden/disabled item (ADR-0034). */}
+        {!subLoading && !showExplain && (
           <Button
             onClick={handleExplain}
             variant="outline"
@@ -712,9 +715,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           >
             <Sparkles size={14} /> {t('explain')}
           </Button>
-        )}
-        {!subLoading && !isPro && (
-          <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
         )}
 
         {/* Context sentence (collapsible) + Search images — web popup parity */}
@@ -739,6 +739,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         {/* AI Explanation content */}
         {showExplain && (
           <div className="lpv-explain-section">
+            {!subLoading && !isPro && (
+              <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
+            )}
             {explainLoading && (
               <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
             )}
