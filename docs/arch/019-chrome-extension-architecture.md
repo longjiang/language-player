@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR overlap normalization, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling, web-parity dictionary popup, page-reader subtitle-style translation list)
+- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR word-based alignment, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling, web-parity dictionary popup, page-reader subtitle-style translation list, save-word login prompt, always-visible Let-DeepSeek-Explain, page-translation lifecycle re-assert on navigation, selection dictionary)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -305,11 +305,15 @@ The extension supports six platforms. Each has a different mechanism for detecti
 7. Falls back to unsigned timedtext API if first fetch is empty
 8. Parses as timedtext XML or JSON3 format
 9. **ASR alignment**: if the selected track is auto-generated (`kind === 'asr'`),
-   all cues are shifted earlier by `YT_ASR_LEAD_OFFSET_SEC` (2.0s) so the active
-   line matches the audio rather than the lagging on-screen caption. ASR cues
-   frequently overlap (rolling recognition windows), so each shifted end is also
+   each line is anchored to its first word's absolute start and its last word's
+   absolute end, read from the json3 per-seg `tOffsetMs`/`dDurationMs` timings
+   (`applyASRWordTiming`), so the active line matches the audio rather than the
+   lagging on-screen caption. The original blanket `YT_ASR_LEAD_OFFSET_SEC` (2.0s)
+   lead shift was removed in favour of this literal word-based timing. ASR cues
+   frequently overlap (rolling recognition windows), so each end is also
    clamped to the next cue's start — otherwise clicking a line could seek to the
-   previous overlapping line.
+   previous overlapping line. For ASR tracks without per-word data (timedtext
+   XML) the cue's own start/end is kept and overlap is still clamped.
 10. setupYouTubeNavigationObserver() watches for SPA navigation via a DOM
     MutationObserver **and** YouTube's `yt-navigate-finish` event (video ID
     changes): it immediately clears the cue list, active cue, subtitle URL, and
@@ -475,6 +479,18 @@ Key behaviors:
   click renders instantly from the batch's English defs, then swaps in the
   L1-translated definitions (`getL1CachedEntries` / `/dictionary/lookup` with
   `l1`) once they load when `l1 ≠ en` — matching apps/web and apps/mobile.
+- **Selection dictionary (SPEC-033 port)**: dragging to select any portion of
+  tokenized text opens the dictionary popup with the selection as a lemma-less
+  token (`{ text: <selection>, lemmas: [] }`), matching apps/web. On the
+  subtitle transcript each `TokenizedLine` uses `useSelectionPopup` (ported from
+  apps/web); the context is the sentence containing the selection
+  (`sentenceContaining`, `@langplayer/utils`). On tokenized web pages,
+  `page-content.js` attaches a `pointerup` listener that captures selections
+  inside a `.lpv-page-token` span and opens the same popup. Ruby `<rt>` readings
+  are `user-select: none` (`select-none`) so `selection.toString()` returns the
+  L2 source text; `selection-utils.ts` maps the Range to a source-text offset
+  (skipping `rt, .select-none`). Note: apps/web's `extractPhrases` Phrases
+  section (`/extract-phrases`) is not yet ported to the extension popup.
 - **Dictionary iframe styles**: `page-dictionary-frame.html` loads
   `content.css`, `sidepanel.css`, and `page-dictionary.css`. The `.lpv-dict-*`
   card base styles (flex header, close-button placement, pro banner, save
@@ -487,11 +503,17 @@ Key behaviors:
   mode), and the dictionary lookup dialog is clamped to `min(28rem, …)`
   (apps/web dictionary-popup `w-[28rem]`) so it does not render as an oversized
   sheet on the page. The entry card matches apps/web's layout: level/CEFR
-  badges top-right, labeled save/bookmark button always visible (click gates on
-  login), and the alternate script next to the headword — Chinese (zh/yue/lzh)
+  badges top-right, labeled save/bookmark button always visible, and the
+  alternate script next to the headword — Chinese (zh/yue/lzh)
   shows the opposite script to the user's traditional/simplified preference
   (head ↔ alternate swap), and Vietnamese/Korean show chữ Hán / hanja from
-  `han_script.han`, mirroring apps/web's `useScriptPreference`.
+  `han_script.han`, mirroring apps/web's `useScriptPreference`. Tapping Save
+  while logged out opens the login dialog (`onRequireLogin` → `{ kind: 'login' }`
+  in `page-dictionary-frame.tsx`) instead of silently ignoring the click; the
+  active dictionary surface is preserved across the login so the learner lands
+  back on the word after signing in. The "Let DeepSeek Explain" button is always
+  shown — a non-Pro tap renders the `aiProFeature` upgrade prompt inside the
+  explain section, a Pro tap streams the explanation (web parity, ADR-0034).
 - **Dictionary iframe locale**: `page-dictionary-frame.tsx` calls `setLocale()`
   with the saved `l1Language` on init and re-applies it on `storage` changes, so
   the popup renders the user's selected interface language rather than falling
@@ -526,11 +548,13 @@ Key behaviors:
   upgrade banner and `ai-explanation` free-user prompt.
 - **Auto-generated (ASR) caption alignment**: YouTube ASR captions lag the audio,
   so at a given `currentTime` the panel highlighted the previous line. For an
-  ASR track, `fetchYTTrack` shifts every cue earlier by `YT_ASR_LEAD_OFFSET_SEC`
-  (default 2.0s, preserving inter-cue gaps and dropping zero-length cues), then
-  clamps each cue's end to the next cue's start so ASR windows don't overlap and
-  click-to-seek always lands on the clicked line. Manual caption tracks are left
-  untouched.
+  ASR track, `fetchYTTrack` anchors each line to its first word's absolute start
+  and its last word's absolute end via `applyASRWordTiming` (json3 per-seg
+  `tOffsetMs`/`dDurationMs`), then clamps each cue's end to the next cue's start
+  so ASR windows don't overlap and click-to-seek always lands on the clicked
+  line. Manual caption tracks are left untouched. The previous blanket 2.0s
+  lead shift (`applyASRSubtitleOffset`) was removed: the starttime of each line
+  is now the starttime of the first word of that line.
 - **Subtitle clear on YouTube SPA navigation**: `setupYouTubeNavigationObserver`
   resets `STATE.cues`/`activeCueIdx`/`subtitleUrl` and pushes a `detecting` state
   the moment the video ID changes (via a DOM MutationObserver and YouTube's
@@ -599,12 +623,22 @@ with `position:fixed`. They render in the browser's own side panel:
   Tokenization starts only after the Page Translation tab is active. The
   browser's native ✕ restores the original page immediately; switching to
   Subtitles does the same. A later Page Translation tab open re-reads the page
-  snapshot and lazily tokenizes only near-viewport page blocks.
+  snapshot and lazily tokenizes only near-viewport page blocks. The background
+  re-asserts `panelOpenState(true)` to the side-panel tab once a navigation
+  completes (`chrome.tabs.onUpdated` `status === 'complete'`): the side-panel
+  port stays connected across a reload, so `onConnect` never fires again and the
+  freshly-injected `page-content.js` would otherwise read `panelOpen=false` and
+  report "page translation is not active" for the Page Translation tab. The side
+  panel's snapshot retry also re-asserts `pageTranslationVisibility` on "not
+  active", so a Retry recovers instead of spinning.
 - **Page translation on video hosts**: `page-content.js` no longer skips video
   hosts. When the Page Translation tab is active on a YouTube/Netflix/… page it
   tokenizes the page (title/description/comments) for the popup dictionary and
   serves the `getPageTranslationSnapshot` feed, so the Page Translation tab works
-  there too. `pushPageModeState()` returns early on a video host so the side
+  there too. `getPageTranslationSnapshot` extracts visible text from non-skipped
+  text nodes (`getVisibleBlockText`) rather than falling back to `textContent`,
+  so script/style-only wrappers — e.g. YouTube's VideoObject JSON-LD — do not
+  surface as a page-translation line. `pushPageModeState()` returns early on a video host so the side
   panel is never flipped out of the Subtitles/video mode; the panel still gets
   page lookups via the dedicated `pageLookup` message.
 - **What moved out of content scripts**: `createPanelUI`/`createPanel`, the
@@ -978,7 +1012,7 @@ The extension enforces the same Pro gates as web and mobile:
 | Feature | Free | Pro | Implementation |
 |---|---|---|---|
 | Interactive transcript | first **10** lines + upgrade banner | complete | `FREE_TRANSCRIPT_LINES = 10` in `transcript-app.tsx`; banner links to the web Go Pro page |
-| AI explanation ("Let DeepSeek Explain") | upgrade prompt (`msg.ai_pro_feature`) | available | `DictionaryCard` renders the button only for Pro; per-cue Explain menu item is hidden for free users |
+| AI explanation ("Let DeepSeek Explain") | upgrade prompt (`msg.ai_pro_feature`) on click | available | `DictionaryCard` and the per-cue Explain menu render the button for everyone (web parity); a non-Pro tap shows the upgrade prompt, Pro opens the explain surface (`msg.ai_pro_feature` / `aiProFeature`) |
 | Saved words, dictionary, tokenization | ✅ | ✅ | not gated |
 
 Pro status comes from `GET /user-subscription` with the stored Supabase JWT
