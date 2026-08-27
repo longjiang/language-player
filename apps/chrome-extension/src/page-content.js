@@ -9,7 +9,8 @@
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { setLocale, log, logwarn } from './i18n';
-import { buildRuby } from '@langplayer/utils';
+import { buildRuby, baseCode, sentenceContaining } from '@langplayer/utils';
+import { selectionStartOffset } from './selection-utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
 /** Language Player's own web assets — never tokenize these (mirrors popup.js). */
@@ -94,6 +95,24 @@ function isHidden(el) {
     return style.display === 'none' || style.visibility === 'hidden';
   } catch {
     return true;
+  }
+}
+
+/** True when `el` has a descendant matching BLOCK_SELECTOR that is NOT hidden.
+ *  Used as the "is this a nested wrapper?" test. Hidden descendant blocks do
+ *  NOT make `el` nested — otherwise a wrapper that only contains hidden
+ *  sub-blocks (e.g. YouTube's always-hidden paid-comment-chip <div> inside a
+ *  comment body) would be skipped as "nested", orphaning its *visible* text
+ *  (the comment body <span>). */
+function hasVisibleBlockDescendant(el) {
+  try {
+    const descendants = el.querySelectorAll(BLOCK_SELECTOR);
+    for (const child of descendants) {
+      if (!isHidden(child)) return true;
+    }
+    return false;
+  } catch {
+    return false;
   }
 }
 
@@ -249,6 +268,33 @@ function normalizeBlockText(text) {
   return (text || '').replace(/\s+/g, ' ').trim();
 }
 
+/** Visible text of a block, from non-skipped text nodes only. `innerText` can
+ *  be empty while `textContent` is a big non-rendered blob — e.g. a wrapper
+ *  around YouTube's `<script type="application/ld+json">` VideoObject that
+ *  would otherwise surface as a page-translation line. Walking text nodes
+ *  through the same SKIP_SELECTOR / hidden filter as the tokenizer excludes
+ *  scripts, styles, templates, and hidden subtrees; ruby `<rt>` readings are
+ *  excluded too so the text matches what the learner sees (no glosses). */
+function getVisibleBlockText(el) {
+  try {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+        const value = (node.nodeValue || '').trim();
+        if (!value) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const parts = [];
+    while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+    return normalizeBlockText(parts.join(' '));
+  } catch {
+    return normalizeBlockText(el.textContent || '');
+  }
+}
+
 /** Return source blocks for the side-panel translation view. This reads the
  * page DOM from the page content script, never from the side-panel document.
  * The cap keeps runtime message payloads bounded on very large pages. */
@@ -256,8 +302,8 @@ function getPageTranslationSnapshot() {
   const blocks = [];
   let totalChars = 0;
   for (const el of document.querySelectorAll(BLOCK_SELECTOR)) {
-    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || el.querySelector(BLOCK_SELECTOR)) continue;
-    const text = normalizeBlockText(el.innerText || el.textContent || '');
+    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
+    const text = getVisibleBlockText(el);
     if (!text || text.length < 2) continue;
     const clipped = text.slice(0, 2000);
     if (totalChars + clipped.length > 180000) break;
@@ -276,7 +322,10 @@ function onTokenClick(e, token, textNodeParent) {
   const anchor = textNodeParent?.closest?.('a[href]');
   const href = anchor ? anchor.href : null;
   const block = textNodeParent?.closest?.(BLOCK_SELECTOR) || textNodeParent;
-  const blockText = normalizeBlockText(block?.innerText || block?.textContent || '');
+  // Serve the context from the source text captured at tokenization, not from
+  // the live (tokenized + ruby) DOM — otherwise the context sentence includes
+  // ruby readings.
+  const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
   const blockId = block?.__lpvBlockId || null;
 
   const payload = {
@@ -308,15 +357,82 @@ function onTokenClick(e, token, textNodeParent) {
   });
 }
 
+let pageSelectionHandler = null;
+
+/** Drag-select → dictionary popup on tokenized page text (SPEC-033). Selecting
+ *  any portion of tokenized page text opens the dictionary with the selection
+ *  as the lookup term (no lemma), context = the sentence containing it. */
+function attachPageSelectionListener() {
+  if (pageSelectionHandler) return;
+  pageSelectionHandler = (e) => {
+    if (!enabled) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const anchorEl = range.startContainer.nodeType === Node.ELEMENT_NODE
+      ? range.startContainer
+      : range.startContainer.parentElement;
+    // Only selections inside tokenized page text open the popup.
+    if (!anchorEl?.closest?.('.lpv-page-token')) return;
+    const text = sel.toString().trim();
+    if (!text) return;
+    const tokenEl = anchorEl.closest('.lpv-page-token');
+    const block = anchorEl.closest?.(BLOCK_SELECTOR) || tokenEl;
+    const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
+    const offset = selectionStartOffset(block, range);
+    const hit = offset !== null && blockText.slice(offset).startsWith(text)
+      ? offset
+      : blockText.indexOf(text);
+    const contextText = hit !== -1
+      ? sentenceContaining(blockText, hit, baseCode(l2Code))
+      : blockText;
+    const blockId = block?.__lpvBlockId || null;
+    const link = block?.closest?.('a[href]');
+    const href = link?.href || null;
+    const payload = {
+      token: { text, lemmas: [], pronunciation: null },
+      blockText: contextText,
+      blockId,
+      href,
+      l1Code,
+      l2Code,
+      pageUrl: location.href,
+    };
+    log(`[PAGE] selection lookup: "${text}" | context chars=${contextText.length}`);
+    lastLookup = payload;
+    window.dispatchEvent(new CustomEvent('lpv-page-dictionary-open', { detail: payload }));
+    try {
+      chrome.runtime.sendMessage({ action: 'pageLookup', payload }).catch(() => {});
+    } catch {}
+    getTabId().then((tid) => {
+      if (!tid) return;
+      try {
+        if (chrome.sidePanel?.open) chrome.sidePanel.open({ tabId: tid });
+      } catch {}
+    });
+    // Collapse the native selection so the popup doesn't re-open on a stray
+    // mouseup over the still-highlighted text.
+    window.getSelection()?.removeAllRanges();
+  };
+  // pointerup handles both mouse and touch; defer so the selection is settled.
+  document.addEventListener('pointerup', pageSelectionHandler, true);
+}
+
+function detachPageSelectionListener() {
+  if (!pageSelectionHandler) return;
+  document.removeEventListener('pointerup', pageSelectionHandler, true);
+  pageSelectionHandler = null;
+}
+
 function onIntersect(entries) {
-  if (!enabled) return;
+  if (!enabled || !panelOpen) return;
   let queued = false;
   for (const entry of entries) {
     if (!entry.isIntersecting) continue;
     const el = entry.target;
     if (tokenizedBlocks.has(el) || pendingBlocks.has(el)) continue;
     if (isHidden(el) || isInsideSkipped(el)) continue;
-    if (el.querySelector(BLOCK_SELECTOR)) continue; // became nested — children tokenize as their own leaf blocks
+    if (hasVisibleBlockDescendant(el)) continue; // became nested — children tokenize as their own leaf blocks
     pendingBlocks.add(el);
     queued = true;
   }
@@ -337,7 +453,7 @@ function scheduleFlush() {
 
 async function flushPending() {
   flushTimer = null;
-  if (!enabled || tokenizing || pendingBlocks.size === 0) return;
+  if (!enabled || !panelOpen || tokenizing || pendingBlocks.size === 0) return;
   tokenizing = true;
   const blocks = [...pendingBlocks];
   pendingBlocks.clear();
@@ -346,11 +462,16 @@ async function flushPending() {
     const emptyBlocks = [];
     for (const block of blocks) {
       if (tokenizedBlocks.has(block)) continue;
-      if (block.querySelector(BLOCK_SELECTOR)) continue; // became nested — leave to its leaf children
+      if (hasVisibleBlockDescendant(block)) continue; // became nested — leave to its leaf children
       if (block.__lpvOriginalHtml === undefined) block.__lpvOriginalHtml = block.innerHTML;
       if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
       const nodes = getTextNodes(block);
       if (nodes.length > 0) {
+        // Capture the block's *source* text once, before the text nodes are
+        // replaced by token spans. The lookup context is served from this
+        // stored value instead of re-reading the (now tokenized, ruby-laden)
+        // DOM on every token click / selection (SPEC-033 context parity).
+        if (block.__lpvSourceText === undefined) block.__lpvSourceText = getVisibleBlockText(block);
         blocksWithNodes.push({ block, nodes });
         block.classList.add('lpv-page-tokenizing');
       } else {
@@ -416,7 +537,7 @@ async function flushPending() {
 }
 
 async function tokenizePage() {
-  if (!enabled) return;
+  if (!enabled || !panelOpen) return;
   const ioInstance = ensureIo();
   const allCandidates = [...document.querySelectorAll(BLOCK_SELECTOR)];
   let hiddenCount = 0;
@@ -431,7 +552,7 @@ async function tokenizePage() {
     } else if (isInsideSkipped(el)) {
       insideSkippedCount++;
       if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:insideSkipped`);
-    } else if (el.querySelector(BLOCK_SELECTOR)) {
+    } else if (hasVisibleBlockDescendant(el)) {
       nestedCount++;
       if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:nested`);
     } else {
@@ -488,7 +609,7 @@ function cleanup() {
   lifecycleGeneration++;
   initialized = false;
   enabled = false;
-  log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks`);
+  log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks (enabled=false, panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}); page tokenization + translation stopped`);
   if (observer) {
     observer.disconnect();
     observer = null;
@@ -508,6 +629,7 @@ function cleanup() {
   for (const block of pendingBlocks) block.classList.remove('lpv-page-tokenizing');
   pendingBlocks.clear();
   tokenizing = false;
+  detachPageSelectionListener();
   restoreTokens();
   tokenCache.clear();
   lastLookup = null;
@@ -528,7 +650,7 @@ function restoreTokens() {
 function startObserver() {
   if (observer) return;
   observer = new MutationObserver(() => {
-    if (!enabled) return;
+    if (!enabled || !panelOpen) return;
     clearTimeout(mutationTimer);
     mutationTimer = setTimeout(() => tokenizePage(), 400);
   });
@@ -583,6 +705,7 @@ async function init() {
     logwarn(`[PAGE] ⚠️ page language ${mismatch.detected} ≠ saved L2 ${mismatch.saved} — tokenizing as ${l2Code} anyway; panel shows the mismatch banner`);
   }
   await tokenizePage();
+  attachPageSelectionListener();
   pushPageModeState();
   startObserver();
 }
@@ -608,8 +731,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.action === 'panelOpenState') {
     panelOpen = message.open === true;
-    log(`[PAGE] panel lifecycle: open=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}`);
+    log(`[PAGE] panel lifecycle: open=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}, enabled=${enabled}`);
     if (!panelOpen) {
+      // Side panel closed — stop all page tokenization/translation immediately.
+      // The IntersectionObserver, MutationObserver, pending flush timers, and
+      // token cache are all torn down and every token span is restored, so
+      // scrolling no longer tokenizes any further page text.
       pageTranslationTabOpen = false;
       cleanup();
     } else if (pageTranslationTabOpen) {
@@ -653,10 +780,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.action === 'getPageTranslationSnapshot') {
     if (!enabled || !panelOpen || !pageTranslationTabOpen) {
+      log(`[PAGE] snapshot rejected: enabled=${enabled}, panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}, host=${location.hostname}`);
       sendResponse({ ok: false, error: 'page translation is not active' });
       return true;
     }
-    sendResponse({ ok: true, pageUrl: location.href, blocks: getPageTranslationSnapshot() });
+    const blocks = getPageTranslationSnapshot();
+    log(`[PAGE] snapshot returned ${blocks.length} blocks (l2=${l2Code}, l1=${l1Code})`);
+    sendResponse({ ok: true, pageUrl: location.href, blocks });
     return true;
   }
   if (message.action === 'changeLanguage') {

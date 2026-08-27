@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Mật khẩu"
   },
+  "welcomeBack": {
+    "message": "Chào mừng trở lại"
+  },
+  "logInToContinue": {
+    "message": "Đăng nhập để tiếp tục học."
+  },
+  "forgotPassword": {
+    "message": "Quên mật khẩu?"
+  },
+  "signUp": {
+    "message": "Đăng ký"
+  },
+  "dontHaveAccount": {
+    "message": "Chưa có tài khoản?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Để tạo tài khoản hoặc đặt lại mật khẩu, hãy truy cập languageplayer.io rồi quay lại đây để đăng nhập."
+  },
   "popupSaveWords": {
     "message": "<strong>Lưu</strong> từ vào tài khoản Language Player của bạn"
   },
@@ -182,6 +200,12 @@
   },
   "searchImages": {
     "message": "Tìm kiếm hình ảnh"
+  },
+  "contextSentence": {
+    "message": "Câu ngữ cảnh"
+  },
+  "openInDictionary": {
+    "message": "Mở trong từ điển"
   },
   "startPlaying": {
     "message": "Bắt đầu phát video."
@@ -306,6 +330,27 @@
   "review": {
     "message": "Ôn tập"
   },
+  "smoothScroll": {
+    "message": "Cuộn mượt"
+  },
+  "voice": {
+    "message": "Giọng nói"
+  },
+  "rate": {
+    "message": "Tốc độ"
+  },
+  "speed": {
+    "message": "Tốc độ"
+  },
+  "defaultVoice": {
+    "message": "Tự động (tốt nhất hiện có)"
+  },
+  "textAppearance": {
+    "message": "Giao diện văn bản"
+  },
+  "testVoice": {
+    "message": "Giọng thử"
+  },
   "settingsUnavailable": {
     "message": "Danh mục cài đặt này sẽ sớm ra mắt."
   },
@@ -332,6 +377,27 @@
   },
   "level": {
     "message": "Cấp độ"
+  },
+  "levelName1": {
+    "message": "Sơ cấp I"
+  },
+  "levelName2": {
+    "message": "Sơ cấp II"
+  },
+  "levelName3": {
+    "message": "Sơ cấp III"
+  },
+  "levelName4": {
+    "message": "Trung cấp I"
+  },
+  "levelName5": {
+    "message": "Trung cấp II"
+  },
+  "levelName6": {
+    "message": "Cao cấp I"
+  },
+  "levelName7": {
+    "message": "Cao cấp II"
   },
   "subscription": {
     "message": "Gói đăng ký"
@@ -722,5 +788,53 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Không thể tải từ điển: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "Không tìm thấy mục từ điển nào cho $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Đã thử các dạng gốc"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Tìm trên Language Player →"
+  },
+  "lookupFailed": {
+    "message": "Tra cứu thất bại"
+  },
+  "explainFailed": {
+    "message": "Giải thích thất bại"
+  },
+  "examplesFailed": {
+    "message": "Không thể tải ví dụ"
+  },
+  "followUpFailed": {
+    "message": "Câu hỏi tiếp theo thất bại"
+  },
+  "noSubtitleExamples": {
+    "message": "Không tìm thấy ví dụ từ phụ đề"
+  },
+  "measureWord": {
+    "message": "Đo lường:"
+  },
+  "genderLabel": {
+    "message": "Giới tính:"
+  },
+  "nounClass": {
+    "message": "Lớp:"
   }
 }

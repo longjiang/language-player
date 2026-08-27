@@ -4,7 +4,7 @@
  * from changing the Language Player UI.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { AuthState } from './auth';
@@ -21,7 +21,7 @@ import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { Dialog } from './components/ui/dialog';
 import { Markdown } from './components/Markdown';
-import { logwarn, t } from './i18n';
+import { logwarn, setLocale, t } from './i18n';
 
 const MESSAGE_SOURCE = 'language-player-page-dictionary';
 type Theme = 'light' | 'dark' | 'system';
@@ -67,10 +67,11 @@ function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
 }
 
-function DictionarySurface({ lookup, modal, onClose }: {
+function DictionarySurface({ lookup, modal, onClose, onRequireLogin }: {
   lookup?: PageDictionaryLookup;
   modal?: Extract<ModalPayload, { kind: 'dictionary' }>;
   onClose: () => void;
+  onRequireLogin?: () => void;
 }) {
   const { isPro, loading: subLoading } = useSubscription();
   const token = modal?.token || lookup?.token || null;
@@ -91,13 +92,14 @@ function DictionarySurface({ lookup, modal, onClose }: {
         isPro={isPro}
         subLoading={subLoading}
         onClose={onClose}
+        onRequireLogin={onRequireLogin}
       />
     </SavedWordsProvider>
   );
 }
 
 function LineExplanationSurface({ modal, onClose }: { modal: Extract<ModalPayload, { kind: 'line-explanation' }>; onClose: () => void }) {
-  const { isPro } = useSubscription();
+  const { isPro, loading: subLoading } = useSubscription();
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -135,6 +137,8 @@ Text: ${cue.text}`;
 
   return (
     <Dialog open title={t('explainTitle')} closeLabel={t('close')} onOpenChange={(open) => { if (!open) onClose(); }} className="lpv-line-explanation-dialog">
+      {subLoading && <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>}
+      {!subLoading && !isPro && <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>}
       {loading && <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>}
       {error && <div className="lpv-explain-error">{error}</div>}
       {text && <div className="lpv-explain-section" style={{ borderBottom: 'none' }}><Markdown text={text} /></div>}
@@ -145,6 +149,58 @@ Text: ${cue.text}`;
 function PageDictionaryFrame() {
   const [lookup, setLookup] = useState<PageDictionaryLookup | null>(null);
   const [modal, setModal] = useState<ModalPayload | null>(null);
+  // Preserve the surface (dictionary modal or page lookup) that was showing
+  // when the user tapped Save while logged out, so a successful login returns
+  // them to it instead of dropping the lookup.
+  const prevSurfaceRef = useRef<{ modal: ModalPayload | null; lookup: PageDictionaryLookup | null }>({ modal: null, lookup: null });
+  // Bump on locale load so the modal re-renders with the user's L1 strings
+  // instead of falling back to chrome.i18n (browser UI language) — the same
+  // mechanism the native side panel uses (see src/sidepanel.tsx).
+  const [, setLocaleVersion] = useState(0);
+
+  // Load the user's selected interface language (L1) into the runtime i18n
+  // cache. Without this, t() falls back to chrome.i18n.getMessage(), which
+  // resolves against the browser UI language and shows the wrong language in
+  // the popup. Mirror the side panel: resolve on init and re-apply whenever
+  // the stored L1 changes.
+  useEffect(() => {
+    (async () => {
+      const { l1Language } = await chrome.storage.local.get(['l1Language']);
+      await setLocale(l1Language || 'en');
+      setLocaleVersion((v) => v + 1);
+    })();
+    const onChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string,
+    ) => {
+      if (area !== 'local' || !changes.l1Language) return;
+      setLocale(changes.l1Language.newValue || 'en').then(() => {
+        setLocaleVersion((v) => v + 1);
+      });
+    };
+    chrome.storage.onChanged.addListener(onChange);
+    return () => chrome.storage.onChanged.removeListener(onChange);
+  }, []);
+
+  // Keep the iframe theme in sync with the extension's display theme. Without
+  // this the modal defaults to light, so a word lookup on a dark page renders
+  // a light card — it looks jarring and "not styled". Resolve the saved theme
+  // on init and re-apply whenever it changes (side panel / Settings).
+  useEffect(() => {
+    chrome.storage.local.get(['theme'], (res) => {
+      applyTheme((res?.theme === 'light' || res?.theme === 'dark') ? res.theme : 'system');
+    });
+    const onChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string,
+    ) => {
+      if (area !== 'local' || !changes.theme) return;
+      const next = changes.theme.newValue;
+      applyTheme((next === 'light' || next === 'dark') ? next : 'system');
+    };
+    chrome.storage.onChanged.addListener(onChange);
+    return () => chrome.storage.onChanged.removeListener(onChange);
+  }, []);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -178,8 +234,17 @@ function PageDictionaryFrame() {
     postModalEvent({ action: 'close' });
   };
 
+  // Save → login prompt: stash the active dictionary surface so a successful
+  // login restores it (web parity — a save needs an account, and the learner
+  // shouldn't have to re-locate the word after signing in).
+  const openLoginFromDictionary = useCallback(() => {
+    prevSurfaceRef.current = { modal, lookup };
+    setLookup(null);
+    setModal({ kind: 'login' });
+  }, [modal, lookup]);
+
   const modalContent = modal?.kind === 'dictionary'
-    ? <DictionarySurface modal={modal} onClose={close} />
+    ? <DictionarySurface modal={modal} onClose={close} onRequireLogin={openLoginFromDictionary} />
     : modal?.kind === 'line-explanation'
       ? <LineExplanationSurface modal={modal} onClose={close} />
       : modal?.kind === 'language'
@@ -191,12 +256,19 @@ function PageDictionaryFrame() {
             : modal?.kind === 'about'
               ? <AboutModal open onOpenChange={(open) => { if (!open) close(); }} />
               : modal?.kind === 'login'
-                ? <LoginDialog open onOpenChange={(open) => { if (!open) close(); }} onLoggedIn={() => { postModalEvent({ action: 'loggedIn' }); setModal(null); }} />
+                ? <LoginDialog open onOpenChange={(open) => { if (!open) close(); }} onLoggedIn={() => {
+                    postModalEvent({ action: 'loggedIn' });
+                    // Restore the dictionary surface the save tap came from.
+                    const prev = prevSurfaceRef.current;
+                    prevSurfaceRef.current = { modal: null, lookup: null };
+                    setModal(prev.modal);
+                    setLookup(prev.lookup);
+                  }} />
                 : modal?.kind === 'account'
                   ? <AccountModal open auth={modal.auth} l1Code={modal.l1Code} l2Code={modal.l2Code} onOpenChange={(open) => { if (!open) close(); }} onLoggedOut={() => { postModalEvent({ action: 'loggedOut' }); setModal(null); }} />
                   : null;
 
-  return <div id="lpv-page-dictionary-frame-root">{modalContent || (lookup && <DictionarySurface lookup={lookup} onClose={close} />)}</div>;
+  return <div id="lpv-page-dictionary-frame-root">{modalContent || (lookup && <DictionarySurface lookup={lookup} onClose={close} onRequireLogin={openLoginFromDictionary} />)}</div>;
 }
 
 const container = document.getElementById('lpv-page-dictionary-root');

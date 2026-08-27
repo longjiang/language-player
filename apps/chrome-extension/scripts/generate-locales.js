@@ -34,6 +34,8 @@ const CSV_LOOKUP = {
   'retry': 'action.retry',
   'speak': 'action.speak',
   'searchImages': 'action.search_images',
+  'contextSentence': 'label.context_sentence',
+  'openInDictionary': 'action.open_in_dictionary',
   'zoomOut': 'action.zoom_out',
   'zoomIn': 'action.zoom_in',
   'profile': 'title.profile',
@@ -85,6 +87,15 @@ const CSV_LOOKUP = {
   'playback': 'title.playback',
   'speech': 'title.speech',
   'review': 'title.review',
+  // Playback + Speech settings controls (CSV keys exist, so all locales pull
+  // their translations from translations.csv).
+  'smoothScroll': 'label.smooth_scroll',
+  'voice': 'label.voice',
+  'rate': 'label.rate',
+  'speed': 'label.speed',
+  'defaultVoice': 'label.auto_best_available',
+  'textAppearance': 'setting.text_appearance',
+  'testVoice': 'label.test_voice',
   'noLanguagesFound': 'msg.no_languages_match',
   'traditional': 'setting.traditional',
   'simplified': 'setting.simplified',
@@ -98,6 +109,12 @@ const CSV_LOOKUP = {
   'popupLogoutBtn': 'action.log_out',
   'popularLanguages': 'msg.popular_languages',
   'popupChecking': 'msg.checking',
+  // Login dialog (web-parity surface)
+  'welcomeBack': 'title.welcome_back',
+  'logInToContinue': 'msg.log_in_to_continue',
+  'forgotPassword': 'action.forgot_password',
+  'signUp': 'action.sign_up',
+  'dontHaveAccount': 'msg.dont_have_account',
   // Reused existing CSV keys (SPEC-028 optimization)
   'interfaceLanguage': 'placeholder.select_language',
   'learningLanguage': 'placeholder.select_language',
@@ -142,6 +159,14 @@ const CSV_LOOKUP = {
   'synonyms': 'action.synonyms',
   'examples': 'title.examples_from_videos',
   'subsAiExamples': 'prompt.subs_ai_examples',
+  // Dictionary card states (reuse existing CSV keys)
+  'dictLoadFailed': 'log.failed_load_dictionary',
+  'noDictionaryEntry': 'msg.no_dictionary_entry',
+  'triedLemmas': 'msg.tried_lemmas',
+  // Dictionary card classifiers (apps/web DictionaryEntryCard parity)
+  'measureWord': 'label.measure_word',
+  'genderLabel': 'label.gender_label',
+  'nounClass': 'label.noun_class',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.
@@ -840,6 +865,73 @@ const MANUAL = {
     'pt': 'Restam {days} dias', 'ru': 'Осталось дней: {days}', 'th': 'เหลืออีก {days} วัน',
     'tr': '{days} gün kaldı', 'vi': 'Còn {days} ngày',
   },
+  'searchOnLanguagePlayer': {
+    'zh-Hans': '在语言学习器中搜索 →', 'zh-Hant': '在語言學習器中搜尋 →', 'ar': 'البحث في Language Player ←',
+    'de': 'Auf Language Player suchen →', 'es': 'Buscar en Language Player →', 'fr': 'Rechercher sur Language Player →',
+    'id': 'Cari di Language Player →', 'it': 'Cerca su Language Player →', 'ja': '言語プレイヤーで検索 →',
+    'ko': 'Language Player에서 검색 →', 'nl': 'Zoeken op Language Player →', 'pl': 'Szukaj w Language Player →',
+    'pt': 'Pesquisar no Language Player →', 'ru': 'Искать в Language Player →', 'th': 'ค้นหาใน Language Player →',
+    'tr': "Language Player'de ara →", 'vi': 'Tìm trên Language Player →',
+  },
+  'lookupFailed': {
+    'zh-Hans': '查询失败', 'zh-Hant': '查詢失敗', 'ar': 'فشل البحث',
+    'de': 'Suche fehlgeschlagen', 'es': 'La búsqueda falló', 'fr': 'La recherche a échoué',
+    'id': 'Pencarian gagal', 'it': 'Ricerca non riuscita', 'ja': '検索に失敗しました',
+    'ko': '검색 실패', 'nl': 'Zoeken mislukt', 'pl': 'Wyszukiwanie nie powiodło się',
+    'pt': 'A pesquisa falhou', 'ru': 'Поиск не удался', 'th': 'การค้นหาล้มเหลว',
+    'tr': 'Arama başarısız oldu', 'vi': 'Tra cứu thất bại',
+  },
+  'explainFailed': {
+    'zh-Hans': '解释失败', 'zh-Hant': '解釋失敗', 'ar': 'فشل الشرح',
+    'de': 'Erklärung fehlgeschlagen', 'es': 'La explicación falló', 'fr': "L'explication a échoué",
+    'id': 'Penjelasan gagal', 'it': 'Spiegazione non riuscita', 'ja': '説明に失敗しました',
+    'ko': '설명 실패', 'nl': 'Uitleg mislukt', 'pl': 'Wyjaśnienie nie powiodło się',
+    'pt': 'A explicação falhou', 'ru': 'Объяснение не удалось', 'th': 'คำอธิบายล้มเหลว',
+    'tr': 'Açıklama başarısız oldu', 'vi': 'Giải thích thất bại',
+  },
+  'examplesFailed': {
+    'zh-Hans': '示例获取失败', 'zh-Hant': '範例取得失敗', 'ar': 'فشل الحصول على الأمثلة',
+    'de': 'Beispiele konnten nicht geladen werden', 'es': 'No se pudieron cargar los ejemplos', 'fr': "L'obtention d'exemples a échoué",
+    'id': 'Gagal memuat contoh', 'it': 'Impossibile caricare gli esempi', 'ja': '例文の取得に失敗しました',
+    'ko': '예시 로드 실패', 'nl': 'Voorbeelden laden mislukt', 'pl': 'Nie udało się załadować przykładów',
+    'pt': 'Falha ao carregar exemplos', 'ru': 'Не удалось загрузить примеры', 'th': 'โหลดตัวอย่างไม่สำเร็จ',
+    'tr': 'Örnekler yüklenemedi', 'vi': 'Không thể tải ví dụ',
+  },
+  'followUpFailed': {
+    'zh-Hans': '追问失败', 'zh-Hant': '追問失敗', 'ar': 'فشل المتابعة',
+    'de': 'Folgeanfrage fehlgeschlagen', 'es': 'La consulta de seguimiento falló', 'fr': 'Le suivi a échoué',
+    'id': 'Pertanyaan lanjutan gagal', 'it': "La domanda di approfondimento non è riuscita", 'ja': 'フォローアップに失敗しました',
+    'ko': '후속 질문 실패', 'nl': 'Vervolgvraag mislukt', 'pl': 'Pytanie uzupełniające nie powiodło się',
+    'pt': 'A pergunta de acompanhamento falhou', 'ru': 'Уточняющий вопрос не удался', 'th': 'คำถามต่อเนื่องล้มเหลว',
+    'tr': 'Takip sorusu başarısız oldu', 'vi': 'Câu hỏi tiếp theo thất bại',
+  },
+  'noSubtitleExamples': {
+    'zh-Hans': '未找到字幕示例', 'zh-Hant': '找不到字幕範例', 'ar': 'لم يتم العثور على أمثلة من الترجمة',
+    'de': 'Keine Untertitel-Beispiele gefunden', 'es': 'No se encontraron ejemplos de subtítulos', 'fr': 'Aucun exemple de sous-titres trouvé',
+    'id': 'Tidak ada contoh subtitle yang ditemukan', 'it': 'Nessun esempio di sottotitolo trovato', 'ja': '字幕の例が見つかりません',
+    'ko': '자막 예시를 찾을 수 없습니다', 'nl': 'Geen voorbeelden uit ondertitels gevonden', 'pl': 'Nie znaleziono przykładów z napisów',
+    'pt': 'Nenhum exemplo de legendas encontrado', 'ru': 'Примеры из субтитров не найдены', 'th': 'ไม่พบตัวอย่างจากคำบรรยาย',
+    'tr': 'Altyazı örneği bulunamadı', 'vi': 'Không tìm thấy ví dụ từ phụ đề',
+  },
+  'accountOnWebsiteNotice': {
+    'zh-Hans': '注册或找回密码请前往 languageplayer.io，完成后返回此处登录。',
+    'zh-Hant': '註冊或找回密碼請前往 languageplayer.io，完成後返回此處登入。',
+    'ar': 'لإنشاء حساب أو إعادة تعيين كلمة المرور، تفضل بزيارة languageplayer.io ثم عد إلى هنا لتسجيل الدخول.',
+    'de': 'Um ein Konto zu erstellen oder dein Passwort zurückzusetzen, besuche languageplayer.io und melde dich dann hier wieder an.',
+    'es': 'Para crear una cuenta o restablecer tu contraseña, visita languageplayer.io y vuelve aquí para iniciar sesión.',
+    'fr': 'Pour créer un compte ou réinitialiser votre mot de passe, rendez-vous sur languageplayer.io, puis revenez ici pour vous connecter.',
+    'id': 'Untuk membuat akun atau mengatur ulang kata sandi, kunjungi languageplayer.io lalu kembali ke sini untuk masuk.',
+    'it': 'Per creare un account o reimpostare la password, visita languageplayer.io e poi torna qui per accedere.',
+    'ja': 'アカウント作成やパスワード再設定は languageplayer.io で行い、完了したらここに戻ってログインしてください。',
+    'ko': '계정을 만들거나 비밀번호를 재설정하려면 languageplayer.io를 방문한 후 여기로 돌아와 로그인하세요.',
+    'nl': 'Om een account aan te maken of je wachtwoord opnieuw in te stellen, ga je naar languageplayer.io en kom daarna hier terug om in te loggen.',
+    'pl': 'Aby utworzyć konto lub zresetować hasło, odwiedź languageplayer.io, a następnie wróć tutaj, aby się zalogować.',
+    'pt': 'Para criar uma conta ou redefinir a senha, visite languageplayer.io e volte aqui para entrar.',
+    'ru': 'Чтобы создать аккаунт или сбросить пароль, перейдите на languageplayer.io и вернитесь сюда для входа.',
+    'th': 'หากต้องการสร้างบัญชีหรือรีเซ็ตรหัสผ่าน โปรดไปที่ languageplayer.io แล้วกลับมาที่นี่เพื่อเข้าสู่ระบบ',
+    'tr': 'Hesap oluşturmak veya şifrenizi sıfırlamak için languageplayer.io adresini ziyaret edin, ardından giriş yapmak için buraya dönün.',
+    'vi': 'Để tạo tài khoản hoặc đặt lại mật khẩu, hãy truy cập languageplayer.io rồi quay lại đây để đăng nhập.',
+  },
 };
 
 // ── CSV Parser ────────────────────────────────────────────────────────────
@@ -863,6 +955,23 @@ function loadCSV() {
 }
 
 // ── Generator ─────────────────────────────────────────────────────────────
+
+/**
+ * Extract a single branch value from an ICU MessageFormat `select`.
+ * e.g. for `{level, select, 1{Beginner I} 2{Beginner II} ...}` and num=1
+ * this returns "Beginner I". Used to flatten the CSV `level.name` ICU select
+ * into per-level flat keys (the extension's t()/chrome.i18n can't parse ICU).
+ * Branch values contain no nested braces, so a simple `[^{}]*` capture works.
+ */
+function extractIcuSelectValue(icu, num) {
+  if (!icu) return null;
+  const re = /(?:^|[\s,{])(\d+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(icu)) !== null) {
+    if (Number(m[1]) === num) return m[2].trim();
+  }
+  return null;
+}
 
 function main() {
   const csv = loadCSV();
@@ -916,14 +1025,25 @@ function main() {
         translated = MANUAL[key][csvCol];
       }
 
-      // 3. For popupShowTranscript, reuse showTranscript
+      // 3. levelNameN — flattened from the CSV `level.name` ICU select for the
+      //    current locale. chrome.i18n cannot parse ICU MessageFormat, so the
+      //    generator turns "{level, select, 1{Beginner I} ...}" into flat keys.
+      if (!translated) {
+        const levelMatch = key.match(/^levelName([1-7])$/);
+        if (levelMatch) {
+          const icu = (csv['level.name'] && csv['level.name'][csvCol]) || null;
+          translated = extractIcuSelectValue(icu, Number(levelMatch[1]));
+        }
+      }
+
+      // 4. For popupShowTranscript, reuse showTranscript
       if (!translated) {
         if (key === 'popupShowTranscript' && result['showTranscript']) {
           translated = result['showTranscript'].message;
         }
       }
 
-      // 4. Final fallback: empty string (will trigger Chrome's default_locale fallback)
+      // 5. Final fallback: empty string (will trigger Chrome's default_locale fallback)
       if (!translated) {
         console.warn(`  ⚠ No translation for "${key}" in ${chromeLocale} (${csvCol})`);
         translated = enMessages[key].message; // fallback to English

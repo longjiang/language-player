@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Mot de passe"
   },
+  "welcomeBack": {
+    "message": "Bon retour"
+  },
+  "logInToContinue": {
+    "message": "Connectez-vous pour continuer à apprendre."
+  },
+  "forgotPassword": {
+    "message": "Mot de passe oublié ?"
+  },
+  "signUp": {
+    "message": "S'inscrire"
+  },
+  "dontHaveAccount": {
+    "message": "Vous n'avez pas de compte ?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Pour créer un compte ou réinitialiser votre mot de passe, rendez-vous sur languageplayer.io, puis revenez ici pour vous connecter."
+  },
   "popupSaveWords": {
     "message": "<strong>Enregistrez</strong> des mots sur votre compte Language Player"
   },
@@ -182,6 +200,12 @@
   },
   "searchImages": {
     "message": "Rechercher des images"
+  },
+  "contextSentence": {
+    "message": "Phrase de contexte"
+  },
+  "openInDictionary": {
+    "message": "Ouvrir dans le dictionnaire"
   },
   "startPlaying": {
     "message": "Lancez une vidéo."
@@ -306,6 +330,27 @@
   "review": {
     "message": "Révision"
   },
+  "smoothScroll": {
+    "message": "Défilement fluide"
+  },
+  "voice": {
+    "message": "Voix"
+  },
+  "rate": {
+    "message": "Rythme"
+  },
+  "speed": {
+    "message": "Vitesse"
+  },
+  "defaultVoice": {
+    "message": "Auto (meilleur disponible)"
+  },
+  "textAppearance": {
+    "message": "Apparence du texte"
+  },
+  "testVoice": {
+    "message": "Tester la voix"
+  },
   "settingsUnavailable": {
     "message": "Cette catégorie de paramètres sera bientôt disponible."
   },
@@ -332,6 +377,27 @@
   },
   "level": {
     "message": "Niveau"
+  },
+  "levelName1": {
+    "message": "Débutant I"
+  },
+  "levelName2": {
+    "message": "Débutant II"
+  },
+  "levelName3": {
+    "message": "Débutant III"
+  },
+  "levelName4": {
+    "message": "Intermédiaire I"
+  },
+  "levelName5": {
+    "message": "Intermédiaire II"
+  },
+  "levelName6": {
+    "message": "Avancé I"
+  },
+  "levelName7": {
+    "message": "Avancé II"
   },
   "subscription": {
     "message": "Abonnement"
@@ -722,5 +788,53 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Échec du chargement du dictionnaire : $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "Aucune entrée de dictionnaire trouvée pour $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Lemmes essayés"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Rechercher sur Language Player →"
+  },
+  "lookupFailed": {
+    "message": "La recherche a échoué"
+  },
+  "explainFailed": {
+    "message": "L'explication a échoué"
+  },
+  "examplesFailed": {
+    "message": "L'obtention d'exemples a échoué"
+  },
+  "followUpFailed": {
+    "message": "Le suivi a échoué"
+  },
+  "noSubtitleExamples": {
+    "message": "Aucun exemple de sous-titres trouvé"
+  },
+  "measureWord": {
+    "message": "Mesure :"
+  },
+  "genderLabel": {
+    "message": "Genre :"
+  },
+  "nounClass": {
+    "message": "Classe :"
   }
 }

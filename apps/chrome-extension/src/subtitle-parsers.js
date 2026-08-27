@@ -252,7 +252,24 @@ export function parseYTJSON3(jsonText) {
     const segs = ev.segs || [];
     const text = segs.map(s => s.utf8 || '').join('').trim();
     if (text && dur > 0) {
-      cues.push({ start, end: start + dur, text: decodeEntities(stripTags(text)) });
+      // Reconstruct word-level timings (absolute seconds). The first word's
+      // start / last word's end bound the spoken line more precisely than the
+      // raw event window, which for auto-generated (ASR) captions includes
+      // leading/trailing recognition silence. Non-ASR tracks leave these
+      // untouched, and the field is stripped before cues reach the panel.
+      const words = segs
+        .map((s) => {
+          const segText = s.utf8 || '';
+          if (!segText) return null;
+          const segStart = (ev.tStartMs || 0) + (s.tOffsetMs || 0);
+          return {
+            text: segText,
+            start: segStart / 1000,
+            end: (segStart + (s.dDurationMs || 0)) / 1000,
+          };
+        })
+        .filter(Boolean);
+      cues.push({ start, end: start + dur, text: decodeEntities(stripTags(text)), words });
     }
   }
 

@@ -135,6 +135,18 @@ button:focus-visible,
   color: hsl(var(--muted-foreground));
 }
 
+/* Web-parity chevron on the language trigger (apps/web header ChevronDown),
+ * replaces the legacy ⌄ text glyph that rendered inconsistently. */
+.lpv-language-trigger .lpv-chevron {
+  flex: 0 0 auto;
+  color: hsl(var(--muted-foreground));
+  transition: transform 150ms ease;
+}
+
+.lpv-language-trigger .lpv-chevron.is-open {
+  transform: rotate(180deg);
+}
+
 .lpv-profile-trigger {
   border: 1px solid hsl(var(--border));
   border-radius: 9999px;
@@ -145,6 +157,22 @@ button:focus-visible,
 .lpv-profile-trigger:hover {
   background: hsl(var(--accent));
   color: hsl(var(--accent-foreground));
+}
+
+/* Logged-in avatar: match the account/profile modal's avatar treatment
+ * (apps/web user-menu trigger, apps/web profile header — a primary-tinted
+ * circle with the user's initial). The icon button is already 2.25rem, so it
+ * aligns 1:1 with .lpv-account-avatar. */
+.lpv-profile-trigger.is-authed {
+  border: 0;
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.lpv-profile-trigger.is-authed:hover {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
 }
 
 .lpv-user-menu {
@@ -205,14 +233,97 @@ button:focus-visible,
   color: hsl(var(--destructive));
 }
 
+/* ── Login dialog (web-parity: max-w-md card, labeled inputs, register /
+     forgot-password links) ────────────────────────────────────────────── */
+.lpv-login-dialog {
+  width: min(100%, 28rem);
+}
+
+.lpv-login {
+  display: grid;
+  gap: 1rem;
+}
+
+.lpv-login-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
 .lpv-login-form {
   display: grid;
   gap: 0.75rem;
 }
 
+.lpv-login-field {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.lpv-login-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+}
+
+.lpv-login-form .lpv-ui-input {
+  font-weight: 400;
+}
+
+.lpv-login-forgot {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.lpv-login-link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: hsl(var(--primary));
+  cursor: pointer;
+}
+
+.lpv-login-link:hover {
+  text-decoration: underline;
+}
+
+.lpv-login-link-strong {
+  font-weight: 500;
+}
+
+.lpv-login-submit {
+  width: 100%;
+}
+
+.lpv-login-footer {
+  margin: 0;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.lpv-login-notice {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.3);
+  color: hsl(var(--muted-foreground));
+}
+
 .lpv-account-scroll {
   display: grid;
   gap: 1rem;
+}
+
+/* Clamp the account/profile dialog to the same narrow width as the other
+ * modal surfaces (apps/web profile content is a max-w-3xl page, but the
+ * side-panel account dialog must not render as an oversized sheet). */
+.lpv-account-dialog {
+  width: min(100%, 28rem);
 }
 
 .lpv-account-chip {
@@ -463,15 +574,20 @@ button:focus-visible,
   min-height: 0;
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  /* Match the subtitles scroll list: no horizontal padding, so each block can
+     run edge-to-edge with its own left border indicator at the panel edge. */
+  padding: 4px 0;
   scrollbar-color: hsl(var(--border)) transparent;
 }
 
 .lpv-page-translation-block {
-  padding: 0.875rem 0;
-  border-bottom: 1px solid hsl(var(--border));
+  padding: 8px 16px;
+  /* Always reserve the 3px indicator gutter (transparent until the block is
+     the current line) so highlighting never shifts the layout — the same
+     treatment as .lpv-cue / .lpv-cue.lpv-active in the subtitles list. */
+  border-left: 3px solid transparent;
   scroll-margin-block: 7rem;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .lpv-page-translation-block:first-child {
@@ -483,16 +599,18 @@ button:focus-visible,
 }
 
 .lpv-page-translation-result {
-  margin-top: 0.375rem !important;
+  margin-top: 0 !important;
   color: hsl(var(--foreground));
   font-size: 0.875rem;
   line-height: 1.5;
+  font-weight: 400;
 }
 
 .lpv-page-translation-block.is-highlighted {
-  border-radius: var(--radius);
-  background: hsl(var(--primary) / 0.1);
-  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35);
+  /* Current line — identical to the subtitles active cue (.lpv-cue.lpv-active):
+     a light primary wash plus a solid primary left border. */
+  background: hsl(var(--primary) / 0.12);
+  border-left-color: hsl(var(--primary));
 }
 
 .lpv-page-translation-skeleton {
@@ -651,7 +769,9 @@ button:focus-visible,
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: hsl(var(--foreground) / 0.5);
+  /* Web-parity dim: a fixed semi-transparent black (not the theme foreground,
+     which is white in dark mode and would wash the page behind the dialog). */
+  background: hsl(0 0% 0% / 0.5);
 }
 
 .lpv-ui-dialog {
@@ -697,9 +817,14 @@ button:focus-visible,
 }
 
 /* DictionaryPopup parity: compact entry cards use the same information
- * hierarchy as apps/web while retaining the extension's semantic tokens. */
+ * hierarchy as apps/web while retaining the extension's semantic tokens. The
+ * width matches apps/web dictionary-popup.tsx (w-[28rem] max-w-[90vw]). The
+ * popup is anchored to the top and grows downward only (apps/web POPUP_TOP),
+ * so loading skeletons/entries never reflow the dialog vertically. */
 .lpv-dictionary-dialog {
-  width: min(100%, 30rem);
+  width: min(100%, 28rem);
+  align-self: flex-start;
+  margin-top: 2rem;
 }
 
 .lpv-dictionary-dialog .lpv-ui-dialog-body {
@@ -724,7 +849,8 @@ button:focus-visible,
 .lpv-dictionary-dialog .lpv-dict-card-pron,
 .lpv-dictionary-dialog .lpv-dict-pron-small,
 .lpv-dictionary-dialog .lpv-dict-pos,
-.lpv-dictionary-dialog .lpv-dict-def {
+.lpv-dictionary-dialog .lpv-dict-def,
+.lpv-dictionary-dialog .lpv-dict-alternate {
   color: hsl(var(--muted-foreground));
 }
 
@@ -742,14 +868,40 @@ button:focus-visible,
   color: hsl(var(--foreground));
 }
 
+/* The card body pads on all four sides and stacks its children on a single
+   uniform gap (explain button/section, context sentence, each entry card) so
+   the vertical rhythm is consistent — matching apps/web's dictionary popup
+   spacing. Per-child margins are cleared; the flex gap is the single source. */
 .lpv-dictionary-dialog .lpv-dict-card-body {
   max-height: min(55vh, 32rem);
-  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem 1rem;
+}
+
+/* The explain button sits flush inside the body's padding (no extra margin —
+   the body gap supplies spacing before the next element). */
+.lpv-dictionary-dialog .lpv-explain-btn {
+  margin: 0;
+}
+
+/* The AI-explain section sits inside .lpv-dict-card-body (which already pads
+   1.25rem horizontally), so clear its own horizontal padding to keep the
+   explain button, Pro banner, and explanation text on the same left/right
+   margin. The section's own 0.75rem vertical padding provides the spacing, so
+   the banner adds no extra margin (it would double the gap). */
+.lpv-dictionary-dialog .lpv-explain-section {
+  padding: 0.75rem 0;
+}
+
+.lpv-dictionary-dialog .lpv-explain-pro-banner {
+  margin: 0;
 }
 
 .lpv-dictionary-dialog .lpv-dict-entry-row {
   align-items: stretch;
-  margin-top: 0.625rem;
+  margin-top: 0;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   background: hsl(var(--card));
@@ -773,6 +925,10 @@ button:focus-visible,
 .lpv-dictionary-dialog .lpv-dict-head {
   font-size: 1.125rem;
   font-weight: 700;
+}
+
+.lpv-dictionary-dialog .lpv-dict-alternate {
+  font-size: 0.9375rem;
 }
 
 .lpv-dictionary-dialog .lpv-dict-def {
@@ -870,6 +1026,157 @@ button:focus-visible,
   color: hsl(var(--primary));
 }
 
+/* ── Web-parity entry cards ────────────────────────────────────────────── */
+
+/* The compact entry card no longer navigates (head-only link, apps/web
+   headOnlyLink), so it should not show a card hover like a link. */
+.lpv-dictionary-dialog .lpv-dict-entry-row:hover,
+.lpv-dictionary-dialog .lpv-dict-entry:hover {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+/* Only the head word is the link to the detail page. Reset the button chrome
+   so it reads as the word, with a link affordance on hover. */
+.lpv-dictionary-dialog .lpv-dict-head-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.lpv-dictionary-dialog .lpv-dict-head-link:hover {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Loading skeleton — mirrors apps/web DictionaryEntryCardSkeleton so the
+   popup keeps a stable shape (and fixed top) instead of a spinner. */
+.lpv-dictionary-dialog .lpv-dict-skeleton {
+  margin-top: 0.625rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  padding: 0.75rem;
+  animation: lpv-dict-skeleton-pulse 1.5s ease-in-out infinite;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-bar {
+  display: block;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-badge {
+  margin-left: auto;
+  height: 1rem;
+  width: 2.5rem;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-defs {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-foot {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lpv-dictionary-dialog .lpv-dict-skeleton-btn {
+  height: 1.5rem;
+  width: 5rem;
+  border-radius: 0.375rem;
+  background: hsl(var(--muted));
+}
+@keyframes lpv-dict-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Context sentence (collapsible) + Search images row — apps/web popup parity. */
+.lpv-dictionary-dialog .lpv-dict-context-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0;
+}
+.lpv-dictionary-dialog .lpv-dict-context-col {
+  flex: 1;
+  min-width: 0;
+}
+.lpv-dictionary-dialog .lpv-dict-context-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.lpv-dictionary-dialog .lpv-dict-context-toggle:hover {
+  border-color: hsl(var(--ring));
+  color: hsl(var(--foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-context-body {
+  margin-top: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.3);
+}
+.lpv-dictionary-dialog .lpv-dict-context-l2,
+.lpv-dictionary-dialog .lpv-dict-context-l1 {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.lpv-dictionary-dialog .lpv-dict-context-l2 {
+  color: hsl(var(--foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-context-l1 {
+  margin-top: 0.25rem;
+  color: hsl(var(--muted-foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-context-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-images-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+}
+.lpv-dictionary-dialog .lpv-dict-images-icon:hover {
+  border-color: hsl(var(--ring));
+  color: hsl(var(--foreground));
+}
+
 .lpv-ui-input,
 .lpv-ui-select {
   width: 100%;
@@ -886,6 +1193,7 @@ button:focus-visible,
 .lpv-ui-input {
   height: 2.25rem;
   padding: 0 0.75rem;
+  font-weight: 400;
 }
 
 .lpv-ui-select {
@@ -934,6 +1242,69 @@ button:focus-visible,
 .lpv-ui-slider {
   width: min(12rem, 50%);
   accent-color: hsl(var(--primary));
+}
+
+/* Segmented control — mirrors apps/web SegmentedRow (theme / font / phonetics).
+ * Replaces the legacy <select> dropdowns in the Settings modal. */
+.lpv-segmented {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.lpv-segmented-label {
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-segmented-group {
+  display: inline-flex;
+  gap: 0.25rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted));
+  box-sizing: border-box;
+}
+
+.lpv-segmented-option {
+  border: 0;
+  border-radius: calc(var(--radius) - 0.125rem);
+  padding: 0.375rem 0.625rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.lpv-segmented-option:hover {
+  color: hsl(var(--foreground));
+}
+
+.lpv-segmented-option.is-selected {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.1);
+}
+
+/* Sub-section header grouping controls within a settings category
+ * (apps/web SectionHeader). */
+.lpv-settings-subsection {
+  margin: 1.25rem 0 0;
+}
+
+.lpv-settings-subsection-title {
+  margin: 0 0 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .lpv-dialog-actions {
@@ -1089,6 +1460,44 @@ button:focus-visible,
 
 .lpv-settings-row label {
   min-width: 0;
+}
+
+/* Stacked settings field — label above the control (apps/web SettingsRow/
+ * SectionHeader vertical layout for segmented + slider controls). */
+.lpv-settings-block-list {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.lpv-settings-block {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.lpv-settings-block-label {
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-settings-block-control {
+  min-width: 0;
+}
+
+.lpv-settings-test-speak {
+  margin-top: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.lpv-settings-test-speak:hover {
+  background: hsl(var(--muted));
 }
 
 .lpv-settings-preview {
