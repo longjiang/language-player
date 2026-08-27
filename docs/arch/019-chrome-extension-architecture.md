@@ -639,9 +639,12 @@ with `position:fixed`. They render in the browser's own side panel:
   gesture, so auto-open on subtitle load is gone. It opens from the extension
   action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token
   click (the content script calls `sidePanel.open()` on the click gesture,
-  then pushes `pageLookup`). The background records the originating tab and
-  closes Chrome's global panel when the active tab changes, so panel-open state
-  affects only the page where the user opened it.
+  then pushes `pageLookup`). The action and shortcut click **toggle**: if the
+  panel is already open they close it (the open state is persisted in
+  `chrome.storage.session` so an MV3 service-worker restart doesn't make the
+  toggle reopen an already-open panel). The background records the originating
+  tab and closes Chrome's global panel when the active tab changes, so
+  panel-open state affects only the page where the user opened it.
 - **Close on navigation / video change**: the panel is closed on any page
   navigation of the panel's tab (`chrome.tabs.onUpdated` `status === 'loading'`)
   and on a YouTube SPA video change (`content-entry.js` sends `closePanel` when
