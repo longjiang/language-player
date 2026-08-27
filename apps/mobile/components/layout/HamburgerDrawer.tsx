@@ -10,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { useReaderChrome } from '@/contexts/ReaderChromeContext';
 import {
   Compass, Music, Tv, Clapperboard, Upload,
-  FileText, BookMarked, RotateCcw, Globe, BookOpen,
+  FileText, BookMarked, RotateCcw, Globe, BookOpen, ImageIcon,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SIDEBAR_EDGE_MARGIN } from '@/components/ui/sidebar';
@@ -42,6 +42,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.notes_reader', href: '/(tabs)/(reading)' },
       { key: 'title.web_reader', href: '/(tabs)/(reading)/web-reader' },
       { key: 'title.epub_reader', href: '/(tabs)/(reading)/epub' },
+      { key: 'title.image_reader', href: '/(tabs)/(reading)/image-reader' },
     ],
   },
   {
@@ -67,6 +68,7 @@ const NAV_ICONS: Record<string, React.JSX.Element> = {
   reader: <FileText size={16} color={ICON_COLOR} />,
   'web-reader': <Globe size={16} color={ICON_COLOR} />,
   epub: <BookOpen size={16} color={ICON_COLOR} />,
+  'image-reader': <ImageIcon size={16} color={ICON_COLOR} />,
   dictionary: <BookMarked size={16} color={ICON_COLOR} />,
   review: <RotateCcw size={16} color={ICON_COLOR} />,
 };

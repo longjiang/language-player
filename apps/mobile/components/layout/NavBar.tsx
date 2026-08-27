@@ -32,6 +32,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.notes_reader', href: '/(tabs)/(reading)', sf: 'doc.text' },
       { key: 'title.web_reader', href: '/(tabs)/(reading)/web-reader', sf: 'globe' },
       { key: 'title.epub_reader', href: '/(tabs)/(reading)/epub', sf: 'book' },
+      { key: 'title.image_reader', href: '/(tabs)/(reading)/image-reader', sf: 'photo' },
     ],
   },
   {
