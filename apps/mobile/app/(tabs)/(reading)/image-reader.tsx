@@ -5,27 +5,35 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Clipboard from 'expo-clipboard';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { Sidebar, useSidebar } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X } from 'lucide-react-native';
+import {
+  ImageIcon, Clipboard as ClipboardIcon, X, Plus, Upload, PanelRightOpen, PanelRightClose,
+} from 'lucide-react-native';
 
 /** Vision-OCR prompt for the image reader (deepseek-v4-flash-vision-exp) — the
- *  model returns clean, block-level markdown: blocks separated by blank lines
- *  so each reflows independently. */
+ *  model returns a leading `# <title>` heading (human-readable image title)
+ *  followed by clean, block-level markdown: blocks separated by blank lines so
+ *  each reflows independently. */
 const IMAGE_OCR_PROMPT =
   'Extract all text from this image as clean, properly formatted markdown. ' +
-  'Separate each block element (headings, paragraphs, list items) with a blank ' +
-  'line so blocks reflow independently. Keep each paragraph as flowing prose — ' +
-  'do not insert line breaks inside a paragraph, and do not collapse distinct ' +
+  'Begin with a single H1 heading (one line starting with "# ") giving a short, ' +
+  'human-readable title for the image (the document, diagram, or page name — ' +
+  'never a filename). Then a blank line, then the extracted content. Separate ' +
+  'each block element (headings, paragraphs, list items) with a blank line so ' +
+  'blocks reflow independently. Keep each paragraph as flowing prose — do not ' +
+  'insert line breaks inside a paragraph, and do not collapse distinct ' +
   'paragraphs together. Preserve headings (#), paragraphs, lists, bold/italic ' +
   'emphasis, and code blocks. Output only the markdown, with no commentary.';
 
@@ -36,9 +44,27 @@ interface ImageEntry {
   /** Thumbnail + OCR source (base64 data URL). */
   dataUrl: string;
   uri: string;
+  /** Human-readable title returned by the vision model (first `# ` heading). */
+  title?: string;
   md: string;
   converting: boolean;
   error?: boolean;
+}
+
+/** Pull the leading `# <title>` heading out of the OCR markdown as the image's
+ *  human-readable title; the rest is the body. Falls back to no title. */
+function extractTitle(md: string): { title: string | null; body: string } {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  let i = 0;
+  while (i < lines.length && lines[i]!.trim() === '') i++;
+  const first = lines[i];
+  const m = first?.match(/^#\s+(.+)$/);
+  if (m) {
+    const title = m[1]!.trim();
+    const body = lines.slice(i + 1).join('\n').replace(/^\n+/, '');
+    return { title, body };
+  }
+  return { title: null, body: md };
 }
 
 let counter = 0;
@@ -57,8 +83,8 @@ export default function ImageReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
-  const router = useRouter();
   const { isMd } = useResponsive();
+  const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
 
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -87,9 +113,10 @@ export default function ImageReaderScreen() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      log('[image-reader] OCR result', { name: entry.name, mdLength: md.length, sample: md.slice(0, 160) });
+      const { title, body } = extractTitle(md);
+      log('[image-reader] OCR result', { name: entry.name, mdLength: md.length, title: title ?? null, sample: body.slice(0, 160) });
       setImages((prev) => prev.map((im) => (
-        im.id === id ? { ...im, md, converting: false } : im
+        im.id === id ? { ...im, title: title ?? im.title, md: body, converting: false } : im
       )));
     } catch (err) {
       logwarn('[image-reader] OCR failed:', (err as Error)?.message ?? err);
@@ -224,19 +251,67 @@ export default function ImageReaderScreen() {
     }, [append]),
   );
 
+  /** Placeholder "add next image" tile below the last thumbnail. */
+  const addTile = (
+    <View className="w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-2">
+      <Plus size={18} color={ICON_MUTED} />
+      <View className="flex-row items-center gap-1.5">
+        <Pressable
+          onPress={() => void addFromPicker()}
+          className="flex-row items-center gap-1 rounded-md bg-primary px-2 py-1 active:opacity-90"
+          accessibilityRole="button"
+          accessibilityLabel={t('action.select_files')}
+        >
+          <Upload size={12} color={ICON_MUTED} />
+          <Text className="text-[11px] font-medium text-primary-foreground">{t('action.select_files')}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => void pasteFromClipboard()}
+          className="flex-row items-center gap-1 rounded-md border border-border px-2 py-1 active:bg-muted"
+          accessibilityRole="button"
+          accessibilityLabel={t('action.paste')}
+        >
+          <ClipboardIcon size={12} color={ICON_MUTED} />
+          <Text className="text-[11px] font-medium text-foreground">{t('action.paste')}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  /** A single thumbnail tile (current highlighted). */
+  const thumbnail = (im: ImageEntry) => (
+    <Pressable
+      key={im.id}
+      onPress={() => selectImage(im.id)}
+      className={`relative w-24 overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
+      accessibilityRole="button"
+      accessibilityLabel={im.title || im.name}
+    >
+      <Image source={{ uri: im.uri }} style={{ width: '100%', height: 64 }} resizeMode="cover" />
+      {im.id === currentId && (
+        <View className="absolute inset-0 border-2 border-primary" />
+      )}
+      {im.converting && (
+        <View className="absolute inset-0 items-center justify-center bg-background/60">
+          <ActivityIndicator size="small" color={ICON_MUTED} />
+        </View>
+      )}
+      <Pressable
+        onPress={() => removeImage(im.id)}
+        className="absolute right-0.5 top-0.5 rounded-full bg-background/80 p-0.5"
+        accessibilityRole="button"
+        accessibilityLabel={t('action.remove')}
+      >
+        <X size={12} color={ICON_MUTED} />
+      </Pressable>
+    </Pressable>
+  );
+
   // ── Empty state ──
   if (images.length === 0) {
     return (
       <View className="flex-1 bg-background">
         <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
-          <Pressable
-            onPress={() => router.back()}
-            className="rounded-md p-1.5 active:bg-muted"
-            accessibilityRole="button"
-            accessibilityLabel={t('action.back')}
-          >
-            <ArrowLeft size={20} color={ICON_MUTED} />
-          </Pressable>
           <Text numberOfLines={1} className="flex-1 text-lg font-bold text-foreground">
             {t('title.image_reader')}
           </Text>
@@ -261,6 +336,7 @@ export default function ImageReaderScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t('action.select_files')}
               >
+                <Upload size={14} color={ICON_MUTED} />
                 <Text className="text-xs font-medium text-primary-foreground">{t('action.select_files')}</Text>
               </Pressable>
               <Pressable
@@ -279,38 +355,25 @@ export default function ImageReaderScreen() {
     );
   }
 
-  // ── Loaded state: thumbnail strip + OCR'd reader ──
+  // ── Loaded state: OCR'd reader (main) + right collapsible thumbnail sidebar ──
   return (
     <View className="flex-1 bg-background">
       <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
-        <Pressable
-          onPress={() => router.back()}
-          className="rounded-md p-1.5 active:bg-muted"
-          accessibilityRole="button"
-          accessibilityLabel={t('action.back')}
-        >
-          <ArrowLeft size={20} color={ICON_MUTED} />
-        </Pressable>
         <Text numberOfLines={1} className="flex-1 text-lg font-bold text-foreground">
-          {current?.name || t('title.image_reader')}
+          {current?.title || current?.name || t('title.image_reader')}
         </Text>
-        <Pressable
-          onPress={() => void addFromPicker()}
-          className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
-          accessibilityRole="button"
-          accessibilityLabel={t('action.select_files')}
+        <Button
+          onPress={toggle}
+          variant="ghost"
+          size="icon"
+          accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
         >
-          <Text className="text-xs font-medium text-foreground">{t('action.select_files')}</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => void pasteFromClipboard()}
-          className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
-          accessibilityRole="button"
-          accessibilityLabel={t('action.paste')}
-        >
-          <ClipboardIcon size={14} color={ICON_MUTED} />
-          <Text className="text-xs font-medium text-foreground">{t('action.paste')}</Text>
-        </Pressable>
+          {isWide && sidebarOpen ? (
+            <PanelRightClose size={18} color={ICON_MUTED} />
+          ) : (
+            <PanelRightOpen size={18} color={ICON_MUTED} />
+          )}
+        </Button>
         <Pressable
           onPress={clearAll}
           className="rounded-md p-1.5 active:bg-muted"
@@ -321,97 +384,76 @@ export default function ImageReaderScreen() {
         </Pressable>
       </View>
 
-      {/* Thumbnail rail */}
-      <View className="border-b border-border">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}
-        >
-          {images.map((im) => (
-            <Pressable
-              key={im.id}
-              onPress={() => selectImage(im.id)}
-              className={`relative overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
-              accessibilityRole="button"
-              accessibilityLabel={im.name}
-            >
-              <Image source={{ uri: im.uri }} style={{ width: 88, height: 60 }} resizeMode="cover" />
-              {im.id === currentId && (
-                <View className="absolute inset-0 border-2 border-primary" />
-              )}
-              {im.converting && (
-                <View className="absolute inset-0 items-center justify-center bg-background/60">
-                  <ActivityIndicator size="small" color={ICON_MUTED} />
-                </View>
-              )}
-              <Pressable
-                onPress={() => removeImage(im.id)}
-                className="absolute right-0.5 top-0.5 rounded-full bg-background/80 p-0.5"
-                accessibilityRole="button"
-                accessibilityLabel={t('action.remove')}
-              >
-                <X size={12} color={ICON_MUTED} />
-              </Pressable>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-
       {notice && <Text className="px-4 py-2 text-center text-xs text-destructive">{notice}</Text>}
 
-      {/* OCR result (tokenized text) */}
-      <View className="flex-1">
-        {current ? (current.converting ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color={ICON_MUTED} />
-            <Text className="mt-3 text-sm text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+      {/* Content row — main OCR reader + right thumbnail sidebar */}
+      <View className="flex-1" style={{ flexDirection: isWide ? 'row' : 'column' }}>
+        <View className="flex-1">
+          {current ? (current.converting ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color={ICON_MUTED} />
+              <Text className="mt-3 text-sm text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+            </View>
+          ) : current.error ? (
+            <View className="flex-1 items-center justify-center px-8">
+              <Text className="text-center text-sm text-destructive">{t('msg.image_reader_ocr_error')}</Text>
+            </View>
+          ) : (
+            <PaginatedReader
+              blocks={pagination.blocks}
+              visibleBlocks={pagination.visibleBlocks}
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              hasMeasured={pagination.hasMeasured}
+              loadingTokens={pagination.loadingTokens}
+              tokenCache={pagination.tokenCache}
+              blockTranslations={pagination.blockTranslations}
+              isTranslating={pagination.isTranslating}
+              prevPage={pagination.prevPage}
+              nextPage={pagination.nextPage}
+              goToPage={pagination.goToPage}
+              handleMeasureBlock={pagination.handleMeasureBlock}
+              onVisibleBlocksChange={pagination.onVisibleBlocksChange}
+              contentWidth={pagination.contentWidth}
+              measureStart={pagination.measureStart}
+              measureEnd={pagination.measureEnd}
+              measureNonce={pagination.measureNonce}
+              onViewportLayout={pagination.handleViewportLayout}
+              hasPrev={pagination.hasPrev}
+              hasNext={pagination.hasNext}
+              flipping={pagination.flipping}
+              measuring={pagination.measuring}
+              l2Code={l2Lang.code}
+              l1Code={l1Lang.code}
+              showTranslation={display.translation}
+              onToggleTranslation={() => {
+                const next = !display.translation;
+                updateDisplay({ translation: next });
+              }}
+              showTextActions
+              translationSideBySide={isMd}
+              selectionDictionary
+              firstLineIndent
+              onOpenLink={handleOpenLink}
+              textScale={1}
+              t={t}
+            />
+          )) : null}
+        </View>
+
+        {/* Thumbnail sidebar — right, collapsible (standard Sidebar). */}
+        <Sidebar
+          open={mobileOpen}
+          onOpenChange={setMobileOpen}
+          sidebarOpen={sidebarOpen}
+          title={t('label.images')}
+          desktopClassName="w-60 ml-3"
+        >
+          <View className="flex-row flex-wrap gap-2 p-2">
+            {images.map(thumbnail)}
+            {addTile}
           </View>
-        ) : current.error ? (
-          <View className="flex-1 items-center justify-center px-8">
-            <Text className="text-center text-sm text-destructive">{t('msg.image_reader_ocr_error')}</Text>
-          </View>
-        ) : (
-          <PaginatedReader
-            blocks={pagination.blocks}
-            visibleBlocks={pagination.visibleBlocks}
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            hasMeasured={pagination.hasMeasured}
-            loadingTokens={pagination.loadingTokens}
-            tokenCache={pagination.tokenCache}
-            blockTranslations={pagination.blockTranslations}
-            isTranslating={pagination.isTranslating}
-            prevPage={pagination.prevPage}
-            nextPage={pagination.nextPage}
-            goToPage={pagination.goToPage}
-            handleMeasureBlock={pagination.handleMeasureBlock}
-            onVisibleBlocksChange={pagination.onVisibleBlocksChange}
-            contentWidth={pagination.contentWidth}
-            measureStart={pagination.measureStart}
-            measureEnd={pagination.measureEnd}
-            measureNonce={pagination.measureNonce}
-            onViewportLayout={pagination.handleViewportLayout}
-            hasPrev={pagination.hasPrev}
-            hasNext={pagination.hasNext}
-            flipping={pagination.flipping}
-            measuring={pagination.measuring}
-            l2Code={l2Lang.code}
-            l1Code={l1Lang.code}
-            showTranslation={display.translation}
-            onToggleTranslation={() => {
-              const next = !display.translation;
-              updateDisplay({ translation: next });
-            }}
-            showTextActions
-            translationSideBySide={isMd}
-            selectionDictionary
-            firstLineIndent
-            onOpenLink={handleOpenLink}
-            textScale={1}
-            t={t}
-          />
-        )) : null}
+        </Sidebar>
       </View>
     </View>
   );
