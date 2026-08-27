@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "متقدم II"
   },
+  "lemma": {
+    "message": "الجذر"
+  },
   "subscription": {
     "message": "اشتراك"
   },

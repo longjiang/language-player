@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (settings modal: segmented Display controls, L2 sample preview, Playback + Speech categories, deep search; Review/subtitle-search removed; account/profile dialog: language-specific level labels, translated activity label, width clamp; unified "Hard words only" phonetics pipeline in @langplayer/utils shared by the video transcript and the page tokenizer (lazy batch dictionary lookup); web-parity language-trigger chevron and signed-in avatar)
+- **Last Updated**: 2026-08-26 (settings modal: segmented Display controls, L2 sample preview, Playback + Speech categories, deep search; Review/subtitle-search removed; account/profile dialog: language-specific level labels, translated activity label, width clamp; unified "Hard words only" phonetics pipeline in @langplayer/utils shared by the video transcript and the page tokenizer (lazy batch dictionary lookup); web-parity language-trigger chevron and signed-in avatar; popup dict follow-link inside the padded body + localized "Lemma:" header label)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -523,7 +523,12 @@ Key behaviors:
   ADR-0034. The `lpv-dict-card-body` pads on all four sides and stacks the
   explain button/section, context sentence, and each entry card on a single
   uniform flex gap (0.625rem), so the vertical rhythm is consistent
-  (`sidepanel.css` `.lpv-dictionary-dialog .lpv-dict-card-body`).
+  (`sidepanel.css` `.lpv-dictionary-dialog .lpv-dict-card-body`). The page
+  "Follow link" button renders *inside* that padded body (not as a full-width
+  strip between the header and the body), so it lines up with the Explain /
+  Save / Search-images buttons and shares the same padding; the header's
+  inflected-form context is labelled `Lemma:` via the localized `label.lemma`
+  key instead of a raw `←` glyph (apps/web dictionary-popup parity).
 - **Saved-context + classifier parity**: when a lookup entry is a saved word,
   the entry card shows apps/web's saved metadata — the save date, source type
   + title (video/book), and the context sentence it was saved from with the

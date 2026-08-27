@@ -886,6 +886,13 @@ button:focus-visible,
   margin: 0;
 }
 
+/* The follow-link button lives inside the padded card body too, so it shares
+   the body's horizontal padding and flex gap with the Explain/Save buttons
+   (clear the content.css margin so the gap is the single source of spacing). */
+.lpv-dictionary-dialog .lpv-page-follow-link {
+  margin: 0;
+}
+
 /* The AI-explain section sits inside .lpv-dict-card-body (which already pads
    1.25rem horizontally), so clear its own horizontal padding to keep the
    explain button, Pro banner, and explanation text on the same left/right
