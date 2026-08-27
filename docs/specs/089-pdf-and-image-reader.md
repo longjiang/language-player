@@ -16,9 +16,11 @@ The ebook reader (bookshelf + paginated reader) gains two content types:
    - opening a PDF **auto-opens page 1** in the paginated reader (converted
      via DeepSeek Vision) with a **collapsible right-side thumbnails sidebar**
      (standard Sidebar — desktop persistent panel / mobile slide-in sheet);
-   - the sidebar lists every page, **outlines the current page**, tapping a
-     different page opens it, and tapping the **current** page opens a
-     **full-size zoomable preview modal** (same as the image reader);
+   - the sidebar lists every page in a **single centered column with 16px
+     inner padding**, thumbnails load **lazily** as the sidebar scrolls, and
+     it **outlines the current page**; tapping a different page opens it, and
+     tapping the **current** page opens a **full-size zoomable preview modal**
+     (same as the image reader);
    - the reader's **bottom bar** has a **TOC button** (the PDF outline) and a
      **Thumbnails button** (toggles the sidebar).
 2. **Images** open into the standalone image reader: OCR via DeepSeek Vision

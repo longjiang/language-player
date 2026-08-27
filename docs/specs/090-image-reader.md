@@ -61,7 +61,8 @@ multi-image navigation. It is **not** an action inside the epub reader.
 - Right-side, **collapsible** standard `Sidebar` (web `components/ui/sidebar`;
   mobile `components/ui/sidebar` + `useSidebar`): a desktop persistent panel +
   a mobile slide-in sheet.
-- Thumbnail grid, **current image highlighted**. Clicking a non-current
+- Thumbnail list: a **single centered column of large thumbnails** with 16px
+  inner padding, **current image highlighted**. Clicking a non-current
   thumbnail selects it; clicking the **current** thumbnail opens the preview.
 - Below the last thumbnail, a dashed **"add next image"** tile holding
   **Select files** and **Paste** buttons.
