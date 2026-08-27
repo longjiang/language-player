@@ -131,6 +131,15 @@ function notifyTabPanelOpenState(tabId, open) {
   });
 }
 
+/** Close the open side panel if any. The port's onDisconnect resets the
+ *  tracked tab/window and notifies the panel tab of the closed state. */
+function closeSidePanelIfOpen() {
+  if (!sidePanelConnected || sidePanelWindowId == null) return;
+  try {
+    chrome.sidePanel.close({ windowId: sidePanelWindowId }).catch(() => {});
+  } catch {}
+}
+
 async function toggleSidePanel(tab) {
   if (!tab?.id) return;
   try {
@@ -184,6 +193,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sidePanelPort.postMessage({ ...request, tabId: sender.tab.id });
             } catch {}
         }
+        sendResponse({ ok: true });
+        return true;
+    } else if (request.action === "closePanel") {
+        // Video change (e.g. YouTube SPA navigation to another video): close
+        // the side panel so a left-running autoplay doesn't keep the panel
+        // consuming tokenization / translation / subscription calls.
+        closeSidePanelIfOpen();
         sendResponse({ ok: true });
         return true;
     } else if (request.action === "clearSubtitles") {
@@ -458,15 +474,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.status === 'loading') {
         clearDetectedSubtitlesByTab(tabId);
         updateBadge();
-    }
-    // Re-assert the side-panel open state after a navigation. The panel's port
-    // stays connected across a reload, so chrome.runtime.onConnect never fires
-    // again to re-notify the freshly-injected content scripts — page-content.js
-    // would read panelOpen=false and report "page translation is not active"
-    // even though the side panel is still open on this tab. Re-send it once the
-    // new content scripts are registered (document_idle runs before 'complete').
-    if (changeInfo.status === 'complete' && sidePanelConnected && tabId === sidePanelTabId) {
-        notifyTabPanelOpenState(tabId, true);
+        // Close the side panel on page navigation. The panel's port stays
+        // connected across a reload, so leaving it open would keep firing
+        // tokenization / translation / subscription calls on a page the
+        // learner has navigated away from (e.g. autoplay). Reopening is a
+        // deliberate user action (icon / shortcut / token click).
+        if (sidePanelConnected && tabId === sidePanelTabId) {
+            closeSidePanelIfOpen();
+        }
     }
 });
 
