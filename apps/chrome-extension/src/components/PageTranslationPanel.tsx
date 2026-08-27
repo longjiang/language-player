@@ -331,7 +331,10 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     // which does not auto-clear). No timer here — a clear would make the
     // indicator flash in and out.
     setHighlightedBlockId(blockId);
-  }, [blocks, lookup?.blockId, lookup?.token?.text]);
+    // Also highlight the translation SENTENCE containing the looked-up token, so
+    // a click keeps both block + sentence emphasis (matching hover / apps/web).
+    setActiveHover({ [blockId]: { tokenOffset: lookup?.tokenOffset ?? null, sentenceIndex: lookup?.sentenceIndex ?? 0 } });
+  }, [blocks, lookup?.blockId, lookup?.token?.text, lookup?.sentenceIndex]);
 
   // Token hover → scroll the translation + highlight the SENTENCE containing
   // the hovered token (apps/web reader parity). Each rendered block is a whole
@@ -351,8 +354,10 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     }
     log('[PAGE] hover → scrolling translation block', { blockId: hover.blockId, token: hover.tokenText });
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Whole block — highlight the translation sentence at the hovered source offset.
-    setActiveHover((cur) => ({ ...cur, [hover.blockId!]: { tokenOffset: hover.tokenOffset, sentenceIndex } }));
+    // Both block + sentence: mark the whole block (is-highlighted wash) and
+    // highlight the translation sentence at the hovered source offset.
+    setHighlightedBlockId(hover.blockId);
+    setActiveHover({ [hover.blockId]: { tokenOffset: hover.tokenOffset ?? null, sentenceIndex } });
   }, [hover, blocks.length]);
 
   // Render a block's translation as sentence spans so the SENTENCE containing a
