@@ -13,7 +13,7 @@
  */
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import type { LemmatizedToken, DictionaryEntry, SavedWordContext } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel, isHanLanguage, glyphLangTag } from '@langplayer/shared';
 import { baseCode, formatPronunciation, getCachedEntries, setCachedEntries, getL1CachedEntries, setL1CachedEntry, subscribeToCache } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
@@ -21,7 +21,7 @@ import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
 import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
-import { Bookmark, BookmarkCheck, ChevronDown, ChevronUp, Image, Loader, Sparkles, Volume2, X } from './Icons';
+import { Bookmark, BookmarkCheck, BookOpen, ChevronDown, ChevronUp, Image, Loader, Sparkles, Video, Volume2, X } from './Icons';
 import { Button } from './ui/button';
 import { log, logwarn, logerr, t } from '../i18n';
 
@@ -90,6 +90,34 @@ async function fetchEntries(
 function extractYoutubeId(url: string): string | undefined {
   const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   return m?.[1];
+}
+
+/** Cap a source title to 5 space-delimited words or 15 characters, whichever is shorter. */
+function capSourceTitle(title: string): string {
+  const trimmed = title.trim();
+  const words = trimmed.split(/\s+/).slice(0, 5).join(' ');
+  const chars = trimmed.slice(0, 15);
+  const capped = words.length < chars.length ? words : chars;
+  const truncated = trimmed.split(/\s+/).length > 5 || trimmed.length > 15;
+  return truncated ? `${capped.trim()}…` : trimmed;
+}
+
+/** Highlights every occurrence of the saved word's surface form inside the
+ *  context sentence, mirroring apps/web's DictionaryEntryCard HighlightForm. */
+function HighlightForm({ text, form }: { text: string; form?: string }) {
+  if (!form) return <>{text}</>;
+  const parts = text.split(form);
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && <span className="lpv-dict-saved-hit">{form}</span>}
+        </React.Fragment>
+      ))}
+    </>
+  );
 }
 
 // ── Loading skeleton (matches apps/web DictionaryEntryCardSkeleton) ─────────
@@ -229,6 +257,28 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
 
   const isSaved = isLoggedIn && (savedWords[l2Code] || []).some(w => w.id === entry.id);
 
+  // ── Saved metadata (apps/web DictionaryEntryCard parity) ──
+  // When this entry is a saved word, show the CONTEXT it was saved from — date,
+  // source (video/book), and the highlighted context sentence — so the learner
+  // sees where the word was encountered, not just the current lookup context.
+  const savedRecord = isLoggedIn
+    ? ((savedWords[l2Code] || []).find(w => w.id === entry.id) as SavedLexicalItemRecord | undefined)
+    : undefined;
+  const rawCtx = savedRecord?.context;
+  const savedInsts: SavedLexicalItemInstance[] = savedRecord?.instances?.length
+    ? savedRecord.instances
+    : (rawCtx ? [{ form: rawCtx.form, timestamp: savedRecord!.date, context: rawCtx }] : []);
+  const savedCtx = savedInsts[savedInsts.length - 1]?.context ?? rawCtx;
+  const saveDateStr = savedRecord?.date
+    ? new Date(savedRecord.date).toLocaleDateString(l1Code)
+    : '';
+  const contextSentence = savedCtx?.text && savedCtx.text !== entry.head ? savedCtx.text : undefined;
+  const hasVideoSource = !!(savedCtx?.youtube_id || savedCtx?.videoTitle);
+  const hasTextSource = !!savedCtx?.textTitle;
+  const sourceLabel = hasVideoSource
+    ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
+    : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
+
   const handleSave = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -337,6 +387,29 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               <span key={index}>{entry.part_of_speech || index > 0 ? '  ' : ''}<strong>{index + 1}</strong> {definition}</span>
             ))}
           </div>
+        )}
+        {/* Saved metadata — date, source, and the saved context sentence
+            (apps/web DictionaryEntryCard parity). */}
+        {savedRecord && (
+          <p className="lpv-dict-saved-meta" lang={glyphLang}>
+            <BookmarkCheck size={12} className="lpv-dict-saved-meta-icon" />
+            <span className="lpv-dict-saved-date">{saveDateStr}</span>
+            {(hasVideoSource || hasTextSource) && (
+              <>
+                <span className="lpv-dict-saved-sep">·</span>
+                {hasVideoSource
+                  ? <Video size={12} className="lpv-dict-saved-meta-icon" />
+                  : <BookOpen size={12} className="lpv-dict-saved-meta-icon" />}
+                {sourceLabel && <span className="lpv-dict-saved-source">{sourceLabel}</span>}
+              </>
+            )}
+            {contextSentence && (
+              <>
+                <span className="lpv-dict-saved-sep">·</span>
+                <span className="lpv-dict-saved-context">“<HighlightForm text={contextSentence} form={savedCtx?.form} />”</span>
+              </>
+            )}
+          </p>
         )}
         <div className="lpv-dict-entry-footer">
           <div className="lpv-dict-entry-footer-left">
