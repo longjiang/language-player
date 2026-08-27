@@ -378,6 +378,27 @@
   "level": {
     "message": "Cấp độ"
   },
+  "levelName1": {
+    "message": "Sơ cấp I"
+  },
+  "levelName2": {
+    "message": "Sơ cấp II"
+  },
+  "levelName3": {
+    "message": "Sơ cấp III"
+  },
+  "levelName4": {
+    "message": "Trung cấp I"
+  },
+  "levelName5": {
+    "message": "Trung cấp II"
+  },
+  "levelName6": {
+    "message": "Cao cấp I"
+  },
+  "levelName7": {
+    "message": "Cao cấp II"
+  },
   "subscription": {
     "message": "Gói đăng ký"
   },

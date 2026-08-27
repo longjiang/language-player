@@ -378,6 +378,27 @@
   "level": {
     "message": "Уровень"
   },
+  "levelName1": {
+    "message": "Начинающий I"
+  },
+  "levelName2": {
+    "message": "Начинающий II"
+  },
+  "levelName3": {
+    "message": "Начинающий III"
+  },
+  "levelName4": {
+    "message": "Средний I"
+  },
+  "levelName5": {
+    "message": "Средний II"
+  },
+  "levelName6": {
+    "message": "Продвинутый I"
+  },
+  "levelName7": {
+    "message": "Продвинутый II"
+  },
   "subscription": {
     "message": "Подписка"
   },

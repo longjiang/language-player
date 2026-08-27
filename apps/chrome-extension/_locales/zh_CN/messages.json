@@ -378,6 +378,27 @@
   "level": {
     "message": "等级"
   },
+  "levelName1": {
+    "message": "初级一"
+  },
+  "levelName2": {
+    "message": "初级二"
+  },
+  "levelName3": {
+    "message": "初级三"
+  },
+  "levelName4": {
+    "message": "中级一"
+  },
+  "levelName5": {
+    "message": "中级二"
+  },
+  "levelName6": {
+    "message": "高级一"
+  },
+  "levelName7": {
+    "message": "高级二"
+  },
   "subscription": {
     "message": "订阅"
   },

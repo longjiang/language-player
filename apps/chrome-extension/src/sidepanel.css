@@ -319,6 +319,13 @@ button:focus-visible,
   gap: 1rem;
 }
 
+/* Clamp the account/profile dialog to the same narrow width as the other
+ * modal surfaces (apps/web profile content is a max-w-3xl page, but the
+ * side-panel account dialog must not render as an oversized sheet). */
+.lpv-account-dialog {
+  width: min(100%, 28rem);
+}
+
 .lpv-account-chip {
   display: flex;
   align-items: center;

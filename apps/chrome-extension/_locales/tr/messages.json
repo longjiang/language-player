@@ -378,6 +378,27 @@
   "level": {
     "message": "Seviye"
   },
+  "levelName1": {
+    "message": "Başlangıç I"
+  },
+  "levelName2": {
+    "message": "Başlangıç II"
+  },
+  "levelName3": {
+    "message": "Başlangıç III"
+  },
+  "levelName4": {
+    "message": "Orta I"
+  },
+  "levelName5": {
+    "message": "Orta II"
+  },
+  "levelName6": {
+    "message": "İleri I"
+  },
+  "levelName7": {
+    "message": "İleri II"
+  },
   "subscription": {
     "message": "Abonelik"
   },
