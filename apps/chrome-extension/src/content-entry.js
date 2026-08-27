@@ -1657,6 +1657,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'getPanelState') {
     // Side panel pulled state (open, tab switch, navigation).
+    log('[CONTENT] getPanelState answered (video mode)', { cues: STATE.cues.length, subtitleStatus: STATE.subtitleStatus });
     sendResponse({ state: buildPanelState() });
     return true;
   }

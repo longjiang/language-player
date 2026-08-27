@@ -20,7 +20,7 @@ import { LanguagePicker } from './components/LanguagePicker';
 import { UserMenu } from './components/UserMenu';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
-import { t, setLocale, log } from './i18n';
+import { t, setLocale, log, logwarn, logerr } from './i18n';
 import { languageName } from './language-names';
 import { ChevronDown } from './components/Icons';
 
@@ -73,6 +73,40 @@ interface PagePanelState {
   /** Page-declared language ≠ saved L2 (page reader warning, web parity of
    *  the video-mode mismatch). */
   mismatch?: { detected: string; saved: string } | null;
+}
+
+/** Error boundary around the whole side-panel tree. Without it a render crash in
+ *  the transcript, page panel, or a modal unmounts the entire React tree and
+ *  leaves a blank panel with no recovery. This catches the crash and shows a
+ *  friendly error + Retry instead (spec-086 §7/§11 "never blank"). */
+class PanelErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+  static getDerivedStateFromError(error: Error): { error: Error } {
+    return { error };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    logerr('[SIDEPANEL] panel render error', { error: error?.message, stack: info?.componentStack });
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="lpv-app-shell" role="alert">
+          <div className="lpv-app-main">
+            <div className="lpv-ui-empty-state">
+              <p>{t('pageUnavailable')}</p>
+              <Button variant="outline" size="sm" onClick={() => this.setState({ error: null })}>
+                {t('retry')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function SidePanelApp() {
@@ -465,6 +499,7 @@ function SidePanelApp() {
   };
 
   return (
+    <PanelErrorBoundary>
     <div className="lpv-app-shell" data-theme={theme}>
       <header className="lpv-app-topbar">
         <div className="lpv-app-brand">
@@ -559,6 +594,7 @@ function SidePanelApp() {
         onConfirm={handleLanguageConfirm}
       />
     </div>
+    </PanelErrorBoundary>
   );
 }
 
