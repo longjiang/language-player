@@ -1169,8 +1169,8 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-level {
   font-size: 10px;
   font-weight: 600;
-  color: hsl(var(--lpv-primary));
-  background: hsl(var(--lpv-primary) / 0.12);
+  /* Background/color set inline from the shared per-level hexColor (web parity);
+     this block only carries the deterministic shape. */
   padding: 1px 6px;
   border-radius: 4px;
 }
