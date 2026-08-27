@@ -16,17 +16,6 @@ interface PageLookup {
   token?: { text?: string };
 }
 
-/** Token hover from the page content script — drives the translation scroll +
- *  sentence highlight (apps/web reader parity). */
-interface PageTranslationHover {
-  blockId?: string | null;
-  sentenceIndex?: number;
-  /** UTF-16 offset of the hovered token within the full block source text. */
-  tokenOffset?: number | null;
-  blockText?: string;
-  tokenText?: string;
-}
-
 type TranslationStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 
 interface PageTranslationPanelProps {
@@ -35,7 +24,6 @@ interface PageTranslationPanelProps {
   l2Code: string;
   pageUrl?: string;
   lookup?: PageLookup | null;
-  hover?: PageTranslationHover | null;
 }
 
 const TRANSLATION_BATCH_SIZE = 5;
@@ -61,7 +49,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   l2Code,
   pageUrl,
   lookup,
-  hover,
 }) => {
   const [blocks, setBlocks] = useState<PageBlock[]>([]);
   const [status, setStatus] = useState<TranslationStatus>('idle');
@@ -70,8 +57,8 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   const [pending, setPending] = useState<Set<string>>(new Set());
   const [failed, setFailed] = useState<Set<string>>(new Set());
   const [highlightedBlockId, setHighlightedBlockId] = useState<string | null>(null);
-  /** Per-block hover state used to highlight the translation SENTENCE. Keyed by
-   *  the rendered block id (a whole paragraph block). */
+  /** Per-block active-sentence state used to highlight the translation SENTENCE
+   *  on token click. Keyed by the rendered block id (a whole paragraph block). */
   const [activeHover, setActiveHover] = useState<Record<string, { tokenOffset?: number | null; sentenceIndex: number }>>({});
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const blockElements = useRef(new Map<string, HTMLElement>());
@@ -332,37 +319,13 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     // indicator flash in and out.
     setHighlightedBlockId(blockId);
     // Also highlight the translation SENTENCE containing the looked-up token, so
-    // a click keeps both block + sentence emphasis (matching hover / apps/web).
+    // a click keeps both block + sentence emphasis (apps/web reader parity).
     setActiveHover({ [blockId]: { tokenOffset: lookup?.tokenOffset ?? null, sentenceIndex: lookup?.sentenceIndex ?? 0 } });
   }, [blocks, lookup?.blockId, lookup?.token?.text, lookup?.sentenceIndex]);
 
-  // Token hover → scroll the translation + highlight the SENTENCE containing
-  // the hovered token (apps/web reader parity). Each rendered block is a whole
-  // paragraph (the snapshot does not split sentences into sub-blocks), so the
-  // sentence is resolved and highlighted within the single block.
-  useEffect(() => {
-    if (!hover?.blockId) return;
-    const sentenceIndex = hover.sentenceIndex ?? 0;
-    const element = blockElements.current.get(hover.blockId);
-    if (!element) {
-      logwarn('[PAGE] hover target is not in translation snapshot', {
-        blockId: hover.blockId,
-        token: hover.tokenText,
-        blocks: blocks.length,
-      });
-      return;
-    }
-    log('[PAGE] hover → scrolling translation block', { blockId: hover.blockId, token: hover.tokenText });
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Both block + sentence: mark the whole block (is-highlighted wash) and
-    // highlight the translation sentence at the hovered source offset.
-    setHighlightedBlockId(hover.blockId);
-    setActiveHover({ [hover.blockId]: { tokenOffset: hover.tokenOffset ?? null, sentenceIndex } });
-  }, [hover, blocks.length]);
-
   // Render a block's translation as sentence spans so the SENTENCE containing a
-  // hovered source token can be highlighted (matches apps/web's SegmentedTranslation).
-  // Falls back to a plain paragraph when there's no hover or the alignment fails.
+  // clicked source token can be highlighted (matches apps/web's SegmentedTranslation).
+  // Falls back to a plain paragraph when there's no active token or the alignment fails.
   const renderTranslationValue = (block: PageBlock, value: string) => {
     const hoverInfo = activeHover[block.id];
     if (!hoverInfo) return <p className="lpv-page-translation-result">{value}</p>;
