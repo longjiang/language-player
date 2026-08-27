@@ -679,7 +679,11 @@ with `position:fixed`. They render in the browser's own side panel:
   unsupported page) it degrades to a friendly error + Retry rather than sitting
   blank until the user closes and reopens the panel. Polls are guarded by the
   active tab id so a late response from a just-left tab cannot overwrite the
-  current tab's state.
+  current tab's state. The terminal message is **tab-scoped**: on the subtitles
+  tab it surfaces the subtitle state machine ("No subtitles found" + Retry, per
+  SPEC-086 §Phase 3: Detecting / No subtitles / Error / Ready) and never the
+  page-reader "This page is unavailable for translation" text, which belongs only
+  to the page-translation context.
 - **Close on navigation / video change**: the panel is closed on any page
   navigation of the panel's tab (`chrome.tabs.onUpdated` `status === 'loading'`)
   and on a YouTube SPA video change (`content-entry.js` sends `closePanel` when
