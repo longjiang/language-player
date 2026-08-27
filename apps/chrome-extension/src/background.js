@@ -96,27 +96,6 @@ let sidePanelConnected = false;
 let sidePanelTabId = null;
 let sidePanelWindowId = null;
 
-// Persisted side-panel open state. The MV3 service worker can be suspended or
-// restarted, which resets sidePanelConnected to false even while the panel is
-// still open on screen. chrome.storage.session survives those restarts within
-// a browser session, so the action toggle does not get confused into reopening
-// (or failing to close) an already-open panel.
-const SIDE_PANEL_STATE_KEY = 'lpvSidePanelOpen';
-function persistPanelState() {
-  const state = sidePanelConnected && sidePanelTabId != null
-    ? { tabId: sidePanelTabId, windowId: sidePanelWindowId }
-    : null;
-  chrome.storage.session.set({ [SIDE_PANEL_STATE_KEY]: state }).catch(() => {});
-}
-async function readPanelState() {
-  try {
-    const res = await chrome.storage.session.get({ [SIDE_PANEL_STATE_KEY]: null });
-    return res && res[SIDE_PANEL_STATE_KEY];
-  } catch {
-    return null;
-  }
-}
-
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'lpv-sidepanel') return;
   sidePanelPort = port;
@@ -132,7 +111,6 @@ chrome.runtime.onConnect.addListener((port) => {
     }
     sidePanelTabId = activeTab.id;
     sidePanelWindowId = activeTab.windowId;
-    persistPanelState();
     notifyTabPanelOpenState(activeTab.id, true);
   });
   port.onDisconnect.addListener(() => {
@@ -141,7 +119,6 @@ chrome.runtime.onConnect.addListener((port) => {
     sidePanelConnected = false;
     sidePanelTabId = null;
     sidePanelWindowId = null;
-    persistPanelState();
     console.log('[LP Extension] Side panel disconnected');
     notifyTabPanelOpenState(previousTabId, false);
   });
@@ -163,37 +140,44 @@ function closeSidePanelIfOpen() {
   } catch {}
 }
 
+// The extension action toggles the side panel natively (open when closed, close
+// when open) via Chrome's openPanelOnActionClick behavior. This is reliable
+// where our own sidePanelConnected flag is not — the MV3 service worker can be
+// suspended/restarted and the side-panel port does not always disconnect, both
+// of which previously left a stale "open" state that made a second click fail
+// to open. The action click therefore needs no manual open/close handler.
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+
 async function toggleSidePanel(tab) {
   if (!tab?.id) return;
   try {
-    // Trust the persisted state over the volatile sidePanelConnected flag: an
-    // MV3 service-worker restart loses the in-memory flag but not the panel.
-    const persisted = await readPanelState();
-    const open = sidePanelConnected || (persisted && persisted.windowId != null);
-    if (open && chrome.sidePanel?.close) {
+    if (sidePanelConnected && chrome.sidePanel?.close) {
       // The manifest uses one global side panel. Closing by windowId works
       // across Chrome versions where close({ tabId }) rejects for a global
-      // panel.
-      console.log('[LP Extension] Action click → closing side panel');
-      notifyTabPanelOpenState(sidePanelTabId ?? persisted?.tabId ?? tab.id, false);
-      await chrome.sidePanel.close({ windowId: sidePanelWindowId ?? persisted?.windowId ?? tab.windowId });
-      persistPanelState();
+      // panel. This path is used by the keyboard commands (Alt+T etc.).
+      console.log('[LP Extension] Toggle → closing side panel');
+      const prevTabId = sidePanelTabId;
+      const prevWindowId = sidePanelWindowId ?? tab.windowId;
+      // Clear the tracked state first so a subsequent toggle opens again even
+      // if the port's onDisconnect is delayed or skipped.
+      sidePanelConnected = false;
+      sidePanelTabId = null;
+      sidePanelWindowId = null;
+      notifyTabPanelOpenState(prevTabId, false);
+      await chrome.sidePanel.close({ windowId: prevWindowId });
     } else {
-      console.log('[LP Extension] Action click → opening side panel');
+      console.log('[LP Extension] Toggle → opening side panel');
       sidePanelTabId = tab.id;
       sidePanelWindowId = tab.windowId;
       await chrome.sidePanel.open({ tabId: tab.id });
-      persistPanelState();
     }
   } catch {}
 }
 
-// The extension icon is the primary panel toggle. Keeping this as an action
-// click (and removing action.default_popup from the manifest) preserves the
-// native Chrome side-panel user gesture without adding a permission.
-chrome.action.onClicked.addListener((tab) => {
-  toggleSidePanel(tab);
-});
+// The extension icon toggles the side panel natively via
+// chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }) above —
+// clicking it opens a closed panel and closes an open one, with no manual
+// open/close handler needed.
 
 // The native side panel is global to a window. Close it when the user changes
 // tabs so opening the panel on one reading page never affects other tabs.
