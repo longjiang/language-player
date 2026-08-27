@@ -18,9 +18,30 @@ The ebook reader (bookshelf + paginated reader) gains two content types:
      loads it into the paginated reader (tokenized words + translation);
    - the reader's **bottom bar** has a **TOC button** (the PDF outline) and a
      **Thumbnails button** (back to the grid).
-2. **Images** open into the image reader: OCR via DeepSeek Vision
+2. **Images** open into the standalone image reader: OCR via DeepSeek Vision
    (`deepseek-v4-flash-vision-exp`, `POST /vision`, cached) → markdown →
    paginated reader.
+
+## Image reader (standalone)
+
+The image reader is its own **route** reachable from the Reading menu, not an
+action inside the epub reader:
+
+- **Web**: `/[l1]/[l2]/image-reader` (`apps/web/src/app/[l1]/[l2]/image-reader/`)
+- **Mobile**: `(tabs)/(reading)/image-reader` (`apps/mobile/app/(tabs)/(reading)/image-reader.tsx`)
+
+It provides a **multi-file** entry surface (drag & drop or a multi-file picker),
+a **paste** button, and global **Ctrl/Cmd+V** clipboard-image paste (web
+`paste` event; mobile `expo-clipboard` `getImageAsync`). Once files are
+loaded it shows a **thumbnail rail/sidebar** (current image highlighted) and
+the vision-OCR result of the current image as **tokenized text** in the
+paginated reader. OCR is lazy per selection; results are cached server-side.
+
+The OCR markdown is normalized by `normalizeVisionMarkdown`
+(`packages/shared/src/markdown/vision.ts`) so paragraphs the vision model
+returns separated by single newlines become separate reader blocks (the model
+often collapses them into one paragraph/block otherwise). This also benefits
+the PDF page→markdown path.
 
 ## Architecture
 
@@ -34,8 +55,10 @@ The ebook reader (bookshelf + paginated reader) gains two content types:
 | Bottom bar | `PaginatedReader.onOpenToc` + new `onOpenThumbnails` | same |
 
 ### Image reader flow
-`Open image` → image → `POST /vision` (OCR prompt) → `parseMarkdown` /
-`parseMarkdownBlocks` → shared paginated reader (non-immersive session).
+`Open image` (Reading menu → Image Reader) → paste/drop/pick one or more
+images → `POST /vision` (OCR prompt) → `normalizeVisionMarkdown` →
+`parseMarkdown` / `parseMarkdownBlocks` → shared paginated reader
+(non-immersive session), with a thumbnail rail for multi-image navigation.
 
 ## Caching
 
@@ -51,3 +74,13 @@ PDF thumbnails and the rendered cover are cached locally in the app.
 - Typecheck both apps (`apps/web`, `apps/mobile`); runtime verification of
   the mobile WebView pdf.js path and OS file-open is outstanding (needs a
   simulator/device run).
+
+## Revision
+
+- **Image reader → standalone route**: the image reader moved out of the epub
+  reader's bookshelf "Open image" action into its own route
+  (`/[l1]/[l2]/image-reader` web, `(tabs)/(reading)/image-reader` mobile) with
+  an "Image Reader" item in the Reading menu. It now supports multi-file
+  drag & drop / picker, clipboard-image paste (Ctrl/Cmd+V), and a thumbnail
+  rail; the epub reader no longer hosts an inline image session. OCR markdown
+  is normalized by `normalizeVisionMarkdown` for block breaking.

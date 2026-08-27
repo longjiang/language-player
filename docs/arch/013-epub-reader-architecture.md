@@ -603,9 +603,20 @@ button (back to the grid). Web rendering: `apps/web/src/lib/pdf-book.ts` +
 `components/reader/PdfReaderPanel.tsx`.
 
 ### Image reader (web + mobile)
-"Open image" on the epub reader's bookshelf reads the image and sends it to
-`POST /vision` with an OCR prompt; the markdown is read in the paginated
-reader as a non-persistent session.
+The image reader is a **standalone route** (not an epub-bookshelf action),
+listed as "Image Reader" in the Reading menu: web
+`/[l1]/[l2]/image-reader` (`apps/web/src/app/[l1]/[l2]/image-reader/`),
+mobile `(tabs)/(reading)/image-reader`
+(`apps/mobile/app/(tabs)/(reading)/image-reader.tsx`). It accepts **multiple**
+images via drag & drop or a multi-file picker, plus a **paste** button and
+global **Ctrl/Cmd+V** clipboard-image paste (web `paste` event / `async
+clipboard.read`; mobile `expo-clipboard` `getImageAsync`), then shows a
+thumbnail rail with the current image highlighted and sends the current image
+to `POST /vision` (OCR prompt). Each image's markdown is normalized by
+`normalizeVisionMarkdown` (`packages/shared/src/markdown/vision.ts`) — which
+promotes newline-separated paragraphs into separate reader blocks — and read
+in the paginated reader as a non-persistent session. OCR is lazy per image and
+cached server-side by `/vision`.
 
 ### Epub-like formats (.fb2 / .mobi / .azw3)
 `packages/utils/src/alt-formats.ts` (pure TS, shared) converts FictionBook
