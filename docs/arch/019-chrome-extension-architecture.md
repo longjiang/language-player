@@ -521,6 +521,14 @@ Key behaviors:
   ADR-0034. The explain button, Pro banner, and follow-link share the card
   body's horizontal padding with a uniform 0.75rem vertical margin
   (`page-dictionary.css` `#lpv-page-dictionary-root .lpv-explain-btn`).
+- **Saved-context + classifier parity**: when a lookup entry is a saved word,
+  the entry card shows apps/web's saved metadata — the save date, source type
+  + title (video/book), and the context sentence it was saved from with the
+  surface form highlighted (latest saved instance context, legacy `context`
+  fallback, `capSourceTitle` for long titles). The card also renders a
+  match-type badge (when the match is not `exact`) and classifier chips
+  (measure word / gender / noun class, via the shared `Classifier[]` field),
+  matching apps/web's compact `DictionaryEntryCard`.
 - **Dictionary iframe locale**: `page-dictionary-frame.tsx` calls `setLocale()`
   with the saved `l1Language` on init and re-applies it on `storage` changes, so
   the popup renders the user's selected interface language rather than falling
