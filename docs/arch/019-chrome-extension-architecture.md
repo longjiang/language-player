@@ -645,6 +645,14 @@ with `position:fixed`. They render in the browser's own side panel:
     and `chrome.tabs.sendMessage` resolves with the **first** responder, so a
     catch-all `{ received: true }` from content-entry would mask page-content's
     real result (previously surfacing "this page cannot be translated").
+  - The reverse is also enforced: `page-content.js` stays silent on
+    `getPanelState` for video hosts (it `return`s without `sendResponse`), so
+    the side panel's mode pull is answered only by `content-entry.js`'s
+    `mode: 'video'` result. Otherwise page-content's `state: null` (the video-host
+    branch) could win the first-responder race and leave the side panel stuck
+    resolving the tab's mode instead of showing the subtitles. On ordinary pages
+    page-content is the only injected script and is the sole `getPanelState`
+    responder (page mode).
 - **Opening the panel**: `chrome.sidePanel.open({ tabId })` requires a user
   gesture, so auto-open on subtitle load is gone. It opens from the extension
   action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token
