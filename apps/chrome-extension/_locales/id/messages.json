@@ -378,6 +378,27 @@
   "level": {
     "message": "Level"
   },
+  "levelName1": {
+    "message": "Pemula I"
+  },
+  "levelName2": {
+    "message": "Pemula II"
+  },
+  "levelName3": {
+    "message": "Pemula III"
+  },
+  "levelName4": {
+    "message": "Menengah I"
+  },
+  "levelName5": {
+    "message": "Menengah II"
+  },
+  "levelName6": {
+    "message": "Lanjutan I"
+  },
+  "levelName7": {
+    "message": "Lanjutan II"
+  },
   "subscription": {
     "message": "Langganan"
   },

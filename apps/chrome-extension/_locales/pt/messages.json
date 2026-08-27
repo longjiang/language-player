@@ -378,6 +378,27 @@
   "level": {
     "message": "Nível"
   },
+  "levelName1": {
+    "message": "Iniciante I"
+  },
+  "levelName2": {
+    "message": "Iniciante II"
+  },
+  "levelName3": {
+    "message": "Iniciante III"
+  },
+  "levelName4": {
+    "message": "Intermediário I"
+  },
+  "levelName5": {
+    "message": "Intermediário II"
+  },
+  "levelName6": {
+    "message": "Avançado I"
+  },
+  "levelName7": {
+    "message": "Avançado II"
+  },
   "subscription": {
     "message": "Assinatura"
   },

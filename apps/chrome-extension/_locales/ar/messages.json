@@ -378,6 +378,27 @@
   "level": {
     "message": "المستوى"
   },
+  "levelName1": {
+    "message": "مبتدئ I"
+  },
+  "levelName2": {
+    "message": "مبتدئ II"
+  },
+  "levelName3": {
+    "message": "مبتدئ III"
+  },
+  "levelName4": {
+    "message": "متوسط I"
+  },
+  "levelName5": {
+    "message": "متوسط II"
+  },
+  "levelName6": {
+    "message": "متقدم I"
+  },
+  "levelName7": {
+    "message": "متقدم II"
+  },
   "subscription": {
     "message": "اشتراك"
   },

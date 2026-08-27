@@ -956,6 +956,23 @@ function loadCSV() {
 
 // ── Generator ─────────────────────────────────────────────────────────────
 
+/**
+ * Extract a single branch value from an ICU MessageFormat `select`.
+ * e.g. for `{level, select, 1{Beginner I} 2{Beginner II} ...}` and num=1
+ * this returns "Beginner I". Used to flatten the CSV `level.name` ICU select
+ * into per-level flat keys (the extension's t()/chrome.i18n can't parse ICU).
+ * Branch values contain no nested braces, so a simple `[^{}]*` capture works.
+ */
+function extractIcuSelectValue(icu, num) {
+  if (!icu) return null;
+  const re = /(?:^|[\s,{])(\d+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(icu)) !== null) {
+    if (Number(m[1]) === num) return m[2].trim();
+  }
+  return null;
+}
+
 function main() {
   const csv = loadCSV();
 
@@ -1008,14 +1025,25 @@ function main() {
         translated = MANUAL[key][csvCol];
       }
 
-      // 3. For popupShowTranscript, reuse showTranscript
+      // 3. levelNameN — flattened from the CSV `level.name` ICU select for the
+      //    current locale. chrome.i18n cannot parse ICU MessageFormat, so the
+      //    generator turns "{level, select, 1{Beginner I} ...}" into flat keys.
+      if (!translated) {
+        const levelMatch = key.match(/^levelName([1-7])$/);
+        if (levelMatch) {
+          const icu = (csv['level.name'] && csv['level.name'][csvCol]) || null;
+          translated = extractIcuSelectValue(icu, Number(levelMatch[1]));
+        }
+      }
+
+      // 4. For popupShowTranscript, reuse showTranscript
       if (!translated) {
         if (key === 'popupShowTranscript' && result['showTranscript']) {
           translated = result['showTranscript'].message;
         }
       }
 
-      // 4. Final fallback: empty string (will trigger Chrome's default_locale fallback)
+      // 5. Final fallback: empty string (will trigger Chrome's default_locale fallback)
       if (!translated) {
         console.warn(`  ⚠ No translation for "${key}" in ${chromeLocale} (${csvCol})`);
         translated = enMessages[key].message; // fallback to English

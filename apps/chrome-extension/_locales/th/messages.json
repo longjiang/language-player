@@ -378,6 +378,27 @@
   "level": {
     "message": "ระดับ"
   },
+  "levelName1": {
+    "message": "ระดับเริ่มต้น I"
+  },
+  "levelName2": {
+    "message": "ระดับเริ่มต้น II"
+  },
+  "levelName3": {
+    "message": "ระดับเริ่มต้น III"
+  },
+  "levelName4": {
+    "message": "ระดับกลาง I"
+  },
+  "levelName5": {
+    "message": "ระดับกลาง II"
+  },
+  "levelName6": {
+    "message": "ระดับสูง I"
+  },
+  "levelName7": {
+    "message": "ระดับสูง II"
+  },
   "subscription": {
     "message": "การสมัครสมาชิก"
   },
