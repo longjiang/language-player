@@ -135,6 +135,18 @@ button:focus-visible,
   color: hsl(var(--muted-foreground));
 }
 
+/* Web-parity chevron on the language trigger (apps/web header ChevronDown),
+ * replaces the legacy ⌄ text glyph that rendered inconsistently. */
+.lpv-language-trigger .lpv-chevron {
+  flex: 0 0 auto;
+  color: hsl(var(--muted-foreground));
+  transition: transform 150ms ease;
+}
+
+.lpv-language-trigger .lpv-chevron.is-open {
+  transform: rotate(180deg);
+}
+
 .lpv-profile-trigger {
   border: 1px solid hsl(var(--border));
   border-radius: 9999px;
