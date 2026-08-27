@@ -23,15 +23,12 @@ import {
  *  /vision): a leading `# <title>` heading the client extracts as the
  *  human-readable image title, followed by blocks separated by blank lines. */
 const IMAGE_OCR_PROMPT =
-  'Extract all text from this image as clean, properly formatted markdown. ' +
-  'Begin with a single H1 heading (one line starting with "# ") giving a short, ' +
-  'human-readable title for the image (the document, diagram, or page name — ' +
-  'never a filename). Then a blank line, then the extracted content. Separate ' +
-  'each block element (headings, paragraphs, list items) with a blank line so ' +
-  'blocks reflow independently. Keep each paragraph as flowing prose — do not ' +
-  'insert line breaks inside a paragraph, and do not collapse distinct ' +
-  'paragraphs together. Preserve headings (#), paragraphs, lists, bold/italic ' +
-  'emphasis, and code blocks. Output only the markdown, with no commentary.';
+  'Transcribe all text in this image into clean, well-formatted markdown. ' +
+  'Start with a single H1 heading (a line starting with "# ") giving a short, ' +
+  'human-readable title for the image. Read in natural reading order and join ' +
+  'wrapped lines into flowing prose — no hard line breaks inside a paragraph. ' +
+  'Preserve headings, paragraphs, lists, emphasis, and code blocks. Output ' +
+  'only the markdown.';
 
 /** Accepted image MIME types (mirrors msg.image_reader_supported). */
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp';

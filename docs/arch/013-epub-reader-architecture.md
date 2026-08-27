@@ -590,17 +590,23 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 ### PDF reader (web + mobile)
 PDFs live on the same bookshelf (an `EpubMeta.format: 'pdf'` entry; the first
 page is rendered at import as the shelf cover — pdf.js on web, a hidden
-WebView hosting pdf.js on mobile). Opening a PDF shows a grid of page
-thumbnails (lazy-rendered). Tapping a page renders it and sends the page
-image to the DeepSeek Vision endpoint (`POST /vision`,
-`deepseek-v4-flash-vision-exp`, cached server-side) with a "page → markdown"
-prompt; the returned markdown is parsed into blocks and read in the shared
-paginated reader (tokenized words, translation, text actions). The bottom bar
-carries a **TOC** button (the PDF outline/bookmarks) and a **Thumbnails**
-button (back to the grid). Web rendering: `apps/web/src/lib/pdf-book.ts` +
-`components/reader/pdf-reader-panel.tsx`; mobile: `lib/pdf-viewer.tsx`
-(WebView + pdf.js via data: URLs — no native modules) +
-`components/reader/PdfReaderPanel.tsx`.
+WebView hosting pdf.js on mobile). Opening a PDF **auto-opens page 1** in the
+shared paginated reader and shows a **collapsible right-side thumbnails
+sidebar** (standard Sidebar: desktop persistent panel / mobile slide-in
+sheet). The sidebar lists every page (lazy-rendered), **outlines the current
+page**, tapping a different page opens it, and tapping the **current** page
+opens a **full-size zoomable preview modal** (shared `ZoomableImage`, same as
+the image reader). Tapping a page renders it and sends the page image to the
+DeepSeek Vision endpoint (`POST /vision`, `deepseek-v4-flash-vision-exp`,
+cached server-side) with a "page → markdown" prompt; the returned markdown is
+parsed into blocks and read in the shared paginated reader (tokenized words,
+translation, text actions). The bottom bar carries a **TOC** button (the PDF
+outline/bookmarks) and a **Thumbnails** button that **toggles the sidebar**.
+The top-right reader close control is a `✕` close button; there is no
+top-left thumbnails icon (the header uses a standard sidebar toggle). Web
+rendering: `apps/web/src/lib/pdf-book.ts` + `components/reader/pdf-reader-panel.tsx`;
+mobile: `lib/pdf-viewer.tsx` (WebView + pdf.js via data: URLs — no native
+modules) + `components/reader/PdfReaderPanel.tsx`.
 
 ### Image reader (web + mobile)
 The image reader is a **standalone route** (not an epub-bookshelf action),

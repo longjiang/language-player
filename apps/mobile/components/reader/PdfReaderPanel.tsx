@@ -333,10 +333,8 @@ export function PdfReaderPanel({
 /** Vision prompt: transcribe the page as clean, flowing markdown (no hard
  *  line breaks, natural reading order) — shared locally by openPage. */
 const PDF_PAGE_PROMPT =
-  'Extract all text from this PDF page image as clean, properly formatted ' +
-  'markdown. Separate each block element (headings, paragraphs, list items) ' +
-  'with a blank line so blocks reflow independently. Keep each paragraph as ' +
-  'flowing prose — do not insert line breaks inside a paragraph, and do not ' +
-  'collapse distinct paragraphs together. Preserve headings (#), paragraphs, ' +
-  'lists, bold/italic emphasis, and code blocks. Output only the markdown, ' +
-  'with no commentary.';
+  'Transcribe all text on this page into clean, well-formatted markdown. ' +
+  'Read in natural reading order and join wrapped lines into flowing prose — ' +
+  'no hard line breaks inside a paragraph, and do not split a sentence across ' +
+  'separate lines. Preserve headings, paragraphs, lists, emphasis, and code ' +
+  'blocks. Output only the markdown.';

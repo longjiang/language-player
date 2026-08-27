@@ -13,11 +13,14 @@ The ebook reader (bookshelf + paginated reader) gains two content types:
 
 1. **PDFs** sit on the bookshelf like EPUBs:
    - the **first page** is rendered at import as the shelf cover;
-   - opening a PDF shows a **grid of page thumbnails**;
-   - tapping a page **converts it to markdown via AI** (DeepSeek Vision) and
-     loads it into the paginated reader (tokenized words + translation);
+   - opening a PDF **auto-opens page 1** in the paginated reader (converted
+     via DeepSeek Vision) with a **collapsible right-side thumbnails sidebar**
+     (standard Sidebar — desktop persistent panel / mobile slide-in sheet);
+   - the sidebar lists every page, **outlines the current page**, tapping a
+     different page opens it, and tapping the **current** page opens a
+     **full-size zoomable preview modal** (same as the image reader);
    - the reader's **bottom bar** has a **TOC button** (the PDF outline) and a
-     **Thumbnails button** (back to the grid).
+     **Thumbnails button** (toggles the sidebar).
 2. **Images** open into the standalone image reader: OCR via DeepSeek Vision
    (`deepseek-v4-flash-vision-exp`, `POST /vision`, cached) → markdown →
    paginated reader.
@@ -55,15 +58,16 @@ The gallery persists across navigation/refresh and is restored on mount:
 Images are re-OCR'd lazily if they have no stored result (the `/vision`
 results are cached server-side).
 
-The vision model is prompted to return **properly formatted, block-level
-markdown**: a leading `# <title>` heading giving a short, human-readable
-image title (which the reader extracts and uses for the title bar and the
-saved-word context — not the raw filename), then block elements (headings,
-paragraphs, list items) separated by blank lines, each paragraph as flowing
-prose (no internal hard line breaks). That makes the reader break blocks
-naturally and reflow each block independently — there is **no** client-side
-post-processing of the OCR text. The same prompt is used for the PDF
-page→markdown path.
+The vision model is prompted to return **clean, flowing markdown** in
+**natural reading order**: the text with wrapped lines joined into flowing
+prose (no hard line breaks inside a paragraph, no sentence split across
+separate lines). The image reader additionally asks for a leading
+`# <title>` heading giving a short, human-readable image title (which the
+reader extracts and uses for the title bar and the saved-word context — not
+the raw filename). That makes the reader break blocks naturally and reflow
+each block independently — there is **no** client-side post-processing of the
+OCR text. The PDF page→markdown path uses the same simplified style (minus
+the title heading).
 
 > **Full detail moved to [SPEC-090 — Image Reader](090-image-reader.md).** This
 > section is a summary; the standalone image reader (routes, entry surfaces,
@@ -97,8 +101,10 @@ PDF thumbnails and the rendered cover are cached locally in the app.
 
 ## Verification
 
-- Import a PDF → shelf tile shows page 1; open → thumbnails grid; tap a page
-  → markdown reader; TOC + Thumbnails buttons work (web + mobile).
+- Import a PDF → shelf tile shows page 1; open → page 1 is read with a
+  right-side thumbnails sidebar; switching pages, the current-page outline,
+  the full-page preview modal, and the TOC + Thumbnails-toggle buttons work
+  (web + mobile).
 - Open an image → OCR text appears in the paginated reader.
 - Typecheck both apps (`apps/web`, `apps/mobile`); runtime verification of
   the mobile WebView pdf.js path and OS file-open is outstanding (needs a
@@ -119,3 +125,14 @@ PDF thumbnails and the rendered cover are cached locally in the app.
   paragraph as flowing prose). This replaces an earlier client-side
   `normalizeVisionMarkdown` step that force-split every OCR line into its own
   block, which caused text to render pre-wrapped instead of reflowing.
+- **PDF reader: thumbnails sidebar replaces the grid**: the PDF reader no
+  longer opens onto a page-thumbnails grid. It auto-opens page 1 with a
+  collapsible right-side thumbnails sidebar (current page outlined; tapping
+  the current page opens a full-size zoomable preview modal; the bottom-bar
+  Thumbnails button toggles the sidebar). The top-right reader close control
+  is now a `✕` close button, and the top-left thumbnails icon was removed in
+  favour of a standard sidebar toggle (see also ARCH-013).
+- **Simplified vision prompt**: the vision OCR prompt was simplified — the
+  model is asked to read in natural reading order and join wrapped lines into
+  flowing prose (no fixed-width line breaks), rather than an explicit
+  block-splitting instruction list.
