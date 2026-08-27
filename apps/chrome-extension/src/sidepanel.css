@@ -1209,6 +1209,69 @@ button:focus-visible,
   accent-color: hsl(var(--primary));
 }
 
+/* Segmented control — mirrors apps/web SegmentedRow (theme / font / phonetics).
+ * Replaces the legacy <select> dropdowns in the Settings modal. */
+.lpv-segmented {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.lpv-segmented-label {
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-segmented-group {
+  display: inline-flex;
+  gap: 0.25rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted));
+  box-sizing: border-box;
+}
+
+.lpv-segmented-option {
+  border: 0;
+  border-radius: calc(var(--radius) - 0.125rem);
+  padding: 0.375rem 0.625rem;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.lpv-segmented-option:hover {
+  color: hsl(var(--foreground));
+}
+
+.lpv-segmented-option.is-selected {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.1);
+}
+
+/* Sub-section header grouping controls within a settings category
+ * (apps/web SectionHeader). */
+.lpv-settings-subsection {
+  margin: 1.25rem 0 0;
+}
+
+.lpv-settings-subsection-title {
+  margin: 0 0 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .lpv-dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -1362,6 +1425,44 @@ button:focus-visible,
 
 .lpv-settings-row label {
   min-width: 0;
+}
+
+/* Stacked settings field — label above the control (apps/web SettingsRow/
+ * SectionHeader vertical layout for segmented + slider controls). */
+.lpv-settings-block-list {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.lpv-settings-block {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.lpv-settings-block-label {
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+}
+
+.lpv-settings-block-control {
+  min-width: 0;
+}
+
+.lpv-settings-test-speak {
+  margin-top: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.lpv-settings-test-speak:hover {
+  background: hsl(var(--muted));
 }
 
 .lpv-settings-preview {
