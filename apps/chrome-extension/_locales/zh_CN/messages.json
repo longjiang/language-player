@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "高级二"
   },
+  "lemma": {
+    "message": "词元"
+  },
   "subscription": {
     "message": "订阅"
   },

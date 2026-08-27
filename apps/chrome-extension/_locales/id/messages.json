@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "Lanjutan II"
   },
+  "lemma": {
+    "message": "Lemma"
+  },
   "subscription": {
     "message": "Langganan"
   },

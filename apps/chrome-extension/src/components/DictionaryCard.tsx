@@ -797,7 +797,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           )}
           {token.lemmas.length > 0 && token.lemmas[0]!.lemma !== token.text && (
             <span className="lpv-dict-card-lemma">
-              ← {token.lemmas.map((l) => l.lemma).join(', ')}
+              {t('lemma')}: {token.lemmas.map((l) => l.lemma).join(', ')}
             </span>
           )}
         </div>
@@ -808,22 +808,25 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </div>
       </div>
 
-      {linkUrl && (
-        <button
-          type="button"
-          className="lpv-page-follow-link"
-          onClick={(event) => {
-            event.stopPropagation();
-            if (onFollowLink) onFollowLink(linkUrl);
-            else window.location.assign(linkUrl);
-          }}
-        >
-          {t('followLink')} →
-        </button>
-      )}
-
       {/* Card body */}
       <div className="lpv-dict-card-body">
+        {/* Follow-link (page hyperlink) sits INSIDE the padded body so it lines
+            up with the Explain / Save / Search-images buttons and shares the
+            card-body padding + flex gap (web/entry-card parity). */}
+        {linkUrl && (
+          <button
+            type="button"
+            className="lpv-page-follow-link"
+            onClick={(event) => {
+              event.stopPropagation();
+              if (onFollowLink) onFollowLink(linkUrl);
+              else window.location.assign(linkUrl);
+            }}
+          >
+            {t('followLink')} →
+          </button>
+        )}
+
         {/* AI explanation — always show the "Let DeepSeek Explain" button
             immediately (not deferred until the subscription check). Non-Pro
             users get the upgrade prompt inside the explain section after they

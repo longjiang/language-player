@@ -89,6 +89,14 @@ function SidePanelApp() {
   const [theme, setTheme] = useState<Theme>('system');
   const [subtitleRequesting, setSubtitleRequesting] = useState(false);
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
+  /** True while we're still resolving the active tab's mode (video/page) so the
+   *  panel shows a clear loading state instead of a blank/empty surface. */
+  const [panelLoading, setPanelLoading] = useState(true);
+  /** Set when the mode never resolves (stale page / no content script) so the
+   *  panel degrades to a friendly error + Retry rather than sitting blank. */
+  const [panelError, setPanelError] = useState<string | null>(null);
+  /** Auto-recovery poll counter (caps the retry loop before showing an error). */
+  const panelPollCountRef = useRef(0);
   const pageModalEventRef = useRef<(event: any) => void>(() => {});
 
   const tabIdRef = useRef<number | null>(null);
@@ -105,23 +113,41 @@ function SidePanelApp() {
 
   /** Pull the current panel state from a tab's content script. */
   const pullState = useCallback(async (tid: number | null) => {
-    setMode(null);
-    setLookup(null);
-    if (!tid) return;
+    setPanelLoading(true);
+    setPanelError(null);
+    if (!tid) {
+      setMode(null);
+      setPanelLoading(false);
+      return;
+    }
     try {
       const res: any = await chrome.tabs.sendMessage(tid, { action: 'getPanelState' });
+      if (tid !== tabIdRef.current) return; // stale pull — the active tab changed
       if (res?.state?.mode === 'video') {
+        panelPollCountRef.current = 0;
+        log('[SIDEPANEL] getPanelState → video mode', { tid, cues: res.state.cues?.length });
         setVideoState(res.state);
         setMode('video');
         setMismatchDismissed(false);
+        setPanelLoading(false);
       } else if (res?.state?.mode === 'page') {
+        panelPollCountRef.current = 0;
+        log('[SIDEPANEL] getPanelState → page mode', { tid, status: res.state.pageTranslationStatus });
         setPageState(res.state);
         setLookup(res.state.lookup || null);
         setMode('page');
+        setPanelLoading(false);
+      } else {
+        // Content script is present but reports no active mode yet (panelOpen /
+        // pageTranslationTabOpen lifecycle not asserted, or a stale tab). Leave
+        // panelLoading on so the retry loop re-pulls until it resolves.
+        log('[SIDEPANEL] getPanelState returned no active mode; retrying', { tid, res: res?.state ?? null });
       }
-    } catch {
-      // No content script (or not ready yet) — the empty state shows until a
-      // content script pushes its first panelState/pageModeState.
+    } catch (err) {
+      if (tid !== tabIdRef.current) return; // stale pull — ignore
+      // No content script (or not ready yet) — keep loading; the retry loop
+      // recovers once the content script is injected / this tab is supported.
+      logwarn('[SIDEPANEL] getPanelState failed (no content script?)', { tid, err: (err as Error)?.message });
     }
   }, []);
 
@@ -135,17 +161,23 @@ function SidePanelApp() {
     const refresh = async (tid?: number) => {
       const target = tid ?? (await getActiveTabId());
       setTabId(target);
+      // Clear the previously-active tab's state before pulling the new one, so
+      // we never show stale content from another tab while this one loads.
+      setMode(null);
+      setVideoState(null);
+      setPageState(null);
+      setLookup(null);
+      panelPollCountRef.current = 0;
       await pullState(target);
     };
     refresh();
 
     const onActivated = (info: chrome.tabs.TabActiveInfo) => {
-      setTabId(info.tabId);
-      pullState(info.tabId);
+      refresh(info.tabId);
     };
     const onUpdated = (tid: number, changeInfo: chrome.tabs.TabChangeInfo) => {
       if (changeInfo.status === 'complete' && tid === tabIdRef.current) {
-        pullState(tid);
+        refresh(tid);
       }
     };
     chrome.tabs.onActivated.addListener(onActivated);
@@ -156,6 +188,44 @@ function SidePanelApp() {
     };
   }, [getActiveTabId, pullState]);
 
+  // ── Auto-recovery ──
+  // When the panel first opens, the content script may not have finished its
+  // lifecycle setup yet (panelOpenState / pageTranslationVisibility race the
+  // side panel's getPanelState pull), so getPanelState can return no active
+  // mode and leave the panel blank. Keep re-pulling briefly so the panel
+  // resolves on its own, then degrade to a friendly error + Retry instead of a
+  // dead/blank panel that requires closing and reopening the panel.
+  useEffect(() => {
+    if (mode !== null || panelError) {
+      panelPollCountRef.current = 0;
+      return;
+    }
+    if (!panelLoading) return;
+    const timer = setInterval(() => {
+      if (mode !== null || panelError) return;
+      panelPollCountRef.current += 1;
+      if (panelPollCountRef.current > 8) {
+        logwarn('[SIDEPANEL] mode never resolved after polling — showing error + retry', {
+          attempts: panelPollCountRef.current,
+          tabId: tabIdRef.current,
+        });
+        setPanelLoading(false);
+        setPanelError(t('pageUnavailable'));
+        return;
+      }
+      log('[SIDEPANEL] retrying getPanelState pull', { attempt: panelPollCountRef.current, tabId: tabIdRef.current });
+      pullState(tabIdRef.current);
+    }, 500);
+    return () => clearInterval(timer);
+  }, [mode, panelError, panelLoading, pullState]);
+
+  const retryPanelResolve = useCallback(() => {
+    panelPollCountRef.current = 0;
+    setPanelError(null);
+    setPanelLoading(true);
+    pullState(tabIdRef.current);
+  }, [pullState]);
+
   // ── Port to background: receives content-script state pushes ──
   useEffect(() => {
     const port = chrome.runtime.connect({ name: 'lpv-sidepanel' });
@@ -165,10 +235,14 @@ function SidePanelApp() {
         setVideoState(msg.state);
         setMode('video');
         setMismatchDismissed(false);
+        setPanelLoading(false);
+        setPanelError(null);
       } else if (msg.action === 'pageModeState') {
         setPageState(msg.state);
         setMode('page');
         setMismatchDismissed(false);
+        setPanelLoading(false);
+        setPanelError(null);
         if (msg.state?.lookup) setLookup(msg.state.lookup);
       } else if (msg.action === 'pageLookup') {
         setLookup(msg.payload);
@@ -446,18 +520,36 @@ function SidePanelApp() {
         </div>
       )}
 
-      <Tabs value={activeTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
-        <TabsList className="lpv-app-tabs">
-          {subtitlesAvailable && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
-          <TabsTrigger value="page-translation">{t('pageTranslation')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="subtitles" className="lpv-app-tabpanel" id="lpv-panel-content">
-          {subtitleContent}
-        </TabsContent>
-        <TabsContent value="page-translation" className="lpv-app-tabpanel" id="lpv-panel-content">
-          {pageTranslationContent}
-        </TabsContent>
-      </Tabs>
+      {mode === null ? (
+        // Still resolving the tab's mode — show a clear loading/error state so
+        // the panel is never blank while the content script initializes.
+        <div className="lpv-app-main" role={panelError ? 'alert' : 'status'} aria-live="polite">
+          {panelError ? (
+            <div className="lpv-ui-empty-state">
+              <p>{panelError}</p>
+              <Button variant="outline" size="sm" onClick={retryPanelResolve}>{t('retry')}</Button>
+            </div>
+          ) : (
+            <div className="lpv-ui-empty-state">
+              <span className="lpv-ui-spinner" aria-hidden="true" />
+              <p>{t('loadingSubtitles')}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <Tabs value={activeTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
+          <TabsList className="lpv-app-tabs">
+            {subtitlesAvailable && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
+            <TabsTrigger value="page-translation">{t('pageTranslation')}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="subtitles" className="lpv-app-tabpanel" id="lpv-panel-content">
+            {subtitleContent}
+          </TabsContent>
+          <TabsContent value="page-translation" className="lpv-app-tabpanel" id="lpv-panel-content">
+            {pageTranslationContent}
+          </TabsContent>
+        </Tabs>
+      )}
 
       <LanguagePicker
         open={languagePickerOpen}
