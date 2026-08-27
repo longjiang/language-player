@@ -138,9 +138,13 @@ export async function pdfPageToMarkdown(dataUrl: string): Promise<string> {
     body: JSON.stringify({
       image: dataUrl,
       prompt:
-        'Extract all text from this PDF page image as clean markdown. ' +
-        'Preserve headings, paragraphs, lists, bold/italic emphasis, and code ' +
-        'blocks. Output only the markdown, with no commentary.',
+        'Extract all text from this PDF page image as clean, properly formatted ' +
+        'markdown. Separate each block element (headings, paragraphs, list items) ' +
+        'with a blank line so blocks reflow independently. Keep each paragraph as ' +
+        'flowing prose — do not insert line breaks inside a paragraph, and do not ' +
+        'collapse distinct paragraphs together. Preserve headings (#), paragraphs, ' +
+        'lists, bold/italic emphasis, and code blocks. Output only the markdown, ' +
+        'with no commentary.',
     }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

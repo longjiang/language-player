@@ -11,7 +11,6 @@ import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
-import { normalizeVisionMarkdown } from '@langplayer/shared';
 import { ArrowLeft, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { log } from '@/lib/logger';
 import ReactMarkdown from 'react-markdown';
@@ -96,8 +95,7 @@ export function PdfReaderPanel({
     try {
       const img = await renderPdfPage(data, page, 1.5);
       const md = await pdfPageToMarkdown(img);
-      const normalized = normalizeVisionMarkdown(md);
-      setConverted({ md: normalized, blocks: normalized ? parseMarkdown(normalized) : [] });
+      setConverted({ md, blocks: md ? parseMarkdown(md) : [] });
     } catch (err) {
       log('[LP Web] pdf page conversion failed', { page, error: (err as Error)?.message ?? err });
       setConverted({ md: '', blocks: [] });

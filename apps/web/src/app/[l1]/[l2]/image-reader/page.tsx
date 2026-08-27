@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SavedWordContext } from '@langplayer/shared';
-import { normalizeVisionMarkdown } from '@langplayer/shared';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -14,11 +13,15 @@ import { epubLog } from '@/lib/epub-log';
 import { ArrowLeft, ImageIcon, Loader2, Clipboard, Upload, X } from 'lucide-react';
 
 /** Vision-OCR prompt for the image reader — the model returns the image's
- *  text as clean markdown (deepseek-v4-flash-vision-exp via /vision). */
+ *  text as clean, block-level markdown (deepseek-v4-flash-vision-exp via
+ *  /vision): blocks separated by blank lines so each reflows independently. */
 const IMAGE_OCR_PROMPT =
-  'Extract all text from this image as clean markdown. Preserve headings, ' +
-  'paragraphs, lists, bold/italic emphasis, and code blocks. Output only the ' +
-  'markdown, with no commentary.';
+  'Extract all text from this image as clean, properly formatted markdown. ' +
+  'Separate each block element (headings, paragraphs, list items) with a blank ' +
+  'line so blocks reflow independently. Keep each paragraph as flowing prose — ' +
+  'do not insert line breaks inside a paragraph, and do not collapse distinct ' +
+  'paragraphs together. Preserve headings (#), paragraphs, lists, bold/italic ' +
+  'emphasis, and code blocks. Output only the markdown, with no commentary.';
 
 /** Accepted image MIME types (mirrors msg.image_reader_supported). */
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp';
@@ -82,10 +85,12 @@ export default function ImageReaderPage() {
     [images, currentId],
   );
 
-  /** Run the vision OCR for an image id (idempotent; no-op if already OCR'd). */
-  const runOcr = useCallback(async (id: string) => {
-    const entry = imagesRef.current.find((im) => im.id === id);
+  /** Run the vision OCR for an image entry (idempotent; no-op if already
+   *  OCR'd). Takes the entry directly so a fresh add/paste can OCR immediately
+   *  without waiting for the images ref to catch up. */
+  const runOcr = useCallback(async (entry: ImageEntry) => {
     if (!entry || entry.md || entry.converting) return;
+    const { id } = entry;
     setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
     epubLog(`image reader OCR start file=${entry.name}`);
     try {
@@ -96,12 +101,11 @@ export default function ImageReaderPage() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      const normalized = normalizeVisionMarkdown(md);
-      epubLog(`image reader OCR md length=${md.length} normalizedBlocksLen=${normalized.length}`);
-      epubLog(`image reader OCR sample: ${normalized.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
+      epubLog(`image reader OCR md length=${md.length}`);
+      epubLog(`image reader OCR sample: ${md.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
       setImages((prev) => prev.map((im) => (
         im.id === id
-          ? { ...im, md: normalized, blocks: normalized ? parseMarkdown(normalized) : [], converting: false }
+          ? { ...im, md, blocks: md ? parseMarkdown(md) : [], converting: false }
           : im
       )));
     } catch (err) {
@@ -125,12 +129,10 @@ export default function ImageReaderPage() {
       setNotice(t('msg.no_image_in_clipboard'));
       return;
     }
-    let firstNewId: string | null = null;
     const pending: Promise<void>[] = [];
     const newEntries: ImageEntry[] = [];
     for (const file of supported) {
       const id = nextId();
-      if (!firstNewId) firstNewId = id;
       const entry: ImageEntry = { id, name: file.name, dataUrl: '', md: '', blocks: null, converting: false };
       newEntries.push(entry);
       const p = readAsDataUrl(file).then((dataUrl) => {
@@ -141,9 +143,11 @@ export default function ImageReaderPage() {
     setNotice(null);
     Promise.all(pending).then(() => {
       setImages((prev) => [...prev, ...newEntries]);
-      if (firstNewId) {
-        setCurrentId(firstNewId);
-        runOcr(firstNewId);
+      // Open the first newly added image by default and kick off its OCR.
+      const first = newEntries[0];
+      if (first) {
+        setCurrentId(first.id);
+        void runOcr(first);
       }
     });
   }, [runOcr, t]);
@@ -153,7 +157,7 @@ export default function ImageReaderPage() {
     setCurrentId(id);
     const entry = imagesRef.current.find((im) => im.id === id);
     if (entry && !entry.md && !entry.converting) {
-      void runOcr(id);
+      void runOcr(entry);
     }
   }, [runOcr]);
 
