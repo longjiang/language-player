@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
 import { readerClampedContentWidth } from '@/lib/reader-layout';
+import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -222,10 +223,13 @@ export default function ImageReaderScreen() {
     setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
     log('[image-reader] OCR start', { name: entry.name });
     try {
+      // Downscale + re-encode before /vision to cap token usage.
+      const payload = await downscaleImage(entry.dataUrl);
+      log('[image-reader] OCR payload b64', { from: entry.dataUrl.length, to: payload.length });
       const res = await fetch(`${PYTHON_API_URL}/vision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: entry.dataUrl, prompt: IMAGE_OCR_PROMPT }),
+        body: JSON.stringify({ image: payload, prompt: IMAGE_OCR_PROMPT }),
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';

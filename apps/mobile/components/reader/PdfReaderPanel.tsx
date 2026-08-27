@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ArrowLeft, ChevronDown, LayoutGrid, List, X } from 'lucide-react-native';
+import { downscaleImage } from '@/lib/downscale-image';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -82,11 +83,14 @@ export function PdfReaderPanel({
     try {
       const img = await viewerRef.current?.renderPage(page, 1.5);
       if (!img) throw new Error('page render failed');
+      // Downscale + re-encode before /vision to cap token usage.
+      const payload = await downscaleImage(img);
+      log('[pdf] page → vision OCR', { page, b64: `${img.length}→${payload.length}` });
       const res = await fetch(`${PYTHON_API_URL}/vision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          image: img,
+          image: payload,
           prompt:
             'Extract all text from this PDF page image as clean, properly ' +
             'formatted markdown. Separate each block element (headings, ' +
