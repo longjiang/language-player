@@ -5,7 +5,7 @@
 - **Feature**: PDF bookshelf entries (cover, thumbnails, AI page→markdown, TOC/thumbnails buttons) and the image reader (vision OCR) — web + mobile
 - **Status**: implemented (2026-08-25; web `dbc39d9d`, mobile `64745e95`, image `53cf12e1`)
 - **ROADMAP Phase**: Phase 5 (Content Features) — Reading
-- **See also**: [EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [SPEC-087 — Paginated Reader](087-paginated-reader.md), [SPEC-085 — EBook Reader Interface](085-ebook-reader-interface.md)
+- **See also**: [SPEC-090 — Image Reader](090-image-reader.md), [EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [SPEC-087 — Paginated Reader](087-paginated-reader.md), [SPEC-085 — EBook Reader Interface](085-ebook-reader-interface.md)
 
 ## Overview
 
@@ -64,6 +64,11 @@ prose (no internal hard line breaks). That makes the reader break blocks
 naturally and reflow each block independently — there is **no** client-side
 post-processing of the OCR text. The same prompt is used for the PDF
 page→markdown path.
+
+> **Full detail moved to [SPEC-090 — Image Reader](090-image-reader.md).** This
+> section is a summary; the standalone image reader (routes, entry surfaces,
+> vision pipeline incl. downscaling, sidebar, preview/zoom, persistence) is
+> documented there.
 
 ## Architecture
 

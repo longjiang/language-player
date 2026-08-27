@@ -1,0 +1,132 @@
+# SPEC-090: Image Reader
+
+## Metadata
+- **Spec ID**: SPEC-090
+- **Feature**: Standalone image reader — OCR images via DeepSeek Vision into tokenized, interactive text (web + mobile)
+- **Status**: implemented (retroactive spec for the as-built feature; see SPEC-089 for the original PDF & Image Reader work)
+- **ROADMAP Phase**: Phase 5 (Content Features) — Reading
+- **See also**: [SPEC-089 — PDF & Image Reader](089-pdf-and-image-reader.md), [SPEC-083 — Unified Markdown](083-mobile-unified-markdown.md), [ARCH-013 — EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [ADR-0012](../adr/0012-custom-epub-parser-mobile.md), [ADR-0022](../adr/0022-epub-web-book-model-on-epubjs.md)
+
+## Overview
+
+The image reader is a standalone route reachable from the Reading menu. Users
+load one or more images (file picker, drag & drop, clipboard paste, or OS
+file-open); each is OCR'd by DeepSeek Vision and shown as **tokenized,
+interactive text** in the shared paginated reader, with a thumbnail sidebar for
+multi-image navigation. It is **not** an action inside the epub reader.
+
+## Routes & files
+
+- **Web**: `/[l1]/[l2]/image-reader` — `apps/web/src/app/[l1]/[l2]/image-reader/{page,layout}.tsx`
+- **Mobile**: `(tabs)/(reading)/image-reader` — `apps/mobile/app/(tabs)/(reading)/image-reader.tsx`
+  (registered in the reading `Stack`; an "Image Reader" item was added to the
+  Reading menu in `NavBar.tsx` and `HamburgerDrawer.tsx`).
+- Reading-menu key: `title.image_reader`.
+
+## Vision pipeline
+
+1. **Downscale** the image before `POST /vision` to cap token usage and
+   latency:
+   - **Web**: `apps/web/src/lib/downscale-image.ts` (browser `Image` + canvas).
+   - **Mobile**: `apps/mobile/lib/downscale-image.ts` via `expo-image-manipulator`.
+   - Longest side capped at `IMAGE_OCR_MAX_DIM` (1600px) and re-encoded to JPEG
+     `IMAGE_OCR_QUALITY` (0.82); web preserves PNG for transparent images. The
+     thumbnail and preview still use the full-resolution original — only the
+     copy sent for OCR is downscaled.
+2. **`POST /vision`** (`deepseek-v4-flash-vision-exp`), cached server-side by
+   prompt + image bytes.
+3. **OCR prompt** requests clean, block-level markdown that **starts with a
+   `# <title>` heading** (a short, human-readable title — never a filename),
+   then blank-line-separated block elements with each paragraph as flowing
+   prose. No client-side OCR post-processing: blocks break naturally at the
+   markdown level and reflow.
+4. **`extractTitle`** pulls the leading `# ` heading out as the image title
+   (used for the title bar and the saved-word context); the remaining text is
+   the body.
+5. The body markdown is parsed into reader blocks (web `parseMarkdown`; mobile
+   `useEpubPagination`). OCR is **lazy per image**; the first
+   pasted/dropped/picked image is opened by default and OCR'd immediately.
+
+## Entry surfaces
+
+- **Multi-file** drag & drop (web) or **multi-file picker** (web + mobile
+  `DocumentPicker`).
+- **Paste** button + global **Ctrl/Cmd+V** clipboard-image paste: web `paste`
+  event / `navigator.clipboard.read()`; mobile `expo-clipboard` `getImageAsync`.
+- **OS file-open** routing (mobile `lib/file-open.ts`) sends images to the
+  image reader screen, consumed on focus.
+
+## Sidebar
+
+- Right-side, **collapsible** standard `Sidebar` (web `components/ui/sidebar`;
+  mobile `components/ui/sidebar` + `useSidebar`): a desktop persistent panel +
+  a mobile slide-in sheet.
+- Thumbnail grid, **current image highlighted**. Clicking a non-current
+  thumbnail selects it; clicking the **current** thumbnail opens the preview.
+- Below the last thumbnail, a dashed **"add next image"** tile holding
+  **Select files** and **Paste** buttons.
+- Title bar: title (LLM title → file name) + sidebar toggle + close. There is
+  **no** back arrow and no select/paste in the title bar (those live in the
+  sidebar).
+
+## Preview & zoom
+
+Clicking the current image thumbnail opens a **full-size preview**:
+
+- **Web**: Radix `Dialog` + a `ZoomableImage` — click toggles zoom (1× ↔ 2×),
+  Ctrl+wheel / trackpad pinch zooms continuously, drag pans while zoomed.
+- **Mobile**: `Modal` + a `ZoomableImage` using `react-native-gesture-handler`
+  (`Gesture.Tap` + `Gesture.Pinch` + `Gesture.Pan`, `.runOnJS`), wrapped in a
+  `GestureHandlerRootView` for the modal window — tap toggles zoom, pinch
+  zooms, drag pans.
+
+## Persistence
+
+The gallery survives navigating away or a refresh/restart:
+
+- **Web**: IndexedDB — `apps/web/src/lib/image-reader-store.ts`.
+- **Mobile**: a JSON file in the app documents —
+  `apps/mobile/lib/image-reader-store.ts`.
+
+It saves each image's base64 + OCR result + title and the current selection,
+and restores them on mount. Images without a stored result are re-OCR'd lazily.
+
+## Saved-word context
+
+The image title (LLM title → file name) is used as `SavedWordContext.textTitle`
+on web, so saved words carry proper context instead of a raw filename.
+
+## Cache
+
+Vision results are cached server-side by `/vision` (keyed by prompt + image
+bytes), so re-opening an image is instant and free.
+
+## i18n
+
+Keys: `title.image_reader`, `msg.drop_images_here`, `msg.image_reader_supported`,
+`msg.image_reader_empty`, `msg.image_reader_ocr_error`,
+`msg.no_image_in_clipboard`, `action.select_files`, `action.paste`. (All locales.)
+
+## Logging
+
+Gated: web `epubLog` (flip `EPUB_LOGS_ENABLED`), mobile `log` / `logwarn`
+(app-wide `LOG_LEVEL`). Logs the OCR markdown length, the extracted title, and
+the downscaled payload byte size.
+
+## Verification
+
+- Load images via picker / drop / paste / OS file-open → thumbnails appear, the
+  current one opens and OCRs.
+- Title bar shows the human-readable title; saved-word context uses it.
+- Sidebar collapses on desktop / sheets on mobile; the add-next tile adds
+  images.
+- Preview opens on clicking the current thumbnail; click/pinch zoom + drag pan.
+- Gallery persists across navigation/refresh (web + mobile).
+- Typecheck both apps (`apps/web`, `apps/mobile`).
+
+## Revision
+
+- **Retroactive spec**: written to describe the as-built standalone image
+  reader (routes, entry surfaces, vision pipeline incl. downscaling, LLM title,
+  block-breaking, sidebar, preview/zoom, persistence, i18n, logging). Supersedes
+  the image-reader notes previously folded into SPEC-089.
