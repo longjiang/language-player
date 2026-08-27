@@ -87,6 +87,15 @@ const CSV_LOOKUP = {
   'playback': 'title.playback',
   'speech': 'title.speech',
   'review': 'title.review',
+  // Playback + Speech settings controls (CSV keys exist, so all locales pull
+  // their translations from translations.csv).
+  'smoothScroll': 'label.smooth_scroll',
+  'voice': 'label.voice',
+  'rate': 'label.rate',
+  'speed': 'label.speed',
+  'defaultVoice': 'label.auto_best_available',
+  'textAppearance': 'setting.text_appearance',
+  'testVoice': 'label.test_voice',
   'noLanguagesFound': 'msg.no_languages_match',
   'traditional': 'setting.traditional',
   'simplified': 'setting.simplified',

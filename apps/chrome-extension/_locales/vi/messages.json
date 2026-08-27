@@ -330,6 +330,27 @@
   "review": {
     "message": "Ôn tập"
   },
+  "smoothScroll": {
+    "message": "Cuộn mượt"
+  },
+  "voice": {
+    "message": "Giọng nói"
+  },
+  "rate": {
+    "message": "Tốc độ"
+  },
+  "speed": {
+    "message": "Tốc độ"
+  },
+  "defaultVoice": {
+    "message": "Tự động (tốt nhất hiện có)"
+  },
+  "textAppearance": {
+    "message": "Giao diện văn bản"
+  },
+  "testVoice": {
+    "message": "Giọng thử"
+  },
   "settingsUnavailable": {
     "message": "Danh mục cài đặt này sẽ sớm ra mắt."
   },

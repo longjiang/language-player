@@ -330,6 +330,27 @@
   "review": {
     "message": "Wiederholung"
   },
+  "smoothScroll": {
+    "message": "Sanftes Scrollen"
+  },
+  "voice": {
+    "message": "Stimme"
+  },
+  "rate": {
+    "message": "Tempo"
+  },
+  "speed": {
+    "message": "Geschwindigkeit"
+  },
+  "defaultVoice": {
+    "message": "Automatisch (am besten verfügbar)"
+  },
+  "textAppearance": {
+    "message": "Textdarstellung"
+  },
+  "testVoice": {
+    "message": "Teststimme"
+  },
   "settingsUnavailable": {
     "message": "Diese Einstellungskategorie kommt bald."
   },

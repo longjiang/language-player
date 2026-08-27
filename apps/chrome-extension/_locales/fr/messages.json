@@ -330,6 +330,27 @@
   "review": {
     "message": "Révision"
   },
+  "smoothScroll": {
+    "message": "Défilement fluide"
+  },
+  "voice": {
+    "message": "Voix"
+  },
+  "rate": {
+    "message": "Rythme"
+  },
+  "speed": {
+    "message": "Vitesse"
+  },
+  "defaultVoice": {
+    "message": "Auto (meilleur disponible)"
+  },
+  "textAppearance": {
+    "message": "Apparence du texte"
+  },
+  "testVoice": {
+    "message": "Tester la voix"
+  },
   "settingsUnavailable": {
     "message": "Cette catégorie de paramètres sera bientôt disponible."
   },

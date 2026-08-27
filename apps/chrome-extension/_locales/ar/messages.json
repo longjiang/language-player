@@ -330,6 +330,27 @@
   "review": {
     "message": "مراجعة"
   },
+  "smoothScroll": {
+    "message": "تمرير سلس"
+  },
+  "voice": {
+    "message": "صوت"
+  },
+  "rate": {
+    "message": "المعدل"
+  },
+  "speed": {
+    "message": "السرعة"
+  },
+  "defaultVoice": {
+    "message": "تلقائي (أفضل متاح)"
+  },
+  "textAppearance": {
+    "message": "مظهر النص"
+  },
+  "testVoice": {
+    "message": "اختبار الصوت"
+  },
   "settingsUnavailable": {
     "message": "ستتوفر فئة الإعدادات هذه قريبًا."
   },

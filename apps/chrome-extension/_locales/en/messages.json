@@ -330,6 +330,27 @@
   "review": {
     "message": "Review"
   },
+  "smoothScroll": {
+    "message": "Smooth Scroll"
+  },
+  "voice": {
+    "message": "Voice"
+  },
+  "rate": {
+    "message": "Rate"
+  },
+  "speed": {
+    "message": "Speed"
+  },
+  "defaultVoice": {
+    "message": "Auto (best available)"
+  },
+  "textAppearance": {
+    "message": "Text Appearance"
+  },
+  "testVoice": {
+    "message": "Test Voice"
+  },
   "settingsUnavailable": {
     "message": "This settings category is coming soon."
   },

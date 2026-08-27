@@ -330,6 +330,27 @@
   "review": {
     "message": "Beoordeling"
   },
+  "smoothScroll": {
+    "message": "Vloeiend scrollen"
+  },
+  "voice": {
+    "message": "Stem"
+  },
+  "rate": {
+    "message": "Tempo"
+  },
+  "speed": {
+    "message": "Snelheid"
+  },
+  "defaultVoice": {
+    "message": "Automatisch (best beschikbaar)"
+  },
+  "textAppearance": {
+    "message": "Tekstweergave"
+  },
+  "testVoice": {
+    "message": "Teststem"
+  },
   "settingsUnavailable": {
     "message": "Deze instellingencategorie komt binnenkort."
   },

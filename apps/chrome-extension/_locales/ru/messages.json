@@ -330,6 +330,27 @@
   "review": {
     "message": "Повторение"
   },
+  "smoothScroll": {
+    "message": "Плавная прокрутка"
+  },
+  "voice": {
+    "message": "Голос"
+  },
+  "rate": {
+    "message": "Темп"
+  },
+  "speed": {
+    "message": "Скорость"
+  },
+  "defaultVoice": {
+    "message": "Авто (наилучшее доступное)"
+  },
+  "textAppearance": {
+    "message": "Вид текста"
+  },
+  "testVoice": {
+    "message": "Тестовый голос"
+  },
   "settingsUnavailable": {
     "message": "Эта категория настроек скоро появится."
   },
