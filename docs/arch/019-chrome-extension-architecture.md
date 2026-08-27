@@ -518,9 +518,10 @@ Key behaviors:
   tint. A non-Pro tap renders the `aiProFeature` upgrade prompt inside the
   explain section and a Pro tap streams the explanation once the subscription
   check resolves (a spinner shows while it is still loading) — web parity,
-  ADR-0034. The explain button, Pro banner, and follow-link share the card
-  body's horizontal padding with a uniform 0.75rem vertical margin
-  (`page-dictionary.css` `#lpv-page-dictionary-root .lpv-explain-btn`).
+  ADR-0034. The `lpv-dict-card-body` pads on all four sides and stacks the
+  explain button/section, context sentence, and each entry card on a single
+  uniform flex gap (0.625rem), so the vertical rhythm is consistent
+  (`sidepanel.css` `.lpv-dictionary-dialog .lpv-dict-card-body`).
 - **Saved-context + classifier parity**: when a lookup entry is a saved word,
   the entry card shows apps/web's saved metadata — the save date, source type
   + title (video/book), and the context sentence it was saved from with the
