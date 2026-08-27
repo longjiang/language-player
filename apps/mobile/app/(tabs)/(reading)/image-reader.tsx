@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking, Modal,
+  View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking, Modal, useWindowDimensions,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from 'expo-router';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -17,6 +18,7 @@ import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
+import { readerClampedContentWidth } from '@/lib/reader-layout';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -140,6 +142,11 @@ export default function ImageReaderScreen() {
   const t = useT();
   const { isMd } = useResponsive();
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
+  const { width: winWidth } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  // Empty-state drop zone: clamp to the content container (logo → avatar width)
+  // like the reader text column, centered, minus the horizontal padding.
+  const emptyWidth = readerClampedContentWidth(Math.max(0, winWidth - 64));
 
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -437,8 +444,11 @@ export default function ImageReaderScreen() {
             {t('title.image_reader')}
           </Text>
         </View>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="flex-1 items-center justify-center gap-4 px-8 py-10">
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}>
+          <View
+            className="flex-1 items-center justify-center gap-4"
+            style={{ width: emptyWidth, alignSelf: 'center' }}
+          >
             <ImageIcon size={44} color={ICON_MUTED} />
             <Text className="text-center text-sm font-medium text-foreground">
               {t('msg.drop_images_here')}

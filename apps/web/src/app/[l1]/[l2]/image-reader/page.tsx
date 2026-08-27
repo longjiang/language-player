@@ -517,7 +517,13 @@ export default function ImageReaderPage() {
         <p className="mx-auto mb-3 w-full max-w-7xl px-4 text-xs text-destructive">{notice}</p>
       )}
 
-      {!loaded ? dropZone : (
+      {!loaded ? (
+        /* Clamp the empty drop zone to the content container (logo → avatar)
+           and leave a bottom margin so it doesn't hug the viewport edge. */
+        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-6">
+          {dropZone}
+        </div>
+      ) : (
         <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 gap-4 px-4 pb-6">
           {/* OCR result (tokenized text) */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border">
