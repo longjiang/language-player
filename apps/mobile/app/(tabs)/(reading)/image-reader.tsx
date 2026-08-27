@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking,
+  View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking, Modal,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from 'expo-router';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -15,6 +16,7 @@ import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
+import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -79,6 +81,59 @@ function mimeFor(name: string): string {
   return 'image/jpeg';
 }
 
+/** Full-size zoomable image for the preview modal: tap toggles zoom (1x ↔ 2x),
+ *  pinch zooms continuously, and drag pans while zoomed. */
+function ZoomableImage({ uri }: { uri: string }) {
+  const [scale, setScale] = useState(1);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const startZoomRef = useRef(1);
+  const startTranslateRef = useRef({ x: 0, y: 0 });
+
+  const tap = Gesture.Tap()
+    .runOnJS(true)
+    .maxDuration(250)
+    .onEnd(() => {
+      if (scale > 1) {
+        setScale(1);
+        setTranslate({ x: 0, y: 0 });
+      } else {
+        setScale(2);
+      }
+    });
+
+  const pinch = Gesture.Pinch()
+    .runOnJS(true)
+    .onStart(() => { startZoomRef.current = scale; })
+    .onUpdate((e) => {
+      setScale(Math.min(4, Math.max(1, Math.round(startZoomRef.current * e.scale * 100) / 100)));
+    })
+    .onEnd(() => { if (scale < 1) setScale(1); });
+
+  const pan = Gesture.Pan()
+    .runOnJS(true)
+    .onStart(() => { startTranslateRef.current = translate; })
+    .onUpdate((e) => {
+      if (scale > 1) {
+        setTranslate({
+          x: startTranslateRef.current.x + e.translationX,
+          y: startTranslateRef.current.y + e.translationY,
+        });
+      }
+    });
+
+  const composed = Gesture.Simultaneous(pinch, pan, tap);
+
+  return (
+    <View className="flex-1 items-center justify-center bg-black">
+      <GestureDetector gesture={composed}>
+        <View style={{ transform: [{ translateX: translate.x }, { translateY: translate.y }, { scale }] }}>
+          <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+        </View>
+      </GestureDetector>
+    </View>
+  );
+}
+
 export default function ImageReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
@@ -89,6 +144,10 @@ export default function ImageReaderScreen() {
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  /** Id of the image whose full-size preview modal is open (current image). */
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  /** True once the persisted gallery has been loaded. Persisting is a no-op until then. */
+  const [initialized, setInitialized] = useState(false);
   const imagesRef = useRef<ImageEntry[]>([]);
   useEffect(() => { imagesRef.current = images; }, [images]);
 
@@ -96,6 +155,56 @@ export default function ImageReaderScreen() {
     () => images.find((im) => im.id === currentId) ?? null,
     [images, currentId],
   );
+
+  const preview = useMemo(
+    () => images.find((im) => im.id === previewId) ?? null,
+    [images, previewId],
+  );
+
+  // Restore the persisted gallery on mount (survives navigation/refresh).
+  useEffect(() => {
+    if (initialized) return;
+    (async () => {
+      try {
+        const g = await loadImageGallery();
+        if (g && g.entries.length > 0) {
+          const entries = g.entries.map((e) => ({
+            id: e.id,
+            name: e.name,
+            dataUrl: e.dataUrl,
+            uri: e.dataUrl,
+            title: e.title,
+            md: e.md,
+            converting: false,
+            error: e.error,
+          }));
+          setImages(entries);
+          const curId = g.currentId && entries.some((e) => e.id === g.currentId) ? g.currentId : entries[0]!.id;
+          setCurrentId(curId);
+        }
+        setInitialized(true);
+      } catch (err) {
+        logwarn('[image-reader] gallery restore failed:', (err as Error)?.message ?? err);
+        setInitialized(true);
+      }
+    })();
+  }, [initialized]);
+
+  // Persist the gallery whenever it changes (after the initial restore).
+  useEffect(() => {
+    if (!initialized) return;
+    void saveImageGallery({
+      entries: images.map((e) => ({
+        id: e.id,
+        name: e.name,
+        dataUrl: e.dataUrl,
+        title: e.title,
+        md: e.md,
+        error: e.error,
+      })),
+      currentId,
+    });
+  }, [images, currentId, initialized]);
 
   /** OCR a single image (idempotent — no-op if already OCR'd / converting).
    *  Takes the entry directly so a fresh add/paste can OCR immediately without
@@ -123,6 +232,13 @@ export default function ImageReaderScreen() {
       setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: false, error: true } : im)));
     }
   }, []);
+
+  // After restore, OCR the current image if it has no result yet.
+  useEffect(() => {
+    if (!initialized) return;
+    const cur = images.find((im) => im.id === currentId);
+    if (cur && !cur.md && !cur.converting && !cur.error) void runOcr(cur);
+  }, [initialized, currentId, images, runOcr]);
 
   /** Switch current image; lazily OCR it if not yet read. */
   const selectImage = useCallback((id: string) => {
@@ -282,7 +398,12 @@ export default function ImageReaderScreen() {
   const thumbnail = (im: ImageEntry) => (
     <Pressable
       key={im.id}
-      onPress={() => selectImage(im.id)}
+      onPress={() => {
+        // Clicking the current image opens its full-size preview; clicking
+        // another image selects it.
+        if (im.id === currentId) setPreviewId(im.id);
+        else selectImage(im.id);
+      }}
       className={`relative w-24 overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
       accessibilityRole="button"
       accessibilityLabel={im.title || im.name}
@@ -455,6 +576,26 @@ export default function ImageReaderScreen() {
           </View>
         </Sidebar>
       </View>
+
+      {/* Full-size image preview — tap to zoom in/out, pinch to zoom. */}
+      <Modal
+        visible={!!preview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewId(null)}
+      >
+        <GestureHandlerRootView className="flex-1 bg-black/90">
+          <ZoomableImage uri={preview?.dataUrl ?? ''} />
+          <Pressable
+            onPress={() => setPreviewId(null)}
+            className="absolute right-4 top-4 rounded-full bg-black/60 p-2"
+            accessibilityRole="button"
+            accessibilityLabel={t('action.close')}
+          >
+            <X size={20} color="#fff" />
+          </Pressable>
+        </GestureHandlerRootView>
+      </Modal>
     </View>
   );
 }
