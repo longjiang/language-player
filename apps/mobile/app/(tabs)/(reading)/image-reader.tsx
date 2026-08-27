@@ -12,18 +12,22 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { normalizeVisionMarkdown } from '@langplayer/shared';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X } from 'lucide-react-native';
 
-/** Vision-OCR prompt for the image reader (deepseek-v4-flash-vision-exp). */
+/** Vision-OCR prompt for the image reader (deepseek-v4-flash-vision-exp) — the
+ *  model returns clean, block-level markdown: blocks separated by blank lines
+ *  so each reflows independently. */
 const IMAGE_OCR_PROMPT =
-  'Extract all text from this image as clean markdown. Preserve headings, ' +
-  'paragraphs, lists, bold/italic emphasis, and code blocks. Output only ' +
-  'the markdown, with no commentary.';
+  'Extract all text from this image as clean, properly formatted markdown. ' +
+  'Separate each block element (headings, paragraphs, list items) with a blank ' +
+  'line so blocks reflow independently. Keep each paragraph as flowing prose — ' +
+  'do not insert line breaks inside a paragraph, and do not collapse distinct ' +
+  'paragraphs together. Preserve headings (#), paragraphs, lists, bold/italic ' +
+  'emphasis, and code blocks. Output only the markdown, with no commentary.';
 
 /** One loaded image and its vision-OCR result (lazy, per selection). */
 interface ImageEntry {
@@ -67,10 +71,12 @@ export default function ImageReaderScreen() {
     [images, currentId],
   );
 
-  /** OCR a single image (idempotent — no-op if already OCR'd / converting). */
-  const runOcr = useCallback(async (id: string) => {
-    const entry = imagesRef.current.find((im) => im.id === id);
+  /** OCR a single image (idempotent — no-op if already OCR'd / converting).
+   *  Takes the entry directly so a fresh add/paste can OCR immediately without
+   *  waiting for the images ref to catch up. */
+  const runOcr = useCallback(async (entry: ImageEntry) => {
     if (!entry || entry.md || entry.converting) return;
+    const { id } = entry;
     setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
     log('[image-reader] OCR start', { name: entry.name });
     try {
@@ -81,10 +87,9 @@ export default function ImageReaderScreen() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      const normalized = normalizeVisionMarkdown(md);
-      log('[image-reader] OCR result', { name: entry.name, mdLength: md.length, normalizedLength: normalized.length, sample: normalized.slice(0, 160) });
+      log('[image-reader] OCR result', { name: entry.name, mdLength: md.length, sample: md.slice(0, 160) });
       setImages((prev) => prev.map((im) => (
-        im.id === id ? { ...im, md: normalized, converting: false } : im
+        im.id === id ? { ...im, md, converting: false } : im
       )));
     } catch (err) {
       logwarn('[image-reader] OCR failed:', (err as Error)?.message ?? err);
@@ -96,7 +101,7 @@ export default function ImageReaderScreen() {
   const selectImage = useCallback((id: string) => {
     setCurrentId(id);
     const entry = imagesRef.current.find((im) => im.id === id);
-    if (entry && !entry.md && !entry.converting) void runOcr(id);
+    if (entry && !entry.md && !entry.converting) void runOcr(entry);
   }, [runOcr]);
 
   /** Append entries, select the first new one, and OCR the selection. */
@@ -104,9 +109,10 @@ export default function ImageReaderScreen() {
     if (entries.length === 0) return;
     setNotice(null);
     setImages((prev) => [...prev, ...entries]);
+    // Open the first newly added image by default and kick off its OCR.
     const first = entries[0]!;
     setCurrentId(first.id);
-    void runOcr(first.id);
+    void runOcr(first);
   }, [runOcr]);
 
   /** Multi-file image picker. */
