@@ -28,19 +28,12 @@ type Theme = 'light' | 'dark' | 'system';
 
 interface PageDictionaryLookup {
   token: LemmatizedToken;
-  /** Full source block text (for the translation panel sentence alignment). */
   blockText: string;
-  /** Immediate sentence containing the token — the saved-word context. */
-  contextText?: string;
-  /** Index of the sentence containing the token within the block (0-based). */
-  sentenceIndex?: number;
   blockId?: string | null;
   href?: string | null;
   l1Code?: string;
   l2Code?: string;
   pageUrl?: string;
-  /** Host page title — used as the saved-word `textTitle`. */
-  pageTitle?: string;
 }
 
 interface LineExplanationRequest {
@@ -55,7 +48,7 @@ type ModalPayload =
   | { kind: 'help' }
   | { kind: 'about' }
   | { kind: 'login' }
-  | { kind: 'dictionary'; token: LemmatizedToken; l1Code: string; l2Code: string; contextText?: string; cueStartTime?: number; videoTitle?: string; pageUrl?: string; pageTitle?: string }
+  | { kind: 'dictionary'; token: LemmatizedToken; l1Code: string; l2Code: string; contextText?: string; cueStartTime?: number; videoTitle?: string; pageUrl?: string }
   | { kind: 'line-explanation'; request: LineExplanationRequest }
   | { kind: 'account'; auth: AuthState; l1Code: string; l2Code: string };
 
@@ -90,11 +83,10 @@ function DictionarySurface({ lookup, modal, onClose, onRequireLogin }: {
         token={token}
         l1Code={l1Code}
         l2Code={l2Code}
-        contextText={modal?.contextText || lookup?.contextText || lookup?.blockText}
+        contextText={modal?.contextText || lookup?.blockText}
         cueStartTime={modal?.cueStartTime}
         videoTitle={modal?.videoTitle}
         pageUrl={modal?.pageUrl || lookup?.pageUrl}
-        pageTitle={modal?.pageTitle || lookup?.pageTitle}
         linkUrl={lookup?.href}
         onFollowLink={(href) => postToParent({ action: 'follow-link', href })}
         isPro={isPro}

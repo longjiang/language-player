@@ -9,7 +9,7 @@
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { setLocale, log, logwarn } from './i18n';
-import { buildRuby, baseCode, sentenceContaining, segmentSentences, shouldShowPhonetics, getWordDifficulty, setCachedEntries, getCachedEntries } from '@langplayer/utils';
+import { buildRuby, baseCode, sentenceContaining, shouldShowPhonetics, getWordDifficulty, setCachedEntries, getCachedEntries } from '@langplayer/utils';
 import { selectionStartOffset } from './selection-utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
@@ -380,51 +380,6 @@ function getVisibleBlockText(el) {
   }
 }
 
-/** UTF-16 offset of a token span's first visible character within a block's
- *  normalized source text (`__lpvSourceText` / getVisibleBlockText). Walks the
- *  block's text nodes in document order, skipping ruby readings and hidden
- *  subtrees, and sums the normalized length of every text node before the span.
- *  Returns -1 when the span can't be located. The offset is therefore in the
- *  same (whitespace-normalized) coordinate space as `blockText`, so it feeds
- *  `sentenceContaining` / `sentenceIndexAtOffset` directly. */
-function tokenOffsetInBlock(block, tokenSpan) {
-  if (!block || !tokenSpan) return -1;
-  try {
-    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
-      acceptNode(node) {
-        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
-        const value = (node.nodeValue || '').trim();
-        if (!value) return NodeFilter.FILTER_REJECT;
-        const parent = node.parentElement;
-        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      },
-    });
-    const parts = [];
-    let node;
-    while ((node = walker.nextNode())) {
-      if (node === tokenSpan || tokenSpan.contains(node)) break;
-      parts.push(node.nodeValue);
-    }
-    return normalizeBlockText(parts.join(' ')).length;
-  } catch {
-    return -1;
-  }
-}
-
-/** Index of the sentence containing `offset` within `text` (0-based), following
- *  the same segmentation as sentenceContaining. Clamps to a valid index. */
-function sentenceIndexAtOffset(text, offset, locale) {
-  if (!text) return 0;
-  if (offset < 0 || offset > text.length) return 0;
-  const segs = segmentSentences(text, locale);
-  if (segs.length === 0) return 0;
-  for (let i = 0; i < segs.length; i++) {
-    if (offset >= segs[i].start && offset < segs[i].end) return i;
-  }
-  return segs.length - 1;
-}
-
 /** Return source blocks for the side-panel translation view. This reads the
  * page DOM from the page content script, never from the side-panel document.
  * The cap keeps runtime message payloads bounded on very large pages. */
@@ -435,16 +390,11 @@ function getPageTranslationSnapshot() {
     if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
     const text = getVisibleBlockText(el);
     if (!text || text.length < 2) continue;
-    if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
-    const anchor = el.closest('a[href]');
-    const href = anchor?.href || null;
-    // Each readable element renders as ONE translation block (a paragraph-level
-    // chunk) — do not split it into sentence units. The translation view shows
-    // whole paragraphs; a hovered token highlights the translation SENTENCE
-    // within the block via buildSentenceMap (apps/web reader parity).
     const clipped = text.slice(0, 2000);
     if (totalChars + clipped.length > 180000) break;
-    blocks.push({ id: el.__lpvBlockId, text: clipped, href });
+    if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
+    const anchor = el.closest('a[href]');
+    blocks.push({ id: el.__lpvBlockId, text: clipped, href: anchor?.href || null });
     totalChars += clipped.length;
   }
   return blocks;
@@ -457,25 +407,11 @@ function onTokenClick(e, token, textNodeParent) {
   const anchor = textNodeParent?.closest?.('a[href]');
   const href = anchor ? anchor.href : null;
   const block = textNodeParent?.closest?.(BLOCK_SELECTOR) || textNodeParent;
-  // Serve the block text from the source captured at tokenization, not from the
-  // live (tokenized + ruby) DOM — otherwise it includes ruby readings. Restrict
-  // the dict context to the immediate sentence containing the token (Spec/console
-  // parity: match apps/web, which uses sentenceContaining/Intl.Segmenter).
+  // Serve the context from the source text captured at tokenization, not from
+  // the live (tokenized + ruby) DOM — otherwise the context sentence includes
+  // ruby readings.
   const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
   const blockId = block?.__lpvBlockId || null;
-  const tokenSpan = e.currentTarget;
-  let contextText = blockText;
-  let sentenceIndex = 0;
-  if (tokenSpan) {
-    const offset = tokenOffsetInBlock(block, tokenSpan);
-    const hit = offset !== -1 && blockText.slice(offset, offset + token.text.length) === token.text
-      ? offset
-      : blockText.indexOf(token.text);
-    sentenceIndex = sentenceIndexAtOffset(blockText, hit !== -1 ? hit : offset, baseCode(l2Code));
-    contextText = hit !== -1
-      ? sentenceContaining(blockText, hit, baseCode(l2Code))
-      : blockText;
-  }
 
   const payload = {
     token: {
@@ -484,14 +420,11 @@ function onTokenClick(e, token, textNodeParent) {
       pronunciation: token.pronunciation || null,
     },
     blockText,
-    contextText,
-    sentenceIndex,
     blockId,
     href,
     l1Code,
     l2Code,
     pageUrl: location.href,
-    pageTitle: document.title,
   };
   lastLookup = payload;
   window.dispatchEvent(new CustomEvent('lpv-page-dictionary-open', { detail: payload }));
@@ -538,23 +471,17 @@ function attachPageSelectionListener() {
     const contextText = hit !== -1
       ? sentenceContaining(blockText, hit, baseCode(l2Code))
       : blockText;
-    const sentenceIndex = hit !== -1
-      ? sentenceIndexAtOffset(blockText, hit, baseCode(l2Code))
-      : 0;
     const blockId = block?.__lpvBlockId || null;
     const link = block?.closest?.('a[href]');
     const href = link?.href || null;
     const payload = {
       token: { text, lemmas: [], pronunciation: null },
-      blockText,
-      contextText,
-      sentenceIndex,
+      blockText: contextText,
       blockId,
       href,
       l1Code,
       l2Code,
       pageUrl: location.href,
-      pageTitle: document.title,
     };
     log(`[PAGE] selection lookup: "${text}" | context chars=${contextText.length}`);
     lastLookup = payload;
@@ -580,58 +507,6 @@ function detachPageSelectionListener() {
   if (!pageSelectionHandler) return;
   document.removeEventListener('pointerup', pageSelectionHandler, true);
   pageSelectionHandler = null;
-}
-
-let pageHoverHandler = null;
-let lastHoverKey = '';
-
-/** Token hover → scroll + highlight the translation. While the side-panel page
- *  translation tab is open, hovering a page token tells the panel to scroll the
- *  corresponding translation into view and highlight the translation SENTENCE
- *  that contains the token (apps/web reader parity). Deduped to one message per
- *  (block, sentence) so moving across a single sentence doesn't flood the panel
- *  with identical scroll requests. */
-function attachPageHoverListener() {
-  if (pageHoverHandler) return;
-  pageHoverHandler = (e) => {
-    if (!enabled || !panelOpen || !pageTranslationTabOpen) return;
-    const span = e.target?.closest?.('.lpv-page-token');
-    if (!span) {
-      // Pointer left tokenized text — allow the next token to re-trigger.
-      if (lastHoverKey) lastHoverKey = '';
-      return;
-    }
-    const block = span.closest?.(BLOCK_SELECTOR) || span;
-    const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
-    const tokenText = span.dataset.tokenText || '';
-    const offset = tokenOffsetInBlock(block, span);
-    const sentenceIndex = offset !== -1
-      ? sentenceIndexAtOffset(blockText, offset, baseCode(l2Code))
-      : 0;
-    const key = `${block?.__lpvBlockId || ''}:${sentenceIndex}`;
-    if (key === lastHoverKey) return;
-    lastHoverKey = key;
-    log(`[PAGE] token hover → translation scroll: block=${block?.__lpvBlockId || '?'} sentence=${sentenceIndex} token="${tokenText}"`);
-    try {
-      chrome.runtime.sendMessage({
-        action: 'pageTokenHover',
-        blockId: block?.__lpvBlockId || null,
-        sentenceIndex,
-        tokenOffset: offset !== -1 ? offset : null,
-        blockText,
-        tokenText,
-      }).catch(() => {});
-    } catch {}
-  };
-  // mouseover is delegated; pointerover is used so it also fires on touch/pen.
-  document.addEventListener('pointerover', pageHoverHandler, true);
-}
-
-function detachPageHoverListener() {
-  if (!pageHoverHandler) return;
-  document.removeEventListener('pointerover', pageHoverHandler, true);
-  pageHoverHandler = null;
-  lastHoverKey = '';
 }
 
 function onIntersect(entries) {
@@ -853,7 +728,6 @@ function cleanup() {
   pendingBlocks.clear();
   tokenizing = false;
   detachPageSelectionListener();
-  detachPageHoverListener();
   restoreTokens();
   tokenCache.clear();
   lastLookup = null;
@@ -933,7 +807,6 @@ async function init() {
   }
   await tokenizePage();
   attachPageSelectionListener();
-  attachPageHoverListener();
   pushPageModeState();
   startObserver();
 }
@@ -987,20 +860,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
   if (message.action === 'getPanelState') {
-    // Video hosts co-inject content-entry.js, which owns the mode: 'video'
-    // answer for getPanelState. chrome.tabs.sendMessage resolves with the FIRST
-    // responder, so answering here (even with state: null) can mask
-    // content-entry's real video result and leave the side panel stuck
-    // resolving mode. Stay silent on video hosts — mirrors content-entry's own
-    // PAGE_SCRIPT_ACTIONS silence for page-owned actions (commit 391272c1).
-    if (isVideoHost()) {
-      log('[PAGE] getPanelState: video host → staying silent (content-entry owns video mode)');
-      return;
-    }
-    // Ordinary page: answer page mode when the panel is open.
-    log('[PAGE] getPanelState answered (page mode)', { panelOpen, pageTranslationStatus });
+    // Side panel pulled state (open, tab switch, navigation).
     sendResponse({
-      state: panelOpen && !isOwnHost() && !isLocalhost()
+      state: panelOpen && !isVideoHost() && !isOwnHost() && !isLocalhost()
         ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup, mismatch: pageLangMismatch(), pageTranslationStatus, pageTranslationError }
         : null,
     });
