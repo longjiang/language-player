@@ -164,7 +164,7 @@ function SidePanelApp() {
       if (tid !== tabIdRef.current) return; // stale pull — the active tab changed
       if (res?.state?.mode === 'video') {
         panelPollCountRef.current = 0;
-        log('[SIDEPANEL] getPanelState → video mode', { tid, cues: res.state.cues?.length });
+        log('[SIDEPANEL] getPanelState → video mode', { tid, cues: res.state.cues?.length, status: res.state.subtitleStatus });
         setVideoState(res.state);
         setMode('video');
         setMismatchDismissed(false);
@@ -186,7 +186,27 @@ function SidePanelApp() {
       if (tid !== tabIdRef.current) return; // stale pull — ignore
       // No content script (or not ready yet) — keep loading; the retry loop
       // recovers once the content script is injected / this tab is supported.
-      logwarn('[SIDEPANEL] getPanelState failed (no content script?)', { tid, err: (err as Error)?.message });
+      const e = err as { message?: string } | undefined;
+      // Capture the tab URL so we can tell whether the pull is aimed at a tab
+      // that actually hosts our content script (video hosts) vs a tab that
+      // legitimately has none (chrome://, the chrome Web Store, an unsupported
+      // site). This is the key to distinguishing a real co-injection race from a
+      // wrong-tab / unsupported-page pull.
+      let tabUrl = 'unknown';
+      if (tid != null) {
+        try {
+          const t = await chrome.tabs.get(tid);
+          tabUrl = t?.url || t?.pendingUrl || 'no-url';
+        } catch {
+          tabUrl = 'tab-get-failed';
+        }
+      }
+      logwarn('[SIDEPANEL] getPanelState failed (no content script?)', {
+        tid,
+        tabUrl,
+        err: e?.message ?? String(err),
+        tabIdRef: tabIdRef.current,
+      });
     }
   }, []);
 
@@ -204,8 +224,14 @@ function SidePanelApp() {
       // player init) must not reset mode → null, or the panel flips back to the
       // loading/error state and can strand the learner on "page cannot be
       // translated" even though the subtitles resolved fine moments earlier.
-      const tabChanged = target !== tabIdRef.current;
+      const previous = tabIdRef.current;
+      const tabChanged = target !== previous;
       setTabId(target);
+      // Sync the ref immediately (not just on the next render via `tabIdRef.current
+      // = tabId`). Otherwise the first pullState's stale check (`tid !==
+      // tabIdRef.current`) compares against the old/null tab and silently discards
+      // content-entry's first valid getPanelState response — leaving mode stuck.
+      tabIdRef.current = target;
       if (tabChanged) {
         setMode(null);
         setVideoState(null);
@@ -277,6 +303,7 @@ function SidePanelApp() {
     port.onMessage.addListener((msg: any) => {
       if (!msg || msg.tabId !== tabIdRef.current) return;
       if (msg.action === 'panelState') {
+        log('[SIDEPANEL] port panelState', { tabId: msg.tabId, ref: tabIdRef.current, cues: msg.state?.cues?.length, status: msg.state?.subtitleStatus });
         setVideoState(msg.state);
         setMode('video');
         setMismatchDismissed(false);
