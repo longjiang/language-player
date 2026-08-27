@@ -82,6 +82,60 @@ function mimeFor(name: string): string {
   return 'image/jpeg';
 }
 
+/** A single thumbnail tile. Measures the loaded image's natural dimensions so
+ *  the tile renders at the image's original aspect ratio (no forced 3:2 crop),
+ *  matching apps/web's image-reader sidebar. */
+function ThumbnailTile({ im, currentId, onSelect, onPreview, onRemove, t }: {
+  im: ImageEntry;
+  currentId: string | null;
+  onSelect: (id: string) => void;
+  onPreview: (id: string) => void;
+  onRemove: (id: string) => void;
+  t: (key: string) => string;
+}) {
+  const [ratio, setRatio] = useState<number | null>(null);
+  return (
+    <Pressable
+      key={im.id}
+      onPress={() => {
+        // Clicking the current image opens its full-size preview; clicking
+        // another image selects it.
+        if (im.id === currentId) onPreview(im.id);
+        else onSelect(im.id);
+      }}
+      className={`relative w-full overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
+      accessibilityRole="button"
+      accessibilityLabel={im.title || im.name}
+    >
+      <Image
+        source={{ uri: im.uri }}
+        style={{ width: '100%', aspectRatio: ratio ?? 3 / 2 }}
+        resizeMode={ratio ? 'contain' : 'cover'}
+        onLoad={(e) => {
+          const s = e.nativeEvent?.source;
+          if (s?.width && s?.height) setRatio(s.width / s.height);
+        }}
+      />
+      {im.id === currentId && (
+        <View className="absolute inset-0 border-2 border-primary" />
+      )}
+      {im.converting && (
+        <View className="absolute inset-0 items-center justify-center bg-background/60">
+          <ActivityIndicator size="small" color={ICON_MUTED} />
+        </View>
+      )}
+      <Pressable
+        onPress={() => onRemove(im.id)}
+        className="absolute right-0.5 top-0.5 rounded-full bg-background/80 p-0.5"
+        accessibilityRole="button"
+        accessibilityLabel={t('action.remove')}
+      >
+        <X size={12} color={ICON_MUTED} />
+      </Pressable>
+    </Pressable>
+  );
+}
+
 export default function ImageReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
@@ -350,40 +404,6 @@ export default function ImageReaderScreen() {
     </View>
   );
 
-  /** A single thumbnail tile (current highlighted). */
-  const thumbnail = (im: ImageEntry) => (
-    <Pressable
-      key={im.id}
-      onPress={() => {
-        // Clicking the current image opens its full-size preview; clicking
-        // another image selects it.
-        if (im.id === currentId) setPreviewId(im.id);
-        else selectImage(im.id);
-      }}
-      className={`relative w-full overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
-      accessibilityRole="button"
-      accessibilityLabel={im.title || im.name}
-    >
-      <Image source={{ uri: im.uri }} style={{ width: '100%', aspectRatio: 3 / 2 }} resizeMode="cover" />
-      {im.id === currentId && (
-        <View className="absolute inset-0 border-2 border-primary" />
-      )}
-      {im.converting && (
-        <View className="absolute inset-0 items-center justify-center bg-background/60">
-          <ActivityIndicator size="small" color={ICON_MUTED} />
-        </View>
-      )}
-      <Pressable
-        onPress={() => removeImage(im.id)}
-        className="absolute right-0.5 top-0.5 rounded-full bg-background/80 p-0.5"
-        accessibilityRole="button"
-        accessibilityLabel={t('action.remove')}
-      >
-        <X size={12} color={ICON_MUTED} />
-      </Pressable>
-    </Pressable>
-  );
-
   // ── Empty state ──
   if (images.length === 0) {
     return (
@@ -531,7 +551,17 @@ export default function ImageReaderScreen() {
           bodyClassName="p-4"
         >
           <View className="flex-col items-center gap-3">
-            {images.map(thumbnail)}
+            {images.map((im) => (
+              <ThumbnailTile
+                key={im.id}
+                im={im}
+                currentId={currentId}
+                onSelect={selectImage}
+                onPreview={setPreviewId}
+                onRemove={removeImage}
+                t={t}
+              />
+            ))}
             {addTile}
           </View>
         </Sidebar>
