@@ -397,6 +397,7 @@ body.lpv-panel-open disney-web-player-ui {
   color: hsl(var(--lpv-muted-foreground));
   margin-top: 2px;
   line-height: 1.5;
+  font-weight: 400;
 }
 
 .lpv-cue.lpv-active .lpv-cue-translation {
@@ -1316,6 +1317,7 @@ body.lpv-panel-open disney-web-player-ui {
   margin-bottom: 12px;
   font-size: calc(13px * var(--lpv-font-scale, 1));
   line-height: 1.7;
+  font-weight: 400;
   color: hsl(var(--lpv-foreground) / 0.88);
 }
 
