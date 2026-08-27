@@ -626,7 +626,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `title.docs` | Docs |
 | `title.email` | Email |
 | `title.episodes` | Episodes |
-| `title.epub_reader` | EPUB Reader |
+| `title.epub_reader` | EBook Reader |
 | `title.examples_from_videos` | Examples from Videos |
 | `title.explore` | Explore |
 | `title.explore_media` | Explore Media |
