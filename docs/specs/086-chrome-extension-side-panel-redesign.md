@@ -185,10 +185,17 @@ Settings use a Shadcn Dialog with a two-panel list-to-detail layout matching app
 
 ### 4.2 Display category
 
-Implement the following controls with the web's default Shadcn Select, Switch, and Slider designs:
+Implement the following controls using the current apps/web designs. Theme,
+Typeface, Phonetics mode, and Phonetics scope use the web's **SegmentedRow**
+segmented button group (not a `<select>` — apps/web moved off `Select` for
+these multi-value choices); Show translation is a Switch; the sizes are
+Sliders. Tokenized-text size ranges 16–36 px.
 
 - Theme: Light, Dark, System.
-- Preview sample containing tokenized L2 text and its L1 translation.
+- Preview sample containing tokenized L2 text and its L1 translation. The
+  sample is the L2-specific short sentence (`getSampleSentence(l2Code)` from
+  `@langplayer/shared`; apps/web uses the async `loadSampleShort`, but the
+  extension bundles everything so the synchronous shared sentence is used).
 - Show translation: on/off.
 - Typeface: Default, Serif, Non-serif.
 - Tokenized-text size: slider, 16–36 px.
@@ -197,11 +204,26 @@ Implement the following controls with the web's default Shadcn Select, Switch, a
 - Show phonetics: Above, Replace, Off.
 - Show scope, shown only when phonetics are enabled: All words, Hard words only.
 
-The preview uses the same token/ruby and translation rendering rules as the subtitle transcript. It reflects changes immediately and must not make a network request for every slider tick unless translation data is not already available.
+The preview uses the same token/ruby and translation rendering rules as the
+subtitle transcript. It reflects changes immediately and must not make a
+network request for every slider tick unless translation data is not already
+available.
 
 ### 4.3 Additional categories
 
-The two-panel shell must support the existing web settings categories, even if the first implementation only exposes the Display controls listed above. Playback, Speech, Review, and subtitle-search settings must be ported without changing their semantics. The category list must not expose a control that the extension cannot apply.
+The two-panel shell exposes the settings categories the extension can actually
+apply. **Display**, **Playback**, and **Speech** are ported. Playback currently
+exposes only the control the extension can apply (smooth-scroll of the
+transcript to the active cue) — the extension has no native video player, so
+the web's captions-display-as, karaoke, and auto-pause controls are not shown
+(they would have no effect). Speech exposes the TTS voice and rate, applied to
+the transcript and dictionary speak buttons.
+
+**Review and subtitle-search are intentionally NOT exposed.** They were added
+as placeholder items that only rendered a "coming soon" state and cannot be
+applied by the extension (there is no SRS new-card budget or subtitle-search
+surface in the side panel). The two-panel shell must not expose a control that
+the extension cannot apply.
 
 ## 5. Help modal
 
