@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (settings modal: segmented Display controls, L2 sample preview, Playback + Speech categories, deep search; Review/subtitle-search removed; account/profile dialog: language-specific level labels, translated activity label, width clamp; unified "Hard words only" phonetics pipeline in @langplayer/utils shared by the video transcript and the page tokenizer (lazy batch dictionary lookup); web-parity language-trigger chevron and signed-in avatar; popup dict follow-link inside the padded body + localized "Lemma:" header label)
+- **Last Updated**: 2026-08-26 (settings modal: segmented Display controls, L2 sample preview, Playback + Speech categories, deep search; Review/subtitle-search removed; account/profile dialog: language-specific level labels, translated activity label, width clamp; unified "Hard words only" phonetics pipeline in @langplayer/utils shared by the video transcript and the page tokenizer (lazy batch dictionary lookup); web-parity language-trigger chevron and signed-in avatar; popup dict follow-link inside the padded body + localized "Lemma:" header label; side panel never-blank open resolution with auto-recovery polling)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -661,6 +661,17 @@ with `position:fixed`. They render in the browser's own side panel:
   toggle reopens. The background records the originating tab and closes
   Chrome's global panel when the active tab changes, so panel-open state
   affects only the page where the user opened it.
+- **Panel-open resolution (never blank)**: the side panel shows a centered
+  spinner + "Loading…" while it resolves the active tab's mode (`getPanelState`
+  pull), instead of rendering a blank/empty surface. Because the panel's
+  `getPanelState` can race the background's `panelOpenState` /
+  `pageTranslationVisibility` assertions (so the content script reports no
+  active mode yet), `SidePanelApp` auto-re-pulls up to ~8 times over ~4 s; if
+  the mode still never resolves (a stale tab, no content script, or an
+  unsupported page) it degrades to a friendly error + Retry rather than sitting
+  blank until the user closes and reopens the panel. Polls are guarded by the
+  active tab id so a late response from a just-left tab cannot overwrite the
+  current tab's state.
 - **Close on navigation / video change**: the panel is closed on any page
   navigation of the panel's tab (`chrome.tabs.onUpdated` `status === 'loading'`)
   and on a YouTube SPA video change (`content-entry.js` sends `closePanel` when
