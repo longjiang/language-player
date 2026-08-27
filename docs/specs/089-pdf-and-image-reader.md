@@ -33,16 +33,25 @@ action inside the epub reader:
 It provides a **multi-file** entry surface (drag & drop or a multi-file picker),
 a **paste** button, and global **Ctrl/Cmd+V** clipboard-image paste (web
 `paste` event; mobile `expo-clipboard` `getImageAsync`). Once files are
-loaded it shows a **thumbnail rail/sidebar** (current image highlighted) and
-the vision-OCR result of the current image as **tokenized text** in the
-paginated reader. OCR is lazy per selection; results are cached server-side.
+loaded the vision-OCR result of the current image is shown as **tokenized
+text** in the paginated reader, with a **thumbnail sidebar on the right**
+(current image highlighted) that is **collapsible** like every other standard
+sidebar (desktop persistent panel + mobile slide-in sheet). Below the last
+thumbnail the sidebar shows a dashed **"add next image"** tile with
+"Select files" and "Paste" buttons. OCR is lazy per selection; results are
+cached server-side. The first pasted/dropped/picked image is opened by
+default and OCR'd immediately. The title bar no longer carries a back arrow
+or the select/paste actions (they moved into the sidebar).
 
 The vision model is prompted to return **properly formatted, block-level
-markdown**: block elements (headings, paragraphs, list items) separated by
-blank lines, each paragraph as flowing prose (no internal hard line breaks).
-That makes the reader break blocks naturally and reflow each block
-independently — there is **no** client-side post-processing of the OCR text.
-The same prompt is used for the PDF page→markdown path.
+markdown**: a leading `# <title>` heading giving a short, human-readable
+image title (which the reader extracts and uses for the title bar and the
+saved-word context — not the raw filename), then block elements (headings,
+paragraphs, list items) separated by blank lines, each paragraph as flowing
+prose (no internal hard line breaks). That makes the reader break blocks
+naturally and reflow each block independently — there is **no** client-side
+post-processing of the OCR text. The same prompt is used for the PDF
+page→markdown path.
 
 ## Architecture
 
