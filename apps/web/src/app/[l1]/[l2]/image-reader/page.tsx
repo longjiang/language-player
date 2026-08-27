@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import type { SavedWordContext } from '@langplayer/shared';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -9,17 +8,24 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { parseMarkdown, type ReaderBlock } from '@/lib/parse-markdown';
+import { Sidebar } from '@/components/ui/sidebar';
 import { epubLog } from '@/lib/epub-log';
-import { ArrowLeft, ImageIcon, Loader2, Clipboard, Upload, X } from 'lucide-react';
+import {
+  ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose,
+} from 'lucide-react';
 
 /** Vision-OCR prompt for the image reader — the model returns the image's
  *  text as clean, block-level markdown (deepseek-v4-flash-vision-exp via
- *  /vision): blocks separated by blank lines so each reflows independently. */
+ *  /vision): a leading `# <title>` heading the client extracts as the
+ *  human-readable image title, followed by blocks separated by blank lines. */
 const IMAGE_OCR_PROMPT =
   'Extract all text from this image as clean, properly formatted markdown. ' +
-  'Separate each block element (headings, paragraphs, list items) with a blank ' +
-  'line so blocks reflow independently. Keep each paragraph as flowing prose — ' +
-  'do not insert line breaks inside a paragraph, and do not collapse distinct ' +
+  'Begin with a single H1 heading (one line starting with "# ") giving a short, ' +
+  'human-readable title for the image (the document, diagram, or page name — ' +
+  'never a filename). Then a blank line, then the extracted content. Separate ' +
+  'each block element (headings, paragraphs, list items) with a blank line so ' +
+  'blocks reflow independently. Keep each paragraph as flowing prose — do not ' +
+  'insert line breaks inside a paragraph, and do not collapse distinct ' +
   'paragraphs together. Preserve headings (#), paragraphs, lists, bold/italic ' +
   'emphasis, and code blocks. Output only the markdown, with no commentary.';
 
@@ -31,6 +37,8 @@ interface ImageEntry {
   id: string;
   name: string;
   dataUrl: string;
+  /** Human-readable title returned by the vision model (first `# ` heading). */
+  title?: string;
   md: string;
   blocks: ReaderBlock[] | null;
   converting: boolean;
@@ -48,6 +56,22 @@ function readAsDataUrl(file: File): Promise<string> {
     reader.onerror = () => reject(new Error('read failed'));
     reader.readAsDataURL(file);
   });
+}
+
+/** Pull the leading `# <title>` heading out of the OCR markdown as the image's
+ *  human-readable title; the rest is the body. Falls back to no title. */
+function extractTitle(md: string): { title: string | null; body: string } {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  let i = 0;
+  while (i < lines.length && lines[i]!.trim() === '') i++;
+  const first = lines[i];
+  const m = first?.match(/^#\s+(.+)$/);
+  if (m) {
+    const title = m[1]!.trim();
+    const body = lines.slice(i + 1).join('\n').replace(/^\n+/, '');
+    return { title, body };
+  }
+  return { title: null, body: md };
 }
 
 let counter = 0;
@@ -72,12 +96,14 @@ function imageFilesFromItems(items: DataTransferItemList | DataTransferItem[]): 
 export default function ImageReaderPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const router = useRouter();
 
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // Standard right-side sidebar: persistent collapsible panel on desktop, sheet on mobile.
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const current = useMemo(
@@ -101,11 +127,12 @@ export default function ImageReaderPage() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      epubLog(`image reader OCR md length=${md.length}`);
-      epubLog(`image reader OCR sample: ${md.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
+      const { title, body } = extractTitle(md);
+      epubLog(`image reader OCR md length=${md.length} title=${title ?? '(none)'}`);
+      epubLog(`image reader OCR sample: ${body.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
       setImages((prev) => prev.map((im) => (
         im.id === id
-          ? { ...im, md, blocks: md ? parseMarkdown(md) : [], converting: false }
+          ? { ...im, title: title ?? im.title, md: body, blocks: body ? parseMarkdown(body) : [], converting: false }
           : im
       )));
     } catch (err) {
@@ -114,8 +141,8 @@ export default function ImageReaderPage() {
     }
   }, []);
 
-  // Keep a ref to `images` so runOcr/setCurrent can read the latest entry
-  // without the callback identity changing on every render.
+  // Keep a ref to `images` so selectImage can read the latest entry without the
+  // callback identity changing on every render.
   const imagesRef = useRef<ImageEntry[]>([]);
   useEffect(() => {
     imagesRef.current = images;
@@ -229,8 +256,9 @@ export default function ImageReaderPage() {
     }
   }, [l1.code, l2.code]);
 
+  // Saved-word context title: prefer the LLM title, then the file name.
   const ctx: Partial<SavedWordContext> = {
-    textTitle: current?.name || t('title.image_reader'),
+    textTitle: current?.title || current?.name || t('title.image_reader'),
   };
 
   const removeImage = useCallback((id: string) => {
@@ -285,42 +313,58 @@ export default function ImageReaderPage() {
     </div>
   );
 
-  // Loaded state: thumbnail sidebar + the current image's OCR'd reader.
+  /** Placeholder "next image" tile below the last thumbnail. */
+  const addTile = (
+    <div className="col-span-2 flex aspect-[3/2] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-3 text-center">
+      <Plus className="h-5 w-5 text-muted-foreground" />
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          <Upload className="h-3 w-3" />
+          {t('action.select_files')}
+        </button>
+        <button
+          type="button"
+          onClick={() => void pasteFromButton()}
+          className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          <Clipboard className="h-3 w-3" />
+          {t('action.paste')}
+        </button>
+      </div>
+    </div>
+  );
+
+  // Loaded state: OCR'd reader (main) + right collapsible thumbnail sidebar.
   const loaded = images.length > 0;
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-57px)] max-w-7xl flex-col px-4 py-6">
-      {/* Title row */}
-      <div className="mb-4 flex items-center gap-3">
-        <button
-          onClick={() => router.push(`/${l1.code}/${l2.code}/reader`)}
-          aria-label={t('action.back')}
-          title={t('action.back')}
-          className="rounded-md p-1 text-foreground transition-colors hover:bg-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
+    <div className="flex h-[calc(100vh-57px)] flex-col">
+      <div className="mx-auto mb-4 flex w-full max-w-7xl items-center gap-3 px-4 pt-6">
+        {/* Title — human-readable LLM title, then file name. */}
         <h1 className="min-w-0 flex-1 truncate text-xl font-bold text-foreground">
-          {current?.name || t('title.image_reader')}
+          {current?.title || current?.name || t('title.image_reader')}
         </h1>
-        {/* Add-more controls (visible once images are loaded) */}
         {loaded && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {/* Sidebar toggle — mobile: opens the slide-in sheet */}
             <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label={t('action.show_sidebar')}
             >
-              <Upload className="h-3.5 w-3.5" />
-              {t('action.select_files')}
+              <PanelRight className="h-5 w-5" />
             </button>
+            {/* Sidebar toggle — desktop: collapses the persistent panel */}
             <button
-              type="button"
-              onClick={() => void pasteFromButton()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+              onClick={() => setSidebarOpen(o => !o)}
+              className="hidden lg:flex flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
             >
-              <Clipboard className="h-3.5 w-3.5" />
-              {t('action.paste')}
+              {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
             </button>
             <button
               type="button"
@@ -336,48 +380,11 @@ export default function ImageReaderPage() {
       </div>
 
       {notice && (
-        <p className="mb-3 text-xs text-destructive">{notice}</p>
+        <p className="mx-auto mb-3 w-full max-w-7xl px-4 text-xs text-destructive">{notice}</p>
       )}
 
       {!loaded ? dropZone : (
-        <div className="flex min-h-0 flex-1 gap-4">
-          {/* Thumbnail rail */}
-          <div className="flex w-40 shrink-0 flex-col gap-2 overflow-y-auto pr-1">
-            {images.map((im) => (
-              <div
-                key={im.id}
-                role="button"
-                tabIndex={0}
-                aria-disabled={false}
-                onClick={() => selectImage(im.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectImage(im.id); }}
-                className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
-                  im.id === currentId ? 'border-primary' : 'border-border hover:border-muted-foreground/50'
-                }`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={im.dataUrl} alt={im.name} className="aspect-[3/2] w-full object-cover" />
-                {im.id === currentId && (
-                  <div className="absolute inset-0 ring-2 ring-inset ring-primary" />
-                )}
-                {im.converting && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeImage(im.id); }}
-                  aria-label={t('action.remove')}
-                  title={t('action.remove')}
-                  className="absolute right-1 top-1 rounded-full bg-background/80 p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-
+        <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 gap-4 px-4 pb-6">
           {/* OCR result (tokenized text) */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border">
             {current ? (
@@ -411,6 +418,52 @@ export default function ImageReaderPage() {
               )
             ) : null}
           </div>
+
+          {/* Thumbnail sidebar — right, collapsible (standard Sidebar). */}
+          <Sidebar
+            open={mobileSidebarOpen}
+            onOpenChange={setMobileSidebarOpen}
+            sidebarOpen={sidebarOpen}
+            title={t('label.images')}
+            desktopClassName="w-60 ml-3"
+            bodyClassName="p-2"
+          >
+            <div className="grid grid-cols-2 gap-2">
+              {images.map((im) => (
+                <div
+                  key={im.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => selectImage(im.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectImage(im.id); }}
+                  className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
+                    im.id === currentId ? 'border-primary' : 'border-border hover:border-muted-foreground/50'
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={im.dataUrl} alt={im.title || im.name} className="aspect-[3/2] w-full object-cover" />
+                  {im.id === currentId && (
+                    <div className="absolute inset-0 ring-2 ring-inset ring-primary" />
+                  )}
+                  {im.converting && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removeImage(im.id); }}
+                    aria-label={t('action.remove')}
+                    title={t('action.remove')}
+                    className="absolute right-1 top-1 rounded-full bg-background/80 p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {addTile}
+            </div>
+          </Sidebar>
         </div>
       )}
 
