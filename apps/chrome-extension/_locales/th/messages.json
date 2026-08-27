@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "รหัสผ่าน"
   },
+  "welcomeBack": {
+    "message": "ยินดีต้อนรับกลับ"
+  },
+  "logInToContinue": {
+    "message": "เข้าสู่ระบบเพื่อเรียนรู้ต่อ"
+  },
+  "forgotPassword": {
+    "message": "ลืมรหัสผ่าน?"
+  },
+  "signUp": {
+    "message": "สมัครสมาชิก"
+  },
+  "dontHaveAccount": {
+    "message": "ยังไม่มีบัญชี?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "หากต้องการสร้างบัญชีหรือรีเซ็ตรหัสผ่าน โปรดไปที่ languageplayer.io แล้วกลับมาที่นี่เพื่อเข้าสู่ระบบ"
+  },
   "popupSaveWords": {
     "message": "<strong>บันทึก</strong> คำศัพท์ลงในบัญชี Language Player ของคุณ"
   },

@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Пароль"
   },
+  "welcomeBack": {
+    "message": "С возвращением"
+  },
+  "logInToContinue": {
+    "message": "Войдите, чтобы продолжить обучение."
+  },
+  "forgotPassword": {
+    "message": "Забыли пароль?"
+  },
+  "signUp": {
+    "message": "Регистрация"
+  },
+  "dontHaveAccount": {
+    "message": "Нет аккаунта?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Чтобы создать аккаунт или сбросить пароль, перейдите на languageplayer.io и вернитесь сюда для входа."
+  },
   "popupSaveWords": {
     "message": "<strong>Сохраняйте</strong> слова в свой аккаунт Language Player"
   },

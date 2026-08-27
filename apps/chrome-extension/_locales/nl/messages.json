@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Wachtwoord"
   },
+  "welcomeBack": {
+    "message": "Welkom terug"
+  },
+  "logInToContinue": {
+    "message": "Log in om verder te leren."
+  },
+  "forgotPassword": {
+    "message": "Wachtwoord vergeten?"
+  },
+  "signUp": {
+    "message": "Registreren"
+  },
+  "dontHaveAccount": {
+    "message": "Nog geen account?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Om een account aan te maken of je wachtwoord opnieuw in te stellen, ga je naar languageplayer.io en kom daarna hier terug om in te loggen."
+  },
   "popupSaveWords": {
     "message": "<strong>Sla</strong> woorden op in je Language Player-account"
   },

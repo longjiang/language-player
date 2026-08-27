@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "密码"
   },
+  "welcomeBack": {
+    "message": "欢迎回来"
+  },
+  "logInToContinue": {
+    "message": "登录以继续学习。"
+  },
+  "forgotPassword": {
+    "message": "忘记密码？"
+  },
+  "signUp": {
+    "message": "注册"
+  },
+  "dontHaveAccount": {
+    "message": "还没有账户？"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "注册或找回密码请前往 languageplayer.io，完成后返回此处登录。"
+  },
   "popupSaveWords": {
     "message": "<strong>收藏</strong>单词到您的 Language Player 账户"
   },

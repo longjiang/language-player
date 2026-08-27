@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Şifre"
   },
+  "welcomeBack": {
+    "message": "Tekrar hoş geldiniz"
+  },
+  "logInToContinue": {
+    "message": "Öğrenmeye devam etmek için giriş yapın."
+  },
+  "forgotPassword": {
+    "message": "Şifrenizi mi unuttunuz?"
+  },
+  "signUp": {
+    "message": "Kaydol"
+  },
+  "dontHaveAccount": {
+    "message": "Hesabınız yok mu?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Hesap oluşturmak veya şifrenizi sıfırlamak için languageplayer.io adresini ziyaret edin, ardından giriş yapmak için buraya dönün."
+  },
   "popupSaveWords": {
     "message": "Language Player hesabınıza kelimeleri <strong>kaydedin</strong>"
   },

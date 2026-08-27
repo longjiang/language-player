@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "パスワード"
   },
+  "welcomeBack": {
+    "message": "おかえりなさい"
+  },
+  "logInToContinue": {
+    "message": "ログインして学習を続けましょう。"
+  },
+  "forgotPassword": {
+    "message": "パスワードをお忘れですか？"
+  },
+  "signUp": {
+    "message": "登録"
+  },
+  "dontHaveAccount": {
+    "message": "アカウントをお持ちではありませんか？"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "アカウント作成やパスワード再設定は languageplayer.io で行い、完了したらここに戻ってログインしてください。"
+  },
   "popupSaveWords": {
     "message": "Language Playerアカウントに単語を<strong>保存</strong>"
   },
