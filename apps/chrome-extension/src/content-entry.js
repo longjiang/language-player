@@ -450,9 +450,40 @@ function buildPanelState(loadingL2) {
   };
 }
 
+// Build the side-panel state WITHOUT ever letting a throw take down the panel's
+// mode resolution. buildPanelState() calls getLocaleVersion()/buildWebUrl()/
+// document.title; if any of those throws intermittently, the getPanelState
+// handler would fail to sendResponse and the side panel would see
+// "Receiving end does not exist" (no content script) and strand the learner on
+// "this page cannot be translated" until a full reload. Fall back to a minimal
+// but valid video state so the subs tab still resolves.
+function safeBuildPanelState(loadingL2) {
+  try {
+    return buildPanelState(loadingL2);
+  } catch (err) {
+    logerr('[CONTENT] buildPanelState failed; returning minimal state', err);
+    return {
+      mode: 'video',
+      cues: STATE.cues,
+      activeCueIdx: STATE.activeCueIdx,
+      l2Code: savedL2Code,
+      l1Code: L1_CODE,
+      pageUrl: location.href,
+      loadingL2,
+      subtitleStatus: STATE.subtitleStatus || 'error',
+      subtitleError: STATE.subtitleError || `state-build-error: ${(err && err.message) || String(err)}`,
+      // These are safe module values only — avoid re-calling the same helpers
+      // that may have thrown (getLocaleVersion, buildWebUrl).
+      localeVersion: 0,
+      mismatch: null,
+      videoTitle: document.title || '',
+    };
+  }
+}
+
 function pushPanelState(loadingL2) {
   try {
-    chrome.runtime.sendMessage({ action: 'panelState', state: buildPanelState(loadingL2) })
+    chrome.runtime.sendMessage({ action: 'panelState', state: safeBuildPanelState(loadingL2) })
       .catch(() => {});
   } catch {}
 }
@@ -1663,7 +1694,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       senderTabId: sender?.tab?.id,
       frameId: sender?.frameId,
     });
-    sendResponse({ state: buildPanelState() });
+    sendResponse({ state: safeBuildPanelState() });
     return true;
   }
 
