@@ -11,6 +11,23 @@
   --lpv-frame-secondary: hsl(var(--secondary));
 }
 
+/* The .lpv-dict-* base rules loaded from content.css use --lpv-* HSL tokens.
+ * content.css resolves those with its own prefers-color-scheme, which does NOT
+ * follow the extension's light/dark choice in this iframe. Point them at the
+ * frame's semantic tokens so the card stays theme-consistent. */
+:root {
+  --lpv-background: var(--background);
+  --lpv-foreground: var(--foreground);
+  --lpv-card: var(--card);
+  --lpv-primary: var(--primary);
+  --lpv-primary-foreground: var(--primary-foreground);
+  --lpv-secondary: var(--secondary);
+  --lpv-muted-foreground: var(--muted-foreground);
+  --lpv-border: var(--border);
+  --lpv-warning: var(--accent);
+  --lpv-destructive: var(--destructive);
+}
+
 html,
 body,
 #lpv-page-dictionary-root {
@@ -35,7 +52,9 @@ body,
   justify-content: center;
   box-sizing: border-box;
   padding: 1rem;
-  background: hsl(var(--foreground) / 0.5);
+  /* Web-parity dim: fixed semi-transparent black (not the theme foreground,
+     which is white in dark mode). */
+  background: hsl(0 0% 0% / 0.5);
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog {
@@ -49,6 +68,14 @@ body,
   color: var(--lpv-frame-foreground);
   box-shadow: 0 1.5rem 4rem hsl(var(--foreground) / 0.24);
   text-align: left;
+}
+
+/* The dictionary lookup popup is clamped to the web dictionary popup's width
+   (apps/web dictionary-popup.tsx: w-[28rem] max-w-[90vw]) so it does not render
+   as an oversized sheet on top of the page. Other dialogs (settings/help/about/
+   account) keep the wider 52rem treatment. */
+#lpv-page-dictionary-root .lpv-ui-dialog.lpv-dictionary-dialog {
+  width: min(28rem, calc(100vw - 2rem));
 }
 
 #lpv-page-dictionary-root .lpv-settings-layout,
@@ -87,7 +114,8 @@ body,
 #lpv-page-dictionary-root .lpv-dict-card-pron,
 #lpv-page-dictionary-root .lpv-dict-pron-small,
 #lpv-page-dictionary-root .lpv-dict-card-lemma,
-#lpv-page-dictionary-root .lpv-dict-def {
+#lpv-page-dictionary-root .lpv-dict-def,
+#lpv-page-dictionary-root .lpv-dict-alternate {
   color: var(--lpv-frame-muted);
 }
 
@@ -126,13 +154,13 @@ body,
 
 #lpv-page-dictionary-root .lpv-page-follow-link {
   display: block;
-  width: calc(100% - 2rem);
-  margin: 0 1rem 0.5rem;
+  width: 100%;
+  margin: 0;
   padding: 0.375rem 0.75rem;
   border: 1px solid var(--lpv-frame-border);
-  border-radius: 0.375rem;
-  background: transparent;
-  color: var(--lpv-frame-primary);
+  border-radius: var(--radius);
+  background: var(--lpv-frame-background);
+  color: var(--lpv-frame-foreground);
   cursor: pointer;
   font: inherit;
   font-size: 0.8125rem;
@@ -145,17 +173,20 @@ body,
 
 #lpv-page-dictionary-root .lpv-explain-btn {
   display: inline-flex;
-  width: calc(100% - 2rem);
+  width: 100%;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin: 0 1rem 0.5rem;
+  /* Regular (neutral) outline button, matching apps/web's "Let DeepSeek
+     Explain" action — not the purple primary tint. The card body supplies a
+     uniform flex gap around its children, so the button adds no margin. */
+  margin: 0;
   padding: 0.375rem 0.75rem;
-  border: 1px solid hsl(var(--primary) / 0.35);
-  border-radius: 0.375rem;
-  background: transparent;
-  color: var(--lpv-frame-primary);
+  border: 1px solid var(--lpv-frame-border);
+  border-radius: var(--radius);
+  background: var(--lpv-frame-background);
+  color: var(--lpv-frame-foreground);
   cursor: pointer;
   font: inherit;
   font-size: 0.8125rem;
@@ -163,5 +194,5 @@ body,
 }
 
 #lpv-page-dictionary-root .lpv-explain-btn:hover {
-  background: hsl(var(--primary) / 0.08);
+  background: var(--lpv-frame-secondary);
 }

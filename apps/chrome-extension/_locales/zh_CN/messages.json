@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "密码"
   },
+  "welcomeBack": {
+    "message": "欢迎回来"
+  },
+  "logInToContinue": {
+    "message": "登录以继续学习。"
+  },
+  "forgotPassword": {
+    "message": "忘记密码？"
+  },
+  "signUp": {
+    "message": "注册"
+  },
+  "dontHaveAccount": {
+    "message": "还没有账户？"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "注册或找回密码请前往 languageplayer.io，完成后返回此处登录。"
+  },
   "popupSaveWords": {
     "message": "<strong>收藏</strong>单词到您的 Language Player 账户"
   },
@@ -182,6 +200,12 @@
   },
   "searchImages": {
     "message": "搜索图片"
+  },
+  "contextSentence": {
+    "message": "上下文句子"
+  },
+  "openInDictionary": {
+    "message": "在词典中打开"
   },
   "startPlaying": {
     "message": "开始播放视频。"
@@ -306,6 +330,27 @@
   "review": {
     "message": "复习"
   },
+  "smoothScroll": {
+    "message": "平滑滚动"
+  },
+  "voice": {
+    "message": "声音"
+  },
+  "rate": {
+    "message": "速率"
+  },
+  "speed": {
+    "message": "速度"
+  },
+  "defaultVoice": {
+    "message": "自动（最佳可用）"
+  },
+  "textAppearance": {
+    "message": "文字外观"
+  },
+  "testVoice": {
+    "message": "测试声音"
+  },
   "settingsUnavailable": {
     "message": "此设置类别即将推出。"
   },
@@ -332,6 +377,27 @@
   },
   "level": {
     "message": "等级"
+  },
+  "levelName1": {
+    "message": "初级一"
+  },
+  "levelName2": {
+    "message": "初级二"
+  },
+  "levelName3": {
+    "message": "初级三"
+  },
+  "levelName4": {
+    "message": "中级一"
+  },
+  "levelName5": {
+    "message": "中级二"
+  },
+  "levelName6": {
+    "message": "高级一"
+  },
+  "levelName7": {
+    "message": "高级二"
   },
   "subscription": {
     "message": "订阅"
@@ -722,5 +788,53 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "加载字典失败：$error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "未找到「$word$」的词典条目",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "已尝试词形"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "在语言学习器中搜索 →"
+  },
+  "lookupFailed": {
+    "message": "查询失败"
+  },
+  "explainFailed": {
+    "message": "解释失败"
+  },
+  "examplesFailed": {
+    "message": "示例获取失败"
+  },
+  "followUpFailed": {
+    "message": "追问失败"
+  },
+  "noSubtitleExamples": {
+    "message": "未找到字幕示例"
+  },
+  "measureWord": {
+    "message": "量词："
+  },
+  "genderLabel": {
+    "message": "性别："
+  },
+  "nounClass": {
+    "message": "词类："
   }
 }

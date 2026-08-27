@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "كلمة المرور"
   },
+  "welcomeBack": {
+    "message": "مرحبًا بعودتك"
+  },
+  "logInToContinue": {
+    "message": "سجل الدخول لمواصلة التعلم."
+  },
+  "forgotPassword": {
+    "message": "نسيت كلمة المرور؟"
+  },
+  "signUp": {
+    "message": "التسجيل"
+  },
+  "dontHaveAccount": {
+    "message": "ليس لديك حساب؟"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "لإنشاء حساب أو إعادة تعيين كلمة المرور، تفضل بزيارة languageplayer.io ثم عد إلى هنا لتسجيل الدخول."
+  },
   "popupSaveWords": {
     "message": "<strong>احفظ</strong> الكلمات في حساب Language Player الخاص بك"
   },
@@ -182,6 +200,12 @@
   },
   "searchImages": {
     "message": "البحث عن صور"
+  },
+  "contextSentence": {
+    "message": "جملة السياق"
+  },
+  "openInDictionary": {
+    "message": "فتح في القاموس"
   },
   "startPlaying": {
     "message": "ابدأ تشغيل فيديو."
@@ -306,6 +330,27 @@
   "review": {
     "message": "مراجعة"
   },
+  "smoothScroll": {
+    "message": "تمرير سلس"
+  },
+  "voice": {
+    "message": "صوت"
+  },
+  "rate": {
+    "message": "المعدل"
+  },
+  "speed": {
+    "message": "السرعة"
+  },
+  "defaultVoice": {
+    "message": "تلقائي (أفضل متاح)"
+  },
+  "textAppearance": {
+    "message": "مظهر النص"
+  },
+  "testVoice": {
+    "message": "اختبار الصوت"
+  },
   "settingsUnavailable": {
     "message": "ستتوفر فئة الإعدادات هذه قريبًا."
   },
@@ -332,6 +377,27 @@
   },
   "level": {
     "message": "المستوى"
+  },
+  "levelName1": {
+    "message": "مبتدئ I"
+  },
+  "levelName2": {
+    "message": "مبتدئ II"
+  },
+  "levelName3": {
+    "message": "مبتدئ III"
+  },
+  "levelName4": {
+    "message": "متوسط I"
+  },
+  "levelName5": {
+    "message": "متوسط II"
+  },
+  "levelName6": {
+    "message": "متقدم I"
+  },
+  "levelName7": {
+    "message": "متقدم II"
   },
   "subscription": {
     "message": "اشتراك"
@@ -722,5 +788,53 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "فشل تحميل القاموس: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "لم يتم العثور على مدخل قاموس لـ $word$.",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "تمت تجربة الأشكال الأساسية التالية:"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "البحث في Language Player ←"
+  },
+  "lookupFailed": {
+    "message": "فشل البحث"
+  },
+  "explainFailed": {
+    "message": "فشل الشرح"
+  },
+  "examplesFailed": {
+    "message": "فشل الحصول على الأمثلة"
+  },
+  "followUpFailed": {
+    "message": "فشل المتابعة"
+  },
+  "noSubtitleExamples": {
+    "message": "لم يتم العثور على أمثلة من الترجمة"
+  },
+  "measureWord": {
+    "message": "كلمة قياس:"
+  },
+  "genderLabel": {
+    "message": "الجنس:"
+  },
+  "nounClass": {
+    "message": "الفئة:"
   }
 }

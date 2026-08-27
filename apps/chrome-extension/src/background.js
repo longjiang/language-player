@@ -131,16 +131,42 @@ function notifyTabPanelOpenState(tabId, open) {
   });
 }
 
+/** Close the open side panel if any. The port's onDisconnect resets the
+ *  tracked tab/window and notifies the panel tab of the closed state. */
+function closeSidePanelIfOpen() {
+  if (!sidePanelConnected || sidePanelWindowId == null) return;
+  try {
+    chrome.sidePanel.close({ windowId: sidePanelWindowId }).catch(() => {});
+  } catch {}
+}
+
+// The extension action toggles the side panel natively (open when closed, close
+// when open) via Chrome's openPanelOnActionClick behavior. This is reliable
+// where our own sidePanelConnected flag is not — the MV3 service worker can be
+// suspended/restarted and the side-panel port does not always disconnect, both
+// of which previously left a stale "open" state that made a second click fail
+// to open. The action click therefore needs no manual open/close handler.
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+
 async function toggleSidePanel(tab) {
   if (!tab?.id) return;
   try {
     if (sidePanelConnected && chrome.sidePanel?.close) {
       // The manifest uses one global side panel. Closing by windowId works
       // across Chrome versions where close({ tabId }) rejects for a global
-      // panel.
-      notifyTabPanelOpenState(sidePanelTabId, false);
-      await chrome.sidePanel.close({ windowId: sidePanelWindowId ?? tab.windowId });
+      // panel. This path is used by the keyboard commands (Alt+T etc.).
+      console.log('[LP Extension] Toggle → closing side panel');
+      const prevTabId = sidePanelTabId;
+      const prevWindowId = sidePanelWindowId ?? tab.windowId;
+      // Clear the tracked state first so a subsequent toggle opens again even
+      // if the port's onDisconnect is delayed or skipped.
+      sidePanelConnected = false;
+      sidePanelTabId = null;
+      sidePanelWindowId = null;
+      notifyTabPanelOpenState(prevTabId, false);
+      await chrome.sidePanel.close({ windowId: prevWindowId });
     } else {
+      console.log('[LP Extension] Toggle → opening side panel');
       sidePanelTabId = tab.id;
       sidePanelWindowId = tab.windowId;
       await chrome.sidePanel.open({ tabId: tab.id });
@@ -148,12 +174,10 @@ async function toggleSidePanel(tab) {
   } catch {}
 }
 
-// The extension icon is the primary panel toggle. Keeping this as an action
-// click (and removing action.default_popup from the manifest) preserves the
-// native Chrome side-panel user gesture without adding a permission.
-chrome.action.onClicked.addListener((tab) => {
-  toggleSidePanel(tab);
-});
+// The extension icon toggles the side panel natively via
+// chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }) above —
+// clicking it opens a closed panel and closes an open one, with no manual
+// open/close handler needed.
 
 // The native side panel is global to a window. Close it when the user changes
 // tabs so opening the panel on one reading page never affects other tabs.
@@ -184,6 +208,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sidePanelPort.postMessage({ ...request, tabId: sender.tab.id });
             } catch {}
         }
+        sendResponse({ ok: true });
+        return true;
+    } else if (request.action === "closePanel") {
+        // Video change (e.g. YouTube SPA navigation to another video): close
+        // the side panel so a left-running autoplay doesn't keep the panel
+        // consuming tokenization / translation / subscription calls.
+        closeSidePanelIfOpen();
         sendResponse({ ok: true });
         return true;
     } else if (request.action === "clearSubtitles") {
@@ -458,6 +489,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.status === 'loading') {
         clearDetectedSubtitlesByTab(tabId);
         updateBadge();
+        // Close the side panel on page navigation. The panel's port stays
+        // connected across a reload, so leaving it open would keep firing
+        // tokenization / translation / subscription calls on a page the
+        // learner has navigated away from (e.g. autoplay). Reopening is a
+        // deliberate user action (icon / shortcut / token click).
+        if (sidePanelConnected && tabId === sidePanelTabId) {
+            closeSidePanelIfOpen();
+        }
     }
 });
 

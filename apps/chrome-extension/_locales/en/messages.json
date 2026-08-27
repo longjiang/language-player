@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Password"
   },
+  "welcomeBack": {
+    "message": "Welcome back"
+  },
+  "logInToContinue": {
+    "message": "Log in to continue learning."
+  },
+  "forgotPassword": {
+    "message": "Forgot password?"
+  },
+  "signUp": {
+    "message": "Sign up"
+  },
+  "dontHaveAccount": {
+    "message": "Don't have an account?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "To create an account or reset your password, visit languageplayer.io, then come back here to sign in."
+  },
   "popupSaveWords": {
     "message": "<strong>Save</strong> words to your Language Player account"
   },
@@ -182,6 +200,12 @@
   },
   "searchImages": {
     "message": "Search images"
+  },
+  "contextSentence": {
+    "message": "Context sentence"
+  },
+  "openInDictionary": {
+    "message": "Open in Dictionary"
   },
   "startPlaying": {
     "message": "Start playing a video."
@@ -306,6 +330,27 @@
   "review": {
     "message": "Review"
   },
+  "smoothScroll": {
+    "message": "Smooth Scroll"
+  },
+  "voice": {
+    "message": "Voice"
+  },
+  "rate": {
+    "message": "Rate"
+  },
+  "speed": {
+    "message": "Speed"
+  },
+  "defaultVoice": {
+    "message": "Auto (best available)"
+  },
+  "textAppearance": {
+    "message": "Text Appearance"
+  },
+  "testVoice": {
+    "message": "Test Voice"
+  },
   "settingsUnavailable": {
     "message": "This settings category is coming soon."
   },
@@ -332,6 +377,27 @@
   },
   "level": {
     "message": "Level"
+  },
+  "levelName1": {
+    "message": "Beginner I"
+  },
+  "levelName2": {
+    "message": "Beginner II"
+  },
+  "levelName3": {
+    "message": "Beginner III"
+  },
+  "levelName4": {
+    "message": "Intermediate I"
+  },
+  "levelName5": {
+    "message": "Intermediate II"
+  },
+  "levelName6": {
+    "message": "Advanced I"
+  },
+  "levelName7": {
+    "message": "Advanced II"
   },
   "subscription": {
     "message": "Subscription"
@@ -722,5 +788,53 @@
         "content": "$3"
       }
     }
+  },
+  "dictLoadFailed": {
+    "message": "Failed to load dictionary: $error$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "HTTP 500"
+      }
+    }
+  },
+  "noDictionaryEntry": {
+    "message": "No dictionary entry found for $word$",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
+  },
+  "triedLemmas": {
+    "message": "Tried lemmas"
+  },
+  "searchOnLanguagePlayer": {
+    "message": "Search on Language Player →"
+  },
+  "lookupFailed": {
+    "message": "Lookup failed"
+  },
+  "explainFailed": {
+    "message": "Explain failed"
+  },
+  "examplesFailed": {
+    "message": "Examples failed"
+  },
+  "followUpFailed": {
+    "message": "Follow-up failed"
+  },
+  "noSubtitleExamples": {
+    "message": "No subtitle examples found"
+  },
+  "measureWord": {
+    "message": "Measure:"
+  },
+  "genderLabel": {
+    "message": "Gender:"
+  },
+  "nounClass": {
+    "message": "Class:"
   }
 }

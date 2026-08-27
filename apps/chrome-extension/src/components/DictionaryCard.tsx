@@ -1,26 +1,30 @@
 /**
- * DictionaryCard — Inline dictionary lookup card for the extension.
+ * DictionaryCard — Web-parity dictionary lookup card for the extension.
  *
- * Renders inside the transcript panel when a word token is clicked.
- * Fetches entries from POST /dictionary/lookup and shows full details:
- * pronunciation, part of speech, definitions, proficiency levels.
- * Each entry links to the Language Player web app for full details.
- * Includes a Save/Unsave button backed by the Supabase row API (SPEC-034)
- * and a Pro-gated AI explanation (ADR-0034 D3).
+ * Mirrors apps/web's DictionaryPopup + DictionaryEntryCard:
+ * - Only the head word navigates to the entry detail page (headOnlyLink), the
+ *   rest of the card never navigates.
+ * - Loading renders compact entry-card skeletons (not a spinner) so the popup's
+ *   shape and fixed top stay stable.
+ * - Entries from the shared batch cache render instantly (even for l1 ≠ en),
+ *   then hot-swap to L1-translated cards once they arrive.
+ * - Supports the collapsible "Context sentence" card and a "Search images" link.
+ * - Save/bookmark gated on auth, matching web's redirect-to-login behaviour.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
-import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
-import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { baseCode, formatPronunciation } from '@langplayer/utils';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
+import { formatProficiencyLevel, primaryScale, shouldShowLevel, isHanLanguage, glyphLangTag } from '@langplayer/shared';
+import { baseCode, formatPronunciation, getCachedEntries, setCachedEntries, getL1CachedEntries, setL1CachedEntry, subscribeToCache } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
 import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
-import { Bookmark, BookmarkCheck, ExternalLink, Volume2, X } from './Icons';
+import { Bookmark, BookmarkCheck, BookOpen, ChevronDown, ChevronUp, Image, Loader, Sparkles, Video, Volume2, X } from './Icons';
 import { Button } from './ui/button';
-import { log, logerr, t } from '../i18n';
+import { log, logwarn, logerr, t } from '../i18n';
+import { applySpeechToUtterance, loadSpeechSettings } from '../extension-settings';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -32,7 +36,7 @@ interface DictionaryCardProps {
   l1Name?: string;
   /** Human-readable L2 name (e.g., "Japanese", "français") */
   l2Name?: string;
-  /** The full subtitle line text — used as save context. */
+  /** The full subtitle/page line text — used as save context + context sentence. */
   contextText?: string;
   /** Start time of the cue (seconds), used as save context. */
   cueStartTime?: number;
@@ -48,6 +52,9 @@ interface DictionaryCardProps {
   isPro: boolean;
   subLoading: boolean;
   onClose: () => void;
+  /** Called when the user taps Save/Bookmark while logged out — the host
+   *  opens the login dialog (web parity: a save requires an account). */
+  onRequireLogin?: () => void;
 }
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -80,7 +87,125 @@ async function fetchEntries(
   return (data.results ?? []) as DictionaryEntry[];
 }
 
-// ── Entry Row ──────────────────────────────────────────────────────────────
+/** Extract a YouTube video ID from a URL if present. */
+function extractYoutubeId(url: string): string | undefined {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m?.[1];
+}
+
+/** Cap a source title to 5 space-delimited words or 15 characters, whichever is shorter. */
+function capSourceTitle(title: string): string {
+  const trimmed = title.trim();
+  const words = trimmed.split(/\s+/).slice(0, 5).join(' ');
+  const chars = trimmed.slice(0, 15);
+  const capped = words.length < chars.length ? words : chars;
+  const truncated = trimmed.split(/\s+/).length > 5 || trimmed.length > 15;
+  return truncated ? `${capped.trim()}…` : trimmed;
+}
+
+/** Highlights every occurrence of the saved word's surface form inside the
+ *  context sentence, mirroring apps/web's DictionaryEntryCard HighlightForm. */
+function HighlightForm({ text, form }: { text: string; form?: string }) {
+  if (!form) return <>{text}</>;
+  const parts = text.split(form);
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && <span className="lpv-dict-saved-hit">{form}</span>}
+        </React.Fragment>
+      ))}
+    </>
+  );
+}
+
+// ── Loading skeleton (matches apps/web DictionaryEntryCardSkeleton) ─────────
+
+function EntryCardSkeleton() {
+  return (
+    <div className="lpv-dict-skeleton" aria-busy="true" aria-hidden="true">
+      <div className="lpv-dict-skeleton-head">
+        <span className="lpv-dict-skeleton-bar" style={{ width: '6rem' }} />
+        <span className="lpv-dict-skeleton-bar" style={{ width: '4rem' }} />
+        <span className="lpv-dict-skeleton-badge" />
+      </div>
+      <div className="lpv-dict-skeleton-defs">
+        <span className="lpv-dict-skeleton-bar" style={{ width: '100%' }} />
+        <span className="lpv-dict-skeleton-bar" style={{ width: '80%' }} />
+        <span className="lpv-dict-skeleton-bar" style={{ width: '66%' }} />
+      </div>
+      <div className="lpv-dict-skeleton-foot">
+        <span className="lpv-dict-skeleton-bar" style={{ width: '5rem' }} />
+        <span className="lpv-dict-skeleton-btn" />
+      </div>
+    </div>
+  );
+}
+
+// ── Collapsible context sentence (matches apps/web ContextSentenceCard) ─────
+
+interface ContextCardProps {
+  contextText: string;
+  l1Code: string;
+  l2Code: string;
+}
+
+function ContextSentenceCard({ contextText, l1Code, l2Code }: ContextCardProps) {
+  const [open, setOpen] = useState(false);
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const fetchedRef = useRef(false);
+
+  const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && !fetchedRef.current && canTranslate) {
+      fetchedRef.current = true;
+      setTranslating(true);
+      apiFetch(`${API_BASE}/translate_array`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: [contextText], l1: l1Code, l2: l2Code }),
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const value = Array.isArray(data.translated_texts) ? data.translated_texts[0] : undefined;
+          setTranslation(value && value !== contextText ? value : null);
+        })
+        .catch((err: any) => {
+          logwarn('[DICT] context translation failed', { message: err?.message });
+          setTranslation(null);
+        })
+        .finally(() => setTranslating(false));
+    }
+  };
+
+  return (
+    <div className="lpv-dict-context">
+      <button type="button" onClick={toggle} className="lpv-dict-context-toggle" aria-expanded={open}>
+        <span>{t('contextSentence')}</span>
+        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
+      {open && (
+        <div className="lpv-dict-context-body">
+          <p className="lpv-dict-context-l2" dir="auto">{contextText}</p>
+          {canTranslate && (translating ? (
+            <span className="lpv-dict-context-loading"><Loader size={12} /> {t('translating')}</span>
+          ) : translation ? (
+            <p className="lpv-dict-context-l1">{translation}</p>
+          ) : null)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Entry card (head-only link, matches apps/web compact DictionaryEntryCard) ─
 
 interface EntryRowProps {
   entry: DictionaryEntry;
@@ -91,15 +216,11 @@ interface EntryRowProps {
   cueStartTime?: number;
   videoTitle?: string;
   pageUrl?: string;
+  /** Opens the login dialog when the user taps Save while logged out. */
+  onRequireLogin?: () => void;
 }
 
-/** Extract a YouTube video ID from a URL if present. */
-function extractYoutubeId(url: string): string | undefined {
-  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  return m?.[1];
-}
-
-const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl }) => {
+const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, onRequireLogin }) => {
   const { savedWords, saveWord, removeSavedWord, isLoggedIn, loading: wordsLoading } = useSavedWords();
   const [saving, setSaving] = useState(false);
 
@@ -112,17 +233,72 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     .filter((level) => level.numeric != null && shouldShowLevel(level, l2Base))
     .map((level) => formatProficiencyLevel(level, primaryScale(l2Base)));
 
+  // ── Alternate script display (matches apps/web useScriptPreference) ──────
+  const [useTraditional, setUseTraditional] = useState(false);
+  useEffect(() => {
+    chrome.storage.local.get('useTraditional').then((result) => {
+      setUseTraditional(result.useTraditional === true);
+    }).catch(() => {});
+  }, []);
+  const isHanScript = l2Base === 'vi' || l2Base === 'ko';
+  const isChinese = isHanLanguage(l2Base);
+  const glyphLang = glyphLangTag(l2Base, useTraditional);
+  let displayHead = entry.head;
+  let displayAlternate: string | null = entry.alternate ?? null;
+  if (useTraditional && isChinese && displayAlternate && displayAlternate !== displayHead) {
+    const swapped = displayHead;
+    displayHead = displayAlternate;
+    displayAlternate = swapped;
+  }
+  if (isHanScript && entry.han_script?.han) {
+    displayAlternate = entry.han_script.han;
+  } else if (!(isChinese && displayAlternate && displayAlternate !== displayHead)) {
+    displayAlternate = null;
+  }
+
   const isSaved = isLoggedIn && (savedWords[l2Code] || []).some(w => w.id === entry.id);
+
+  // ── Saved metadata (apps/web DictionaryEntryCard parity) ──
+  // When this entry is a saved word, show the CONTEXT it was saved from — date,
+  // source (video/book), and the highlighted context sentence — so the learner
+  // sees where the word was encountered, not just the current lookup context.
+  const savedRecord = isLoggedIn
+    ? ((savedWords[l2Code] || []).find(w => w.id === entry.id) as SavedLexicalItemRecord | undefined)
+    : undefined;
+  const rawCtx = savedRecord?.context;
+  const savedInsts: SavedLexicalItemInstance[] = savedRecord?.instances?.length
+    ? savedRecord.instances
+    : (rawCtx ? [{ form: rawCtx.form, timestamp: savedRecord!.date, context: rawCtx }] : []);
+  const savedCtx = savedInsts[savedInsts.length - 1]?.context ?? rawCtx;
+  const saveDateStr = savedRecord?.date
+    ? new Date(savedRecord.date).toLocaleDateString(l1Code)
+    : '';
+  const contextSentence = savedCtx?.text && savedCtx.text !== entry.head ? savedCtx.text : undefined;
+  const hasVideoSource = !!(savedCtx?.youtube_id || savedCtx?.videoTitle);
+  const hasTextSource = !!savedCtx?.textTitle;
+  const sourceLabel = hasVideoSource
+    ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
+    : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
 
   const handleSave = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!isLoggedIn || wordsLoading) return;
+    // Web parity: a save needs an account. Log it so "save does nothing" is
+    // diagnosable, and let the optimistic store update + PUT run when authed.
+    if (wordsLoading) {
+      logwarn('[SAVE] click ignored while saved-words still loading');
+      return;
+    }
+    if (!isLoggedIn) {
+      log('[SAVE] not logged in — prompting login (web parity: save needs an account)');
+      onRequireLogin?.();
+      return;
+    }
 
     setSaving(true);
     try {
       if (isSaved) {
-        removeSavedWord(l2Code, entry.id);
+        await removeSavedWord(l2Code, entry.id);
       } else {
         const allForms = await fetchInflectedForms(entry.head, l2Code);
         const youtubeId = pageUrl ? extractYoutubeId(pageUrl) : undefined;
@@ -137,7 +313,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             starttime: cueStartTime,
             youtube_id: youtubeId,
             videoTitle,
-          },
+          } as SavedWordContext,
           instances: [{
             timestamp: Date.now(),
             form: tokenForm,
@@ -148,46 +324,68 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               starttime: cueStartTime,
               youtube_id: youtubeId,
               videoTitle,
-            },
+            } as SavedWordContext,
           }],
         };
-        log('[SAVE] Saving word:', JSON.stringify(record, null, 2));
-        saveWord(l2Code, record);
+        log('[SAVE] saving word:', JSON.stringify(record, null, 2));
+        await saveWord(l2Code, record as any);
       }
+    } catch (err: any) {
+      logerr('[SAVE] save failed', err?.message ?? String(err));
     } finally {
       setSaving(false);
     }
-  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord]);
+  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord, onRequireLogin]);
 
   const handleSpeak = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
     window.speechSynthesis?.cancel();
-    const utterance = new SpeechSynthesisUtterance(entry.head);
-    utterance.lang = l2Base;
-    utterance.rate = 0.75;
-    window.speechSynthesis?.speak(utterance);
-  }, [entry.head, l2Base]);
+    const utterance = new SpeechSynthesisUtterance(displayHead);
+    loadSpeechSettings().then((speech) => {
+      applySpeechToUtterance(utterance, l2Base, speech);
+      window.speechSynthesis?.speak(utterance);
+    });
+  }, [displayHead, l2Base]);
 
   const openEntry = useCallback(() => {
     window.open(webAppUrl, '_blank', 'noopener,noreferrer');
   }, [webAppUrl]);
 
   return (
-    <div
-      className="lpv-dict-entry-row lpv-dict-entry-card"
-      role="link"
-      tabIndex={0}
-      onClick={openEntry}
-      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openEntry(); } }}
-    >
+    <div className="lpv-dict-entry-row lpv-dict-entry-card">
       <div className="lpv-dict-entry">
         <div className="lpv-dict-entry-header">
-          <span className="lpv-dict-head">{entry.head}</span>
+          {/* Head word is the ONLY link to the detail page (web headOnlyLink). */}
+          <button
+            type="button"
+            className="lpv-dict-head lpv-dict-head-link"
+            lang={glyphLang}
+            title={t('openInDictionary')}
+            onClick={(e) => { e.stopPropagation(); openEntry(); }}
+          >
+            {displayHead}
+          </button>
+          {displayAlternate && (
+            <span className="lpv-dict-alternate" lang={glyphLang}>{displayAlternate}</span>
+          )}
           <button className="lpv-dict-speak" type="button" onClick={handleSpeak} title={t('speak')} aria-label={t('speak')}>
             <Volume2 size={14} />
           </button>
           {formattedPronunciation && (
             <span className="lpv-dict-pron-small">{formattedPronunciation}</span>
+          )}
+          {levelBadges.length > 0 && (
+            <span className="lpv-dict-entry-badges">
+              {levelBadges.map((level, i) => (
+                <span
+                  key={i}
+                  className="lpv-dict-level"
+                  style={{ backgroundColor: `${level.hexColor}1A`, color: level.hexColor }}
+                >
+                  {level.short}
+                </span>
+              ))}
+            </span>
           )}
         </div>
         {(entry.part_of_speech || entry.definitions?.length) && (
@@ -198,18 +396,63 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             ))}
           </div>
         )}
-        {levelBadges.length > 0 && (
-          <div className="lpv-dict-levels">
-            {levelBadges.map((level, i) => (
-              <span key={i} className="lpv-dict-level">
-                {level.short}
+        {/* Classifiers (measure word / gender / noun class) — apps/web parity */}
+        {entry.classifier && entry.classifier.length > 0 && (
+          <div className="lpv-dict-classifiers">
+            <span className="lpv-dict-classifier-label">
+              {entry.classifier[0]!.kind === 'measure_word' ? t('measureWord')
+                : entry.classifier[0]!.kind === 'gender' ? t('genderLabel')
+                : t('nounClass')}
+            </span>
+            {entry.classifier.map((cl, i) => (
+              <span
+                key={i}
+                className="lpv-dict-classifier"
+                title={cl.kind === 'measure_word'
+                  ? `${t('measureWord')} ${cl.traditional} (${cl.reading})`
+                  : cl.kind === 'gender' ? `${t('genderLabel')} ${cl.value}` : `${t('nounClass')} ${cl.value}`}
+              >
+                {cl.kind === 'measure_word' ? (
+                  <>
+                    <span className="lpv-dict-classifier-item" lang="zh-Hans">{cl.simplified}</span>
+                    <span className="lpv-dict-classifier-reading">{cl.reading}</span>
+                  </>
+                ) : (
+                  <span className="lpv-dict-classifier-value">{cl.value}</span>
+                )}
               </span>
             ))}
           </div>
         )}
+        {/* Saved metadata — date, source, and the saved context sentence
+            (apps/web DictionaryEntryCard parity). */}
+        {savedRecord && (
+          <p className="lpv-dict-saved-meta" lang={glyphLang}>
+            <BookmarkCheck size={12} className="lpv-dict-saved-meta-icon" />
+            <span className="lpv-dict-saved-date">{saveDateStr}</span>
+            {(hasVideoSource || hasTextSource) && (
+              <>
+                <span className="lpv-dict-saved-sep">·</span>
+                {hasVideoSource
+                  ? <Video size={12} className="lpv-dict-saved-meta-icon" />
+                  : <BookOpen size={12} className="lpv-dict-saved-meta-icon" />}
+                {sourceLabel && <span className="lpv-dict-saved-source">{sourceLabel}</span>}
+              </>
+            )}
+            {contextSentence && (
+              <>
+                <span className="lpv-dict-saved-sep">·</span>
+                <span className="lpv-dict-saved-context">“<HighlightForm text={contextSentence} form={savedCtx?.form} />”</span>
+              </>
+            )}
+          </p>
+        )}
         <div className="lpv-dict-entry-footer">
           <div className="lpv-dict-entry-footer-left">
             <span className="lpv-dict-source">{entry.dictionary?.name ?? entry.source ?? ''}</span>
+            {entry.match_type && entry.match_type !== 'exact' && (
+              <span className="lpv-dict-match-type">{entry.match_type}</span>
+            )}
             <a
               href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`}
               target="_blank"
@@ -217,20 +460,19 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               className="lpv-dict-images-link"
               onClick={(event) => event.stopPropagation()}
             >
-              <ExternalLink size={12} /> {t('searchImages')}
+              <Image size={12} /> {t('searchImages')}
             </a>
           </div>
-          {isLoggedIn && !wordsLoading && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
-              title={isSaved ? t('removeFromSaved') : t('save')}
-              aria-label={isSaved ? t('removeFromSaved') : t('save')}
-            >
-              {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-            </button>
-          )}
+          <button
+            onClick={handleSave}
+            disabled={saving || wordsLoading}
+            className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
+            title={isSaved ? t('removeFromSaved') : t('save')}
+            aria-label={isSaved ? t('removeFromSaved') : t('save')}
+          >
+            {saving ? <Loader size={14} /> : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+            <span className="lpv-entry-save-label">{isSaved ? t('saved') : t('save')}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -255,6 +497,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   isPro,
   subLoading,
   onClose,
+  onRequireLogin,
 }) => {
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -269,6 +512,12 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [showExplain, setShowExplain] = useState(false);
   const [followUpLoading, setFollowUpLoading] = useState<FollowUpKind | null>(null);
   const [usedFollowUps, setUsedFollowUps] = useState<FollowUpKind[]>([]);
+  const [cacheVersion, setCacheVersion] = useState(0);
+
+  useEffect(() => subscribeToCache(() => setCacheVersion((v) => v + 1)), []);
+  // Surface a cacheVersion bump re-render (e.g. an L1 entry arriving from
+  // another surface) without re-fetching.
+  void cacheVersion;
 
   // DeepSeek responses are per-word — never carry them over to a new lookup.
   useEffect(() => {
@@ -285,32 +534,59 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     const controller = new AbortController();
     setLoading(true);
     setError(null);
+    setEntries([]);
 
     log('Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
 
     const search = async () => {
-      const searchTerms = [
+      const texts = [
         ...token.lemmas.map((l) => l.lemma),
         token.text,
       ].filter((t, i, a) => a.indexOf(t) === i);
+      const l2 = baseCode(l2Code);
+      const cacheBase = baseCode(l2Code);
 
       let allEntries: DictionaryEntry[] = [];
+      let cacheHit = false;
 
-      for (const term of searchTerms) {
-        if (cancelled) break;
-        try {
-          const results = await fetchEntries(term, l2Code, l1Code, controller.signal);
-          if (!cancelled && results.length > 0) {
-            for (const e of results) {
-              if (!e.match_type) {
-                e.match_type = term === token.text ? 'exact' : 'lemma';
-              }
+      // 1. Shared batch cache first (English defs). Show instantly even for
+      //    l1 ≠ en — the L1 swap below hot-swaps the displayed cards.
+      for (const text of texts) {
+        const cached = getCachedEntries(cacheBase, text);
+        if (cached && cached.length > 0) {
+          for (const e of cached) {
+            if (!e.match_type) {
+              e.match_type = text === token.text ? 'exact' : 'lemma';
             }
-            allEntries = results;
-            break;
           }
-        } catch {
-          // Try next term
+          allEntries.push(...cached);
+          cacheHit = true;
+          break;
+        }
+      }
+
+      // 2. Cache miss — fetch from the server (already L1-translated when l1≠en).
+      if (!cacheHit) {
+        for (const text of texts) {
+          if (cancelled) break;
+          try {
+            const results = await fetchEntries(text, l2Code, l1Code, controller.signal);
+            if (!cancelled && results.length > 0) {
+              for (const e of results) {
+                if (!e.match_type) {
+                  e.match_type = text === token.text ? 'exact' : 'lemma';
+                }
+              }
+              setCachedEntries(cacheBase, text, results);
+              if (l1Code !== 'en') {
+                for (const e of results) setL1CachedEntry(l2, l1Code, e);
+              }
+              allEntries = results;
+              break;
+            }
+          } catch {
+            // Try the next term
+          }
         }
       }
 
@@ -321,16 +597,43 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           seen.add(e.id);
           return true;
         });
-        log('Dictionary results:', deduped.length, 'entries');
         setEntries(deduped);
         setLoading(false);
+      }
+
+      // 3. Cache hit + non-English L1: show the cached English cards (already
+      //    rendered above), then hot-swap in the L1-translated definitions.
+      if (cacheHit && l1Code !== 'en' && !cancelled) {
+        const currentIds = allEntries.map((e) => e.id).filter(Boolean);
+        const cachedL1 = getL1CachedEntries(l2, l1Code, currentIds);
+        if (cachedL1.length > 0) {
+          const cachedL1Ids = new Set(cachedL1.map((e) => e.id));
+          setEntries([
+            ...cachedL1,
+            ...allEntries.filter((e) => !cachedL1Ids.has(e.id)),
+          ]);
+        } else {
+          for (const text of texts) {
+            if (cancelled) break;
+            try {
+              const results = await fetchEntries(text, l2Code, l1Code, controller.signal);
+              if (cancelled || results.length === 0) continue;
+              for (const e of results) setL1CachedEntry(l2, l1Code, e);
+              const byId = new Map(results.map((e) => [e.id, e]));
+              setEntries(allEntries.map((e) => byId.get(e.id) ?? e));
+              break;
+            } catch {
+              // Keep the English defs already shown.
+            }
+          }
+        }
       }
     };
 
     search().catch((err) => {
       if (!cancelled && err.name !== 'AbortError') {
         logerr('Dictionary lookup error:', err);
-        setError(err?.message ?? 'Lookup failed');
+        setError(err?.message ?? t('lookupFailed'));
         setLoading(false);
       }
     });
@@ -341,15 +644,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     };
   }, [token, l1Code, l2Code]);
 
-  const handleExplain = useCallback(async () => {
-    if (!isPro) return; // ADR-0034 D3: AI explanations are hard Pro-only
-    if (showExplain) {
-      setShowExplain(false);
-      return;
-    }
-    setShowExplain(true);
-
-    // If already fetched, just toggle visibility
+  const fetchExplanation = useCallback(async () => {
     if (explainText || explainError) return;
 
     setExplainLoading(true);
@@ -361,7 +656,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       const hasContext = !!contextText;
       const hasInflectedForm = hasContext && token.text !== lemma;
 
-      // Build prompt using translated CSV keys (matches web app's AiExplanation)
       let prompt: string;
       if (hasInflectedForm) {
         prompt = t('explainWordContextForm', [l1Name, l2Name, code, lemma, token.text, contextText!]);
@@ -371,7 +665,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         prompt = t('explainWord', [l1Name, l2Name, code, token.text]);
       }
 
-      // Add morphology for inflecting languages
       const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
       if (!nonInflecting.includes(code)) {
         prompt += t('explainMorphology');
@@ -387,11 +680,29 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       const text = data.response || data.text || data.result || JSON.stringify(data);
       setExplainText(text);
     } catch (err: any) {
-      setExplainError(err?.message || 'Explain failed');
+      setExplainError(err?.message || t('explainFailed'));
     } finally {
       setExplainLoading(false);
     }
-  }, [isPro, showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
+  }, [explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
+
+  const handleExplain = useCallback(() => {
+    if (showExplain) {
+      setShowExplain(false);
+      return;
+    }
+    setShowExplain(true);
+  }, [showExplain]);
+
+  // Stream the explanation once the subscription check resolves and the user is
+  // Pro. The button is shown immediately (not deferred until the subscription
+  // loads) so the card renders stably; for a free user the explain section
+  // renders the upgrade prompt instead. Matches apps/web's AiExplanation.
+  useEffect(() => {
+    if (!showExplain || subLoading || !isPro) return;
+    if (explainText || explainError || explainLoading) return;
+    void fetchExplanation();
+  }, [showExplain, subLoading, isPro, explainText, explainError, explainLoading, fetchExplanation]);
 
   const handleFollowUp = useCallback(async (kind: FollowUpKind) => {
     if (!isPro || followUpLoading) return;
@@ -399,19 +710,20 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     const language = l2Name || l2Code;
     const context = contextText?.replace(/[.。！!？?…]+$/, '');
     const contextForm = token.text !== word ? token.text : undefined;
+    const l2Base = baseCode(l2Code);
     let prompt = '';
     if (kind === 'examples') {
       setFollowUpLoading(kind);
       setShowExplain(true);
       setExplainError(null);
       try {
-        const response = await fetch(`${API_BASE}/subs-search?terms=${encodeURIComponent(word)}&l2=${encodeURIComponent(l2Base)}&limit=5&context=2`);
+        const response = await apiFetch(`${API_BASE}/subs-search?terms=${encodeURIComponent(word)}&l2=${encodeURIComponent(l2Base)}&limit=5&context=2`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const results = await response.json();
         const lines = Array.isArray(results)
           ? results.flatMap((result: any) => String(result.subs_l2 || '').split('\n').slice(0, 2)).filter(Boolean)
           : [];
-        if (lines.length === 0) throw new Error('No subtitle examples found');
+        if (lines.length === 0) throw new Error(t('noSubtitleExamples'));
         const prompt = `${t('subsAiExamples', [String(results.length), language, word])}\n\n${lines.join('\n')}`;
         const res = await apiFetch(`${API_BASE}/chatgpt`, {
           method: 'POST',
@@ -423,7 +735,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         setExplainText(data.response || data.text || data.result || JSON.stringify(data));
         setUsedFollowUps((current) => current.includes(kind) ? current : [...current, kind]);
       } catch (err: any) {
-        setExplainError(err?.message || 'Examples failed');
+        setExplainError(err?.message || t('examplesFailed'));
       } finally {
         setFollowUpLoading(null);
       }
@@ -465,7 +777,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       setExplainText(data.response || data.text || data.result || JSON.stringify(data));
       setUsedFollowUps((current) => current.includes(kind) ? current : [...current, kind]);
     } catch (err: any) {
-      setExplainError(err?.message || 'Follow-up failed');
+      setExplainError(err?.message || t('followUpFailed'));
     } finally {
       setFollowUpLoading(null);
     }
@@ -510,27 +822,52 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </button>
       )}
 
-      {/* AI explanation — Pro-only (ADR-0034 D3). Free users see the prompt. */}
-      {!subLoading && isPro && !showExplain && (
-        <Button
-          onClick={handleExplain}
-          variant="outline"
-          size="sm"
-          className="lpv-explain-btn"
-          title={t('explainPro')}
-        >
-          <span aria-hidden="true">✦</span> {t('explain')}
-        </Button>
-      )}
-      {!subLoading && !isPro && (
-        <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
-      )}
-
       {/* Card body */}
       <div className="lpv-dict-card-body">
-        {/* AI Explanation */}
+        {/* AI explanation — always show the "Let DeepSeek Explain" button
+            immediately (not deferred until the subscription check). Non-Pro
+            users get the upgrade prompt inside the explain section after they
+            tap it (ADR-0034, web parity). */}
+        {!showExplain && (
+          <Button
+            onClick={handleExplain}
+            variant="outline"
+            size="sm"
+            className="lpv-explain-btn"
+            title={t('explainPro')}
+          >
+            <Sparkles size={14} /> {t('explain')}
+          </Button>
+        )}
+
+        {/* Context sentence (collapsible) + Search images — web popup parity */}
+        {contextText && (
+          <div className="lpv-dict-context-row">
+            <div className="lpv-dict-context-col">
+              <ContextSentenceCard contextText={contextText} l1Code={l1Code} l2Code={l2Code} />
+            </div>
+            <a
+              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lpv-dict-images-link lpv-dict-images-icon"
+              title={t('searchImages')}
+              aria-label={t('searchImages')}
+            >
+              <Image size={14} />
+            </a>
+          </div>
+        )}
+
+        {/* AI Explanation content */}
         {showExplain && (
           <div className="lpv-explain-section">
+            {subLoading && (
+              <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
+            )}
+            {!subLoading && !isPro && (
+              <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
+            )}
             {explainLoading && (
               <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
             )}
@@ -558,25 +895,29 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           </div>
         )}
 
-        {loading && (
-          <div className="lpv-dict-loading"><span className="lpv-spinner" /> {t('lookingUpWord', [token.text])}</div>
-        )}
-
         {error && (
           <div className="lpv-dict-error">
-            Could not load dictionary entries: {error}
+            {t('dictLoadFailed', [error])}
           </div>
+        )}
+
+        {/* Loading → stable entry-card skeletons (web parity), not a spinner */}
+        {loading && (
+          <>
+            <EntryCardSkeleton />
+            <EntryCardSkeleton />
+          </>
         )}
 
         {!loading && !error && entries.length === 0 && (
           <div className="lpv-dict-empty">
-            No dictionary entries found for &ldquo;{token.text}&rdquo;.
+            <span>{t('noDictionaryEntry', [token.text])}</span>
             {token.lemmas.length > 0 && (
-              <span> Tried lemmas: {token.lemmas.map((l) => l.lemma).join(', ')}.</span>
+              <span> {t('triedLemmas')}: {token.lemmas.map((l) => l.lemma).join(', ')}</span>
             )}
             <div className="lpv-dict-empty-link">
               <a href={searchUrl} target="_blank" rel="noopener noreferrer">
-                Search on Language Player →
+                {t('searchOnLanguagePlayer')}
               </a>
             </div>
           </div>
@@ -586,7 +927,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           <>
             {entries.map((entry) => (
               <EntryRow
-                key={entry.id}
+                key={`${entry.dictionary?.id ?? 'llm'}-${entry.id}`}
                 entry={entry}
                 l1Code={l1Code}
                 l2Code={l2Code}
@@ -595,6 +936,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
                 cueStartTime={cueStartTime}
                 videoTitle={videoTitle}
                 pageUrl={pageUrl}
+                onRequireLogin={onRequireLogin}
               />
             ))}
           </>
