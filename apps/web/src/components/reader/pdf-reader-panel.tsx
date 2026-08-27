@@ -1,16 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useT } from '@/hooks/use-t';
+import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { PaginatedReader, type BlockRenderCtx, type ReaderPageItem } from '@/components/reader/paginated-reader';
-import { parseMarkdown, type ReaderBlock } from '@/lib/parse-markdown';
+import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { renderPdfPage, pdfPageToMarkdown, type PdfOutlineItem } from '@/lib/pdf-book';
-import { blockClass, blockTag } from '@/components/reader/shared-reader-styles';
+import { blockClass, blockTag, translationClass } from '@/components/reader/shared-reader-styles';
+import { ReaderTextBlock, ReaderMarkdownBlock } from '@/components/reader/reader-block';
+import { translationFontSizeRem } from '@/lib/reader-text-size';
+import { READER_DEFAULT_LEADING, readerLeadingPx } from '@/lib/reader-layout';
 import { Sidebar } from '@/components/ui/sidebar';
 import { ZoomableImage } from '@/components/reader/zoomable-image';
-import { TokenizedText } from '@/components/tokenized-text';
-import { TextActionMenu } from '@/components/text-action-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PanelRight, PanelRightClose, X, Loader2 } from 'lucide-react';
@@ -54,8 +56,27 @@ export function PdfReaderPanel({
   onClose: () => void;
 }) {
   const t = useT();
-  const { display } = useSettingsContext();
+  const { display, tokenizedText, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
+  const textZoom = useTextScale();
+  const readerLeading = readerLeadingPx(tokenizedText.zoom, tokenizedText.leading ?? READER_DEFAULT_LEADING);
+
+  // Translation splitter — same live-split/persist pattern as the other
+  // readers (epub-reader-panel, reader-panel). The PDF reader now shares the
+  // aligned block renderer, so it gets the draggable splitter as well.
+  const persistedSplit = display.translationSplit;
+  const [liveSplit, setLiveSplit] = useState(persistedSplit);
+  const appliedSplit = liveSplit;
+  const onTranslationSplitChange = useCallback((r: number) => setLiveSplit(r), []);
+  const onTranslationSplitCommit = useCallback((r: number) => {
+    setLiveSplit(r);
+    updateDisplay({ translationSplit: r });
+  }, [updateDisplay]);
+  useEffect(() => {
+    setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
+  }, [persistedSplit]);
+
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${persistedSplit}:${tokenizedText.translationSize}`;
 
   /** page number (1-based) → rendered thumbnail data URL. */
   const [thumbs, setThumbs] = useState<Record<number, string>>({});
@@ -180,59 +201,73 @@ export function PdfReaderPanel({
     return out;
   }, [outline]);
 
-  /** Block rendering for converted PDF page markdown — a compact version of
-   *  the epub reader's block renderer (no sentence-highlight wiring). */
-  const renderPdfBlock = useCallback((item: ReaderPageItem, rctx: BlockRenderCtx) => {
+  /** Block rendering for converted PDF page markdown — the SAME aligned,
+   *  sentence-highlighted renderer as the EPUB reader (baseline-aligned
+   *  translation, draggable splitter), via the shared ReaderTextBlock /
+   *  ReaderMarkdownBlock. Only markdown link/image handling is generic here. */
+  const renderBlock = useCallback((item: ReaderPageItem, rctx: BlockRenderCtx) => {
     if (item.kind === 'markdown') {
-      return (
-        <div key={item.key}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.block.raw}</ReactMarkdown>
-        </div>
-      );
+      return <ReaderMarkdownBlock key={item.key} raw={item.block.raw} />;
     }
-    const tb = item.block;
-    const Tag = blockTag(tb);
+    const tb = item.block as TextBlock;
+    const href = tb.formats.find(f => f.type === 'link')?.url;
     return (
-      <TextActionMenu
+      <ReaderTextBlock
         key={item.key}
-        text={tb.text}
+        block={tb}
+        rctx={rctx}
+        ctx={ctx}
+        href={href}
+        measureNonce={measureNonce}
+        translationSplit={appliedSplit}
+        onTranslationSplitChange={onTranslationSplitChange}
+        onTranslationSplitCommit={onTranslationSplitCommit}
+        sideBySideGapPx={readerLeading}
         l2Code={l2.code}
         l1Code={l1.code}
-        translation={rctx.translation}
-      >
-        <Tag className={blockClass(tb)}>
-          <TokenizedText
-            text={tb.text}
-            l2Code={l2.code}
-            inheritSize={tb.type === 'heading'}
-            tokens={rctx.tokens}
-            selectionDictionary
-          />
-        </Tag>
-      </TextActionMenu>
+      />
     );
-  }, [l1.code, l2.code]);
+  }, [ctx, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, readerLeading, l2.code, l1.code]);
 
-  /** Mirror block for measurement — must match renderPdfBlock's layout. */
-  const renderPdfMeasureBlock = useCallback((item: ReaderPageItem, index: number) => {
+  /** Mirror block for measurement — the aligned dual-column layout matching
+   *  ReaderTextBlock's visible rendering (3:2 split, reader-leading gap,
+   *  translation column, heading zoom). */
+  const renderMeasureBlock = useCallback((item: ReaderPageItem, index: number) => {
     if (item.kind === 'markdown') {
       return (
         <div key={`m-${index}`} className="mb-4">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.block.raw}</ReactMarkdown>
+          {showTranslation && <div className="h-6" />}
         </div>
       );
     }
-    const tb = item.block;
+    const tb = item.block as TextBlock;
     const Tag = blockTag(tb);
+    const lines = Math.max(1, Math.ceil(tb.text.length / 50));
+    const trFontSize = translationFontSizeRem(tb, textZoom, tokenizedText.translationSize);
     return (
       <div key={`m-${index}`} className="mb-4 flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <Tag className={blockClass(tb)}>{tb.text}</Tag>
+        <div
+          className="flex-1 min-w-0 flex flex-col gap-y-2 md:flex-row md:gap-[var(--reader-side-gap)] md:items-center"
+          style={{ '--reader-side-gap': `${readerLeading}px` } as CSSProperties}
+        >
+          <div className="flex-[3] min-w-0">
+            <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>{tb.text}</Tag>
+          </div>
+          {showTranslation && (
+            <div className={`flex-[2] min-w-0 pt-1 md:pt-0 ${translationClass(tb)}`} style={{ fontSize: `${trFontSize}rem` }}>
+              <div className="flex flex-col gap-y-1.5">
+                {Array.from({ length: lines }).map((_, li) => (
+                  <div key={li} style={{ height: `${trFontSize}rem` }} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="mt-1 h-6 w-6 shrink-0" />
       </div>
     );
-  }, []);
+  }, [showTranslation, textZoom, readerLeading, tokenizedText.translationSize]);
 
   /** A single page thumbnail tile in the sidebar (current page outlined). */
   const renderSidebarPage = useCallback((page: number) => (
@@ -330,6 +365,7 @@ export function PdfReaderPanel({
               ctx={ctx}
               onLemmatize={onLemmatize}
               onPageTranslate={onPageTranslate}
+              measureNonce={measureNonce}
               onOpenToc={flatOutline.length > 0 ? () => setTocOpen(true) : undefined}
               onOpenThumbnails={toggleSidebar}
               contentClassName="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
@@ -344,8 +380,8 @@ export function PdfReaderPanel({
                 [&_a]:text-primary [&_a]:underline [&_a]:hover:no-underline
                 [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
                 [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0"
-              renderBlock={renderPdfBlock}
-              renderMeasureBlock={renderPdfMeasureBlock}
+              renderBlock={renderBlock}
+              renderMeasureBlock={renderMeasureBlock}
             />
           )}
         </div>

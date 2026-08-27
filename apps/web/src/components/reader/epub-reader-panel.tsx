@@ -7,8 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { TokenizedText } from '@/components/tokenized-text';
-import { TextActionMenu } from '@/components/text-action-menu';
+import { ReaderTextBlock, ReaderMarkdownBlock } from '@/components/reader/reader-block';
 import { translationFontSizeRem } from '@/lib/reader-text-size';
 import { READER_DEFAULT_LEADING, readerHorizontalPadding, readerLeadingPx } from '@/lib/reader-layout';
 import {
@@ -21,7 +20,7 @@ import {
   type BlockRenderCtx,
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
-import { SentenceHighlightBlock } from '@/components/reader/sentence-highlight';
+import type { FormatRange, TextBlock } from '@/lib/parse-markdown';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
 import type { EpubSearchMatch } from '@/hooks/use-epub';
@@ -191,19 +190,19 @@ export function EpubReaderPanel({
   const renderBlock = useCallback((item: ReaderPageItem, rctx: BlockRenderCtx) => {
     if (item.kind === 'markdown') {
       return (
-        <div key={item.key}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents} urlTransform={readerUrlTransform}>
-            {item.block.raw}
-          </ReactMarkdown>
-        </div>
+        <ReaderMarkdownBlock
+          key={item.key}
+          raw={item.block.raw}
+          components={markdownComponents}
+          urlTransform={readerUrlTransform}
+        />
       );
     }
-    const tb = item.block;
+    const tb = item.block as TextBlock;
     const bookLoc = item.loc as BookLocation;
-    const Tag = blockTag(tb);
-    const href = tb.formats.find(f => f.type === 'link')?.url;
     // Append the search-match highlight range when this block contains it.
-    let formats = tb.formats;
+    const href = tb.formats.find(f => f.type === 'link')?.url;
+    let extraFormats: FormatRange[] = [];
     if (
       highlight &&
       highlight.spineIndex === bookLoc.spineIndex &&
@@ -211,40 +210,27 @@ export function EpubReaderPanel({
     ) {
       const start = Math.max(0, Math.min(highlight.start, tb.text.length));
       const end = Math.max(start, Math.min(highlight.end, tb.text.length));
-      if (end > start) formats = [...tb.formats, { start, end, type: 'highlight' as const }];
+      if (end > start) extraFormats = [{ start, end, type: 'highlight' as const }];
     }
     return (
-      <SentenceHighlightBlock key={item.key} text={tb.text} translation={showTranslation ? rctx.translation : null}>
-        {({ map, activeSentence, onTokenHover }) => (
-          <TextActionMenu text={tb.text} l2Code={l2.code} l1Code={l1.code}
-            translationAligned={showTranslation && rctx.translation ? {
-              text: rctx.translation,
-              map,
-              active: activeSentence,
-              measureNonce,
-            } : null}
-            translationClass={translationClass(tb)}
-            translationFontSize={translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}
-            translationSplit={appliedSplit}
-            onTranslationSplitChange={onTranslationSplitChange}
-            onTranslationSplitCommit={onTranslationSplitCommit}
-            sideBySideBreakpoint="md"
-            sideBySideGapPx={readerLeading}
-            loading={showTranslation && !rctx.translation}>
-            <Tag
-              className={blockClass(tb)}
-              style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
-            >
-              <TokenizedText text={tb.text} l2Code={l2.code}
-                inheritSize={tb.type === 'heading'} context={ctx}
-                tokens={rctx.tokens} formats={formats} href={href} onOpenLink={onOpenLink} selectionDictionary
-                onTokenHover={onTokenHover} />
-            </Tag>
-          </TextActionMenu>
-        )}
-      </SentenceHighlightBlock>
+      <ReaderTextBlock
+        key={item.key}
+        block={tb}
+        rctx={rctx}
+        ctx={ctx}
+        extraFormats={extraFormats}
+        href={href}
+        onOpenLink={onOpenLink}
+        measureNonce={measureNonce}
+        translationSplit={appliedSplit}
+        onTranslationSplitChange={onTranslationSplitChange}
+        onTranslationSplitCommit={onTranslationSplitCommit}
+        sideBySideGapPx={readerLeading}
+        l2Code={l2.code}
+        l1Code={l1.code}
+      />
     );
-  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, markdownComponents, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, readerLeading]);
+  }, [highlight, ctx, onOpenLink, markdownComponents, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, readerLeading, l2.code, l1.code]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block. Mirrors the shared web-reader measurement (dual-column
