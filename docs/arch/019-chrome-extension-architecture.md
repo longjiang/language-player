@@ -526,9 +526,16 @@ Key behaviors:
   + title (video/book), and the context sentence it was saved from with the
   surface form highlighted (latest saved instance context, legacy `context`
   fallback, `capSourceTitle` for long titles). The card also renders a
-  match-type badge (when the match is not `exact`) and classifier chips
+  match-type badge (when the match is not `exact`), classifier chips
   (measure word / gender / noun class, via the shared `Classifier[]` field),
-  matching apps/web's compact `DictionaryEntryCard`.
+  and color-coded proficiency level badges (per-level `hexColor` from
+  `formatProficiencyLevel`), matching apps/web's compact `DictionaryEntryCard`.
+- **Page tokenization hard-stop on panel close**: every page tokenization
+  entry point (IntersectionObserver callback, `flushPending`, `tokenizePage`,
+  and the MutationObserver) also checks `panelOpen`, so once the side panel
+  closes — which tears down the observers, flush timers, and token cache and
+  restores the original HTML — scrolling can never re-tokenize page text. The
+  panel-close and cleanup events log the resulting state for confirmation.
 - **Dictionary iframe locale**: `page-dictionary-frame.tsx` calls `setLocale()`
   with the saved `l1Language` on init and re-applies it on `storage` changes, so
   the popup renders the user's selected interface language rather than falling
