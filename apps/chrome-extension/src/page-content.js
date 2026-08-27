@@ -322,7 +322,10 @@ function onTokenClick(e, token, textNodeParent) {
   const anchor = textNodeParent?.closest?.('a[href]');
   const href = anchor ? anchor.href : null;
   const block = textNodeParent?.closest?.(BLOCK_SELECTOR) || textNodeParent;
-  const blockText = normalizeBlockText(block?.innerText || block?.textContent || '');
+  // Serve the context from the source text captured at tokenization, not from
+  // the live (tokenized + ruby) DOM — otherwise the context sentence includes
+  // ruby readings.
+  const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
   const blockId = block?.__lpvBlockId || null;
 
   const payload = {
@@ -375,7 +378,7 @@ function attachPageSelectionListener() {
     if (!text) return;
     const tokenEl = anchorEl.closest('.lpv-page-token');
     const block = anchorEl.closest?.(BLOCK_SELECTOR) || tokenEl;
-    const blockText = getVisibleBlockText(block);
+    const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
     const offset = selectionStartOffset(block, range);
     const hit = offset !== null && blockText.slice(offset).startsWith(text)
       ? offset
@@ -464,6 +467,11 @@ async function flushPending() {
       if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
       const nodes = getTextNodes(block);
       if (nodes.length > 0) {
+        // Capture the block's *source* text once, before the text nodes are
+        // replaced by token spans. The lookup context is served from this
+        // stored value instead of re-reading the (now tokenized, ruby-laden)
+        // DOM on every token click / selection (SPEC-033 context parity).
+        if (block.__lpvSourceText === undefined) block.__lpvSourceText = getVisibleBlockText(block);
         blocksWithNodes.push({ block, nodes });
         block.classList.add('lpv-page-tokenizing');
       } else {
