@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "고급 II"
   },
+  "lemma": {
+    "message": "표제어"
+  },
   "subscription": {
     "message": "구독"
   },

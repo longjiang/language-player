@@ -47,6 +47,7 @@ const CSV_LOOKUP = {
   'account': 'title.profile',
   'learningLevel': 'label.level',
   'level': 'label.level',
+  'lemma': 'label.lemma',
   'subscription': 'title.subscription',
   'subscriptionMonthly': 'subscription.monthly_cap',
   'subscriptionAnnual': 'subscription.annual_cap',

@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "ระดับสูง II"
   },
+  "lemma": {
+    "message": "รากศัพท์"
+  },
   "subscription": {
     "message": "การสมัครสมาชิก"
   },

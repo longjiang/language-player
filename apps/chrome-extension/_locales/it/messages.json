@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "Avanzato II"
   },
+  "lemma": {
+    "message": "Lemma"
+  },
   "subscription": {
     "message": "Abbonamento"
   },
