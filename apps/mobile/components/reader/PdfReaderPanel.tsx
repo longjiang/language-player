@@ -156,11 +156,13 @@ export function PdfReaderPanel({
         if (page === currentPage) setPreviewPage(page);
         else void openPage(page);
       }}
-      className={`relative w-24 overflow-hidden rounded-lg border-2 ${page === currentPage ? 'border-primary' : 'border-border'}`}
+      className={`relative w-full overflow-hidden rounded-lg border-2 ${page === currentPage ? 'border-primary' : 'border-border'}`}
       accessibilityRole="button"
       accessibilityLabel={t('msg.pdf_page', { page: String(page) })}
     >
-      <View className="w-full overflow-hidden" style={{ aspectRatio: 3 / 4 }}>
+      {/* onLayout fires as each tile lays out, so thumbnails beyond the
+          pre-rendered ones are rendered lazily (not stuck on a number). */}
+      <View className="w-full overflow-hidden" style={{ aspectRatio: 3 / 4 }} onLayout={() => void renderThumb(page)}>
         {thumbs[page] ? (
           <Image source={{ uri: thumbs[page] }} className="h-full w-full" resizeMode="cover" />
         ) : (
@@ -261,8 +263,9 @@ export function PdfReaderPanel({
           sidebarOpen={sidebarOpen}
           title={t('action.thumbnails')}
           desktopClassName="w-60 ml-3"
+          bodyClassName="p-4"
         >
-          <View className="flex-row flex-wrap gap-2 p-2">
+          <View className="flex-col items-center gap-3">
             {Array.from({ length: pageCount }, (_, i) => i + 1).map(sidebarPage)}
           </View>
         </Sidebar>

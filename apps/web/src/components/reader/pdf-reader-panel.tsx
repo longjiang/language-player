@@ -61,6 +61,8 @@ export function PdfReaderPanel({
   const [thumbs, setThumbs] = useState<Record<number, string>>({});
   const [rendering, setRendering] = useState<Set<number>>(new Set());
   const renderingRef = useRef<Set<number>>(new Set());
+  /** The sidebar thumbnail column — IntersectionObserver root children. */
+  const thumbGridRef = useRef<HTMLDivElement>(null);
   /** Reading session: the page being read + its AI-converted markdown. */
   const [currentPage, setCurrentPage] = useState<number | null>(null);
   const [converting, setConverting] = useState(false);
@@ -97,6 +99,24 @@ export function PdfReaderPanel({
   // Pre-render the first few thumbnails so the sidebar isn't empty on open.
   useEffect(() => {
     for (let i = 1; i <= Math.min(pageCount, 8); i++) void renderThumb(i);
+  }, [renderThumb, pageCount]);
+
+  // Lazily render thumbnails as they scroll into the sidebar. The pre-render
+  // above only covers the first few pages, so without this any page beyond
+  // that never gets its thumbnail rendered (page numbers would show forever).
+  useEffect(() => {
+    const grid = thumbGridRef.current;
+    if (!grid) return;
+    const scrollRoot = grid.parentElement;
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const page = Number((entry.target as HTMLElement).dataset.page);
+        if (page) void renderThumb(page);
+      }
+    }, { root: scrollRoot, rootMargin: '200px 0px' });
+    Array.from(grid.children).forEach((child) => io.observe(child));
+    return () => io.disconnect();
   }, [renderThumb, pageCount]);
 
   /** Tap a thumbnail: convert the page to markdown via Vision, read it. */
@@ -236,6 +256,7 @@ export function PdfReaderPanel({
         page === currentPage ? 'border-primary' : 'border-border hover:border-muted-foreground/50'
       }`}
       aria-label={t('msg.pdf_page', { page: String(page) })}
+      data-page={page}
     >
       {thumbs[page] ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -336,9 +357,9 @@ export function PdfReaderPanel({
           sidebarOpen={sidebarOpen}
           title={t('action.thumbnails')}
           desktopClassName="w-60 ml-3"
-          bodyClassName="p-2"
+          bodyClassName="p-4"
         >
-          <div className="grid grid-cols-2 gap-2">
+          <div ref={thumbGridRef} className="flex flex-col items-center gap-3">
             {Array.from({ length: pageCount }, (_, i) => i + 1).map(renderSidebarPage)}
           </div>
         </Sidebar>
