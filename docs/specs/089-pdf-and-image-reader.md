@@ -43,6 +43,18 @@ cached server-side. The first pasted/dropped/picked image is opened by
 default and OCR'd immediately. The title bar no longer carries a back arrow
 or the select/paste actions (they moved into the sidebar).
 
+Clicking the **current** image thumbnail opens a **full-size preview dialog**;
+clicking the image toggles zoom (1× ↔ 2×), pinch (mobile) / Ctrl+wheel
+(trackpad pinch, web) zooms continuously, and dragging pans while zoomed.
+Clicking a *different* thumbnail selects it instead.
+
+The gallery persists across navigation/refresh and is restored on mount:
+- **Web**: IndexedDB (`apps/web/src/lib/image-reader-store.ts`).
+- **Mobile**: a JSON file in the app documents
+  (`apps/mobile/lib/image-reader-store.ts`).
+Images are re-OCR'd lazily if they have no stored result (the `/vision`
+results are cached server-side).
+
 The vision model is prompted to return **properly formatted, block-level
 markdown**: a leading `# <title>` heading giving a short, human-readable
 image title (which the reader extracts and uses for the title bar and the
