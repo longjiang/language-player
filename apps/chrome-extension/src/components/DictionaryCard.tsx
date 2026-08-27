@@ -388,6 +388,34 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             ))}
           </div>
         )}
+        {/* Classifiers (measure word / gender / noun class) — apps/web parity */}
+        {entry.classifier && entry.classifier.length > 0 && (
+          <div className="lpv-dict-classifiers">
+            <span className="lpv-dict-classifier-label">
+              {entry.classifier[0]!.kind === 'measure_word' ? t('measureWord')
+                : entry.classifier[0]!.kind === 'gender' ? t('genderLabel')
+                : t('nounClass')}
+            </span>
+            {entry.classifier.map((cl, i) => (
+              <span
+                key={i}
+                className="lpv-dict-classifier"
+                title={cl.kind === 'measure_word'
+                  ? `${t('measureWord')} ${cl.traditional} (${cl.reading})`
+                  : cl.kind === 'gender' ? `${t('genderLabel')} ${cl.value}` : `${t('nounClass')} ${cl.value}`}
+              >
+                {cl.kind === 'measure_word' ? (
+                  <>
+                    <span className="lpv-dict-classifier-item" lang="zh-Hans">{cl.simplified}</span>
+                    <span className="lpv-dict-classifier-reading">{cl.reading}</span>
+                  </>
+                ) : (
+                  <span className="lpv-dict-classifier-value">{cl.value}</span>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
         {/* Saved metadata — date, source, and the saved context sentence
             (apps/web DictionaryEntryCard parity). */}
         {savedRecord && (
@@ -414,6 +442,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
         <div className="lpv-dict-entry-footer">
           <div className="lpv-dict-entry-footer-left">
             <span className="lpv-dict-source">{entry.dictionary?.name ?? entry.source ?? ''}</span>
+            {entry.match_type && entry.match_type !== 'exact' && (
+              <span className="lpv-dict-match-type">{entry.match_type}</span>
+            )}
             <a
               href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`}
               target="_blank"

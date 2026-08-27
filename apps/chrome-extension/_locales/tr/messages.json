@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Altyazı örneği bulunamadı"
+  },
+  "measureWord": {
+    "message": "Ölçü:"
+  },
+  "genderLabel": {
+    "message": "Cinsiyet:"
+  },
+  "nounClass": {
+    "message": "Sınıf:"
   }
 }

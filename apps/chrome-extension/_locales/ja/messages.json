@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "字幕の例が見つかりません"
+  },
+  "measureWord": {
+    "message": "測定："
+  },
+  "genderLabel": {
+    "message": "性別："
+  },
+  "nounClass": {
+    "message": "クラス："
   }
 }

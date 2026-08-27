@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "لم يتم العثور على أمثلة من الترجمة"
+  },
+  "measureWord": {
+    "message": "كلمة قياس:"
+  },
+  "genderLabel": {
+    "message": "الجنس:"
+  },
+  "nounClass": {
+    "message": "الفئة:"
   }
 }

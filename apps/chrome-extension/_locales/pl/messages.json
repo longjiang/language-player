@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Nie znaleziono przykładów z napisów"
+  },
+  "measureWord": {
+    "message": "Miara:"
+  },
+  "genderLabel": {
+    "message": "Płeć:"
+  },
+  "nounClass": {
+    "message": "Klasa:"
   }
 }

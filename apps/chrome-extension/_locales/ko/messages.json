@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "자막 예시를 찾을 수 없습니다"
+  },
+  "measureWord": {
+    "message": "측정:"
+  },
+  "genderLabel": {
+    "message": "성별:"
+  },
+  "nounClass": {
+    "message": "등급:"
   }
 }

@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Geen voorbeelden uit ondertitels gevonden"
+  },
+  "measureWord": {
+    "message": "Maatstaf:"
+  },
+  "genderLabel": {
+    "message": "Geslacht:"
+  },
+  "nounClass": {
+    "message": "Klas:"
   }
 }

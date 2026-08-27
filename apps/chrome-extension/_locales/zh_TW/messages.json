@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "找不到字幕範例"
+  },
+  "measureWord": {
+    "message": "量詞："
+  },
+  "genderLabel": {
+    "message": "性別："
+  },
+  "nounClass": {
+    "message": "類別："
   }
 }

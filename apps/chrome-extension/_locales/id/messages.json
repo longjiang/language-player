@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Tidak ada contoh subtitle yang ditemukan"
+  },
+  "measureWord": {
+    "message": "Ukuran:"
+  },
+  "genderLabel": {
+    "message": "Jenis kelamin:"
+  },
+  "nounClass": {
+    "message": "Kelas:"
   }
 }

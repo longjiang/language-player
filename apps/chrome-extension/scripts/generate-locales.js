@@ -154,6 +154,10 @@ const CSV_LOOKUP = {
   'dictLoadFailed': 'log.failed_load_dictionary',
   'noDictionaryEntry': 'msg.no_dictionary_entry',
   'triedLemmas': 'msg.tried_lemmas',
+  // Dictionary card classifiers (apps/web DictionaryEntryCard parity)
+  'measureWord': 'label.measure_word',
+  'genderLabel': 'label.gender_label',
+  'nounClass': 'label.noun_class',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.

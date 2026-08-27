@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Không tìm thấy ví dụ từ phụ đề"
+  },
+  "measureWord": {
+    "message": "Đo lường:"
+  },
+  "genderLabel": {
+    "message": "Giới tính:"
+  },
+  "nounClass": {
+    "message": "Lớp:"
   }
 }

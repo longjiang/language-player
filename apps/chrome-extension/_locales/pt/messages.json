@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Nenhum exemplo de legendas encontrado"
+  },
+  "measureWord": {
+    "message": "Medida:"
+  },
+  "genderLabel": {
+    "message": "Gênero:"
+  },
+  "nounClass": {
+    "message": "Classe:"
   }
 }

@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Примеры из субтитров не найдены"
+  },
+  "measureWord": {
+    "message": "Мера:"
+  },
+  "genderLabel": {
+    "message": "Пол:"
+  },
+  "nounClass": {
+    "message": "Класс:"
   }
 }
