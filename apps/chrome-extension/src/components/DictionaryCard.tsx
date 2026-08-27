@@ -375,7 +375,13 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           {levelBadges.length > 0 && (
             <span className="lpv-dict-entry-badges">
               {levelBadges.map((level, i) => (
-                <span key={i} className="lpv-dict-level">{level.short}</span>
+                <span
+                  key={i}
+                  className="lpv-dict-level"
+                  style={{ backgroundColor: `${level.hexColor}1A`, color: level.hexColor }}
+                >
+                  {level.short}
+                </span>
               ))}
             </span>
           )}
