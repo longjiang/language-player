@@ -537,7 +537,7 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 
 | Key | English |
 |---|---|
-| `title.epub_reader` | "EPUB Reader" |
+| `title.epub_reader` | "EBook Reader" |
 | `msg.drop_epub_here` | "Drop an EPUB file here, or click to browse" |
 | `msg.epub_not_supported` | "Only .epub files are supported." |
 | `msg.epub_parse_error` / `msg.epub_file_unreadable` | "Could not open this EPUB file." |
