@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Hasło"
   },
-  "welcomeBack": {
-    "message": "Witaj z powrotem"
-  },
-  "logInToContinue": {
-    "message": "Zaloguj się, aby kontynuować naukę."
-  },
-  "forgotPassword": {
-    "message": "Nie pamiętasz hasła?"
-  },
-  "signUp": {
-    "message": "Zarejestruj się"
-  },
-  "dontHaveAccount": {
-    "message": "Nie masz konta?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Aby utworzyć konto lub zresetować hasło, odwiedź languageplayer.io, a następnie wróć tutaj, aby się zalogować."
-  },
   "popupSaveWords": {
     "message": "<strong>Zapisuj</strong> słowa na swoim koncie Language Player"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Szukaj obrazów"
-  },
-  "contextSentence": {
-    "message": "Zdanie kontekstowe"
-  },
-  "openInDictionary": {
-    "message": "Otwórz w słowniku"
   },
   "startPlaying": {
     "message": "Rozpocznij odtwarzanie filmu."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Powtórka"
   },
-  "smoothScroll": {
-    "message": "Płynne przewijanie"
-  },
-  "voice": {
-    "message": "Głos"
-  },
-  "rate": {
-    "message": "Tempo"
-  },
-  "speed": {
-    "message": "Prędkość"
-  },
-  "defaultVoice": {
-    "message": "Auto (najlepsze dostępne)"
-  },
-  "textAppearance": {
-    "message": "Wygląd tekstu"
-  },
-  "testVoice": {
-    "message": "Głos testowy"
-  },
   "settingsUnavailable": {
     "message": "Ta kategoria ustawień pojawi się wkrótce."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Poziom"
-  },
-  "levelName1": {
-    "message": "Początkujący I"
-  },
-  "levelName2": {
-    "message": "Początkujący II"
-  },
-  "levelName3": {
-    "message": "Początkujący III"
-  },
-  "levelName4": {
-    "message": "Średniozaawansowany I"
-  },
-  "levelName5": {
-    "message": "Średniozaawansowany II"
-  },
-  "levelName6": {
-    "message": "Zaawansowany I"
-  },
-  "levelName7": {
-    "message": "Zaawansowany II"
-  },
-  "lemma": {
-    "message": "Lemat"
   },
   "subscription": {
     "message": "Subskrypcja"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Nie udało się załadować słownika: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "Nie znaleziono wpisu słownikowego dla $word$",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Próbowane lematy"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Szukaj w Language Player →"
-  },
-  "lookupFailed": {
-    "message": "Wyszukiwanie nie powiodło się"
-  },
-  "explainFailed": {
-    "message": "Wyjaśnienie nie powiodło się"
-  },
-  "examplesFailed": {
-    "message": "Nie udało się załadować przykładów"
-  },
-  "followUpFailed": {
-    "message": "Pytanie uzupełniające nie powiodło się"
-  },
-  "noSubtitleExamples": {
-    "message": "Nie znaleziono przykładów z napisów"
-  },
-  "measureWord": {
-    "message": "Miara:"
-  },
-  "genderLabel": {
-    "message": "Płeć:"
-  },
-  "nounClass": {
-    "message": "Klasa:"
   }
 }

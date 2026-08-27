@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "비밀번호"
   },
-  "welcomeBack": {
-    "message": "다시 오신 것을 환영합니다"
-  },
-  "logInToContinue": {
-    "message": "로그인하여 학습을 계속하세요."
-  },
-  "forgotPassword": {
-    "message": "비밀번호를 잊으셨나요?"
-  },
-  "signUp": {
-    "message": "가입하기"
-  },
-  "dontHaveAccount": {
-    "message": "계정이 없으신가요?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "계정을 만들거나 비밀번호를 재설정하려면 languageplayer.io를 방문한 후 여기로 돌아와 로그인하세요."
-  },
   "popupSaveWords": {
     "message": "Language Player 계정에 단어를 <strong>저장</strong>하세요"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "이미지 검색"
-  },
-  "contextSentence": {
-    "message": "문맥 문장"
-  },
-  "openInDictionary": {
-    "message": "사전에서 열기"
   },
   "startPlaying": {
     "message": "동영상을 재생하세요."
@@ -330,27 +306,6 @@
   "review": {
     "message": "복습"
   },
-  "smoothScroll": {
-    "message": "부드러운 스크롤"
-  },
-  "voice": {
-    "message": "음성"
-  },
-  "rate": {
-    "message": "속도"
-  },
-  "speed": {
-    "message": "속도"
-  },
-  "defaultVoice": {
-    "message": "자동 (최적 사용 가능)"
-  },
-  "textAppearance": {
-    "message": "텍스트 모양"
-  },
-  "testVoice": {
-    "message": "음성 테스트"
-  },
   "settingsUnavailable": {
     "message": "이 설정 카테고리는 곧 제공됩니다."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "레벨"
-  },
-  "levelName1": {
-    "message": "초급 I"
-  },
-  "levelName2": {
-    "message": "초급 II"
-  },
-  "levelName3": {
-    "message": "초급 III"
-  },
-  "levelName4": {
-    "message": "중급 I"
-  },
-  "levelName5": {
-    "message": "중급 II"
-  },
-  "levelName6": {
-    "message": "고급 I"
-  },
-  "levelName7": {
-    "message": "고급 II"
-  },
-  "lemma": {
-    "message": "표제어"
   },
   "subscription": {
     "message": "구독"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "사전 로딩 실패: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "$word$에 대한 사전 항목을 찾을 수 없습니다",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "시도한 표제어"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Language Player에서 검색 →"
-  },
-  "lookupFailed": {
-    "message": "검색 실패"
-  },
-  "explainFailed": {
-    "message": "설명 실패"
-  },
-  "examplesFailed": {
-    "message": "예시 로드 실패"
-  },
-  "followUpFailed": {
-    "message": "후속 질문 실패"
-  },
-  "noSubtitleExamples": {
-    "message": "자막 예시를 찾을 수 없습니다"
-  },
-  "measureWord": {
-    "message": "측정:"
-  },
-  "genderLabel": {
-    "message": "성별:"
-  },
-  "nounClass": {
-    "message": "등급:"
   }
 }

@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Wachtwoord"
   },
-  "welcomeBack": {
-    "message": "Welkom terug"
-  },
-  "logInToContinue": {
-    "message": "Log in om verder te leren."
-  },
-  "forgotPassword": {
-    "message": "Wachtwoord vergeten?"
-  },
-  "signUp": {
-    "message": "Registreren"
-  },
-  "dontHaveAccount": {
-    "message": "Nog geen account?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Om een account aan te maken of je wachtwoord opnieuw in te stellen, ga je naar languageplayer.io en kom daarna hier terug om in te loggen."
-  },
   "popupSaveWords": {
     "message": "<strong>Sla</strong> woorden op in je Language Player-account"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Afbeeldingen zoeken"
-  },
-  "contextSentence": {
-    "message": "Contextzin"
-  },
-  "openInDictionary": {
-    "message": "Openen in woordenboek"
   },
   "startPlaying": {
     "message": "Start een video met afspelen."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Beoordeling"
   },
-  "smoothScroll": {
-    "message": "Vloeiend scrollen"
-  },
-  "voice": {
-    "message": "Stem"
-  },
-  "rate": {
-    "message": "Tempo"
-  },
-  "speed": {
-    "message": "Snelheid"
-  },
-  "defaultVoice": {
-    "message": "Automatisch (best beschikbaar)"
-  },
-  "textAppearance": {
-    "message": "Tekstweergave"
-  },
-  "testVoice": {
-    "message": "Teststem"
-  },
   "settingsUnavailable": {
     "message": "Deze instellingencategorie komt binnenkort."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Niveau"
-  },
-  "levelName1": {
-    "message": "Beginner I"
-  },
-  "levelName2": {
-    "message": "Beginner II"
-  },
-  "levelName3": {
-    "message": "Beginner III"
-  },
-  "levelName4": {
-    "message": "Gemiddeld I"
-  },
-  "levelName5": {
-    "message": "Gemiddeld II"
-  },
-  "levelName6": {
-    "message": "Gevorderd I"
-  },
-  "levelName7": {
-    "message": "Gevorderd II"
-  },
-  "lemma": {
-    "message": "Lemma"
   },
   "subscription": {
     "message": "Abonnement"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Kon woordenboek niet laden: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "Geen woordenboekinvoer gevonden voor $word$",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Geprobeerde lemma's"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Zoeken op Language Player →"
-  },
-  "lookupFailed": {
-    "message": "Zoeken mislukt"
-  },
-  "explainFailed": {
-    "message": "Uitleg mislukt"
-  },
-  "examplesFailed": {
-    "message": "Voorbeelden laden mislukt"
-  },
-  "followUpFailed": {
-    "message": "Vervolgvraag mislukt"
-  },
-  "noSubtitleExamples": {
-    "message": "Geen voorbeelden uit ondertitels gevonden"
-  },
-  "measureWord": {
-    "message": "Maatstaf:"
-  },
-  "genderLabel": {
-    "message": "Geslacht:"
-  },
-  "nounClass": {
-    "message": "Klas:"
   }
 }

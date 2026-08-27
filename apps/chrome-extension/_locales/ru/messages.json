@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Пароль"
   },
-  "welcomeBack": {
-    "message": "С возвращением"
-  },
-  "logInToContinue": {
-    "message": "Войдите, чтобы продолжить обучение."
-  },
-  "forgotPassword": {
-    "message": "Забыли пароль?"
-  },
-  "signUp": {
-    "message": "Регистрация"
-  },
-  "dontHaveAccount": {
-    "message": "Нет аккаунта?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Чтобы создать аккаунт или сбросить пароль, перейдите на languageplayer.io и вернитесь сюда для входа."
-  },
   "popupSaveWords": {
     "message": "<strong>Сохраняйте</strong> слова в свой аккаунт Language Player"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Поиск изображений"
-  },
-  "contextSentence": {
-    "message": "Предложение из контекста"
-  },
-  "openInDictionary": {
-    "message": "Открыть в словаре"
   },
   "startPlaying": {
     "message": "Начните воспроизведение видео."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Повторение"
   },
-  "smoothScroll": {
-    "message": "Плавная прокрутка"
-  },
-  "voice": {
-    "message": "Голос"
-  },
-  "rate": {
-    "message": "Темп"
-  },
-  "speed": {
-    "message": "Скорость"
-  },
-  "defaultVoice": {
-    "message": "Авто (наилучшее доступное)"
-  },
-  "textAppearance": {
-    "message": "Вид текста"
-  },
-  "testVoice": {
-    "message": "Тестовый голос"
-  },
   "settingsUnavailable": {
     "message": "Эта категория настроек скоро появится."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Уровень"
-  },
-  "levelName1": {
-    "message": "Начинающий I"
-  },
-  "levelName2": {
-    "message": "Начинающий II"
-  },
-  "levelName3": {
-    "message": "Начинающий III"
-  },
-  "levelName4": {
-    "message": "Средний I"
-  },
-  "levelName5": {
-    "message": "Средний II"
-  },
-  "levelName6": {
-    "message": "Продвинутый I"
-  },
-  "levelName7": {
-    "message": "Продвинутый II"
-  },
-  "lemma": {
-    "message": "Лемма"
   },
   "subscription": {
     "message": "Подписка"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Не удалось загрузить словарь: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "Словарная статья для $word$ не найдена",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Попробованные леммы"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Искать в Language Player →"
-  },
-  "lookupFailed": {
-    "message": "Поиск не удался"
-  },
-  "explainFailed": {
-    "message": "Объяснение не удалось"
-  },
-  "examplesFailed": {
-    "message": "Не удалось загрузить примеры"
-  },
-  "followUpFailed": {
-    "message": "Уточняющий вопрос не удался"
-  },
-  "noSubtitleExamples": {
-    "message": "Примеры из субтитров не найдены"
-  },
-  "measureWord": {
-    "message": "Мера:"
-  },
-  "genderLabel": {
-    "message": "Пол:"
-  },
-  "nounClass": {
-    "message": "Класс:"
   }
 }

@@ -22,7 +22,6 @@ import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { t, setLocale, log } from './i18n';
 import { languageName } from './language-names';
-import { ChevronDown } from './components/Icons';
 
 type SidePanelTab = 'subtitles' | 'page-translation';
 type Theme = 'light' | 'dark' | 'system';
@@ -412,7 +411,7 @@ function SidePanelApp() {
             onClick={() => setLanguagePickerOpen(true)}
           >
             {languageName(currentL2Code, l1Code)}
-            <ChevronDown size={14} strokeWidth={2} className={`lpv-chevron${languagePickerOpen ? ' is-open' : ''}`} />
+            <span aria-hidden="true">⌄</span>
           </Button>
           <UserMenu
             onSettings={() => openPageModal({ kind: 'settings', l2Code: currentL2Code })}

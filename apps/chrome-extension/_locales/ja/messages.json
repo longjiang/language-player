@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "パスワード"
   },
-  "welcomeBack": {
-    "message": "おかえりなさい"
-  },
-  "logInToContinue": {
-    "message": "ログインして学習を続けましょう。"
-  },
-  "forgotPassword": {
-    "message": "パスワードをお忘れですか？"
-  },
-  "signUp": {
-    "message": "登録"
-  },
-  "dontHaveAccount": {
-    "message": "アカウントをお持ちではありませんか？"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "アカウント作成やパスワード再設定は languageplayer.io で行い、完了したらここに戻ってログインしてください。"
-  },
   "popupSaveWords": {
     "message": "Language Playerアカウントに単語を<strong>保存</strong>"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "画像を検索"
-  },
-  "contextSentence": {
-    "message": "文脈の文"
-  },
-  "openInDictionary": {
-    "message": "辞書で開く"
   },
   "startPlaying": {
     "message": "動画を再生してください。"
@@ -330,27 +306,6 @@
   "review": {
     "message": "復習"
   },
-  "smoothScroll": {
-    "message": "スムーズスクロール"
-  },
-  "voice": {
-    "message": "音声"
-  },
-  "rate": {
-    "message": "レート"
-  },
-  "speed": {
-    "message": "速度"
-  },
-  "defaultVoice": {
-    "message": "自動（最適なものを選択）"
-  },
-  "textAppearance": {
-    "message": "テキストの外観"
-  },
-  "testVoice": {
-    "message": "音声をテスト"
-  },
   "settingsUnavailable": {
     "message": "この設定カテゴリは近日公開予定です。"
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "レベル"
-  },
-  "levelName1": {
-    "message": "初心者 I"
-  },
-  "levelName2": {
-    "message": "初心者 II"
-  },
-  "levelName3": {
-    "message": "初心者 III"
-  },
-  "levelName4": {
-    "message": "中級 I"
-  },
-  "levelName5": {
-    "message": "中級 II"
-  },
-  "levelName6": {
-    "message": "上級 I"
-  },
-  "levelName7": {
-    "message": "上級 II"
-  },
-  "lemma": {
-    "message": "見出し語"
   },
   "subscription": {
     "message": "サブスクリプション"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "辞書の読み込みに失敗しました: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "$word$の辞書エントリは見つかりませんでした",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "試したレンマ"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "言語プレイヤーで検索 →"
-  },
-  "lookupFailed": {
-    "message": "検索に失敗しました"
-  },
-  "explainFailed": {
-    "message": "説明に失敗しました"
-  },
-  "examplesFailed": {
-    "message": "例文の取得に失敗しました"
-  },
-  "followUpFailed": {
-    "message": "フォローアップに失敗しました"
-  },
-  "noSubtitleExamples": {
-    "message": "字幕の例が見つかりません"
-  },
-  "measureWord": {
-    "message": "測定："
-  },
-  "genderLabel": {
-    "message": "性別："
-  },
-  "nounClass": {
-    "message": "クラス："
   }
 }

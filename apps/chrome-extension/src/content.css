@@ -349,8 +349,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-token:hover {
-  background: hsl(var(--lpv-primary) / 0.24);
-  box-shadow: 0 0 0 1px hsl(var(--lpv-primary) / 0.4);
+  background: hsl(var(--lpv-primary) / 0.2);
 }
 
 .lpv-token-saved {
@@ -397,7 +396,6 @@ body.lpv-panel-open disney-web-player-ui {
   color: hsl(var(--lpv-muted-foreground));
   margin-top: 2px;
   line-height: 1.5;
-  font-weight: 400;
 }
 
 .lpv-cue.lpv-active .lpv-cue-translation {
@@ -599,31 +597,6 @@ body.lpv-panel-open disney-web-player-ui {
   user-select: none;
 }
 
-/* Page-token ruby readings (page-content.js) are non-selectable too, so a
-   drag-select on tokenized page text returns the L2 source text (SPEC-033). */
-.lpv-page-token rt {
-  font-size: 0.55em;
-  color: hsl(var(--lpv-muted-foreground));
-  user-select: none;
-}
-.lpv-page-token {
-  -webkit-touch-callout: none;
-}
-
-/* Ruby reading / gloss annotations and any element marked select-none are
-   excluded from native text selection, so drag-select (SPEC-033) returns the
-   L2 source text rather than the rendered readings. */
-.select-none {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Drag-select enabled cue text — suppress iOS's long-press callout so the
-   native selection menu doesn't fight the dictionary popup. */
-.lpv-cue-text {
-  -webkit-touch-callout: none;
-}
-
 .lpv-cue.lpv-active .lpv-token rt {
   color: hsl(var(--lpv-muted-foreground));
 }
@@ -673,10 +646,6 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  /* Consistent symmetric margins: the card body supplies the horizontal
-     padding, so only a uniform vertical gap is needed (and it must match the
-     Pro banner below). */
-  margin: 0.75rem 0;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 500;
@@ -730,22 +699,16 @@ body.lpv-panel-open disney-web-player-ui {
   color: hsl(var(--lpv-destructive));
 }
 
-/* Pro-gated feature banners (ADR-0034)
-   Rendered as a bordered, rounded card set inside the dialog/card padding
-   (matching apps/web's ai-explanation.tsx free-user prompt and
-   subtitle-display.tsx upgrade banner), not an edge-to-edge full-width strip. */
+/* Pro-gated feature banners (ADR-0034) */
 .lpv-explain-pro-banner {
   display: block;
-  box-sizing: border-box;
   width: 100%;
-  margin: 0.75rem 0;
-  padding: 0.5rem 0.75rem;
+  padding: 8px 16px;
   font-size: 12px;
   text-align: center;
   color: hsl(var(--lpv-warning));
   background: hsl(var(--lpv-warning) / 0.07);
-  border: 1px solid hsl(var(--lpv-warning) / 0.35);
-  border-radius: 0.5rem;
+  border-bottom: 1px solid hsl(var(--lpv-secondary) / 0.7);
 }
 
 .lpv-pro-banner {
@@ -753,16 +716,12 @@ body.lpv-panel-open disney-web-player-ui {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  box-sizing: border-box;
-  width: calc(100% - 2rem);
-  margin: 0.75rem 1rem;
-  padding: 0.75rem 1rem;
+  padding: 14px 16px;
   font-size: 12px;
   text-align: center;
   color: hsl(var(--lpv-warning));
   background: hsl(var(--lpv-warning) / 0.08);
-  border: 1px solid hsl(var(--lpv-warning) / 0.35);
-  border-radius: 0.5rem;
+  border-top: 1px solid hsl(var(--lpv-warning) / 0.25);
 }
 
 .lpv-pro-banner-link {
@@ -779,10 +738,8 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 /* Pulse the upgrade CTA once playback reaches the last free transcript line,
-   drawing the learner's eye to the Pro prompt. Named distinctly from the
-   cue-loading opacity pulse (also `lpv-pulse`-style) so the box-shadow ring
-   is NOT applied to loading subtitle lines. Respects reduced motion. */
-@keyframes lpv-cta-pulse {
+   drawing the learner's eye to the Pro prompt. Respects reduced motion. */
+@keyframes lpv-pulse {
   0%, 100% {
     box-shadow: 0 0 0 0 hsl(var(--lpv-warning) / 0.5);
   }
@@ -791,12 +748,12 @@ body.lpv-panel-open disney-web-player-ui {
   }
 }
 
-.lpv-pro-banner-link.lpv-cta-pulse {
-  animation: lpv-cta-pulse 1.6s ease-out infinite;
+.lpv-pro-banner-link.lpv-pulse {
+  animation: lpv-pulse 1.6s ease-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lpv-pro-banner-link.lpv-cta-pulse {
+  .lpv-pro-banner-link.lpv-pulse {
     animation: none;
   }
 }
@@ -998,15 +955,6 @@ body.lpv-panel-open disney-web-player-ui {
   flex-wrap: wrap;
 }
 
-/* Level/CEFR badges push to the top-right of the entry-card header (web parity). */
-.lpv-dict-entry-badges {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
 .lpv-dict-head {
   font-size: 15px;
   font-weight: 600;
@@ -1015,13 +963,6 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-dict-pron-small {
   font-size: 11px;
-  color: hsl(var(--lpv-muted-foreground));
-}
-
-/* Alternate script form (traditional/simplified, chữ Hán, hanja) shown next
-   to the headword — matches apps/web dictionary-entry-card. */
-.lpv-dict-alternate {
-  font-size: 12px;
   color: hsl(var(--lpv-muted-foreground));
 }
 
@@ -1044,87 +985,6 @@ body.lpv-panel-open disney-web-player-ui {
   color: hsl(var(--lpv-muted-foreground));
   margin-top: 4px;
   line-height: 1.5;
-}
-
-/* ── Saved metadata (apps/web DictionaryEntryCard parity) ──────────────
-   Shown under a saved word's card: save date, source type + title, and the
-   context sentence it was saved from (with the surface form highlighted). */
-.lpv-dict-saved-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 6px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: hsl(var(--lpv-muted-foreground));
-}
-.lpv-dict-saved-meta-icon {
-  flex-shrink: 0;
-  vertical-align: -2px;
-}
-.lpv-dict-saved-date {
-  white-space: nowrap;
-}
-.lpv-dict-saved-sep {
-  color: hsl(var(--lpv-muted-foreground) / 0.8);
-}
-.lpv-dict-saved-source {
-  color: hsl(var(--lpv-muted-foreground));
-}
-.lpv-dict-saved-context {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  color: hsl(var(--lpv-muted-foreground));
-}
-.lpv-dict-saved-hit {
-  font-weight: 700;
-  color: hsl(var(--lpv-foreground));
-}
-
-/* ── Match-type badge + classifiers (apps/web DictionaryEntryCard parity) ── */
-.lpv-dict-match-type {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: hsl(var(--lpv-warning) / 0.15);
-  color: hsl(var(--lpv-warning));
-  font-size: 10px;
-  line-height: 1.4;
-  text-transform: capitalize;
-}
-.lpv-dict-classifiers {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-}
-.lpv-dict-classifier-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: hsl(var(--lpv-muted-foreground));
-  margin-right: 2px;
-}
-.lpv-dict-classifier {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: hsl(var(--lpv-primary) / 0.1);
-  color: hsl(var(--lpv-muted-foreground));
-  font-size: 12px;
-}
-.lpv-dict-classifier-item {
-  font-weight: 500;
-}
-.lpv-dict-classifier-reading,
-.lpv-dict-classifier-value {
-  color: hsl(var(--lpv-muted-foreground));
 }
 
 /* ── Entry Row with per-entry Save button ──────────────────────────── */
@@ -1169,8 +1029,8 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-level {
   font-size: 10px;
   font-weight: 600;
-  /* Background/color set inline from the shared per-level hexColor (web parity);
-     this block only carries the deterministic shape. */
+  color: hsl(var(--lpv-primary));
+  background: hsl(var(--lpv-primary) / 0.12);
   padding: 1px 6px;
   border-radius: 4px;
 }
@@ -1250,24 +1110,19 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-entry-save-btn {
   flex-shrink: 0;
+  width: 28px;
   height: 28px;
-  padding: 0 8px;
+  padding: 0;
   margin: 6px 8px 0 4px;
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
   color: hsl(var(--lpv-muted-foreground));
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-
-.lpv-entry-save-label {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  line-height: 1;
 }
 
 .lpv-entry-save-btn:hover {
@@ -1308,8 +1163,7 @@ body.lpv-panel-open disney-web-player-ui {
   justify-content: center;
   padding: 1rem;
   box-sizing: border-box;
-  /* Web-parity dim: fixed semi-transparent black. */
-  background: hsl(0 0% 0% / 0.5);
+  background: hsl(222 47% 11% / 0.5);
 }
 
 #lpv-page-dictionary-root .lpv-ui-dialog {
@@ -1398,7 +1252,6 @@ body.lpv-panel-open disney-web-player-ui {
   margin-bottom: 12px;
   font-size: calc(13px * var(--lpv-font-scale, 1));
   line-height: 1.7;
-  font-weight: 400;
   color: hsl(var(--lpv-foreground) / 0.88);
 }
 

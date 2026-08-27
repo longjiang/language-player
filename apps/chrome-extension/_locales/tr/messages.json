@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Şifre"
   },
-  "welcomeBack": {
-    "message": "Tekrar hoş geldiniz"
-  },
-  "logInToContinue": {
-    "message": "Öğrenmeye devam etmek için giriş yapın."
-  },
-  "forgotPassword": {
-    "message": "Şifrenizi mi unuttunuz?"
-  },
-  "signUp": {
-    "message": "Kaydol"
-  },
-  "dontHaveAccount": {
-    "message": "Hesabınız yok mu?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Hesap oluşturmak veya şifrenizi sıfırlamak için languageplayer.io adresini ziyaret edin, ardından giriş yapmak için buraya dönün."
-  },
   "popupSaveWords": {
     "message": "Language Player hesabınıza kelimeleri <strong>kaydedin</strong>"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Görsel ara"
-  },
-  "contextSentence": {
-    "message": "Bağlam cümlesi"
-  },
-  "openInDictionary": {
-    "message": "Sözlükte Aç"
   },
   "startPlaying": {
     "message": "Bir video oynatmaya başlayın."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Gözden Geçir"
   },
-  "smoothScroll": {
-    "message": "Yumuşak Kaydırma"
-  },
-  "voice": {
-    "message": "Ses"
-  },
-  "rate": {
-    "message": "Hız"
-  },
-  "speed": {
-    "message": "Hız"
-  },
-  "defaultVoice": {
-    "message": "Otomatik (mevcut en iyi)"
-  },
-  "textAppearance": {
-    "message": "Metin Görünümü"
-  },
-  "testVoice": {
-    "message": "Sesi Test Et"
-  },
   "settingsUnavailable": {
     "message": "Bu ayar kategorisi yakında kullanıma sunulacak."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Seviye"
-  },
-  "levelName1": {
-    "message": "Başlangıç I"
-  },
-  "levelName2": {
-    "message": "Başlangıç II"
-  },
-  "levelName3": {
-    "message": "Başlangıç III"
-  },
-  "levelName4": {
-    "message": "Orta I"
-  },
-  "levelName5": {
-    "message": "Orta II"
-  },
-  "levelName6": {
-    "message": "İleri I"
-  },
-  "levelName7": {
-    "message": "İleri II"
-  },
-  "lemma": {
-    "message": "Sözlük biçimi"
   },
   "subscription": {
     "message": "Abonelik"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Sözlük yüklenemedi: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "$word$ için sözlük girişi bulunamadı",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Denenmiş lemma"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Language Player'de ara →"
-  },
-  "lookupFailed": {
-    "message": "Arama başarısız oldu"
-  },
-  "explainFailed": {
-    "message": "Açıklama başarısız oldu"
-  },
-  "examplesFailed": {
-    "message": "Örnekler yüklenemedi"
-  },
-  "followUpFailed": {
-    "message": "Takip sorusu başarısız oldu"
-  },
-  "noSubtitleExamples": {
-    "message": "Altyazı örneği bulunamadı"
-  },
-  "measureWord": {
-    "message": "Ölçü:"
-  },
-  "genderLabel": {
-    "message": "Cinsiyet:"
-  },
-  "nounClass": {
-    "message": "Sınıf:"
   }
 }

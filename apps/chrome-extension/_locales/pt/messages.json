@@ -141,24 +141,6 @@
   "popupPasswordPlaceholder": {
     "message": "Senha"
   },
-  "welcomeBack": {
-    "message": "Bem-vindo de volta"
-  },
-  "logInToContinue": {
-    "message": "Faça login para continuar aprendendo."
-  },
-  "forgotPassword": {
-    "message": "Esqueceu a senha?"
-  },
-  "signUp": {
-    "message": "Cadastrar"
-  },
-  "dontHaveAccount": {
-    "message": "Não tem uma conta?"
-  },
-  "accountOnWebsiteNotice": {
-    "message": "Para criar uma conta ou redefinir a senha, visite languageplayer.io e volte aqui para entrar."
-  },
   "popupSaveWords": {
     "message": "<strong>Salve</strong> palavras na sua conta do Language Player"
   },
@@ -200,12 +182,6 @@
   },
   "searchImages": {
     "message": "Pesquisar imagens"
-  },
-  "contextSentence": {
-    "message": "Frase de contexto"
-  },
-  "openInDictionary": {
-    "message": "Abrir no dicionário"
   },
   "startPlaying": {
     "message": "Comece a reproduzir um vídeo."
@@ -330,27 +306,6 @@
   "review": {
     "message": "Revisão"
   },
-  "smoothScroll": {
-    "message": "Rolagem suave"
-  },
-  "voice": {
-    "message": "Voz"
-  },
-  "rate": {
-    "message": "Ritmo"
-  },
-  "speed": {
-    "message": "Velocidade"
-  },
-  "defaultVoice": {
-    "message": "Auto (melhor disponível)"
-  },
-  "textAppearance": {
-    "message": "Aparência do texto"
-  },
-  "testVoice": {
-    "message": "Testar Voz"
-  },
   "settingsUnavailable": {
     "message": "Esta categoria de configurações estará disponível em breve."
   },
@@ -377,30 +332,6 @@
   },
   "level": {
     "message": "Nível"
-  },
-  "levelName1": {
-    "message": "Iniciante I"
-  },
-  "levelName2": {
-    "message": "Iniciante II"
-  },
-  "levelName3": {
-    "message": "Iniciante III"
-  },
-  "levelName4": {
-    "message": "Intermediário I"
-  },
-  "levelName5": {
-    "message": "Intermediário II"
-  },
-  "levelName6": {
-    "message": "Avançado I"
-  },
-  "levelName7": {
-    "message": "Avançado II"
-  },
-  "lemma": {
-    "message": "Lema"
   },
   "subscription": {
     "message": "Assinatura"
@@ -791,53 +722,5 @@
         "content": "$3"
       }
     }
-  },
-  "dictLoadFailed": {
-    "message": "Falha ao carregar o dicionário: $error$",
-    "placeholders": {
-      "error": {
-        "content": "$1",
-        "example": "HTTP 500"
-      }
-    }
-  },
-  "noDictionaryEntry": {
-    "message": "Nenhuma entrada de dicionário encontrada para $word$",
-    "placeholders": {
-      "word": {
-        "content": "$1",
-        "example": "你好"
-      }
-    }
-  },
-  "triedLemmas": {
-    "message": "Lemas testados"
-  },
-  "searchOnLanguagePlayer": {
-    "message": "Pesquisar no Language Player →"
-  },
-  "lookupFailed": {
-    "message": "A pesquisa falhou"
-  },
-  "explainFailed": {
-    "message": "A explicação falhou"
-  },
-  "examplesFailed": {
-    "message": "Falha ao carregar exemplos"
-  },
-  "followUpFailed": {
-    "message": "A pergunta de acompanhamento falhou"
-  },
-  "noSubtitleExamples": {
-    "message": "Nenhum exemplo de legendas encontrado"
-  },
-  "measureWord": {
-    "message": "Medida:"
-  },
-  "genderLabel": {
-    "message": "Gênero:"
-  },
-  "nounClass": {
-    "message": "Classe:"
   }
 }

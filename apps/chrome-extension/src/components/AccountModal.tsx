@@ -8,8 +8,6 @@ import { API_BASE } from '../api-config';
 import { languageName } from '../language-names';
 import { languagePlayerPath } from '../web-links';
 import { t } from '../i18n';
-import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
-import { baseCode } from '@langplayer/utils';
 
 interface SubscriptionInfo {
   id?: number;
@@ -67,21 +65,6 @@ export function AccountModal({ open, auth, l1Code, l2Code, onOpenChange, onLogge
   const willAutoRenew = ['monthly', 'annual'].includes(subscription?.type || '') && !!subscription?.payment_customer_id && isActive;
   const planLabel = subscription?.type === 'monthly' ? t('subscriptionMonthly') : subscription?.type === 'annual' ? t('subscriptionAnnual') : subscription?.type === 'lifetime' ? t('subscriptionLifetime') : t('freeAccount');
 
-  // Level selector options — language-specific exam scale labels, matching
-  // apps/web LanguageLevelSelect: "JLPT N4 — Beginner III", "HSK 3 — Beginner III",
-  // "CEFR C2 — Advanced II", etc. The exam prefix/label come from the shared
-  // level registry (getLevelLabelWithFallback + primaryScale); the category
-  // ("Beginner III") is the localized flat levelNameN key generated from the
-  // CSV level.name ICU select (chrome.i18n can't parse ICU MessageFormat).
-  const buildLevelOptions = () => {
-    const scaleId = primaryScale(baseCode(l2Code));
-    return Array.from({ length: 7 }, (_, index) => {
-      const numeric = index + 1;
-      const { label, prefix } = getLevelLabelWithFallback(numeric, scaleId);
-      return { value: String(numeric), label: `${prefix} ${label} — ${t('levelName' + numeric)}` };
-    });
-  };
-
   const openExternal = (url: string) => { chrome.tabs.create({ url }).catch(() => {}); };
 
   const handleDelete = async () => {
@@ -118,9 +101,9 @@ export function AccountModal({ open, auth, l1Code, l2Code, onOpenChange, onLogge
         ) : (
           <>
             <div className="lpv-account-chip"><span className="lpv-account-avatar">{displayName.charAt(0).toUpperCase()}</span><div><strong>{displayName}</strong><span>{auth.email}</span></div></div>
-            <div className="lpv-account-section"><h3>{t('learningLevel')}</h3><p>{languageName(l2Code, l1Code)}</p><Select value={level} onChange={(value) => { updateLevel(value).catch(() => {}); }} ariaLabel={t('learningLevel')} options={buildLevelOptions()} /></div>
+            <div className="lpv-account-section"><h3>{t('learningLevel')}</h3><p>{languageName(l2Code, l1Code)}</p><Select value={level} onChange={(value) => { updateLevel(value).catch(() => {}); }} ariaLabel={t('learningLevel')} options={Array.from({ length: 7 }, (_, index) => ({ value: String(index + 1), label: `${t('level')} ${index + 1}` }))} /></div>
             <div className="lpv-account-section"><h3>{t('subscription')}</h3>{subscriptionLoading ? <p>{t('loadingSubtitles')}</p> : <><span className="lpv-account-status">{planLabel}</span>{expiresOn && isActive && !isLifetime && <p>{t('daysRemaining', [String(Math.max(0, Math.ceil((expiresOn.getTime() - Date.now()) / 86400000)))])}</p>}{willAutoRenew && <p>{t('autoRenews')}</p>}{!isLifetime && <Button variant="outline" size="sm" onClick={() => openExternal(languagePlayerPath(l1Code, l2Code, 'go-pro'))}>{t(subscription ? 'manageSubscription' : 'upgradeToPro')}</Button>}</>}</div>
-            <div className="lpv-account-section"><h3>{t('myActivities')}</h3><Button variant="outline" onClick={() => openExternal(languagePlayerPath(l1Code, l2Code, 'watch-history'))}>{t('myActivities')}</Button></div>
+            <div className="lpv-account-section"><h3>{t('myActivities')}</h3><Button variant="outline" onClick={() => openExternal(languagePlayerPath(l1Code, l2Code, 'watch-history'))}>{t('openActivities')}</Button></div>
             <div className="lpv-account-danger-section"><h3>{t('deleteAccount')}</h3><p>{t('deleteAccountWarning')}</p>{willAutoRenew ? <p className="lpv-account-danger">{t('deleteSubscriptionFirst')}</p> : <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>{t('deleteAccount')}</Button>}</div>
           </>
         )}
