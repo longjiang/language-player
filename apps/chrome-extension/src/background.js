@@ -96,6 +96,27 @@ let sidePanelConnected = false;
 let sidePanelTabId = null;
 let sidePanelWindowId = null;
 
+// Persisted side-panel open state. The MV3 service worker can be suspended or
+// restarted, which resets sidePanelConnected to false even while the panel is
+// still open on screen. chrome.storage.session survives those restarts within
+// a browser session, so the action toggle does not get confused into reopening
+// (or failing to close) an already-open panel.
+const SIDE_PANEL_STATE_KEY = 'lpvSidePanelOpen';
+function persistPanelState() {
+  const state = sidePanelConnected && sidePanelTabId != null
+    ? { tabId: sidePanelTabId, windowId: sidePanelWindowId }
+    : null;
+  chrome.storage.session.set({ [SIDE_PANEL_STATE_KEY]: state }).catch(() => {});
+}
+async function readPanelState() {
+  try {
+    const res = await chrome.storage.session.get({ [SIDE_PANEL_STATE_KEY]: null });
+    return res && res[SIDE_PANEL_STATE_KEY];
+  } catch {
+    return null;
+  }
+}
+
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'lpv-sidepanel') return;
   sidePanelPort = port;
@@ -111,6 +132,7 @@ chrome.runtime.onConnect.addListener((port) => {
     }
     sidePanelTabId = activeTab.id;
     sidePanelWindowId = activeTab.windowId;
+    persistPanelState();
     notifyTabPanelOpenState(activeTab.id, true);
   });
   port.onDisconnect.addListener(() => {
@@ -119,6 +141,7 @@ chrome.runtime.onConnect.addListener((port) => {
     sidePanelConnected = false;
     sidePanelTabId = null;
     sidePanelWindowId = null;
+    persistPanelState();
     console.log('[LP Extension] Side panel disconnected');
     notifyTabPanelOpenState(previousTabId, false);
   });
@@ -143,16 +166,24 @@ function closeSidePanelIfOpen() {
 async function toggleSidePanel(tab) {
   if (!tab?.id) return;
   try {
-    if (sidePanelConnected && chrome.sidePanel?.close) {
+    // Trust the persisted state over the volatile sidePanelConnected flag: an
+    // MV3 service-worker restart loses the in-memory flag but not the panel.
+    const persisted = await readPanelState();
+    const open = sidePanelConnected || (persisted && persisted.windowId != null);
+    if (open && chrome.sidePanel?.close) {
       // The manifest uses one global side panel. Closing by windowId works
       // across Chrome versions where close({ tabId }) rejects for a global
       // panel.
-      notifyTabPanelOpenState(sidePanelTabId, false);
-      await chrome.sidePanel.close({ windowId: sidePanelWindowId ?? tab.windowId });
+      console.log('[LP Extension] Action click → closing side panel');
+      notifyTabPanelOpenState(sidePanelTabId ?? persisted?.tabId ?? tab.id, false);
+      await chrome.sidePanel.close({ windowId: sidePanelWindowId ?? persisted?.windowId ?? tab.windowId });
+      persistPanelState();
     } else {
+      console.log('[LP Extension] Action click → opening side panel');
       sidePanelTabId = tab.id;
       sidePanelWindowId = tab.windowId;
       await chrome.sidePanel.open({ tabId: tab.id });
+      persistPanelState();
     }
   } catch {}
 }
