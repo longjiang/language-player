@@ -42,7 +42,7 @@ export function UserMenu({ onSettings, onHelp, onAbout, onLogin, onAccount }: Us
 
   return (
     <div ref={menuRef} className="lpv-user-menu">
-      <Button variant="ghost" size="icon" className="lpv-profile-trigger" aria-label={auth ? displayName : t('login')} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}><span aria-hidden="true">{auth ? displayName.charAt(0).toUpperCase() : '◉'}</span></Button>
+      <Button variant="ghost" size="icon" className={`lpv-profile-trigger${auth ? ' is-authed' : ''}`} aria-label={auth ? displayName : t('login')} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}><span aria-hidden="true">{auth ? displayName.charAt(0).toUpperCase() : '◉'}</span></Button>
       {open && <div className="lpv-user-menu-popover" role="menu">
         {auth ? <button className="lpv-user-menu-summary" onClick={() => { onAccount(auth); setOpen(false); }}><strong>{displayName}</strong><span>{auth.email}</span></button> : <button className="lpv-user-menu-item" onClick={() => { onLogin(); setOpen(false); }}>{t('login')}</button>}
         <button className="lpv-user-menu-item" onClick={() => { onSettings(); setOpen(false); }}>{t('settings')}</button>

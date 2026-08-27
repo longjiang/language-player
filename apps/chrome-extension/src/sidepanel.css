@@ -159,6 +159,22 @@ button:focus-visible,
   color: hsl(var(--accent-foreground));
 }
 
+/* Logged-in avatar: match the account/profile modal's avatar treatment
+ * (apps/web user-menu trigger, apps/web profile header — a primary-tinted
+ * circle with the user's initial). The icon button is already 2.25rem, so it
+ * aligns 1:1 with .lpv-account-avatar. */
+.lpv-profile-trigger.is-authed {
+  border: 0;
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.lpv-profile-trigger.is-authed:hover {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
+
 .lpv-user-menu {
   position: relative;
 }
