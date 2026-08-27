@@ -600,7 +600,9 @@ button:focus-visible,
 
 .lpv-page-translation-result {
   margin-top: 0 !important;
-  color: hsl(var(--foreground));
+  /* Muted by default so the SENTENCE highlighted on token hover/click stands out
+     (apps/web reader's SegmentedTranslation dims the non-active text). */
+  color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
   line-height: 1.5;
   font-weight: 400;
