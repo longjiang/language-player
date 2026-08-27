@@ -6,7 +6,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from 'expo-router';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -14,6 +14,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { ZoomableImage } from '@/components/reader/ZoomableImage';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
@@ -82,59 +83,6 @@ function mimeFor(name: string): string {
   if (/\.png$/i.test(name)) return 'image/png';
   if (/\.(gif|webp|heic)$/i.test(name)) return 'image/webp';
   return 'image/jpeg';
-}
-
-/** Full-size zoomable image for the preview modal: tap toggles zoom (1x ↔ 2x),
- *  pinch zooms continuously, and drag pans while zoomed. */
-function ZoomableImage({ uri }: { uri: string }) {
-  const [scale, setScale] = useState(1);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const startZoomRef = useRef(1);
-  const startTranslateRef = useRef({ x: 0, y: 0 });
-
-  const tap = Gesture.Tap()
-    .runOnJS(true)
-    .maxDuration(250)
-    .onEnd(() => {
-      if (scale > 1) {
-        setScale(1);
-        setTranslate({ x: 0, y: 0 });
-      } else {
-        setScale(2);
-      }
-    });
-
-  const pinch = Gesture.Pinch()
-    .runOnJS(true)
-    .onStart(() => { startZoomRef.current = scale; })
-    .onUpdate((e) => {
-      setScale(Math.min(4, Math.max(1, Math.round(startZoomRef.current * e.scale * 100) / 100)));
-    })
-    .onEnd(() => { if (scale < 1) setScale(1); });
-
-  const pan = Gesture.Pan()
-    .runOnJS(true)
-    .onStart(() => { startTranslateRef.current = translate; })
-    .onUpdate((e) => {
-      if (scale > 1) {
-        setTranslate({
-          x: startTranslateRef.current.x + e.translationX,
-          y: startTranslateRef.current.y + e.translationY,
-        });
-      }
-    });
-
-  const composed = Gesture.Simultaneous(pinch, pan, tap);
-
-  return (
-    <View className="flex-1 items-center justify-center bg-black">
-      <GestureDetector gesture={composed}>
-        <View style={{ transform: [{ translateX: translate.x }, { translateY: translate.y }, { scale }] }}>
-          <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
-        </View>
-      </GestureDetector>
-    </View>
-  );
 }
 
 export default function ImageReaderScreen() {
