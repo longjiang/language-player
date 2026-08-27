@@ -120,18 +120,26 @@ export function EpubBookshelf({
         </>
       ) : (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-foreground">{t('title.my_books')}</h2>
-
-          {/* Filter the shelf by book name */}
-          <div className="relative mb-3 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          {/* Filter the shelf by book name — full width, standard shadcn-styled
+              input. Password-manager autofill is suppressed (this is a book
+              filter, not a credential field). */}
+          <div className="relative mb-3 w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
+              name="book-filter"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-form-type="other"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder={t('placeholder.filter_books')}
               aria-label={t('placeholder.filter_books')}
-              className="w-full rounded-md border border-border bg-background py-1.5 pl-8 pr-8 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+              className="flex h-10 w-full rounded-md border border-border bg-background pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             />
             {filter && (
               <button
@@ -139,7 +147,7 @@ export function EpubBookshelf({
                 onClick={() => setFilter('')}
                 aria-label={t('action.clear')}
                 title={t('action.clear')}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

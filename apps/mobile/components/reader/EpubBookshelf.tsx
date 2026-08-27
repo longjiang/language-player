@@ -124,20 +124,24 @@ export function EpubBookshelf({
         </>
       ) : (
         <>
-          <Text className="mb-3 text-lg font-semibold text-foreground">{t('title.my_books')}</Text>
-
-          {/* Filter the shelf by book name */}
-          <View className="mb-3 flex-row items-center rounded-md border border-border bg-background px-2.5">
-            <Search size={14} color={ICON_MUTED} />
+          {/* Filter the shelf by book name — full width, larger. Password
+              manager autofill is suppressed (this is a book filter, not a
+              credential field). */}
+          <View className="mb-3 flex-row items-center rounded-md border border-border bg-background px-3">
+            <Search size={16} color={ICON_MUTED} />
             <TextInput
               value={filter}
               onChangeText={setFilter}
               placeholder={t('placeholder.filter_books')}
               placeholderTextColor={ICON_MUTED}
-              className="ml-2 h-9 flex-1 py-1 text-xs text-foreground"
+              className="ml-2 h-11 flex-1 py-1 text-sm text-foreground"
               accessibilityLabel={t('placeholder.filter_books')}
+              autoComplete="off"
+              textContentType="none"
+              importantForAutofill="no"
               autoCorrect={false}
               autoCapitalize="none"
+              spellCheck={false}
             />
             {filter.length > 0 && (
               <Pressable
