@@ -717,6 +717,17 @@ with `position:fixed`. They render in the browser's own side panel:
   `pushPageModeState()` returns early on a video host so the side
   panel is never flipped out of the Subtitles/video mode; the panel still gets
   page lookups via the dedicated `pageLookup` message.
+- **Page translation block granularity + hover highlight**: the Page Translation
+  snapshot serves one translation block per readable page element (a
+  paragraph-level chunk) — it does not split long source blocks into
+  sentence-level sub-blocks. Block ids are the element's own `__lpvBlockId`
+  (no `#s<i>` suffix), so a token click/lookup scrolls to the whole block.
+  A token hover on the tokenized page (`pageTokenHover`, carrying the token's
+  `blockId` and `tokenOffset`) scrolls the panel to that block and highlights the
+  translation **sentence** that contains the hovered token via
+  `buildSentenceMap`/`sentenceIndexAt` (mirroring apps/web's
+  `SentenceHighlightBlock`/`SegmentedTranslation`), rendered as a `primary`
+  background wash on the active sentence.
 - **What moved out of content scripts**: `createPanelUI`/`createPanel`, the
   mismatch banner DOM, the header (logo/open-in-web/close), `setPanelVisible`,
   `togglePanel`, `updateStatus` (now log-only), and the `autoOpenPanel` pref.

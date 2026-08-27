@@ -93,15 +93,11 @@ class PanelErrorBoundary extends React.Component<
   render() {
     if (this.state.error) {
       return (
-        <div className="lpv-app-shell" role="alert">
-          <div className="lpv-app-main">
-            <div className="lpv-ui-empty-state">
-              <p>{t('pageUnavailable')}</p>
-              <Button variant="outline" size="sm" onClick={() => this.setState({ error: null })}>
-                {t('retry')}
-              </Button>
-            </div>
-          </div>
+        <div className="lpv-ui-empty-state" role="alert">
+          <p>{t('pageUnavailable')}</p>
+          <Button variant="outline" size="sm" onClick={() => this.setState({ error: null })}>
+            {t('retry')}
+          </Button>
         </div>
       );
     }
@@ -115,6 +111,15 @@ function SidePanelApp() {
   const [videoState, setVideoState] = useState<VideoPanelState | null>(null);
   const [pageState, setPageState] = useState<PagePanelState | null>(null);
   const [lookup, setLookup] = useState<PageLookupDetail | null>(null);
+  /** Latest token hover (page reader) — tells the page-translation tab to scroll
+   *  to and highlight the translation sentence under the cursor. */
+  const [translationHover, setTranslationHover] = useState<{
+    blockId: string | null;
+    sentenceIndex: number;
+    tokenOffset?: number | null;
+    blockText?: string;
+    tokenText?: string;
+  } | null>(null);
   const [mismatchDismissed, setMismatchDismissed] = useState(false);
   const [localeVersion, setLocaleVersion] = useState(0);
   const [l1Code, setL1Code] = useState('en');
@@ -194,14 +199,20 @@ function SidePanelApp() {
   useEffect(() => {
     const refresh = async (tid?: number) => {
       const target = tid ?? (await getActiveTabId());
+      // Only clear the prior tab's state when the active tab actually changed.
+      // A same-tab onUpdated (e.g. YouTube re-asserts status:'complete' during
+      // player init) must not reset mode → null, or the panel flips back to the
+      // loading/error state and can strand the learner on "page cannot be
+      // translated" even though the subtitles resolved fine moments earlier.
+      const tabChanged = target !== tabIdRef.current;
       setTabId(target);
-      // Clear the previously-active tab's state before pulling the new one, so
-      // we never show stale content from another tab while this one loads.
-      setMode(null);
-      setVideoState(null);
-      setPageState(null);
-      setLookup(null);
-      panelPollCountRef.current = 0;
+      if (tabChanged) {
+        setMode(null);
+        setVideoState(null);
+        setPageState(null);
+        setLookup(null);
+        panelPollCountRef.current = 0;
+      }
       await pullState(target);
     };
     refresh();
@@ -280,6 +291,8 @@ function SidePanelApp() {
         if (msg.state?.lookup) setLookup(msg.state.lookup);
       } else if (msg.action === 'pageLookup') {
         setLookup(msg.payload);
+      } else if (msg.action === 'pageTokenHover') {
+        setTranslationHover(msg.payload);
       } else if (msg.action === 'pageModalEvent') {
         pageModalEventRef.current(msg.event);
       }
@@ -363,7 +376,12 @@ function SidePanelApp() {
     sendToTab('requestSubtitleDetection', { retry }).finally(() => setSubtitleRequesting(false));
   }, [mode, sendToTab, tabId]);
 
-  const subtitlesAvailable = mode === 'video' || !!videoState;
+  // Show the Subtitles tab optimistically while the tab's mode is still being
+  // resolved (mode === null), so a video page shows the subtitles tab instead of
+  // jumping straight to the Page Translation tab — the panel chrome (tab bar)
+  // must always be visible so a slow/errored mode pull never leaves the learner
+  // with no way to switch tabs.
+  const subtitlesAvailable = mode === 'video' || !!videoState || mode === null;
   const activeTab: SidePanelTab = selectedTab === 'subtitles' && subtitlesAvailable
     ? 'subtitles'
     : 'page-translation';
@@ -413,9 +431,30 @@ function SidePanelApp() {
     (mode === 'video' && videoState?.mismatch) || (mode === 'page' && pageState?.mismatch) || null;
   const mismatchShown = mismatch && !mismatchDismissed ? mismatch : null;
 
-  const subtitleStatus = videoState?.subtitleStatus
-    || (videoState?.cues?.length ? 'ready' : 'idle');
-  const subtitleContent = mode === 'video' && videoState && subtitleStatus === 'ready' ? (
+  // If the content script pushed parsed cues, the subtitles are available — show
+  // the transcript even if `subtitleStatus` is momentarily off (e.g. the pull
+  // raced the detection lifecycle and reported 'idle'/'empty' while cues exist).
+  const subtitleStatus = videoState?.cues?.length
+    ? 'ready'
+    : (videoState?.subtitleStatus || 'idle');
+  const subtitleContent = mode === null ? (
+      // Mode not resolved yet: spinner while pulling, or a friendly error + Retry
+      // if it never resolves. Rendered inside the subtitles tab so the tab bar
+      // and header stay visible and the learner can still switch tabs.
+      <div className="lpv-ui-empty-state" role={panelError ? 'alert' : 'status'} aria-live="polite">
+        {panelError ? (
+          <>
+            <p>{panelError}</p>
+            <Button variant="outline" size="sm" onClick={retryPanelResolve}>{t('retry')}</Button>
+          </>
+        ) : (
+          <>
+            <span className="lpv-ui-spinner" aria-hidden="true" />
+            <p>{t('loadingSubtitles')}</p>
+          </>
+        )}
+      </div>
+    ) : mode === 'video' && videoState && subtitleStatus === 'ready' ? (
       <SavedWordsProvider l2Code={videoState.l2Code}>
         <TranscriptAppInner
           cues={videoState.cues}
@@ -467,8 +506,18 @@ function SidePanelApp() {
         l2Code={pageState?.l2Code || l2Code}
         pageUrl={pageState?.pageUrl}
         lookup={lookup}
+        hover={translationHover}
       />
   ) : null;
+
+  // Diagnostic: whenever the panel could be stuck in a loading/error state,
+  // log the computed state so we can pinpoint why subtitles aren't showing.
+  if (mode === null || panelError || activeTab === 'page-translation') {
+    log('[SIDEPANEL] content state', {
+      mode, activeTab, panelError, subtitleStatus,
+      cues: videoState?.cues?.length, hasVideoState: !!videoState,
+    });
+  }
 
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
 
@@ -555,36 +604,18 @@ function SidePanelApp() {
         </div>
       )}
 
-      {mode === null ? (
-        // Still resolving the tab's mode — show a clear loading/error state so
-        // the panel is never blank while the content script initializes.
-        <div className="lpv-app-main" role={panelError ? 'alert' : 'status'} aria-live="polite">
-          {panelError ? (
-            <div className="lpv-ui-empty-state">
-              <p>{panelError}</p>
-              <Button variant="outline" size="sm" onClick={retryPanelResolve}>{t('retry')}</Button>
-            </div>
-          ) : (
-            <div className="lpv-ui-empty-state">
-              <span className="lpv-ui-spinner" aria-hidden="true" />
-              <p>{t('loadingSubtitles')}</p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <Tabs value={activeTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
-          <TabsList className="lpv-app-tabs">
-            {subtitlesAvailable && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
-            <TabsTrigger value="page-translation">{t('pageTranslation')}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="subtitles" className="lpv-app-tabpanel" id="lpv-panel-content">
-            {subtitleContent}
-          </TabsContent>
-          <TabsContent value="page-translation" className="lpv-app-tabpanel" id="lpv-panel-content">
-            {pageTranslationContent}
-          </TabsContent>
-        </Tabs>
-      )}
+      <Tabs value={activeTab} onValueChange={(value) => selectTab(value as SidePanelTab)} className="lpv-app-main">
+        <TabsList className="lpv-app-tabs">
+          {subtitlesAvailable && <TabsTrigger value="subtitles">{t('subtitles')}</TabsTrigger>}
+          <TabsTrigger value="page-translation">{t('pageTranslation')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="subtitles" className="lpv-app-tabpanel" id="lpv-panel-content">
+          <PanelErrorBoundary>{subtitleContent}</PanelErrorBoundary>
+        </TabsContent>
+        <TabsContent value="page-translation" className="lpv-app-tabpanel" id="lpv-panel-content">
+          <PanelErrorBoundary>{pageTranslationContent}</PanelErrorBoundary>
+        </TabsContent>
+      </Tabs>
 
       <LanguagePicker
         open={languagePickerOpen}
@@ -597,6 +628,16 @@ function SidePanelApp() {
     </PanelErrorBoundary>
   );
 }
+
+// Surface any uncaught error / unhandled rejection in the side panel's own
+// devtools console so a render/runtime failure is diagnosable instead of a
+// silent blank or a bare "page cannot be translated" with no cause.
+window.addEventListener('error', (event) => {
+  try { logerr('[SIDEPANEL] uncaught error', { message: event?.message, source: event?.filename, line: event?.lineno, col: event?.colno }); } catch {}
+});
+window.addEventListener('unhandledrejection', (event) => {
+  try { logerr('[SIDEPANEL] unhandled rejection', { reason: String(event?.reason), name: event?.reason?.name }); } catch {}
+});
 
 const container = document.getElementById('lpv-side-panel-root');
 if (container) {
