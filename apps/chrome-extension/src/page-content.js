@@ -61,6 +61,14 @@ let pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
 let pageTranslationStatus = 'idle'; // idle | loading | ready | empty | error
 let pageTranslationError = null;
 
+// ── Text runs ──────────────────────────────────────────────────────────────
+// A block element (e.g. a bare <div>) can hold several paragraphs separated by
+// <br> (5ch / BBS posts). Treat each run as its own translation block so the
+// reader shows separate paragraphs instead of one clumped string. Token spans
+// are stamped with `data-lpv-run` (the run id) so click/hover resolve the
+// correct paragraph's source text + sentence without re-walking the element.
+const pageRunTexts = new Map(); // runId -> normalized source text of the run
+
 /** Cached tab id (via background) — used to open the side panel. */
 let _tabId = null;
 function getTabId() {
@@ -278,7 +286,7 @@ function enqueueTokenizedPageLookups() {
   lookupPageWords([...words].map((word) => ({ text: word, l2Code: baseCode(l2Code) }))).catch(() => {});
 }
 
-function renderTextNode(node, tokens) {
+function renderTextNode(node, tokens, runId) {
   if (!tokens || tokens.length === 0) return false;
   const parent = node.parentElement;
   if (!parent) return false;
@@ -302,6 +310,9 @@ function renderTextNode(node, tokens) {
     const span = document.createElement('span');
     span.className = 'lpv-page-token';
     span.dataset.tokenText = token.text;
+    // Stamp the paragraph RUN id so a click/hover resolves the correct
+    // translation block + sentence without re-walking the DOM.
+    if (runId) span.dataset.lpvRun = runId;
     // Keep the resolved token on the span so the phonetics toggle can
     // re-render ruby purely visually (no tokenCache lookup, no retokenize).
     try { span.dataset.token = JSON.stringify(token); } catch {}
@@ -380,36 +391,76 @@ function getVisibleBlockText(el) {
   }
 }
 
-/** UTF-16 offset of a token span's first visible character within a block's
- *  normalized source text (`__lpvSourceText` / getVisibleBlockText). Walks the
- *  block's text nodes in document order, skipping ruby readings and hidden
- *  subtrees, and sums the normalized length of every text node before the span.
- *  Returns -1 when the span can't be located. The offset is therefore in the
- *  same (whitespace-normalized) coordinate space as `blockText`, so it feeds
- *  `sentenceContaining` / `sentenceIndexAtOffset` directly. */
-function tokenOffsetInBlock(block, tokenSpan) {
-  if (!block || !tokenSpan) return -1;
+/** Split a block element's visible text into paragraph "runs" at <br>
+ *  boundaries (e.g. a bare <div> post body on 5ch/BBS). Each run is its own
+ *  translation block. Returns [] for an element with no tokenizable text.
+ *  Registers each run's normalized source text in `pageRunTexts` so tokenization
+ *  can stamp `data-lpv-run` and click/hover can resolve the paragraph without a
+ *  second DOM walk. */
+function getTextRuns(el) {
+  if (!el) return [];
+  const runs = [];
+  let runIndex = 0;
+  let curNodes = [];
+  const flush = () => {
+    if (curNodes.length > 0) {
+      const text = normalizeBlockText(curNodes.map((n) => n.nodeValue).join(' '));
+      if (text) {
+        if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
+        const runId = `${el.__lpvBlockId}#r${runIndex}`;
+        pageRunTexts.set(runId, text);
+        runs.push({ runId, index: runIndex, text, nodes: curNodes });
+      }
+    }
+    runIndex++;
+    curNodes = [];
+  };
   try {
-    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
-        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
-        const value = (node.nodeValue || '').trim();
-        if (!value) return NodeFilter.FILTER_REJECT;
-        const parent = node.parentElement;
-        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName === 'BR') return NodeFilter.FILTER_ACCEPT;
+          if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+          if (isHidden(node) || isInsideSkipped(node)) return NodeFilter.FILTER_REJECT;
+          // Inline container (span/a): descend into its text children.
+          return NodeFilter.FILTER_SKIP;
+        }
+        if (node.nodeType === Node.TEXT_NODE) {
+          const v = (node.nodeValue || '').trim();
+          if (!v) return NodeFilter.FILTER_REJECT;
+          const parent = node.parentElement;
+          if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+        return NodeFilter.FILTER_REJECT;
       },
     });
-    const parts = [];
     let node;
     while ((node = walker.nextNode())) {
-      if (node === tokenSpan || tokenSpan.contains(node)) break;
-      parts.push(node.nodeValue);
+      if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'BR') flush();
+      else if (node.nodeType === Node.TEXT_NODE) curNodes.push(node);
     }
-    return normalizeBlockText(parts.join(' ')).length;
+    flush();
   } catch {
-    return -1;
+    // Fall back to a single run (whole element) if the walk fails.
+    const text = normalizeBlockText(el.textContent || '');
+    if (text) {
+      if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
+      const runId = `${el.__lpvBlockId}#r0`;
+      pageRunTexts.set(runId, text);
+      runs.push({ runId, index: 0, text, nodes: [] });
+    }
   }
+  return runs;
+}
+
+/** Resolve the paragraph run id for a tokenized token span. Returns the run's
+ *  normalized source text + runId, or null when the span isn't mapped. */
+function resolveRunForSpan(span) {
+  const runId = span?.dataset?.lpvRun;
+  if (!runId) return null;
+  const text = pageRunTexts.get(runId);
+  return text ? { runId, text } : null;
 }
 
 /** Index of the sentence containing `offset` within `text` (0-based), following
@@ -427,25 +478,32 @@ function sentenceIndexAtOffset(text, offset, locale) {
 
 /** Return source blocks for the side-panel translation view. This reads the
  * page DOM from the page content script, never from the side-panel document.
- * The cap keeps runtime message payloads bounded on very large pages. */
+ * The cap keeps runtime message payloads bounded on very large pages.
+ *
+ * Granularity: ONE block per text run (paragraph), where a run is a maximal run
+ * of visible text between <br> separators within a leaf block element — so a
+ * bare <div> post body split by <br> yields separate paragraphs instead of one
+ * clumped string. A run's block id is the element's `__lpvBlockId` + `#r<i>`,
+ * which tokenization reuses so a token click/hover maps to the right paragraph. */
 function getPageTranslationSnapshot() {
   const blocks = [];
   let totalChars = 0;
   for (const el of document.querySelectorAll(BLOCK_SELECTOR)) {
     if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
-    const text = getVisibleBlockText(el);
-    if (!text || text.length < 2) continue;
-    if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
+    const runs = getTextRuns(el);
+    if (runs.length > 1) log(`[PAGE] split '${el.__lpvBlockId || el.tagName}' into ${runs.length} runs (<br>-separated paragraphs)`);
     const anchor = el.closest('a[href]');
     const href = anchor?.href || null;
-    // Each readable element renders as ONE translation block (a paragraph-level
-    // chunk) — do not split it into sentence units. The translation view shows
-    // whole paragraphs; a hovered token highlights the translation SENTENCE
-    // within the block via buildSentenceMap (apps/web reader parity).
-    const clipped = text.slice(0, 2000);
-    if (totalChars + clipped.length > 180000) break;
-    blocks.push({ id: el.__lpvBlockId, text: clipped, href });
-    totalChars += clipped.length;
+    for (const run of runs) {
+      // Each run renders as ONE translation block (a paragraph-level chunk) —
+      // do not split a run further into sentence units. A hovered token
+      // highlights the translation SENTENCE within the block via buildSentenceMap
+      // (apps/web reader parity).
+      const clipped = run.text.slice(0, 2000);
+      if (totalChars + clipped.length > 180000) break;
+      blocks.push({ id: run.runId, text: clipped, href });
+      totalChars += clipped.length;
+    }
   }
   return blocks;
 }
@@ -457,22 +515,21 @@ function onTokenClick(e, token, textNodeParent) {
   const anchor = textNodeParent?.closest?.('a[href]');
   const href = anchor ? anchor.href : null;
   const block = textNodeParent?.closest?.(BLOCK_SELECTOR) || textNodeParent;
-  // Serve the block text from the source captured at tokenization, not from the
-  // live (tokenized + ruby) DOM — otherwise it includes ruby readings. Restrict
-  // the dict context to the immediate sentence containing the token (Spec/console
-  // parity: match apps/web, which uses sentenceContaining/Intl.Segmenter).
-  const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
-  const blockId = block?.__lpvBlockId || null;
   const tokenSpan = e.currentTarget;
+  // Prefer the paragraph RUN the token belongs to (stamped at tokenization), so
+  // the dictionary context + sentence index are scoped to one paragraph rather
+  // than the whole (possibly multi-paragraph) element. Fall back to the element
+  // block text for tokens not stamped (edge case).
+  const run = resolveRunForSpan(tokenSpan);
+  const blockText = run?.text || block?.__lpvSourceText || getVisibleBlockText(block);
+  const blockId = run?.runId || block?.__lpvBlockId || null;
   let contextText = blockText;
   let sentenceIndex = 0;
-  if (tokenSpan) {
-    const offset = tokenOffsetInBlock(block, tokenSpan);
-    const hit = offset !== -1 && blockText.slice(offset, offset + token.text.length) === token.text
-      ? offset
-      : blockText.indexOf(token.text);
-    sentenceIndex = sentenceIndexAtOffset(blockText, hit !== -1 ? hit : offset, baseCode(l2Code));
-    contextText = hit !== -1
+  if (tokenSpan && blockText) {
+    const offset = blockText.indexOf(token.text);
+    const hit = offset >= 0 ? offset : -1;
+    sentenceIndex = sentenceIndexAtOffset(blockText, hit >= 0 ? hit : 0, baseCode(l2Code));
+    contextText = hit >= 0
       ? sentenceContaining(blockText, hit, baseCode(l2Code))
       : blockText;
   }
@@ -602,22 +659,26 @@ function attachPageHoverListener() {
       return;
     }
     const block = span.closest?.(BLOCK_SELECTOR) || span;
-    const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
     const tokenText = span.dataset.tokenText || '';
-    const offset = tokenOffsetInBlock(block, span);
-    const sentenceIndex = offset !== -1
+    // Resolve the paragraph RUN the token belongs to, so the sentence index is
+    // scoped to one paragraph (stable across multiple hovered runs).
+    const run = resolveRunForSpan(span);
+    const blockText = run?.text || block?.__lpvSourceText || getVisibleBlockText(block);
+    const blockId = run?.runId || block?.__lpvBlockId || null;
+    const offset = blockText.indexOf(tokenText);
+    const sentenceIndex = offset >= 0
       ? sentenceIndexAtOffset(blockText, offset, baseCode(l2Code))
       : 0;
-    const key = `${block?.__lpvBlockId || ''}:${sentenceIndex}`;
+    const key = `${blockId || ''}:${sentenceIndex}`;
     if (key === lastHoverKey) return;
     lastHoverKey = key;
-    log(`[PAGE] token hover → translation scroll: block=${block?.__lpvBlockId || '?'} sentence=${sentenceIndex} token="${tokenText}"`);
+    log(`[PAGE] token hover → translation scroll: block=${blockId || '?'} sentence=${sentenceIndex} token="${tokenText}"`);
     try {
       chrome.runtime.sendMessage({
         action: 'pageTokenHover',
-        blockId: block?.__lpvBlockId || null,
+        blockId,
         sentenceIndex,
-        tokenOffset: offset !== -1 ? offset : null,
+        tokenOffset: offset >= 0 ? offset : null,
         blockText,
         tokenText,
       }).catch(() => {});
@@ -674,15 +735,21 @@ async function flushPending() {
       if (tokenizedBlocks.has(block)) continue;
       if (hasVisibleBlockDescendant(block)) continue; // became nested — leave to its leaf children
       if (block.__lpvOriginalHtml === undefined) block.__lpvOriginalHtml = block.innerHTML;
-      if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
-      const nodes = getTextNodes(block);
-      if (nodes.length > 0) {
+      // Split the block into paragraph runs so each is tokenized + stamped with
+      // its own run id (data-lpv-run) — a bare <div> post body yields one block
+      // per <br>-separated paragraph instead of one clumped block.
+      const runs = getTextRuns(block);
+      const nodeRuns = [];
+      for (const run of runs) {
+        for (const node of run.nodes) nodeRuns.push({ node, runId: run.runId });
+      }
+      if (nodeRuns.length > 0) {
         // Capture the block's *source* text once, before the text nodes are
         // replaced by token spans. The lookup context is served from this
         // stored value instead of re-reading the (now tokenized, ruby-laden)
         // DOM on every token click / selection (SPEC-033 context parity).
         if (block.__lpvSourceText === undefined) block.__lpvSourceText = getVisibleBlockText(block);
-        blocksWithNodes.push({ block, nodes });
+        blocksWithNodes.push({ block, nodeRuns });
         block.classList.add('lpv-page-tokenizing');
       } else {
         emptyBlocks.push(block);
@@ -697,7 +764,8 @@ async function flushPending() {
     }
     if (blocksWithNodes.length === 0) return;
 
-    const textNodes = blocksWithNodes.flatMap(({ nodes }) => nodes);
+    const nodeRunsList = blocksWithNodes.flatMap(({ nodeRuns }) => nodeRuns);
+    const textNodes = nodeRunsList.map(({ node }) => node);
     log(`[PAGE] tokenizing ${blocksWithNodes.length} blocks, ${textNodes.length} text nodes`);
 
     // Only fetch texts not already in the token cache — repeats (the same
@@ -717,9 +785,9 @@ async function flushPending() {
 
     const statsBefore = { ...pageTokenStats };
     let renderedNodes = 0;
-    for (const { block, nodes } of blocksWithNodes) {
-      for (const node of nodes) {
-        if (renderTextNode(node, tokenCache.get(`${l2Code}:${node.nodeValue}`))) renderedNodes++;
+    for (const { block, nodeRuns } of blocksWithNodes) {
+      for (const { node, runId } of nodeRuns) {
+        if (renderTextNode(node, tokenCache.get(`${l2Code}:${node.nodeValue}`), runId)) renderedNodes++;
       }
       block.classList.remove('lpv-page-tokenizing');
       tokenizedBlocks.add(block);
@@ -832,6 +900,7 @@ function cleanup() {
   initialized = false;
   enabled = false;
   pageLookupWords.clear();
+  pageRunTexts.clear();
   log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks (enabled=false, panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}); page tokenization + translation stopped`);
   if (observer) {
     observer.disconnect();
