@@ -24,6 +24,7 @@ import { Markdown } from './Markdown';
 import { Bookmark, BookmarkCheck, BookOpen, ChevronDown, ChevronUp, Image, Loader, Sparkles, Video, Volume2, X } from './Icons';
 import { Button } from './ui/button';
 import { log, logwarn, logerr, t } from '../i18n';
+import { applySpeechToUtterance, loadSpeechSettings } from '../extension-settings';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -340,9 +341,10 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     event.stopPropagation();
     window.speechSynthesis?.cancel();
     const utterance = new SpeechSynthesisUtterance(displayHead);
-    utterance.lang = l2Base;
-    utterance.rate = 0.75;
-    window.speechSynthesis?.speak(utterance);
+    loadSpeechSettings().then((speech) => {
+      applySpeechToUtterance(utterance, l2Base, speech);
+      window.speechSynthesis?.speak(utterance);
+    });
   }, [displayHead, l2Base]);
 
   const openEntry = useCallback(() => {
