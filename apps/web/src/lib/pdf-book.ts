@@ -9,6 +9,7 @@
 
 import * as pdfjs from 'pdfjs-dist';
 import { log, logwarn } from '@/lib/logger';
+import { downscaleImage } from '@/lib/downscale-image';
 
 // ESM worker, bundled as an asset by Next.js.
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -132,11 +133,14 @@ export async function renderPdfPage(
  */
 export async function pdfPageToMarkdown(dataUrl: string): Promise<string> {
   const { PYTHON_API_URL } = await import('@/lib/api-url');
+  // Downscale the rendered page before /vision to cap token usage.
+  const payload = await downscaleImage(dataUrl);
+  log('[LP Web] pdf page → markdown', { chars: dataUrl.length, downscaled: payload.length });
   const res = await fetch(`${PYTHON_API_URL}/vision`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      image: dataUrl,
+      image: payload,
       prompt:
         'Extract all text from this PDF page image as clean, properly formatted ' +
         'markdown. Separate each block element (headings, paragraphs, list items) ' +
