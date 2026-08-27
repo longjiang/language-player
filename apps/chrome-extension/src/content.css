@@ -672,6 +672,10 @@ body.lpv-panel-open disney-web-player-ui {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  /* Consistent symmetric margins: the card body supplies the horizontal
+     padding, so only a uniform vertical gap is needed (and it must match the
+     Pro banner below). */
+  margin: 0.75rem 0;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 500;
@@ -732,8 +736,8 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-explain-pro-banner {
   display: block;
   box-sizing: border-box;
-  width: calc(100% - 2rem);
-  margin: 0.5rem 1rem 0.75rem;
+  width: 100%;
+  margin: 0.75rem 0;
   padding: 0.5rem 0.75rem;
   font-size: 12px;
   text-align: center;
