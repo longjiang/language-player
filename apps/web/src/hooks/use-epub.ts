@@ -378,6 +378,10 @@ export function useEpub(): UseEpubReturn {
           epubWarn(`PDF cover render failed: ${(err as Error)?.message ?? err}`);
         }
       }
+      // Log the byte length right before the IndexedDB put. A detached
+      // ArrayBuffer reports 0 here — if a PDF with content logs 0 bytes, the
+      // cover render detached the buffer (see pdf-book.ts openDoc).
+      epubLog(`saving PDF "${fName}" — ${data.byteLength} bytes, cover=${coverUrl ? 'yes' : 'no'}`);
       await saveEpub(id, data, {
         id,
         fileName: fName,
