@@ -503,9 +503,13 @@ src/
 ├── lib/epub-book-types.ts                ← Shared book-model types (TocNode, BookLocation, EpubBlock, …)
 ├── lib/epub-store.ts                     ← IndexedDB persistence (v3: lastLocation + per-spine search index)
 └── components/reader/
+    ├── paginated-reader.tsx               ← Shared `PaginatedReader` panel (viewport, pager, bottom bar) — used by ALL readers
+    ├── reader-block.tsx                   ← Shared per-block renderers (`ReaderTextBlock` / `ReaderMarkdownBlock`): the single `renderBlock` the EPUB, notes/web/image, and PDF readers inject into `PaginatedReader`. Only markdown URL transform, link handler, search highlight, and deferred tokenization differ per reader (pass-in props).
     ├── epub-upload.tsx                    ← Drag-and-drop UI
     ├── epub-chapter-sidebar.tsx           ← TOC tree with hierarchy + ancestor highlighting
     ├── epub-reader-panel.tsx              ← Block-driven reading pane (whole-book pages, tokens, translation)
+    ├── reader-panel.tsx                   ← Notes / web-reader / image-reader panel (same `PaginatedReader` + `reader-block`)
+    ├── pdf-reader-panel.tsx               ← PDF reader (same `PaginatedReader` + `reader-block`; thumbnails sidebar + page preview)
     └── reader-sidebar.tsx                 ← Shared responsive sidebar shell
 ```
 
@@ -603,8 +607,13 @@ image reader). Tapping a page renders it and sends the page image to the
 DeepSeek Vision endpoint (`POST /vision`, `deepseek-v4-flash-vision-exp`,
 cached server-side) with a "page → markdown" prompt; the returned markdown is
 parsed into blocks and read in the shared paginated reader (tokenized words,
-translation, text actions). The bottom bar carries a **TOC** button (the PDF
-outline/bookmarks) and a **Thumbnails** button that **toggles the sidebar**.
+translation, text actions). On **web** the PDF reader injects the SAME shared
+`ReaderTextBlock` / `ReaderMarkdownBlock` into `PaginatedReader` as the EPUB
+and notes/web/image readers, so it gets the identical baseline-aligned,
+sentence-highlighted translation and the draggable splitter (it previously
+used a compact renderer that dropped that wiring). The bottom bar carries a
+**TOC** button (the PDF outline/bookmarks) and a **Thumbnails** button that
+**toggles the sidebar**.
 The top-right reader close control is a `✕` close button; there is no
 top-left thumbnails icon (the header uses a standard sidebar toggle). Web
 rendering: `apps/web/src/lib/pdf-book.ts` + `components/reader/pdf-reader-panel.tsx`;
