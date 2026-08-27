@@ -360,11 +360,11 @@ export default function ImageReaderScreen() {
         if (im.id === currentId) setPreviewId(im.id);
         else selectImage(im.id);
       }}
-      className={`relative w-24 overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
+      className={`relative w-full overflow-hidden rounded-lg border-2 ${im.id === currentId ? 'border-primary' : 'border-border'}`}
       accessibilityRole="button"
       accessibilityLabel={im.title || im.name}
     >
-      <Image source={{ uri: im.uri }} style={{ width: '100%', height: 64 }} resizeMode="cover" />
+      <Image source={{ uri: im.uri }} style={{ width: '100%', aspectRatio: 3 / 2 }} resizeMode="cover" />
       {im.id === currentId && (
         <View className="absolute inset-0 border-2 border-primary" />
       )}
@@ -528,8 +528,9 @@ export default function ImageReaderScreen() {
           sidebarOpen={sidebarOpen}
           title={t('label.images')}
           desktopClassName="w-60 ml-3"
+          bodyClassName="p-4"
         >
-          <View className="flex-row flex-wrap gap-2 p-2">
+          <View className="flex-col items-center gap-3">
             {images.map(thumbnail)}
             {addTile}
           </View>
