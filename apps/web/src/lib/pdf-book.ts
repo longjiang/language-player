@@ -35,7 +35,15 @@ export interface PdfInfo {
 
 async function openDoc(data: ArrayBuffer) {
   try {
-    return await pdfjs.getDocument({ data }).promise;
+    // pdf.js runs in a worker and transfers the passed `data` to it via
+    // postMessage with a transfer list, which DETACHES the caller's
+    // ArrayBuffer (its bytes become the worker's). Callers keep their buffer
+    // afterwards — e.g. addBook renders the cover here and then saves the
+    // SAME buffer through IndexedDB (saveEpub). Storing a detached buffer
+    // throws "DataCloneError: An ArrayBuffer is detached". Copy it up front
+    // so pdf.js transfers its own copy and the caller's buffer is untouched.
+    const copy = data.slice(0);
+    return await pdfjs.getDocument({ data: copy }).promise;
   } catch (err) {
     logwarn('[LP Web] PDF parse failed', (err as Error)?.message ?? err);
     throw err;
