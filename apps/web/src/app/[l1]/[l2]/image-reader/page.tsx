@@ -380,7 +380,7 @@ export default function ImageReaderPage() {
 
   /** Placeholder "next image" tile below the last thumbnail. */
   const addTile = (
-    <div className="col-span-2 flex aspect-[3/2] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-3 text-center">
+    <div className="flex aspect-[3/2] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-3 text-center">
       <Plus className="h-5 w-5 text-muted-foreground" />
       <div className="flex items-center gap-1.5">
         <button
@@ -497,9 +497,9 @@ export default function ImageReaderPage() {
             sidebarOpen={sidebarOpen}
             title={t('label.images')}
             desktopClassName="w-60 ml-3"
-            bodyClassName="p-2"
+            bodyClassName="p-4"
           >
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col items-center gap-3">
               {images.map((im) => (
                 <div
                   key={im.id}
@@ -520,7 +520,7 @@ export default function ImageReaderPage() {
                     if (im.id === currentId) setPreviewId(im.id);
                     else selectImage(im.id);
                   }}
-                  className={`group relative cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
+                  className={`group relative w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
                     im.id === currentId ? 'border-primary' : 'border-border hover:border-muted-foreground/50'
                   }`}
                 >
