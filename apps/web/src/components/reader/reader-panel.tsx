@@ -9,8 +9,6 @@ import { useT } from '@/hooks/use-t';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { TokenizedText } from '@/components/tokenized-text';
-import { TextActionMenu } from '@/components/text-action-menu';
 import { translationFontSizeRem } from '@/lib/reader-text-size';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,9 +17,7 @@ import {
   type ReaderLoc,
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
-import {
-  SentenceHighlightBlock,
-} from '@/components/reader/sentence-highlight';
+import { ReaderTextBlock, ReaderMarkdownBlock } from '@/components/reader/reader-block';
 import { blockTag, blockClass, translationClass } from '@/components/reader/shared-reader-styles';
 import { type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { languageName } from '@/lib/language-data';
@@ -149,18 +145,10 @@ export function ReaderPanel({
   const renderBlock = useCallback((item: ReaderPageItem, rctx: BlockRenderCtx) => {
     if (item.kind === 'markdown') {
       return (
-        <div key={item.key}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={markdownComponents}
-          >
-            {item.block.raw}
-          </ReactMarkdown>
-        </div>
+        <ReaderMarkdownBlock key={item.key} raw={item.block.raw} components={markdownComponents} />
       );
     }
     const tb = item.block as TextBlock;
-    const Tag = blockTag(tb);
     // First link in the block — surfaced as an "Open in Reader" action in
     // the token dictionary popup. Without a custom handler, only http(s)
     // links qualify.
@@ -168,37 +156,24 @@ export function ReaderPanel({
       f => f.type === 'link' && (onOpenLink ? true : /^https?:\/\//i.test(f.url ?? '')),
     )?.url;
     return (
-      <SentenceHighlightBlock key={item.key} text={tb.text} translation={showTranslation ? rctx.translation : null}>
-        {({ map, activeSentence, onTokenHover }) => (
-          <TextActionMenu text={tb.text} l2Code={l2.code} l1Code={l1.code}
-            translationAligned={showTranslation && rctx.translation ? {
-              text: rctx.translation,
-              map,
-              active: activeSentence,
-              measureNonce,
-            } : null}
-            translationClass={translationClass(tb)}
-            translationFontSize={translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}
-            translationSplit={appliedSplit}
-            onTranslationSplitChange={onTranslationSplitChange}
-            onTranslationSplitCommit={onTranslationSplitCommit}
-            sideBySideBreakpoint="md"
-            loading={rctx.isTranslating && !rctx.translation}>
-            <Tag
-              className={blockClass(tb)}
-              style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
-            >
-              <TokenizedText text={tb.text} l2Code={l2.code}
-                inheritSize={tb.type === 'heading'} context={ctx}
-                tokens={rctx.tokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink}
-                deferTokenization={!!onLemmatize} selectionDictionary
-                onTokenHover={onTokenHover} />
-            </Tag>
-          </TextActionMenu>
-        )}
-      </SentenceHighlightBlock>
+      <ReaderTextBlock
+        key={item.key}
+        block={tb}
+        rctx={rctx}
+        ctx={ctx}
+        href={blockHref}
+        onOpenLink={onOpenLink}
+        deferTokenization={!!onLemmatize}
+        measureNonce={measureNonce}
+        translationSplit={appliedSplit}
+        onTranslationSplitChange={onTranslationSplitChange}
+        onTranslationSplitCommit={onTranslationSplitCommit}
+        loading={rctx.isTranslating && !rctx.translation}
+        l2Code={l2.code}
+        l1Code={l1.code}
+      />
     );
-  }, [showTranslation, textZoom, ctx, l2.code, l1.code, onOpenLink, markdownComponents, onLemmatize, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit]);
+  }, [ctx, onOpenLink, markdownComponents, onLemmatize, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, l2.code, l1.code]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block, matching spacing, the translation skeleton, and the
