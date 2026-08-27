@@ -97,6 +97,8 @@ export default function ImageReaderPage() {
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
       const normalized = normalizeVisionMarkdown(md);
+      epubLog(`image reader OCR md length=${md.length} normalizedBlocksLen=${normalized.length}`);
+      epubLog(`image reader OCR sample: ${normalized.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
       setImages((prev) => prev.map((im) => (
         im.id === id
           ? { ...im, md: normalized, blocks: normalized ? parseMarkdown(normalized) : [], converting: false }
@@ -125,7 +127,7 @@ export default function ImageReaderPage() {
     }
     let firstNewId: string | null = null;
     const pending: Promise<void>[] = [];
-    let newEntries: ImageEntry[] = [];
+    const newEntries: ImageEntry[] = [];
     for (const file of supported) {
       const id = nextId();
       if (!firstNewId) firstNewId = id;

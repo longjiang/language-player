@@ -82,6 +82,7 @@ export default function ImageReaderScreen() {
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
       const normalized = normalizeVisionMarkdown(md);
+      log('[image-reader] OCR result', { name: entry.name, mdLength: md.length, normalizedLength: normalized.length, sample: normalized.slice(0, 160) });
       setImages((prev) => prev.map((im) => (
         im.id === id ? { ...im, md: normalized, converting: false } : im
       )));
