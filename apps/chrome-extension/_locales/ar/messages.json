@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "كلمة المرور"
   },
+  "welcomeBack": {
+    "message": "مرحبًا بعودتك"
+  },
+  "logInToContinue": {
+    "message": "سجل الدخول لمواصلة التعلم."
+  },
+  "forgotPassword": {
+    "message": "نسيت كلمة المرور؟"
+  },
+  "signUp": {
+    "message": "التسجيل"
+  },
+  "dontHaveAccount": {
+    "message": "ليس لديك حساب؟"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "لإنشاء حساب أو إعادة تعيين كلمة المرور، تفضل بزيارة languageplayer.io ثم عد إلى هنا لتسجيل الدخول."
+  },
   "popupSaveWords": {
     "message": "<strong>احفظ</strong> الكلمات في حساب Language Player الخاص بك"
   },

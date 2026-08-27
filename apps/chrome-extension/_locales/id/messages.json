@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Kata Sandi"
   },
+  "welcomeBack": {
+    "message": "Selamat datang kembali"
+  },
+  "logInToContinue": {
+    "message": "Masuk untuk melanjutkan belajar."
+  },
+  "forgotPassword": {
+    "message": "Lupa kata sandi?"
+  },
+  "signUp": {
+    "message": "Daftar"
+  },
+  "dontHaveAccount": {
+    "message": "Belum punya akun?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Untuk membuat akun atau mengatur ulang kata sandi, kunjungi languageplayer.io lalu kembali ke sini untuk masuk."
+  },
   "popupSaveWords": {
     "message": "<strong>Simpan</strong> kata ke akun Language Player Anda"
   },

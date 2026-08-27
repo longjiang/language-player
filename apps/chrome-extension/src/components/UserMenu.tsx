@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
 import { Input } from './ui/input';
 import { AuthState, getAuthState, login, logout } from '../auth';
+import { LANGUAGE_PLAYER_URL } from '../web-links';
 import { t } from '../i18n';
 
 interface UserMenuProps {
@@ -58,10 +59,46 @@ export function LoginDialog({ open, onOpenChange, onLoggedIn }: { open: boolean;
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Shown after the learner taps "Sign up" or "Forgot password": account
+  // creation and password reset happen on the website, so we open that page
+  // and tell them to come back here to sign in.
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const openWebsite = useCallback((path: string) => {
+    setNotice(t('accountOnWebsiteNotice'));
+    try { chrome.tabs.create({ url: `${LANGUAGE_PLAYER_URL}${path}` }); } catch {}
+  }, []);
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true); setError(null);
     try { onLoggedIn(await login(email, password)); } catch (err: any) { setError(err?.message || t('loginFailed')); } finally { setLoading(false); }
   };
-  return <Dialog open={open} onOpenChange={onOpenChange} title={t('login')} closeLabel={t('close')}><form className="lpv-login-form" onSubmit={submit}><Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={t('popupEmailPlaceholder')} aria-label={t('popupEmailPlaceholder')} required /><Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={t('popupPasswordPlaceholder')} aria-label={t('popupPasswordPlaceholder')} required />{error && <p className="lpv-account-danger" role="alert">{error}</p>}<div className="lpv-dialog-actions"><Button variant="outline" type="button" onClick={() => onOpenChange(false)}>{t('close')}</Button><Button type="submit" disabled={loading}>{loading ? t('loadingSubtitles') : t('login')}</Button></div></form></Dialog>;
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} title={t('welcomeBack')} closeLabel={t('close')} className="lpv-login-dialog">
+      <div className="lpv-login">
+        <p className="lpv-login-subtitle">{t('logInToContinue')}</p>
+        <form className="lpv-login-form" onSubmit={submit}>
+          <label className="lpv-login-field">
+            <span className="lpv-login-label">{t('popupEmailPlaceholder')}</span>
+            <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={t('popupEmailPlaceholder')} autoComplete="email" required />
+          </label>
+          <label className="lpv-login-field">
+            <span className="lpv-login-label">{t('popupPasswordPlaceholder')}</span>
+            <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" autoComplete="current-password" required />
+          </label>
+          <div className="lpv-login-forgot">
+            <button type="button" className="lpv-login-link" onClick={() => openWebsite('/forgot-password')}>{t('forgotPassword')}</button>
+          </div>
+          {error && <p className="lpv-account-danger" role="alert">{error}</p>}
+          {notice && <p className="lpv-login-notice" role="status">{notice}</p>}
+          <Button type="submit" className="lpv-login-submit" disabled={loading}>{loading ? t('loadingSubtitles') : t('login')}</Button>
+        </form>
+        <p className="lpv-login-footer">
+          {t('dontHaveAccount')}{' '}
+          <button type="button" className="lpv-login-link lpv-login-link-strong" onClick={() => openWebsite('/register')}>{t('signUp')}</button>
+        </p>
+      </div>
+    </Dialog>
+  );
 }

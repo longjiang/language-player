@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Mật khẩu"
   },
+  "welcomeBack": {
+    "message": "Chào mừng trở lại"
+  },
+  "logInToContinue": {
+    "message": "Đăng nhập để tiếp tục học."
+  },
+  "forgotPassword": {
+    "message": "Quên mật khẩu?"
+  },
+  "signUp": {
+    "message": "Đăng ký"
+  },
+  "dontHaveAccount": {
+    "message": "Chưa có tài khoản?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Để tạo tài khoản hoặc đặt lại mật khẩu, hãy truy cập languageplayer.io rồi quay lại đây để đăng nhập."
+  },
   "popupSaveWords": {
     "message": "<strong>Lưu</strong> từ vào tài khoản Language Player của bạn"
   },

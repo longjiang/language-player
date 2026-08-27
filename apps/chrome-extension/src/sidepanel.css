@@ -205,9 +205,85 @@ button:focus-visible,
   color: hsl(var(--destructive));
 }
 
+/* ── Login dialog (web-parity: max-w-md card, labeled inputs, register /
+     forgot-password links) ────────────────────────────────────────────── */
+.lpv-login-dialog {
+  width: min(100%, 28rem);
+}
+
+.lpv-login {
+  display: grid;
+  gap: 1rem;
+}
+
+.lpv-login-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
 .lpv-login-form {
   display: grid;
   gap: 0.75rem;
+}
+
+.lpv-login-field {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.lpv-login-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+}
+
+.lpv-login-form .lpv-ui-input {
+  font-weight: 400;
+}
+
+.lpv-login-forgot {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.lpv-login-link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: hsl(var(--primary));
+  cursor: pointer;
+}
+
+.lpv-login-link:hover {
+  text-decoration: underline;
+}
+
+.lpv-login-link-strong {
+  font-weight: 500;
+}
+
+.lpv-login-submit {
+  width: 100%;
+}
+
+.lpv-login-footer {
+  margin: 0;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.lpv-login-notice {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.3);
+  color: hsl(var(--muted-foreground));
 }
 
 .lpv-account-scroll {
@@ -492,6 +568,7 @@ button:focus-visible,
   color: hsl(var(--foreground));
   font-size: 0.875rem;
   line-height: 1.5;
+  font-weight: 400;
 }
 
 .lpv-page-translation-block.is-highlighted {
@@ -1063,6 +1140,7 @@ button:focus-visible,
 .lpv-ui-input {
   height: 2.25rem;
   padding: 0 0.75rem;
+  font-weight: 400;
 }
 
 .lpv-ui-select {

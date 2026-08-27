@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "비밀번호"
   },
+  "welcomeBack": {
+    "message": "다시 오신 것을 환영합니다"
+  },
+  "logInToContinue": {
+    "message": "로그인하여 학습을 계속하세요."
+  },
+  "forgotPassword": {
+    "message": "비밀번호를 잊으셨나요?"
+  },
+  "signUp": {
+    "message": "가입하기"
+  },
+  "dontHaveAccount": {
+    "message": "계정이 없으신가요?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "계정을 만들거나 비밀번호를 재설정하려면 languageplayer.io를 방문한 후 여기로 돌아와 로그인하세요."
+  },
   "popupSaveWords": {
     "message": "Language Player 계정에 단어를 <strong>저장</strong>하세요"
   },

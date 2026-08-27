@@ -100,6 +100,12 @@ const CSV_LOOKUP = {
   'popupLogoutBtn': 'action.log_out',
   'popularLanguages': 'msg.popular_languages',
   'popupChecking': 'msg.checking',
+  // Login dialog (web-parity surface)
+  'welcomeBack': 'title.welcome_back',
+  'logInToContinue': 'msg.log_in_to_continue',
+  'forgotPassword': 'action.forgot_password',
+  'signUp': 'action.sign_up',
+  'dontHaveAccount': 'msg.dont_have_account',
   // Reused existing CSV keys (SPEC-028 optimization)
   'interfaceLanguage': 'placeholder.select_language',
   'learningLanguage': 'placeholder.select_language',
@@ -893,6 +899,25 @@ const MANUAL = {
     'ko': '자막 예시를 찾을 수 없습니다', 'nl': 'Geen voorbeelden uit ondertitels gevonden', 'pl': 'Nie znaleziono przykładów z napisów',
     'pt': 'Nenhum exemplo de legendas encontrado', 'ru': 'Примеры из субтитров не найдены', 'th': 'ไม่พบตัวอย่างจากคำบรรยาย',
     'tr': 'Altyazı örneği bulunamadı', 'vi': 'Không tìm thấy ví dụ từ phụ đề',
+  },
+  'accountOnWebsiteNotice': {
+    'zh-Hans': '注册或找回密码请前往 languageplayer.io，完成后返回此处登录。',
+    'zh-Hant': '註冊或找回密碼請前往 languageplayer.io，完成後返回此處登入。',
+    'ar': 'لإنشاء حساب أو إعادة تعيين كلمة المرور، تفضل بزيارة languageplayer.io ثم عد إلى هنا لتسجيل الدخول.',
+    'de': 'Um ein Konto zu erstellen oder dein Passwort zurückzusetzen, besuche languageplayer.io und melde dich dann hier wieder an.',
+    'es': 'Para crear una cuenta o restablecer tu contraseña, visita languageplayer.io y vuelve aquí para iniciar sesión.',
+    'fr': 'Pour créer un compte ou réinitialiser votre mot de passe, rendez-vous sur languageplayer.io, puis revenez ici pour vous connecter.',
+    'id': 'Untuk membuat akun atau mengatur ulang kata sandi, kunjungi languageplayer.io lalu kembali ke sini untuk masuk.',
+    'it': 'Per creare un account o reimpostare la password, visita languageplayer.io e poi torna qui per accedere.',
+    'ja': 'アカウント作成やパスワード再設定は languageplayer.io で行い、完了したらここに戻ってログインしてください。',
+    'ko': '계정을 만들거나 비밀번호를 재설정하려면 languageplayer.io를 방문한 후 여기로 돌아와 로그인하세요.',
+    'nl': 'Om een account aan te maken of je wachtwoord opnieuw in te stellen, ga je naar languageplayer.io en kom daarna hier terug om in te loggen.',
+    'pl': 'Aby utworzyć konto lub zresetować hasło, odwiedź languageplayer.io, a następnie wróć tutaj, aby się zalogować.',
+    'pt': 'Para criar uma conta ou redefinir a senha, visite languageplayer.io e volte aqui para entrar.',
+    'ru': 'Чтобы создать аккаунт или сбросить пароль, перейдите на languageplayer.io и вернитесь сюда для входа.',
+    'th': 'หากต้องการสร้างบัญชีหรือรีเซ็ตรหัสผ่าน โปรดไปที่ languageplayer.io แล้วกลับมาที่นี่เพื่อเข้าสู่ระบบ',
+    'tr': 'Hesap oluşturmak veya şifrenizi sıfırlamak için languageplayer.io adresini ziyaret edin, ardından giriş yapmak için buraya dönün.',
+    'vi': 'Để tạo tài khoản hoặc đặt lại mật khẩu, hãy truy cập languageplayer.io rồi quay lại đây để đăng nhập.',
   },
 };
 

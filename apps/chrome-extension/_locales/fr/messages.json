@@ -141,6 +141,24 @@
   "popupPasswordPlaceholder": {
     "message": "Mot de passe"
   },
+  "welcomeBack": {
+    "message": "Bon retour"
+  },
+  "logInToContinue": {
+    "message": "Connectez-vous pour continuer à apprendre."
+  },
+  "forgotPassword": {
+    "message": "Mot de passe oublié ?"
+  },
+  "signUp": {
+    "message": "S'inscrire"
+  },
+  "dontHaveAccount": {
+    "message": "Vous n'avez pas de compte ?"
+  },
+  "accountOnWebsiteNotice": {
+    "message": "Pour créer un compte ou réinitialiser votre mot de passe, rendez-vous sur languageplayer.io, puis revenez ici pour vous connecter."
+  },
   "popupSaveWords": {
     "message": "<strong>Enregistrez</strong> des mots sur votre compte Language Player"
   },
