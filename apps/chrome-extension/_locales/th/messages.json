@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "ไม่พบตัวอย่างจากคำบรรยาย"
+  },
+  "measureWord": {
+    "message": "วัด:"
+  },
+  "genderLabel": {
+    "message": "เพศ:"
+  },
+  "nounClass": {
+    "message": "คลาส:"
   }
 }

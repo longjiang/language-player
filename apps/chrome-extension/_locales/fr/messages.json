@@ -785,5 +785,14 @@
   },
   "noSubtitleExamples": {
     "message": "Aucun exemple de sous-titres trouvé"
+  },
+  "measureWord": {
+    "message": "Mesure :"
+  },
+  "genderLabel": {
+    "message": "Genre :"
+  },
+  "nounClass": {
+    "message": "Classe :"
   }
 }
