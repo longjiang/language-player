@@ -27,41 +27,38 @@ const isHulu = /hulu\.com/.test(location.hostname);
 const isHBOMax = /max\.com|hbonow\.com|hbomax\.com/.test(location.hostname);
 
 /**
- * YouTube auto-generated (ASR) caption alignment offset.
+ * YouTube auto-generated (ASR) caption alignment.
  *
- * YouTube's timedtext/json3 timestamps for auto-generated captions lag behind
- * the actual audio: the caption for a line appears in the player AFTER the
- * speaker has started the line, so at a given currentTime the panel highlights
- * the previous line ("one line behind"). Shifting these cues EARLIER by this
- * offset makes the first word of the line align with when it is first spoken.
- * Manual caption tracks are accurate and are left untouched. Tune this value
- * if the panel drifts ahead/behind on a particular auto-caption video.
+ * Auto-generated captions carry per-seg word timings in the json3 payload.
+ * The raw event window can span recognition silence, so anchoring each line to
+ * its first word's start and last word's end is more accurate than shifting
+ * every cue by a constant. The previous constant `YT_ASR_LEAD_OFFSET_SEC`
+ * (2.0s) lead shift was removed in favour of this literal word-based timing
+ * (the starttime of each line is the starttime of the first word of the line).
  */
-const YT_ASR_LEAD_OFFSET_SEC = 2.0;
-
-/** Shift every cue earlier by `offsetSec` so ASR captions align with the audio
- *  the speaker utters. Subtracting a constant preserves inter-cue gaps (no new
- *  overlaps); cues that would collapse to zero/negative length are dropped.
- *
- *  ASR cues also overlap (rolling recognition windows): the previous line's
- *  `end` can run past the next line's `start`. After the shift, clamp each
- *  `end` to the next `start` so `findActiveCueIndex` picks exactly one line —
- *  otherwise clicking a line seeks to the previous overlapping line. */
-function applyASRSubtitleOffset(cues, offsetSec) {
-  if (!Array.isArray(cues) || !offsetSec) return cues;
-  const shifted = [];
+function applyASRWordTiming(cues) {
+  if (!Array.isArray(cues)) return cues;
+  const out = [];
   for (const cue of cues) {
-    const start = Math.max(0, cue.start - offsetSec);
-    const end = Math.max(0, cue.end - offsetSec);
-    if (end - start > 0.02) shifted.push({ start, end, text: cue.text });
-  }
-  shifted.sort((a, b) => a.start - b.start);
-  for (let i = 0; i < shifted.length - 1; i++) {
-    if (shifted[i].end > shifted[i + 1].start) {
-      shifted[i].end = shifted[i + 1].start - 0.001;
+    const words = cue.words || [];
+    // ASR cues that carry word timing anchor start/end to the spoken span.
+    // XML/timedtext ASR tracks have no per-word data — keep the cue as-is.
+    if (words.length > 0) {
+      out.push({ start: words[0].start, end: words[words.length - 1].end, text: cue.text });
+    } else {
+      out.push({ start: cue.start, end: cue.end, text: cue.text });
     }
   }
-  return shifted.filter((c) => c.end - c.start > 0.02);
+  out.sort((a, b) => a.start - b.start);
+  // ASR cues overlap (rolling recognition windows): the previous line's `end`
+  // can run past the next line's `start`. Clamp so findActiveCueIndex picks
+  // exactly one line — otherwise clicking a line seeks to the previous line.
+  for (let i = 0; i < out.length - 1; i++) {
+    if (out[i].end > out[i + 1].start) {
+      out[i].end = out[i + 1].start - 0.001;
+    }
+  }
+  return out.filter((c) => c.end - c.start > 0.02);
 }
 
 /** Trace logging helper — labels each step with a unique phase tag so
@@ -925,16 +922,19 @@ async function fetchYTTrack(track, requestGeneration = detectionGeneration) {
 
     log('Parsed', cues.length, 'cues');
 
-    // Auto-generated (ASR) captions lag the audio by roughly one line. Shift
-    // them earlier so the active line matches what the speaker is saying now,
-    // rather than remaining on the previous line.
+    // Auto-generated (ASR) captions: anchor each line to its first word's
+    // start / last word's end so the active line matches what the speaker is
+    // saying now (word-level timing), rather than a constant lead shift.
     if (track.kind === 'asr') {
-      log(`[TIME] ASR caption offset: shifting ${cues.length} cues earlier by ${YT_ASR_LEAD_OFFSET_SEC}s to align with audio`);
-      cues = applyASRSubtitleOffset(cues, YT_ASR_LEAD_OFFSET_SEC);
+      const wordCues = cues.filter((c) => Array.isArray(c.words) && c.words.length > 0).length;
+      log(`[TIME] ASR caption alignment: ${wordCues}/${cues.length} cues carry word timing; anchoring line start to first word`);
+      cues = applyASRWordTiming(cues);
     }
 
     if (requestGeneration !== detectionGeneration) return;
-    STATE.cues = cues;
+    // Strip the transient word-timing field before the cues reach the panel
+    // (SubtitleCue is { start, end, text }; words only inform ASR alignment).
+    STATE.cues = cues.map(({ start, end, text }) => ({ start, end, text }));
     STATE.subtitleUrl = track.baseUrl;
     logCueTimeRange('YouTube');
 
