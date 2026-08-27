@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR word-based alignment, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling, web-parity dictionary popup, page-reader subtitle-style translation list, save-word login prompt, always-visible Let-DeepSeek-Explain, page-translation lifecycle re-assert on navigation, selection dictionary, context-sentence source-text capture, web-parity login dialog, close-on-navigation)
+- **Last Updated**: 2026-08-26 (settings modal: segmented Display controls, L2 sample preview, Playback + Speech categories, deep search; Review/subtitle-search removed)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -88,10 +88,12 @@ apps/chrome-extension/
     ├── use-subscription.ts            ← React hook: check Pro subscription status (JWT, /user-subscription)
     └── components/
         ├── ui/                          ← Extension-local Shadcn-compatible primitives
+        │   └── segmented.tsx             ← Segmented button group (settings controls; web SegmentedRow)
+        ├── extension-settings.ts         ← Playback + Speech settings storage keys/helpers (apply to TTS)
         ├── DictionaryCard.tsx           ← Compact dictionary cards and AI explanation
         ├── DictionaryModal.tsx          ← Modal lookup surface for transcript/page tokens
         ├── LanguagePicker.tsx            ← L1/L2 picker and script preference
-        ├── SettingsModal.tsx             ← Two-panel Display settings dialog
+        ├── SettingsModal.tsx             ← Two-panel settings dialog (Display/Playback/Speech + search)
         ├── UserMenu.tsx                  ← Auth-aware profile menu and login dialog
         ├── AccountModal.tsx              ← Profile, level, subscription, deletion flow
         ├── HelpModal.tsx                 ← Offline two-panel help/docs dialog
@@ -734,6 +736,34 @@ stored in `AuthState` as `firstName`/`lastName`; no `/auth/me` endpoint was
 added. Account deletion uses the existing authenticated DELETE route and the
 same active-renewing subscription predicate as web. Web-only account actions
 open the canonical production site in a new tab.
+
+The Settings modal is a two-panel list→detail dialog (ADR-0015 / SPEC-086) with
+three categories — **Display**, **Playback**, and **Speech** — and a search
+field that matches category titles *and* control labels (locale-agnostic via
+the flat extension keys resolved through `t()`, matching apps/web
+`SettingsListPanel`). Settings apply immediately and persist to
+`chrome.storage.local`.
+
+- **Display** uses the web's segmented controls (`Segmented` in
+  `components/ui/segmented.tsx`) for Theme / Typeface / Phonetics mode / Scope,
+  a Switch for Show translation, and Sliders for text/translation size and
+  leading. The live preview renders the L2-specific short sample sentence
+  (`getSampleSentence`, `@langplayer/shared`) and its L1 translation (via
+  `/translate_array` when Show translation is on). Display storage keys are
+  unchanged (`extensionDisplaySettings` + the legacy flat keys
+  `showPhonetics`/`showTranslation`/`textScale` the transcript reads).
+- **Playback** exposes only Smooth scroll (transcript autoscroll behaviour —
+  `chrome.storage.local.extensionPlaybackSettings.smoothScroll`, applied in
+  `transcript-app.tsx`). Karaoke / auto-pause / captions-display-as are not
+  shown because the extension has no native video player to apply them.
+- **Speech** exposes the TTS voice + rate.
+  `chrome.storage.local.extensionSpeechSettings` (`voiceURI` + `rate`,
+  default 0.75) are applied to the transcript and dictionary speak buttons via
+  `applySpeechToUtterance` (`extension-settings.ts`).
+
+**Review and subtitle-search are intentionally absent**: they were placeholder
+categories that only rendered a "coming soon" state and cannot be applied by
+the extension (SPEC-086 §13.4.3).
 
 The login dialog (`LoginDialog`, rendered in the page-dictionary-frame) matches
 apps/web's login card: clamped to 28rem, "Welcome back" title + "Log in to
