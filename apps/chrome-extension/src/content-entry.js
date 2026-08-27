@@ -1129,6 +1129,13 @@ function setupYouTubeNavigationObserver() {
     if (!currentId || currentId === lastVideoId) return;
     lastVideoId = currentId;
     log(`Navigated to video: ${currentId}`);
+    // Close the side panel on video change: an autoplaying "up next" would
+    // otherwise keep the panel tokenizing / translating / calling the
+    // subscription endpoint on a video the learner has left. Reopening is a
+    // deliberate user action (icon / shortcut / token click).
+    try {
+      chrome.runtime.sendMessage({ action: 'closePanel' }).catch(() => {});
+    } catch {}
     // Clear the previous video's transcript immediately so the side panel
     // doesn't keep showing the prior video's subtitles while the new video's
     // caption track loads (or while it resolves to "no subtitles").
