@@ -37,11 +37,12 @@ loaded it shows a **thumbnail rail/sidebar** (current image highlighted) and
 the vision-OCR result of the current image as **tokenized text** in the
 paginated reader. OCR is lazy per selection; results are cached server-side.
 
-The OCR markdown is normalized by `normalizeVisionMarkdown`
-(`packages/shared/src/markdown/vision.ts`) so paragraphs the vision model
-returns separated by single newlines become separate reader blocks (the model
-often collapses them into one paragraph/block otherwise). This also benefits
-the PDF page→markdown path.
+The vision model is prompted to return **properly formatted, block-level
+markdown**: block elements (headings, paragraphs, list items) separated by
+blank lines, each paragraph as flowing prose (no internal hard line breaks).
+That makes the reader break blocks naturally and reflow each block
+independently — there is **no** client-side post-processing of the OCR text.
+The same prompt is used for the PDF page→markdown path.
 
 ## Architecture
 
@@ -56,9 +57,11 @@ the PDF page→markdown path.
 
 ### Image reader flow
 `Open image` (Reading menu → Image Reader) → paste/drop/pick one or more
-images → `POST /vision` (OCR prompt) → `normalizeVisionMarkdown` →
+images → `POST /vision` (OCR prompt requesting block-level markdown) →
 `parseMarkdown` / `parseMarkdownBlocks` → shared paginated reader
 (non-immersive session), with a thumbnail rail for multi-image navigation.
+The first pasted/dropped/picked image is opened by default and OCR'd
+immediately.
 
 ## Caching
 
@@ -82,5 +85,11 @@ PDF thumbnails and the rendered cover are cached locally in the app.
   (`/[l1]/[l2]/image-reader` web, `(tabs)/(reading)/image-reader` mobile) with
   an "Image Reader" item in the Reading menu. It now supports multi-file
   drag & drop / picker, clipboard-image paste (Ctrl/Cmd+V), and a thumbnail
-  rail; the epub reader no longer hosts an inline image session. OCR markdown
-  is normalized by `normalizeVisionMarkdown` for block breaking.
+  rail; the epub reader no longer hosts an inline image session. The first
+  pasted/dropped image is opened by default and OCR'd immediately.
+- **Block breaking via the prompt (reversed earlier post-processing)**: block
+  breaking is now driven by the vision OCR prompt, which requests properly
+  formatted, block-level markdown (blocks separated by blank lines, each
+  paragraph as flowing prose). This replaces an earlier client-side
+  `normalizeVisionMarkdown` step that force-split every OCR line into its own
+  block, which caused text to render pre-wrapped instead of reflowing.

@@ -612,10 +612,12 @@ images via drag & drop or a multi-file picker, plus a **paste** button and
 global **Ctrl/Cmd+V** clipboard-image paste (web `paste` event / `async
 clipboard.read`; mobile `expo-clipboard` `getImageAsync`), then shows a
 thumbnail rail with the current image highlighted and sends the current image
-to `POST /vision` (OCR prompt). Each image's markdown is normalized by
-`normalizeVisionMarkdown` (`packages/shared/src/markdown/vision.ts`) — which
-promotes newline-separated paragraphs into separate reader blocks — and read
-in the paginated reader as a non-persistent session. OCR is lazy per image and
+to `POST /vision` (OCR prompt). The first pasted/dropped/picked image is
+opened by default and OCR'd immediately. The vision prompt asks for clean,
+**block-level markdown** — block elements separated by blank lines, each
+paragraph as flowing prose — so blocks break naturally and reflow
+independently (no client-side OCR post-processing). The markdown is read in
+the paginated reader as a non-persistent session. OCR is lazy per image and
 cached server-side by `/vision`.
 
 ### Epub-like formats (.fb2 / .mobi / .azw3)
