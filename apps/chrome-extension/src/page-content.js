@@ -425,7 +425,7 @@ function detachPageSelectionListener() {
 }
 
 function onIntersect(entries) {
-  if (!enabled) return;
+  if (!enabled || !panelOpen) return;
   let queued = false;
   for (const entry of entries) {
     if (!entry.isIntersecting) continue;
@@ -453,7 +453,7 @@ function scheduleFlush() {
 
 async function flushPending() {
   flushTimer = null;
-  if (!enabled || tokenizing || pendingBlocks.size === 0) return;
+  if (!enabled || !panelOpen || tokenizing || pendingBlocks.size === 0) return;
   tokenizing = true;
   const blocks = [...pendingBlocks];
   pendingBlocks.clear();
@@ -537,7 +537,7 @@ async function flushPending() {
 }
 
 async function tokenizePage() {
-  if (!enabled) return;
+  if (!enabled || !panelOpen) return;
   const ioInstance = ensureIo();
   const allCandidates = [...document.querySelectorAll(BLOCK_SELECTOR)];
   let hiddenCount = 0;
@@ -609,7 +609,7 @@ function cleanup() {
   lifecycleGeneration++;
   initialized = false;
   enabled = false;
-  log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks`);
+  log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks (enabled=false, panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}); page tokenization + translation stopped`);
   if (observer) {
     observer.disconnect();
     observer = null;
@@ -650,7 +650,7 @@ function restoreTokens() {
 function startObserver() {
   if (observer) return;
   observer = new MutationObserver(() => {
-    if (!enabled) return;
+    if (!enabled || !panelOpen) return;
     clearTimeout(mutationTimer);
     mutationTimer = setTimeout(() => tokenizePage(), 400);
   });
@@ -731,8 +731,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.action === 'panelOpenState') {
     panelOpen = message.open === true;
-    log(`[PAGE] panel lifecycle: open=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}`);
+    log(`[PAGE] panel lifecycle: open=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}, enabled=${enabled}`);
     if (!panelOpen) {
+      // Side panel closed — stop all page tokenization/translation immediately.
+      // The IntersectionObserver, MutationObserver, pending flush timers, and
+      // token cache are all torn down and every token span is restored, so
+      // scrolling no longer tokenizes any further page text.
       pageTranslationTabOpen = false;
       cleanup();
     } else if (pageTranslationTabOpen) {
