@@ -21,7 +21,7 @@ import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
 import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
-import { Bookmark, BookmarkCheck, BookOpen, ChevronDown, ChevronUp, Image, Loader, Sparkles, Video, Volume2, X } from './Icons';
+import { Bookmark, BookmarkCheck, BookOpen, ChevronDown, ChevronUp, Ellipsis, Image, Loader, Sparkles, Video, Volume2, X } from './Icons';
 import { Button } from './ui/button';
 import { log, logwarn, logerr, t } from '../i18n';
 import { applySpeechToUtterance, loadSpeechSettings } from '../extension-settings';
@@ -44,6 +44,9 @@ interface DictionaryCardProps {
   videoTitle?: string;
   /** Page URL, used to extract platform/video ID for save context. */
   pageUrl?: string;
+  /** Host page title — used as the saved-word `textTitle` (page reader parity:
+   *  the dictionary iframe's own document.title is empty, not the page title). */
+  pageTitle?: string;
   /** URL of the hyperlink containing the selected token, if any. */
   linkUrl?: string | null;
   /** Navigate to the selected hyperlink without treating the card click as an entry click. */
@@ -156,7 +159,9 @@ function ContextSentenceCard({ contextText, l1Code, l2Code }: ContextCardProps) 
   const [open, setOpen] = useState(false);
   const [translation, setTranslation] = useState<string | null>(null);
   const [translating, setTranslating] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const fetchedRef = useRef(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
 
@@ -185,12 +190,91 @@ function ContextSentenceCard({ contextText, l1Code, l2Code }: ContextCardProps) 
     }
   };
 
+  // Close the text-action menu on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('mousedown', onDocClick, true);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick, true);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  const copyText = useCallback(() => {
+    navigator.clipboard?.writeText(contextText).catch(() => {});
+    setMenuOpen(false);
+  }, [contextText]);
+
+  const speakText = useCallback(() => {
+    window.speechSynthesis?.cancel();
+    const utterance = new SpeechSynthesisUtterance(contextText);
+    loadSpeechSettings().then((speech) => {
+      applySpeechToUtterance(utterance, baseCode(l2Code), speech);
+      window.speechSynthesis?.speak(utterance);
+    });
+    setMenuOpen(false);
+  }, [contextText, l2Code]);
+
+  const translateText = useCallback(() => {
+    setOpen(true);
+    setMenuOpen(false);
+    // Fetch the translation if not already fetched (same as toggling open).
+    if (!fetchedRef.current && canTranslate) {
+      fetchedRef.current = true;
+      setTranslating(true);
+      apiFetch(`${API_BASE}/translate_array`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: [contextText], l1: l1Code, l2: l2Code }),
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const value = Array.isArray(data.translated_texts) ? data.translated_texts[0] : undefined;
+          setTranslation(value && value !== contextText ? value : null);
+        })
+        .catch((err: any) => {
+          logwarn('[DICT] context translation failed', { message: err?.message });
+          setTranslation(null);
+        })
+        .finally(() => setTranslating(false));
+    }
+  }, [contextText, l1Code, l2Code, canTranslate]);
+
   return (
     <div className="lpv-dict-context">
-      <button type="button" onClick={toggle} className="lpv-dict-context-toggle" aria-expanded={open}>
-        <span>{t('contextSentence')}</span>
-        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-      </button>
+      <div className="lpv-dict-context-head">
+        <button type="button" onClick={toggle} className="lpv-dict-context-toggle" aria-expanded={open}>
+          <span>{t('contextSentence')}</span>
+          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
+        {/* Text-action menu (apps/web TextActionMenu parity): copy · speak ·
+            translate the context sentence. */}
+        <div className="lpv-dict-context-menu" ref={menuRef}>
+          <button
+            type="button"
+            className="lpv-dict-context-menu-trigger"
+            onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+            aria-expanded={menuOpen}
+            aria-label={t('actions')}
+            title={t('actions')}
+          >
+            <Ellipsis size={14} />
+          </button>
+          {menuOpen && (
+            <div className="lpv-dict-context-menu-pop" role="menu">
+              <button type="button" role="menuitem" onClick={copyText}>{t('copy')}</button>
+              <button type="button" role="menuitem" onClick={speakText}>{t('speak')}</button>
+              {canTranslate && <button type="button" role="menuitem" onClick={translateText}>{t('translate')}</button>}
+            </div>
+          )}
+        </div>
+      </div>
       {open && (
         <div className="lpv-dict-context-body">
           <p className="lpv-dict-context-l2" dir="auto">{contextText}</p>
@@ -216,11 +300,12 @@ interface EntryRowProps {
   cueStartTime?: number;
   videoTitle?: string;
   pageUrl?: string;
+  pageTitle?: string;
   /** Opens the login dialog when the user taps Save while logged out. */
   onRequireLogin?: () => void;
 }
 
-const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, onRequireLogin }) => {
+const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, pageTitle, onRequireLogin }) => {
   const { savedWords, saveWord, removeSavedWord, isLoggedIn, loading: wordsLoading } = useSavedWords();
   const [saving, setSaving] = useState(false);
 
@@ -302,6 +387,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
       } else {
         const allForms = await fetchInflectedForms(entry.head, l2Code);
         const youtubeId = pageUrl ? extractYoutubeId(pageUrl) : undefined;
+        // The dictionary runs in the extension iframe where document.title is
+        // empty — use the host page title (passed by the page content script).
+        const title = pageTitle || document.title;
         const record = {
           id: entry.id,
           forms: allForms,
@@ -309,7 +397,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           context: {
             form: tokenForm,
             text: contextText || tokenForm,
-            textTitle: document.title,
+            textTitle: title,
             starttime: cueStartTime,
             youtube_id: youtubeId,
             videoTitle,
@@ -320,7 +408,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             context: {
               form: tokenForm,
               text: contextText || tokenForm,
-              textTitle: document.title,
+              textTitle: title,
               starttime: cueStartTime,
               youtube_id: youtubeId,
               videoTitle,
@@ -335,7 +423,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     } finally {
       setSaving(false);
     }
-  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord, onRequireLogin]);
+  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, pageTitle, saveWord, removeSavedWord, onRequireLogin]);
 
   const handleSpeak = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
@@ -492,6 +580,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   cueStartTime,
   videoTitle,
   pageUrl,
+  pageTitle,
   linkUrl,
   onFollowLink,
   isPro,
@@ -939,6 +1028,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
                 cueStartTime={cueStartTime}
                 videoTitle={videoTitle}
                 pageUrl={pageUrl}
+                pageTitle={pageTitle}
                 onRequireLogin={onRequireLogin}
               />
             ))}
