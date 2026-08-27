@@ -610,15 +610,21 @@ mobile `(tabs)/(reading)/image-reader`
 (`apps/mobile/app/(tabs)/(reading)/image-reader.tsx`). It accepts **multiple**
 images via drag & drop or a multi-file picker, plus a **paste** button and
 global **Ctrl/Cmd+V** clipboard-image paste (web `paste` event / `async
-clipboard.read`; mobile `expo-clipboard` `getImageAsync`), then shows a
-thumbnail rail with the current image highlighted and sends the current image
-to `POST /vision` (OCR prompt). The first pasted/dropped/picked image is
-opened by default and OCR'd immediately. The vision prompt asks for clean,
-**block-level markdown** — block elements separated by blank lines, each
-paragraph as flowing prose — so blocks break naturally and reflow
-independently (no client-side OCR post-processing). The markdown is read in
-the paginated reader as a non-persistent session. OCR is lazy per image and
-cached server-side by `/vision`.
+clipboard.read`; mobile `expo-clipboard` `getImageAsync`), then shows the
+current image's OCR text in the paginated reader and a **thumbnail sidebar on
+the right** (current image highlighted) that is collapsible like the standard
+shared `Sidebar` (desktop persistent panel + mobile slide-in sheet). Below the
+last thumbnail the sidebar has a dashed **"add next image"** tile with
+"Select files" and "Paste" buttons; those actions were removed from the title
+bar, which also no longer has a back arrow. The first pasted/dropped/picked
+image is opened by default and OCR'd immediately. The vision prompt asks for
+clean, **block-level markdown** starting with a `# <title>` heading (a
+human-readable image title the reader extracts for the title bar and
+saved-word context, instead of the raw filename) — block elements separated by
+blank lines, each paragraph as flowing prose — so blocks break naturally and
+reflow independently (no client-side OCR post-processing). The markdown is
+read in the paginated reader as a non-persistent session. OCR is lazy per
+image and cached server-side by `/vision`.
 
 ### Epub-like formats (.fb2 / .mobi / .azw3)
 `packages/utils/src/alt-formats.ts` (pure TS, shared) converts FictionBook
