@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
-import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords } from '@langplayer/utils';
+import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords, sentenceContaining } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
@@ -18,6 +18,7 @@ import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
 import { useLazyCueWindow, computeCueWindow, WINDOW_LOOKAHEAD_LINES } from './lazy-window';
+import { useSelectionPopup } from './use-selection-popup';
 import type { SubCue } from './use-translate-lines';
 import { t, getLocaleVersion, log, logwarn } from './i18n';
 
@@ -101,13 +102,29 @@ interface TokenizedLineProps {
   onTokenClick: (token: LemmatizedToken) => void;
   /** Bumped when the shared dictionary cache is populated (batch lookup). */
   cacheVersion?: number;
+  /** Enable drag-select → dictionary lookup (SPEC-033 web parity). */
+  selectionDictionary?: boolean;
+  /** Called with a text selection: the selected text, its offset within the
+   *  line's source text, and the line's source text. */
+  onSelectionLookup?: (text: string, startOffset: number | null, sourceText: string) => void;
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, onClickLine, onTokenClick, cacheVersion }) => {
+  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, onClickLine, onTokenClick, cacheVersion, selectionDictionary, onSelectionLookup }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
     const { getTokens, isQueued, enqueue } = useBatchLemmatize();
+    const { containerRef: selectionRef, selection, clear: clearSelection } = useSelectionPopup<HTMLSpanElement>(!!selectionDictionary);
+
+    // ── Drag-select → dictionary popup (SPEC-033 parity) ──
+    // A non-collapsed selection inside this line is looked up as a lemma-less
+    // token. The selection is cleared immediately so a dismissed popup cannot
+    // be re-triggered by a stray click on the old highlight.
+    useEffect(() => {
+      if (!selectionDictionary || !selection) return;
+      onSelectionLookup?.(selection.text, selection.startOffset, text);
+      clearSelection();
+    }, [selectionDictionary, selection, onSelectionLookup, text, clearSelection]);
 
     const shouldTokenize = visible || tokenizeAhead;
     const tokens = shouldTokenize ? getTokens(text, l2Code) : null;
@@ -176,7 +193,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
     // ── Render: TOKENS → raw (not queued) → pulsating (queued) → hidden
     return (
       <span
-        ref={containerRef}
+        ref={(el) => { containerRef.current = el; selectionRef.current = el; }}
         className={`lpv-cue-text ${isActive ? 'lpv-active-text' : ''}`}
         onClick={(e) => { e.stopPropagation(); onClickLine(); }}
       >
@@ -288,7 +305,7 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
               seg.reading ? (
                 <ruby key={j}>
                   {seg.text}
-                  <rt>{seg.reading}</rt>
+                  <rt className="select-none">{seg.reading}</rt>
                 </ruby>
               ) : (
                 <React.Fragment key={j}>{seg.text}</React.Fragment>
@@ -323,10 +340,14 @@ interface CueLineProps {
   localeVersion?: number;
   /** Bumped when the shared dictionary cache is populated (batch lookup). */
   cacheVersion?: number;
+  /** Enable drag-select → dictionary lookup (SPEC-033 web parity). */
+  selectionDictionary?: boolean;
+  /** Called with a text selection (selected text, source offset, source line). */
+  onSelectionLookup?: (text: string, startOffset: number | null, sourceText: string) => void;
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion }) => {
+  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion, selectionDictionary, onSelectionLookup }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -384,6 +405,8 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             onClickLine={handleClick}
             onTokenClick={handleTokenClickWithCue}
             cacheVersion={cacheVersion}
+            selectionDictionary={selectionDictionary}
+            onSelectionLookup={onSelectionLookup}
           />
           {showTranslation && translation && (
             <div className="lpv-cue-translation">{translation}</div>
@@ -549,6 +572,26 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     onLineExplainOpen?.({ cue, l1Code, l2Code });
   }, [l1Code, l2Code, onDictionaryOpen, onLineExplainOpen]);
 
+  // Drag-select → dictionary lookup (SPEC-033). The selected text is the
+  // lookup term (no lemma); the context is the sentence containing the
+  // selection within the line, matching the token-click path.
+  const handleSelectionLookup = useCallback((selectedText: string, startOffset: number | null, sourceText: string) => {
+    if (!selectedText.trim()) return;
+    const contextText = startOffset !== null
+      ? sentenceContaining(sourceText, startOffset, baseCode(l2Code))
+      : sourceText;
+    log('Selection lookup:', selectedText, '| context:', contextText.slice(0, 60));
+    onDictionaryOpen?.({
+      token: { text: selectedText, lemmas: [] },
+      l1Code,
+      l2Code,
+      contextText,
+      videoTitle,
+      pageUrl,
+    });
+    onLineExplainOpen?.(null);
+  }, [l1Code, l2Code, onDictionaryOpen, pageUrl, videoTitle, onLineExplainOpen]);
+
   // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
   // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).
   const prefetchWindowRef = useRef(-1);
@@ -626,6 +669,8 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             explainLoading={false}
             localeVersion={localeVersion}
             cacheVersion={cacheVersion}
+            selectionDictionary
+            onSelectionLookup={handleSelectionLookup}
           />
         ))}
 
