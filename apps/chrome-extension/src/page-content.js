@@ -9,7 +9,7 @@
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { setLocale, log, logwarn } from './i18n';
-import { buildRuby, baseCode, sentenceContaining } from '@langplayer/utils';
+import { buildRuby, baseCode, sentenceContaining, segmentSentences, shouldShowPhonetics, getWordDifficulty, setCachedEntries, getCachedEntries } from '@langplayer/utils';
 import { selectionStartOffset } from './selection-utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
@@ -34,6 +34,20 @@ let lifecycleGeneration = 0;
 let l1Code = 'en';
 let l2Code = 'en';
 let showPhonetics = true;
+/** Display "Show scope": 'all' (All words) or 'hard' (Hard words only). */
+let phoneticsScope = 'all';
+/** Learner's proficiency level (1–7) for the current L2, from progressLevels.
+ *  0 = not set → hard-words scope shows all words. */
+let userLevel = 0;
+/** Unique lemmas/surface forms seen this flush, batched into one lookup. */
+const pageLookupWords = new Set();
+/** Furigana debug — log each unique (word, reason) once to keep the console readable. */
+const pageFuriganaLogged = new Set();
+function logPageFurigana(key, message) {
+  if (pageFuriganaLogged.has(key)) return;
+  pageFuriganaLogged.add(key);
+  log(`[FURIGANA] ${message}`);
+}
 let observer = null;
 let mutationTimer = null;
 let io = null; // IntersectionObserver — tokenizes blocks as they near the viewport
@@ -209,6 +223,61 @@ async function fetchTokensForTexts(texts, l2) {
   return results;
 }
 
+/** Collect a token's lemmas + surface form for the lazy batch dictionary lookup
+ *  that powers the "hard words only" gate (and the shared dictionary cache).
+ *  Only near-viewport (tokenized) blocks contribute, so the lookup is lazy. */
+function collectLookupsForToken(token) {
+  for (const lemma of token.lemmas || []) {
+    if (lemma && typeof lemma.lemma === 'string' && lemma.lemma) pageLookupWords.add(lemma.lemma);
+  }
+  if (typeof token.text === 'string' && token.text) pageLookupWords.add(token.text);
+}
+
+/** Batch dictionary lookup for page words, routed through the background
+ *  `bgFetch` relay (apiFetch) — bare `fetch` from a content script is subject
+ *  to the page's CORS policy, so it is not used here. This populates the same
+ *  cache that powers the "Hard words only" difficulty gate. On completion it
+ *  re-renders phonetics once (hard words appear without retokenizing the page). */
+async function lookupPageWords(words) {
+  const base = baseCode(l2Code);
+  const uncached = words.filter((w) => !getCachedEntries(base, w.text));
+  if (uncached.length === 0) return;
+  const res = await apiFetch(`${API_BASE}/dictionary/lookup-batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ words: uncached.map((w) => ({ text: w.text, l2: base })) }),
+  });
+  if (!res.ok) return;
+  const data = await res.json();
+  const results = data.results ?? {};
+  for (const w of uncached) {
+    const entries = results[w.text] ?? [];
+    if (entries.length > 0) setCachedEntries(base, w.text, entries);
+  }
+  log(`[FURIGANA] page mode batch lookup: ${uncached.length} page words cached (${Object.keys(results).filter((k) => (results[k] || []).length > 0).length} found)`);
+  if (phoneticsScope === 'hard') reRenderTokenPhonetics();
+}
+
+/** Re-scan all tokenized spans and look up their lemmas — used when the scope
+ *  switches to "Hard words only" so already-tokenized text has dictionary data. */
+function enqueueTokenizedPageLookups() {
+  const words = new Set();
+  for (const span of document.querySelectorAll('span.lpv-page-token')) {
+    const raw = span.dataset.token;
+    if (!raw) continue;
+    let token;
+    try { token = JSON.parse(raw); } catch { continue; }
+    if (!token) continue;
+    for (const lemma of token.lemmas || []) {
+      if (lemma && typeof lemma.lemma === 'string' && lemma.lemma) words.add(lemma.lemma);
+    }
+    if (typeof token.text === 'string' && token.text) words.add(token.text);
+  }
+  if (words.size === 0) return;
+  log(`[FURIGANA] page mode look up ${words.size} tokenized page words (hard-words scope)`);
+  lookupPageWords([...words].map((word) => ({ text: word, l2Code: baseCode(l2Code) }))).catch(() => {});
+}
+
 function renderTextNode(node, tokens) {
   if (!tokens || tokens.length === 0) return false;
   const parent = node.parentElement;
@@ -227,6 +296,9 @@ function renderTextNode(node, tokens) {
     }
     pageTokenStats.words++;
     if (token.pronunciation) pageTokenStats.withPron++;
+    // Collect this token's lemmas for the lazy batch dictionary lookup (same
+    // pipeline as the video transcript: tokenize → batch lookup → cache → gate).
+    collectLookupsForToken(token);
     const span = document.createElement('span');
     span.className = 'lpv-page-token';
     span.dataset.tokenText = token.text;
@@ -234,9 +306,22 @@ function renderTextNode(node, tokens) {
     // re-render ruby purely visually (no tokenCache lookup, no retokenize).
     try { span.dataset.token = JSON.stringify(token); } catch {}
 
-    // Inline ruby/furigana, gated by the same showPhonetics pref as video mode.
+    // Inline ruby/furigana — gated by the shared phonetics pipeline
+    // (shouldShowPhonetics) so the "Hard words only" scope and the difficulty
+    // decision match the video transcript exactly, not just the on/off toggle.
+    const canRuby = shouldShowPhonetics({ phoneticsOn: showPhonetics, scope: phoneticsScope, userLevel, l2Code, lemmas: token.lemmas || [] })
+      && token.pronunciation && token.pronunciation !== token.text;
+    // Furigana debug: why is ruby (not) rendering under the hard-words scope?
+    if (phoneticsScope === 'hard' && token.pronunciation && token.pronunciation !== token.text && !canRuby) {
+      const diff = getWordDifficulty(baseCode(l2Code), token.lemmas || []);
+      if (diff.kind === 'not_cached') {
+        logPageFurigana(`page:${token.text}:notCached`, `"${token.text}" page ruby deferred: hard-words scope waiting for batch lookup (userLevel=${userLevel})`);
+      } else {
+        logPageFurigana(`page:${token.text}:notHard`, `"${token.text}" page ruby skipped: hard-words scope filtered it (diff=${JSON.stringify(diff)}, userLevel=${userLevel})`);
+      }
+    }
     let rubyRendered = false;
-    if (showPhonetics && token.pronunciation && token.pronunciation !== token.text) {
+    if (canRuby) {
       const segments = buildRuby(token.text, token.pronunciation, l2Code);
       if (segments.some((seg) => seg.reading)) {
         rubyRendered = true;
@@ -295,6 +380,51 @@ function getVisibleBlockText(el) {
   }
 }
 
+/** UTF-16 offset of a token span's first visible character within a block's
+ *  normalized source text (`__lpvSourceText` / getVisibleBlockText). Walks the
+ *  block's text nodes in document order, skipping ruby readings and hidden
+ *  subtrees, and sums the normalized length of every text node before the span.
+ *  Returns -1 when the span can't be located. The offset is therefore in the
+ *  same (whitespace-normalized) coordinate space as `blockText`, so it feeds
+ *  `sentenceContaining` / `sentenceIndexAtOffset` directly. */
+function tokenOffsetInBlock(block, tokenSpan) {
+  if (!block || !tokenSpan) return -1;
+  try {
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+        const value = (node.nodeValue || '').trim();
+        if (!value) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const parts = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      if (node === tokenSpan || tokenSpan.contains(node)) break;
+      parts.push(node.nodeValue);
+    }
+    return normalizeBlockText(parts.join(' ')).length;
+  } catch {
+    return -1;
+  }
+}
+
+/** Index of the sentence containing `offset` within `text` (0-based), following
+ *  the same segmentation as sentenceContaining. Clamps to a valid index. */
+function sentenceIndexAtOffset(text, offset, locale) {
+  if (!text) return 0;
+  if (offset < 0 || offset > text.length) return 0;
+  const segs = segmentSentences(text, locale);
+  if (segs.length === 0) return 0;
+  for (let i = 0; i < segs.length; i++) {
+    if (offset >= segs[i].start && offset < segs[i].end) return i;
+  }
+  return segs.length - 1;
+}
+
 /** Return source blocks for the side-panel translation view. This reads the
  * page DOM from the page content script, never from the side-panel document.
  * The cap keeps runtime message payloads bounded on very large pages. */
@@ -305,11 +435,16 @@ function getPageTranslationSnapshot() {
     if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
     const text = getVisibleBlockText(el);
     if (!text || text.length < 2) continue;
-    const clipped = text.slice(0, 2000);
-    if (totalChars + clipped.length > 180000) break;
     if (!el.__lpvBlockId) el.__lpvBlockId = `block-${nextBlockId++}`;
     const anchor = el.closest('a[href]');
-    blocks.push({ id: el.__lpvBlockId, text: clipped, href: anchor?.href || null });
+    const href = anchor?.href || null;
+    // Each readable element renders as ONE translation block (a paragraph-level
+    // chunk) — do not split it into sentence units. The translation view shows
+    // whole paragraphs; a hovered token highlights the translation SENTENCE
+    // within the block via buildSentenceMap (apps/web reader parity).
+    const clipped = text.slice(0, 2000);
+    if (totalChars + clipped.length > 180000) break;
+    blocks.push({ id: el.__lpvBlockId, text: clipped, href });
     totalChars += clipped.length;
   }
   return blocks;
@@ -322,11 +457,25 @@ function onTokenClick(e, token, textNodeParent) {
   const anchor = textNodeParent?.closest?.('a[href]');
   const href = anchor ? anchor.href : null;
   const block = textNodeParent?.closest?.(BLOCK_SELECTOR) || textNodeParent;
-  // Serve the context from the source text captured at tokenization, not from
-  // the live (tokenized + ruby) DOM — otherwise the context sentence includes
-  // ruby readings.
+  // Serve the block text from the source captured at tokenization, not from the
+  // live (tokenized + ruby) DOM — otherwise it includes ruby readings. Restrict
+  // the dict context to the immediate sentence containing the token (Spec/console
+  // parity: match apps/web, which uses sentenceContaining/Intl.Segmenter).
   const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
   const blockId = block?.__lpvBlockId || null;
+  const tokenSpan = e.currentTarget;
+  let contextText = blockText;
+  let sentenceIndex = 0;
+  if (tokenSpan) {
+    const offset = tokenOffsetInBlock(block, tokenSpan);
+    const hit = offset !== -1 && blockText.slice(offset, offset + token.text.length) === token.text
+      ? offset
+      : blockText.indexOf(token.text);
+    sentenceIndex = sentenceIndexAtOffset(blockText, hit !== -1 ? hit : offset, baseCode(l2Code));
+    contextText = hit !== -1
+      ? sentenceContaining(blockText, hit, baseCode(l2Code))
+      : blockText;
+  }
 
   const payload = {
     token: {
@@ -335,11 +484,14 @@ function onTokenClick(e, token, textNodeParent) {
       pronunciation: token.pronunciation || null,
     },
     blockText,
+    contextText,
+    sentenceIndex,
     blockId,
     href,
     l1Code,
     l2Code,
     pageUrl: location.href,
+    pageTitle: document.title,
   };
   lastLookup = payload;
   window.dispatchEvent(new CustomEvent('lpv-page-dictionary-open', { detail: payload }));
@@ -386,17 +538,23 @@ function attachPageSelectionListener() {
     const contextText = hit !== -1
       ? sentenceContaining(blockText, hit, baseCode(l2Code))
       : blockText;
+    const sentenceIndex = hit !== -1
+      ? sentenceIndexAtOffset(blockText, hit, baseCode(l2Code))
+      : 0;
     const blockId = block?.__lpvBlockId || null;
     const link = block?.closest?.('a[href]');
     const href = link?.href || null;
     const payload = {
       token: { text, lemmas: [], pronunciation: null },
-      blockText: contextText,
+      blockText,
+      contextText,
+      sentenceIndex,
       blockId,
       href,
       l1Code,
       l2Code,
       pageUrl: location.href,
+      pageTitle: document.title,
     };
     log(`[PAGE] selection lookup: "${text}" | context chars=${contextText.length}`);
     lastLookup = payload;
@@ -422,6 +580,58 @@ function detachPageSelectionListener() {
   if (!pageSelectionHandler) return;
   document.removeEventListener('pointerup', pageSelectionHandler, true);
   pageSelectionHandler = null;
+}
+
+let pageHoverHandler = null;
+let lastHoverKey = '';
+
+/** Token hover → scroll + highlight the translation. While the side-panel page
+ *  translation tab is open, hovering a page token tells the panel to scroll the
+ *  corresponding translation into view and highlight the translation SENTENCE
+ *  that contains the token (apps/web reader parity). Deduped to one message per
+ *  (block, sentence) so moving across a single sentence doesn't flood the panel
+ *  with identical scroll requests. */
+function attachPageHoverListener() {
+  if (pageHoverHandler) return;
+  pageHoverHandler = (e) => {
+    if (!enabled || !panelOpen || !pageTranslationTabOpen) return;
+    const span = e.target?.closest?.('.lpv-page-token');
+    if (!span) {
+      // Pointer left tokenized text — allow the next token to re-trigger.
+      if (lastHoverKey) lastHoverKey = '';
+      return;
+    }
+    const block = span.closest?.(BLOCK_SELECTOR) || span;
+    const blockText = block?.__lpvSourceText || getVisibleBlockText(block);
+    const tokenText = span.dataset.tokenText || '';
+    const offset = tokenOffsetInBlock(block, span);
+    const sentenceIndex = offset !== -1
+      ? sentenceIndexAtOffset(blockText, offset, baseCode(l2Code))
+      : 0;
+    const key = `${block?.__lpvBlockId || ''}:${sentenceIndex}`;
+    if (key === lastHoverKey) return;
+    lastHoverKey = key;
+    log(`[PAGE] token hover → translation scroll: block=${block?.__lpvBlockId || '?'} sentence=${sentenceIndex} token="${tokenText}"`);
+    try {
+      chrome.runtime.sendMessage({
+        action: 'pageTokenHover',
+        blockId: block?.__lpvBlockId || null,
+        sentenceIndex,
+        tokenOffset: offset !== -1 ? offset : null,
+        blockText,
+        tokenText,
+      }).catch(() => {});
+    } catch {}
+  };
+  // mouseover is delegated; pointerover is used so it also fires on touch/pen.
+  document.addEventListener('pointerover', pageHoverHandler, true);
+}
+
+function detachPageHoverListener() {
+  if (!pageHoverHandler) return;
+  document.removeEventListener('pointerover', pageHoverHandler, true);
+  pageHoverHandler = null;
+  lastHoverKey = '';
 }
 
 function onIntersect(entries) {
@@ -522,6 +732,18 @@ async function flushPending() {
       rubyCount: pageTokenStats.rubyCount - statsBefore.rubyCount,
     };
     log(`[FURIGANA] page mode: rendered ${delta.words} word tokens (${delta.withPron} with pronunciation, ${delta.rubyCount} with inline ruby) as clickable spans`);
+
+    // Lazy batch dictionary lookup for the words just tokenized (near-viewport
+    // only). This populates the shared cache that powers the "Hard words only"
+    // difficulty gate — identical pipeline to the video transcript. Only words
+    // actually rendered are looked up, so the request is proportional to what
+    // the learner can see.
+    if (pageLookupWords.size > 0) {
+      const words = [...pageLookupWords].map((word) => ({ text: word, l2Code: baseCode(l2Code) }));
+      log(`[PAGE] batch dictionary lookup for ${words.length} page words`);
+      lookupPageWords(words).catch(() => {});
+      pageLookupWords.clear();
+    }
   } catch (err) {
     logwarn('Page tokenization failed:', err);
     for (const block of blocks) {
@@ -609,6 +831,7 @@ function cleanup() {
   lifecycleGeneration++;
   initialized = false;
   enabled = false;
+  pageLookupWords.clear();
   log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks (enabled=false, panelOpen=${panelOpen}, pageTranslationTabOpen=${pageTranslationTabOpen}); page tokenization + translation stopped`);
   if (observer) {
     observer.disconnect();
@@ -630,6 +853,7 @@ function cleanup() {
   pendingBlocks.clear();
   tokenizing = false;
   detachPageSelectionListener();
+  detachPageHoverListener();
   restoreTokens();
   tokenCache.clear();
   lastLookup = null;
@@ -680,7 +904,7 @@ async function init() {
     return;
   }
 
-  const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation']);
+  const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation', 'phoneticsScope', 'progressLevels']);
   if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
     log('[PAGE] init cancelled before preferences completed');
     return;
@@ -688,6 +912,9 @@ async function init() {
   l1Code = local.l1Language || 'en';
   l2Code = local.l2Language || 'en';
   showPhonetics = local.showPhonetics !== false;
+  phoneticsScope = local.phoneticsScope === 'hard' ? 'hard' : 'all';
+  const lv = (local.progressLevels || {})[l2Code];
+  userLevel = (typeof lv === 'number' && lv >= 1 && lv <= 7) ? lv : 0;
   await setLocale(l1Code);
   if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
     log('[PAGE] init cancelled after locale load');
@@ -697,7 +924,7 @@ async function init() {
   enabled = true;
   pageTranslationStatus = 'ready';
   pageTranslationError = null;
-  log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}, showPhonetics=${showPhonetics}`);
+  log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}, showPhonetics=${showPhonetics}, phoneticsScope=${phoneticsScope}, userLevel=${userLevel}`);
   // Warn BEFORE tokenizing when the page declares a language different from
   // the saved L2 — the side panel shows a banner with a one-tap switch.
   const mismatch = pageLangMismatch();
@@ -706,6 +933,7 @@ async function init() {
   }
   await tokenizePage();
   attachPageSelectionListener();
+  attachPageHoverListener();
   pushPageModeState();
   startObserver();
 }
@@ -848,6 +1076,20 @@ chrome.storage.onChanged.addListener((changes, area) => {
     // is re-fetched or re-tokenized.
     reRenderTokenPhonetics();
   }
+  if (area === 'local' && changes.phoneticsScope && enabled) {
+    phoneticsScope = changes.phoneticsScope.newValue === 'hard' ? 'hard' : 'all';
+    log(`[FURIGANA] page mode phonetics scope → ${phoneticsScope}`);
+    // On switching to "Hard words only", make sure already-tokenized text has
+    // dictionary data (the gate needs it); on 'all' it's a pure visual change.
+    if (phoneticsScope === 'hard') enqueueTokenizedPageLookups();
+    reRenderTokenPhonetics();
+  }
+  if (area === 'local' && changes.progressLevels && enabled) {
+    const lv = (changes.progressLevels.newValue || {})[l2Code];
+    userLevel = (typeof lv === 'number' && lv >= 1 && lv <= 7) ? lv : 0;
+    log(`[FURIGANA] page mode userLevel → ${userLevel}`);
+    reRenderTokenPhonetics();
+  }
 });
 
 /**
@@ -865,7 +1107,8 @@ function reRenderTokenPhonetics() {
     let token;
     try { token = JSON.parse(raw); } catch { continue; }
     if (!token || typeof token.text !== 'string') continue;
-    const canRuby = showPhonetics && !!token.pronunciation && token.pronunciation !== token.text;
+    const canRuby = shouldShowPhonetics({ phoneticsOn: showPhonetics, scope: phoneticsScope, userLevel, l2Code, lemmas: (token.lemmas || []) })
+      && !!token.pronunciation && token.pronunciation !== token.text;
     if (!canRuby) {
       span.textContent = token.text;
       continue;
