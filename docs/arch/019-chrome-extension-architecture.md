@@ -639,12 +639,18 @@ with `position:fixed`. They render in the browser's own side panel:
   gesture, so auto-open on subtitle load is gone. It opens from the extension
   action click, the Alt+T / Ctrl+Shift+Y commands, or — in page mode — a token
   click (the content script calls `sidePanel.open()` on the click gesture,
-  then pushes `pageLookup`). The action and shortcut click **toggle**: if the
-  panel is already open they close it (the open state is persisted in
-  `chrome.storage.session` so an MV3 service-worker restart doesn't make the
-  toggle reopen an already-open panel). The background records the originating
-  tab and closes Chrome's global panel when the active tab changes, so
-  panel-open state affects only the page where the user opened it.
+  then pushes `pageLookup`). The action click **toggles** the panel natively
+  via `chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })`:
+  Chrome opens a closed panel and closes an open one from the real panel state,
+  so clicking the icon reliably reopens even after a close (an earlier manual
+  `chrome.action.onClicked` toggle that keyed off the in-memory
+  `sidePanelConnected` flag was removed — the side-panel port does not always
+  disconnect on close and the flag is lost on an MV3 service-worker restart,
+  which left the toggle stuck on "close"). The keyboard commands share
+  `toggleSidePanel`, which clears its tracked state before closing so a later
+  toggle reopens. The background records the originating tab and closes
+  Chrome's global panel when the active tab changes, so panel-open state
+  affects only the page where the user opened it.
 - **Close on navigation / video change**: the panel is closed on any page
   navigation of the panel's tab (`chrome.tabs.onUpdated` `status === 'loading'`)
   and on a YouTube SPA video change (`content-entry.js` sends `closePanel` when
