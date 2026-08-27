@@ -20,7 +20,7 @@ import { useSubscription } from './use-subscription';
 import { useLazyCueWindow, computeCueWindow, WINDOW_LOOKAHEAD_LINES } from './lazy-window';
 import { useSelectionPopup } from './use-selection-popup';
 import type { SubCue } from './use-translate-lines';
-import { t, getLocaleVersion, log, logwarn } from './i18n';
+import { t, getLocaleVersion, log, logwarn, logerr } from './i18n';
 import { applySpeechToUtterance, loadSpeechSettings, DEFAULT_PLAYBACK } from './extension-settings';
 
 /** ADR-0034: free users see the first 10 transcript lines. */
@@ -99,6 +99,10 @@ interface TokenizedLineProps {
   /** True when this line is inside the active tokenization lookahead window. */
   tokenizeAhead: boolean;
   showPhonetics: boolean;
+  /** "Hard words only" scope: gate readings on word difficulty (apps/web parity). */
+  hardWordsOnly?: boolean;
+  /** Learner's proficiency level (1–7). Only used when hardWordsOnly. */
+  userLevel?: number;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
   /** Bumped when the shared dictionary cache is populated (batch lookup). */
@@ -111,7 +115,7 @@ interface TokenizedLineProps {
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, onClickLine, onTokenClick, cacheVersion, selectionDictionary, onSelectionLookup }) => {
+  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, hardWordsOnly = false, userLevel = 0, onClickLine, onTokenClick, cacheVersion, selectionDictionary, onSelectionLookup }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
     const { getTokens, isQueued, enqueue } = useBatchLemmatize();
@@ -206,6 +210,8 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
               l2Code={l2Code}
               isActive={isActive}
               showPhonetics={showPhonetics}
+              hardWordsOnly={hardWordsOnly}
+              userLevel={userLevel}
               onClickLine={onClickLine}
               onTokenClick={onTokenClick}
               cacheVersion={cacheVersion}
@@ -222,6 +228,45 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
 );
 TokenizedLine.displayName = 'TokenizedLine';
 
+// ── Word difficulty (apps/web token-span.tsx parity) ──────────────────────
+// Used by the "Hard words only" phonetics scope: hide readings for words at or
+// below the learner's level, show them for words above it (or unknown words).
+//
+//   not_cached  — no entry in the dictionary cache yet (bulk lookup pending).
+//   unclassified— cached entry exists but has no levels[].numeric and no
+//                 frequencyLevel. Treat as "hard" (show phonetics).
+//   classified  — at least one levels[].numeric or frequencyLevel found;
+//                 `value` is the lowest (easiest) on a 1–7 scale.
+type WordDifficulty =
+  | { kind: 'not_cached' }
+  | { kind: 'unclassified' }
+  | { kind: 'classified'; value: number };
+
+function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): WordDifficulty {
+  let hasEntry = false;
+  let lowest: number | null = null;
+  for (const lemma of lemmas) {
+    const entries = getCachedEntries(l2Code, lemma.lemma);
+    if (!entries) continue;
+    hasEntry = true;
+    for (const entry of entries) {
+      if (entry.levels) {
+        for (const l of entry.levels) {
+          if (typeof l.numeric === 'number' && l.numeric >= 1 && l.numeric <= 7) {
+            if (lowest === null || l.numeric < lowest) lowest = l.numeric;
+          }
+        }
+      }
+      if (typeof entry.frequencyLevel === 'number' && entry.frequencyLevel >= 1 && entry.frequencyLevel <= 7) {
+        if (lowest === null || entry.frequencyLevel < lowest) lowest = entry.frequencyLevel;
+      }
+    }
+  }
+  if (!hasEntry) return { kind: 'not_cached' };
+  if (lowest === null) return { kind: 'unclassified' };
+  return { kind: 'classified', value: lowest };
+}
+
 // ── Token Span Component ───────────────────────────────────────────────────
 
 interface TokenSpanProps {
@@ -229,6 +274,10 @@ interface TokenSpanProps {
   l2Code: string;
   isActive: boolean;
   showPhonetics: boolean;
+  /** "Hard words only" scope: gate readings on word difficulty (apps/web parity). */
+  hardWordsOnly?: boolean;
+  /** Learner's proficiency level (1–7). Only used when hardWordsOnly. */
+  userLevel?: number;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
   /** Bumped when the shared dictionary cache is populated (batch lookup). */
@@ -236,7 +285,7 @@ interface TokenSpanProps {
 }
 
 const TokenSpan: React.FC<TokenSpanProps> = React.memo(
-  ({ token, l2Code, isActive, showPhonetics, onClickLine, onTokenClick, cacheVersion }) => {
+  ({ token, l2Code, isActive, showPhonetics, hardWordsOnly = false, userLevel = 0, onClickLine, onTokenClick, cacheVersion }) => {
     const { savedFormSet } = useSavedWords();
 
     // Structural tokens
@@ -253,8 +302,22 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
 
     const isSaved = savedFormSet.has(token.text.toLowerCase());
 
-    // Build ruby segments — gated by showPhonetics
-    const hasPhonetics = showPhonetics && token.pronunciation && token.pronunciation !== token.text;
+    // ── "Hard words only" filter: suppress readings for easy words ──
+    // Not memoized: the dictionary cache is populated asynchronously, so this
+    // must re-evaluate on every render (cacheVersion re-renders TokenSpan once
+    // the batch lookup fills the cache). Mirrors apps/web token-span.tsx.
+    const showPhoneticsForWord = (() => {
+      if (!showPhonetics) return false;               // phonetics toggle off
+      if (!hardWordsOnly) return true;                // scope = all words
+      if (!userLevel || userLevel < 1) return true;   // no level set → show all
+      const diff = getWordDifficulty(baseCode(l2Code), token.lemmas);
+      if (diff.kind === 'not_cached') return false;   // wait for the cache
+      if (diff.kind === 'unclassified') return true;  // unknown → treat as hard
+      return diff.value >= userLevel;
+    })();
+
+    // Build ruby segments — gated by showPhoneticsForWord
+    const hasPhonetics = showPhoneticsForWord && token.pronunciation && token.pronunciation !== token.text;
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(token.text, token.pronunciation!, l2Code)
       : null;
@@ -265,6 +328,8 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
       const readings = rubySegments?.filter((seg) => seg.reading) ?? [];
       if (!showPhonetics) {
         logFurigana(`ja:${token.text}:toggle`, `"${token.text}" ruby skipped: phonetics toggle is OFF`);
+      } else if (hardWordsOnly && !showPhoneticsForWord) {
+        logFurigana(`ja:${token.text}:notHard`, `"${token.text}" ruby skipped: hard-words scope filtered it (diff=${JSON.stringify(getWordDifficulty(baseCode(l2Code), token.lemmas))}, userLevel=${userLevel})`);
       } else if (!token.pronunciation) {
         logFurigana(`ja:${token.text}:nopron`, `"${token.text}" ruby skipped: API returned no pronunciation`);
       } else if (token.pronunciation === token.text) {
@@ -329,6 +394,10 @@ interface CueLineProps {
   isPro: boolean;
   l2Code: string;
   showPhonetics: boolean;
+  /** "Hard words only" scope: gate readings on word difficulty (apps/web parity). */
+  hardWordsOnly?: boolean;
+  /** Learner's proficiency level (1–7). Only used when hardWordsOnly. */
+  userLevel?: number;
   onSeekTo: (timeSec: number) => void;
   onTokenClick: (token: LemmatizedToken, cue: SubtitleCue) => void;
   /** L1 translation text (empty string if not available/disabled) */
@@ -348,7 +417,7 @@ interface CueLineProps {
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion, selectionDictionary, onSelectionLookup }) => {
+  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, hardWordsOnly = false, userLevel = 0, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion, selectionDictionary, onSelectionLookup }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -405,6 +474,8 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             isActive={isActive}
             tokenizeAhead={tokenizeAhead}
             showPhonetics={showPhonetics}
+            hardWordsOnly={hardWordsOnly}
+            userLevel={userLevel}
             onClickLine={handleClick}
             onTokenClick={handleTokenClickWithCue}
             cacheVersion={cacheVersion}
@@ -484,6 +555,12 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   /** Text scale index: 0 (smallest) to 4 (largest). Maps to 87%–150%. */
   const [textScale, setTextScale] = useState(2);
   const [smoothScroll, setSmoothScroll] = useState(DEFAULT_PLAYBACK.smoothScroll);
+  /** Phonetics scope: 'all' or 'hard' (Hard words only). Drives the per-word
+   *  difficulty gate in TokenSpan (apps/web token-span.tsx parity). */
+  const [phoneticsScope, setPhoneticsScope] = useState<'all' | 'hard'>('all');
+  /** Learner's proficiency level (1–7) for the current L2, from progressLevels.
+   *  0 = not set → hard-words scope shows all words. */
+  const [userLevel, setUserLevel] = useState(0);
 
   const { isPro } = useSubscription();
   const { preFetch } = useBatchLemmatize();
@@ -501,13 +578,17 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   // Load saved preferences
   useEffect(() => {
     try {
-      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale', 'extensionPlaybackSettings'], (result) => {
+      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale', 'extensionPlaybackSettings', 'phoneticsScope', 'progressLevels'], (result) => {
         log('[PAGE] loaded prefs:', JSON.stringify(result));
         log(`[FURIGANA] video mode prefs: showPhonetics=${result.showPhonetics === undefined ? 'default(true)' : result.showPhonetics}`);
         if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
         if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
         if (result.textScale !== undefined) setTextScale(result.textScale);
         if (result.extensionPlaybackSettings?.smoothScroll !== undefined) setSmoothScroll(result.extensionPlaybackSettings.smoothScroll);
+        if (result.phoneticsScope !== undefined) setPhoneticsScope(result.phoneticsScope === 'hard' ? 'hard' : 'all');
+        const lv = (result as any).progressLevels?.[l2Code];
+        if (typeof lv === 'number' && lv >= 1 && lv <= 7) setUserLevel(lv);
+        log(`[TRANSCRIPT] phonetics prefs loaded: l2=${l2Code} scope=${result.phoneticsScope === 'hard' ? 'hard' : (result.phoneticsScope === undefined ? '<default all>' : result.phoneticsScope)} userLevel=${(typeof lv === 'number' && lv >= 1 && lv <= 7) ? lv : '<unset>'}`);
       });
     } catch {}
     const onChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
@@ -516,10 +597,22 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
       if (changes.showTranslation) setShowTranslation(changes.showTranslation.newValue === true);
       if (changes.textScale) setTextScale(Math.max(0, Math.min(4, Number(changes.textScale.newValue) || 0)));
       if (changes.extensionPlaybackSettings?.newValue?.smoothScroll !== undefined) setSmoothScroll(changes.extensionPlaybackSettings.newValue.smoothScroll);
+      if (changes.phoneticsScope) {
+        const next = changes.phoneticsScope.newValue === 'hard' ? 'hard' : 'all';
+        setPhoneticsScope(next);
+        log(`[TRANSCRIPT] storage change: phoneticsScope -> ${next}`);
+      }
+      if (changes.progressLevels) {
+        const lv = (changes.progressLevels.newValue as any)?.[l2Code];
+        if (typeof lv === 'number' && lv >= 1 && lv <= 7) {
+          setUserLevel(lv);
+          log(`[TRANSCRIPT] storage change: userLevel(l2=${l2Code}) -> ${lv}`);
+        }
+      }
     };
     chrome.storage.onChanged.addListener(onChange);
     return () => chrome.storage.onChanged.removeListener(onChange);
-  }, []);
+  }, [l2Code]);
 
   // Persist phonetics preference on change
   const handlePhoneticsToggle = useCallback((checked: boolean) => {
@@ -647,6 +740,26 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     }
   }, [activeCueIdx, cues, l2Code, preFetch]);
 
+  // Defensive resolution of the "Hard words only" phonetics scope (the crash
+  // that blanked the side panel in 3dbc63a4 was an undeclared state variable
+  // referenced here). If resolution ever throws again, degrade to "show all"
+  // and log the exact error so we can diagnose a resurface, not a blank panel.
+  let hardWordsOnly = false;
+  let effectiveUserLevel = 0;
+  try {
+    hardWordsOnly = phoneticsScope === 'hard';
+    effectiveUserLevel = userLevel;
+  } catch (err) {
+    logerr('[TRANSCRIPT] phonetics scope resolution failed; degrading to show-all', err);
+    hardWordsOnly = false;
+    effectiveUserLevel = 0;
+  }
+  // Log the resolved scope on l2/scope/level change so we can tell a "hard-words
+  // filter misconfigured (wrong level)" apart from "subtitle data never arrived".
+  useEffect(() => {
+    log(`[TRANSCRIPT] render scope: l2=${l2Code} hardWordsOnly=${hardWordsOnly} userLevel=${effectiveUserLevel} cues=${cues.length}`);
+  }, [l2Code, hardWordsOnly, effectiveUserLevel, cues.length]);
+
   if (cues.length === 0) {
     return <EmptyState loadingL2={loadingL2} />;
   }
@@ -667,6 +780,8 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             isPro={isPro}
             l2Code={l2Code}
             showPhonetics={showPhonetics}
+            hardWordsOnly={hardWordsOnly}
+            userLevel={effectiveUserLevel}
             onSeekTo={handleSeekTo}
             onTokenClick={handleTokenClick}
             translation={translated.get(i) || ''}
@@ -784,6 +899,12 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   const translatedBlockIdRef = useRef<string | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showPhonetics, setShowPhonetics] = useState(true);
+  /** Phonetics scope: 'all' or 'hard' (Hard words only). Drives the
+   *  per-word difficulty gate in TokenSpan (apps/web token-span.tsx parity). */
+  const [phoneticsScope, setPhoneticsScope] = useState<'all' | 'hard'>('all');
+  /** Learner's proficiency level (1–7) for the current L2, from progressLevels.
+   *  0 = not set → hard-words scope shows all words. */
+  const [userLevel, setUserLevel] = useState(0);
   const [textScale, setTextScale] = useState(2);
   const { isPro } = useSubscription();
 
