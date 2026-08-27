@@ -13,8 +13,6 @@ import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
 import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/epub-search-panel';
-import { ReaderPanel } from '@/components/reader/reader-panel';
-import { parseMarkdown, type ReaderBlock } from '@/lib/parse-markdown';
 import { normalizeLanguageCode } from '@/lib/epub-book';
 import { useEpub, markerForLocation } from '@/hooks/use-epub';
 import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
@@ -24,7 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Header } from '@/components/layout/header';
 import { ReaderChromeProvider, useReaderChrome } from '@/providers/reader-chrome-provider';
 import {
-  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, ImageIcon, Loader2, PanelTopOpen, X,
+  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelTopOpen, X,
 } from 'lucide-react';
 import { epubLog } from '@/lib/epub-log';
 import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
@@ -44,13 +42,8 @@ const TOP_CHROME_RESERVE = HEADER_HEIGHT + 32; // 89
  *  (counter line bottom = BOTTOM_BAR_HEIGHT + 8 above the screen bottom). */
 const BOTTOM_CHROME_RESERVE = BOTTOM_BAR_HEIGHT + 32; // 73
 
-/** Vision-OCR prompt for the image reader — the model returns the image's
- *  text as clean markdown (deepseek-v4-flash-vision-exp via /vision). */
-const IMAGE_OCR_PROMPT =
-  'Extract all text from this image as clean markdown. Preserve headings, ' +
-  'paragraphs, lists, bold/italic emphasis, and code blocks. Output only the ' +
-  'markdown, with no commentary.';
-
+/** Vision-OCR prompt for the EPUB + PDF readers — the model returns the
+ *  image's text as clean markdown (deepseek-v4-flash-vision-exp via /vision). */
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -75,15 +68,6 @@ export default function EpubPage() {
   /** TOC and Search are modals now (the sidebar is gone). */
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  /** Image reader session: an image OCR'd via DeepSeek Vision, read in the
-   *  paginated reader (no book open). */
-  const [imageSession, setImageSession] = useState<{
-    fileName: string;
-    md: string;
-    blocks: ReaderBlock[] | null;
-    converting: boolean;
-  } | null>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
@@ -174,7 +158,6 @@ export default function EpubPage() {
     if (openingIdRef.current !== null) return;
     openingIdRef.current = id;
     setOpeningId(id);
-    setImageSession(null);
     try {
       // Bookshelf clicks go straight to the content — skip the cover tap.
       const start = await epub.openBook(id, { skipCover: true });
@@ -264,42 +247,7 @@ export default function EpubPage() {
     historyRef.current = [];
   }, [epub]);
 
-  // ── Image reader: open an image, OCR it via DeepSeek Vision, and read the
-  // resulting markdown in the paginated reader (a session, not a stored book).
-  const handleImagePicked = useCallback(async (file: File) => {
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ''));
-      reader.onerror = () => reject(new Error('read failed'));
-      reader.readAsDataURL(file);
-    });
-    setImageSession({ fileName: file.name, md: '', blocks: null, converting: true });
-    epubLog(`image reader OCR start file=${file.name}`);
-    try {
-      const res = await fetch(`${PYTHON_API_URL}/vision`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: dataUrl, prompt: IMAGE_OCR_PROMPT }),
-      });
-      const data = res.ok ? await res.json() : null;
-      const md = typeof data?.response === 'string' ? data.response : '';
-      setImageSession({
-        fileName: file.name,
-        md,
-        blocks: md ? parseMarkdown(md) : [],
-        converting: false,
-      });
-    } catch (err) {
-      epubLog(`image reader OCR failed: ${(err as Error)?.message ?? err}`);
-      setImageSession({ fileName: file.name, md: '', blocks: [], converting: false });
-    }
-  }, []);
-
-  const handleCloseImageSession = useCallback(() => {
-    setImageSession(null);
-  }, []);
-
-  // Close button (top-right X in the immersive reader).
+  // Close the book and return to the bookshelf (the handle is kept).
   const handleCloseReader = useCallback(() => {
     void handleClose();
   }, [handleClose]);
@@ -377,7 +325,7 @@ export default function EpubPage() {
     epub.openBookId !== null && epub.coverTapped && !!epub.book && !!location;
   // PDF reader active — a format: 'pdf' entry opened (thumbnails grid + AI
   // page conversion). Keeps the regular app chrome (non-immersive).
-  const pdfActive = !!epub.pdfDoc && !imageSession;
+  const pdfActive = !!epub.pdfDoc;
 
   // Immerse while the book reader is open — the global app header hides so the
   // book fills the screen; the reader renders its own chrome as overlays.
@@ -548,54 +496,13 @@ export default function EpubPage() {
             )}
             <div className="min-w-0 flex-1">
               <h1 className="text-xl font-bold truncate">
-                {chapterLabel || epub.fileName || (imageSession ? imageSession.fileName : '') || t('title.epub_reader')}
+                {chapterLabel || epub.fileName || t('title.epub_reader')}
               </h1>
             </div>
-            {!epub.openBookId && !imageSession && (
-              <button
-                onClick={() => imageInputRef.current?.click()}
-                aria-label={t('action.open_image')}
-                title={t('action.open_image')}
-                className="flex-shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <ImageIcon className="h-4 w-4" />
-              </button>
-            )}
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
             {!epub.openBookId ? (
-              imageSession ? (
-                imageSession.converting ? (
-                  /* Image → OCR in flight */
-                  <div className="flex min-h-[40vh] items-center justify-center gap-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {t('msg.making_words_interactive')}
-                    </span>
-                  </div>
-                ) : (
-                  /* OCR'd markdown in the shared paginated reader */
-                  <ReaderPanel
-                    l2={l2}
-                    l1={l1}
-                    text={imageSession.md}
-                    loading={false}
-                    activeTab="read"
-                    translating={false}
-                    blocks={imageSession.blocks}
-                    ctx={ctx}
-                    onTextChange={() => {}}
-                    onTabChange={() => {}}
-                    onTokenize={() => {}}
-                    onFillSample={() => {}}
-                    onPageTranslate={handlePageTranslate}
-                    onLemmatize={handleLemmatize}
-                    hideModeTabs
-                    onOpenLink={handleOpenLink}
-                  />
-                )
-              ) : (
               <EpubBookshelf
                 books={epub.books}
                 l2Code={l2.code}
@@ -605,7 +512,6 @@ export default function EpubPage() {
                 openingId={openingId}
                 error={epub.error ? t(epub.error) : null}
               />
-              )
             ) : openingId ? (
               <div className="flex min-h-[40vh] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -712,19 +618,6 @@ export default function EpubPage() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Image reader file input (hidden) */}
-      <input
-        ref={imageInputRef}
-        type="file"
-        accept="image/*"
-        hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) void handleImagePicked(f);
-          e.target.value = '';
-        }}
-      />
     </div>
   );
 }
