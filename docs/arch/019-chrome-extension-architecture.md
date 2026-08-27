@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR word-based alignment, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling, web-parity dictionary popup, page-reader subtitle-style translation list, save-word login prompt, always-visible Let-DeepSeek-Explain, page-translation lifecycle re-assert on navigation, selection dictionary)
+- **Last Updated**: 2026-08-26 (dictionary iframe CSS + web-parity entry card, batch-cache L1 swap, content-entry page-action silence, ASR word-based alignment, clear-on-navigation, iframe theme sync, dialog dim/pro-banner web-parity styling, web-parity dictionary popup, page-reader subtitle-style translation list, save-word login prompt, always-visible Let-DeepSeek-Explain, page-translation lifecycle re-assert on navigation, selection dictionary, context-sentence source-text capture, web-parity login dialog, close-on-navigation)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -619,6 +619,17 @@ with `position:fixed`. They render in the browser's own side panel:
   then pushes `pageLookup`). The background records the originating tab and
   closes Chrome's global panel when the active tab changes, so panel-open state
   affects only the page where the user opened it.
+- **Close on navigation / video change**: the panel is closed on any page
+  navigation of the panel's tab (`chrome.tabs.onUpdated` `status === 'loading'`)
+  and on a YouTube SPA video change (`content-entry.js` sends `closePanel` when
+  the video ID changes). This deliberately diverges from the earlier
+  "panel persists across navigation" design: a left-running autoplay would
+  otherwise keep the panel tokenizing, translating, and calling the subscription
+  endpoint on a page/video the learner has left. Reopening is always a
+  deliberate user action (icon / shortcut / token click). The prior
+  `complete` panel-state re-assert was removed because the panel now closes on
+  navigation rather than persisting (the page-translation lifecycle is re-armed
+  on the next open via `onConnect`).
 - **Page mode lifecycle**: token clicks send `pageLookup` and open the panel.
   Tokenization starts only after the Page Translation tab is active. The
   browser's native ✕ restores the original page immediately; switching to
@@ -638,7 +649,11 @@ with `position:fixed`. They render in the browser's own side panel:
   there too. `getPageTranslationSnapshot` extracts visible text from non-skipped
   text nodes (`getVisibleBlockText`) rather than falling back to `textContent`,
   so script/style-only wrappers — e.g. YouTube's VideoObject JSON-LD — do not
-  surface as a page-translation line. `pushPageModeState()` returns early on a video host so the side
+  surface as a page-translation line. Token-click and selection context are also
+  served from the block's source text captured once at tokenization
+  (`block.__lpvSourceText`), never re-read from the now-tokenized, ruby-laden
+  DOM, so the popup dictionary's context sentence omits ruby readings.
+  `pushPageModeState()` returns early on a video host so the side
   panel is never flipped out of the Subtitles/video mode; the panel still gets
   page lookups via the dedicated `pageLookup` message.
 - **What moved out of content scripts**: `createPanelUI`/`createPanel`, the
@@ -687,6 +702,15 @@ stored in `AuthState` as `firstName`/`lastName`; no `/auth/me` endpoint was
 added. Account deletion uses the existing authenticated DELETE route and the
 same active-renewing subscription predicate as web. Web-only account actions
 open the canonical production site in a new tab.
+
+The login dialog (`LoginDialog`, rendered in the page-dictionary-frame) matches
+apps/web's login card: clamped to 28rem, "Welcome back" title + "Log in to
+continue" subtitle, labeled email/password inputs (weight 400), a full-width
+submit, a "Forgot password?" link, and a "Don't have an account? Sign up" row.
+Sign up / forgot-password open the Language Player site (`/register`,
+`/forgot-password`) in a new tab and show a notice that the learner must
+create/reset the account on the website and then return to the extension to
+sign in — the extension does not implement a second registration/reset flow.
 
 Token lookup is rendered by `DictionaryModal`, never as a bottom dock.
 `DictionaryCard` imports `formatPronunciation` from `@langplayer/utils` and
