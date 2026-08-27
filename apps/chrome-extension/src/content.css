@@ -598,6 +598,31 @@ body.lpv-panel-open disney-web-player-ui {
   user-select: none;
 }
 
+/* Page-token ruby readings (page-content.js) are non-selectable too, so a
+   drag-select on tokenized page text returns the L2 source text (SPEC-033). */
+.lpv-page-token rt {
+  font-size: 0.55em;
+  color: hsl(var(--lpv-muted-foreground));
+  user-select: none;
+}
+.lpv-page-token {
+  -webkit-touch-callout: none;
+}
+
+/* Ruby reading / gloss annotations and any element marked select-none are
+   excluded from native text selection, so drag-select (SPEC-033) returns the
+   L2 source text rather than the rendered readings. */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Drag-select enabled cue text — suppress iOS's long-press callout so the
+   native selection menu doesn't fight the dictionary popup. */
+.lpv-cue-text {
+  -webkit-touch-callout: none;
+}
+
 .lpv-cue.lpv-active .lpv-token rt {
   color: hsl(var(--lpv-muted-foreground));
 }

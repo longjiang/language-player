@@ -9,7 +9,8 @@
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { setLocale, log, logwarn } from './i18n';
-import { buildRuby } from '@langplayer/utils';
+import { buildRuby, baseCode, sentenceContaining } from '@langplayer/utils';
+import { selectionStartOffset } from './selection-utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
 /** Language Player's own web assets — never tokenize these (mirrors popup.js). */
@@ -338,6 +339,96 @@ function onTokenClick(e, token, textNodeParent) {
   });
 }
 
+/** Visible text of a block excluding ruby readings (`<rt>`) and select-none
+ *  annotations, so it matches the offset returned by selectionStartOffset
+ *  (SPEC-033 page-selection context). */
+function getVisibleTextNoRuby(el) {
+  try {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+        const value = (node.nodeValue || '').trim();
+        if (!value) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || isHidden(parent) || isInsideSkipped(parent)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const parts = [];
+    while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+    return normalizeBlockText(parts.join(' '));
+  } catch {
+    return normalizeBlockText(el.textContent || '');
+  }
+}
+
+let pageSelectionHandler = null;
+
+/** Drag-select → dictionary popup on tokenized page text (SPEC-033). Selecting
+ *  any portion of tokenized page text opens the dictionary with the selection
+ *  as the lookup term (no lemma), context = the sentence containing it. */
+function attachPageSelectionListener() {
+  if (pageSelectionHandler) return;
+  pageSelectionHandler = (e) => {
+    if (!enabled) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const anchorEl = range.startContainer.nodeType === Node.ELEMENT_NODE
+      ? range.startContainer
+      : range.startContainer.parentElement;
+    // Only selections inside tokenized page text open the popup.
+    if (!anchorEl?.closest?.('.lpv-page-token')) return;
+    const text = sel.toString().trim();
+    if (!text) return;
+    const tokenEl = anchorEl.closest('.lpv-page-token');
+    const block = anchorEl.closest?.(BLOCK_SELECTOR) || tokenEl;
+    const blockText = getVisibleTextNoRuby(block);
+    const offset = selectionStartOffset(block, range);
+    const hit = offset !== null && blockText.slice(offset).startsWith(text)
+      ? offset
+      : blockText.indexOf(text);
+    const contextText = hit !== -1
+      ? sentenceContaining(blockText, hit, baseCode(l2Code))
+      : blockText;
+    const blockId = block?.__lpvBlockId || null;
+    const link = block?.closest?.('a[href]');
+    const href = link?.href || null;
+    const payload = {
+      token: { text, lemmas: [], pronunciation: null },
+      blockText: contextText,
+      blockId,
+      href,
+      l1Code,
+      l2Code,
+      pageUrl: location.href,
+    };
+    log(`[PAGE] selection lookup: "${text}" | context chars=${contextText.length}`);
+    lastLookup = payload;
+    window.dispatchEvent(new CustomEvent('lpv-page-dictionary-open', { detail: payload }));
+    try {
+      chrome.runtime.sendMessage({ action: 'pageLookup', payload }).catch(() => {});
+    } catch {}
+    getTabId().then((tid) => {
+      if (!tid) return;
+      try {
+        if (chrome.sidePanel?.open) chrome.sidePanel.open({ tabId: tid });
+      } catch {}
+    });
+    // Collapse the native selection so the popup doesn't re-open on a stray
+    // mouseup over the still-highlighted text.
+    window.getSelection()?.removeAllRanges();
+  };
+  // pointerup handles both mouse and touch; defer so the selection is settled.
+  document.addEventListener('pointerup', pageSelectionHandler, true);
+}
+
+function detachPageSelectionListener() {
+  if (!pageSelectionHandler) return;
+  document.removeEventListener('pointerup', pageSelectionHandler, true);
+  pageSelectionHandler = null;
+}
+
 function onIntersect(entries) {
   if (!enabled) return;
   let queued = false;
@@ -538,6 +629,7 @@ function cleanup() {
   for (const block of pendingBlocks) block.classList.remove('lpv-page-tokenizing');
   pendingBlocks.clear();
   tokenizing = false;
+  detachPageSelectionListener();
   restoreTokens();
   tokenCache.clear();
   lastLookup = null;
@@ -613,6 +705,7 @@ async function init() {
     logwarn(`[PAGE] ⚠️ page language ${mismatch.detected} ≠ saved L2 ${mismatch.saved} — tokenizing as ${l2Code} anyway; panel shows the mismatch banner`);
   }
   await tokenizePage();
+  attachPageSelectionListener();
   pushPageModeState();
   startObserver();
 }
