@@ -267,6 +267,18 @@ function normalizeBlockText(text) {
   return (text || '').replace(/\s+/g, ' ').trim();
 }
 
+/** Visible text of a block, from non-skipped text nodes only. `innerText` can
+ *  be empty while `textContent` is a big non-rendered blob — e.g. a wrapper
+ *  around YouTube's `<script type="application/ld+json">` VideoObject that
+ *  would otherwise surface as a page-translation line. Walking text nodes
+ *  through the same SKIP_SELECTOR / hidden filter as the tokenizer excludes
+ *  scripts, styles, templates, and hidden subtrees. */
+function getVisibleBlockText(el) {
+  const nodes = getTextNodes(el);
+  if (nodes.length === 0) return '';
+  return normalizeBlockText(nodes.map((node) => node.nodeValue || '').join(' '));
+}
+
 /** Return source blocks for the side-panel translation view. This reads the
  * page DOM from the page content script, never from the side-panel document.
  * The cap keeps runtime message payloads bounded on very large pages. */
@@ -275,7 +287,7 @@ function getPageTranslationSnapshot() {
   let totalChars = 0;
   for (const el of document.querySelectorAll(BLOCK_SELECTOR)) {
     if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
-    const text = normalizeBlockText(el.innerText || el.textContent || '');
+    const text = getVisibleBlockText(el);
     if (!text || text.length < 2) continue;
     const clipped = text.slice(0, 2000);
     if (totalChars + clipped.length > 180000) break;
