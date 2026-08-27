@@ -19,6 +19,24 @@ function setFrameInteractive(interactive: boolean) {
   if (!frame) return;
   frame.style.setProperty('pointer-events', interactive ? 'auto' : 'none', 'important');
   frame.style.setProperty('visibility', interactive ? 'visible' : 'hidden', 'important');
+  if (interactive) {
+    // Diagnose why the fixed overlay may be reflowing the host page: report the
+    // computed position, and whether any ancestor has transform/filter/contain/
+    // will-change (which re-anchors position:fixed to that ancestor). Fire on
+    // EVERY show so it lands in the console paste.
+    const cs = getComputedStyle(frame);
+    let cause = 'none';
+    let an = frame.parentElement;
+    while (an) {
+      const acs = getComputedStyle(an);
+      if (acs.transform !== 'none' || acs.filter !== 'none' || acs.perspective !== 'none' || acs.contain !== 'none' || /transform/.test(acs.willChange)) {
+        cause = `${an.tagName.toLowerCase()}.${(an.className && String(an.className)) || ''} [transform=${acs.transform} filter=${acs.filter} contain=${acs.contain}]`;
+        break;
+      }
+      an = an.parentElement;
+    }
+    log(`[DICT] dictionary frame shown: position=${cs.position} width=${cs.width} height=${cs.height} ancestorCause=${cause}`);
+  }
   log(`[DICT] dictionary frame ${interactive ? 'shown (interactive)' : 'hidden'}`);
 }
 
