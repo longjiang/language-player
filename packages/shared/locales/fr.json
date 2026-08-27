@@ -884,6 +884,7 @@
         "iap_purchase_failed": "L'achat in-app a échoué. Veuillez réessayer.",
         "iap_purchase_not_for_account": "Cet achat n'appartient pas au compte connecté.",
         "image_reader_empty": "Ajoutez des images pour lire leur texte sous forme de mots interactifs.",
+        "image_reader_ocr_error": "Impossible de lire le texte de cette image.",
         "image_reader_supported": "Formats pris en charge : PNG, JPEG, GIF, WebP",
         "initializing": "Initialisation...",
         "ios_lifetime_only": "Seul l'abonnement à vie est disponible sur iOS.",

@@ -884,6 +884,7 @@
         "iap_purchase_failed": "Aankoop in app mislukt. Probeer het opnieuw.",
         "iap_purchase_not_for_account": "Deze aankoop behoort niet tot het aangemelde account.",
         "image_reader_empty": "Voeg afbeeldingen toe om hun tekst als interactieve woorden te lezen.",
+        "image_reader_ocr_error": "Kon de tekst uit deze afbeelding niet lezen.",
         "image_reader_supported": "Ondersteund: PNG, JPEG, GIF, WebP",
         "initializing": "Initialiseren...",
         "ios_lifetime_only": "Alleen het levenslange abonnement is beschikbaar op iOS.",

@@ -884,6 +884,7 @@
         "iap_purchase_failed": "La compra en la aplicación falló. Inténtalo de nuevo.",
         "iap_purchase_not_for_account": "Esta compra no pertenece a la cuenta con la que has iniciado sesión.",
         "image_reader_empty": "Añade imágenes para leer su texto como palabras interactivas.",
+        "image_reader_ocr_error": "No se pudo leer el texto de esta imagen.",
         "image_reader_supported": "Compatible: PNG, JPEG, GIF, WebP",
         "initializing": "Inicializando...",
         "ios_lifetime_only": "Solo el plan de por vida está disponible en iOS.",

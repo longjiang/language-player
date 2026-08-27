@@ -884,6 +884,7 @@
         "iap_purchase_failed": "アプリ内購入に失敗しました。もう一度お試しください。",
         "iap_purchase_not_for_account": "この購入はログイン中のアカウントのものではありません。",
         "image_reader_empty": "画像を追加して、そのテキストをインタラクティブな単語として読めます。",
+        "image_reader_ocr_error": "この画像からテキストを読み取れませんでした。",
         "image_reader_supported": "対応形式：PNG、JPEG、GIF、WebP",
         "initializing": "初期化中...",
         "ios_lifetime_only": "iOSではライフタイムプランのみ利用可能です。",

@@ -884,6 +884,7 @@
         "iap_purchase_failed": "การซื้อในแอปล้มเหลว โปรดลองอีกครั้ง",
         "iap_purchase_not_for_account": "การซื้อนี้ไม่ใช่ของบัญชีที่เข้าสู่ระบบ",
         "image_reader_empty": "เพิ่มรูปภาพเพื่ออ่านข้อความในรูปแบบคำแบบโต้ตอบได้",
+        "image_reader_ocr_error": "ไม่สามารถอ่านข้อความจากรูปภาพนี้ได้",
         "image_reader_supported": "รองรับ: PNG, JPEG, GIF, WebP",
         "initializing": "กำลังเริ่มต้น...",
         "ios_lifetime_only": "เฉพาะแผนตลอดชีพเท่านั้นที่ใช้ได้บน iOS",

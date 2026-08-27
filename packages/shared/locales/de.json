@@ -884,6 +884,7 @@
         "iap_purchase_failed": "In-App-Kauf fehlgeschlagen. Bitte versuchen Sie es erneut.",
         "iap_purchase_not_for_account": "Dieser Kauf gehört nicht dem angemeldeten Konto.",
         "image_reader_empty": "Fügen Sie Bilder hinzu, um ihren Text als interaktive Wörter zu lesen.",
+        "image_reader_ocr_error": "Der Text konnte aus diesem Bild nicht gelesen werden.",
         "image_reader_supported": "Unterstützt: PNG, JPEG, GIF, WebP",
         "initializing": "Wird initialisiert...",
         "ios_lifetime_only": "Nur der Lifetime-Plan ist auf iOS verfügbar.",

@@ -884,6 +884,7 @@
         "iap_purchase_failed": "Mua trong ứng dụng thất bại. Vui lòng thử lại.",
         "iap_purchase_not_for_account": "Giao dịch mua này không thuộc về tài khoản đã đăng nhập.",
         "image_reader_empty": "Thêm hình ảnh để đọc văn bản của chúng dưới dạng từ tương tác.",
+        "image_reader_ocr_error": "Không thể đọc văn bản từ hình ảnh này.",
         "image_reader_supported": "Hỗ trợ: PNG, JPEG, GIF, WebP",
         "initializing": "Đang khởi tạo...",
         "ios_lifetime_only": "Chỉ gói trọn đời khả dụng trên iOS.",

@@ -884,6 +884,7 @@
         "iap_purchase_failed": "Pembelian dalam aplikasi gagal. Silakan coba lagi.",
         "iap_purchase_not_for_account": "Pembelian ini bukan milik akun yang masuk.",
         "image_reader_empty": "Tambahkan gambar untuk membaca teksnya sebagai kata interaktif.",
+        "image_reader_ocr_error": "Tidak dapat membaca teks dari gambar ini.",
         "image_reader_supported": "Didukung: PNG, JPEG, GIF, WebP",
         "initializing": "Memulai...",
         "ios_lifetime_only": "Hanya paket seumur hidup yang tersedia di iOS.",
