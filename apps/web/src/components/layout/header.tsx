@@ -12,7 +12,7 @@ import { Logo } from '@/components/ui/logo';
 import {
   Menu, X, ChevronDown, Search,
   Compass, Music, Tv, Clapperboard, Upload,
-  BookOpen, Globe, BookMarked,
+  BookOpen, Globe, BookMarked, ImageIcon,
   RotateCcw, FileText, Youtube,
 } from 'lucide-react';
 
@@ -39,6 +39,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.notes_reader', href: 'reader' },
       { key: 'title.web_reader', href: 'web-reader' },
       { key: 'title.epub_reader', href: 'epub' },
+      { key: 'title.image_reader', href: 'image-reader' },
     ],
   },
   {
@@ -59,6 +60,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   reader: <FileText className="h-4 w-4" />,
   'web-reader': <Globe className="h-4 w-4" />,
   epub: <BookOpen className="h-4 w-4" />,
+  'image-reader': <ImageIcon className="h-4 w-4" />,
   dictionary: <BookMarked className="h-4 w-4" />,
   review: <RotateCcw className="h-4 w-4" />,
   'local-media': <Upload className="h-4 w-4" />,
