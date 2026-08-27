@@ -399,6 +399,9 @@
   "levelName7": {
     "message": "上級 II"
   },
+  "lemma": {
+    "message": "見出し語"
+  },
   "subscription": {
     "message": "サブスクリプション"
   },
