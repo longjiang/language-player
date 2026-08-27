@@ -464,14 +464,28 @@ function SidePanelApp() {
   const subtitleStatus = videoState?.cues?.length
     ? 'ready'
     : (videoState?.subtitleStatus || 'idle');
+  // Diagnostic (readable when pasted): if the subtitles tab lands on the
+  // mode-unresolved terminal, log the state plainly so we can confirm whether the
+  // page-reader "cannot translate page" message ever appears here after the fix.
+  // The subtitles tab must surface subtitles states (Detecting / No subtitles /
+  // Error / Ready — SPEC-086 §Phase 3), never the page-translation error.
+  if (mode === null && panelError) {
+    logwarn(`[SIDEPANEL] subtitles tab mode-unresolved terminal: mode=${String(mode)} activeTab=${String(activeTab)} panelError=${String(panelError)}`);
+  }
   const subtitleContent = mode === null ? (
       // Mode not resolved yet: spinner while pulling, or a friendly error + Retry
       // if it never resolves. Rendered inside the subtitles tab so the tab bar
       // and header stay visible and the learner can still switch tabs.
+      //
+      // subtitleContent only renders when the SUBTITLES tab is active, so a
+      // terminal mode miss must read as a subtitles problem — "No subtitles found"
+      // + Retry — not the page-reader's "This page is unavailable for translation."
+      // (SPEC-086 §Phase 3: subtitles states are Detecting / No subtitles / Error /
+      // Ready; this content never shows the page-translation error.)
       <div className="lpv-ui-empty-state" role={panelError ? 'alert' : 'status'} aria-live="polite">
         {panelError ? (
           <>
-            <p>{panelError}</p>
+            <p>{t('noSubtitlesFound')}</p>
             <Button variant="outline" size="sm" onClick={retryPanelResolve}>{t('retry')}</Button>
           </>
         ) : (
