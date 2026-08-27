@@ -92,9 +92,28 @@ class PanelErrorBoundary extends React.Component<
   }
   render() {
     if (this.state.error) {
+      // Self-contained, always-visible fallback. It renders OUTSIDE the themed
+      // `lpv-app-shell`, so theme CSS variables may be unset — inline styles
+      // guarantee the error is never an invisible (dark-on-dark) blank panel.
+      logerr('[SIDEPANEL] rendering error fallback', { error: this.state.error?.message });
       return (
-        <div className="lpv-ui-empty-state" role="alert">
-          <p>{t('pageUnavailable')}</p>
+        <div
+          data-theme="dark"
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            padding: '24px',
+            background: '#111827',
+            color: '#e5e7eb',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '22px', fontWeight: 700, color: '#f9fafb' }}>Language Player</div>
+          <p style={{ margin: 0, color: '#9ca3af' }}>{this.state.error?.message || t('pageUnavailable')}</p>
           <Button variant="outline" size="sm" onClick={() => this.setState({ error: null })}>
             {t('retry')}
           </Button>
@@ -553,14 +572,13 @@ function SidePanelApp() {
 
   // Diagnostic: whenever the panel could be stuck in a loading/error state,
   // log the computed state so we can pinpoint why subtitles aren't showing.
-  if (mode === null || panelError || activeTab === 'page-translation') {
-    log('[SIDEPANEL] content state', {
-      mode, activeTab, panelError, subtitleStatus,
-      cues: videoState?.cues?.length, hasVideoState: !!videoState,
-    });
-  }
-
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
+  log('[SIDEPANEL] content state', {
+    mode, activeTab, panelLoading, panelError, subtitleStatus, theme,
+    cues: videoState?.cues?.length, hasVideoState: !!videoState,
+    hasPageState: !!pageState, l1Code, l2Code, currentL2Code,
+    subtitlesAvailable, tabId,
+  });
 
   const handleLanguageConfirm = useCallback(async (nextL1: string, nextL2: string, traditional: boolean) => {
     setLanguagePickerOpen(false);
