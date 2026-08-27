@@ -12,6 +12,7 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { epubLog } from '@/lib/epub-log';
 import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
+import { downscaleImage } from '@/lib/downscale-image';
 import {
   ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose,
 } from 'lucide-react';
@@ -247,10 +248,13 @@ export default function ImageReaderPage() {
     setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
     epubLog(`image reader OCR start file=${entry.name}`);
     try {
+      // Downscale + re-encode before /vision to cap token usage.
+      const payload = await downscaleImage(entry.dataUrl);
+      epubLog(`image reader OCR payload b64=${entry.dataUrl.length}→${payload.length}`);
       const res = await fetch(`${PYTHON_API_URL}/vision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: entry.dataUrl, prompt: IMAGE_OCR_PROMPT }),
+        body: JSON.stringify({ image: payload, prompt: IMAGE_OCR_PROMPT }),
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
