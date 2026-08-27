@@ -11,7 +11,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ArrowLeft, ChevronDown, LayoutGrid, List, X } from 'lucide-react-native';
-import { normalizeVisionMarkdown } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -89,14 +88,19 @@ export function PdfReaderPanel({
         body: JSON.stringify({
           image: img,
           prompt:
-            'Extract all text from this PDF page image as clean markdown. ' +
-            'Preserve headings, paragraphs, lists, bold/italic emphasis, and code ' +
-            'blocks. Output only the markdown, with no commentary.',
+            'Extract all text from this PDF page image as clean, properly ' +
+            'formatted markdown. Separate each block element (headings, ' +
+            'paragraphs, list items) with a blank line so blocks reflow ' +
+            'independently. Keep each paragraph as flowing prose — do not insert ' +
+            'line breaks inside a paragraph, and do not collapse distinct ' +
+            'paragraphs together. Preserve headings (#), paragraphs, lists, ' +
+            'bold/italic emphasis, and code blocks. Output only the markdown, ' +
+            'with no commentary.',
         }),
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      setConvertedMd(normalizeVisionMarkdown(md));
+      setConvertedMd(md);
     } catch (err) {
       logwarn('[pdf] page conversion failed:', (err as Error)?.message ?? err);
       setConvertedMd('');
