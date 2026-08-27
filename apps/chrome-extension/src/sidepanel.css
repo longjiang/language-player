@@ -833,9 +833,22 @@ button:focus-visible,
   color: hsl(var(--foreground));
 }
 
+/* The card body pads on all four sides and stacks its children on a single
+   uniform gap (explain button/section, context sentence, each entry card) so
+   the vertical rhythm is consistent — matching apps/web's dictionary popup
+   spacing. Per-child margins are cleared; the flex gap is the single source. */
 .lpv-dictionary-dialog .lpv-dict-card-body {
   max-height: min(55vh, 32rem);
-  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem 1rem;
+}
+
+/* The explain button sits flush inside the body's padding (no extra margin —
+   the body gap supplies spacing before the next element). */
+.lpv-dictionary-dialog .lpv-explain-btn {
+  margin: 0;
 }
 
 /* The AI-explain section sits inside .lpv-dict-card-body (which already pads
@@ -853,7 +866,7 @@ button:focus-visible,
 
 .lpv-dictionary-dialog .lpv-dict-entry-row {
   align-items: stretch;
-  margin-top: 0.625rem;
+  margin-top: 0;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   background: hsl(var(--card));
@@ -1062,7 +1075,7 @@ button:focus-visible,
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  margin-top: 0.625rem;
+  margin-top: 0;
 }
 .lpv-dictionary-dialog .lpv-dict-context-col {
   flex: 1;

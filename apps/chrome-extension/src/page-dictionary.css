@@ -155,7 +155,7 @@ body,
 #lpv-page-dictionary-root .lpv-page-follow-link {
   display: block;
   width: 100%;
-  margin: 0.75rem 0;
+  margin: 0;
   padding: 0.375rem 0.75rem;
   border: 1px solid var(--lpv-frame-border);
   border-radius: var(--radius);
@@ -179,10 +179,9 @@ body,
   justify-content: center;
   gap: 0.5rem;
   /* Regular (neutral) outline button, matching apps/web's "Let DeepSeek
-     Explain" action — not the purple primary tint. The card body already pads
-     1.25rem horizontally, so a uniform 0.75rem vertical gap is all that's
-     needed (matches the Pro banner). */
-  margin: 0.75rem 0;
+     Explain" action — not the purple primary tint. The card body supplies a
+     uniform flex gap around its children, so the button adds no margin. */
+  margin: 0;
   padding: 0.375rem 0.75rem;
   border: 1px solid var(--lpv-frame-border);
   border-radius: var(--radius);
