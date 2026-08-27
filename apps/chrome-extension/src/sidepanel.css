@@ -841,9 +841,14 @@ button:focus-visible,
 /* The AI-explain section sits inside .lpv-dict-card-body (which already pads
    1.25rem horizontally), so clear its own horizontal padding to keep the
    explain button, Pro banner, and explanation text on the same left/right
-   margin. */
+   margin. The section's own 0.75rem vertical padding provides the spacing, so
+   the banner adds no extra margin (it would double the gap). */
 .lpv-dictionary-dialog .lpv-explain-section {
   padding: 0.75rem 0;
+}
+
+.lpv-dictionary-dialog .lpv-explain-pro-banner {
+  margin: 0;
 }
 
 .lpv-dictionary-dialog .lpv-dict-entry-row {
