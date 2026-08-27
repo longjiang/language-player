@@ -21,6 +21,7 @@ import { useLazyCueWindow, computeCueWindow, WINDOW_LOOKAHEAD_LINES } from './la
 import { useSelectionPopup } from './use-selection-popup';
 import type { SubCue } from './use-translate-lines';
 import { t, getLocaleVersion, log, logwarn } from './i18n';
+import { applySpeechToUtterance, loadSpeechSettings, DEFAULT_PLAYBACK } from './extension-settings';
 
 /** ADR-0034: free users see the first 10 transcript lines. */
 const FREE_TRANSCRIPT_LINES = 10;
@@ -376,9 +377,11 @@ const CueLine: React.FC<CueLineProps> = React.memo(
     const handleSpeak = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
       const utterance = new SpeechSynthesisUtterance(cue.text);
-      utterance.lang = l2Code;
       speechSynthesis.cancel();
-      speechSynthesis.speak(utterance);
+      loadSpeechSettings().then((speech) => {
+        applySpeechToUtterance(utterance, l2Code, speech);
+        speechSynthesis.speak(utterance);
+      });
       setMenuOpen(false);
     }, [cue.text, l2Code]);
 
@@ -480,6 +483,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const [showPhonetics, setShowPhonetics] = useState(true);
   /** Text scale index: 0 (smallest) to 4 (largest). Maps to 87%–150%. */
   const [textScale, setTextScale] = useState(2);
+  const [smoothScroll, setSmoothScroll] = useState(DEFAULT_PLAYBACK.smoothScroll);
 
   const { isPro } = useSubscription();
   const { preFetch } = useBatchLemmatize();
@@ -497,12 +501,13 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   // Load saved preferences
   useEffect(() => {
     try {
-      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale'], (result) => {
+      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale', 'extensionPlaybackSettings'], (result) => {
         log('[PAGE] loaded prefs:', JSON.stringify(result));
         log(`[FURIGANA] video mode prefs: showPhonetics=${result.showPhonetics === undefined ? 'default(true)' : result.showPhonetics}`);
         if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
         if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
         if (result.textScale !== undefined) setTextScale(result.textScale);
+        if (result.extensionPlaybackSettings?.smoothScroll !== undefined) setSmoothScroll(result.extensionPlaybackSettings.smoothScroll);
       });
     } catch {}
     const onChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
@@ -510,6 +515,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
       if (changes.showPhonetics) setShowPhonetics(changes.showPhonetics.newValue !== false);
       if (changes.showTranslation) setShowTranslation(changes.showTranslation.newValue === true);
       if (changes.textScale) setTextScale(Math.max(0, Math.min(4, Number(changes.textScale.newValue) || 0)));
+      if (changes.extensionPlaybackSettings?.newValue?.smoothScroll !== undefined) setSmoothScroll(changes.extensionPlaybackSettings.newValue.smoothScroll);
     };
     chrome.storage.onChanged.addListener(onChange);
     return () => chrome.storage.onChanged.removeListener(onChange);
@@ -621,7 +627,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
       `[data-index="${activeCueIdx}"]`,
     ) as HTMLElement | null;
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.scrollIntoView({ behavior: smoothScroll ? 'smooth' : 'auto', block: 'center' });
     }
 
     // Only pre-fetch when the active cue crosses into a new window boundary.
