@@ -615,7 +615,10 @@ button:focus-visible,
 }
 .lpv-page-translation-sentence.is-active {
   background: hsl(var(--primary) / 0.2);
-  color: hsl(var(--primary));
+  /* Foreground = near-white on the dark theme, dark on the light theme — so the
+     actively highlighted sentence reads as bright text without hardcoding a
+     color. */
+  color: hsl(var(--foreground));
 }
 
 .lpv-page-translation-block.is-highlighted {
