@@ -512,8 +512,15 @@ Key behaviors:
   in `page-dictionary-frame.tsx`) instead of silently ignoring the click; the
   active dictionary surface is preserved across the login so the learner lands
   back on the word after signing in. The "Let DeepSeek Explain" button is always
-  shown — a non-Pro tap renders the `aiProFeature` upgrade prompt inside the
-  explain section, a Pro tap streams the explanation (web parity, ADR-0034).
+  shown immediately (not deferred until the `/user-subscription` check) and is
+  styled as a regular neutral outline button — matching apps/web's
+  `ai-explanation` `Button variant="outline"` — rather than the purple primary
+  tint. A non-Pro tap renders the `aiProFeature` upgrade prompt inside the
+  explain section and a Pro tap streams the explanation once the subscription
+  check resolves (a spinner shows while it is still loading) — web parity,
+  ADR-0034. The explain button, Pro banner, and follow-link share the card
+  body's horizontal padding with a uniform 0.75rem vertical margin
+  (`page-dictionary.css` `#lpv-page-dictionary-root .lpv-explain-btn`).
 - **Dictionary iframe locale**: `page-dictionary-frame.tsx` calls `setLocale()`
   with the saved `l1Language` on init and re-applies it on `storage` changes, so
   the popup renders the user's selected interface language rather than falling
