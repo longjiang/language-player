@@ -94,7 +94,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
 
     try {
       let response: any = null;
-      for (let attempt = 1; attempt <= 4; attempt += 1) {
+      for (let attempt = 1; attempt <= 5; attempt += 1) {
         try {
           response = await chrome.tabs.sendMessage(tabId, { action: 'getPageTranslationSnapshot' });
         } catch (sendErr: any) {
@@ -119,6 +119,16 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
           blocks: Array.isArray(response?.blocks) ? response.blocks.length : null,
         });
         if (response?.ok || response?.error !== 'page translation is not active') break;
+        // The page content script reports the lifecycle is not active (its
+        // panelOpen/enabled state was lost, e.g. the tab navigated and the
+        // background hasn't re-asserted panel-open yet). Re-assert the
+        // page-translation lifecycle — the same message the tab switch sends —
+        // so a retry recovers instead of spinning on "not active".
+        if (attempt === 1) {
+          try {
+            await chrome.tabs.sendMessage(tabId, { action: 'pageTranslationVisibility', open: true });
+          } catch {}
+        }
         await new Promise((resolve) => window.setTimeout(resolve, RETRY_DELAY_MS));
       }
       if (generation !== requestGenerationRef.current) return;
