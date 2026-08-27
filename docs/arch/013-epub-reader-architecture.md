@@ -131,7 +131,7 @@ The dashed border is a drop zone. On web, users can drag-and-drop `.epub` files 
 │  │        or click to browse   [ Browse ] │   │
 │  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘   │
 │                                               │
-│  My Books                                     │
+│  [ 🔍 Filter by name…                   ✕ ]  │
 │  ┌────────┐ ┌────────┐ ┌────────┐            │
 │  │        │ │        │ │        │            │
 │  │ Cover  │ │ Cover  │ │ Cover  │            │
@@ -143,7 +143,7 @@ The dashed border is a drop zone. On web, users can drag-and-drop `.epub` files 
 └───────────────────────────────────────────────┘
 ```
 
-The home screen shows a grid of stored books sorted by `lastReadAt` descending. Each card shows the stored cover (or a placeholder), the file name, and a progress bar with a percentage. Covers are persisted as base64 data URLs — epubjs's `coverUrl()` returns a `blob:` URL that is invalidated on page refresh, so it is converted before saving and any leftover `blob:` values are treated as missing. Progress is computed as `readChars / totalChars` where both values come from the book's plain-text character counts: the hook loads each chapter once in the background, caches per-chapter counts in IndexedDB, and updates `readChars` as the user pages through chapters (prefix of completed chapters + the anchor offset within the current chapter). Closing a book keeps its handle; tapping a card reopens it at the saved chapter/page.
+The home screen shows a grid of stored books sorted by `lastReadAt` descending. Each card shows the stored cover (or a placeholder), the file name, and a progress bar with a percentage. Covers are persisted as base64 data URLs — epubjs's `coverUrl()` returns a `blob:` URL that is invalidated on page refresh, so it is converted before saving and any leftover `blob:` values are treated as missing. Progress is computed as `readChars / totalChars` where both values come from the book's plain-text character counts: the hook loads each chapter once in the background, caches per-chapter counts in IndexedDB, and updates `readChars` as the user pages through chapters (prefix of completed chapters + the anchor offset within the current chapter). Closing a book keeps its handle; tapping a card reopens it at the saved chapter/page. The shelf has no separate "My Books" heading; a full-width name-filter input (styled as the standard shadcn input, password-manager autofill disabled) sits above the grid.
 
 Uploads never open a book — dropping or selecting one or more `.epub` files just adds them to the shelf (the reader stays on the home screen). Extracted **folder EPUBs** (directories named `*.epub`, common from macOS/iOS/Calibre) are also accepted: web zips them back into an EPUB in memory from drag-and-drop or the folder picker; mobile detects `isDirectory` assets and does the same with JSZip. Valid files are imported even when some fail; files that fail validation or parsing are skipped and reported in an "Import Issues" dialog listing each file's name, size, and the reason it was rejected. When the shelf is empty the drop zone renders as a full-width row; once books exist it becomes an inline dashed "add book" slot tile after the last book card.
 
@@ -593,10 +593,13 @@ page is rendered at import as the shelf cover — pdf.js on web, a hidden
 WebView hosting pdf.js on mobile). Opening a PDF **auto-opens page 1** in the
 shared paginated reader and shows a **collapsible right-side thumbnails
 sidebar** (standard Sidebar: desktop persistent panel / mobile slide-in
-sheet). The sidebar lists every page (lazy-rendered), **outlines the current
-page**, tapping a different page opens it, and tapping the **current** page
-opens a **full-size zoomable preview modal** (shared `ZoomableImage`, same as
-the image reader). Tapping a page renders it and sends the page image to the
+sheet). The sidebar lists every page in a **single centered column with 16px
+inner padding**; thumbnails load **lazily** (an IntersectionObserver on web,
+per-tile `onLayout` on mobile) so pages beyond the first pre-rendered ones
+still appear as the sidebar is scrolled. It **outlines the current page**,
+tapping a different page opens it, and tapping the **current** page opens a
+**full-size zoomable preview modal** (shared `ZoomableImage`, same as the
+image reader). Tapping a page renders it and sends the page image to the
 DeepSeek Vision endpoint (`POST /vision`, `deepseek-v4-flash-vision-exp`,
 cached server-side) with a "page → markdown" prompt; the returned markdown is
 parsed into blocks and read in the shared paginated reader (tokenized words,
@@ -619,8 +622,9 @@ global **Ctrl/Cmd+V** clipboard-image paste (web `paste` event / `async
 clipboard.read`; mobile `expo-clipboard` `getImageAsync`), then shows the
 current image's OCR text in the paginated reader and a **thumbnail sidebar on
 the right** (current image highlighted) that is collapsible like the standard
-shared `Sidebar` (desktop persistent panel + mobile slide-in sheet). Below the
-last thumbnail the sidebar has a dashed **"add next image"** tile with
+shared `Sidebar` (desktop persistent panel + mobile slide-in sheet) — a single
+centered column of large thumbnails with 16px inner padding. Below the last
+thumbnail the sidebar has a dashed **"add next image"** tile with
 "Select files" and "Paste" buttons; those actions were removed from the title
 bar, which also no longer has a back arrow. The first pasted/dropped/picked
 image is opened by default and OCR'd immediately. The vision prompt asks for
