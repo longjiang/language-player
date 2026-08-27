@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { baseCode, buildSentenceMap, sentenceIndexAt } from '@langplayer/utils';
+import { baseCode } from '@langplayer/utils';
 import { API_BASE } from '../api-config';
 import { apiFetch } from '../api-fetch';
 import { log, logwarn, t } from '../i18n';
@@ -16,17 +16,6 @@ interface PageLookup {
   token?: { text?: string };
 }
 
-/** Token hover from the page content script — drives the translation scroll +
- *  sentence highlight (apps/web reader parity). */
-interface PageTranslationHover {
-  blockId?: string | null;
-  sentenceIndex?: number;
-  /** UTF-16 offset of the hovered token within the full block source text. */
-  tokenOffset?: number | null;
-  blockText?: string;
-  tokenText?: string;
-}
-
 type TranslationStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 
 interface PageTranslationPanelProps {
@@ -35,7 +24,6 @@ interface PageTranslationPanelProps {
   l2Code: string;
   pageUrl?: string;
   lookup?: PageLookup | null;
-  hover?: PageTranslationHover | null;
 }
 
 const TRANSLATION_BATCH_SIZE = 5;
@@ -61,7 +49,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   l2Code,
   pageUrl,
   lookup,
-  hover,
 }) => {
   const [blocks, setBlocks] = useState<PageBlock[]>([]);
   const [status, setStatus] = useState<TranslationStatus>('idle');
@@ -70,9 +57,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   const [pending, setPending] = useState<Set<string>>(new Set());
   const [failed, setFailed] = useState<Set<string>>(new Set());
   const [highlightedBlockId, setHighlightedBlockId] = useState<string | null>(null);
-  /** Per-block hover state used to highlight the translation SENTENCE. Keyed by
-   *  the rendered block id (a whole paragraph block). */
-  const [activeHover, setActiveHover] = useState<Record<string, { tokenOffset?: number | null; sentenceIndex: number }>>({});
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const blockElements = useRef(new Map<string, HTMLElement>());
   const blocksRef = useRef<PageBlock[]>([]);
@@ -97,7 +81,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     translatedRef.current = new Map();
     setPending(new Set());
     setFailed(new Set());
-    setActiveHover({});
     queueRef.current = [];
     inFlightRef.current.clear();
     log('[PAGE] translation snapshot requested', { tabId, l1Code, l2Code, pageUrl, generation });
@@ -333,59 +316,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     setHighlightedBlockId(blockId);
   }, [blocks, lookup?.blockId, lookup?.token?.text]);
 
-  // Token hover → scroll the translation + highlight the SENTENCE containing
-  // the hovered token (apps/web reader parity). Each rendered block is a whole
-  // paragraph (the snapshot does not split sentences into sub-blocks), so the
-  // sentence is resolved and highlighted within the single block.
-  useEffect(() => {
-    if (!hover?.blockId) return;
-    const sentenceIndex = hover.sentenceIndex ?? 0;
-    const element = blockElements.current.get(hover.blockId);
-    if (!element) {
-      logwarn('[PAGE] hover target is not in translation snapshot', {
-        blockId: hover.blockId,
-        token: hover.tokenText,
-        blocks: blocks.length,
-      });
-      return;
-    }
-    log('[PAGE] hover → scrolling translation block', { blockId: hover.blockId, token: hover.tokenText });
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Whole block — highlight the translation sentence at the hovered source offset.
-    setActiveHover((cur) => ({ ...cur, [hover.blockId!]: { tokenOffset: hover.tokenOffset, sentenceIndex } }));
-  }, [hover, blocks.length]);
-
-  // Render a block's translation as sentence spans so the SENTENCE containing a
-  // hovered source token can be highlighted (matches apps/web's SegmentedTranslation).
-  // Falls back to a plain paragraph when there's no hover or the alignment fails.
-  const renderTranslationValue = (block: PageBlock, value: string) => {
-    const hoverInfo = activeHover[block.id];
-    if (!hoverInfo) return <p className="lpv-page-translation-result">{value}</p>;
-    const map = buildSentenceMap(block.text, value);
-    if (!map) return <p className="lpv-page-translation-result">{value}</p>;
-    let activePair = -1;
-    if (hoverInfo.tokenOffset != null) {
-      const idx = sentenceIndexAt(map, hoverInfo.tokenOffset);
-      activePair = idx != null ? idx : -1;
-    } else {
-      activePair = Math.min(Math.max(0, hoverInfo.sentenceIndex), map.pairs.length - 1);
-    }
-    const pair = activePair >= 0 ? map.pairs[activePair] : undefined;
-    const activeTrIndex = pair ? map.tr.findIndex((seg) => seg.start === pair.tr.start) : -1;
-    return (
-      <p className="lpv-page-translation-result">
-        {map.tr.map((seg, i) => (
-          <span
-            key={i}
-            className={i === activeTrIndex ? 'lpv-page-translation-sentence is-active' : 'lpv-page-translation-sentence'}
-          >
-            {value.slice(seg.start, seg.end)}
-          </span>
-        ))}
-      </p>
-    );
-  };
-
   if (!canTranslate) {
     // l1 === l2: translating a page into its own language is meaningless.
     return <div className="lpv-ui-empty-state" role="status"><p>{t('pageUnavailable')}</p></div>;
@@ -417,7 +347,7 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
             className={`lpv-page-translation-block ${highlightedBlockId === block.id ? 'is-highlighted' : ''}`}
           >
             {value ? (
-              renderTranslationValue(block, value)
+              <p className="lpv-page-translation-result">{value}</p>
             ) : hasFailed ? (
               <div className="lpv-page-translation-failed">
                 <p>{t('failedToLoadSubtitles')}</p>

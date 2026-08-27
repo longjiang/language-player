@@ -804,10 +804,7 @@ interface PagePanelProps {
 
 interface PageLookupDetail {
   token: LemmatizedToken;
-  /** Full source block text (for the translation panel sentence alignment). */
   blockText: string;
-  /** Immediate sentence containing the token — the saved/displayed context. */
-  contextText?: string;
   blockId?: string | null;
   href?: string | null;
 }
@@ -856,10 +853,7 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
     log(`[FURIGANA] page mode lookup: token="${lookup.token.text}" pron="${lookup.token.pronunciation || 'none'}" — rendered as dictionary header text, not ruby`);
     const newBlockId = lookup.blockId || null;
     setSelectedToken(lookup.token);
-    // Prefer the immediate sentence (page reader restricts dict context to the
-    // sentence, apps/web parity); fall back to the full block for video lookups
-    // that don't carry a separate sentence.
-    setBlockText((lookup.contextText || lookup.blockText) || '');
+    setBlockText(lookup.blockText || '');
     setBlockId(newBlockId);
     setHref(lookup.href || null);
     if (translatedBlockIdRef.current !== newBlockId) {
