@@ -884,6 +884,7 @@
         "iap_purchase_failed": "Uygulama içi satın alma başarısız oldu. Lütfen tekrar deneyin.",
         "iap_purchase_not_for_account": "Bu satın alma, oturum açılmış hesaba ait değil.",
         "image_reader_empty": "Metnini etkileşimli kelimeler olarak okumak için görseller ekleyin.",
+        "image_reader_ocr_error": "Bu görseldeki metin okunamadı.",
         "image_reader_supported": "Desteklenen: PNG, JPEG, GIF, WebP",
         "initializing": "Başlatılıyor...",
         "ios_lifetime_only": "iOS'ta yalnızca ömür boyu plan mevcuttur.",

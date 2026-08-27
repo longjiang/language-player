@@ -884,6 +884,7 @@
         "iap_purchase_failed": "인앱 구매에 실패했습니다. 다시 시도해 주세요.",
         "iap_purchase_not_for_account": "이 구매는 로그인한 계정의 것이 아닙니다.",
         "image_reader_empty": "이미지를 추가하여 텍스트를 대화형 단어로 읽으세요.",
+        "image_reader_ocr_error": "이 이미지에서 텍스트를 읽을 수 없습니다.",
         "image_reader_supported": "지원 형식: PNG, JPEG, GIF, WebP",
         "initializing": "초기화 중...",
         "ios_lifetime_only": "iOS에서는 평생 요금제만 이용 가능합니다.",

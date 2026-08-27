@@ -868,6 +868,7 @@
         "iap_purchase_failed": "應用程式內購買失敗。請重試。",
         "iap_purchase_not_for_account": "此購買不屬於目前登入的帳戶。",
         "image_reader_empty": "新增圖片以將其中的文字作為可互動單字來閱讀。",
+        "image_reader_ocr_error": "無法從該圖片中讀取文字。",
         "image_reader_supported": "支援格式：PNG、JPEG、GIF、WebP",
         "initializing": "初始化中...",
         "ios_lifetime_only": "iOS 上僅支援終身版。",

@@ -884,6 +884,7 @@
         "iap_purchase_failed": "فشلت عملية الشراء داخل التطبيق. يرجى المحاولة مرة أخرى.",
         "iap_purchase_not_for_account": "هذه العملية لا تخص الحساب المسجل دخوله.",
         "image_reader_empty": "أضف صورًا لقراءة نصها ككلمات تفاعلية.",
+        "image_reader_ocr_error": "تعذّر قراءة النص من هذه الصورة.",
         "image_reader_supported": "المدعوم: PNG، JPEG، GIF، WebP",
         "initializing": "جاري التهيئة...",
         "ios_lifetime_only": "الخطة مدى الحياة متاحة فقط على iOS.",
