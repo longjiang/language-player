@@ -10,6 +10,7 @@ import { ReaderPanel } from '@/components/reader/reader-panel';
 import { parseMarkdown, type ReaderBlock } from '@/lib/parse-markdown';
 import { Sidebar } from '@/components/ui/sidebar';
 import { epubLog } from '@/lib/epub-log';
+import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
 import {
   ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose,
 } from 'lucide-react';
@@ -105,11 +106,58 @@ export default function ImageReaderPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  /** True once the persisted gallery has been loaded. Persisting is a no-op until then. */
+  const [initialized, setInitialized] = useState(false);
 
   const current = useMemo(
     () => images.find((im) => im.id === currentId) ?? null,
     [images, currentId],
   );
+
+  // Restore the persisted gallery on mount (survives navigation/refresh).
+  useEffect(() => {
+    if (initialized) return;
+    (async () => {
+      try {
+        const g = await loadImageGallery();
+        if (g && g.entries.length > 0) {
+          const entries = g.entries.map((e) => ({
+            id: e.id,
+            name: e.name,
+            dataUrl: e.dataUrl,
+            title: e.title,
+            md: e.md,
+            blocks: e.md ? parseMarkdown(e.md) : null,
+            converting: false,
+            error: e.error,
+          }));
+          setImages(entries);
+          const curId = g.currentId && entries.some((e) => e.id === g.currentId) ? g.currentId : entries[0]!.id;
+          setCurrentId(curId);
+        }
+        setInitialized(true);
+      } catch (err) {
+        epubLog(`image reader gallery restore failed: ${(err as Error)?.message ?? err}`);
+        setInitialized(true);
+      }
+    })();
+  }, [initialized]);
+
+  // Persist the gallery whenever it changes (after the initial restore).
+  useEffect(() => {
+    if (!initialized) return;
+    void saveImageGallery({
+      entries: images.map((e) => ({
+        id: e.id,
+        name: e.name,
+        dataUrl: e.dataUrl,
+        title: e.title,
+        md: e.md,
+        error: e.error,
+      })),
+      currentId,
+    });
+  }, [images, currentId, initialized]);
 
   /** Run the vision OCR for an image entry (idempotent; no-op if already
    *  OCR'd). Takes the entry directly so a fresh add/paste can OCR immediately
@@ -140,6 +188,13 @@ export default function ImageReaderPage() {
       setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: false, error: true } : im)));
     }
   }, []);
+
+  // After restore, OCR the current image if it has no result yet.
+  useEffect(() => {
+    if (!initialized) return;
+    const cur = images.find((im) => im.id === currentId);
+    if (cur && !cur.md && !cur.converting && !cur.error) void runOcr(cur);
+  }, [initialized, currentId, images, runOcr]);
 
   // Keep a ref to `images` so selectImage can read the latest entry without the
   // callback identity changing on every render.
