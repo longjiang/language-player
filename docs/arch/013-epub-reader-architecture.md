@@ -626,6 +626,14 @@ reflow independently (no client-side OCR post-processing). The markdown is
 read in the paginated reader as a non-persistent session. OCR is lazy per
 image and cached server-side by `/vision`.
 
+Clicking the **current** image thumbnail opens a full-size **preview dialog**:
+click/pinch (mobile) or Ctrl+wheel (web) toggles/zooms, and dragging pans while
+zoomed; clicking a different thumbnail selects it. The gallery itself
+**persists** across navigation/refresh and is restored on mount — web via an
+IndexedDB store (`apps/web/src/lib/image-reader-store.ts`), mobile via a JSON
+file in the app documents (`apps/mobile/lib/image-reader-store.ts`). Images
+with no stored OCR result are re-OCR'd lazily on restore (server-cached).
+
 ### Epub-like formats (.fb2 / .mobi / .azw3)
 `packages/utils/src/alt-formats.ts` (pure TS, shared) converts FictionBook
 (FB2 XML) and MOBI/AZW3 (PDB + MOBI header + PalmDOC LZ77 decompression per
