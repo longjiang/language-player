@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
-import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords, sentenceContaining, shouldShowPhonetics, getWordDifficulty } from '@langplayer/utils';
+import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords, sentenceContaining } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
@@ -228,6 +228,45 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
 );
 TokenizedLine.displayName = 'TokenizedLine';
 
+// ── Word difficulty (apps/web token-span.tsx parity) ──────────────────────
+// Used by the "Hard words only" phonetics scope: hide readings for words at or
+// below the learner's level, show them for words above it (or unknown words).
+//
+//   not_cached  — no entry in the dictionary cache yet (bulk lookup pending).
+//   unclassified— cached entry exists but has no levels[].numeric and no
+//                 frequencyLevel. Treat as "hard" (show phonetics).
+//   classified  — at least one levels[].numeric or frequencyLevel found;
+//                 `value` is the lowest (easiest) on a 1–7 scale.
+type WordDifficulty =
+  | { kind: 'not_cached' }
+  | { kind: 'unclassified' }
+  | { kind: 'classified'; value: number };
+
+function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): WordDifficulty {
+  let hasEntry = false;
+  let lowest: number | null = null;
+  for (const lemma of lemmas) {
+    const entries = getCachedEntries(l2Code, lemma.lemma);
+    if (!entries) continue;
+    hasEntry = true;
+    for (const entry of entries) {
+      if (entry.levels) {
+        for (const l of entry.levels) {
+          if (typeof l.numeric === 'number' && l.numeric >= 1 && l.numeric <= 7) {
+            if (lowest === null || l.numeric < lowest) lowest = l.numeric;
+          }
+        }
+      }
+      if (typeof entry.frequencyLevel === 'number' && entry.frequencyLevel >= 1 && entry.frequencyLevel <= 7) {
+        if (lowest === null || entry.frequencyLevel < lowest) lowest = entry.frequencyLevel;
+      }
+    }
+  }
+  if (!hasEntry) return { kind: 'not_cached' };
+  if (lowest === null) return { kind: 'unclassified' };
+  return { kind: 'classified', value: lowest };
+}
+
 // ── Token Span Component ───────────────────────────────────────────────────
 
 interface TokenSpanProps {
@@ -264,15 +303,18 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
     const isSaved = savedFormSet.has(token.text.toLowerCase());
 
     // ── "Hard words only" filter: suppress readings for easy words ──
-    // Uses the shared phonetics gate (@langplayer/utils shouldShowPhonetics) so
-    // the video transcript and the page tokenizer make the identical decision.
-    const showPhoneticsForWord = shouldShowPhonetics({
-      phoneticsOn: showPhonetics,
-      scope: hardWordsOnly ? 'hard' : 'all',
-      userLevel,
-      l2Code,
-      lemmas: token.lemmas,
-    });
+    // Not memoized: the dictionary cache is populated asynchronously, so this
+    // must re-evaluate on every render (cacheVersion re-renders TokenSpan once
+    // the batch lookup fills the cache). Mirrors apps/web token-span.tsx.
+    const showPhoneticsForWord = (() => {
+      if (!showPhonetics) return false;               // phonetics toggle off
+      if (!hardWordsOnly) return true;                // scope = all words
+      if (!userLevel || userLevel < 1) return true;   // no level set → show all
+      const diff = getWordDifficulty(baseCode(l2Code), token.lemmas);
+      if (diff.kind === 'not_cached') return false;   // wait for the cache
+      if (diff.kind === 'unclassified') return true;  // unknown → treat as hard
+      return diff.value >= userLevel;
+    })();
 
     // Build ruby segments — gated by showPhoneticsForWord
     const hasPhonetics = showPhoneticsForWord && token.pronunciation && token.pronunciation !== token.text;
