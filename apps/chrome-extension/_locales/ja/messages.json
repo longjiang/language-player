@@ -330,6 +330,27 @@
   "review": {
     "message": "復習"
   },
+  "smoothScroll": {
+    "message": "スムーズスクロール"
+  },
+  "voice": {
+    "message": "音声"
+  },
+  "rate": {
+    "message": "レート"
+  },
+  "speed": {
+    "message": "速度"
+  },
+  "defaultVoice": {
+    "message": "自動（最適なものを選択）"
+  },
+  "textAppearance": {
+    "message": "テキストの外観"
+  },
+  "testVoice": {
+    "message": "音声をテスト"
+  },
   "settingsUnavailable": {
     "message": "この設定カテゴリは近日公開予定です。"
   },

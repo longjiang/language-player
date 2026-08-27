@@ -330,6 +330,27 @@
   "review": {
     "message": "ทบทวน"
   },
+  "smoothScroll": {
+    "message": "เลื่อนอย่างนุ่มนวล"
+  },
+  "voice": {
+    "message": "เสียง"
+  },
+  "rate": {
+    "message": "อัตรา"
+  },
+  "speed": {
+    "message": "ความเร็ว"
+  },
+  "defaultVoice": {
+    "message": "อัตโนมัติ (ที่ดีที่สุดที่มี)"
+  },
+  "textAppearance": {
+    "message": "ลักษณะข้อความ"
+  },
+  "testVoice": {
+    "message": "ทดสอบเสียง"
+  },
   "settingsUnavailable": {
     "message": "หมวดหมู่การตั้งค่านี้จะพร้อมใช้งานเร็วๆ นี้"
   },

@@ -330,6 +330,27 @@
   "review": {
     "message": "Tinjauan"
   },
+  "smoothScroll": {
+    "message": "Gulir Halus"
+  },
+  "voice": {
+    "message": "Suara"
+  },
+  "rate": {
+    "message": "Laju"
+  },
+  "speed": {
+    "message": "Kecepatan"
+  },
+  "defaultVoice": {
+    "message": "Otomatis (terbaik yang tersedia)"
+  },
+  "textAppearance": {
+    "message": "Tampilan teks"
+  },
+  "testVoice": {
+    "message": "Uji Suara"
+  },
   "settingsUnavailable": {
     "message": "Kategori pengaturan ini akan segera hadir."
   },

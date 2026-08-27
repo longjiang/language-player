@@ -330,6 +330,27 @@
   "review": {
     "message": "复习"
   },
+  "smoothScroll": {
+    "message": "平滑滚动"
+  },
+  "voice": {
+    "message": "声音"
+  },
+  "rate": {
+    "message": "速率"
+  },
+  "speed": {
+    "message": "速度"
+  },
+  "defaultVoice": {
+    "message": "自动（最佳可用）"
+  },
+  "textAppearance": {
+    "message": "文字外观"
+  },
+  "testVoice": {
+    "message": "测试声音"
+  },
   "settingsUnavailable": {
     "message": "此设置类别即将推出。"
   },

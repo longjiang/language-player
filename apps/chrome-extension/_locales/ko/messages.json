@@ -330,6 +330,27 @@
   "review": {
     "message": "복습"
   },
+  "smoothScroll": {
+    "message": "부드러운 스크롤"
+  },
+  "voice": {
+    "message": "음성"
+  },
+  "rate": {
+    "message": "속도"
+  },
+  "speed": {
+    "message": "속도"
+  },
+  "defaultVoice": {
+    "message": "자동 (최적 사용 가능)"
+  },
+  "textAppearance": {
+    "message": "텍스트 모양"
+  },
+  "testVoice": {
+    "message": "음성 테스트"
+  },
   "settingsUnavailable": {
     "message": "이 설정 카테고리는 곧 제공됩니다."
   },

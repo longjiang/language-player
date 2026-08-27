@@ -330,6 +330,27 @@
   "review": {
     "message": "Gözden Geçir"
   },
+  "smoothScroll": {
+    "message": "Yumuşak Kaydırma"
+  },
+  "voice": {
+    "message": "Ses"
+  },
+  "rate": {
+    "message": "Hız"
+  },
+  "speed": {
+    "message": "Hız"
+  },
+  "defaultVoice": {
+    "message": "Otomatik (mevcut en iyi)"
+  },
+  "textAppearance": {
+    "message": "Metin Görünümü"
+  },
+  "testVoice": {
+    "message": "Sesi Test Et"
+  },
   "settingsUnavailable": {
     "message": "Bu ayar kategorisi yakında kullanıma sunulacak."
   },

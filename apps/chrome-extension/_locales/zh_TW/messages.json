@@ -330,6 +330,27 @@
   "review": {
     "message": "複習"
   },
+  "smoothScroll": {
+    "message": "平滑捲動"
+  },
+  "voice": {
+    "message": "語音"
+  },
+  "rate": {
+    "message": "速率"
+  },
+  "speed": {
+    "message": "速度"
+  },
+  "defaultVoice": {
+    "message": "自動（最佳可用）"
+  },
+  "textAppearance": {
+    "message": "文字外觀"
+  },
+  "testVoice": {
+    "message": "測試語音"
+  },
   "settingsUnavailable": {
     "message": "此設定類別即將推出。"
   },
