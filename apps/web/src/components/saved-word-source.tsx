@@ -32,11 +32,15 @@ export function SavedWordSource({ context, date, className = '' }: SavedWordSour
   // Video wins when either video field is present; a title is only shown
   // when it exists (some legacy records only store youtube_id).
   if (hasVideoContext && context.videoTitle) {
+    // `max-w-full` + `min-w-0` on the truncating span let a long title shrink
+    // and ellipsize inside the inline-flex row instead of overflowing the card
+    // (flex items default to `min-width: auto`, which would otherwise widen the
+    // row past the container and push the date out).
     return (
-      <span className={`inline-flex items-center gap-1 ${className}`}>
+      <span className={`inline-flex max-w-full items-center gap-1 ${className}`}>
         <Video className="h-3 w-3 flex-shrink-0" />
-        <span className="truncate">{context.videoTitle}</span>
-        <span>· {dateStr}</span>
+        <span className="min-w-0 truncate">{context.videoTitle}</span>
+        <span className="shrink-0">· {dateStr}</span>
       </span>
     );
   }
@@ -46,10 +50,10 @@ export function SavedWordSource({ context, date, className = '' }: SavedWordSour
   }
 
   return (
-    <span className={`inline-flex items-center gap-1 ${className}`}>
+    <span className={`inline-flex max-w-full items-center gap-1 ${className}`}>
       <BookOpen className="h-3 w-3 flex-shrink-0" />
-      <span className="truncate">{context.textTitle}</span>
-      <span>· {dateStr}</span>
+      <span className="min-w-0 truncate">{context.textTitle}</span>
+      <span className="shrink-0">· {dateStr}</span>
     </span>
   );
 }

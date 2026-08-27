@@ -525,7 +525,8 @@ export default function ImageReaderPage() {
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={im.dataUrl} alt={im.title || im.name} className="aspect-[3/2] w-full object-cover" />
+                  {/* Retain the image's original aspect ratio (no forced 3:2 crop). */}
+                  <img src={im.dataUrl} alt={im.title || im.name} className="block w-full h-auto" />
                   {im.id === currentId && (
                     <div className="absolute inset-0 ring-2 ring-inset ring-primary" />
                   )}
