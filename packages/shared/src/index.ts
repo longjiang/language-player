@@ -20,4 +20,3 @@ export * from './markdown/parser';
 export * from './markdown/reconstruct';
 export * from './markdown/html-to-markdown';
 export * from './markdown/inline';
-export * from './markdown/vision';
