@@ -205,8 +205,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Content script → side panel relay (tagged with the sender tab).
         if (sidePanelPort && sender.tab?.id) {
             try {
+                console.log('[LP Extension] [BG] relay', request.action, 'tab', sender.tab.id, '→', sidePanelPort ? 'port' : 'no-port');
                 sidePanelPort.postMessage({ ...request, tabId: sender.tab.id });
             } catch {}
+        } else {
+            console.log('[LP Extension] [BG] relay SKIPPED', request.action, { hasPort: !!sidePanelPort, senderTabId: sender.tab?.id });
         }
         sendResponse({ ok: true });
         return true;
