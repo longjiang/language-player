@@ -401,7 +401,10 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             <div className="lpv-cue-menu-dropdown">
               <button onClick={handleCopy} className="lpv-cue-menu-item">{t('copy')}</button>
               <button onClick={handleSpeak} className="lpv-cue-menu-item">{t('speak')}</button>
-              {isPro && !explainLoading && (
+              {/* Let DeepSeek Explain — ALWAYS shown. Non-Pro users get the
+                  upgrade prompt from the line-explanation surface instead of a
+                  hidden item (web parity, ADR-0034). */}
+              {!explainLoading && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExplainLine(cue); }}
                   className="lpv-cue-menu-item"
@@ -539,10 +542,12 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   }, [l1Code, l2Code, onDictionaryOpen, pageUrl, videoTitle]);
 
   const handleExplainLine = useCallback((cue: SubtitleCue) => {
-    if (!isPro) return; // ADR-0034 D3: AI explanations are hard Pro-only
+    // Always open the explain surface. For non-Pro users the line-explanation
+    // dialog shows the upgrade prompt (web parity, ADR-0034) rather than
+    // silently ignoring the tap.
     onDictionaryOpen?.(null);
     onLineExplainOpen?.({ cue, l1Code, l2Code });
-  }, [isPro, l1Code, l2Code, onDictionaryOpen, onLineExplainOpen]);
+  }, [l1Code, l2Code, onDictionaryOpen, onLineExplainOpen]);
 
   // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
   // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).

@@ -99,7 +99,7 @@ function DictionarySurface({ lookup, modal, onClose, onRequireLogin }: {
 }
 
 function LineExplanationSurface({ modal, onClose }: { modal: Extract<ModalPayload, { kind: 'line-explanation' }>; onClose: () => void }) {
-  const { isPro } = useSubscription();
+  const { isPro, loading: subLoading } = useSubscription();
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -137,6 +137,8 @@ Text: ${cue.text}`;
 
   return (
     <Dialog open title={t('explainTitle')} closeLabel={t('close')} onOpenChange={(open) => { if (!open) onClose(); }} className="lpv-line-explanation-dialog">
+      {subLoading && <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>}
+      {!subLoading && !isPro && <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>}
       {loading && <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>}
       {error && <div className="lpv-explain-error">{error}</div>}
       {text && <div className="lpv-explain-section" style={{ borderBottom: 'none' }}><Markdown text={text} /></div>}
