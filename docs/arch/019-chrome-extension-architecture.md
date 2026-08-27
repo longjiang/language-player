@@ -722,16 +722,20 @@ with `position:fixed`. They render in the browser's own side panel:
   panel is never flipped out of the Subtitles/video mode; the panel still gets
   page lookups via the dedicated `pageLookup` message.
 - **Page translation block granularity + hover highlight**: the Page Translation
-  snapshot serves one translation block per readable page element (a
-  paragraph-level chunk) — it does not split long source blocks into
-  sentence-level sub-blocks. Block ids are the element's own `__lpvBlockId`
-  (no `#s<i>` suffix), so a token click/lookup scrolls to the whole block.
-  A token hover on the tokenized page (`pageTokenHover`, carrying the token's
-  `blockId` and `tokenOffset`) scrolls the panel to that block and highlights the
-  translation **sentence** that contains the hovered token via
-  `buildSentenceMap`/`sentenceIndexAt` (mirroring apps/web's
-  `SentenceHighlightBlock`/`SegmentedTranslation`), rendered as a `primary`
-  background wash on the active sentence.
+  snapshot serves one translation block per text **run** — a maximal run of visible
+  text separated by a `<br>` within a leaf block element — so a bare `<div>` post
+  body (e.g. 5ch/BBS) yields separate paragraph blocks instead of one clumped
+  string. A run is not further split into sentence-level sub-blocks. Run block ids
+  are the element's own `__lpvBlockId` + `#r<i>` (stable, shared by the snapshot
+  and the tokenizer), so a token click/lookup scrolls to the right paragraph.
+  Token spans carry `data-lpv-run`, and both a token **click** (`pageLookup`) and a
+  token **hover** (`pageTokenHover`), each carrying the run's `blockId` and
+  `sentenceIndex`, scroll the panel to that block and highlight the translation
+  **sentence** that contains the token via `buildSentenceMap`/`sentenceIndexAt`
+  (mirroring apps/web's `SentenceHighlightBlock`/`SegmentedTranslation`), rendered
+  as a `primary` background wash on the active sentence. The rest of a block's
+  translation text is rendered muted (`--muted-foreground`) so the highlighted
+  sentence stands out.
 - **What moved out of content scripts**: `createPanelUI`/`createPanel`, the
   mismatch banner DOM, the header (logo/open-in-web/close), `setPanelVisible`,
   `togglePanel`, `updateStatus` (now log-only), and the `autoOpenPanel` pref.
