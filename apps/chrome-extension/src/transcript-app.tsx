@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
-import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords, sentenceContaining } from '@langplayer/utils';
+import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords, sentenceContaining, shouldShowPhonetics, getWordDifficulty } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
@@ -228,45 +228,6 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
 );
 TokenizedLine.displayName = 'TokenizedLine';
 
-// ── Word difficulty (apps/web token-span.tsx parity) ──────────────────────
-// Used by the "Hard words only" phonetics scope: hide readings for words at or
-// below the learner's level, show them for words above it (or unknown words).
-//
-//   not_cached  — no entry in the dictionary cache yet (bulk lookup pending).
-//   unclassified— cached entry exists but has no levels[].numeric and no
-//                 frequencyLevel. Treat as "hard" (show phonetics).
-//   classified  — at least one levels[].numeric or frequencyLevel found;
-//                 `value` is the lowest (easiest) on a 1–7 scale.
-type WordDifficulty =
-  | { kind: 'not_cached' }
-  | { kind: 'unclassified' }
-  | { kind: 'classified'; value: number };
-
-function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): WordDifficulty {
-  let hasEntry = false;
-  let lowest: number | null = null;
-  for (const lemma of lemmas) {
-    const entries = getCachedEntries(l2Code, lemma.lemma);
-    if (!entries) continue;
-    hasEntry = true;
-    for (const entry of entries) {
-      if (entry.levels) {
-        for (const l of entry.levels) {
-          if (typeof l.numeric === 'number' && l.numeric >= 1 && l.numeric <= 7) {
-            if (lowest === null || l.numeric < lowest) lowest = l.numeric;
-          }
-        }
-      }
-      if (typeof entry.frequencyLevel === 'number' && entry.frequencyLevel >= 1 && entry.frequencyLevel <= 7) {
-        if (lowest === null || entry.frequencyLevel < lowest) lowest = entry.frequencyLevel;
-      }
-    }
-  }
-  if (!hasEntry) return { kind: 'not_cached' };
-  if (lowest === null) return { kind: 'unclassified' };
-  return { kind: 'classified', value: lowest };
-}
-
 // ── Token Span Component ───────────────────────────────────────────────────
 
 interface TokenSpanProps {
@@ -303,18 +264,15 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
     const isSaved = savedFormSet.has(token.text.toLowerCase());
 
     // ── "Hard words only" filter: suppress readings for easy words ──
-    // Not memoized: the dictionary cache is populated asynchronously, so this
-    // must re-evaluate on every render (cacheVersion re-renders TokenSpan once
-    // the batch lookup fills the cache). Mirrors apps/web token-span.tsx.
-    const showPhoneticsForWord = (() => {
-      if (!showPhonetics) return false;               // phonetics toggle off
-      if (!hardWordsOnly) return true;                // scope = all words
-      if (!userLevel || userLevel < 1) return true;   // no level set → show all
-      const diff = getWordDifficulty(baseCode(l2Code), token.lemmas);
-      if (diff.kind === 'not_cached') return false;   // wait for the cache
-      if (diff.kind === 'unclassified') return true;  // unknown → treat as hard
-      return diff.value >= userLevel;
-    })();
+    // Uses the shared phonetics gate (@langplayer/utils shouldShowPhonetics) so
+    // the video transcript and the page tokenizer make the identical decision.
+    const showPhoneticsForWord = shouldShowPhonetics({
+      phoneticsOn: showPhonetics,
+      scope: hardWordsOnly ? 'hard' : 'all',
+      userLevel,
+      l2Code,
+      lemmas: token.lemmas,
+    });
 
     // Build ruby segments — gated by showPhoneticsForWord
     const hasPhonetics = showPhoneticsForWord && token.pronunciation && token.pronunciation !== token.text;
@@ -556,7 +514,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const [textScale, setTextScale] = useState(2);
   const [smoothScroll, setSmoothScroll] = useState(DEFAULT_PLAYBACK.smoothScroll);
   /** Phonetics scope: 'all' or 'hard' (Hard words only). Drives the per-word
-   *  difficulty gate in TokenSpan (apps/web token-span.tsx parity). */
+   *  difficulty gate (apps/web token-span.tsx parity). */
   const [phoneticsScope, setPhoneticsScope] = useState<'all' | 'hard'>('all');
   /** Learner's proficiency level (1–7) for the current L2, from progressLevels.
    *  0 = not set → hard-words scope shows all words. */
@@ -740,10 +698,10 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     }
   }, [activeCueIdx, cues, l2Code, preFetch]);
 
-  // Defensive resolution of the "Hard words only" phonetics scope (the crash
-  // that blanked the side panel in 3dbc63a4 was an undeclared state variable
-  // referenced here). If resolution ever throws again, degrade to "show all"
-  // and log the exact error so we can diagnose a resurface, not a blank panel.
+  // Defensive resolution of the "Hard words only" phonetics scope (a crash that
+  // blanked the side panel was an undeclared state variable referenced here). If
+  // resolution ever throws again, degrade to "show all" and log the exact error
+  // so we can diagnose a resurface, not a blank panel.
   let hardWordsOnly = false;
   let effectiveUserLevel = 0;
   try {
@@ -880,7 +838,10 @@ interface PagePanelProps {
 
 interface PageLookupDetail {
   token: LemmatizedToken;
+  /** Full source block text (for the translation panel sentence alignment). */
   blockText: string;
+  /** Immediate sentence containing the token — the saved/displayed context. */
+  contextText?: string;
   blockId?: string | null;
   href?: string | null;
 }
@@ -929,7 +890,10 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
     log(`[FURIGANA] page mode lookup: token="${lookup.token.text}" pron="${lookup.token.pronunciation || 'none'}" — rendered as dictionary header text, not ruby`);
     const newBlockId = lookup.blockId || null;
     setSelectedToken(lookup.token);
-    setBlockText(lookup.blockText || '');
+    // Prefer the immediate sentence (page reader restricts dict context to the
+    // sentence, apps/web parity); fall back to the full block for video lookups
+    // that don't carry a separate sentence.
+    setBlockText((lookup.contextText || lookup.blockText) || '');
     setBlockId(newBlockId);
     setHref(lookup.href || null);
     if (translatedBlockIdRef.current !== newBlockId) {
