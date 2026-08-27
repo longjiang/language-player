@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ArrowLeft, ChevronDown, LayoutGrid, List, X } from 'lucide-react-native';
+import { normalizeVisionMarkdown } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -94,7 +95,8 @@ export function PdfReaderPanel({
         }),
       });
       const data = res.ok ? await res.json() : null;
-      setConvertedMd(typeof data?.response === 'string' ? data.response : '');
+      const md = typeof data?.response === 'string' ? data.response : '';
+      setConvertedMd(normalizeVisionMarkdown(md));
     } catch (err) {
       logwarn('[pdf] page conversion failed:', (err as Error)?.message ?? err);
       setConvertedMd('');
