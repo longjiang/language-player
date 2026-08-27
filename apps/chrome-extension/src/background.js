@@ -459,6 +459,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         clearDetectedSubtitlesByTab(tabId);
         updateBadge();
     }
+    // Re-assert the side-panel open state after a navigation. The panel's port
+    // stays connected across a reload, so chrome.runtime.onConnect never fires
+    // again to re-notify the freshly-injected content scripts — page-content.js
+    // would read panelOpen=false and report "page translation is not active"
+    // even though the side panel is still open on this tab. Re-send it once the
+    // new content scripts are registered (document_idle runs before 'complete').
+    if (changeInfo.status === 'complete' && sidePanelConnected && tabId === sidePanelTabId) {
+        notifyTabPanelOpenState(tabId, true);
+    }
 });
 
 // Extract filename from URL
