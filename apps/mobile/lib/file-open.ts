@@ -1,5 +1,4 @@
 import * as Linking from 'expo-linking';
-import * as FileSystem from 'expo-file-system/legacy';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -63,6 +62,11 @@ export function clearPendingOpens(): void {
  *  needs the copy — it is a temporary grant). */
 async function ingestExternalUri(sourceUri: string, fallbackName?: string): Promise<void> {
   try {
+    // Lazy-load the legacy expo-file-system module on the first OS file-open
+    // instead of at app startup. Its module-eval reads native-module state, so
+    // pulling it out of the startup bundle path avoids a release-only
+    // module-eval crash on launch. Errors here are caught below (non-fatal).
+    const FileSystem = await import('expo-file-system/legacy');
     const name =
       fallbackName ||
       sourceUri.split('/').pop()?.split('?')[0] ||
