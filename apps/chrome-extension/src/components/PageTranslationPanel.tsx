@@ -87,7 +87,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     setActiveHover({});
     queueRef.current = [];
     inFlightRef.current.clear();
-    log('[PAGE] translation snapshot requested', { tabId, l1Code, l2Code, pageUrl, generation });
 
     if (!tabId) {
       setStatus('error');
@@ -115,13 +114,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
           });
           break;
         }
-        log('[PAGE] translation snapshot response', {
-          generation,
-          attempt,
-          ok: response?.ok,
-          error: response?.error,
-          blocks: Array.isArray(response?.blocks) ? response.blocks.length : null,
-        });
         if (response?.ok || response?.error !== 'page translation is not active') break;
         // The page content script reports the lifecycle is not active (its
         // panelOpen/enabled state was lost, e.g. the tab navigated and the
@@ -141,7 +133,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
       blocksRef.current = nextBlocks;
       setBlocks(nextBlocks);
       setStatus(nextBlocks.length > 0 ? 'ready' : 'empty');
-      log('[PAGE] translation snapshot loaded', { generation, blocks: nextBlocks.length });
     } catch (err: any) {
       if (generation !== requestGenerationRef.current) return;
       setStatus('error');
@@ -180,13 +171,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
       .filter((block): block is PageBlock => !!block);
     if (selected.length === 0) return;
     selected.forEach((block) => inFlightRef.current.add(block.id));
-    log('[PAGE] translation request', {
-      generation,
-      ids: selected.map((block) => block.id),
-      lengths: selected.map((block) => block.text.length),
-      l1: l1Code,
-      l2: l2Code,
-    });
 
     try {
       const response = await apiFetch(`${API_BASE}/translate_array`, {
@@ -210,14 +194,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
           message: parseError?.message,
         });
       }
-      log('[PAGE] translation response', {
-        generation,
-        status: response.status,
-        ok: response.ok,
-        requested: selected.length,
-        returned: Array.isArray(data.translated_texts) ? data.translated_texts.length : 0,
-        bodyKeys: Object.keys(data || {}),
-      });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       if (generation !== requestGenerationRef.current) return;
 
@@ -272,7 +248,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
     if (translatedRef.current.has(id) || inFlightRef.current.has(id) || queueRef.current.includes(id)) return;
     queueRef.current.push(id);
     setPending((current) => new Set(current).add(id));
-    log('[PAGE] translation block queued', { id, queueLength: queueRef.current.length });
     if (flushTimerRef.current === null) {
       const flush = () => {
         flushTimerRef.current = null;
@@ -311,7 +286,6 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
       });
       return;
     }
-    log('[PAGE] scrolling translation to lookup block', { blockId, token: lookup?.token?.text });
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     // Keep the current-line marker on the block the learner is reading until
     // they tap a different token (matching the subtitles active-cue behavior,

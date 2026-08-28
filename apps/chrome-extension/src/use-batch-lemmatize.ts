@@ -206,24 +206,6 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
       const data = await res.json();
       const results: LemmatizedToken[][] = data.results ?? [];
 
-      // ── Furigana/phonetics debug: does the API give us readings? ──
-      let tokenCount = 0;
-      let wordCount = 0;
-      let withPronCount = 0;
-      const pronSample: string[] = [];
-      for (const tokens of results) {
-        tokenCount += tokens.length;
-        for (const tok of tokens) {
-          if (tok.lemmas.length === 0) continue;
-          wordCount++;
-          if (tok.pronunciation) {
-            withPronCount++;
-            if (pronSample.length < 3) pronSample.push(`${tok.text}/${tok.pronunciation}`);
-          }
-        }
-      }
-      log(`[FURIGANA] batch l2=${lang} texts=${textsToSend.length} tokens=${tokenCount} words=${wordCount} withPron=${withPronCount}${pronSample.length ? ` sample=[${pronSample.join(', ')}]` : ''}`);
-
       // Populate cache: results[i] corresponds to textsToSend[i]
       for (let i = 0; i < results.length; i++) {
         const key = `${lang}:${textsToSend[i]}`;
