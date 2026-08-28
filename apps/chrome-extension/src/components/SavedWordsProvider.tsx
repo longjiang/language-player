@@ -13,6 +13,7 @@ import React, {
 import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
 import { fetchSavedWords, putSavedWord, deleteSavedWord } from '../saved-words';
 import { getAuthState } from '../auth';
+import { buildSavedWordMaps } from '../quick-gloss';
 
 // ── Context ────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,10 @@ interface SavedWordsContextValue {
   savedWords: SavedLexicalItemStore;
   /** Set of lowercased word forms for quick lookup (e.g., highlighting). */
   savedFormSet: Set<string>;
+  /** Surface form → the dictionary entry id the user saved. A form can match
+   *  several saved entries; the most-recently-saved entry wins (apps/web
+   *  savedWordIdByForm). Used to render the saved entry's quick gloss. */
+  savedWordIdByForm: Map<string, string>;
   /** Whether we're currently loading from the server. */
   loading: boolean;
   /** Save a word and sync to the server. */
@@ -34,6 +39,7 @@ interface SavedWordsContextValue {
 const SavedWordsContext = createContext<SavedWordsContextValue>({
   savedWords: {},
   savedFormSet: new Set(),
+  savedWordIdByForm: new Map(),
   loading: false,
   saveWord: async () => {},
   removeSavedWord: async () => {},
@@ -179,6 +185,12 @@ export const SavedWordsProvider: React.FC<SavedWordsProviderProps> = ({ children
     return forms;
   }, [savedWords]);
 
+  // Build the surface-form → saved-entry-id map (most-recently-saved wins) so
+  // tokens render the entry the user actually saved as the quick gloss.
+  const savedWordIdByForm = useMemo(() => {
+    return buildSavedWordMaps(savedWords, l2Code ?? '').savedWordIdByForm;
+  }, [savedWords, l2Code]);
+
   const saveWord = useCallback(async (l2Code: string, record: SavedLexicalItemRecord) => {
     // Optimistic local update (server merges forms/instances idempotently)
     setSavedWords(prev => {
@@ -222,7 +234,7 @@ export const SavedWordsProvider: React.FC<SavedWordsProviderProps> = ({ children
   }, [l2Code]);
 
   return (
-    <SavedWordsContext.Provider value={{ savedWords, savedFormSet, loading, saveWord, removeSavedWord, isLoggedIn }}>
+    <SavedWordsContext.Provider value={{ savedWords, savedFormSet, savedWordIdByForm, loading, saveWord, removeSavedWord, isLoggedIn }}>
       {children}
     </SavedWordsContext.Provider>
   );
