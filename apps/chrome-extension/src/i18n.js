@@ -120,10 +120,23 @@ export function t(key, substitutions) {
 
   // 2. Fallback to Chrome's built-in i18n — uses browser UI language, not user-selected.
   //    Only reached when runtimeMessages hasn't been loaded or key is missing.
+  //    Chrome's signature is getMessage(name, substitutions?, options?) where
+  //    `substitutions` is a SINGLE string OR array — it must be passed whole, never
+  //    spread. Spreading an array (getMessage(key, a, b)) makes the 3rd arg land in
+  //    `options` and throws "No matching signature", which previously cascaded into
+  //    a whole-panel crash/blank. Guard with try/catch too so a bad call can never
+  //    take down the render tree.
   if (typeof chrome !== 'undefined' && chrome.i18n) {
-    const msg = substitutions && substitutions.length
-      ? chrome.i18n.getMessage(key, ...substitutions)
-      : chrome.i18n.getMessage(key);
+    let msg = '';
+    try {
+      msg = substitutions && substitutions.length
+        ? chrome.i18n.getMessage(key, substitutions)
+        : chrome.i18n.getMessage(key);
+      if (typeof msg !== 'string') msg = '';
+    } catch (err) {
+      logwarn(`i18n.getMessage failed for "${key}":`, err?.message);
+      msg = '';
+    }
     if (msg) return msg;
   }
 

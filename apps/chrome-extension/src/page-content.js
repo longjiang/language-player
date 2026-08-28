@@ -1137,6 +1137,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.action === 'pageTranslationVisibility') {
     pageTranslationTabOpen = message.open === true;
+    // A `pageTranslationVisibility {open:true}` is sent by the side panel itself,
+    // which is authoritative proof the side panel is open. If a stale
+    // `panelOpenState {open:false}` (e.g. a port flap during panel boot on a
+    // cold, never-visited page) arrived just before this, `panelOpen` is
+    // wrongly false — trusting the side-panel request here recovers the page
+    // reader instead of routing this into the `cleanup()` branch (which would
+    // leave it disabled). A REAL close is still handled by the authoritative
+    // `panelOpenState {open:false}` from the background.
+    if (message.open === true) panelOpen = true;
     if (panelOpen && pageTranslationTabOpen) {
       initialized = false;
       init();
