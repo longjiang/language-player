@@ -10,10 +10,11 @@
 ## Overview
 
 The image reader is a standalone route reachable from the Reading menu. Users
-load one or more images (file picker, drag & drop, clipboard paste, or OS
-file-open); each is OCR'd by DeepSeek Vision and shown as **tokenized,
-interactive text** in the shared paginated reader, with a thumbnail sidebar for
-multi-image navigation. It is **not** an action inside the epub reader.
+load one or more images (file picker, drag & drop, or clipboard paste; the OS
+file-open entry point is **unimplemented** — see below); each is OCR'd by
+DeepSeek Vision and shown as **tokenized, interactive text** in the shared
+paginated reader, with a thumbnail sidebar for multi-image navigation. It is
+**not** an action inside the epub reader.
 
 ## Routes & files
 
@@ -53,8 +54,12 @@ multi-image navigation. It is **not** an action inside the epub reader.
   `DocumentPicker`).
 - **Paste** button + global **Ctrl/Cmd+V** clipboard-image paste: web `paste`
   event / `navigator.clipboard.read()`; mobile `expo-clipboard` `getImageAsync`.
-- **OS file-open** routing (mobile `lib/file-open.ts`) sends images to the
-  image reader screen, consumed on focus.
+- **OS file-open** routing — **unimplemented / removed.** Previously the mobile
+  `lib/file-open.ts` sent OS-opened images here (consumed on focus), but the
+  OS file-open feature was **discarded** because a Release build black-screens
+  at launch (`[runtime not ready]: TypeError: Cannot read property 'timeout' of
+  undefined`; no crash report; Debug unaffected). Users load images via the
+  picker / paste / drop instead.
 
 ## Sidebar
 
@@ -116,8 +121,8 @@ the downscaled payload byte size.
 
 ## Verification
 
-- Load images via picker / drop / paste / OS file-open → thumbnails appear, the
-  current one opens and OCRs.
+- Load images via picker / drop / paste (OS file-open is unimplemented) →
+  thumbnails appear, the current one opens and OCRs.
 - Title bar shows the human-readable title; saved-word context uses it.
 - Sidebar collapses on desktop / sheets on mobile; the add-next tile adds
   images.

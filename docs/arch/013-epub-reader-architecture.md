@@ -714,9 +714,22 @@ handlers/`toggleChrome` ignore taps inside the window. On web, taps are also
 ignored while any dialog overlay is still mounted (open or animating out),
 matching SPEC-085 §11.
 
-### Mobile file handling
+### Mobile file handling — UNIMPLEMENTED (removed)
+> **Status: unimplemented / removed.** The OS file-open feature was implemented
+> in `6ec2de25` but **discarded** because a Release (TestFlight) build
+> black-screens at launch with a fatal
+> `[runtime not ready]: TypeError: Cannot read property 'timeout' of undefined`
+> during JS bundle evaluation (no crash report; Debug builds are unaffected).
+> The failure could not be traced to a specific source line — the working Debug
+> build and the broken Release ship identical mobile source — so the feature was
+> reverted rather than carried through the bug.
+
 OS file-open (iOS CFBundleDocumentTypes / Android VIEW intent filters) and an
-in-app routing layer (`apps/mobile/lib/file-open.ts`) send audio/video (+.srt)
-to the local media player, ebooks/PDFs to the ebook reader, .txt/.md to the
-notes reader (as a new note), and images to the image reader. Requires a
-dev-build rebuild for the native document types to take effect.
+in-app routing layer (`apps/mobile/lib/file-open.ts`) would send audio/video
+(+.srt) to the local media player, ebooks/PDFs to the ebook reader, .txt/.md to
+the notes reader (as a new note), and images to the image reader. **This is no
+longer present** — `lib/file-open.ts` is deleted, the `CFBundleDocumentTypes` /
+VIEW intent filters are removed from `app.config.js`, and no screen consumes
+OS-opened files. Files are still importable via the in-app pickers (media,
+bookshelf, image reader, notes). Re-adding this feature should be treated as
+new work and revalidated against a Release build before shipping.
