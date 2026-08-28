@@ -100,7 +100,6 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'lpv-sidepanel') return;
   sidePanelPort = port;
   sidePanelConnected = true;
-  console.log('[LP Extension] Side panel connected');
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs?.[0];
     if (!activeTab?.id) return;
@@ -119,7 +118,6 @@ chrome.runtime.onConnect.addListener((port) => {
     sidePanelConnected = false;
     sidePanelTabId = null;
     sidePanelWindowId = null;
-    console.log('[LP Extension] Side panel disconnected');
     notifyTabPanelOpenState(previousTabId, false);
   });
 });
@@ -205,7 +203,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Content script → side panel relay (tagged with the sender tab).
         if (sidePanelPort && sender.tab?.id) {
             try {
-                console.log('[LP Extension] [BG] relay', request.action, 'tab', sender.tab.id, '→', sidePanelPort ? 'port' : 'no-port');
                 sidePanelPort.postMessage({ ...request, tabId: sender.tab.id });
             } catch {}
         } else {

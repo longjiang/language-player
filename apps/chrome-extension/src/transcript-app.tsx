@@ -28,15 +28,6 @@ const FREE_TRANSCRIPT_LINES = 10;
 
 const WEB_APP_URL = 'https://language-player.netlify.app';
 
-/** Furigana debug — log each unique (word, reason) once so the console stays readable. */
-const furiganaDebugLogged = new Set<string>();
-
-function logFurigana(key: string, message: string): void {
-  if (furiganaDebugLogged.has(key)) return;
-  furiganaDebugLogged.add(key);
-  log(`[FURIGANA] ${message}`);
-}
-
 /** Re-render the transcript when the shared dictionary cache is populated by
  *  the lazy batch lookup, so quick glosses appear without a manual refresh. */
 function useDictionaryCacheVersion(): number {
@@ -280,25 +271,6 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
       ? buildRuby(token.text, token.pronunciation!, l2Code)
       : null;
 
-    // ── Furigana debug: why is ruby (not) rendering for Japanese kanji words? ──
-    const l2Base = l2Code.split('-')[0]!;
-    if (isWord && l2Base === 'ja' && /[一-龯]/.test(token.text)) {
-      const readings = rubySegments?.filter((seg) => seg.reading) ?? [];
-      if (!showPhonetics) {
-        logFurigana(`ja:${token.text}:toggle`, `"${token.text}" ruby skipped: phonetics toggle is OFF`);
-      } else if (hardWordsOnly && !showPhoneticsForWord) {
-        logFurigana(`ja:${token.text}:notHard`, `"${token.text}" ruby skipped: hard-words scope filtered it (diff=${JSON.stringify(getWordDifficulty(baseCode(l2Code), token.lemmas))}, userLevel=${userLevel})`);
-      } else if (!token.pronunciation) {
-        logFurigana(`ja:${token.text}:nopron`, `"${token.text}" ruby skipped: API returned no pronunciation`);
-      } else if (token.pronunciation === token.text) {
-        logFurigana(`ja:${token.text}:same`, `"${token.text}" ruby skipped: pronunciation equals surface text`);
-      } else if (readings.length === 0) {
-        logFurigana(`ja:${token.text}:nosegs`, `"${token.text}" ruby skipped: buildRuby returned no readings (segments=${JSON.stringify(rubySegments)})`);
-      } else {
-        logFurigana(`ja:success`, `ruby rendered for "${token.text}" (pron=${token.pronunciation}, readings=${readings.length}/${rubySegments!.length}) — first ja success`);
-      }
-    }
-
     const lemmaTitle = token.lemmas.map((l) => l.lemma).join(', ');
 
     // Quick gloss from the shared dictionary cache (populated lazily by the
@@ -538,7 +510,6 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     try {
       chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale', 'extensionPlaybackSettings', 'phoneticsScope', 'progressLevels'], (result) => {
         log('[PAGE] loaded prefs:', JSON.stringify(result));
-        log(`[FURIGANA] video mode prefs: showPhonetics=${result.showPhonetics === undefined ? 'default(true)' : result.showPhonetics}`);
         if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
         if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
         if (result.textScale !== undefined) setTextScale(result.textScale);
@@ -876,7 +847,6 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   useEffect(() => {
     try {
       chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale'], (result) => {
-        log(`[FURIGANA] page mode prefs: showPhonetics=${result.showPhonetics === undefined ? 'default(true)' : result.showPhonetics} — page panel has no inline ruby surface; dictionary card shows pronunciation as text`);
         if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
         if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
         if (result.textScale !== undefined) setTextScale(result.textScale);
@@ -887,7 +857,6 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   useEffect(() => {
     if (!lookup?.token) return;
     log(`[PAGE] lookup: "${lookup.token.text}", blockText chars=${(lookup.blockText || '').length}, href=${lookup.href || 'none'}`);
-    log(`[FURIGANA] page mode lookup: token="${lookup.token.text}" pron="${lookup.token.pronunciation || 'none'}" — rendered as dictionary header text, not ruby`);
     const newBlockId = lookup.blockId || null;
     setSelectedToken(lookup.token);
     // Prefer the immediate sentence (page reader restricts dict context to the
@@ -942,7 +911,6 @@ export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, o
   }, [selectedToken, effectiveShowTranslation, blockText, blockId, l1Code, l2Code, canTranslate]);
 
   const handlePhoneticsToggle = (checked: boolean) => {
-    log(`[FURIGANA] page mode phonetics toggle → ${checked}`);
     setShowPhonetics(checked);
     try { chrome.storage.local.set({ showPhonetics: checked }); } catch {}
   };

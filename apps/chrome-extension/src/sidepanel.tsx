@@ -190,11 +190,9 @@ function SidePanelApp() {
         // Content script is present but reports no active mode yet (panelOpen /
         // pageTranslationTabOpen lifecycle not asserted, or a stale tab). Leave
         // panelLoading on so the retry loop re-pulls until it resolves.
-        log('[SIDEPANEL] getPanelState returned no active mode; retrying', { tid, res: res?.state ?? null });
       }
     } catch (err) {
-      if (tid !== tabIdRef.current) return; // stale pull — ignore
-      // No content script (or not ready yet) — keep loading; the retry loop
+      if (tid !== tabIdRef.current) return; // stale pull — ignore      // No content script (or not ready yet) — keep loading; the retry loop
       // recovers once the content script is injected / this tab is supported.
       const e = err as { message?: string } | undefined;
       // Capture the tab URL so we can tell whether the pull is aimed at a tab
@@ -561,12 +559,6 @@ function SidePanelApp() {
   // Diagnostic: whenever the panel could be stuck in a loading/error state,
   // log the computed state so we can pinpoint why subtitles aren't showing.
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
-  log('[SIDEPANEL] content state', {
-    mode, activeTab, panelLoading, panelError, subtitleStatus, theme,
-    cues: videoState?.cues?.length, hasVideoState: !!videoState,
-    hasPageState: !!pageState, l1Code, l2Code, currentL2Code,
-    subtitlesAvailable, tabId,
-  });
 
   const handleLanguageConfirm = useCallback(async (nextL1: string, nextL2: string, traditional: boolean) => {
     setLanguagePickerOpen(false);
@@ -690,4 +682,3 @@ const container = document.getElementById('lpv-side-panel-root');
 if (container) {
   createRoot(container).render(<SidePanelApp />);
 }
-log('Side panel host loaded');
