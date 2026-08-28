@@ -84,3 +84,16 @@ uploads and dev (Debug) builds, one row per commit, chronological.
   paragraph ruby with overhang again. Debug-vs-Release variables ruled out along the way:
   `ENABLE_DEBUG_DYLIB` split (monolith still failed), fonts/typeFace, TextKit 1 vs 2, linked
   frameworks, build flags, settings.
+- **2026-08-28 — TestFlight e.g. 3.4.1 (b15) black-screens on launch (no root cause; feature discarded).**
+  The iOS Release build opens to a black screen with no crash report, while the latest Debug build
+  (`dev 27`) runs fine. Device syslog shows a fatal JS exception thrown during bundle evaluation:
+  `[runtime not ready]: TypeError: Cannot read property 'timeout' of undefined`. The crash is a
+  **Release-build evaluation artifact**: `dev 27` (Debug) and the broken Release ship identical
+  mobile source (only the harmless `8270edc3` image-reader view fix separates them), and the
+  `.timeout` read could not be attributed to any source line (searched app/shared/`@langplayer`/
+  `expo-linking`/`expo-file-system`/`expo-iap`/`axios`/every bundled dep; only `config.timeout`
+  and `AbortSignal.timeout` exist). Because the failure was not reproducible in a Debug build and
+  couldn't be traced, the OS file-open feature (`6ec2de25`, prime suspect; also the only mobile
+  change requiring a native `CFBundleDocumentTypes` rebuild) was **discarded** (revert
+  `0b0480ef`), and the docs/arch-013 + specs-089/090 mark it **unimplemented**. Re-adding the
+  feature must be revalidated against a Release build before shipping.

@@ -109,8 +109,12 @@ PDF thumbnails and the rendered cover are cached locally in the app.
   (web + mobile).
 - Open an image → OCR text appears in the paginated reader.
 - Typecheck both apps (`apps/web`, `apps/mobile`); runtime verification of
-  the mobile WebView pdf.js path and OS file-open is outstanding (needs a
-  simulator/device run).
+  the mobile WebView pdf.js path is outstanding (needs a simulator/device run).
+- OS file-open (mobile `lib/file-open.ts`) is **unimplemented / removed** — it
+  was discarded because a Release build black-screens at launch
+  (`[runtime not ready]: TypeError: Cannot read property 'timeout' of
+  undefined`; no crash report; Debug unaffected). Files are imported via the
+  in-app pickers.
 
 ## Revision
 
