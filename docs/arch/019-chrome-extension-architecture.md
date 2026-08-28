@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-26 (settings modal: segmented Display controls, L2 sample preview, Playback + Speech categories, deep search; Review/subtitle-search removed; account/profile dialog: language-specific level labels, translated activity label, width clamp; unified "Hard words only" phonetics pipeline in @langplayer/utils shared by the video transcript and the page tokenizer (lazy batch dictionary lookup); web-parity language-trigger chevron and signed-in avatar; popup dict follow-link inside the padded body + localized "Lemma:" header label; side panel never-blank open resolution with auto-recovery polling)
+- **Last Updated**: 2026-08-27 (side panel never-blank: the whole-app error fallback's Retry now remounts the tree (key bump) so a stale tab / dead content script recovers instead of re-rendering the same crash; page mode diagnostics log the resolved page-translation state; page-content `init()` auto-re-inits after a transient lifecycle flap so a cold "never-visited" page does not strand the page reader disabled — see note below)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -685,6 +685,21 @@ with `position:fixed`. They render in the browser's own side panel:
   SPEC-086 §Phase 3: Detecting / No subtitles / Error / Ready) and never the
   page-reader "This page is unavailable for translation" text, which belongs only
   to the page-translation context.
+- **Whole-app crash fallback + recovery Retry**: the top-level `PanelErrorBoundary`
+  fallback is self-contained (inline styles, brand title, precise error message)
+  so it is never an invisible dark-on-dark blank. Its **Retry bumps an internal
+  key** instead of a plain `setState({error:null})`, so the crashing subtree is
+  fully remounted — re-running the active-tab tracking and mode pull — rather than
+  re-rendering the same deterministic crash.
+- **Page-reader init auto-recovery (never-visited pages)**: on a cold page load
+  the panel-open / page-translation-visibility / mode-pull messages race the
+  async `init()`. If `init()` aborts after a stale-generation check (a lifecycle
+  re-assert superseded it) while the panel is STILL open with the Page Translation
+  tab active, `page-content.js` schedules a bounded auto-re-init (≤3 attempts,
+  guarded by `initInFlight` so it never double-runs a concurrent init) rather than
+  leaving `enabled=false` and the reader dead until the panel is closed/reopened.
+  Aborting is still correct when the panel actually closed (`panelOpen`/tabOpen
+  false), which the guard excludes.
 - **Close on navigation / video change**: the panel is closed on any page
   navigation of the panel's tab (`chrome.tabs.onUpdated` `status === 'loading'`)
   and on a YouTube SPA video change (`content-entry.js` sends `closePanel` when
