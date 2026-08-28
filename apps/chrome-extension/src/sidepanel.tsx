@@ -78,24 +78,36 @@ interface PagePanelState {
 /** Error boundary around the whole side-panel tree. Without it a render crash in
  *  the transcript, page panel, or a modal unmounts the entire React tree and
  *  leaves a blank panel with no recovery. This catches the crash and shows a
- *  friendly error + Retry instead (spec-086 §7/§11 "never blank"). */
+ *  friendly error + Retry instead (spec-086 §7/§11 "never blank").
+ *
+ *  The fallback is self-contained and always visible (inline styles + brand
+ *  title + precise error message + a Retry that actually recovers). Retry bumps
+ *  an internal key so the crashing subtree is fully REMOUNTED — a plain
+ *  setState({error:null}) would just re-render the same deterministic crash and
+ *  land right back on the error. Remounting re-runs SidePanelApp's mount effects
+ *  (active-tab tracking, mode pull) so a stale tab / dead content script is
+ *  recovered on retry. */
 class PanelErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { error: Error | null }
+  { error: Error | null; retryKey: number }
 > {
-  state: { error: Error | null } = { error: null };
+  state: { error: Error | null; retryKey: number } = { error: null, retryKey: 0 };
   static getDerivedStateFromError(error: Error): { error: Error } {
     return { error };
   }
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     logerr('[SIDEPANEL] panel render error', { error: error?.message, stack: info?.componentStack });
   }
+  private handleRetry = () => {
+    this.setState((prev) => ({ error: null, retryKey: prev.retryKey + 1 }));
+  };
   render() {
     if (this.state.error) {
       // Self-contained, always-visible fallback. It renders OUTSIDE the themed
       // `lpv-app-shell`, so theme CSS variables may be unset — inline styles
       // guarantee the error is never an invisible (dark-on-dark) blank panel.
-      logerr('[SIDEPANEL] rendering error fallback', { error: this.state.error?.message });
+      const message = this.state.error?.message ? String(this.state.error.message) : '';
+      logerr('[SIDEPANEL] rendering error fallback', { error: message || this.state.error?.name || t('pageUnavailable'), stack: this.state.error?.stack });
       return (
         <div
           data-theme="dark"
@@ -113,14 +125,14 @@ class PanelErrorBoundary extends React.Component<
           }}
         >
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#f9fafb' }}>Language Player</div>
-          <p style={{ margin: 0, color: '#9ca3af' }}>{this.state.error?.message || t('pageUnavailable')}</p>
-          <Button variant="outline" size="sm" onClick={() => this.setState({ error: null })}>
+          <p style={{ margin: 0, color: '#9ca3af' }}>{message || this.state.error?.name || t('pageUnavailable')}</p>
+          <Button variant="outline" size="sm" onClick={this.handleRetry}>
             {t('retry')}
           </Button>
         </div>
       );
     }
-    return this.props.children;
+    return <React.Fragment key={this.state.retryKey}>{this.props.children}</React.Fragment>;
   }
 }
 
@@ -558,7 +570,18 @@ function SidePanelApp() {
 
   // Diagnostic: whenever the panel could be stuck in a loading/error state,
   // log the computed state so we can pinpoint why subtitles aren't showing.
+  // For page mode this captures the resolved page-translation state so a
+  // non-crash blank (mode=page + page-translation tab with no ready content) is
+  // diagnosable from the console rather than reading as an unlabeled void.
   const currentL2Code = mode === 'video' ? videoState?.l2Code ?? l2Code : mode === 'page' ? pageState?.l2Code ?? l2Code : l2Code;
+  if (mode === 'page' || panelError || (mode !== null && panelLoading)) {
+    log('[SIDEPANEL] page/loading state', {
+      mode, activeTab, panelLoading, panelError,
+      pageStatus: pageState?.pageTranslationStatus, pageError: pageState?.pageTranslationError,
+      pageUrl: pageState?.pageUrl, hasPageState: !!pageState,
+      tabId, l1Code, l2Code, currentL2Code,
+    });
+  }
 
   const handleLanguageConfirm = useCallback(async (nextL1: string, nextL2: string, traditional: boolean) => {
     setLanguagePickerOpen(false);
@@ -670,12 +693,25 @@ function SidePanelApp() {
 
 // Surface any uncaught error / unhandled rejection in the side panel's own
 // devtools console so a render/runtime failure is diagnosable instead of a
-// silent blank or a bare "page cannot be translated" with no cause.
+// silent blank or a bare "page cannot be translated" with no cause. The detail
+// is flattened to a string (not a collapsed object) so the copied log shows the
+// real message + location + first stack frame.
 window.addEventListener('error', (event) => {
-  try { logerr('[SIDEPANEL] uncaught error', { message: event?.message, source: event?.filename, line: event?.lineno, col: event?.colno }); } catch {}
+  try {
+    const loc = [event?.filename, event?.lineno, event?.colno].filter(Boolean).join(':');
+    const frame = event?.error?.stack?.split('\n')[1]?.trim?.() || '';
+    logerr(`[SIDEPANEL] uncaught error: ${event?.message || '(no message)'}${loc ? ` @ ${loc}` : ''}${frame ? ` | ${frame}` : ''}`);
+  } catch {}
 });
 window.addEventListener('unhandledrejection', (event) => {
-  try { logerr('[SIDEPANEL] unhandled rejection', { reason: String(event?.reason), name: event?.reason?.name }); } catch {}
+  try {
+    let reason = event?.reason;
+    let name = reason?.name ? `${reason.name}: ` : '';
+    let msg = reason?.message ? String(reason.message) : String(reason);
+    let frame = '';
+    if (reason?.stack) frame = (String(reason.stack).split('\n')[1] || '').trim();
+    logerr(`[SIDEPANEL] unhandled rejection: ${name}${msg}${frame ? ` | ${frame}` : ''}`);
+  } catch {}
 });
 
 const container = document.getElementById('lpv-side-panel-root');
