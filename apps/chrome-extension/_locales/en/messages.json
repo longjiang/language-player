@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Class:"
+  },
+  "showGlossSaved": {
+    "message": "Show Quick Gloss"
+  },
+  "wordLevelDisplay": {
+    "message": "Word-Level Display"
   }
 }

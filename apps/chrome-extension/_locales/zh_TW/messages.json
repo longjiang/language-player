@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "類別："
+  },
+  "showGlossSaved": {
+    "message": "顯示快速釋義"
+  },
+  "wordLevelDisplay": {
+    "message": "單字級顯示"
   }
 }

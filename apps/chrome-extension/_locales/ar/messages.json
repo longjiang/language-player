@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "الفئة:"
+  },
+  "showGlossSaved": {
+    "message": "معنى سريع"
+  },
+  "wordLevelDisplay": {
+    "message": "عرض على مستوى الكلمة"
   }
 }

@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Clase:"
+  },
+  "showGlossSaved": {
+    "message": "Glosa rápida"
+  },
+  "wordLevelDisplay": {
+    "message": "Visualización por palabra"
   }
 }

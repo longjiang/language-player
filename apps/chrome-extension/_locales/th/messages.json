@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "คลาส:"
+  },
+  "showGlossSaved": {
+    "message": "คำแปลด่วน"
+  },
+  "wordLevelDisplay": {
+    "message": "การแสดงผลระดับคำ"
   }
 }

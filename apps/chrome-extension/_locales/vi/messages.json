@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Lớp:"
+  },
+  "showGlossSaved": {
+    "message": "Nghĩa nhanh"
+  },
+  "wordLevelDisplay": {
+    "message": "Hiển thị cấp độ từ"
   }
 }

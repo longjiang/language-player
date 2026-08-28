@@ -30,6 +30,8 @@ const CSV_LOOKUP = {
   'allLanguages': 'filter.all',        // CSV has "All", we append "Languages" below
   'translate': 'action.translation',
   'showTranslation': 'label.show_translation',
+  'showGlossSaved': 'label.show_gloss_saved',
+  'wordLevelDisplay': 'setting.word_level_display',
   'copy': 'action.copy',
   'retry': 'action.retry',
   'speak': 'action.speak',
