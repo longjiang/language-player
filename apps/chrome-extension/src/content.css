@@ -1450,6 +1450,24 @@ body.lpv-panel-open disney-web-player-ui {
   user-select: none;
 }
 
+/* Saved-word highlight — scoped to the word (not the inline gloss), so the
+   quick gloss text stays unhighlighted (apps/web wordBgClass). */
+.lpv-page-word {
+  border-radius: 2px;
+}
+.lpv-page-word-saved {
+  background: hsl(var(--lpv-warning) / 0.15);
+}
+
+/* Inline quick gloss after a saved word: `('def')` at text size, muted, and
+   non-selectable so drag-select returns the L2 source text (SPEC-033). L1 tag
+   on the element so the browser picks the L1 regional glyph variant. */
+.lpv-page-gloss {
+  color: hsl(var(--lpv-muted-foreground));
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .lpv-page-tokenizing {
   animation: lpv-pulse 1.5s ease-in-out infinite;
   opacity: 0.55;
