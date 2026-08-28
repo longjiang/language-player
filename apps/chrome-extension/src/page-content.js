@@ -9,8 +9,10 @@
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { setLocale, log, logwarn } from './i18n';
-import { buildRuby, baseCode, sentenceContaining, segmentSentences, shouldShowPhonetics, getWordDifficulty, setCachedEntries, getCachedEntries } from '@langplayer/utils';
+import { buildRuby, baseCode, sentenceContaining, segmentSentences, shouldShowPhonetics, setCachedEntries, getCachedEntries } from '@langplayer/utils';
 import { selectionStartOffset } from './selection-utils';
+import { fetchSavedWords } from './saved-words';
+import { buildSavedWordMaps, savedWordIdForToken, getCachedQuickGloss, getCachedL1Gloss, fetchL1Gloss } from './quick-gloss';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
 /** Language Player's own web assets — never tokenize these (mirrors popup.js). */
@@ -50,9 +52,16 @@ let tokenizing = false; // guard against overlapping flushes
 const tokenCache = new Map();
 const tokenizedBlocks = new Set();
 let nextBlockId = 1;
-let pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
 let pageTranslationStatus = 'idle'; // idle | loading | ready | empty | error
 let pageTranslationError = null;
+
+/** Show an inline first definition after saved words (apps/web quick gloss). */
+let showGlossSaved = true;
+/** Surface form → the dictionary entry id the user saved (most-recent wins).
+ *  Populated by loadSavedWords(); drives saved-word highlighting + gloss. */
+let savedWordIdByForm = new Map();
+/** Generation counter — invalidates a stale saved-words fetch on L2/auth change. */
+let savedWordsGen = 0;
 
 // ── Text runs ──────────────────────────────────────────────────────────────
 // A block element (e.g. a bare <div>) can hold several paragraphs separated by
@@ -254,7 +263,76 @@ async function lookupPageWords(words) {
     const entries = results[w.text] ?? [];
     if (entries.length > 0) setCachedEntries(base, w.text, entries);
   }
-  if (phoneticsScope === 'hard') reRenderTokenPhonetics();
+  // The batch cache now holds the definitions quick glosses and the hard-words
+  // gate resolve from — re-render the affected surface without retokenizing.
+  if (showGlossSaved || phoneticsScope === 'hard') {
+    reRenderTokenPhonetics();
+    if (showGlossSaved) refreshSavedL1Glosses();
+  }
+}
+
+/** Fetch the current L2's saved words and rebuild the saved-word maps that
+ *  drive highlighting + quick glosses. Invalidated by a generation counter so a
+ *  stale response from a previous L2/auth state is dropped. Always re-renders
+ *  the visible tokens afterwards (so newly-saved words highlight, removed
+ *  words lose their highlight/gloss). */
+async function loadSavedWords() {
+  const gen = ++savedWordsGen;
+  try {
+    const store = await fetchSavedWords(l2Code);
+    if (gen !== savedWordsGen) return;
+    const maps = buildSavedWordMaps(store, l2Code);
+    savedWordIdByForm = maps.savedWordIdByForm;
+  } catch {
+    if (gen !== savedWordsGen) return;
+    savedWordIdByForm = new Map();
+  }
+  if (gen !== savedWordsGen) return;
+  reRenderTokenPhonetics();
+  if (showGlossSaved && l1Code !== 'en' && l1Code !== baseCode(l2Code)) refreshSavedL1Glosses();
+}
+
+/** Debounced saved-words refresh — fired after a token/selection lookup so a
+ *  word saved in the dictionary popup highlights shortly after without a full
+ *  page re-tokenize. */
+let savedWordsRefreshTimer = null;
+function scheduleSavedWordsRefresh() {
+  if (!enabled) return;
+  clearTimeout(savedWordsRefreshTimer);
+  savedWordsRefreshTimer = setTimeout(() => loadSavedWords().catch(() => {}), 800);
+}
+
+/** For saved word spans, fetch the L1-translated definition (apps/web parity
+ *  when l1 ≠ en) and re-render the gloss when it arrives. Each span is resolved
+ *  once; the module-level inflight/cache dedupes repeat fetches. */
+async function refreshSavedL1Glosses() {
+  if (!showGlossSaved || l1Code === 'en' || l1Code === baseCode(l2Code)) return;
+  for (const span of document.querySelectorAll('span.lpv-page-token')) {
+    if (span.__l1GlossResolved) continue;
+    const raw = span.dataset.token;
+    if (!raw) continue;
+    let token;
+    try { token = JSON.parse(raw); } catch { continue; }
+    if (!token) continue;
+    const savedWordId = savedWordIdForToken(token, savedWordIdByForm);
+    if (!savedWordId) continue;
+    const cached = getCachedL1Gloss(l2Code, l1Code, savedWordId);
+    if (cached) {
+      span.__l1Gloss = cached;
+      span.__l1GlossResolved = true;
+      renderTokenSpanContent(span);
+      continue;
+    }
+    fetchL1Gloss(token, savedWordId, l1Code, l2Code)
+      .then((def) => {
+        if (def) span.__l1Gloss = def;
+        span.__l1GlossResolved = true;
+        renderTokenSpanContent(span);
+      })
+      .catch(() => {
+        span.__l1GlossResolved = true;
+      });
+  }
 }
 
 /** Re-scan all tokenized spans and look up their lemmas — used when the scope
@@ -281,7 +359,8 @@ function renderTextNode(node, tokens, runId) {
   const parent = node.parentElement;
   if (!parent) return false;
   const frag = document.createDocumentFragment();
-  for (const token of tokens) {
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
     if (!token || typeof token.text !== 'string') continue;
     if (/^\s*$/.test(token.text)) {
       frag.appendChild(document.createTextNode(token.text));
@@ -292,8 +371,6 @@ function renderTextNode(node, tokens, runId) {
       frag.appendChild(document.createTextNode(token.text));
       continue;
     }
-    pageTokenStats.words++;
-    if (token.pronunciation) pageTokenStats.withPron++;
     // Collect this token's lemmas for the lazy batch dictionary lookup (same
     // pipeline as the video transcript: tokenize → batch lookup → cache → gate).
     collectLookupsForToken(token);
@@ -303,42 +380,88 @@ function renderTextNode(node, tokens, runId) {
     // Stamp the paragraph RUN id so a click/hover resolves the correct
     // translation block + sentence without re-walking the DOM.
     if (runId) span.dataset.lpvRun = runId;
-    // Keep the resolved token on the span so the phonetics toggle can
-    // re-render ruby purely visually (no tokenCache lookup, no retokenize).
+    // Keep the resolved token on the span so the phonetics/saved-word toggles
+    // can re-render purely visually (no tokenCache lookup, no retokenize).
     try { span.dataset.token = JSON.stringify(token); } catch {}
+    // Whether the next token is whitespace/punctuation (no definition) — the
+    // quick gloss omits its trailing space so the existing inter-word gap shows
+    // instead of a double space (apps/web nextTokenIsSeparator).
+    const nextTicket = tokens[i + 1];
+    const nextIsSeparator = !nextTicket || !Array.isArray(nextTicket.lemmas) || nextTicket.lemmas.length === 0;
+    span.dataset.nextSep = nextIsSeparator ? '1' : '0';
 
-    // Inline ruby/furigana — gated by the shared phonetics pipeline
-    // (shouldShowPhonetics) so the "Hard words only" scope and the difficulty
-    // decision match the video transcript exactly, not just the on/off toggle.
-    const canRuby = shouldShowPhonetics({ phoneticsOn: showPhonetics, scope: phoneticsScope, userLevel, l2Code, lemmas: token.lemmas || [] })
-      && token.pronunciation && token.pronunciation !== token.text;
-    let rubyRendered = false;
-    if (canRuby) {
-      const segments = buildRuby(token.text, token.pronunciation, l2Code);
-      if (segments.some((seg) => seg.reading)) {
-        rubyRendered = true;
-        for (const seg of segments) {
-          if (seg.reading) {
-            const ruby = document.createElement('ruby');
-            ruby.appendChild(document.createTextNode(seg.text));
-            const rt = document.createElement('rt');
-            rt.textContent = seg.reading;
-            ruby.appendChild(rt);
-            span.appendChild(ruby);
-          } else {
-            span.appendChild(document.createTextNode(seg.text));
-          }
-        }
-      }
-    }
-    if (!rubyRendered) span.textContent = token.text;
-    if (rubyRendered) pageTokenStats.rubyCount++;
-
+    renderTokenSpanContent(span);
     span.addEventListener('click', (e) => onTokenClick(e, token, parent));
     frag.appendChild(span);
   }
   parent.replaceChild(frag, node);
   return true;
+}
+
+/**
+ * Rebuild a page token span's inner content from its `data-token`, including
+ * the saved-word highlight (apps/web wordBgClass), inline quick gloss
+ * (`('def')`, apps/web QuickGloss), and inline ruby/furigana. Called on initial
+ * render and from every re-render trigger (phonetics/saved-word toggle, batch
+ * dict lookup, saved words load, L1 def fetch) so the surface stays consistent
+ * without retokenizing the page.
+ */
+function renderTokenSpanContent(span) {
+  const raw = span.dataset.token;
+  if (!raw) return;
+  let token;
+  try { token = JSON.parse(raw); } catch { return; }
+  if (!token || typeof token.text !== 'string') return;
+
+  const savedWordId = savedWordIdForToken(token, savedWordIdByForm);
+  const isSaved = savedWordId != null;
+
+  // Rebuild the word content.
+  span.textContent = '';
+  const wordSpan = document.createElement('span');
+  wordSpan.className = 'lpv-page-word' + (isSaved ? ' lpv-page-word-saved' : '');
+  const canRuby = shouldShowPhonetics({ phoneticsOn: showPhonetics, scope: phoneticsScope, userLevel, l2Code, lemmas: token.lemmas || [] })
+    && token.pronunciation && token.pronunciation !== token.text;
+  let rubyRendered = false;
+  if (canRuby) {
+    const segments = buildRuby(token.text, token.pronunciation, l2Code);
+    if (segments.some((seg) => seg.reading)) {
+      rubyRendered = true;
+      for (const seg of segments) {
+        if (seg.reading) {
+          const ruby = document.createElement('ruby');
+          ruby.appendChild(document.createTextNode(seg.text));
+          const rt = document.createElement('rt');
+          rt.textContent = seg.reading;
+          ruby.appendChild(rt);
+          wordSpan.appendChild(ruby);
+        } else {
+          wordSpan.appendChild(document.createTextNode(seg.text));
+        }
+      }
+    }
+  }
+  if (!rubyRendered) wordSpan.textContent = token.text;
+  span.appendChild(wordSpan);
+
+  // Inline quick gloss — only for saved words with the setting on. Prefer the
+  // L1-translated def (fetched per saved word when l1 ≠ en) over the saved
+  // entry's cached def over the first cached match (apps/web precedence).
+  if (isSaved && showGlossSaved) {
+    const def = span.__l1Gloss
+      ?? getCachedL1Gloss(l2Code, l1Code, savedWordId)
+      ?? getCachedQuickGloss(token, savedWordId, l2Code);
+    if (def) {
+      const gloss = document.createElement('span');
+      gloss.className = 'lpv-page-gloss select-none';
+      if (l1Code) gloss.lang = l1Code;
+      gloss.textContent = ` (‘${def}’)`;
+      // Omit the trailing space when the next token is already a gap (space or
+      // punctuation) so two spaces never stack.
+      if (span.dataset.nextSep !== '1') gloss.textContent += ' ';
+      span.appendChild(gloss);
+    }
+  }
 }
 
 function normalizeBlockText(text) {
@@ -536,6 +659,10 @@ function onTokenClick(e, token, textNodeParent) {
     chrome.runtime.sendMessage({ action: 'pageLookup', payload }).catch(() => {});
   } catch {}
 
+  // The dictionary popup may let the user save this word — refresh the saved
+  // words shortly after so a new save highlights the token without a re-tokenize.
+  scheduleSavedWordsRefresh();
+
   // Open the native side panel — this click is a user gesture, which
   // chrome.sidePanel.open() requires (Chrome 116+).
   getTabId().then((tid) => {
@@ -599,6 +726,8 @@ function attachPageSelectionListener() {
     try {
       chrome.runtime.sendMessage({ action: 'pageLookup', payload }).catch(() => {});
     } catch {}
+    // Refresh saved words after a selection lookup too (the popup may save).
+    scheduleSavedWordsRefresh();
     getTabId().then((tid) => {
       if (!tid) return;
       try {
@@ -833,6 +962,12 @@ function cleanup() {
   detachPageSelectionListener();
   restoreTokens();
   tokenCache.clear();
+  savedWordIdByForm = new Map();
+  savedWordsGen++;
+  if (savedWordsRefreshTimer) {
+    clearTimeout(savedWordsRefreshTimer);
+    savedWordsRefreshTimer = null;
+  }
   lastLookup = null;
   pageTranslationStatus = 'idle';
   pageTranslationError = null;
@@ -880,7 +1015,7 @@ async function init() {
     return;
   }
 
-  const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation', 'phoneticsScope', 'progressLevels']);
+  const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation', 'showGlossSaved', 'phoneticsScope', 'progressLevels']);
   if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
     log('[PAGE] init cancelled before preferences completed');
     return;
@@ -888,6 +1023,7 @@ async function init() {
   l1Code = local.l1Language || 'en';
   l2Code = local.l2Language || 'en';
   showPhonetics = local.showPhonetics !== false;
+  showGlossSaved = local.showGlossSaved !== false; // default on (apps/web parity)
   phoneticsScope = local.phoneticsScope === 'hard' ? 'hard' : 'all';
   const lv = (local.progressLevels || {})[l2Code];
   userLevel = (typeof lv === 'number' && lv >= 1 && lv <= 7) ? lv : 0;
@@ -906,6 +1042,10 @@ async function init() {
   if (mismatch) {
     logwarn(`[PAGE] ⚠️ page language ${mismatch.detected} ≠ saved L2 ${mismatch.saved} — tokenizing as ${l2Code} anyway; panel shows the mismatch banner`);
   }
+  // Resolve saved words so the tokenizer can highlight + gloss them. Run in
+  // parallel with tokenization rather than blocking the first render — if the
+  // fetch lands after tokenizing, loadSavedWords re-renders the spans.
+  loadSavedWords().catch(() => {});
   await tokenizePage();
   attachPageSelectionListener();
   pushPageModeState();
@@ -1045,6 +1185,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
     // is re-fetched or re-tokenized.
     reRenderTokenPhonetics();
   }
+  if (area === 'local' && changes.showGlossSaved && enabled) {
+    showGlossSaved = changes.showGlossSaved.newValue !== false;
+    // Purely visual toggle: add/remove the saved-word highlight + inline gloss
+    // from the existing token spans (apps/web quick gloss setting).
+    reRenderTokenPhonetics();
+    if (showGlossSaved) refreshSavedL1Glosses();
+  }
   if (area === 'local' && changes.phoneticsScope && enabled) {
     phoneticsScope = changes.phoneticsScope.newValue === 'hard' ? 'hard' : 'all';
     // On switching to "Hard words only", make sure already-tokenized text has
@@ -1060,46 +1207,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 /**
- * Re-render ruby/furigana in the existing token spans after the phonetics
- * toggle. Each span carries its resolved token in `data-token`, so the
- * re-render is a pure DOM update — no tokenization, no network, no layout
- * re-scan.
+ * Re-render ruby/furigana (and saved-word highlight + quick gloss) in the
+ * existing token spans after a phonetics/saved-words/dictionary-cache change.
+ * Each span carries its resolved token in `data-token`, so the re-render is a
+ * pure DOM update — no tokenization, no network, no layout re-scan.
  */
 function reRenderTokenPhonetics() {
   const spans = document.querySelectorAll('span.lpv-page-token');
-  let withRuby = 0;
-  for (const span of spans) {
-    const raw = span.dataset.token;
-    if (!raw) continue;
-    let token;
-    try { token = JSON.parse(raw); } catch { continue; }
-    if (!token || typeof token.text !== 'string') continue;
-    const canRuby = shouldShowPhonetics({ phoneticsOn: showPhonetics, scope: phoneticsScope, userLevel, l2Code, lemmas: (token.lemmas || []) })
-      && !!token.pronunciation && token.pronunciation !== token.text;
-    if (!canRuby) {
-      span.textContent = token.text;
-      continue;
-    }
-    const segments = buildRuby(token.text, token.pronunciation, l2Code);
-    if (!segments.some((seg) => seg.reading)) {
-      span.textContent = token.text;
-      continue;
-    }
-    span.textContent = '';
-    for (const seg of segments) {
-      if (seg.reading) {
-        const ruby = document.createElement('ruby');
-        ruby.appendChild(document.createTextNode(seg.text));
-        const rt = document.createElement('rt');
-        rt.textContent = seg.reading;
-        ruby.appendChild(rt);
-        span.appendChild(ruby);
-      } else {
-        span.appendChild(document.createTextNode(seg.text));
-      }
-    }
-    withRuby++;
-  }
+  for (const span of spans) renderTokenSpanContent(span);
 }
 
 init();
