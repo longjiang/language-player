@@ -361,6 +361,20 @@ body.lpv-panel-open disney-web-player-ui {
   background: hsl(var(--lpv-warning) / 0.3);
 }
 
+/* Saved-word highlight is scoped to the word content (never the inline gloss),
+   matching apps/web wordBgClass. */
+.lpv-token-word {
+  border-radius: 2px;
+}
+
+/* Inline quick gloss after a saved word: `('def')` at text size, muted, and
+   non-selectable so drag-select returns the L2 source text (SPEC-033). */
+.lpv-token-gloss {
+  color: hsl(var(--lpv-muted-foreground));
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .lpv-token-active {
   /* Tokens inside the active (currently playing) subtitle line */
 }
