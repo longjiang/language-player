@@ -599,6 +599,7 @@ Key behaviors:
 - **State flow**: `content-entry.js` `pushPanelState()` → `chrome.runtime.sendMessage({action:'panelState'})` → background tags `sender.tab.id` → `sidePanelPort.postMessage()` → `SidePanelApp` re-renders `TranscriptAppInner` with new props (React preserves scroll/selection state across pushes). The side panel pulls the current state on open/tab-switch via `getPanelState`, and sends `panelSeek` back to seek the player.
 - **L2 level selector (apps/web `LanguageLevelSelect` parity)**: the account/profile dialog builds its level options with the shared `primaryScale(l2Code)` + `getLevelLabelWithFallback(numeric, scaleId)` so each L2 shows its exam scale ("JLPT N4 — Beginner III", "HSK 3 — Beginner III", "CEFR C2 — Advanced II", "TOPIK 2 — Beginner III", CEFR fallback otherwise). The category suffix comes from the flat `levelName1..7` keys that `scripts/generate-locales.js` flattens from the CSV `level.name` ICU select per locale (chrome.i18n cannot parse ICU), so it is translated in all 18 locales rather than the legacy generic "Level 1..7". The dialog is clamped to 28rem and the "My activities" action reuses the translated `title.my_activity` label.
 - **"Hard words only" phonetics scope (single shared pipeline)**: the phonetics decision lives once in `@langplayer/utils` `shouldShowPhonetics` + `getWordDifficulty` (mirroring apps/web `token-span.tsx`), and every tokenized-text surface calls it — the video transcript `TokenSpan`, the page tokenizer's inline ruby, and `reRenderTokenPhonetics`. When Display scope is "Hard words only", each surface reads `phoneticsScope` + the learner's `progressLevels[l2Code]` from `chrome.storage.local` and gates a word's ruby on difficulty (lowest `levels[].numeric` / `frequencyLevel`): words easier than the learner are hidden, unknown words are shown (treated as hard), and uncached words stay hidden until the lazy batch lookup lands (`cacheVersion` re-render in the transcript; one `reRenderTokenPhonetics` after the page batch resolves). Because both the video transcript and the page tokenizer run the same lazy pipeline (tokenize → batch dictionary lookup → shared cache → gate), the "All words / Hard words only" setting can never drift between surfaces. The page tokenizer routes its batch lookup through the background `bgFetch` relay (a content script's bare `fetch` is subject to the page's CORS policy).
+- **Saved-word highlighting + inline quick gloss (apps/web `token-span.tsx` parity)**: saved words are highlighted on both the video transcript and the page reader, and — when the Display setting **Show Quick Gloss** is on (default `true`, apps/web `tokenizedText.quickGloss`; Settings modal → Word-Level Display) — each saved word renders an inline `(‘def’)` gloss. Resolution mirrors web: prefer the entry the user actually saved (resolved by `savedWordIdForToken` from the surface/lemma form → entry-id map, most-recently-saved wins for homographs), then the first cached dictionary match; when `l1 ≠ en`, the definition is fetched per saved word via `/dictionary/lookup` with `l1` (`fetchL1Gloss`, deduped through a module-level cache + in-flight map and the shared L1 entry cache). The highlight is scoped to the word content (`.lpv-token-word` / `.lpv-page-word`), never the muted non-selectable gloss (`.lpv-token-gloss` / `.lpv-page-gloss`), so drag-selection still returns the L2 source text (SPEC-033). Both surfaces re-render lazily when the batch dictionary cache, the saved-words fetch, the Show Quick Gloss toggle, or the per-word L1 definition lands — without retokenizing the page. Shared logic lives in `apps/chrome-extension/src/quick-gloss.ts`; the page tokenizer refreshes saved words on init and (debounced) after a token/selection lookup so a word saved in the popup highlights shortly after.
 - **Web-parity chrome on the top-bar controls**: the language trigger uses the `ChevronDown` icon (a signed-in user's avatar is a primary-tinted circle, matching the account/profile modal avatar and apps/web's user-menu trigger) instead of the legacy `⌄` text glyph.
 
 ---
@@ -792,12 +793,14 @@ the flat extension keys resolved through `t()`, matching apps/web
 
 - **Display** uses the web's segmented controls (`Segmented` in
   `components/ui/segmented.tsx`) for Theme / Typeface / Phonetics mode / Scope,
-  a Switch for Show translation, and Sliders for text/translation size and
-  leading. The live preview renders the L2-specific short sample sentence
-  (`getSampleSentence`, `@langplayer/shared`) and its L1 translation (via
-  `/translate_array` when Show translation is on). Display storage keys are
-  unchanged (`extensionDisplaySettings` + the legacy flat keys
-  `showPhonetics`/`showTranslation`/`textScale` the transcript reads).
+  a Switch for Show translation, a Word-Level Display section with a **Show
+  Quick Gloss** switch (apps/web `label.show_gloss_saved`, default on), and
+  Sliders for text/translation size and leading. The live preview renders the
+  L2-specific short sample sentence (`getSampleSentence`, `@langplayer/shared`)
+  and its L1 translation (via `/translate_array` when Show translation is on).
+  Display storage keys are `extensionDisplaySettings` (now including
+  `showGlossSaved`) plus the legacy flat keys `showPhonetics`/`showTranslation`/
+  `showGlossSaved`/`textScale` the transcript and page reader read.
 - **Playback** exposes only Smooth scroll (transcript autoscroll behaviour —
   `chrome.storage.local.extensionPlaybackSettings.smoothScroll`, applied in
   `transcript-app.tsx`). Karaoke / auto-pause / captions-display-as are not
