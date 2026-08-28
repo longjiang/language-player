@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Klas:"
+  },
+  "showGlossSaved": {
+    "message": "Snelle vertaling"
+  },
+  "wordLevelDisplay": {
+    "message": "Weergave op woordniveau"
   }
 }

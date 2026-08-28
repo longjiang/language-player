@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "등급:"
+  },
+  "showGlossSaved": {
+    "message": "빠른 뜻"
+  },
+  "wordLevelDisplay": {
+    "message": "단어 수준 표시"
   }
 }

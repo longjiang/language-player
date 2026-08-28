@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Sınıf:"
+  },
+  "showGlossSaved": {
+    "message": "Hızlı Anlam"
+  },
+  "wordLevelDisplay": {
+    "message": "Kelime Düzeyinde Görüntüleme"
   }
 }

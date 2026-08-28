@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "クラス："
+  },
+  "showGlossSaved": {
+    "message": "クイック訳"
+  },
+  "wordLevelDisplay": {
+    "message": "単語レベルの表示"
   }
 }

@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "词类："
+  },
+  "showGlossSaved": {
+    "message": "显示快速释义"
+  },
+  "wordLevelDisplay": {
+    "message": "单词级显示"
   }
 }

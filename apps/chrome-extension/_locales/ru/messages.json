@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Класс:"
+  },
+  "showGlossSaved": {
+    "message": "Быстрый перевод"
+  },
+  "wordLevelDisplay": {
+    "message": "Отображение на уровне слова"
   }
 }

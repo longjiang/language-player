@@ -28,6 +28,8 @@ type SettingsCategory = 'display' | 'playback' | 'speech';
 export interface ExtensionDisplaySettings {
   theme: Theme;
   showTranslation: boolean;
+  /** Show an inline first definition after saved words (apps/web quick gloss). */
+  showGlossSaved: boolean;
   typeFace: 'default' | 'serif' | 'sans-serif';
   textSize: number;
   translationSize: number;
@@ -37,7 +39,7 @@ export interface ExtensionDisplaySettings {
 }
 
 const DEFAULTS: ExtensionDisplaySettings = {
-  theme: 'system', showTranslation: false, typeFace: 'default', textSize: 24,
+  theme: 'system', showTranslation: false, showGlossSaved: true, typeFace: 'default', textSize: 24,
   translationSize: 0.75, leading: 1.5, phoneticsMode: 'above', phoneticsScope: 'all',
 };
 
@@ -47,7 +49,7 @@ const SEARCH_TERMS: Record<SettingsCategory, string[]> = {
   display: [
     'theme', 'light', 'dark', 'system', 'typeface', 'defaultTypeface', 'serif', 'sansSerif',
     'textSize', 'translationSize', 'leading', 'phonetics', 'above', 'replace', 'off',
-    'scope', 'allWords', 'hardWords', 'showTranslation',
+    'scope', 'allWords', 'hardWords', 'showTranslation', 'showGlossSaved', 'quickGloss', 'gloss',
   ],
   playback: ['smoothScroll'],
   speech: ['voice', 'rate', 'speed'],
@@ -80,7 +82,7 @@ export function SettingsModal({ open, l2Code, onOpenChange, onThemeChange }: Set
     setCategory('display');
 
     chrome.storage.local.get([
-      'extensionDisplaySettings', 'theme', 'showTranslation', 'textSizePx', 'translationSize',
+      'extensionDisplaySettings', 'theme', 'showTranslation', 'showGlossSaved', 'textSizePx', 'translationSize',
       'leading', 'typeFace', 'phoneticsMode', 'phoneticsScope',
     ]).then((stored: any) => {
       log('[LP Extension] SettingsModal read chrome.storage.local keys:',
@@ -90,6 +92,7 @@ export function SettingsModal({ open, l2Code, onOpenChange, onThemeChange }: Set
         ...(stored.extensionDisplaySettings || {}),
         theme: stored.theme === 'light' || stored.theme === 'dark' ? stored.theme : (stored.extensionDisplaySettings?.theme || DEFAULTS.theme),
         showTranslation: stored.showTranslation ?? stored.extensionDisplaySettings?.showTranslation ?? DEFAULTS.showTranslation,
+        showGlossSaved: stored.showGlossSaved ?? stored.extensionDisplaySettings?.showGlossSaved ?? DEFAULTS.showGlossSaved,
         textSize: Number(stored.textSizePx ?? stored.extensionDisplaySettings?.textSize ?? DEFAULTS.textSize),
         translationSize: Number(stored.translationSize ?? stored.extensionDisplaySettings?.translationSize ?? DEFAULTS.translationSize),
         leading: Number(stored.leading ?? stored.extensionDisplaySettings?.leading ?? DEFAULTS.leading),
@@ -157,6 +160,7 @@ export function SettingsModal({ open, l2Code, onOpenChange, onThemeChange }: Set
         extensionDisplaySettings: next,
         theme: next.theme,
         showTranslation: next.showTranslation,
+        showGlossSaved: next.showGlossSaved,
         textSizePx: next.textSize,
         textScale,
         translationSize: next.translationSize,
@@ -301,6 +305,10 @@ function DisplaySettings({ settings, update, sampleText, sampleTranslation }: {
 
       <Section title={t('showTranslation')}>
         <ToggleRow label={t('showTranslation')} checked={settings.showTranslation} onCheckedChange={(checked) => update({ showTranslation: checked })} />
+      </Section>
+
+      <Section title={t('wordLevelDisplay')}>
+        <ToggleRow label={t('showGlossSaved')} checked={settings.showGlossSaved} onCheckedChange={(checked) => update({ showGlossSaved: checked })} />
       </Section>
 
       <Section title={t('textAppearance')}>

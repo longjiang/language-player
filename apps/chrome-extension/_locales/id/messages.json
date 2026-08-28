@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Kelas:"
+  },
+  "showGlossSaved": {
+    "message": "Arti cepat"
+  },
+  "wordLevelDisplay": {
+    "message": "Tampilan per kata"
   }
 }

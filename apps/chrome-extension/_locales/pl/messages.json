@@ -839,5 +839,11 @@
   },
   "nounClass": {
     "message": "Klasa:"
+  },
+  "showGlossSaved": {
+    "message": "Szybkie tłumaczenie"
+  },
+  "wordLevelDisplay": {
+    "message": "Wyświetlanie na poziomie słowa"
   }
 }
