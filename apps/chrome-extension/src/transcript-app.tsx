@@ -7,11 +7,12 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
-import { buildRuby, baseCode, getCachedEntries, subscribeToCache, enqueueLookupWords, sentenceContaining, shouldShowPhonetics, getWordDifficulty } from '@langplayer/utils';
+import type { LemmatizedToken } from '@langplayer/shared';
+import { buildRuby, baseCode, subscribeToCache, enqueueLookupWords, sentenceContaining, shouldShowPhonetics } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
+import { savedWordIdForToken, getCachedQuickGloss, getCachedL1Gloss, fetchL1Gloss } from './quick-gloss';
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { useTranslateLines } from './use-translate-lines';
@@ -86,10 +87,14 @@ export type { SubCue };
 interface TokenizedLineProps {
   text: string;
   l2Code: string;
+  /** User's native language — passed through for the quick gloss (l1 ≠ en). */
+  l1Code: string;
   isActive: boolean;
   /** True when this line is inside the active tokenization lookahead window. */
   tokenizeAhead: boolean;
   showPhonetics: boolean;
+  /** Show an inline first definition after saved words (apps/web quick gloss). */
+  quickGloss?: boolean;
   /** "Hard words only" scope: gate readings on word difficulty (apps/web parity). */
   hardWordsOnly?: boolean;
   /** Learner's proficiency level (1–7). Only used when hardWordsOnly. */
@@ -106,7 +111,7 @@ interface TokenizedLineProps {
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, hardWordsOnly = false, userLevel = 0, onClickLine, onTokenClick, cacheVersion, selectionDictionary, onSelectionLookup }) => {
+  ({ text, l2Code, l1Code, isActive, tokenizeAhead, showPhonetics, quickGloss = false, hardWordsOnly = false, userLevel = 0, onClickLine, onTokenClick, cacheVersion, selectionDictionary, onSelectionLookup }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
     const { getTokens, isQueued, enqueue } = useBatchLemmatize();
@@ -194,20 +199,27 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
         onClick={(e) => { e.stopPropagation(); onClickLine(); }}
       >
         {tokens ? (
-          tokens.map((token, i) => (
-            <TokenSpan
-              key={i}
-              token={token}
-              l2Code={l2Code}
-              isActive={isActive}
-              showPhonetics={showPhonetics}
-              hardWordsOnly={hardWordsOnly}
-              userLevel={userLevel}
-              onClickLine={onClickLine}
-              onTokenClick={onTokenClick}
-              cacheVersion={cacheVersion}
-            />
-          ))
+          tokens.map((token, i) => {
+            const nextTicket = tokens[i + 1];
+            const nextTokenIsSeparator = !nextTicket || nextTicket.lemmas.length === 0;
+            return (
+              <TokenSpan
+                key={i}
+                token={token}
+                l2Code={l2Code}
+                l1Code={l1Code}
+                isActive={isActive}
+                showPhonetics={showPhonetics}
+                quickGloss={quickGloss}
+                nextTokenIsSeparator={nextTokenIsSeparator}
+                hardWordsOnly={hardWordsOnly}
+                userLevel={userLevel}
+                onClickLine={onClickLine}
+                onTokenClick={onTokenClick}
+                cacheVersion={cacheVersion}
+              />
+            );
+          })
         ) : queued ? (
           <span className="lpv-cue-loading">{text}</span>
         ) : (
@@ -224,8 +236,15 @@ TokenizedLine.displayName = 'TokenizedLine';
 interface TokenSpanProps {
   token: LemmatizedToken;
   l2Code: string;
+  /** User's native language — used for per-word L1 gloss lookup when l1 ≠ en. */
+  l1Code: string;
   isActive: boolean;
   showPhonetics: boolean;
+  /** Show an inline first definition after saved words (apps/web quick gloss). */
+  quickGloss?: boolean;
+  /** True when the following token is whitespace/punctuation — the gloss omits
+   *  its trailing space so the existing gap shows instead of a double space. */
+  nextTokenIsSeparator?: boolean;
   /** "Hard words only" scope: gate readings on word difficulty (apps/web parity). */
   hardWordsOnly?: boolean;
   /** Learner's proficiency level (1–7). Only used when hardWordsOnly. */
@@ -237,8 +256,32 @@ interface TokenSpanProps {
 }
 
 const TokenSpan: React.FC<TokenSpanProps> = React.memo(
-  ({ token, l2Code, isActive, showPhonetics, hardWordsOnly = false, userLevel = 0, onClickLine, onTokenClick, cacheVersion }) => {
-    const { savedFormSet } = useSavedWords();
+  ({ token, l2Code, l1Code, isActive, showPhonetics, quickGloss = false, nextTokenIsSeparator = false, hardWordsOnly = false, userLevel = 0, onClickLine, onTokenClick, cacheVersion }) => {
+    const { savedWordIdByForm } = useSavedWords();
+
+    // Resolve the saved entry id (surface form first, then lemma forms) so the
+    // quick gloss shows the entry the user actually saved (apps/web parity).
+    const savedWordId = savedWordIdForToken(token, savedWordIdByForm);
+    const isSaved = savedWordId != null;
+
+    // ── L1-translated quick gloss (apps/web token-span.tsx parity) ──
+    // The batch lookup returns English definitions; for a saved word with quick
+    // gloss on and l1 ≠ en, fetch the L1-translated definition individually.
+    const [l1GlossDef, setL1GlossDef] = useState<string | null>(null);
+    useEffect(() => {
+      if (!isSaved || !quickGloss || l1Code === 'en' || l1Code === baseCode(l2Code)) {
+        setL1GlossDef(null);
+        return;
+      }
+      // Already-translated entry cached by the dictionary popup/review page?
+      const cached = getCachedL1Gloss(l2Code, l1Code, savedWordId);
+      if (cached) { setL1GlossDef(cached); return; }
+      let cancelled = false;
+      fetchL1Gloss(token, savedWordId, l1Code, l2Code).then((def) => {
+        if (!cancelled) setL1GlossDef(def);
+      });
+      return () => { cancelled = true; };
+    }, [isSaved, quickGloss, l1Code, l2Code, savedWordId, token]);
 
     // Structural tokens
     if (token.text === '\n' || token.text === '\r') {
@@ -251,8 +294,6 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
     if (!isWord) {
       return <>{token.text}</>;
     }
-
-    const isSaved = savedFormSet.has(token.text.toLowerCase());
 
     // ── "Hard words only" filter: suppress readings for easy words ──
     // Uses the shared phonetics gate (@langplayer/utils shouldShowPhonetics) so
@@ -273,41 +314,47 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
 
     const lemmaTitle = token.lemmas.map((l) => l.lemma).join(', ');
 
-    // Quick gloss from the shared dictionary cache (populated lazily by the
-    // batch lookup for window/visible lines). cacheVersion triggers a recompute
-    // when the async batch lookup resolves. Falls back to the lemma list.
-    let quickGloss = '';
-    if (cacheVersion !== undefined) {
-      const base = baseCode(l2Code);
-      const entries: DictionaryEntry[] | undefined =
-        token.lemmas.length > 0
-          ? getCachedEntries(base, token.lemmas[0]!.lemma)
-          : getCachedEntries(base, token.text);
-      quickGloss = entries?.[0]?.definitions?.[0] ?? '';
-    }
-    const title = quickGloss ? `${lemmaTitle} — ${quickGloss}` : lemmaTitle;
+    // Inline gloss definition: prefer the L1-translated def (when fetched),
+    // then the saved entry's cached def, then the first cached match.
+    const quickGlossDef = (isSaved && quickGloss)
+      ? (l1GlossDef ?? getCachedL1Gloss(l2Code, l1Code, savedWordId) ?? getCachedQuickGloss(token, savedWordId, l2Code))
+      : null;
+    const titleDef = quickGlossDef ?? getCachedQuickGloss(token, savedWordId, l2Code);
+    const title = titleDef ? `${lemmaTitle} — ${titleDef}` : lemmaTitle;
 
+    // Saved-word highlight is scoped to the word content, never the gloss
+    // (apps/web wordBgClass), so the inline `('def')` stays unhighlighted.
     return (
       <span
-        className={`lpv-token ${isActive ? 'lpv-token-active' : ''} ${isSaved ? 'lpv-token-saved' : ''}`}
+        className={`lpv-token ${isActive ? 'lpv-token-active' : ''}`}
         title={title}
         onClick={(e) => {
           e.stopPropagation();
           onTokenClick(token);
         }}
       >
-        {rubySegments
-          ? rubySegments.map((seg, j) =>
-              seg.reading ? (
-                <ruby key={j}>
-                  {seg.text}
-                  <rt className="select-none">{seg.reading}</rt>
-                </ruby>
-              ) : (
-                <React.Fragment key={j}>{seg.text}</React.Fragment>
-              ),
-            )
-          : token.text}
+        <span className={`lpv-token-word${isSaved ? ' lpv-token-saved' : ''}`}>
+          {rubySegments
+            ? rubySegments.map((seg, j) =>
+                seg.reading ? (
+                  <ruby key={j}>
+                    {seg.text}
+                    <rt className="select-none">{seg.reading}</rt>
+                  </ruby>
+                ) : (
+                  <React.Fragment key={j}>{seg.text}</React.Fragment>
+                ),
+              )
+            : token.text}
+        </span>
+        {quickGlossDef && (
+          <span lang={l1Code} className="lpv-token-gloss select-none">
+            {' (‘'}
+            {quickGlossDef}
+            {'’)'}
+            {!nextTokenIsSeparator ? ' ' : null}
+          </span>
+        )}
       </span>
     );
   },
@@ -323,7 +370,11 @@ interface CueLineProps {
   tokenizeAhead: boolean;
   isPro: boolean;
   l2Code: string;
+  /** User's native language — passed through for the quick gloss (l1 ≠ en). */
+  l1Code: string;
   showPhonetics: boolean;
+  /** Show an inline first definition after saved words (apps/web quick gloss). */
+  quickGloss?: boolean;
   /** "Hard words only" scope: gate readings on word difficulty (apps/web parity). */
   hardWordsOnly?: boolean;
   /** Learner's proficiency level (1–7). Only used when hardWordsOnly. */
@@ -347,7 +398,7 @@ interface CueLineProps {
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, hardWordsOnly = false, userLevel = 0, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion, selectionDictionary, onSelectionLookup }) => {
+  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, l1Code, showPhonetics, quickGloss = false, hardWordsOnly = false, userLevel = 0, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion, cacheVersion, selectionDictionary, onSelectionLookup }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -401,9 +452,11 @@ const CueLine: React.FC<CueLineProps> = React.memo(
           <TokenizedLine
             text={cue.text}
             l2Code={l2Code}
+            l1Code={l1Code}
             isActive={isActive}
             tokenizeAhead={tokenizeAhead}
             showPhonetics={showPhonetics}
+            quickGloss={quickGloss}
             hardWordsOnly={hardWordsOnly}
             userLevel={userLevel}
             onClickLine={handleClick}
@@ -482,6 +535,9 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const prevActiveRef = useRef(activeCueIdx);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showPhonetics, setShowPhonetics] = useState(true);
+  /** Show an inline first definition after saved words (apps/web quick gloss).
+   *  Default on, matching web's tokenizedText.quickGloss. */
+  const [showGlossSaved, setShowGlossSaved] = useState(true);
   /** Text scale index: 0 (smallest) to 4 (largest). Maps to 87%–150%. */
   const [textScale, setTextScale] = useState(2);
   const [smoothScroll, setSmoothScroll] = useState(DEFAULT_PLAYBACK.smoothScroll);
@@ -508,10 +564,11 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   // Load saved preferences
   useEffect(() => {
     try {
-      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale', 'extensionPlaybackSettings', 'phoneticsScope', 'progressLevels'], (result) => {
+      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'showGlossSaved', 'textScale', 'extensionPlaybackSettings', 'phoneticsScope', 'progressLevels'], (result) => {
         log('[PAGE] loaded prefs:', JSON.stringify(result));
         if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
         if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
+        if (result.showGlossSaved !== undefined) setShowGlossSaved(result.showGlossSaved !== false);
         if (result.textScale !== undefined) setTextScale(result.textScale);
         if (result.extensionPlaybackSettings?.smoothScroll !== undefined) setSmoothScroll(result.extensionPlaybackSettings.smoothScroll);
         if (result.phoneticsScope !== undefined) setPhoneticsScope(result.phoneticsScope === 'hard' ? 'hard' : 'all');
@@ -524,6 +581,7 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
       if (area !== 'local') return;
       if (changes.showPhonetics) setShowPhonetics(changes.showPhonetics.newValue !== false);
       if (changes.showTranslation) setShowTranslation(changes.showTranslation.newValue === true);
+      if (changes.showGlossSaved) setShowGlossSaved(changes.showGlossSaved.newValue !== false);
       if (changes.textScale) setTextScale(Math.max(0, Math.min(4, Number(changes.textScale.newValue) || 0)));
       if (changes.extensionPlaybackSettings?.newValue?.smoothScroll !== undefined) setSmoothScroll(changes.extensionPlaybackSettings.newValue.smoothScroll);
       if (changes.phoneticsScope) {
@@ -708,7 +766,9 @@ export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             tokenizeAhead={isInWindow(i)}
             isPro={isPro}
             l2Code={l2Code}
+            l1Code={l1Code}
             showPhonetics={showPhonetics}
+            quickGloss={showGlossSaved}
             hardWordsOnly={hardWordsOnly}
             userLevel={effectiveUserLevel}
             onSeekTo={handleSeekTo}
