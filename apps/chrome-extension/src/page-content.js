@@ -54,6 +54,13 @@ const tokenizedBlocks = new Set();
 let nextBlockId = 1;
 let pageTranslationStatus = 'idle'; // idle | loading | ready | empty | error
 let pageTranslationError = null;
+/** Bounded auto-re-init counter — recovers the page reader from a transient
+ *  init cancellation (Lifecycle flap on a freshly-loaded page) instead of
+ *  stranding it disabled until the panel is closed/reopened. */
+let reinitAttempts = 0;
+/** True while init() is running; gates auto-re-init so it never double-runs a
+ *  concurrent init (which would tokenize the page twice). */
+let initInFlight = false;
 
 /** Show an inline first definition after saved words (apps/web quick gloss). */
 let showGlossSaved = true;
@@ -993,63 +1000,104 @@ function startObserver() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+/** If init was cancelled by a transient lifecycle flap (generation bump /
+ *  re-assert) but the panel is still open with the Page Translation tab active,
+ *  re-run it shortly after so the page reader recovers on its own instead of
+ *  staying disabled until the panel is closed/reopened. Guarded by initInFlight
+ *  (never double-runs a concurrent init) and a bounded retry cap.
+ *
+ *  This is the "new page never visited before" recovery: on a cold page load the
+ *  panel-open / page-translation-visibility / mode-pull messages race the async
+ *  init, so a stale-generation check can abort init just after locale load.
+ *  Aborting is CORRECT when the panel actually closed (panelOpen/tabOpen false)
+ *  — that path is guarded below — but wrong when the panel is still open and a
+ *  later re-assert simply superseded the running init. */
+function maybeReinitAfterCancel() {
+  if (!panelOpen || !pageTranslationTabOpen || enabled) return;
+  if (reinitAttempts >= 3) {
+    logwarn('[PAGE] init cancelled repeatedly; giving up on auto-reinit, awaiting a lifecycle re-assert', { reinitAttempts });
+    return;
+  }
+  reinitAttempts++;
+  // Delayed re-init. The `!initInFlight` check inside the callback (not here)
+  // is what prevents a double-run: by the time it fires the current init's
+  // finally has cleared initInFlight, so if a newer init is actively running it
+  // is skipped, and if it completed, `enabled` guards it off.
+  setTimeout(() => {
+    if (panelOpen && pageTranslationTabOpen && !enabled && !initInFlight) {
+      initialized = false;
+      log('[PAGE] auto-reinit after init cancellation', { reinitAttempts });
+      init();
+    }
+  }, 120);
+}
+
 async function init() {
   if (initialized) return;
   initialized = true;
+  initInFlight = true;
   const generation = lifecycleGeneration;
-  // Page translation is a feature of the page, not of the video player, so it
-  // must run on video hosts too (SPEC-086 §2.2: available on every ordinary
-  // http/https page). Only Language Player's own assets and localhost are
-  // skipped. On a video host the page content script tokenizes the page
-  // (title/description/comments) for the popup dictionary and provides the
-  // page-translation snapshot, while content-entry.js keeps owning the video
-  // subtitles mode.
-  if (isOwnHost() || isLocalhost()) {
-    log(`[PAGE] init skipped: host=${location.hostname} (${isOwnHost() ? 'own asset' : 'localhost'})`);
-    return;
-  }
-  if (isVideoHost()) {
-    log(`[PAGE] init on video host ${location.hostname}: page translation + tokenization enabled`);
-  }
-  if (!panelOpen || !pageTranslationTabOpen) {
-    return;
-  }
+  try {
+    // Page translation is a feature of the page, not of the video player, so it
+    // must run on video hosts too (SPEC-086 §2.2: available on every ordinary
+    // http/https page). Only Language Player's own assets and localhost are
+    // skipped. On a video host the page content script tokenizes the page
+    // (title/description/comments) for the popup dictionary and provides the
+    // page-translation snapshot, while content-entry.js keeps owning the video
+    // subtitles mode.
+    if (isOwnHost() || isLocalhost()) {
+      log(`[PAGE] init skipped: host=${location.hostname} (${isOwnHost() ? 'own asset' : 'localhost'})`);
+      return;
+    }
+    if (isVideoHost()) {
+      log(`[PAGE] init on video host ${location.hostname}: page translation + tokenization enabled`);
+    }
+    if (!panelOpen || !pageTranslationTabOpen) {
+      log('[PAGE] init wait: panel open / page-translation tab not ready (skipping until lifecycle asserted)', { panelOpen, pageTranslationTabOpen });
+      return;
+    }
 
-  const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation', 'showGlossSaved', 'phoneticsScope', 'progressLevels']);
-  if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
-    log('[PAGE] init cancelled before preferences completed');
-    return;
-  }
-  l1Code = local.l1Language || 'en';
-  l2Code = local.l2Language || 'en';
-  showPhonetics = local.showPhonetics !== false;
-  showGlossSaved = local.showGlossSaved !== false; // default on (apps/web parity)
-  phoneticsScope = local.phoneticsScope === 'hard' ? 'hard' : 'all';
-  const lv = (local.progressLevels || {})[l2Code];
-  userLevel = (typeof lv === 'number' && lv >= 1 && lv <= 7) ? lv : 0;
-  await setLocale(l1Code);
-  if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
-    log('[PAGE] init cancelled after locale load');
-    return;
-  }
+    const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation', 'showGlossSaved', 'phoneticsScope', 'progressLevels']);
+    if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
+      log('[PAGE] init cancelled before preferences completed', { generation, lifecycleGeneration, panelOpen, pageTranslationTabOpen });
+      maybeReinitAfterCancel();
+      return;
+    }
+    l1Code = local.l1Language || 'en';
+    l2Code = local.l2Language || 'en';
+    showPhonetics = local.showPhonetics !== false;
+    showGlossSaved = local.showGlossSaved !== false; // default on (apps/web parity)
+    phoneticsScope = local.phoneticsScope === 'hard' ? 'hard' : 'all';
+    const lv = (local.progressLevels || {})[l2Code];
+    userLevel = (typeof lv === 'number' && lv >= 1 && lv <= 7) ? lv : 0;
+    await setLocale(l1Code);
+    if (generation !== lifecycleGeneration || !panelOpen || !pageTranslationTabOpen) {
+      log('[PAGE] init cancelled after locale load', { generation, lifecycleGeneration, panelOpen, pageTranslationTabOpen });
+      maybeReinitAfterCancel();
+      return;
+    }
 
-  enabled = true;
-  pageTranslationStatus = 'ready';
-  pageTranslationError = null;
-  // Warn BEFORE tokenizing when the page declares a language different from
-  // the saved L2 — the side panel shows a banner with a one-tap switch.
-  const mismatch = pageLangMismatch();
-  if (mismatch) {
-    logwarn(`[PAGE] ⚠️ page language ${mismatch.detected} ≠ saved L2 ${mismatch.saved} — tokenizing as ${l2Code} anyway; panel shows the mismatch banner`);
+    enabled = true;
+    pageTranslationStatus = 'ready';
+    pageTranslationError = null;
+    reinitAttempts = 0;
+    // Warn BEFORE tokenizing when the page declares a language different from
+    // the saved L2 — the side panel shows a banner with a one-tap switch.
+    const mismatch = pageLangMismatch();
+    if (mismatch) {
+      logwarn(`[PAGE] ⚠️ page language ${mismatch.detected} ≠ saved L2 ${mismatch.saved} — tokenizing as ${l2Code} anyway; panel shows the mismatch banner`);
+    }
+    // Resolve saved words so the tokenizer can highlight + gloss them. Run in
+    // parallel with tokenization rather than blocking the first render — if the
+    // fetch lands after tokenizing, loadSavedWords re-renders the spans.
+    loadSavedWords().catch(() => {});
+    await tokenizePage();
+    attachPageSelectionListener();
+    pushPageModeState();
+    startObserver();
+  } finally {
+    initInFlight = false;
   }
-  // Resolve saved words so the tokenizer can highlight + gloss them. Run in
-  // parallel with tokenization rather than blocking the first render — if the
-  // fetch lands after tokenizing, loadSavedWords re-renders the spans.
-  loadSavedWords().catch(() => {});
-  await tokenizePage();
-  attachPageSelectionListener();
-  pushPageModeState();
-  startObserver();
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
