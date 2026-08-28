@@ -2,13 +2,10 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
-import { useFocusEffect } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useLocalMedia } from '@/hooks/use-local-media';
-import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
-import { log } from '@/lib/logger';
 import type { SubtitleLine } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_ON_PRIMARY, ICON_MUTED } from '@/lib/theme-colors';
@@ -18,23 +15,6 @@ export default function LocalMediaScreen() {
   const t = useT();
   const localMedia = useLocalMedia();
   const { width: screenWidth, isLg } = useResponsive();
-
-  // OS file-open (file handling): audio/video files open in this player;
-  // .srt/.vtt caption files load captions for the current media.
-  useFocusEffect(
-    useCallback(() => {
-      const f = peekPendingOpen();
-      if (!f || f.kind !== 'media') return;
-      consumePendingOpen();
-      log('[local-media] file-open → load', { name: f.name });
-      if (/\.(srt|vtt)$/i.test(f.name)) {
-        void localMedia.openCaptionsFromUri(f.uri).catch(() => {});
-      } else {
-        void localMedia.openFileFromUri(f.uri, f.name).catch(() => {});
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [localMedia]),
-  );
   const hasSubtitles = localMedia.subtitleLines.length > 0;
   const contentWidth = Math.min(screenWidth, 1280);
   const asideWidth = 320;

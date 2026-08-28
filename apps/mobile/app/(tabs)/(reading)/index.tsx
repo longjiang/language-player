@@ -12,11 +12,7 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { NotesSidebar } from '@/components/reader/NotesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
-import { useFocusEffect } from 'expo-router';
-import * as FileSystem from 'expo-file-system/legacy';
 import { saveNoteAnchor, getNoteAnchor } from '@/lib/reader-storage';
-import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
-import { log } from '@/lib/logger';
 import { BookOpen, PenLine, PanelRightOpen, PanelRightClose, Sparkles } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -41,32 +37,6 @@ export default function ReaderScreen() {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
-
-  // OS file-open (file handling): .txt/.md files create a note with the file
-  // text and open it in the notes reader.
-  useFocusEffect(
-    useCallback(() => {
-      const f = peekPendingOpen();
-      if (!f || f.kind !== 'notes') return;
-      consumePendingOpen();
-      log('[notes] file-open → create note', { name: f.name });
-      void (async () => {
-        try {
-          const fileText = await FileSystem.readAsStringAsync(f.uri, {
-            encoding: FileSystem.EncodingType.UTF8,
-          });
-          const title = f.name.replace(/\.(txt|md|markdown)$/i, '');
-          const noteId = await notes.createNote(title);
-          await notes.saveNote(noteId, fileText, '');
-          justCreatedRef.current = true;
-          await notes.selectNote(noteId);
-        } catch (err) {
-          log('[notes] file-open failed:', (err as Error)?.message ?? err);
-        }
-      })();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [notes]),
-  );
 
   // Clear saved-flash timers on unmount.
   useEffect(() => {

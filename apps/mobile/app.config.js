@@ -32,42 +32,6 @@ module.exports = {
         // prompt ("Missing Compliance") and builds become available
         // immediately instead of waiting for a manual answer.
         ITSAppUsesNonExemptEncryption: false,
-        // OS file open ("Open in Language Player…" from Files): declare the
-        // document types each reader handles — media, ebooks/pdf, text/notes,
-        // images. Files arrive through expo-linking (file:// URL) and are
-        // routed by lib/file-open.ts.
-        CFBundleDocumentTypes: [
-          {
-            CFBundleTypeName: 'Audio',
-            CFBundleTypeRole: 'Viewer',
-            LSHandlerRank: 'Alternate',
-            LSItemContentTypes: ['public.audio'],
-          },
-          {
-            CFBundleTypeName: 'Video',
-            CFBundleTypeRole: 'Viewer',
-            LSHandlerRank: 'Alternate',
-            LSItemContentTypes: ['public.movie'],
-          },
-          {
-            CFBundleTypeName: 'Image',
-            CFBundleTypeRole: 'Viewer',
-            LSHandlerRank: 'Alternate',
-            LSItemContentTypes: ['public.image'],
-          },
-          {
-            CFBundleTypeName: 'Ebook',
-            CFBundleTypeRole: 'Viewer',
-            LSHandlerRank: 'Alternate',
-            LSItemContentTypes: ['org.idpf.epub-container', 'com.adobe.pdf'],
-          },
-          {
-            CFBundleTypeName: 'Text',
-            CFBundleTypeRole: 'Viewer',
-            LSHandlerRank: 'Alternate',
-            LSItemContentTypes: ['public.text', 'public.plain-text', 'net.daringfireball.markdown'],
-          },
-        ],
       },
       associatedDomains: [
         'applinks:languageplayer.io',
@@ -102,15 +66,6 @@ module.exports = {
           ],
           category: ['BROWSABLE', 'DEFAULT'],
         },
-        // OS file open: Android VIEW intents by MIME type (routed by
-        // lib/file-open.ts through expo-linking).
-        { action: 'VIEW', data: [{ mimeType: 'audio/*' }], category: ['BROWSABLE', 'DEFAULT'] },
-        { action: 'VIEW', data: [{ mimeType: 'video/*' }], category: ['BROWSABLE', 'DEFAULT'] },
-        { action: 'VIEW', data: [{ mimeType: 'image/*' }], category: ['BROWSABLE', 'DEFAULT'] },
-        { action: 'VIEW', data: [{ mimeType: 'text/plain' }], category: ['BROWSABLE', 'DEFAULT'] },
-        { action: 'VIEW', data: [{ mimeType: 'text/markdown' }], category: ['BROWSABLE', 'DEFAULT'] },
-        { action: 'VIEW', data: [{ mimeType: 'application/pdf' }], category: ['BROWSABLE', 'DEFAULT'] },
-        { action: 'VIEW', data: [{ mimeType: 'application/epub+zip' }], category: ['BROWSABLE', 'DEFAULT'] },
       ],
     },
     web: {
