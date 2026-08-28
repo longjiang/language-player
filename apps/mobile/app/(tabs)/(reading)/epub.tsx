@@ -8,7 +8,6 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
@@ -385,29 +384,6 @@ export default function EpubReaderScreen() {
       setSearchOpen(false);
     }
   }, [readerActive]);
-
-  // OS file-open (file handling): ebooks/PDFs import into the shelf and open;
-  // images run through the vision OCR image reader.
-  useFocusEffect(
-    useCallback(() => {
-      const f = peekPendingOpen();
-      if (!f) return;
-      if (f.kind === 'ebook' || f.kind === 'pdf') {
-        consumePendingOpen();
-        log('[epub] file-open → import', { name: f.name, kind: f.kind });
-        void (async () => {
-          const id = await epub.importExternalFile(f.uri, f.name, l2Lang.code);
-          if (id) await handleOpenBook(id);
-        })();
-      } else if (f.kind === 'image') {
-        // Images now open in the standalone image reader — route there and
-        // leave the pending open for the image reader to consume on focus.
-        log('[epub] file-open → image reader', { name: f.name, kind: f.kind });
-        router.push('/(tabs)/(reading)/image-reader' as any);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [epub, l2Lang.code, handleOpenBook, router]),
-  );
 
   // ── Immersive chrome animations: the app header slides down from the top
   // when the chrome is shown (pure overlay, no reflow). The chromeless

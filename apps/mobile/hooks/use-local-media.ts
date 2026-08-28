@@ -30,12 +30,8 @@ export interface UseLocalMediaReturn {
   savedPosition: number;
   /** Open file picker for a media file. */
   openFile: () => Promise<void>;
-  /** Open a media file by URI (OS file-open / in-app routing). */
-  openFileFromUri: (uri: string, name: string) => Promise<void>;
   /** Open file picker for a caption file. */
   loadCaptions: () => Promise<void>;
-  /** Load a caption file by URI (OS file-open / in-app routing). */
-  openCaptionsFromUri: (uri: string) => Promise<void>;
   /** Remove stored media and captions. */
   clear: () => Promise<void>;
   /** Save current playback position. */
@@ -115,12 +111,20 @@ export function useLocalMedia(): UseLocalMediaReturn {
     })();
   }, []);
 
-  // ── Open a media file by URI (OS file-open / in-app routing) ──
-  const openFileFromUri = useCallback(async (sourceUri: string, name: string) => {
+  // ── Open media file ──
+  const openFile = useCallback(async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['video/*', 'audio/*'],
+      copyToCacheDirectory: false,
+    });
+
+    if (result.canceled || !result.assets?.[0]) return;
+    const asset = result.assets[0];
+
     // Copy to local media directory
-    const targetName = name ?? 'media';
+    const targetName = asset.name ?? 'media';
     const targetUri = `${MEDIA_DIR}${targetName}`;
-    await FileSystem.copyAsync({ from: sourceUri, to: targetUri });
+    await FileSystem.copyAsync({ from: asset.uri, to: targetUri });
 
     const audio = isAudioFile(targetName);
 
@@ -140,18 +144,6 @@ export function useLocalMedia(): UseLocalMediaReturn {
     });
   }, [persistState]);
 
-  // ── Open media file ──
-  const openFile = useCallback(async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['video/*', 'audio/*'],
-      copyToCacheDirectory: false,
-    });
-
-    if (result.canceled || !result.assets?.[0]) return;
-    const asset = result.assets[0];
-    await openFileFromUri(asset.uri, asset.name ?? 'media');
-  }, [openFileFromUri]);
-
   // ── Load subtitle file ──
   const loadCaptions = useCallback(async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -169,20 +161,6 @@ export function useLocalMedia(): UseLocalMediaReturn {
     const lines = parseSubtitles(text);
     setSubtitleLines(lines);
 
-    const current = storageRef.current;
-    await persistState({
-      ...current,
-      captionText: text,
-    });
-  }, [persistState]);
-
-  // ── Load a caption file by URI (OS file-open / in-app routing) ──
-  const openCaptionsFromUri = useCallback(async (uri: string) => {
-    const text = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-    const lines = parseSubtitles(text);
-    setSubtitleLines(lines);
     const current = storageRef.current;
     await persistState({
       ...current,
@@ -231,8 +209,6 @@ export function useLocalMedia(): UseLocalMediaReturn {
     hasMedia,
     savedPosition,
     openFile,
-    openFileFromUri,
-    openCaptionsFromUri,
     loadCaptions,
     clear,
     savePosition,

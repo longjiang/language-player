@@ -5,7 +5,6 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Clipboard from 'expo-clipboard';
-import { useFocusEffect } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -17,7 +16,6 @@ import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ZoomableImage } from '@/components/reader/ZoomableImage';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { peekPendingOpen, consumePendingOpen } from '@/lib/file-open';
 import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
 import { readerClampedContentWidth } from '@/lib/reader-layout';
 import { downscaleImage } from '@/lib/downscale-image';
@@ -352,30 +350,6 @@ export default function ImageReaderScreen() {
       Linking.openURL(href).catch(() => {});
     }
   }, []);
-
-  // OS file-open (file handling): an image opened externally routes to this
-  // screen (the epub screen navigates here and leaves the open pending).
-  useFocusEffect(
-    useCallback(() => {
-      const f = peekPendingOpen();
-      if (!f || f.kind !== 'image') return;
-      consumePendingOpen();
-      log('[image-reader] file-open → image', { name: f.name, kind: f.kind });
-      void (async () => {
-        try {
-          const base64 = await FileSystem.readAsStringAsync(f.uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          const mime = mimeFor(f.name);
-          const dataUrl = `data:${mime};base64,${base64}`;
-          append([{ id: nextId(), name: f.name, dataUrl, uri: dataUrl, md: '', converting: false }]);
-        } catch (err) {
-          logwarn('[image-reader] file-open read failed:', (err as Error)?.message ?? err);
-        }
-      })();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [append]),
-  );
 
   /** Placeholder "add next image" tile below the last thumbnail. */
   const addTile = (
