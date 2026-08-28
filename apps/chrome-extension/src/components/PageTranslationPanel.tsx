@@ -74,6 +74,11 @@ export const PageTranslationPanel: React.FC<PageTranslationPanelProps> = ({
   // page translation entirely in that case.
   const canTranslate = baseCode(l1Code) !== baseCode(l2Code);
 
+  useEffect(() => {
+    if (!canTranslate) return;
+    log('[PAGE] panel status', { status, error, blocks: blocks.length, l1Code, l2Code, hasPageUrl: !!pageUrl });
+  }, [status, error, blocks.length, canTranslate, l1Code, l2Code, pageUrl]);
+
   const loadSnapshot = useCallback(async () => {
     const generation = ++requestGenerationRef.current;
     setStatus('loading');
