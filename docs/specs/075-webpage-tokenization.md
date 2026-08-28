@@ -124,6 +124,25 @@ The side panel header shows the logo, the existing **Read in Language Player** b
   4. **Let DeepSeek Explain** (Pro).
   5. The dictionary entry for the token with pronunciation, part of speech, definition, and **Save**.
 
+### Saved-word highlight & quick gloss
+
+Tokenized page text reuses the video transcript's saved-word annotation
+(ARCH-019 "Saved-word highlighting + inline quick gloss", apps/web
+`token-span.tsx` parity):
+
+- A saved word is highlighted on the page (scoped to the word content, never
+  the gloss) and, when the Display **Show Quick Gloss** setting is on,
+  renders an inline `(‘def’)` gloss after it.
+- The gloss definition prefers the entry the user actually saved (resolved from
+  the surface form → saved-entry-id map), then the first cached dictionary
+  match; when `l1 ≠ en` it is fetched per saved word via `/dictionary/lookup`.
+- The gloss is muted and non-selectable, so drag-select still returns the L2
+  source text (SPEC-033).
+- Renders lazily as the batch dictionary cache and the saved-words fetch land,
+  without retokenizing the page. Saved words are refreshed on init and
+  (debounced) after a token/selection lookup so a word saved in the popup
+  highlights shortly after.
+
 ### Click interaction
 
 - Clicking a token stops default navigation, sends the lookup to the side panel (`pageLookup` message), and **opens the side panel** — the click is a user gesture, which `chrome.sidePanel.open()` requires.
