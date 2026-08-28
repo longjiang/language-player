@@ -68,6 +68,7 @@ async function ingestExternalUri(sourceUri: string, fallbackName?: string): Prom
       sourceUri.split('/').pop()?.split('?')[0] ||
       `opened-${Date.now()}`;
     const kind = classifyFileName(name);
+    log('[file-open] ingest — source:', sourceUri, '| name:', name, '| kind:', kind);
     if (kind === 'unknown') {
       logwarn('[file-open] ignored — no reader for', name);
       return;
@@ -98,9 +99,11 @@ async function ingestExternalUri(sourceUri: string, fallbackName?: string): Prom
 /** Start listening for OS file-open events (call once from the root layout). */
 export function startFileOpenListener(): () => void {
   void Linking.getInitialURL().then((url) => {
+    log('[file-open] initial URL:', url ?? '(none)');
     if (url) void ingestExternalUri(url);
   });
   const sub = Linking.addEventListener('url', ({ url }) => {
+    log('[file-open] url event:', url);
     void ingestExternalUri(url);
   });
   log('[file-open] listener started');

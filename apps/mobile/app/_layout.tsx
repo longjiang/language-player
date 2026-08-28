@@ -1,3 +1,8 @@
+// Startup diagnostics — registers the global uncaught-JS-error hook BEFORE any
+// app module can throw, so a silent module-eval crash in a Release build is
+// surfaced in the device log instead of a black screen.
+import '@/lib/bootstrap-diagnostics';
+
 // Intl polyfills for Hermes (Intl.PluralRules) — MUST be first
 import '@/lib/intl-polyfills';
 
@@ -11,7 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
-import { logerr } from '@/lib/logger';
+import { log, logerr } from '@/lib/logger';
 import { useAppFonts } from '@/lib/fonts';
 import { initOfflineMode } from '@/lib/offline-mode';
 import { TokenizationWorkerHost } from '@/components/TokenizationWorkerHost';
@@ -127,6 +132,16 @@ export default function RootLayout() {
   useEffect(() => {
     void initOfflineMode().finally(() => setOfflineModeReady(true));
   }, []);
+
+  // Boot diagnostics: log what the splash gate is waiting on so a stuck
+  // Release launch (fonts / offline-mode never resolve) is visible in logs.
+  useEffect(() => {
+    log(
+      '[boot] gate — fontsLoaded =', fontsLoaded,
+      '; fontError =', !!fontError,
+      '; offlineModeReady =', offlineModeReady,
+    );
+  }, [fontsLoaded, fontError, offlineModeReady]);
 
   // Web → app links (SPEC-069): translate https://languageplayer.io/... URLs
   // into internal routes. Runs only after fonts/offline-mode are ready so the
