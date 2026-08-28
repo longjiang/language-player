@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-27 (side panel never-blank: the whole-app error fallback's Retry now remounts the tree (key bump) so a stale tab / dead content script recovers instead of re-rendering the same crash; page mode diagnostics log the resolved page-translation state; page-content `init()` auto-re-inits after a transient lifecycle flap so a cold "never-visited" page does not strand the page reader disabled — see note below)
+- **Last Updated**: 2026-08-27 (side panel never-blank: the whole-app error fallback's Retry now remounts the tree (key bump) so a stale tab / dead content script recovers instead of re-rendering the same crash; page mode diagnostics log the resolved page-translation state; **i18n `t()` fallback no longer spreads the substitutions array** into `chrome.i18n.getMessage` — Chrome's signature takes a single string/array, so spreading threw "No matching signature" and could crash the whole side panel; boxed in try/catch so a bad call can never take down the render tree; **page-content `pageTranslationVisibility {open:true}` re-asserts `panelOpen`** so a stale `panelOpenState {open:false}` (port flap on a cold never-visited page) no longer routes the page tab into cleanup/disabled; `init()` auto-re-inits after a transient lifecycle flap — see note below)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -1118,7 +1118,7 @@ t(key, substitutions?)
 ├─ Runtime cache hit?
 │   YES → Manual $1$/$2$ replace, return
 │
-├─ chrome.i18n.getMessage(key, ...substitutions)?
+├─ chrome.i18n.getMessage(key, substitutions)?
 │   YES → Chrome resolves $name$ via placeholders config, return
 │
 └─ Fallback → return key as-is
