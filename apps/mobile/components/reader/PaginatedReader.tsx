@@ -646,6 +646,21 @@ export function PaginatedReader({
     if (lastPageShownLogKeyRef.current === key) return;
     lastPageShownLogKeyRef.current = key;
     appLog(`[Reader] ✅ page content shown page=${page} blocks=${visibleBlocksProp.length} t=${Date.now()}`);
+    // Diagnostic (spacing): dump the visible page's block structure + the L2
+    // leading so an unusually large inter-paragraph gap can be traced to either
+    // an unexpected block kind (empty/heading/table) or an oversized leading /
+    // ruby line pitch. Fires once per page (keyed above).
+    appLog('[Reader] 📐 spacing diagnostic', {
+      leading: translationLeading,
+      leadingPx: Math.round(16 * translationLeading),
+      viewportH: viewportHeightRef.current,
+      blocks: visibleBlocksProp.map((b) => ({
+        idx: blocks?.indexOf(b) ?? -1,
+        kind: b.kind,
+        type: b.kind === 'text' ? (b as any).type : null,
+        textLen: 'text' in b ? (b as any).text?.length ?? 0 : 0,
+      })),
+    });
   }, [hasMeasured, page, visibleBlocksProp]);
 
   // ── Progressive tokenized upgrade after the user stops flipping ──
