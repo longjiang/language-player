@@ -19,7 +19,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { GridLine } from '@/lib/aligned-translation';
-import { ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, List, Loader2, Search } from 'lucide-react-native';
+import { ChevronDown, ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
@@ -167,9 +167,6 @@ interface PaginatedReaderProps {
   onOpenToc?: () => void;
   /** Immersive: renders the Search button in the bottom bar. */
   onOpenSearch?: () => void;
-  /** Immersive: renders a "thumbnails" button in the bottom bar (PDF reader —
-   *  returns to the page-thumbnails grid). */
-  onOpenThumbnails?: () => void;
   /** Immersive: overlay rendered in the top reserved strip (muted chapter title). */
   topOverlay?: React.ReactNode;
   /** Immersive: overlay rendered in the bottom reserved strip (muted page count);
@@ -211,7 +208,6 @@ export function PaginatedReader({
   onToggleChrome,
   onOpenToc,
   onOpenSearch,
-  onOpenThumbnails,
   topOverlay,
   pageInfoOverlay,
 }: PaginatedReaderProps) {
@@ -911,15 +907,6 @@ export function PaginatedReader({
               accessibilityLabel={t('action.search')}
             >
               <Search size={18} color={ICON_MUTED} />
-            </Pressable>
-          )}
-          {onOpenThumbnails && (
-            <Pressable
-              onPress={onOpenThumbnails}
-              className="rounded p-1 active:bg-muted"
-              accessibilityLabel={t('action.thumbnails')}
-            >
-              <LayoutGrid size={18} color={ICON_MUTED} />
             </Pressable>
           )}
         </Animated.View>
