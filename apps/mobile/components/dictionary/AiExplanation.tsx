@@ -464,9 +464,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   // Pro gate — free user
   if (!isPro) {
     return (
-      /* mb-2 matches the gap below the "Let DeepSeek explain" button
-         (its wrapper's pb-2) — the banner must not touch the button below. */
-      <View className="mt-4 mb-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+      <View className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
         <Text className="text-center text-sm text-amber-700 dark:text-amber-300">
           <Sparkles size={14} color="#d97706" /> {t('msg.ai_pro_feature')}
         </Text>

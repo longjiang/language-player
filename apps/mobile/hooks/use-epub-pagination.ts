@@ -7,7 +7,7 @@ import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeLogger, readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { useSettingsContext } from '@/contexts/SettingsContext';
-import { readerClampedContentWidth, readerHorizontalPadding } from '@/lib/reader-layout';
+import { readerHorizontalPadding } from '@/lib/reader-layout';
 
 const { log } = lemmatizeLogger;
 const { log: paginationLog, logwarn: paginationWarn } = readerLogger;
@@ -324,19 +324,15 @@ export function useEpubPagination({
   const visibleIndicesKeyRef = useRef('');
   /** Real reader viewport (lazy mode; window dimensions are the fallback). */
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
-  // Reader horizontal padding: both margins equal the text's leading (reader
-  // layout rule). The content width is the viewport minus that padding,
-  // clamped to the content container width (CONTENT_CONTAINER_WIDTH), so it
+  // Reader horizontal padding: left = the text's leading (reader layout rule),
+  // right = 16px. The content width is the viewport minus that padding, so it
   // always matches the visible ScrollView (and the hidden measuring mirror).
-  // The text column is at most min(CONTENT_CONTAINER_WIDTH, viewport − 2 × L).
   const { total: readerPadX } = readerHorizontalPadding(
     tokenizedText.zoom,
     tokenizedText.leading ?? 1.625,
     textScale,
   );
-  const contentWidth = readerClampedContentWidth(
-    viewportSize ? viewportSize.width - readerPadX : windowWidth - readerPadX,
-  );
+  const contentWidth = viewportSize ? viewportSize.width - readerPadX : windowWidth - readerPadX;
   // Pre-layout fallback page height: the real reader viewport (ScrollView
   // onLayout) wins once reported; until then subtract the reader's actual
   // reserved chrome (or the legacy 260px guess) — windowHeight - 260 leaves

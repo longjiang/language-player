@@ -8,11 +8,6 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(projectRoot);
 
-// Bundle pdf.js ESM builds (pdf.min.mjs / pdf.worker.min.mjs) as raw assets
-// so the PDF reader's WebView can load them via expo-asset (data: URLs).
-// No source files in this project use .mjs, so adding it to assetExts is safe.
-config.resolver.assetExts.push('mjs');
-
 // 0. Fix monorepo hoisting: expo/AppEntry.js resolves ../../App to the wrong place.
 //    Force the entry point to use expo-router, which handles the project root correctly.
 config.resolver.resolveRequest = (context, moduleName, platform) => {

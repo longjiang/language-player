@@ -19,7 +19,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { GridLine } from '@/lib/aligned-translation';
-import { ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, List, Loader2, Search } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
@@ -167,9 +167,6 @@ interface PaginatedReaderProps {
   onOpenToc?: () => void;
   /** Immersive: renders the Search button in the bottom bar. */
   onOpenSearch?: () => void;
-  /** Immersive: renders a "thumbnails" button in the bottom bar (PDF reader —
-   *  returns to the page-thumbnails grid). */
-  onOpenThumbnails?: () => void;
   /** Immersive: overlay rendered in the top reserved strip (muted chapter title). */
   topOverlay?: React.ReactNode;
   /** Immersive: overlay rendered in the bottom reserved strip (muted page count);
@@ -211,7 +208,6 @@ export function PaginatedReader({
   onToggleChrome,
   onOpenToc,
   onOpenSearch,
-  onOpenThumbnails,
   topOverlay,
   pageInfoOverlay,
 }: PaginatedReaderProps) {
@@ -239,10 +235,6 @@ export function PaginatedReader({
   const scrollRef = useRef<ScrollView>(null);
   const scrollYRef = useRef(0);
   const viewportHeightRef = useRef(0);
-  /** Long-page affordance: whether the current page overflows the viewport
-   *  and whether the user has scrolled to its bottom. */
-  const [pageOverflow, setPageOverflow] = useState(false);
-  const [atPageBottom, setAtPageBottom] = useState(false);
   const blockLayoutsRef = useRef<Record<number, { top: number; height: number }>>({});
   const lastVisibleKeyRef = useRef('');
   const measureWindowLogKeyRef = useRef('');
@@ -394,13 +386,6 @@ export function PaginatedReader({
 
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     scrollYRef.current = e.nativeEvent.contentOffset.y;
-    // Long-page affordance: track whether the user is at the bottom of an
-    // overflowing page (hides the down-arrow).
-    const vh = viewportHeightRef.current;
-    if (vh > 0) {
-      const maxY = Math.max(0, e.nativeEvent.contentSize.height - vh);
-      setAtPageBottom(maxY > 8 && e.nativeEvent.contentOffset.y >= maxY - 8);
-    }
     // SPEC-082 Task 4: scrolling clears the translation-sentence highlight.
     clearActiveSentence();
     reportVisible();
@@ -764,35 +749,25 @@ export function PaginatedReader({
                     ref={scrollRef}
                     className="flex-1"
                     style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}
-                    // Short pages (last page of a chapter, few blocks) are
-                    // vertically centered like a book page; overflowing pages
-                    // keep top alignment and scroll.
-                    contentContainerStyle={
-                      immersive
-                        ? { flexGrow: 1, justifyContent: 'center' }
-                        : undefined
-                    }
                     onScroll={handleScroll}
                     scrollEventThrottle={16}
                     onLayout={handleViewportLayout}
                     onContentSizeChange={(_w, h) => {
-                      const overflow = h - viewportHeightRef.current;
-                      setPageOverflow(overflow > 8);
                       if (viewportHeightRef.current <= 0) return;
+                      const overflow = h - viewportHeightRef.current;
                       if (overflow > 2 && Math.round(overflow) !== lastOverflowLogRef.current) {
                         lastOverflowLogRef.current = Math.round(overflow);
                         log(`[Reader] ⚠️ page overflow contentH=${Math.round(h)} viewportH=${Math.round(viewportHeightRef.current)} overflow=${Math.round(overflow)}px t=${Date.now()} — translation/page break taller than measured`);
                       }
                     }}
                   >
-                    {/* The page column is clamped to the book measure and
-                        centered (matching the pagination hook's clamped
-                        contentWidth + the hidden measuring mirror). */}
-                    <View style={{ width: contentWidth, alignSelf: 'center' }}>
-                      {visibleBlocks.map((block, bi) =>
-                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics),
-                      )}
-                    </View>
+                    {/* Loading indicator — inside the scroll content (web parity) so
+                        it doesn't resize the measured viewport. */}
+                    {/* loadingTokens indicator removed — no "making text
+                        interactive" row; content shows when ready */}
+                    {visibleBlocks.map((block, bi) =>
+                      renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics),
+                    )}
                   </ScrollView>
                 </GestureDetector>
               </Animated.View>
@@ -829,27 +804,6 @@ export function PaginatedReader({
             </View>
           )}
         </>
-      )}
-
-      {/* Long-page scroll affordance: a floating down-arrow just above the
-          page counter (or the bottom bar) when the current page overflows
-          the viewport. Tapping scrolls to the bottom; hidden at the bottom
-          and when the page fits. */}
-      {pageOverflow && !atPageBottom && (
-        <View
-          pointerEvents="box-none"
-          className="absolute inset-x-0 z-10 items-center"
-          style={{ bottom: immersive ? (immersiveReserve?.bottom ?? 0) - 32 : 56 }}
-        >
-          <Pressable
-            onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
-            className="h-8 w-8 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
-            accessibilityRole="button"
-            accessibilityLabel={t('action.scroll_down')}
-          >
-            <ChevronDown size={16} color={ICON_MUTED} />
-          </Pressable>
-        </View>
       )}
 
       {/* Page navigation + translation switch — always present while a book is
@@ -913,15 +867,6 @@ export function PaginatedReader({
               <Search size={18} color={ICON_MUTED} />
             </Pressable>
           )}
-          {onOpenThumbnails && (
-            <Pressable
-              onPress={onOpenThumbnails}
-              className="rounded p-1 active:bg-muted"
-              accessibilityLabel={t('action.thumbnails')}
-            >
-              <LayoutGrid size={18} color={ICON_MUTED} />
-            </Pressable>
-          )}
         </Animated.View>
       )}
 
@@ -933,7 +878,7 @@ export function PaginatedReader({
         (measuring && measureEnd > measureStart)
         || (!hasMeasured && (measuredWindow > 0 || (measureStart === -1 && measureEnd === -1)))
       ) && (
-        <View key={`measure-${measureStart}-${measureNonce}-${measureLineHeight}`} style={{ position: 'absolute', left: 0, width: contentWidth + readerPad.total, top: 0, opacity: 0, paddingLeft: readerPad.left, paddingRight: readerPad.right }} pointerEvents="none">
+        <View key={`measure-${measureStart}-${measureNonce}-${measureLineHeight}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0, paddingLeft: readerPad.left, paddingRight: readerPad.right }} pointerEvents="none">
           {(() => {
             const hasLazyWindow = measureEnd > measureStart;
             const sliceStart = hasLazyWindow ? measureStart : 0;
@@ -1182,10 +1127,7 @@ function renderBlock(
         highlightedTranslation = (
           <Text>
             {translation.slice(0, pair.tr.start)}
-            {/* The active translation sentence must read clearly in dark
-                mode: stronger primary background + primary foreground
-                (bg-primary/15 alone was invisible on dark backgrounds). */}
-            <Text className="bg-primary/25 text-primary">{translation.slice(pair.tr.start, pair.tr.end)}</Text>
+            <Text className="bg-primary/15">{translation.slice(pair.tr.start, pair.tr.end)}</Text>
             {translation.slice(pair.tr.end)}
           </Text>
         );
