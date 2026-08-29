@@ -16,6 +16,7 @@ import { useAppFonts } from '@/lib/fonts';
 import { initOfflineMode } from '@/lib/offline-mode';
 import { TokenizationWorkerHost } from '@/components/TokenizationWorkerHost';
 import { mapWebUrlToAppRoute } from '@/lib/web-url-mapper';
+import { startFileOpenListener } from '@/lib/file-open';
 
 // ── Custom toast config ──
 
@@ -150,6 +151,14 @@ export default function RootLayout() {
     });
     return () => subscription.remove();
   }, [fontsLoaded, fontError, offlineModeReady]);
+
+  // OS file open (iOS "Open in…" / Android VIEW intent) → route to the right
+  // reader (file handling feature). Starts immediately; copies + classifies
+  // file/content URIs and lets the target screens consume them on focus.
+  useEffect(() => {
+    const stop = startFileOpenListener();
+    return stop;
+  }, []);
 
   // Keep the splash visible (and skip the first render) until the vendored
   // Inter fonts are ready. On failure, render with system fonts instead.
