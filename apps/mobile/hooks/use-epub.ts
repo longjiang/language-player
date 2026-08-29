@@ -3,6 +3,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import {
   openEpubBook,
+  inspectEpubBook,
   sanitizeEpubId,
   unwrapEpubZipFile,
   type EpubBookModel,
@@ -207,8 +208,6 @@ export function useEpub(): UseEpubReturn {
 
     let importedCount = 0;
     let firstError: string | null = null;
-    let lastModel: EpubBookModel | null = null;
-    let lastId = '';
 
     try {
       await ensureLibraryDir();
@@ -254,7 +253,11 @@ export function useEpub(): UseEpubReturn {
           // Diagnostic (import perf): attribute copy+unwrap vs parse. The
           // parse itself logs unzip/images/blocks/cover sub-phases separately.
           log(`[LP Mobile] ⏱️ import "${asset.name}": copy+unwrap ${Date.now() - assetStart}ms (isDir=${!!assetInfo.isDirectory} isZip=${isZipName})`);
-          const m = await openEpubBook(dest, displayName);
+          // Web parity (SPEC-049 §7): importing only parses the package
+          // (title/author/TOC) + the cover — the heavy spine→blocks
+          // conversion is deferred until the book is opened (openEpubBook).
+          // This is why web import feels instant.
+          const m = await inspectEpubBook(dest, displayName);
           let coverUrl = m.coverUrl;
           if (coverUrl?.startsWith('file://')) {
             // Persist the extracted cover next to the book (cacheDirectory
@@ -283,36 +286,35 @@ export function useEpub(): UseEpubReturn {
             title: m.title,
             author: m.author,
             lastLocation: null,
-            totalChars: m.totalChars,
+            // totalChars is only known after the full openEpubBook conversion;
+            // it is filled in when the book is opened (openBook). Until then the
+            // shelf shows no progress % (totalChars === 0 → pct null).
+            totalChars: 0,
             readChars: 0,
             lastReadAt: Date.now(),
             addedAt: Date.now(),
           };
           await saveEpub(meta);
+          await m.cleanup();
           importedCount++;
-          lastModel = m;
-          lastId = id;
-          log(`[LP Mobile] 📚 import done "${asset.name}" total=${Date.now() - assetStart}ms (copy+unwrap+open+cover+save)`);
+          log(`[LP Mobile] 📚 import done "${asset.name}" total=${Date.now() - assetStart}ms (copy+unwrap+inspect+cover+save)`);
         } catch (e: any) {
           firstError ??= e?.message ?? String(e);
           log(`[LP Mobile] 📚 import FAILED "${asset.name}" elapsed=${Date.now() - assetStart}ms err=${e?.message ?? e}`);
         }
       }
 
+      // Importing only adds to the bookshelf (web parity) — it never opens the
+      // book. The user taps a card (or the mount auto-open) to open it.
       setBooks(await listEpubs());
 
       if (importedCount === 0) {
         setError(firstError ?? 'Failed to import EPUB');
-      } else if (importedCount === 1 && lastModel) {
-        const start: BookLocation | null =
-          lastModel.markers[0]?.location ??
-          (lastModel.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null);
-        setCurrentModel(lastModel, lastId, false, start);
       }
     } finally {
       setLoading(false);
     }
-  }, [books, setCurrentModel]);
+  }, [books]);
 
   /** Open a stored book; returns the location to resume at. */
   const openBook = useCallback(async (id: string, opts?: { skipCover?: boolean }): Promise<BookLocation | null> => {
@@ -344,7 +346,9 @@ export function useEpub(): UseEpubReturn {
         ? meta.lastLocation
         : (m.markers[0]?.location ?? (m.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null));
       setCurrentModel(m, id, skipCover, resume);
-      await updateEpubMeta(id, { lastReadAt: Date.now() });
+      // totalChars is only known here (full openEpubBook conversion); the lazy
+      // import set it to 0, so persist it now so the shelf's progress bar works.
+      await updateEpubMeta(id, { lastReadAt: Date.now(), totalChars: m.totalChars });
       setBooks(prev => prev.map((b) => (b.id === id ? { ...b, lastReadAt: Date.now() } : b)));
       log('[epub] openBook finish', { id, openBookIdRef: openBookIdRef.current, skipCover });
       return resume;

@@ -209,20 +209,24 @@ function flattenToc(items: TocItem[]): TocItem[] {
   return out;
 }
 
+/** Parsed package-level data (no spine content conversion). */
+interface EpubPackageData {
+  zip: JSZip;
+  meta: ReturnType<typeof parseOPF>;
+  opfDir: string;
+  manifestItems: Map<string, EpubManifestItem>;
+  toc: TocItem[];
+  tempDir: string;
+}
+
 /**
- * Open an EPUB file and build the whole-book model (SPEC-049 §9.1):
- * spine = reading flow, TOC = bookmarks resolved to block locations, and
- * every content document converted once into a global block stream.
+ * Lightweight package parse: unzip + OPF/nav/NCX → metadata, manifest, spine,
+ * and TOC. Does NOT convert spine content or extract images — that is the
+ * heavy part deferred until a book is actually opened. Web parity: import
+ * only needs the cover, title, and author (SPEC-049 §7), matching how web's
+ * `EpubBook.open` stops at package metadata and converts content lazily.
  */
-export async function openEpubBook(
-  fileUri: string,
-  fileName: string,
-  opts: OpenOptions = {},
-): Promise<EpubBookModel> {
-  const t0 = Date.now();
-  // Some books arrive as unzipped EPUB directories (e.g. older files from
-  // Dropbox/Calibre). Build an in-memory JSZip from the directory so the rest
-  // of the model code is identical for both forms.
+async function parseEpubPackage(fileUri: string, fileName: string): Promise<EpubPackageData> {
   const info = await FileSystem.getInfoAsync(fileUri);
   const isDirectory = !!info.isDirectory;
   let zip: JSZip;
@@ -234,11 +238,7 @@ export async function openEpubBook(
     // and can make JSZip hang or freeze the JS thread on large books.
     const data = await new File(fileUri).arrayBuffer();
     zip = await JSZip.loadAsync(data);
-    log(`[LP Mobile] ⏱️ epub open "${fileName}": unzip ${Date.now() - t0}ms (isDirectory=${isDirectory})`);
   }
-  const id = sanitizeEpubId(fileName);
-  const tempDir = `${FileSystem.cacheDirectory}epub_tmp_${id}/`;
-  try { await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true }); } catch { /* exists */ }
 
   const containerFile = zip.file('META-INF/container.xml');
   if (!containerFile) throw new Error('Invalid EPUB: no container.xml');
@@ -294,6 +294,94 @@ export async function openEpubBook(
     label: s.title || `Chapter ${idx + 1}`,
     href: s.href,
   }));
+  const tempDir = `${FileSystem.cacheDirectory}epub_tmp_${sanitizeEpubId(fileName)}/`;
+  return { zip, meta, opfDir, manifestItems, toc, tempDir };
+}
+
+/** Extract the cover to a temp file, returning its path (or null). Caller
+ *  owns cleanup of the returned path + tempDir. */
+async function extractCover(
+  zip: JSZip,
+  meta: ReturnType<typeof parseOPF>,
+  opfDir: string,
+  manifestItems: Map<string, EpubManifestItem>,
+  tempDir: string,
+): Promise<string | null> {
+  if (!meta.coverBase64) return null;
+  const resolvedPath = resolvePath(opfDir, meta.coverBase64);
+  const cf = zip.file(resolvedPath);
+  if (!cf) return null;
+  try {
+    const coverItem = meta.coverItemId ? manifestItems.get(meta.coverItemId) : undefined;
+    const mimeType = coverItem?.mediaType ?? 'image/jpeg';
+    const b64 = await cf.async('base64');
+    const ext = (mimeType.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const coverPath = `${tempDir}cover.${ext}`;
+    await FileSystem.writeAsStringAsync(coverPath, b64, { encoding: FileSystem.EncodingType.Base64 });
+    return coverPath;
+  } catch {
+    return null;
+  }
+}
+
+/** Package metadata only (no content conversion) — the import-time result. */
+export interface InspectEpubResult {
+  title: string;
+  author: string;
+  toc: TocItem[];
+  spineHrefs: string[];
+  coverUrl: string | null;
+  /** Delete the temp cover + dir (call after persisting/copying the cover). */
+  cleanup: () => Promise<void>;
+}
+
+/**
+ * Open an EPUB's PACKAGE only (metadata + cover) — no content conversion.
+ *
+ * Used at import so adding a book to the bookshelf is as fast as web: it
+ * parses OPF/nav/NCX and extracts the cover, but does NOT read every spine
+ * item or convert it to blocks. The heavy spine→blocks conversion happens in
+ * `openEpubBook` when the book is actually opened.
+ */
+export async function inspectEpubBook(
+  fileUri: string,
+  fileName: string,
+  opts: OpenOptions = {},
+): Promise<InspectEpubResult> {
+  const { zip, meta, opfDir, manifestItems, toc, tempDir } = await parseEpubPackage(fileUri, fileName);
+  try { await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true }); } catch { /* exists */ }
+  let coverUrl: string | null = opts.coverUri ?? null;
+  if (!coverUrl) coverUrl = await extractCover(zip, meta, opfDir, manifestItems, tempDir);
+  return {
+    title: meta.title,
+    author: meta.author,
+    toc,
+    spineHrefs: meta.spine.map((s) => s.href),
+    coverUrl,
+    cleanup: async () => {
+      try { await FileSystem.deleteAsync(tempDir); } catch { /* already gone */ }
+    },
+  };
+}
+
+/**
+ * Open an EPUB file and build the whole-book model (SPEC-049 §9.1):
+ * spine = reading flow, TOC = bookmarks resolved to block locations, and
+ * every content document converted once into a global block stream.
+ */
+export async function openEpubBook(
+  fileUri: string,
+  fileName: string,
+  opts: OpenOptions = {},
+): Promise<EpubBookModel> {
+  const t0 = Date.now();
+  // Package-only parse (zip + OPF/nav/NCX + manifest + spine + TOC). The
+  // heavy spine→blocks conversion + image extraction happen below; the import
+  // path uses the lighter `inspectEpubBook` so adding a book to the shelf is
+  // as fast as web (which converts content lazily).
+  const { zip, meta, opfDir, manifestItems, toc, tempDir } = await parseEpubPackage(fileUri, fileName);
+  log(`[LP Mobile] ⏱️ epub open "${fileName}": package parse ${Date.now() - t0}ms`);
+  try { await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true }); } catch { /* exists */ }
 
   // Extract images once per open (RN Image needs file:// URIs). Only extract
   // the images actually referenced by spine <img> tags, and do it in parallel
@@ -340,22 +428,11 @@ export async function openEpubBook(
 
   // Cover — reuse the persisted bookshelf cover when available.
   let coverUrl: string | null = opts.coverUri ?? null;
-  if (!coverUrl && meta.coverBase64) {
-    const resolvedPath = resolvePath(opfDir, meta.coverBase64);
-    const cf = zip.file(resolvedPath);
-    if (cf) {
-      try {
-        const coverItem = meta.coverItemId ? manifestItems.get(meta.coverItemId) : undefined;
-        const mimeType = coverItem?.mediaType ?? 'image/jpeg';
-        const b64 = await cf.async('base64');
-        const ext = (mimeType.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        const coverPath = `${tempDir}cover.${ext}`;
-        await FileSystem.writeAsStringAsync(coverPath, b64, { encoding: FileSystem.EncodingType.Base64 });
-        // tempDir is already a file:// URI — do not re-prefix (see image cache
-        // comment above).
-        coverUrl = coverPath;
-        tempPaths.push(coverPath);
-      } catch { /* generated cover fallback */ }
+  if (!coverUrl) {
+    const coverPath = await extractCover(zip, meta, opfDir, manifestItems, tempDir);
+    if (coverPath) {
+      coverUrl = coverPath;
+      tempPaths.push(coverPath);
     }
   }
 
