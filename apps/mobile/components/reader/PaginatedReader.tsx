@@ -1308,10 +1308,13 @@ function renderBlock(
     }
   };
 
+  // Web parity (SPEC-082/085): web renders text blocks with `mb-0` and
+  // relies on the first-line indent (`indent-[1em]`) to separate paragraphs.
+  // The old uniform `mb-3` gap made mobile paragraphs look much larger and
+  // more spread out than web (Chrome), especially for dialog-heavy text.
   return (
     <View
       key={bi}
-      className="mb-3"
       onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
     >
       {block.type === 'heading' && (
@@ -1440,7 +1443,7 @@ function renderMeasuringBlock(
   }
 
   return (
-    <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="mb-3">
+    <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)}>
       {block.type === 'heading' && <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>}
       {block.type === 'paragraph' && withActionSpacer(
         translationSideBySide && showTranslation ? (

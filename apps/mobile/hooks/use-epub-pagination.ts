@@ -56,8 +56,10 @@ const MAX_TRUNCATED_ATTEMPTS = 3;
 /** Max blocks rendered into the hidden measuring window at once. 160 keeps a
  *  page turn cheap on mobile while still covering several pages per pass. */
 const WINDOW_LIMIT = 160;
-/** Fallback vertical gap between blocks when measured tops aren't available. */
-const DEFAULT_BLOCK_GAP = 12;
+/** Fallback vertical gap between blocks when measured tops aren't available.
+ *  Web parity: text blocks render with `mb-0` (paragraphs separated by the
+ *  first-line indent, SPEC-082/085), so the default inter-block gap is 0. */
+const DEFAULT_BLOCK_GAP = 0;
 /** How long after the last page flip the reader waits before running heavy
  *  work (exact re-measure, tokenization, translation). Rapid flipping shows
  *  instant estimated pages; the heavy work runs once flipping stops. */
@@ -95,7 +97,8 @@ function estimateBlockHeight(block: ContentBlock, contentWidth: number): number 
     : '';
   const charsPerLine = Math.max(20, Math.floor(contentWidth / 8));
   const lines = Math.max(1, Math.ceil(text.length / charsPerLine));
-  return lines * 24 + 12;
+  // No trailing block gap (text blocks render with mb-0, web parity).
+  return lines * 24;
 }
 
 interface BlockMetrics {
