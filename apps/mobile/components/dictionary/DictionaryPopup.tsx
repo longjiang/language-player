@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, buttonTextClass } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { lookupOfflineByL2, lookupOfflineManyByL2 } from '@/lib/dictionary-db';
 import { localizedError } from '@/lib/errors';
 import { popupLogger } from '@/lib/logger';
+import { suppressReaderTap } from '@/lib/reader-tap-guard';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { TOKENIZER_CONFIG, type DictionaryEntry } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
@@ -580,11 +581,19 @@ export function DictionaryPopup({
     router.push(`/word/${safeId}` as any);
   };
 
+  // Close the popup — also arm the reader chrome guard (reader-tap-guard) so
+  // the tap that dismissed this dialog can't land on the immersive reader's
+  // blank-tap surface and toggle the chrome.
+  const handleClose = useCallback(() => {
+    suppressReaderTap();
+    onClose();
+  }, [onClose]);
+
   return (
     // asChild: the only child is the portal, so the Root renders no placeholder
     // View. This lets TokenizedText be nested inside a parent Text (e.g. AI
     // explanation paragraphs) without embedding a View in the text layout tree.
-    <DialogPrimitive.Root asChild open={visible} onOpenChange={(open) => { if (!open) setTimeout(onClose, 250); }}>
+    <DialogPrimitive.Root asChild open={visible} onOpenChange={(open) => { if (!open) { suppressReaderTap(); setTimeout(onClose, 250); } }}>
       <DialogPrimitive.Portal>
         {/* Overlay */}
         <Animated.View
@@ -594,7 +603,7 @@ export function DictionaryPopup({
         >
           <DialogPrimitive.Overlay
             className="absolute inset-0 bg-black/40"
-            onPress={onClose}
+            onPress={handleClose}
           />
         </Animated.View>
 
@@ -643,7 +652,7 @@ export function DictionaryPopup({
                   )}
                 </View>
                 <Button
-                  onPress={onClose}
+                  onPress={handleClose}
                   variant="ghost"
                   size="icon"
                   hitSlop={8}
