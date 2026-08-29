@@ -346,6 +346,17 @@ export async function getOutboxStats(): Promise<{
   };
 }
 
+/** Outbox row counts grouped by entity — the "why is the queue so long"
+ *  diagnostic (which entities are stuck/failing). */
+export async function getOutboxEntityBreakdown(): Promise<
+  { entity: string; status: string; cnt: number }[]
+> {
+  const db = await openSyncDB();
+  return db.getAllAsync<{ entity: string; status: string; cnt: number }>(
+    'SELECT entity, status, COUNT(*) AS cnt FROM outbox GROUP BY entity, status ORDER BY cnt DESC',
+  );
+}
+
 export async function getSyncMeta(key: string): Promise<string | null> {
   const db = await openSyncDB();
   const row = await db.getFirstAsync<{ value: string }>(

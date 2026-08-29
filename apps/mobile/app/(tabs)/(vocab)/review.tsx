@@ -20,16 +20,18 @@ import {
   msUntilNextDay,
   deviceTimezone,
   newRatingId,
-  buildSrsQuestionPrompt,
-  needsPronunciationTest,
+  getTestKinds,
+  pronunciationReadingOf,
+  surfaceFormOf,
+  lemmaFormOf,
   scoreTestAnswer,
   scoreTestResult,
   type SrsTestQuestion,
-  normalizeTestChoice,
-  parseSrsQuestionResponse,
-  validateSrsPronunciationChoices,
+  type SrsTestDiagnostic,
+  type SrsTestPriority,
   type TestQuestionKind,
 } from '@langplayer/utils';
+import { getSrsTestManager } from '@/lib/srs-test-manager';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
@@ -45,6 +47,7 @@ import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
 import {
   enqueueLookupWords,
+  getCachedEntries,
   getL1CachedEntry,
   setL1CachedEntry,
   setCachedEntryById,
@@ -68,6 +71,50 @@ const { log } = srsLogger;
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
 type TestAnswer = { answer: string; correct: boolean; score: 1 | 2 | 3 | 4 };
+
+/**
+ * Per-question state of the test-mode flow. Each test (definition, and
+ * pronunciation for deep-orthography L2s) is generated independently through
+ * the shared SrsTestManager, so one failing test never blocks the loading of
+ * the other, and each carries its own status.
+ */
+type TestSlot = {
+  kind: TestQuestionKind;
+  status: 'idle' | 'loading' | 'retrying' | 'ready' | 'error' | 'skipped';
+  question?: SrsTestQuestion;
+  diagnostic?: SrsTestDiagnostic;
+};
+
+/**
+ * Tiny "Diagnostic" link shown next to a test error. It reveals, in plain
+ * text, the prompt that was sent to the LLM, the raw LLM response, and the
+ * error — deliberately hidden behind a link so the normal error UI stays
+ * generic.
+ */
+function DiagnosticButton({ diagnostic }: { diagnostic?: SrsTestDiagnostic }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  if (!diagnostic) return null;
+  return (
+    <View className="items-start">
+      <Pressable
+        onPress={() => setOpen((prev) => !prev)}
+        accessibilityRole="button"
+        accessibilityLabel={t('review.diagnostic')}
+        className="py-1"
+      >
+        <Text className="text-[10px] font-medium text-muted-foreground underline">
+          {t('review.diagnostic')}
+        </Text>
+      </Pressable>
+      {open && (
+        <Text className="mt-1 w-full rounded bg-muted p-2 text-[10px] leading-relaxed text-muted-foreground">
+          {`Prompt:\n${diagnostic.prompt}\n\nResponse:\n${diagnostic.response ?? '(none)'}\n\nError:\n${diagnostic.error}`}
+        </Text>
+      )}
+    </View>
+  );
+}
 
 /** ADR-0034: free users can complete 20 SRS reviews per day. */
 const FREE_SRS_DAILY_CAP = 20;
@@ -180,10 +227,10 @@ export default function ReviewScreen() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
-  const [testError, setTestError] = useState<string | null>(null);
-  const testAutoLoadKeyRef = useRef<string | null>(null);
+  /** Generation session id — bumped whenever the current test is invalidated
+   *  (mode switch, card change, rating, remove), so stale async results from
+   *  the shared manager never land on the wrong card. */
   const testRequestVersionRef = useRef(0);
-  const testActiveRequestRef = useRef<number | null>(null);
   /** Wall-clock start of the current test (for the 10s/test slow + 5s/test fast
    *  time adjustments in scoreTestResult). Set when a test begins, NOT reset per
    *  question. */
@@ -192,16 +239,13 @@ export default function ReviewScreen() {
   const [regeneratingKind, setRegeneratingKind] = useState<TestQuestionKind | null>(null);
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     testRequestVersionRef.current += 1;
-    testActiveRequestRef.current = null;
     setReviewMode(mode);
     AsyncStorage.setItem('lp:srs-review-mode', mode).catch(() => {});
-    setTestQuestions([]);
+    setTestSlots([]);
     setTestAnswers([]);
     setTestStartedAt(null);
     testSessionStartRef.current = 0;
-    testAutoLoadKeyRef.current = null;
     setShowTabs(false);
-    setTestError(null);
     setRegeneratingKind(null);
   }, []);
 
@@ -210,15 +254,16 @@ export default function ReviewScreen() {
       if (mode === 'test' || mode === 'recall') setReviewMode(mode);
     }).catch(() => {});
   }, []);
-  const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
+  const [testSlots, setTestSlots] = useState<TestSlot[]>([]);
   const [testAnswers, setTestAnswers] = useState<TestAnswer[]>([]);
   const [testQuestionIndex, setTestQuestionIndex] = useState(0);
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
-  const [testLoading, setTestLoading] = useState(false);
   const [testAnswered, setTestAnswered] = useState(false);
   const [testSelectedAnswer, setTestSelectedAnswer] = useState<string | null>(null);
   const [testAnswerCorrect, setTestAnswerCorrect] = useState<boolean | null>(null);
   const [testScores, setTestScores] = useState<number[]>([]);
+  /** "Now" tick for the progress-bar countdown while a test session runs. */
+  const [testNow, setTestNow] = useState(0);
   const [suggestedRating, setSuggestedRating] = useState<Rating | null>(null);
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
@@ -554,248 +599,288 @@ export default function ReviewScreen() {
     return t(nextReviewKey, { n: nextReviewInterval.value });
   }, [t]);
   const definitionTestAnswered = reviewMode === 'test'
-    && testQuestions.some((question, index) => question.kind === 'definition' && Boolean(testAnswers[index]));
+    && testSlots.some((slot, index) => slot.kind === 'definition' && Boolean(testAnswers[index]));
   const showContextTranslation = showTabs || definitionTestAnswered;
+
+  // ── Test progress bar (SPEC-066) ──
+  // Counts down a total budget of T = 10 s × totalTests. Blue while more than
+  // 5 s × totalTests remain (still inside the fast window that earns the +1
+  // bonus); green once past that threshold (racing the 10 s/test slow mark).
+  const testTotalTests = Math.max(1, testSlots.filter((slot) => slot.status !== 'skipped').length);
+  const testTotalMs = 10_000 * testTotalTests;
+  const testFastMs = 5_000 * testTotalTests;
+  const testElapsedMs = testSessionStartRef.current > 0
+    ? Math.max(0, testNow - testSessionStartRef.current)
+    : 0;
+  const testRemainingMs = Math.max(0, testTotalMs - testElapsedMs);
+  const testProgressPct = testTotalMs > 0 ? (testRemainingMs / testTotalMs) * 100 : 0;
+  const testBarBlue = testRemainingMs > testFastMs;
+
+  // Progress-bar tick: re-render while a test session is running.
+  useEffect(() => {
+    if (testStartedAt === null || rated) return;
+    const timer = setInterval(() => setTestNow(Date.now()), 100);
+    return () => clearInterval(timer);
+  }, [testStartedAt, rated]);
 
   // ── Handlers ──
 
-  /** Reveal the definition + translation for the current card. */
-  const generateTestQuestion = useCallback(async (input: {
-    kind: TestQuestionKind;
-    wordForm: string;
-    context: string;
-    l2Code: string;
-    entryForQuestion: DictionaryEntry | null | undefined;
-    requestVersion: number;
-    /** Fresh-variation request (regenerate/retry): cache-busted prompt. */
-    regenerate?: boolean;
-  }): Promise<SrsTestQuestion> => {
-    const { kind, wordForm, context, l2Code, entryForQuestion, requestVersion, regenerate = false } = input;
-    // Pronunciation confounders are validated against obvious-wrongs (the
-    // correct reading with junk appended/truncated, e.g. つきものぬ from
-    // つきもの). Retry once with a strict hint instead of failing the test;
-    // definition questions validate on the first pass only.
-    const maxAttempts = kind === 'pronunciation' ? 2 : 1;
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const prompt = buildSrsQuestionPrompt({
-        word: wordForm,
-        contextSentence: context,
-        l1Code: baseCode(l1Lang.code),
-        l2Code,
-        kind,
-        definition: entryForQuestion?.definitions?.[0],
-        pronunciation: entryForQuestion?.pronunciation,
-      });
-      const hints: string[] = [];
-      if (regenerate) hints.push(`Generate a fresh variation for request ${requestVersion}; do not reuse any previous response.`);
-      if (attempt > 0) {
-        hints.push(
-          'Previous attempt produced obviously-wrong pronunciation confounders: a confounder contained the correct reading with extra syllables appended/truncated, or the written-kana part of a mixed kana/kanji word was changed. Generate strictly better confounders: keep the written-kana part identical and vary only the kanji readings with real or plausible readings of the same kanji; never extend, truncate, or reorder the correct reading.',
-        );
-      }
-      const requestPrompt = hints.length ? `${prompt}\n\n${hints.join('\n\n')}` : prompt;
-      log('[srs-test] request started', { l2Code, word: wordForm, kind, attempt: attempt + 1, cache: !regenerate && attempt === 0, cacheBust: regenerate || attempt > 0 });
-      const { apiClient } = await import('@langplayer/api-client');
-      const payload = await apiClient.post('/chatgpt', {
-        prompt: requestPrompt,
-        cache: !regenerate && attempt === 0,
-        max_tokens: 500,
-      }, regenerate || attempt > 0 ? {
-        headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
-      } : undefined);
-      log('[srs-test] response received', { l2Code, word: wordForm, kind, attempt: attempt + 1, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
-      const parsed = parseSrsQuestionResponse((payload as any).response);
-      if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
-      if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer)) throw new Error('Japanese pronunciation must be hiragana');
-      if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
-      const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
-      const rawChoices = [parsed.correct_answer, ...confounders].filter((x): x is string => typeof x === 'string');
-      const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
-      log('[srs-test] choices parsed', { l2Code, word: wordForm, kind, attempt: attempt + 1, rawChoiceCount: rawChoices.length, uniqueChoiceCount: choices.length, confoundersIsArray: Array.isArray(parsed.confounders) });
-      if (choices.length !== 4) throw new Error('Invalid question choices');
-      const question: SrsTestQuestion = { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
-      if (kind === 'pronunciation') {
-        const problem = validateSrsPronunciationChoices(question);
-        if (problem) {
-          log('[srs-test] pronunciation obvious-wrong confounder rejected', { l2Code, word: wordForm, attempt: attempt + 1, problem });
-          if (attempt + 1 < maxAttempts) continue;
-          throw new Error(`Pronunciation confounders are obvious wrongs: ${problem}`);
-        }
-      }
-      return question;
-    }
-    throw new Error('Failed to generate a valid question');
-  }, [l1Lang.code, l2Code]);
-
-  const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
+  /**
+   * Load (from the shared cache) or generate one test slot for the current
+   * card. Only ONE test is in flight at a time: the definition test is loaded
+   * and answered first, then the pronunciation test (if the L2 needs one) is
+   * loaded and answered, then the card is rated. All requests route through
+   * the SrsTestManager's single queue (one LLM call at a time), so an error
+   * in one test is isolated to that test.
+   */
+  const loadSlot = useCallback(async (
+    index: number,
+    kind: TestQuestionKind,
+    sessionVersion: number,
+    priority: SrsTestPriority = 'current',
+    regenerate = false,
+  ) => {
     const card = cards[currentIndex];
     if (!card) return;
-    if (testActiveRequestRef.current !== null) {
-      log('[srs-test] question generation ignored — request already active', {
-        l2Code,
-        word: wordForm,
-        activeRequestVersion: testActiveRequestRef.current,
-        retry: Boolean(options?.retry),
-      });
-      return;
-    }
-    const requestVersion = ++testRequestVersionRef.current;
-    testActiveRequestRef.current = requestVersion;
+    const manager = getSrsTestManager();
+    const cardKey = `${l2Code}:${baseCode(l1Lang.code)}:${card.word.id}`;
+    const context = (card.word.context?.text as string | undefined) ?? '';
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
-    const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
-    log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text), retry: Boolean(options?.retry), requestVersion });
-    setTestError(null);
-    setTestLoading(true);
-    try {
-      const questionResults = await Promise.allSettled(kinds.map(async (kind) =>
-        generateTestQuestion({
-          kind,
-          wordForm,
-          context: cards[currentIndex]?.word.context?.text as string | undefined ?? '',
-          l2Code,
-          entryForQuestion,
-          requestVersion,
-          regenerate: options?.retry,
-        }),
-      ));
-      const failedQuestion = questionResults.find((result) => result.status === 'rejected');
-      if (failedQuestion) throw failedQuestion.reason;
-      const questions = questionResults.map((result) => {
-        if (result.status !== 'fulfilled') throw result.reason;
-        return result.value;
-      });
-      if (requestVersion !== testRequestVersionRef.current) return;
-      setTestQuestions(questions);
-      setTestError(null);
-      setTestAnswers([]);
-      setTestQuestionIndex(0);
-      setTestStartedAt(Date.now());
-      testSessionStartRef.current = Date.now();
-      log('[srs-test] question generation succeeded', { l2Code, word: wordForm, requestVersion, questionCount: questions.length });
-    } catch (error) {
-      if (requestVersion !== testRequestVersionRef.current) return;
-      const message = error instanceof Error ? error.message : t('error.unexpected');
-      log('[srs-test] question generation failed', { l2Code, word: wordForm, error: message });
-      setTestError(message);
-      setTestQuestions([]);
-    } finally {
-      log('[srs-test] question generation finished', { l2Code, word: wordForm, loading: false });
-      if (testActiveRequestRef.current === requestVersion) testActiveRequestRef.current = null;
-      if (requestVersion !== testRequestVersionRef.current) return;
-      setTestLoading(false);
-    }
-  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, t, generateTestQuestion]);
+    // The pronunciation test targets the LEMMA (dictionary form), never the
+    // inflected surface form; the definition test keeps the surface form.
+    const targetWord = kind === 'pronunciation'
+      ? lemmaFormOf(card.word, wordForm)
+      : wordForm;
+    setTestSlots((prev) => {
+      if (!prev[index]) return prev;
+      const next = [...prev];
+      next[index] = { kind, status: 'loading' };
+      return next;
+    });
+    log('[srs-test] slot load started', { l2Code, word: targetWord, kind, index, priority, regenerate });
+    const result = await manager.requestTest({
+      cardKey,
+      priority,
+      input: {
+        kind,
+        wordForm: targetWord,
+        context,
+        l1Code: baseCode(l1Lang.code),
+        l2Code,
+        regenerate,
+        definition: entryForQuestion?.definitions?.[0],
+        // The pronunciation ground truth is the headword's KANA reading when the
+        // dictionary has one (EDICT's `pronunciation` field is romaji, not the
+        // kana the test needs). When absent (LLM entry with only romaji) the
+        // manager falls back to the model-supplied correct answer.
+        pronunciation: kind === 'pronunciation'
+          ? pronunciationReadingOf(entryForQuestion, l2Code)
+          : entryForQuestion?.pronunciation,
+      },
+      onRetry: () => {
+        if (sessionVersion !== testRequestVersionRef.current) return;
+        setTestSlots((prev) => prev.map((slot, i) => (i === index ? { ...slot, status: 'retrying' } : slot)));
+      },
+    });
+    if (sessionVersion !== testRequestVersionRef.current) return;
+    setTestSlots((prev) => prev.map((slot, i) => {
+      if (i !== index) return slot;
+      if (result.ok) return { kind, status: 'ready', question: result.question };
+      return { kind, status: 'error', diagnostic: result.diagnostic };
+    }));
+    log('[srs-test] slot load settled', { l2Code, word: targetWord, kind, index, ok: result.ok });
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
 
-  const handleRetryTestQuestions = useCallback(() => {
-    log('[srs-test] retry requested', { l2Code, word: wordForm });
-    const cardId = cards[currentIndex]?.word.id;
-    if (cardId) testAutoLoadKeyRef.current = `${l2Code}:${cardId}`;
-    setTestError(null);
-    setTestQuestions([]);
+  /**
+   * Start the current card's test. The pronunciation test is loaded first (an
+   * instant cache hit when it was prefetched); the definition test is only
+   * loaded after the pronunciation one is answered.
+   */
+  const startTest = useCallback(async () => {
+    const card = cards[currentIndex];
+    if (!card || testSlots.length > 0) return;
+    const sessionVersion = ++testRequestVersionRef.current;
+    // The pronunciation test only appears when the SURFACE form in the
+    // context contains kanji (Japanese) — the learner reads the surface, not
+    // the lemma.
+    const kinds: TestQuestionKind[] = getTestKinds(l2Code, surfaceFormOf(card.word, wordForm));
+    log('[srs-test] start test', { l2Code, word: wordForm, kinds, cardKey: `${l2Code}:${baseCode(l1Lang.code)}:${card.word.id}` });
+    setShowTabs(false);
+    setTestSlots([{ kind: kinds[0]!, status: 'loading' }]);
     setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestStartedAt(null);
     testSessionStartRef.current = 0;
+    setTestSelectedAnswer(null);
+    setTestAnswerCorrect(null);
+    setTestAnswered(false);
+    setTestScores([]);
+    setSuggestedRating(null);
     setRegeneratingKind(null);
-    void loadTestQuestions({ retry: true });
-  }, [cards, currentIndex, l2Code, wordForm, loadTestQuestions]);
+    void loadSlot(0, kinds[0]!, sessionVersion);
+  }, [cards, currentIndex, wordForm, l1Lang.code, l2Code, testSlots.length, loadSlot]);
 
   /**
-   * Regenerate ONE test question (definition or pronunciation) explicitly.
-   * Re-fetches a fresh question for that kind, replaces it in place, and
-   * restarts the test from it: answers/scores for it and any later question
-   * are cleared and the revealed back side is hidden again.
+   * Regenerate ONE test question (definition or pronunciation) explicitly —
+   * also the retry action for a failed test slot. Routes through the manager
+   * at 'user' priority (ahead of current-card and prefetch work). Replaces
+   * the slot in place and restarts the test from it: answers/scores for it
+   * and any later question are cleared and the revealed back side is hidden.
    */
   const handleRegenerateTest = useCallback((kind: TestQuestionKind) => {
     const card = cards[currentIndex];
+    if (!card || regeneratingKind !== null) return;
+    const index = testSlots.findIndex((slot) => slot.kind === kind);
+    if (index === -1) return;
+    const sessionVersion = ++testRequestVersionRef.current;
+    setRegeneratingKind(kind);
+    setTestSlots((prev) => prev.map((slot, i) => (
+      i === index ? { ...slot, status: 'loading', question: undefined, diagnostic: undefined } : slot
+    )));
+    setTestAnswers((prev) => { const next = [...prev]; next.splice(index); return next; });
+    setTestScores((prev) => { const next = [...prev]; next.splice(index); return next; });
+    setTestQuestionIndex(index);
+    setTestStartedAt(null);
+    testSessionStartRef.current = 0;
+    setTestSelectedAnswer(null);
+    setTestAnswerCorrect(null);
+    setTestAnswered(false);
+    setSuggestedRating(null);
+    setShowTabs(false);
+    log('[srs-test] regenerate requested', { l2Code, word: wordForm, kind, index });
+    void loadSlot(index, kind, sessionVersion, 'user', true).finally(() => {
+      if (sessionVersion === testRequestVersionRef.current) setRegeneratingKind(null);
+    });
+  }, [cards, currentIndex, wordForm, l2Code, testSlots, regeneratingKind, loadSlot]);
+
+  // ── Prefetch tests for the next two cards ──
+  // The current card's tests are only generated on Start Test (so the user
+  // can read the context first); the next two cards' tests are warmed through
+  // the shared manager so their Start Test is instant. All requests route
+  // through the manager's single queue (one LLM call at a time) at prefetch
+  // priority, which sits behind user regeneration and current-card work.
+  useEffect(() => {
+    if (reviewMode !== 'test' || rated) return;
+    const manager = getSrsTestManager();
+    void manager.ready();
+    const wantedKeys: string[] = [];
+    for (let offset = 0; offset <= 2; offset++) {
+      const card = cards[currentIndex + offset];
+      if (!card) continue;
+      const cardKey = `${l2Code}:${baseCode(l1Lang.code)}:${card.word.id}`;
+      wantedKeys.push(cardKey);
+      if (offset === 0) continue; // current card: generated on Start Test only
+      const context = (card.word.context?.text as string | undefined) ?? '';
+      const word = firstLookupForm(card.word);
+      // The pronunciation test targets the lemma; the Japanese presence check
+      // uses the surface form. Both must match loadSlot exactly so the
+      // prefetched test is a cache hit when the card is tested.
+      const lemma = lemmaFormOf(card.word, word);
+      // Resolve the headword's kana reading the same way loadSlot does, so the
+      // prefetched utterance uses the identical ground-truth mode (and cache
+      // key). If the entry is not resolved yet, leave it empty — the manager
+      // falls back to the model-supplied correct answer.
+      const prefetchEntry = getCachedEntries(baseCode(l2Code), lemma)?.[0]
+        ?? getCachedEntries(baseCode(l2Code), word)?.[0];
+      const kinds: TestQuestionKind[] = getTestKinds(l2Code, surfaceFormOf(card.word, word));
+      for (const kind of kinds) {
+        void manager.requestTest({
+          cardKey,
+          priority: 'prefetch',
+          input: {
+            kind,
+            wordForm: kind === 'pronunciation' ? lemma : word,
+            context,
+            l1Code: baseCode(l1Lang.code),
+            l2Code,
+            pronunciation: kind === 'pronunciation'
+              ? pronunciationReadingOf(prefetchEntry, l2Code)
+              : undefined,
+          },
+        }).catch(() => {});
+      }
+    }
+    // Drop prefetches for cards that are no longer relevant so stale requests
+    // never burn LLM tokens.
+    manager.cancelPrefetchesExcept(new Set(wantedKeys));
+  }, [reviewMode, currentIndex, cards, l2Code, l1Lang.code, rated]);
+
+  // ── Start the test session (progress-bar countdown) once the current
+  // (first unanswered, unskipped) question is ready to be answered. In the
+  // sequential flow only the current test's slot exists at any time; a slot
+  // in terminal error blocks the session (and the card) until retried or
+  // skipped. ──
+  useEffect(() => {
+    if (rated || testSessionStartRef.current !== 0) return;
+    let nextIndex = 0;
+    while (testSlots[nextIndex] && (testAnswers[nextIndex] || testSlots[nextIndex]!.status === 'skipped')) {
+      nextIndex += 1;
+    }
+    if (testSlots[nextIndex]?.status === 'ready') {
+      const now = Date.now();
+      testSessionStartRef.current = now;
+      setTestStartedAt(now);
+      log('[srs-test] session started', { l2Code, word: wordForm, tests: testSlots.length });
+    }
+  }, [testSlots, testAnswers, rated, l2Code, wordForm]);
+
+  /**
+   * Skip a failed test: it is excluded from the test flow and from the
+   * scoring (the card can be rated on the remaining tests alone).
+   */
+  const handleSkipTest = useCallback((kind: TestQuestionKind) => {
+    const card = cards[currentIndex];
     if (!card) return;
-    if (testActiveRequestRef.current !== null) {
-      log('[srs-test] regenerate ignored — request already active', { l2Code, word: wordForm, kind });
+    const index = testSlots.findIndex((slot) => slot.kind === kind);
+    if (index === -1 || testAnswers[index]) return; // nothing to skip
+    const sessionVersion = testRequestVersionRef.current;
+    const kinds: TestQuestionKind[] = getTestKinds(l2Code, surfaceFormOf(card.word, wordForm));
+    setTestSlots((prev) => prev.map((slot, i) => (
+      i === index ? { ...slot, status: 'skipped', question: undefined, diagnostic: undefined } : slot
+    )));
+    log('[srs-test] test skipped', { l2Code, word: wordForm, kind, index });
+    if (testQuestionIndex < kinds.length - 1) {
+      // Move on to the next test (the pronunciation test was answered or skipped).
+      const nextIndex = testQuestionIndex + 1;
+      if (testSlots.length <= nextIndex) {
+        setTestSlots((prev) => [...prev, { kind: kinds[nextIndex]!, status: 'loading' }]);
+        void loadSlot(nextIndex, kinds[nextIndex]!, sessionVersion);
+      }
+      setTestQuestionIndex(nextIndex);
+      setTestStartedAt(Date.now());
+      setTestSelectedAnswer(null);
+      setTestAnswerCorrect(null);
+      setTestAnswered(false);
       return;
     }
-    const index = testQuestions.findIndex((q) => q.kind === kind);
-    if (index === -1) return;
-    const requestVersion = ++testRequestVersionRef.current;
-    testActiveRequestRef.current = requestVersion;
-    setRegeneratingKind(kind);
-    setTestError(null);
-    const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
-    log('[srs-test] regenerate requested', { l2Code, word: wordForm, kind, index, requestVersion });
-    generateTestQuestion({
-      kind,
-      wordForm,
-      context: card.word.context?.text as string | undefined ?? '',
-      l2Code,
-      entryForQuestion,
-      requestVersion,
-      regenerate: true,
-    })
-      .then((question) => {
-        if (requestVersion !== testRequestVersionRef.current) return;
-        setTestQuestions((prev) => {
-          const next = [...prev];
-          next[index] = question;
-          return next;
-        });
-        // Clear this question's answer and every later one, and reset the
-        // timer — the test restarts from the regenerated question.
-        setTestAnswers((prev) => {
-          const next = [...prev];
-          next.splice(index);
-          return next;
-        });
-        setTestScores((prev) => {
-          const next = [...prev];
-          next.splice(index);
-          return next;
-        });
-        setTestQuestionIndex(index);
-        setTestStartedAt(Date.now());
-        testSessionStartRef.current = Date.now();
-        setTestSelectedAnswer(null);
-        setTestAnswerCorrect(null);
-        setTestAnswered(false);
-        setSuggestedRating(null);
-        setShowTabs(false);
-        setTestError(null);
-        log('[srs-test] regenerate succeeded', { l2Code, word: wordForm, kind, index, requestVersion });
-      })
-      .catch((error) => {
-        if (requestVersion !== testRequestVersionRef.current) return;
-        const message = error instanceof Error ? error.message : t('error.unexpected');
-        log('[srs-test] regenerate failed', { l2Code, word: wordForm, kind, error: message });
-        setTestError(message);
-      })
-      .finally(() => {
-        if (testActiveRequestRef.current === requestVersion) testActiveRequestRef.current = null;
-        if (requestVersion === testRequestVersionRef.current) setRegeneratingKind(null);
-      });
-  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, t, generateTestQuestion, testQuestions]);
-
-  useEffect(() => {
-    const cardId = cards[currentIndex]?.word.id;
-    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated || testActiveRequestRef.current !== null) return;
-    const requestKey = `${l2Code}:${cardId}`;
-    if (testAutoLoadKeyRef.current === requestKey) return;
-    testAutoLoadKeyRef.current = requestKey;
-    log('[srs-test] auto-loading questions', { l2Code, cardId });
-    void loadTestQuestions();
-  }, [reviewMode, cards, currentIndex, l2Code, testQuestions.length, testLoading, testError, rated, loadTestQuestions]);
+    // All tests settled (answered or skipped) → complete the card.
+    const numTests = testSlots.filter((slot) => slot.status !== 'skipped').length;
+    const correctCount = testAnswers.reduce((n, a) => (a.correct ? n + 1 : n), 0);
+    const totalMs = Date.now() - testSessionStartRef.current;
+    setSuggestedRating(scoreTestResult(correctCount, numTests, totalMs));
+    setTestScores([]);
+    setTestQuestionIndex(kinds.length - 1);
+    setTestStartedAt(null);
+    setShowTabs(true);
+  }, [cards, currentIndex, testSlots, testAnswers, testQuestionIndex, wordForm, l2Code, loadSlot]);
 
   const handleTestAnswer = useCallback((answer: string) => {
-    log('[srs-test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), answerCount: testAnswers.length, questionCount: testQuestions.length });
+    log('[srs-test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), answerCount: testAnswers.length, questionCount: testSlots.length });
     if (!testStartedAt || testAnswers[testQuestionIndex]) {
       log('[srs-test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: !testStartedAt ? 'timer missing' : 'question already answered' });
       return;
     }
-    const question = testQuestions[testQuestionIndex];
+    const slot = testSlots[testQuestionIndex];
+    const question = slot?.status === 'ready' ? slot.question : undefined;
     if (!question) {
       log('[srs-test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: 'question missing' });
       return;
     }
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
-    log('[srs-test] answer accepted', { word: wordForm, questionIndex: testQuestionIndex, correct: isCorrect, score, isFinal: testQuestionIndex === testQuestions.length - 1 });
+    const currentCardForKinds = cards[currentIndex]?.word;
+    const kinds: TestQuestionKind[] = getTestKinds(l2Code, surfaceFormOf(currentCardForKinds, wordForm));
+    log('[srs-test] answer accepted', { word: wordForm, questionIndex: testQuestionIndex, correct: isCorrect, score, isFinal: testQuestionIndex === kinds.length - 1 });
     setTestScores((previous) => [...previous, score]);
     setTestAnswers((previous) => {
       const next = [...previous];
@@ -805,9 +890,15 @@ export default function ReviewScreen() {
     setTestSelectedAnswer(answer);
     setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
-    if (testQuestionIndex < testQuestions.length - 1) {
-      // Keep the answered question rendered and immediately append the next one below it.
-      setTestQuestionIndex((i) => i + 1);
+    if (testQuestionIndex < kinds.length - 1) {
+      // The next test (definition) is loaded only after this one is
+      // answered — usually an instant cache hit from the prefetcher.
+      const nextIndex = testQuestionIndex + 1;
+      if (testSlots.length <= nextIndex) {
+        setTestSlots((prev) => [...prev, { kind: kinds[nextIndex]!, status: 'loading' }]);
+        void loadSlot(nextIndex, kinds[nextIndex]!, testRequestVersionRef.current);
+      }
+      setTestQuestionIndex(nextIndex);
       setTestStartedAt(Date.now());
       setTestSelectedAnswer(null);
       setTestAnswerCorrect(null);
@@ -816,17 +907,18 @@ export default function ReviewScreen() {
     }
     // SPEC-066 marking: each test 0/1 (wrong/right), scaled so perfect = 2,
     // then time-adjusted (10s/test slow, 5s/test fast) → again/hard/good/easy.
-    const numTests = testQuestions.length;
+    // Skipped tests do not count toward the scoring.
+    const numTests = testSlots.filter((slot) => slot.status !== 'skipped').length;
     const correctCount =
       testAnswers.reduce((n, a) => (a.correct ? n + 1 : n), 0) + (isCorrect ? 1 : 0);
     const totalMs = Date.now() - testSessionStartRef.current;
     setSuggestedRating(scoreTestResult(correctCount, numTests, totalMs));
     setTestScores([]);
-    setTestQuestionIndex(testQuestions.length - 1); setTestStartedAt(null); setShowTabs(true);
-  }, [testAnswered, testStartedAt, testAnswers, testQuestions, testQuestionIndex, testScores, wordForm, cards, currentIndex]);
+    setTestQuestionIndex(kinds.length - 1); setTestStartedAt(null); setShowTabs(true);
+  }, [testAnswered, testStartedAt, testAnswers, testSlots, testQuestionIndex, testScores, wordForm, l2Code, cards, currentIndex, loadSlot]);
 
   const handleReveal = useCallback(() => {
-    if (reviewMode === 'test') { void loadTestQuestions(); return; }
+    if (reviewMode === 'test') { void startTest(); return; }
     const card = cards[currentIndex];
     log('[srs] reveal', {
       wordId: card?.word.id,
@@ -835,19 +927,17 @@ export default function ReviewScreen() {
       totalCards: cards.length,
     });
     setShowTabs(true);
-  }, [cards, currentIndex, reviewMode, loadTestQuestions]);
+  }, [cards, currentIndex, reviewMode, startTest]);
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     testRequestVersionRef.current += 1;
-    testActiveRequestRef.current = null;
-    setTestQuestions([]);
+    setTestSlots([]);
     setTestAnswers([]);
     setTestStartedAt(null);
     testSessionStartRef.current = 0;
-    testAutoLoadKeyRef.current = null;
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
     setTestAnswerCorrect(null);
@@ -982,19 +1072,17 @@ export default function ReviewScreen() {
     const prevStillSaved = l2SavedWords.some((w) => w.id === prev.id);
     if (!prevStillSaved) {
       testRequestVersionRef.current += 1;
-      testActiveRequestRef.current = null;
-       setTestQuestions([]);
-       setTestAnswers([]);
-       setTestQuestionIndex(0);
-       setTestStartedAt(null);
-       setTestSelectedAnswer(null);
-       setTestAnswerCorrect(null);
-       setTestScores([]);
-       setTestError(null);
-       setSuggestedRating(null);
-       testAutoLoadKeyRef.current = null;
-       setShowTabs(false);
-       log('[srs] unsave', {
+      setTestSlots([]);
+      setTestAnswers([]);
+      setTestQuestionIndex(0);
+      setTestStartedAt(null);
+      setTestSelectedAnswer(null);
+      setTestAnswerCorrect(null);
+      setTestScores([]);
+      setSuggestedRating(null);
+      setRegeneratingKind(null);
+      setShowTabs(false);
+      log('[srs] unsave', {
         wordId: prev.id,
         head: prev.head,
         remainingCards: cards.length,
@@ -1380,8 +1468,9 @@ export default function ReviewScreen() {
   // latest context until the UI explicitly supports adding more instances.
   const displayInstance = instances[instances.length - 1] ?? null;
   const srs = currentCard.srs;
-  // Keep later tests hidden until the preceding test has been answered.
-  const visibleTestQuestions = testQuestions.slice(0, testQuestionIndex + 1);
+  // Keep later tests hidden until the preceding test has been answered; the
+  // current (first unanswered) slot renders its own status below.
+  const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
 
   return (
     <PageContainer maxWidth="2xl">
@@ -1475,67 +1564,119 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {testError && (
-            <View className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
-              <Text className="text-sm text-destructive">{testError}</Text>
-              <Button onPress={handleRetryTestQuestions} variant="outline" size="sm" className="mt-2">
-                <Text className={buttonTextClass('outline')}>{t('action.try_again')}</Text>
-              </Button>
+          {/* Test progress bar: counts down T = 10 s × totalTests once the
+              session starts. Blue while more than 5 s × totalTests remain,
+              green otherwise (SPEC-066). */}
+          {reviewMode === 'test' && testStartedAt !== null && !rated && (
+            <View className="mt-2 w-full">
+              <View className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <View
+                  className={`h-full rounded-full ${testBarBlue ? 'bg-blue-500' : 'bg-green-500'}`}
+                  style={{ width: `${testProgressPct}%` }}
+                />
+              </View>
             </View>
           )}
 
-          {/* Test results stay on screen; each answered question is followed by the next. */}
-          {reviewMode === 'test' && testQuestions.length > 0 ? (
+          {/* Test results stay on screen; each answered question is followed
+              by the next. Questions are generated one at a time through the
+              shared manager — a failing test shows its own error + retry +
+              diagnostic and never blocks the other test's loading. */}
+          {reviewMode === 'test' && testSlots.length > 0 ? (
             <View className="mt-2 gap-5" onStartShouldSetResponder={() => true}>
-              {visibleTestQuestions.map((question, questionIndex) => {
-                const result = testAnswers[questionIndex];
-                const isCurrent = questionIndex === testQuestionIndex;
-                return (
-                  <View key={`${question.kind}-${questionIndex}`} className="gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
-                    <View className="flex-row items-start justify-between gap-2">
-                      <Text className="mb-2 flex-1 font-medium text-foreground">{question.prompt}</Text>
-                      {/* Explicit per-test regeneration: the user can replace a
-                          problematic definition or pronunciation test on its
-                          own (disabled while any generation is in flight or
-                          after rating). */}
-                      <Pressable
-                        onPress={() => handleRegenerateTest(question.kind)}
-                        disabled={rated || testLoading || regeneratingKind !== null || testActiveRequestRef.current !== null}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('action.regenerate')}
-                        className={`shrink-0 flex-row items-center gap-1 rounded-md px-2 py-1 active:bg-muted ${rated || testLoading || regeneratingKind !== null || testActiveRequestRef.current !== null ? 'opacity-40' : ''}`}
-                      >
-                        {regeneratingKind === question.kind ? (
-                          <ActivityIndicator size="small" color={ICON_MUTED} />
-                        ) : (
-                          <RefreshCw size={12} color={ICON_MUTED} />
-                        )}
-                        <Text className="text-xs font-medium text-muted-foreground">{t('action.regenerate')}</Text>
-                      </Pressable>
-                    </View>
-                    {question.choices.map((choice, index) => {
-                      const isSelected = result?.answer === choice;
-                      const isCorrectChoice = Boolean(result) && choice === question.correctAnswer;
-                      const choiceClass = result
-                        ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
-                        : 'border-border bg-background';
-                      return (
-                        <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={Boolean(result) || !isCurrent} className={`rounded-lg border p-3 ${choiceClass}`}>
-                          <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
+              {visibleTestSlots.map((slot, slotIndex) => {
+                const result = testAnswers[slotIndex];
+                const isCurrent = slotIndex === testQuestionIndex;
+                if (slot.status === 'ready' && slot.question) {
+                  return (
+                    <View key={`${slot.kind}-${slotIndex}`} className="gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
+                      <View className="flex-row items-start justify-between gap-2">
+                        <Text className="mb-2 flex-1 font-medium text-foreground">{slot.question.prompt}</Text>
+                        {/* Explicit per-test regeneration: the user can replace a
+                            problematic definition or pronunciation test on its
+                            own (disabled while another regeneration is in
+                            flight or after rating). */}
+                        <Pressable
+                          onPress={() => handleRegenerateTest(slot.kind)}
+                          disabled={rated || regeneratingKind !== null}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('action.regenerate')}
+                          className={`shrink-0 flex-row items-center gap-1 rounded-md px-2 py-1 active:bg-muted ${rated || regeneratingKind !== null ? 'opacity-40' : ''}`}
+                        >
+                          {regeneratingKind === slot.kind ? (
+                            <ActivityIndicator size="small" color={ICON_MUTED} />
+                          ) : (
+                            <RefreshCw size={12} color={ICON_MUTED} />
+                          )}
+                          <Text className="text-xs font-medium text-muted-foreground">{t('action.regenerate')}</Text>
                         </Pressable>
-                      );
-                    })}
-                    {result && <Text className={`text-sm font-semibold ${result.correct ? 'text-green-600' : 'text-destructive'}`}>{result.correct ? t('review.answer_correct') : t('review.answer_incorrect')}</Text>}
+                      </View>
+                      {slot.question.choices.map((choice, index) => {
+                        const isSelected = result?.answer === choice;
+                        const isCorrectChoice = Boolean(result) && choice === slot.question!.correctAnswer;
+                        const choiceClass = result
+                          ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
+                          : 'border-border bg-background';
+                        return (
+                          <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={Boolean(result) || !isCurrent} className={`rounded-lg border p-3 ${choiceClass}`}>
+                            <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
+                          </Pressable>
+                        );
+                      })}
+                      {result && <Text className={`text-sm font-semibold ${result.correct ? 'text-green-600' : 'text-destructive'}`}>{result.correct ? t('review.answer_correct') : t('review.answer_incorrect')}</Text>}
+                    </View>
+                  );
+                }
+                if (slot.status === 'loading') {
+                  return (
+                    <View key={`${slot.kind}-${slotIndex}`} className="flex-row items-center gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
+                      <ActivityIndicator size="small" color={ICON_MUTED} />
+                      <Text className="text-sm text-muted-foreground">{t('review.loading_test')}</Text>
+                    </View>
+                  );
+                }
+                if (slot.status === 'retrying') {
+                  return (
+                    <View key={`${slot.kind}-${slotIndex}`} className="flex-row items-center gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
+                      <ActivityIndicator size="small" color={ICON_MUTED} />
+                      <Text className="text-sm text-muted-foreground">{t('review.trying_again')}</Text>
+                    </View>
+                  );
+                }
+                if (slot.status === 'skipped') {
+                  return (
+                    <View key={`${slot.kind}-${slotIndex}`} className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+                      <Text className="text-xs font-medium text-muted-foreground">{t('review.test_skipped')}</Text>
+                    </View>
+                  );
+                }
+                // Terminal error: generic message + retry / skip + tiny Diagnostic link.
+                return (
+                  <View key={`${slot.kind}-${slotIndex}`} className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+                    <View className="rounded-lg border border-destructive/40 bg-destructive/10 p-3">
+                      <Text className="text-sm text-destructive">{t('review.test_error')}</Text>
+                      <View className="mt-2 flex-row items-center gap-4">
+                        <Button onPress={() => handleRegenerateTest(slot.kind)} variant="outline" size="sm">
+                          <Text className={buttonTextClass('outline')}>{t('action.try_again')}</Text>
+                        </Button>
+                        <Button onPress={() => handleSkipTest(slot.kind)} variant="outline" size="sm">
+                          <Text className={buttonTextClass('outline')}>{t('action.skip')}</Text>
+                        </Button>
+                        <DiagnosticButton diagnostic={slot.diagnostic} />
+                      </View>
+                    </View>
                   </View>
                 );
               })}
             </View>
+          ) : reviewMode === 'test' ? (
+            <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2">
+              <Text className={buttonTextClass('outline')}>{t('review.start_test')}</Text>
+            </Button>
           ) : !showTabs && reviewMode === 'recall' ? (
             <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2">
               <Text className={buttonTextClass('outline')}>{t('review.show_definition')}</Text>
             </Button>
-          ) : reviewMode === 'test' && testLoading ? (
-            <View className="mt-2 items-center"><ActivityIndicator size="small" color={ICON_MUTED} /></View>
           ) : null}
 
           {showTabs && (
