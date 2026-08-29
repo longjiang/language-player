@@ -43,7 +43,6 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.web_reader', href: '/(tabs)/(reading)/web-reader' },
       { key: 'title.epub_reader', href: '/(tabs)/(reading)/epub' },
       { key: 'title.image_reader', href: '/(tabs)/(reading)/image-reader' },
-      { key: 'title.pdf_reader', href: '/(tabs)/(reading)/pdf-reader' },
     ],
   },
   {
@@ -70,7 +69,6 @@ const NAV_ICONS: Record<string, React.JSX.Element> = {
   'web-reader': <Globe size={16} color={ICON_COLOR} />,
   epub: <BookOpen size={16} color={ICON_COLOR} />,
   'image-reader': <ImageIcon size={16} color={ICON_COLOR} />,
-  'pdf-reader': <FileText size={16} color={ICON_COLOR} />,
   dictionary: <BookMarked size={16} color={ICON_COLOR} />,
   review: <RotateCcw size={16} color={ICON_COLOR} />,
 };
