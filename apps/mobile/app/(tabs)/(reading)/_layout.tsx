@@ -7,7 +7,6 @@ export default function ReadingLayout() {
       <Stack.Screen name="web-reader" />
       <Stack.Screen name="epub" />
       <Stack.Screen name="image-reader" />
-      <Stack.Screen name="pdf-reader" />
     </Stack>
   );
 }
