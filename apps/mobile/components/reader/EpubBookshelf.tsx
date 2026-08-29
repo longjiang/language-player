@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Platform, TextInput } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { BookOpen, FileText, MoreVertical, Search, Upload, X } from 'lucide-react-native';
+import { BookOpen, MoreVertical, Search, Upload, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { baseCode } from '@langplayer/utils';
@@ -187,11 +187,7 @@ export function EpubBookshelf({
                         />
                       ) : (
                         <View className="h-full w-full items-center justify-center">
-                          {book.format === 'pdf' ? (
-                            <FileText size={32} color={ICON_MUTED} style={{ opacity: 0.5 }} />
-                          ) : (
-                            <BookOpen size={32} color={ICON_MUTED} style={{ opacity: 0.5 }} />
-                          )}
+                          <BookOpen size={32} color={ICON_MUTED} style={{ opacity: 0.5 }} />
                         </View>
                       )}
                       {openingId === book.id && (
