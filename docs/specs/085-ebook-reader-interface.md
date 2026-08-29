@@ -54,6 +54,7 @@ All numbers are as-built at the time of writing (`apps/web/src/app/[l1]/[l2]/epu
 5. **Modals take over input.** While the TOC or Search modal is open, its backdrop absorbs all touches; the reader's tap surface is inert underneath.
 6. **The reader frame fills the viewport.** Once a book is open, the web and mobile reader roots occupy the full available screen height; the text viewport is the screen height minus the constant reserved strips, even when the current page has very little text.
 7. **Horizontal reader geometry follows typography.** The left page margin equals the rendered L2 body-text leading, and the side-by-side L2/L1 gap uses the same leading value. The visible reader, measuring mirror, and pagination width calculations use identical horizontal geometry.
+8. **Vertical paragraph spacing is web parity (`mb-0`).** Web renders reader text blocks with no inter-block margin (`[&_p]:mb-0`) and separates paragraphs by the first-line indent (`indent-[1em]`). Mobile text blocks must also render with no vertical gap (the `PaginatedReader` block wrapper has no `mb-3`), relying on the same first-line indent, so reader line/paragraph density matches web (Chrome). The pagination fallback inter-block gap (`DEFAULT_BLOCK_GAP`) and `estimateBlockHeight`'s trailing gap follow suit (0). Images/tables/hr keep their own margins.
 
 ## 5. The tap surface
 

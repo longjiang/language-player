@@ -586,6 +586,18 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
   every manifest image; it now pre-scans spine `<img src>` and extracts only
   referenced images, in parallel (capped at 4). Rendered images load as before
   (the URI callback resolves the same paths).
+- **Mobile lazy import (web parity)** — importing an EPUB used to run the FULL
+  `openEpubBook` conversion (read every spine item twice, extract images,
+  convert spine→blocks). This made adding even small books slow while web
+  (epubjs) only parses package metadata at import. Import now uses
+  `inspectEpubBook` (`lib/epub-book.ts`): it parses OPF/nav/NCX + manifest and
+  extracts the cover, then adds the book to the shelf with `totalChars: 0`.
+  The heavy `openEpubBook` conversion is deferred until the book is actually
+  opened, which then persists `totalChars` so the shelf progress bar works.
+  Importing also no longer opens the single imported book — it only adds it to
+  the bookshelf (the mount auto-open / a card tap opens it), matching the
+  "Uploads never open a book" rule above. `parseEpubPackage`/`extractCover`
+  are shared by both the inspect and full-open paths.
 
 ---
 
