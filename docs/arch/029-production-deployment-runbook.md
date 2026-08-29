@@ -269,25 +269,33 @@ and verify the embedded bundle contains the production URL and no localhost
 >    `certificate.type = "Cloud Managed Apple Distribution"`). Use the
 >    `app-store-connect` export options
 >    (`method=app-store-connect`, `signingStyle=automatic`, `teamID=9CS9PCBX32`),
->    exactly as produced by a prior export (e.g. `~/Desktop/LP-Export/ExportOptions.plist`),
+>    exactly as produced by a prior export (committed at
+>    `scripts/export-options/ExportOptions-app-store-connect.plist`),
 >    and do **not** chase a missing local Distribution cert — that is expected.
 
-Reference commands (from the repo root):
+Release artifacts are **never stored on the Desktop**. They go to the
+repo-local, gitignored temp folder `tmp/release/` (repo root) and are deleted
+immediately after a successful upload (§ 4.4, § 5.4). Reference commands
+(from the repo root):
 
 ```bash
+mkdir -p tmp/release
+
 cd apps/mobile
 EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
   xcodebuild -workspace ios/LanguagePlayer3.xcworkspace -scheme LanguagePlayer3 \
     -configuration Release -destination 'generic/platform=iOS' \
     -allowProvisioningUpdates DEVELOPMENT_TEAM=9CS9PCBX32 \
-    -archivePath ~/Desktop/LanguagePlayer3-<version>.xcarchive archive
+    -archivePath ../../tmp/release/LanguagePlayer3-<version>.xcarchive archive
 
-# Export the TestFlight IPA (reuse a known-good app-store-connect ExportOptions):
+# Export the TestFlight IPA (reuse the committed app-store-connect ExportOptions):
 xcodebuild -exportArchive \
-  -archivePath ~/Desktop/LanguagePlayer3-<version>.xcarchive \
-  -exportOptionsPlist ~/Desktop/LP-Export/ExportOptions.plist \
-  -exportPath ~/Desktop/LP3-<version>-export
+  -archivePath ../../tmp/release/LanguagePlayer3-<version>.xcarchive \
+  -exportOptionsPlist ../../scripts/export-options/ExportOptions-app-store-connect.plist \
+  -exportPath ../../tmp/release/LP3-<version>-export
 ```
+
+The IPA lands at `tmp/release/LP3-<version>-export/LanguagePlayer3.ipa`.
 
 ### 4.3 Upload (no EAS needed)
 
@@ -295,9 +303,12 @@ xcodebuild -exportArchive \
 export LP_APPLE_ID="you@example.com"
 export LP_APPLE_APP_SPECIFIC_PASS="xxxx-xxxx-xxxx-xxxx"  # appleid.apple.com → App-Specific Passwords
 
-node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa --dry-run
-node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa
+node scripts/upload.mjs ios tmp/release/LP3-<version>-export/LanguagePlayer3.ipa --dry-run
+node scripts/upload.mjs ios tmp/release/LP3-<version>-export/LanguagePlayer3.ipa
 ```
+
+`upload.mjs` resolves the artifact path against the repo root, so the
+`tmp/release/…` path works as-is from anywhere.
 
 Credentials may also be kept in the gitignored `scripts/.env.upload` (copy
 `scripts/.env.upload.example`) — the script loads it automatically.
@@ -406,7 +417,16 @@ TestFlight metadata in § 4.3.1.
 2. Complete § 4.3.1: update and verify the build’s `en-CA` “What to Test” /
    `betaBuildLocalizations.whatsNew` note, and confirm the Beta App Description
    is current.
-3. **Export compliance ("Missing Compliance"):** `app.config.js` sets
+3. **Delete the temp release artifacts** — they are transient and never kept
+   on the Desktop:
+
+   ```bash
+   rm -rf tmp/release
+   ```
+
+   (If you still need the archive for a re-export, keep `tmp/release/` until
+   the upload is confirmed, then delete it.)
+4. **Export compliance ("Missing Compliance"):** `app.config.js` sets
    `ios.infoPlist.ITSAppUsesNonExemptEncryption: false`, which prebuild bakes
    into Info.plist. App Store Connect then treats the build as "None of the
    algorithms mentioned above" and skips the compliance prompt, so TestFlight
@@ -415,10 +435,10 @@ TestFlight metadata in § 4.3.1.
    the key is read from the binary, so a build uploaded **before** the key was
    added still prompts once; answer "None of the algorithms mentioned above"
    manually for that build (or bump the build number and re-upload).
-4. Add testers / run the beta QA pass.
-5. Submit for review from App Store Connect (review notes: demo account,
+5. Add testers / run the beta QA pass.
+6. Submit for review from App Store Connect (review notes: demo account,
    sample video IDs, real backend note — SPEC-048 § 3.4).
-6. Record the consumed build number immediately, even if rejected/rolled
+7. Record the consumed build number immediately, even if rejected/rolled
    back:
 
    ```bash
@@ -453,6 +473,8 @@ cd apps/mobile/android
 Verify the embedded bundle has `pythonvps.zerotohero.ca` and no localhost
 (SPEC-067 § 3.6). The AAB must be signed with the upload key
 (`~/.android/lp-upload.jks`, configured via `android/key.properties`).
+The AAB lands at the repo-local gradle output path above (gitignored) —
+**never** copied to the Desktop; it is deleted after a successful upload (§ 5.4).
 
 ### 5.3 Upload (no EAS needed)
 
@@ -502,6 +524,13 @@ alternative: Play Console → Release management → upload the AAB.
    (e.g. 10% → 100%).
 3. Record the consumed build number in the ledger (same command as iOS,
    with `android`).
+4. **Delete the temp release artifacts** (the AAB is a transient build
+   output, never kept on the Desktop — it stays at the repo-local gradle
+   output path and can be removed with `./gradlew clean` or manually):
+
+   ```bash
+   rm -rf apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+   ```
 
 ---
 
@@ -636,8 +665,8 @@ npx netlify deploy --build --prod
 # Flask
 ssh <vps> 'cd /home/dh_rqe96h/zerotohero-python && git pull && source venv/bin/activate && pip install -r requirements.txt && systemctl --user restart gunicorn'
 
-# iOS upload (from repo root; env vars set)
-node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa --dry-run
+# iOS upload (from repo root; env vars set; artifact is transient — delete tmp/release/ after success)
+node scripts/upload.mjs ios tmp/release/LP3-<version>-export/LanguagePlayer3.ipa --dry-run
 
 # Android upload (from repo root; env var set)
 node scripts/upload.mjs android \

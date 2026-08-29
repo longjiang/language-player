@@ -291,11 +291,12 @@ is found. Check in this order:
    suits (or when native code changed since the last one).
 2. Then fall back to the older searches: `.app`/`.ipa`/`.xcarchive` under
    `apps/mobile/ios/build`, `apps/mobile/build/devbuild` (dev-build outputs),
-   `~/Desktop`, and Xcode DerivedData/Archives.
+   `tmp/release/` (release artifacts — usually gone, they are deleted after a
+   successful upload per ARCH-029), and Xcode DerivedData/Archives.
 3. Then check CoreDevice's app-install cache:
    `~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id>/.../Stashed/*.app`
    — e.g. a verified `ca.zerotohero.go` debug device build from 2026-08-11 was
-   found there after the repo/Desktop check came back empty.
+   found there after the repo/tmp check came back empty.
 
 **Sideload a cached build (step by step, verified 2026-08-14):**
 
