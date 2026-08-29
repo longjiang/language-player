@@ -26,6 +26,10 @@ interface DictionaryEntryCardProps {
   variant?: 'compact' | 'full';
   /** Called when the card is tapped (navigates to entry detail page). */
   onPress?: (entry: DictionaryEntry) => void;
+  /** Popup mode: only the head word is tappable (navigates to the detail
+   *  page) — tapping anywhere else on the card does nothing. Defaults to
+   *  false (whole card taps navigate). */
+  headOnlyLink?: boolean;
   /** ISO 639-1 code of the target language (for script preference + pitch accent). */
   l2Code?: string;
   /** ISO 639-1 code of the user's L1 (for SpeakButton / AI explain language context). */
@@ -76,6 +80,7 @@ export function DictionaryEntryCard({
   entry,
   variant = 'compact',
   onPress,
+  headOnlyLink = false,
   l2Code = '',
   l1Code,
   saveButton,
@@ -233,15 +238,33 @@ export function DictionaryEntryCard({
     const compactDefs = Array.isArray(entry.definitions) ? entry.definitions : [];
     const pos = typeof entry.part_of_speech === 'string' ? entry.part_of_speech : undefined;
     const displayHead = head || entry.head || entry.id || '?';
+    // Popup mode (headOnlyLink): the card itself is inert — only the head
+    // word is tappable (navigates to the detail page). Otherwise the whole
+    // card is the press target (sidebar/search).
+    const isHeadOnly = headOnlyLink && !!onPress;
+    const CardRoot = (isHeadOnly ? View : Pressable) as React.ElementType;
     return (
-      <Pressable
-        onPress={() => { onPress?.(entry); }}
-        className="rounded-xl border border-border bg-card px-4 pt-4 pb-2 active:bg-muted"
+      <CardRoot
+        {...(isHeadOnly
+          ? {}
+          : { onPress: () => { onPress?.(entry); } })}
+        className={`rounded-xl border border-border bg-card px-4 pt-4 pb-2${isHeadOnly ? '' : ' active:bg-muted'}`}
       >
         {/* Head + alt + pronunciation + badges */}
         <View className="flex-row items-start">
           <View className="flex-1 flex-row items-center gap-2 flex-wrap">
-            <Text lang={glyphLang} className="text-lg font-bold text-foreground">{displayHead}</Text>
+            {isHeadOnly ? (
+              <Pressable
+                onPress={() => onPress!(entry)}
+                className="active:opacity-70"
+                accessibilityRole="button"
+                accessibilityLabel={t('action.open_in_dictionary')}
+              >
+                <Text lang={glyphLang} className="text-lg font-bold text-foreground">{displayHead}</Text>
+              </Pressable>
+            ) : (
+              <Text lang={glyphLang} className="text-lg font-bold text-foreground">{displayHead}</Text>
+            )}
             {displayAlternate && displayAlternate !== head && (
               <Text className="text-xs text-muted-foreground" lang={glyphLang}>{displayAlternate}</Text>
             )}
@@ -299,7 +322,7 @@ export function DictionaryEntryCard({
           <View className="mt-2 flex-row items-center justify-between">
             {displaySource ? <View className="flex-1">{sourceLine}</View> : <View className="flex-1" />}
             {saveButton
-              ? <View className="-mr-1">{saveButton as any}</View>
+              ? <View className="ml-1">{saveButton as any}</View>
               : saveContext ? (
                 <Button
                   onPress={(e) => { e.stopPropagation(); toggleSave(); }}
@@ -323,7 +346,7 @@ export function DictionaryEntryCard({
           title={t('action.search_images')}
           onClose={() => setShowImageSearch(false)}
         />
-      </Pressable>
+      </CardRoot>
     );
   }
 

@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { DictionaryEntryCardSkeleton } from '@/components/dictionary/DictionaryEntryCardSkeleton';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
 import { WebViewSheet } from '@/components/WebViewSheet';
@@ -28,10 +30,101 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExternalLink, ImageIcon, X } from 'lucide-react-native';
+import { ExternalLink, ImageIcon, X, ChevronDown, ChevronUp, Quote } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { TokenizedText } from '@/components/TokenizedText';
+import { TextActionMenu } from '@/components/TextActionMenu';
 
 const { log } = popupLogger;
+
+/**
+ * Collapsible "context sentence" card for the popup dictionary: the L2
+ * sentence the tapped word came from, rendered as tokenized text wrapped in
+ * the text action menu (copy / speak / AI explain / translate), plus its L1
+ * translation (fetched once on first expand). Hidden behind a toggle button
+ * so the popup stays compact by default.
+ */
+function ContextSentenceCard({
+  context,
+  l2Code,
+  l1Code,
+}: {
+  context: string;
+  l2Code: string;
+  l1Code: string;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const translationFetchedRef = useRef(false);
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && !translationFetchedRef.current) {
+      translationFetchedRef.current = true;
+      setTranslating(true);
+      fetch(`${PYTHON_API_URL}/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: context, l1: l1Code, l2: l2Code }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          const tr = data?.translated_text ?? data?.translation ?? data?.text ?? null;
+          setTranslation(typeof tr === 'string' ? tr : null);
+        })
+        .catch(() => setTranslation(null))
+        .finally(() => setTranslating(false));
+    }
+  };
+
+  return (
+    <View>
+      {/* The toggle is styled like the "Let DeepSeek explain" / "Search
+          images" buttons (outline) so the popup's controls read as one
+          family: same size, centered icon + label, chevron at the right. */}
+      <Button
+        onPress={toggle}
+        variant="outline"
+        className="relative w-full pr-9"
+        accessibilityRole="button"
+        accessibilityLabel={t('label.context_sentence')}
+      >
+        <Quote size={16} color={ICON_PRIMARY} />
+        <Text className={buttonTextClass('outline')}>{t('label.context_sentence')}</Text>
+        <View className="absolute right-3">
+          {open
+            ? <ChevronUp size={14} color={ICON_MUTED} />
+            : <ChevronDown size={14} color={ICON_MUTED} />}
+        </View>
+      </Button>
+      {open && (
+        <View className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+          <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
+            <TokenizedText
+              text={context}
+              l2Code={l2Code}
+              textScale={1}
+              disablePopup
+            />
+          </TextActionMenu>
+          {translating ? (
+            <View className="mt-2 flex-row items-center gap-2">
+              <ActivityIndicator size="small" color={ICON_MUTED} />
+              <Text className="text-xs text-muted-foreground">{t('msg.loading')}</Text>
+            </View>
+          ) : translation ? (
+            <Text className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {translation}
+            </Text>
+          ) : null}
+        </View>
+      )}
+    </View>
+  );
+}
 
 interface DictionaryPopupProps {
   visible: boolean;
@@ -116,6 +209,7 @@ export function DictionaryPopup({
   const router = useRouter();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { isMd } = useResponsive();
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -504,11 +598,17 @@ export function DictionaryPopup({
           />
         </Animated.View>
 
-        {/* Bottom sheet on narrow screens; centered dialog on md+ */}
+        {/* Bottom sheet on narrow screens (unchanged — exempt from the
+            fixed-top requirement); top-anchored dialog on md+: pinned a fixed
+            distance below the top and growing downward only, so the popup's
+            top edge never shifts as content loads. */}
         <Animated.View
           pointerEvents="box-none"
-          className={isMd ? 'absolute inset-0 items-center justify-center px-4' : 'absolute inset-x-0 bottom-0'}
-          style={{ transform: isMd ? undefined : [{ translateY: slideAnim }] }}
+          className={isMd ? 'absolute inset-x-0 items-center px-4' : 'absolute inset-x-0 bottom-0'}
+          style={{
+            ...(isMd ? { paddingTop: insets.top + 64 } : {}),
+            transform: isMd ? undefined : [{ translateY: slideAnim }],
+          }}
         >
           <View
             testID="dictionary-popup"
@@ -587,33 +687,55 @@ export function DictionaryPopup({
                 {/* AI + image sections need the network — hide while offline. */}
                 {!status.effectiveOffline && (
                   <>
-                    {/* AI Explanation — inside scrollable area, matching web + Classic */}
+                    {/* AI Explanation — the popup's primary action, matching
+                        web + Classic. */}
                     <AiExplanation
                       word={word}
                       contextText={context}
                       entryFound={(results?.length ?? 0) > 0}
                     />
-
-                    {/* Search Google Images — opens the in-app browser (replaces
-                        the in-popup gallery), styled to match the "Let DeepSeek
-                        explain" button (outline Pressable, centered). */}
-                    <Button
-                      onPress={() => setShowImageSearch(true)}
-                      variant="outline"
-                      className="mb-3"
-                      accessibilityRole="button"
-                      accessibilityLabel={t('action.search_images')}
-                    >
-                      <ImageIcon size={16} color={ICON_PRIMARY} />
-                      <Text className={buttonTextClass('outline')}>{t('action.search_images')}</Text>
-                    </Button>
-                    <WebViewSheet
-                      visible={showImageSearch}
-                      url={googleImagesUrl}
-                      title={t('action.search_images')}
-                      onClose={() => setShowImageSearch(false)}
-                    />
                   </>
+                )}
+
+                {/* Context sentence (collapsible) + Search Google Images
+                    (icon-only) on one row — the popup's secondary action row.
+                    The context sentence card expands beneath the row. */}
+                {(context || !status.effectiveOffline) && (
+                  <View className="mb-3 flex-row gap-2">
+                    {context ? (
+                      <View className="min-w-0 flex-1">
+                        <ContextSentenceCard
+                          context={context}
+                          l2Code={l2}
+                          l1Code={baseCode(l1Lang.code)}
+                        />
+                      </View>
+                    ) : null}
+                    {!status.effectiveOffline && (
+                      /* Search Google Images — opens the in-app browser
+                         (replaces the in-popup gallery), icon-only, same
+                         outline button family as the row. */
+                      <Button
+                        onPress={() => setShowImageSearch(true)}
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0"
+                        accessibilityRole="button"
+                        accessibilityLabel={t('action.search_images')}
+                      >
+                        <ImageIcon size={16} color={ICON_PRIMARY} />
+                      </Button>
+                    )}
+                  </View>
+                )}
+
+                {!status.effectiveOffline && (
+                  <WebViewSheet
+                    visible={showImageSearch}
+                    url={googleImagesUrl}
+                    title={t('action.search_images')}
+                    onClose={() => setShowImageSearch(false)}
+                  />
                 )}
 
                 {error && (
@@ -633,6 +755,7 @@ export function DictionaryPopup({
                     <DictionaryEntryCard
                       entry={entry}
                       variant="compact"
+                      headOnlyLink
                       onPress={(e) => handleCardPress(e, results ?? [])}
                       l2Code={l2}
                       saveButton={
@@ -658,6 +781,7 @@ export function DictionaryPopup({
                         <DictionaryEntryCard
                           entry={entry}
                           variant="compact"
+                          headOnlyLink
                           onPress={(e) => handleCardPress(e, phraseCards)}
                           l2Code={l2}
                           saveButton={
@@ -673,17 +797,15 @@ export function DictionaryPopup({
                   </View>
                 )}
                 {extractPhrases && phraseLoading && (
-                  <View className="items-center py-6">
-                    <ActivityIndicator size="small" className="text-primary" />
-                  </View>
+                  <DictionaryEntryCardSkeleton />
                 )}
 
+                {/* Entry cards are loading — show a stable card skeleton
+                    instead of a spinner so the popup doesn't shift. */}
                 {loading && (
-                  <View className="items-center py-12">
-                    <ActivityIndicator size="large" className="text-primary" />
-                    <Text className="mt-3 text-sm text-muted-foreground">
-                      {t('msg.loading')}
-                    </Text>
+                  <View className="gap-2">
+                    <DictionaryEntryCardSkeleton />
+                    <DictionaryEntryCardSkeleton />
                   </View>
                 )}
               </ScrollView>
