@@ -606,7 +606,18 @@ export default function ReviewScreen() {
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
   // 5 s × totalTests remain (still inside the fast window that earns the +1
   // bonus); green once past that threshold (racing the 10 s/test slow mark).
-  const testTotalTests = Math.max(1, testSlots.filter((slot) => slot.status !== 'skipped').length);
+  // totalTests = the number of test slots for the CURRENT card (1 or 2, from
+  // getTestKinds) — NOT the number of test slots loaded so far. Test slots are
+  // added incrementally (pronunciation loads first; the definition slot is only
+  // appended after it is answered), so counting testSlots.length would start at
+  // 1 and jump to 2 mid-session, ballooning the budget (10s → 20s) and making
+  // the bar jump erratically. Using the card's full test count keeps T stable
+  // so the bar counts down evenly (SPEC-066: "the number of test slots for the
+  // card, 1 or 2").
+  const testTotalTests = Math.max(
+    1,
+    getTestKinds(l2Code, surfaceFormOf(cards[currentIndex]?.word, wordForm)).length,
+  );
   const testTotalMs = 10_000 * testTotalTests;
   const testFastMs = 5_000 * testTotalTests;
   const testElapsedMs = testSessionStartRef.current > 0
