@@ -52,7 +52,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 32 | dbfce4ad | 2026-08-24 | — | dev 23 (Debug; deleted; lp-dev-23-ios-device-dbfce4ad8dbb.zip; 02466cb84819cd3f4ae47f95c21c24907fd73ef44753191fbcb4fee1b929a7ea) |
 | 33 | 2d8ccd39 | 2026-08-24 | — | dev 24 (Debug; deleted; lp-dev-24-ios-device-2d8ccd39c37a.zip; a5bc9f26aa34c4b4881a2ab3e168e843b817ec4341a81d587ec44c38e232c60e) |
 | 34 | c0d1bedc | 2026-08-24 | — | dev 25 (Debug; deleted; lp-dev-25-ios-device-c0d1bedccc4d.zip; 2241bd1761b0742f6f3062261cc8a92371ee430de039d5ee7f28b67a4bdb0fe9) |
-| 35 | ccf27b9e | 2026-08-24 | — | dev 26 (Debug; active; lp-dev-26-ios-device-ccf27b9e1450.zip; 6cc8c55d3b4473c0e0844e1ed160fb9b78bd6f059bedccba60d003c038fa11b8) |
+| 35 | ccf27b9e | 2026-08-24 | — | dev 26 (Debug; archived; lp-dev-26-ios-device-ccf27b9e1450.zip; 6cc8c55d3b4473c0e0844e1ed160fb9b78bd6f059bedccba60d003c038fa11b8) |
 | 36 | 57c4d862 | 2026-08-24 | 3.3.4 — iOS TestFlight (b13, consumed) · 3.3.4 — Android Internal testing (b13, consumed) | — |
 | 37 | a7b9b1c3 | 2026-08-25 | 3.4.0 — Android Internal testing (b14, consumed) · 3.4.0 — iOS TestFlight (b14, consumed) | — |
 | 38 | a9f95469 | 2026-08-27 | — | dev 27 (Debug; active; lp-dev-27-ios-device-a9f95469f3da.zip; 44ef0901cbb24d8be11ed1b8c5d377223bea9ca0742eb0bb251cf8223a4f0e86) |
@@ -60,6 +60,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 40 | 2d8e744c | 2026-08-29 | 3.4.2 — Android internal (b16, consumed) · 3.4.2 — iOS TestFlight (b16, consumed) | — |
 | 41 | 3738fedc | 2026-08-29 | 3.4.3 — Android internal (b17, consumed) · 3.4.3 — iOS TestFlight (b17, consumed) | — |
 | 42 | 4002fb92 | 2026-08-29 | — | dev 28 (Debug; active; lp-dev-28-ios-device-4002fb92a0b7.zip; 4c2825f6626d06d5ae7aa3886aaff36d918b2513b0af7be393a950b175fe4389) |
+| 43 | e14479e7 | 2026-08-29 | — | dev 29 (Debug; active; lp-dev-29-ios-device-e14479e78195.zip; fed0e7002bcc488bc130c849230f7dbce9ee0253ca68d318afdf831bb252fe84) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
