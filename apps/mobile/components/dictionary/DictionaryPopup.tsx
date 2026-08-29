@@ -560,6 +560,18 @@ export function DictionaryPopup({
     [phraseCards, mainEntryIds],
   );
 
+  // ── Close handler (defined BEFORE the early return) ──
+  // This is a hook (`useCallback`) and MUST appear above the
+  // `if (!visible && !wasVisible) return null;` guard below. When the popup
+  // transitions hidden → shown, the hidden render runs the hooks that precede
+  // this return and then exits; if a hook were declared after it, the shown
+  // render would call one more hook than the previous render and React would
+  // throw "Rendered more hooks than during the previous render".
+  const handleClose = useCallback(() => {
+    suppressReaderTap();
+    onClose();
+  }, [onClose]);
+
   if (!visible && !wasVisible) return null;
 
   const popupHeight = isMd ? Math.min(screenHeight * 0.75, 640) : screenHeight * 0.75;
@@ -580,14 +592,6 @@ export function DictionaryPopup({
     onClose();
     router.push(`/word/${safeId}` as any);
   };
-
-  // Close the popup — also arm the reader chrome guard (reader-tap-guard) so
-  // the tap that dismissed this dialog can't land on the immersive reader's
-  // blank-tap surface and toggle the chrome.
-  const handleClose = useCallback(() => {
-    suppressReaderTap();
-    onClose();
-  }, [onClose]);
 
   return (
     // asChild: the only child is the portal, so the Root renders no placeholder
