@@ -258,11 +258,7 @@ function AlignedTranslationImpl({
                   {off.start < highlight!.start && (
                     <Text>{lineText.slice(0, highlight!.start - off.start)}</Text>
                   )}
-                  {/* The active translation sentence must read clearly in
-                      dark mode: stronger primary background + primary
-                      foreground (bg-primary/15 alone was invisible on dark
-                      backgrounds). */}
-                  <Text className="bg-primary/25 text-primary">
+                  <Text className="bg-primary/15">
                     {lineText.slice(
                       Math.max(0, highlight!.start - off.start),
                       Math.min(lineText.length, highlight!.end - off.start),

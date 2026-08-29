@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
@@ -14,17 +14,13 @@ import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
-import { PdfReaderPanel } from '@/components/reader/PdfReaderPanel';
-import { PdfViewer, type PdfViewerHandle } from '@/lib/pdf-viewer';
-import { libraryFileUri } from '@/lib/epub-store';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
-import { PanelTopOpen, X, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { translationLogger, log, logwarn } from '@/lib/logger';
-import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
+import { translationLogger, log } from '@/lib/logger';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
 /** Persist the reading location this long after the last page turn. Rapid
@@ -39,7 +35,6 @@ export default function EpubReaderScreen() {
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { setImmersed, registerCloseReader } = useReaderChrome();
-  const router = useRouter();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
 
@@ -68,27 +63,6 @@ export default function EpubReaderScreen() {
   /** TOC and Search are modals now (the sidebar is gone). */
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-
-  // ── PDF shelf covers: render each PDF's first page once (hidden WebView),
-  // then persist it so the bookshelf tile shows the real cover. ──
-  const pdfWithoutCover = useMemo(
-    () => epub.books.find((b) => b.format === 'pdf' && !b.coverUrl) ?? null,
-    [epub.books],
-  );
-  const [pdfCoverState, setPdfCoverState] = useState<{ id: string; uri: string } | null>(null);
-  const pdfCoverViewerRef = useRef<PdfViewerHandle>(null);
-  useEffect(() => {
-    if (!pdfWithoutCover || pdfCoverState?.id === pdfWithoutCover.id) return;
-    setPdfCoverState({ id: pdfWithoutCover.id, uri: libraryFileUri(pdfWithoutCover.id) });
-  }, [pdfWithoutCover, pdfCoverState]);
-  const handlePdfCoverReady = useCallback(() => {
-    void pdfCoverViewerRef.current?.renderPage(1, 0.6).then((url) => {
-      if (!url || !pdfCoverState) return;
-      log('[epub] pdf cover rendered', { id: pdfCoverState.id });
-      void epub.updateCover(pdfCoverState.id, url);
-      setPdfCoverState(null);
-    });
-  }, [pdfCoverState, epub]);
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   const pendingJumpRef = useRef<BookLocation | null>(null);
@@ -153,9 +127,6 @@ export default function EpubReaderScreen() {
     if (!epub.openBookId) { setSeekBlock(null); return; }
     setSeekBlock(epub.coverTapped ? (epub.initialLocation?.blockIndex ?? null) : null);
   }, [epub.openBookId, epub.coverTapped, epub.initialLocation]);
-
-  /** Image reader now lives on its own screen (…/image-reader) — the epub
-   *  reader only handles books and PDFs. */
 
   // ── Navigation ──
   const pushHistory = useCallback(() => {
@@ -386,46 +357,26 @@ export default function EpubReaderScreen() {
   }, [readerActive]);
 
   // ── Immersive chrome animations: the app header slides down from the top
-  // when the chrome is shown (pure overlay, no reflow). The chromeless
-  // controls (show toolbars + close) simply render when the chrome is hidden. ──
+  // and the close button fades in with the chrome (pure overlay, no reflow). ──
   const topChromeTranslateY = useRef(new Animated.Value(-160)).current;
+  const closeOpacity = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.timing(topChromeTranslateY, {
-      toValue: chromeVisible ? 0 : -160,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  }, [chromeVisible, topChromeTranslateY]);
+    Animated.parallel([
+      Animated.timing(topChromeTranslateY, {
+        toValue: chromeVisible ? 0 : -160,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(closeOpacity, {
+        toValue: chromeVisible ? 1 : 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [chromeVisible, topChromeTranslateY, closeOpacity]);
 
-  // Blank-space tap in the reader toggles the immersive chrome. Quitting a
-  // dialog must never toggle it: the tap that dismissed the dialog can land
-  // on the tap surface right after the overlay disappears (reader-tap-guard),
-  // so ignore taps inside the suppression window.
-  const toggleChrome = useCallback(() => {
-    if (isReaderTapSuppressed()) {
-      log('[epub] blank-tap ignored — dialog recently closed (chrome guard)');
-      return;
-    }
-    setChromeVisible(v => !v);
-  }, []);
-
-  // ── PDF reader (format: 'pdf' shelf entry open) ──
-  if (epub.pdfDoc) {
-    return (
-      <View className="flex-1 bg-background">
-        <PdfReaderPanel
-          uri={epub.pdfDoc.uri}
-          fileName={epub.pdfDoc.fileName}
-          onClose={() => void handleClose()}
-        />
-        {/* Hidden cover renderer — background first-page covers for PDF shelf
-            tiles that don't have one yet. */}
-        {pdfCoverState && pdfCoverState.id !== epub.pdfDoc.id && (
-          <PdfViewer uri={pdfCoverState.uri} ref={pdfCoverViewerRef} onInfo={handlePdfCoverReady} />
-        )}
-      </View>
-    );
-  }
+  // Blank-space tap in the reader toggles the immersive chrome.
+  const toggleChrome = useCallback(() => setChromeVisible(v => !v), []);
 
   // ── Bookshelf (no book open) ──
   if (!hasBook) {
@@ -438,7 +389,7 @@ export default function EpubReaderScreen() {
     }
     return (
       <View className="flex-1 bg-background">
-        <View className="flex-row items-center justify-between px-4 py-5">
+        <View className="px-4 py-5">
           <Text className="text-xl font-bold text-foreground">{t('title.epub_reader')}</Text>
         </View>
         <EpubBookshelf
@@ -451,10 +402,6 @@ export default function EpubReaderScreen() {
           onRemoveBook={handleRemoveBook}
           onAddBook={handleAddBook}
         />
-        {/* Hidden cover renderer — background first-page covers for PDF tiles. */}
-        {pdfCoverState && (
-          <PdfViewer uri={pdfCoverState.uri} ref={pdfCoverViewerRef} onInfo={handlePdfCoverReady} />
-        )}
       </View>
     );
   }
@@ -579,35 +526,24 @@ export default function EpubReaderScreen() {
         </ReaderChromeProvider>
       </Animated.View>
 
-      {/* Chromeless controls: when the chrome is hidden, two icon-only
-          buttons sit top right, vertically aligned with the chapter title
-          (top = insets.top + 65, the title line box) — "show toolbars"
-          reveals the chrome and "close" leaves the reader. Chrome-visible
-          mode deliberately has NO close button (the escape hatches are the
-          chromeless close and the nav menu). */}
-      {!chromeVisible && (
-        <View
-          className="absolute z-40 flex-row items-center gap-2"
-          style={{ top: insets.top + 65, right: 12 }}
+      {/* Close button (chrome): X in a 24px circle, top right — fades in
+          with the chrome. top = insets.top + 65 (H + 8, where H is the
+          header height incl. inset) keeps it ≥ 8px below the site top bar
+          and centers the 24px circle on the chapter-title line (SPEC-085
+          §6.2). */}
+      <Animated.View
+        pointerEvents={chromeVisible ? 'auto' : 'none'}
+        className="absolute z-40"
+        style={{ top: insets.top + 65, right: 12, opacity: closeOpacity }}
+      >
+        <Pressable
+          onPress={handleCloseReader}
+          className="h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
+          accessibilityLabel={t('action.close')}
         >
-          <Pressable
-            onPress={toggleChrome}
-            className="h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
-            accessibilityRole="button"
-            accessibilityLabel={t('action.show_toolbars')}
-          >
-            <PanelTopOpen size={14} color={ICON_MUTED} />
-          </Pressable>
-          <Pressable
-            onPress={handleCloseReader}
-            className="h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
-            accessibilityRole="button"
-            accessibilityLabel={t('action.close')}
-          >
-            <X size={14} color={ICON_MUTED} />
-          </Pressable>
-        </View>
-      )}
+          <X size={14} color={ICON_MUTED} />
+        </Pressable>
+      </Animated.View>
 
       {/* ── TOC modal (replaces the sidebar) ── */}
       {epub.toc.length > 0 && (
@@ -615,7 +551,7 @@ export default function EpubReaderScreen() {
           visible={tocOpen}
           transparent
           animationType="fade"
-          onRequestClose={() => { suppressReaderTap(); setTocOpen(false); }}
+          onRequestClose={() => setTocOpen(false)}
         >
         <View className="flex-1 items-center justify-center bg-black/40 px-6">
           <View className="max-h-[85%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
@@ -644,7 +580,7 @@ export default function EpubReaderScreen() {
                 <ChevronRight size={16} color={ICON_MUTED} />
               </Button>
               <Pressable
-                onPress={() => { suppressReaderTap(); setTocOpen(false); }}
+                onPress={() => setTocOpen(false)}
                 className="rounded p-1 active:bg-muted"
                 accessibilityLabel={t('action.close')}
               >
@@ -679,7 +615,7 @@ export default function EpubReaderScreen() {
         visible={searchOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => { suppressReaderTap(); setSearchOpen(false); }}
+        onRequestClose={() => setSearchOpen(false)}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -690,7 +626,7 @@ export default function EpubReaderScreen() {
               <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
                 <Text className="flex-1 text-base font-semibold text-foreground">{t('action.search')}</Text>
                 <Pressable
-                  onPress={() => { suppressReaderTap(); setSearchOpen(false); }}
+                  onPress={() => setSearchOpen(false)}
                   className="rounded p-1 active:bg-muted"
                   accessibilityLabel={t('action.close')}
                 >

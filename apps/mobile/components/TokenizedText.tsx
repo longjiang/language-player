@@ -182,10 +182,6 @@ export interface TokenizedTextProps {
   /** Diagnostic (SPEC-087): paint base runs yellow and readings cyan so the
    *  vertical space each takes is visible. */
   debugRubyMetrics?: boolean;
-  /** When true, token taps do NOT open the dictionary popup. Used for
-   *  tokenized text rendered inside the popup itself (the context-sentence
-   *  card) where a nested popup would stack on top. */
-  disablePopup?: boolean;
 }
 
 /**
@@ -202,7 +198,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -296,7 +292,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showPhonetics = phoneticsOverride === false ? false : phonetics.show !== false;
   const replaceWithPhonetics = phoneticsOverride === false ? false : phonetics.show === 'word';
-  const popupEnabled = disablePopup ? false : tokenSettings.enabled;
+  const popupEnabled = tokenSettings.enabled;
   const quizMode = modeOverride === undefined ? tokenSettings.mode === 'quiz' : modeOverride === 'quiz';
 
   // ── hardWords filter + quickGloss (Phase 2: SPEC-019) ──

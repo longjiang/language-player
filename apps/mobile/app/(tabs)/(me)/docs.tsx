@@ -12,7 +12,6 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { MarkdownText } from '@/components/MarkdownText';
 import { BookOpen, List, X } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { AskAiButton } from '@/components/docs/AskAiButton';
 
 function stripMarkdown(text: string): string {
   return text
@@ -210,12 +209,9 @@ export default function DocsScreen() {
 
     const docContent = (
       <>
-        <View className="mb-4 flex-row items-center justify-between">
-          <Button variant="link" onPress={() => setSelectedDoc(null)} className="self-start">
-            <Text className={buttonTextClass('link')}>← {t('action.back')}</Text>
-          </Button>
-          <AskAiButton />
-        </View>
+        <Button variant="link" onPress={() => setSelectedDoc(null)} className="mb-4 self-start">
+          <Text className={buttonTextClass('link')}>← {t('action.back')}</Text>
+        </Button>
 
         <Text className="text-xl font-bold text-foreground mb-2">{selectedDoc.title}</Text>
         {!isRootDoc && (
@@ -294,10 +290,7 @@ export default function DocsScreen() {
   return (
     <PageContainer>
       <ScrollView className="flex-1 px-4 py-5">
-      <View className="mb-1 flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-foreground">{t('title.docs')}</Text>
-        <AskAiButton />
-      </View>
+      <Text className="text-2xl font-bold text-foreground mb-1">{t('title.docs')}</Text>
 
       {/* Search */}
       <View className="mb-4 mt-5">

@@ -1,12 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Pressable } from '@/components/ui/pressable';
-import { Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useT } from '@/hooks/use-t';
-import { ICON_ON_PRIMARY, ICON_UNSAVED } from '@/lib/theme-colors';
+import { ICON_SAVED, ICON_UNSAVED } from '@/lib/theme-colors';
 import { Bookmark } from 'lucide-react-native';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 
@@ -18,13 +16,11 @@ interface SaveButtonProps {
 }
 
 /**
- * Save/unsave button for dictionary entries — a small bordered button with
- * the bookmark icon + "Save Word" / "Saved" label (a larger touch target
- * than a bare bookmark icon, matching the full entry card's save control).
+ * Save/unsave button for dictionary entries.
+ * Matches Next.js — bookmark icon, toggle on press.
  */
-export function SaveButton({ entry, size = 18, context }: SaveButtonProps) {
+export function SaveButton({ entry, size = 22, context }: SaveButtonProps) {
   const router = useRouter();
-  const t = useT();
   const { user, loading: authLoading } = useAuth();
   const { l2Lang } = useLanguage();
   const { hasWord, saveWord, removeWord } = useSavedWords();
@@ -66,24 +62,12 @@ export function SaveButton({ entry, size = 18, context }: SaveButtonProps) {
   ]);
 
   return (
-    <Pressable
-      onPress={handlePress}
-      hitSlop={8}
-      accessibilityRole="button"
-      accessibilityLabel={saved ? t('action.remove_from_saved') : t('action.save_word')}
-      className={`flex-row items-center rounded-md border px-2 py-1 ${
-        saved ? 'border-amber-500 bg-amber-500' : 'border-amber-500/50'
-      }`}
-    >
+    <Pressable onPress={handlePress} className="p-1" hitSlop={8}>
       <Bookmark
         size={size}
-        color={saved ? ICON_ON_PRIMARY : ICON_UNSAVED}
-        fill={saved ? ICON_ON_PRIMARY : 'none'}
-        style={{ marginRight: 4 }}
+        color={saved ? ICON_SAVED : ICON_UNSAVED}
+        fill={saved ? ICON_SAVED : 'none'}
       />
-      <Text className={`text-xs font-medium ${saved ? 'text-white' : 'text-amber-500/80'}`}>
-        {saved ? t('label.saved') : t('action.save_word')}
-      </Text>
     </Pressable>
   );
 }
