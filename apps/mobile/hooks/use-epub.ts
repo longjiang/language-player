@@ -57,6 +57,8 @@ export interface UseEpubReturn {
   books: EpubSummary[];
   /** Id of the currently open book, or null when showing the bookshelf. */
   openBookId: string | null;
+  /** Opened PDF (format: 'pdf' entries) — the reader shows the PDF panel. */
+  pdfDoc: { id: string; uri: string; fileName: string } | null;
   loading: boolean;
   /** Error message (already localized, or null). */
   error: string | null;
@@ -102,6 +104,7 @@ export function useEpub(): UseEpubReturn {
   const t = useT();
   const [books, setBooks] = useState<EpubSummary[]>([]);
   const [openBookId, setOpenBookId] = useState<string | null>(null);
+  const [pdfDoc, setPdfDoc] = useState<{ id: string; uri: string; fileName: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<EpubBookModel | null>(null);
@@ -251,6 +254,36 @@ export function useEpub(): UseEpubReturn {
             displayName = unwrappedName;
           }
 
+          // PDF: no EPUB block model — save as a format:'pdf' shelf entry and
+          // auto-open the native PDF reader panel.
+          if (/\.pdf$/i.test(displayName)) {
+            const destInfo = await FileSystem.getInfoAsync(dest);
+            const pdfMeta: EpubMeta = {
+              id,
+              fileName: displayName,
+              fileSize: destInfo.exists ? (destInfo as { size: number }).size : 0,
+              format: 'pdf',
+              language: importLanguage ? importLanguage.trim().split(/[-_]/)[0]?.toLowerCase() || null : null,
+              coverUrl: null,
+              title: displayName.replace(/\.pdf$/i, ''),
+              author: '',
+              lastLocation: null,
+              totalChars: 0,
+              readChars: 0,
+              lastReadAt: Date.now(),
+              addedAt: Date.now(),
+            };
+            await saveEpub(pdfMeta);
+            importedCount += 1;
+            lastId = id;
+            lastModel = null;
+            setPdfDoc({ id, uri: dest, fileName: displayName });
+            setOpenBookId(id);
+            setCoverTapped(true);
+            log('[epub] pdf imported', { name: displayName, id });
+            continue;
+          }
+
           const m = await openEpubBook(dest, displayName);
           let coverUrl = m.coverUrl;
           if (coverUrl?.startsWith('file://')) {
@@ -336,6 +369,21 @@ export function useEpub(): UseEpubReturn {
       const fileUri = libraryFileUri(id);
       const info = await FileSystem.getInfoAsync(fileUri);
       if (!info.exists) { setError('Book file missing'); return null; }
+      // PDF entries: no EPUB block model — show the native PDF reader panel.
+      if (meta.format === 'pdf') {
+        modelRef.current?.close().catch(() => {});
+        modelRef.current = null;
+        openBookIdRef.current = id;
+        setModel(null);
+        setOpenBookId(id);
+        setPdfDoc({ id, uri: fileUri, fileName: meta.fileName });
+        setCoverTapped(true);
+        setInitialLocation(null);
+        await updateEpubMeta(id, { lastReadAt: Date.now() });
+        setBooks(prev => prev.map((b) => (b.id === id ? { ...b, lastReadAt: Date.now() } : b)));
+        log('[epub] openBook pdf', { id });
+        return null;
+      }
       const m = await openEpubBook(fileUri, meta.fileName, { coverUri: await coverUriIfExists(meta.coverUrl) });
       const resume = meta.lastLocation && meta.lastLocation.blockIndex < m.blocks.length
         ? meta.lastLocation
@@ -362,6 +410,7 @@ export function useEpub(): UseEpubReturn {
     openBookIdRef.current = null;
     setModel(null);
     setOpenBookId(null);
+    setPdfDoc(null);
     setCoverTapped(false);
     setInitialLocation(null);
     setError(null);
@@ -398,6 +447,7 @@ export function useEpub(): UseEpubReturn {
   return {
     books,
     openBookId,
+    pdfDoc,
     loading,
     error,
     toc: model?.toc ?? [],
