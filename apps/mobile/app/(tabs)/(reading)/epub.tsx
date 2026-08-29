@@ -14,6 +14,7 @@ import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
+import { PdfReaderPanel } from '@/components/reader/PdfReaderPanel';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
@@ -381,6 +382,17 @@ export default function EpubReaderScreen() {
     }
     setChromeVisible(v => !v);
   }, []);
+
+  // ── PDF reader (a format:'pdf' entry is open) ──
+  if (epub.pdfDoc) {
+    return (
+      <PdfReaderPanel
+        uri={epub.pdfDoc.uri}
+        fileName={epub.pdfDoc.fileName}
+        onClose={() => void handleClose()}
+      />
+    );
+  }
 
   // ── Bookshelf (no book open) ──
   if (!hasBook) {
