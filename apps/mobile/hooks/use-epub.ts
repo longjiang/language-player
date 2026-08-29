@@ -251,6 +251,9 @@ export function useEpub(): UseEpubReturn {
             displayName = unwrappedName;
           }
 
+          // Diagnostic (import perf): attribute copy+unwrap vs parse. The
+          // parse itself logs unzip/images/blocks/cover sub-phases separately.
+          log(`[LP Mobile] ⏱️ import "${asset.name}": copy+unwrap ${Date.now() - assetStart}ms (isDir=${!!assetInfo.isDirectory} isZip=${isZipName})`);
           const m = await openEpubBook(dest, displayName);
           let coverUrl = m.coverUrl;
           if (coverUrl?.startsWith('file://')) {
