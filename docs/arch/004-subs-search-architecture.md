@@ -95,6 +95,16 @@ SubsSearchResults
     └── (closes on backdrop click or X button)
 ```
 
+> **As-built note (post-ARCH-004):** the playback dialog is now
+> `SubsSearchPlaybackModal` (`apps/web/src/components/video/subs-search-playback-modal.tsx`),
+> portaled to `document.body`, with a **singleline | multiline** toggle (the
+> watch-page layout). The sheet is `max-h-[85vh]` and **clips** with
+> `overflow-hidden`; the multiline subtitles scroll inside the nested
+> `VideoSidebarPanel → TabbedPanel → TabsContent` (`overflow-y-auto`) column,
+> which is height-bounded by the sheet's flex chain (`min-h-0`). While the
+> dialog is open the page body is scroll-locked so a wheel/touch over the
+> subtitles never scrolls the page behind the dialog.
+
 ### States
 
 | State | Condition | Rendered |
