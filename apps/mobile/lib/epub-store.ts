@@ -14,6 +14,10 @@ import type { BookLocation } from '@/lib/epub-book';
 export interface EpubMeta {
   /** Stable id derived from the file name (re-import updates the handle). */
   id: string;
+  /** Content digest (md5 of the stored file bytes, base64-encoded) used to
+   *  dedupe imports so a renamed copy never creates a duplicate shelf handle
+   *  (SPEC-065 "bookId"); absent on legacy/pre-hash imports. */
+  bookId?: string;
   fileName: string;
   fileSize: number;
   /** L2 the book was uploaded under (normalized primary subtag), or null

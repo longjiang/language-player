@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { md5 } from '@langplayer/utils';
 import {
   openEpubBook,
   inspectEpubBook,
@@ -35,6 +36,23 @@ async function coverUriIfExists(coverUri: string | null): Promise<string | null>
   if (!coverUri?.startsWith('file://')) return coverUri;
   const info = await FileSystem.getInfoAsync(coverUri);
   return info.exists ? coverUri : null;
+}
+
+/**
+ * Content digest of a stored book file (SPEC-065 "bookId"), used to dedupe
+ * imports by content. Reads the file as base64 and hashes that string, so the
+ * same bytes always produce the same digest regardless of file name. Returns
+ * null if the file cannot be read (no dedupe for that import).
+ */
+async function hashBookContent(uri: string): Promise<string | null> {
+  try {
+    const b64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    return `md5-${md5(b64)}`;
+  } catch {
+    return null;
+  }
 }
 
 /** Recursively copy a directory (used for unzipped EPUB folder packages). */
@@ -207,6 +225,9 @@ export function useEpub(): UseEpubReturn {
 
     let importedCount = 0;
     let firstError: string | null = null;
+    // Content digests already seen in this batch, so two identical files picked
+    // together only import once (same as re-importing a shelf book).
+    const importedBookIds = new Set<string>();
 
     try {
       await ensureLibraryDir();
@@ -249,6 +270,23 @@ export function useEpub(): UseEpubReturn {
             displayName = unwrappedName;
           }
 
+          // Content-hash dedupe (SPEC-065 "bookId"): skip files whose bytes
+          // already match a shelf book, so a renamed copy never creates a
+          // duplicate handle. The hash is computed after copy/unwrap so it is
+          // over the content that will actually be stored. On a duplicate the
+          // just-written file is removed and we move on — no re-parse, no new
+          // shelf entry.
+          const contentHash = await hashBookContent(dest);
+          const duplicate = contentHash
+            ? books.some((b) => b.bookId === contentHash) || importedBookIds.has(contentHash)
+            : false;
+          if (duplicate) {
+            log(`[LP Mobile] ⏭️ skipping "${asset.name}" — already in library (${contentHash})`);
+            await FileSystem.deleteAsync(dest, { idempotent: true }).catch(() => {});
+            continue;
+          }
+          if (contentHash) importedBookIds.add(contentHash);
+
           // Diagnostic (import perf): attribute copy+unwrap vs parse. The
           // parse itself logs unzip/images/blocks/cover sub-phases separately.
           log(`[LP Mobile] ⏱️ import "${asset.name}": copy+unwrap ${Date.now() - assetStart}ms (isDir=${!!assetInfo.isDirectory} isZip=${isZipName})`);
@@ -276,6 +314,9 @@ export function useEpub(): UseEpubReturn {
             : null;
           const meta: EpubMeta = {
             id,
+            // Content digest for dedupe (SPEC-065). Null when the file could
+            // not be read, in which case no content dedupe applies.
+            bookId: contentHash ?? undefined,
             fileName: displayName,
             fileSize: info.exists ? (info as { size: number }).size : 0,
             // Books are scoped to the L2 they were uploaded under — no OPF

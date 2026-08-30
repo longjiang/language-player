@@ -67,6 +67,18 @@ Use the **SHA-256 hex digest of the EPUB bytes** as the canonical book id:
 - Mobile currently uses a sanitized file name. It gains a `bookId` field computed at import time from the stored file bytes, while keeping its local `id` for file naming during a transition period. A pure-JS SHA-256 helper (e.g. `js-sha256`, which supports chunked `update`) hashes the file without a native dependency.
 - On import, mobile dedupes by `bookId`: if a local handle already exists with the same hash, update that handle instead of creating a second shelf entry.
 
+> **Partial implementation (2026-08-30) — import-time dedupe only.** The
+> content-hash import dedupe described here is now implemented on **both**
+> platforms for the "skip already in library" behavior: web re-uses its
+> `EpubMeta.id` (SHA-256) as the content key and skips a re-import when the
+> handle already exists; mobile adds a `bookId` = `md5-<md5(base64 of the
+> file bytes)>` content digest to `EpubMeta` and skips a file whose `bookId`
+> already matches a shelf book (a renamed copy never creates a duplicate).
+> Mobile's `bookId` is currently an **MD5 digest** for local dedupe, not the
+> SPEC SHA-256 sync key — the server-sync `bookId` is still a future step
+> (see "Files Touched" and the open question about migrating mobile `id` to
+> `bookId`).
+
 This means two devices only converge if they have the same EPUB bytes — acceptable for uploaded user files, and the same constraint web already has for its own IndexedDB key.
 
 ### Portable location
