@@ -12,18 +12,12 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { normalizeVisionMarkdown } from '@langplayer/shared';
+import { IMAGE_OCR_PROMPT, normalizeVisionMarkdown } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X } from 'lucide-react-native';
-
-/** Vision-OCR prompt for the image reader. */
-const IMAGE_OCR_PROMPT =
-  'Extract all text from this image as clean markdown. Preserve headings, ' +
-  'paragraphs, lists, bold/italic emphasis, and code blocks. Output only ' +
-  'the markdown, with no commentary.';
 
 /** One loaded image and its vision-OCR result (lazy, per selection). */
 interface ImageEntry {
