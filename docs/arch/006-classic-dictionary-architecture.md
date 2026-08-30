@@ -325,7 +325,7 @@ l1_eng.dictionaries["hain1238"] = ["hsk-cedict"];
    - Inside: WordBlockPopup shows:
      ├── Lemma: 勉強します → 勉強する (verb)
      ├── Dictionary entries (head, reading, definitions, level)
-     ├── Image wall (Google Image Search results)
+     ├── "Search image" link (in-app image gallery removed 2026-08-30)
      ├── "Let DeepSeek Explain" (AI explanation via DeepSeek API)
      └── Save word / Save phrase buttons
 ```

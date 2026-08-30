@@ -26,7 +26,7 @@ import { decomposeWordId } from '@langplayer/shared';
 // same tab opens automatically next time. 'word' is excluded — the detail
 // page doesn't render the embedded Dictionary tab.
 const ENTRY_TAB_KEY = 'lp-entry-tab';
-const ENTRY_TAB_OPTIONS = ['examples', 'images', 'inflections', 'deepseek', 'corpus'];
+const ENTRY_TAB_OPTIONS = ['examples', 'inflections', 'deepseek', 'corpus'];
 
 export default function WordDetailScreen() {
   const { entryId, l2 } = useLocalSearchParams<{ entryId: string; l2?: string }>();
