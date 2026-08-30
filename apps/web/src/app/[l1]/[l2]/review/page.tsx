@@ -1007,20 +1007,11 @@ export default function ReviewPage() {
     [l2SavedWords, langCardsForCounts, dailyLimit],
   );
   useEffect(() => {
-    // Diagnostic: log the raw per-state card breakdown (before the due filter)
-    // alongside countDeckStates' due-today counts, so web and mobile logs can
-    // be diffed to distinguish a divergent card store from a due-time/now
-    // window artifact.
-    const now = Date.now();
-    const stateBreakdown = Object.values(langCardsForCounts).reduce<Record<string, number>>(
-      (acc, c) => { const s = fsrs.getCardState(c); acc[s] = (acc[s] ?? 0) + 1; return acc; },
-      {},
-    );
     const budget = fsrs.getNewCardBudget(
       l2SavedWords,
       langCardsForCounts,
       dailyLimit,
-      now,
+      Date.now(),
       dayStartHour,
     );
     log('[SRS] cardCounts', {
@@ -1031,23 +1022,7 @@ export default function ReviewPage() {
       remaining: budget.remaining,
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCardsForCounts).length,
-      now,
-      stateBreakdown,
     });
-    // Collapse-proof single-string snapshot so the console never truncates it;
-    // the due-review id list is the diff key between web & mobile.
-    const dueReviewIds = Object.entries(langCardsForCounts)
-      .filter(([, c]) => fsrs.getCardState(c) === 'review' && fsrs.isDue(c, now))
-      .map(([id]) => id)
-      .sort();
-    log(
-      `[SRS] deckDiff l2=${l2Code}` +
-        ` cards=${Object.keys(langCardsForCounts).length}` +
-        ` saved=${l2SavedWords.length}` +
-        ` state=new:${stateBreakdown.new ?? 0},learning:${stateBreakdown.learning ?? 0},review:${stateBreakdown.review ?? 0},relearning:${stateBreakdown.relearning ?? 0}` +
-        ` due=new:${cardCounts.newCount},again:${cardCounts.againCount},review:${cardCounts.reviewCount}` +
-        ` reviewDue[${dueReviewIds.length}]=${dueReviewIds.join(',')}`,
-    );
   }, [cardCounts, dailyLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
 
   const currentCard = cards[currentIndex];

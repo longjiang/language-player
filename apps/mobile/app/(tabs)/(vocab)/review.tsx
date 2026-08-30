@@ -55,7 +55,6 @@ import {
 import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { lookupL1Text } from '@/lib/l1-lookup';
-import { getEntityCache, listOutbox } from '@/lib/sync-db';
 import {
   decomposeWordId,
   isSameEntryId,
@@ -1340,20 +1339,11 @@ export default function ReviewScreen() {
     [l2SavedWords, langCardsForCounts, dailyNewLimit],
   );
   useEffect(() => {
-    // Diagnostic: log the raw per-state card breakdown (before the due filter)
-    // alongside countDeckStates' due-today counts, so web and mobile logs can
-    // be diffed to distinguish a divergent card store from a due-time/now
-    // window artifact.
-    const now = Date.now();
-    const stateBreakdown = Object.values(langCardsForCounts).reduce<Record<string, number>>(
-      (acc, c) => { const s = fsrs.getCardState(c); acc[s] = (acc[s] ?? 0) + 1; return acc; },
-      {},
-    );
     const budget = fsrs.getNewCardBudget(
       l2SavedWords,
       langCardsForCounts,
       dailyNewLimit,
-      now,
+      Date.now(),
       dayStartHour,
     );
     log('[srs] cardCounts', {
@@ -1364,80 +1354,8 @@ export default function ReviewScreen() {
       remaining: budget.remaining,
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCardsForCounts).length,
-      now,
-      stateBreakdown,
     });
-    // Collapse-proof single-string snapshot so the console never truncates it;
-    // the due-review id list is the diff key between web & mobile.
-    const dueReviewIds = Object.entries(langCardsForCounts)
-      .filter(([, c]) => fsrs.getCardState(c) === 'review' && fsrs.isDue(c, now))
-      .map(([id]) => id)
-      .sort();
-    log(
-      `[SRS] deckDiff l2=${l2Code}` +
-        ` cards=${Object.keys(langCardsForCounts).length}` +
-        ` saved=${l2SavedWords.length}` +
-        ` state=new:${stateBreakdown.new ?? 0},learning:${stateBreakdown.learning ?? 0},review:${stateBreakdown.review ?? 0},relearning:${stateBreakdown.relearning ?? 0}` +
-        ` due=new:${cardCounts.newCount},again:${cardCounts.againCount},review:${cardCounts.reviewCount}` +
-        ` reviewDue[${dueReviewIds.length}]=${dueReviewIds.join(',')}`,
-    );
   }, [cardCounts, dailyNewLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
-
-  // ── Diagnostic: are mobile-only cards queued-but-never-confirmed, or
-  //    rejected-and-stuck? Diff the local ja deck against GET /srs (server),
-  //    then classify each extra card by its sync-cache row + outbox status.
-  const syncDiffLoggedRef = useRef(false);
-  useEffect(() => {
-    if (!srsLoaded || !srsCloudHydrated || !user) return;
-    if (syncDiffLoggedRef.current) return;
-    syncDiffLoggedRef.current = true;
-    (async () => {
-      const L2 = l2Code;
-      try {
-        const { getSrs } = await import('@langplayer/api-client');
-        const res = await getSrs();
-        const serverJaIds = new Set(Object.keys(res.cards?.[L2] ?? {}));
-        const localJaIds = Object.keys(store.cards[L2] ?? {});
-        const extraIds = localJaIds.filter((id) => !serverJaIds.has(id));
-        const [cacheRows, outboxRows] = await Promise.all([
-          getEntityCache('srs_card'),
-          listOutbox(),
-        ]);
-        const cacheById = new Map(cacheRows.map((r) => [r.entity_id, r]));
-        const outboxById = new Map(
-          outboxRows.filter((r) => r.entity === 'srs_card').map((r) => [r.entity_id, r]),
-        );
-        let pending = 0;
-        let error = 0;
-        const detailById = new Map<
-          string,
-          { cacheUpdated: number | null; cacheDeleted: number | null; obStatus: string; attempts: number; err: string }
-        >();
-        for (const id of extraIds) {
-          const entityId = `${L2}::${id}`;
-          const cache = cacheById.get(entityId);
-          const ob = outboxById.get(entityId);
-          if (ob?.status === 'pending') pending++;
-          else if (ob?.status === 'error') error++;
-          detailById.set(id, {
-            cacheUpdated: cache?.updated_at ?? null,
-            cacheDeleted: cache?.deleted_at ?? null,
-            obStatus: ob?.status ?? 'none',
-            attempts: ob?.attempts ?? 0,
-            err: (ob?.last_error ?? '').slice(0, 120),
-          });
-        }
-        const sample = extraIds.slice(0, 12).map((id) => ({ id, ...detailById.get(id) }));
-        log(
-          `[SRS] syncDiff l2=${L2} serverCards=${serverJaIds.size} localCards=${localJaIds.length}` +
-            ` extra=${extraIds.length} pending=${pending} error=${error} other=${extraIds.length - pending - error}` +
-            ` sample=${JSON.stringify(sample)}`,
-        );
-      } catch (e) {
-        log(`[SRS] syncDiff failed: ${(e as Error)?.message ?? String(e)}`);
-      }
-    })();
-  }, [srsLoaded, srsCloudHydrated, user, l2Code, store]);
 
   // ── Render states ──
 
