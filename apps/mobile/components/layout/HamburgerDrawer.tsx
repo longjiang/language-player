@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useReaderChrome } from '@/contexts/ReaderChromeContext';
 import {
@@ -89,7 +89,6 @@ interface HamburgerDrawerProps {
 export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawerProps) {
   const t = useT();
   const { requestCloseReader } = useReaderChrome();
-  const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const drawerWidth = Math.min(256, screenWidth * 0.6);
@@ -159,11 +158,13 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
                   className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
                   onPress={() => {
                     onClose();
-                    // Tapping "Epub Reader" while already on the epub reader
-                    // closes the open book (an alternative to the close
-                    // button) instead of a no-op same-route navigation.
-                    const onEpubSelfNav = link.href === '/(tabs)/(reading)/epub' && (pathname === '/epub' || pathname.endsWith('/epub'));
-                    if (onEpubSelfNav) { requestCloseReader(); return; }
+                    // Tapping "Epub Reader" while a book is open closes it (an
+                    // alternative to the close button) instead of a no-op
+                    // same-route navigation. The epub screen registers its
+                    // close handler ONLY while a book is open, so
+                    // requestCloseReader returns true exactly when there is
+                    // something to close.
+                    if (link.href === '/(tabs)/(reading)/epub' && requestCloseReader()) return;
                     router.push(link.href as any);
                   }}
                 >
