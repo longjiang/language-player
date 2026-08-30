@@ -72,6 +72,30 @@ as the backend engine from production; DDG is used instead.
 
 ## Consequences
 
+### 2026-08-30 amendment: feature retired — image galleries removed, endpoints disabled
+
+The in-app **dictionary image gallery / image search feature was retired**
+(2026-08-30). Product direction: users no longer browse an image grid in the
+dictionary; the dictionary card instead offers a single **"search image"** link
+(Google Images, opened in a browser) per word.
+
+- **Clients (web, mobile, Classic):** the in-app image-gallery components and
+  tabs were removed. The web `ImageSearchResults`, mobile `ImageSearchResults`,
+  and Classic `WebImages.vue` gallery are gone; each app keeps a "search image"
+  open-in-browser link on the dictionary card.
+- **Backend:** the Flask image-search endpoints are **disabled (not deleted)** —
+  `GET /images/<term>/<lang>` returns `[]`, `GET /img/<term>/<index>/<lang>`
+  returns 404, and `POST /dictionary/image-queries` returns `{"queries": []}`.
+  The `app_images.py` Openverse/DuckDuckGo implementation and the `_llm_image_queries`
+  prompt remain in place for a future re-enablement.
+- **Anki export (Classic):** `<img>` tags are stripped from exported cards (the
+  image-search feature is gone).
+
+This reverses the "Flask as the single image-search gateway" decision above for
+the duration of the retirement. The endpoint/gateway architecture is retained
+and can be re-enabled by restoring the route bodies in `routes/core.py` /
+`routes/dictionary.py`.
+
 ### 2026-08-04 amendment: apps/web reverts to Openverse
 
 After production confirmed that **Bing soft-blocks the datacenter IP by

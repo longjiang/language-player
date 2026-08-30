@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
-import { BookOpen, Film, Binary, Sparkles, ImageIcon, Library } from 'lucide-react';
+import { BookOpen, Film, Binary, Sparkles, Library } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
@@ -11,7 +11,6 @@ import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
 import { InflectionTable } from '@/components/inflection-table';
 import { AiExplanation } from '@/components/ai-explanation';
-import { ImageSearchResults } from '@/components/dictionary/image-search-results';
 import { CorpusPanel } from '@/components/dictionary/corpus/corpus-panel';
 
 interface DictionaryEntryTabsProps {
@@ -95,20 +94,24 @@ export function DictionaryEntryTabs({
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
         ...(hasInflections ? [inflectionsTab] : []),
-        { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
         ...(hasInflections ? [inflectionsTab] : []),
-        { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
       ];
 
   // If the language has no inflections but the (possibly controlled) tab is
   // still 'inflections' — e.g. navigating from a ja entry to a zh entry on the
-  // same detail page — fall back so the panel never renders empty.
-  const effectiveTab = !hasInflections && tab === 'inflections' ? (showDefinitionTab ? 'word' : 'examples') : tab;
+  // same detail page — fall back so the panel never renders empty. Also fall
+  // back for a persisted album 'images' tab after the in-app image gallery was
+  // removed (image search now lives on the "search images" link).
+  const effectiveTab = tab === 'images'
+    ? (showDefinitionTab ? 'word' : 'examples')
+    : !hasInflections && tab === 'inflections'
+      ? (showDefinitionTab ? 'word' : 'examples')
+      : tab;
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -153,16 +156,6 @@ export function DictionaryEntryTabs({
             onExactToggle={setExactMatch}
             formCount={formCount}
             embedded
-          />
-        </div>
-        <div className={effectiveTab === 'images' ? '' : 'hidden'}>
-          <ImageSearchResults
-            term={entry.head}
-            l2Code={l2Code}
-            l1Code={l1Code}
-            definition={entry.definitions?.[0]}
-            contextText={contextText}
-            contextForm={contextForm}
           />
         </div>
         <div className={effectiveTab === 'inflections' ? '' : 'hidden'}>

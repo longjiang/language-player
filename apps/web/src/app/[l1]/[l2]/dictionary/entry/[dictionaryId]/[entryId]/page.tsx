@@ -19,7 +19,7 @@ import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 // same tab opens automatically next time. 'word' is excluded — the entry
 // page doesn't render the embedded Dictionary tab.
 const ENTRY_TAB_KEY = 'lp-entry-tab';
-const ENTRY_TAB_OPTIONS = ['examples', 'images', 'inflections', 'deepseek', 'corpus'];
+const ENTRY_TAB_OPTIONS = ['examples', 'inflections', 'deepseek', 'corpus'];
 
 /**
  * Single dictionary or LLM entry page.
