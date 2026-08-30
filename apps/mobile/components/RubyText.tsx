@@ -426,9 +426,17 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   const nativeMeasuredHeight = nativeGrid && nativeGrid.length > 0
     ? Math.max(...nativeGrid.map((line) => line.y + line.height))
     : 0;
-  const renderedHeight = measured
-    ? Math.max(measured.height, nativeMeasuredHeight)
-    : undefined;
+  // The native paragraph's line grid IS the true rendered extent (ruby band
+  // included). The JS measuring text can OVER-report the line count — it wraps
+  // the ruby-free base text and here measured 16 lines (768px) while the native
+  // TextKit layout settled on 14 lines (644px). Taking `max(measured, native)`
+  // then sizes the View to the inflated JS height and leaves a blank gap below
+  // the last line (the reader's "huge space between paragraphs").
+  // Prefer the native extent when it has landed; use the JS measure only as a
+  // pre-native fallback so the View never clips the true ruby-aware text.
+  const renderedHeight = nativeMeasuredHeight > 0
+    ? nativeMeasuredHeight
+    : (measured?.height ?? undefined);
 
   useEffect(() => {
     if (!__DEV__ || !measured || nativeMeasuredHeight <= measured.height + 0.5) return;
