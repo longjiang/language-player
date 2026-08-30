@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { useSrs } from '@/hooks/use-srs';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
 import {
   BookOpen, Trash2, Download,
-  Loader2, Search, Circle,
+  Loader2, Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +23,7 @@ import { SavedWordEntryCard } from '@/components/dictionary/saved-word-entry-car
 import { WordList } from '@/components/dictionary/word-list';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import { decomposeWordId } from '@langplayer/shared';
-import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
+import type { SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { log } from '@/lib/logger';
 
@@ -32,29 +31,9 @@ const STORAGE_KEY = 'zthSavedWords';
 
 // ── Helpers ──────────────────────────────────────
 
-/** SRS review status for a word. null = not added to SRS. */
-type SrsStatus = 'due' | 'overdue' | 'new' | 'ok' | null;
-
-function getSrsStatus(
-  card: SrsFields | undefined,
-): SrsStatus {
-  if (!card) return null;
-  const now = Date.now();
-  // New card: still in the unrated blue deck
-  if (card.state === 0) return 'new';
-  // Overdue: due more than a day ago
-  if (card.due < now - 24 * 60 * 60 * 1000) return 'overdue';
-  // Due: due is in the past (or now)
-  if (card.due <= now) return 'due';
-  return 'ok';
-}
-
-const SRS_DOT_CLASSES: Record<Exclude<SrsStatus, null>, string> = {
-  overdue: 'text-red-500 fill-red-500',
-  due: 'text-amber-500 fill-amber-500',
-  new: 'text-blue-400 fill-blue-400',
-  ok: 'text-emerald-400 fill-emerald-400',
-};
+// The SRS review-status dot is rendered by the shared DictionaryEntryCard
+// (compact + full) via @langplayer/utils getSrsReviewStatus, so it is not
+// computed here anymore.
 
 // ── Page ─────────────────────────────────────────
 
@@ -65,7 +44,6 @@ const SRS_DOT_CLASSES: Record<Exclude<SrsStatus, null>, string> = {
 export default function SavedWordsPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, getSavedWords, clearSavedWords, loaded } = useSavedWordsContext();
-  const { getCard } = useSrs();
   const router = useRouter();
   const t = useT();
 
@@ -241,7 +219,6 @@ export default function SavedWordsPage() {
                 words={today}
                 l1Code={l1.code}
                 l2Code={l2.code}
-                getCard={getCard}
                 onWordClick={handleWordClick}
               />
             )}
@@ -252,7 +229,6 @@ export default function SavedWordsPage() {
                 words={earlier}
                 l1Code={l1.code}
                 l2Code={l2.code}
-                getCard={getCard}
                 onWordClick={handleWordClick}
               />
             )}
@@ -295,14 +271,12 @@ function SavedWordGroup({
   words,
   l1Code,
   l2Code,
-  getCard,
   onWordClick,
 }: {
   label: string;
   words: SavedLexicalItemRecord[];
   l1Code: string;
   l2Code: string;
-  getCard: (l2Code: string, wordId: string) => SrsFields | undefined;
   onWordClick: (word: SavedLexicalItemRecord) => void;
 }) {
   return (
@@ -313,33 +287,15 @@ function SavedWordGroup({
       columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       className="gap-4"
     >
-      {words.map((word) => {
-        const card = getCard(l2Code, word.id);
-        const srsStatus = getSrsStatus(card);
-        return (
-          <SavedWordEntryCard
-            key={`${word.id}-${word.date}`}
-            word={word}
-            l1Code={l1Code}
-            l2Code={l2Code}
-            onClick={() => onWordClick(word)}
-            srsDot={
-              srsStatus ? (
-                <span
-                  title={
-                    srsStatus === 'overdue' ? 'Overdue for review' :
-                    srsStatus === 'due' ? 'Due for review' :
-                    srsStatus === 'new' ? 'New — not yet reviewed' :
-                    'Reviewed'
-                  }
-                >
-                  <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
-                </span>
-              ) : undefined
-            }
-          />
-        );
-      })}
+      {words.map((word) => (
+        <SavedWordEntryCard
+          key={`${word.id}-${word.date}`}
+          word={word}
+          l1Code={l1Code}
+          l2Code={l2Code}
+          onClick={() => onWordClick(word)}
+        />
+      ))}
     </WordList>
   );
 }

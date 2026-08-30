@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { MouseEvent, ReactNode } from 'react';
+import type { MouseEvent } from 'react';
 import { BookmarkCheck, Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
@@ -90,8 +90,6 @@ interface SavedWordEntryCardProps {
   l1Code: string;
   l2Code: string;
   onClick: () => void;
-  /** SRS dot status. Omit to hide the dot. */
-  srsDot?: ReactNode;
 }
 
 /**
@@ -107,7 +105,6 @@ export function SavedWordEntryCard({
   l1Code,
   l2Code,
   onClick,
-  srsDot,
 }: SavedWordEntryCardProps) {
   const t = useT();
   const { removeSavedWord } = useSavedWordsContext();
@@ -207,7 +204,6 @@ export function SavedWordEntryCard({
       saveContext={safeCtx}
       l2Code={l2Code}
       l1Code={l1Code}
-      srsDot={srsDot}
     />
   );
 }

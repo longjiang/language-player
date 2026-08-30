@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { formatPronunciation } from '@langplayer/utils';
+import { formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
@@ -13,6 +13,7 @@ import { BookOpen, Bookmark, BookmarkCheck, ExternalLink, Video } from 'lucide-r
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
+import { useSrs } from '@/hooks/use-srs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { dictionaryEntryLogger } from '@/lib/logger';
@@ -51,6 +52,20 @@ function capSourceTitle(title: string): string {
   const truncated = trimmed.split(/\s+/).length > 5 || trimmed.length > 15;
   return truncated ? `${capped.trim()}…` : trimmed;
 }
+
+/** SRS review-status dot colors (match the review page's blue/red/green counts). */
+const SRS_STATUS_DOT_CLASSES: Record<'new' | 'learning' | 'review', string> = {
+  new: 'bg-blue-500',
+  learning: 'bg-red-500',
+  review: 'bg-green-500',
+};
+
+/** i18n key for a review-status dot's accessibility label. */
+const SRS_STATUS_LABEL_KEY: Record<'new' | 'learning' | 'review', string> = {
+  new: 'msg.srs_status_new',
+  learning: 'msg.srs_status_learning',
+  review: 'msg.srs_status_review',
+};
 
 /**
  * Highlights every occurrence of the saved word's surface form inside the
@@ -96,6 +111,7 @@ export function DictionaryEntryCard({
   const { l2Lang } = useLanguage();
   const [showImageSearch, setShowImageSearch] = useState(false);
   const { hasWord, savedWords, saveWord, removeWord } = useSavedWords(l2Lang.code);
+  const { getCard } = useSrs();
   const [wordSaved, setWordSaved] = React.useState(false);
   const lastLoggedEntryRef = useRef<DictionaryEntry | null>(null);
 
@@ -175,6 +191,20 @@ export function DictionaryEntryCard({
   const sourceLabel = hasVideoSource
     ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
     : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
+
+  // ── Shared: SRS review-status dot — shown when this entry is a saved word
+  // with an SRS card. Uses the shared getSrsReviewStatus and matches the review
+  // page's blue/red/green deck-count indicator. Rendered beside the level
+  // badges in BOTH compact and full mode.
+  const srsStatus = savedRecord
+    ? getSrsReviewStatus(getCard(l2Lang.code, entry.id))
+    : null;
+  const srsDot = srsStatus ? (
+    <View
+      className={`h-2.5 w-2.5 rounded-full ${SRS_STATUS_DOT_CLASSES[srsStatus]}`}
+      accessibilityLabel={t(SRS_STATUS_LABEL_KEY[srsStatus])}
+    />
+  ) : null;
 
   const scale = primaryScale(l2Code);
   // Format each level with its own scale so HSK badges show the year/version
@@ -274,6 +304,7 @@ export function DictionaryEntryCard({
             ) : null}
           </View>
           {badges}
+          {srsDot}
         </View>
 
         {/* Definitions */}
@@ -371,6 +402,7 @@ export function DictionaryEntryCard({
           )}
           <View className="flex-1" />
           {badges}
+          {srsDot}
         </View>
       </Pressable>
 

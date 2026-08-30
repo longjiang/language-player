@@ -766,6 +766,13 @@ types count while unexpired — there is no `status` filter.
 - ✅ **FSRS scheduling via `ts-fsrs`** — implemented (Phases 1–2):
   `fsrs-scheduler.ts` owns the state machine; both review pages, both `useSrs`
   hooks, and the saved-words status dots use the shared wrapper.
+- ✅ **Dictionary card review-status dot (2026-08-30)** — the shared
+  `getSrsReviewStatus(card)` (in `@langplayer/utils`) maps a card to
+  `new` / `learning` / `review` / `null` and is used by the `DictionaryEntryCard`
+  on both apps to render the SRS status dot next to the level badges in **both
+  compact and full** mode (blue = new, red = learning/relearning, green =
+  review). Previously the web saved-words page had a page-local `getSrsStatus`
+  (due/overdue/ok colors) shown only in compact mode.
 - ✅ **"No more new cards today" message** — implemented (Phase 6): shown in
   the all-done / no-due states when today's new-card budget is exhausted
   (`msg.no_more_new_cards_today`); trigger updated with the local-day quota

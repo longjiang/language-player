@@ -333,6 +333,23 @@ export function getCardState(card: FsrsCard): SrsCardState {
   }
 }
 
+/** Saved-word card review status for the dictionary entry status dot. */
+export type SrsReviewStatus = 'new' | 'learning' | 'review' | null;
+
+/**
+ * Review status of a saved word's card, shared by the dictionary entry cards
+ * (web + mobile). Matches the review page's blue/red/green deck-count
+ * indicator: `new` (blue), `learning`/`relearning` (red, "again"), `review`
+ * (green). Returns `null` when the word has no SRS card (not added to SRS).
+ */
+export function getSrsReviewStatus(card: FsrsCard | undefined | null): SrsReviewStatus {
+  if (!card) return null;
+  const state = getCardState(card);
+  if (state === 'new') return 'new';
+  if (state === 'learning' || state === 'relearning') return 'learning';
+  return 'review';
+}
+
 /** Options for Anki-style due-today deck counts. */
 export interface DeckCountOptions {
   /** Daily new-card limit; caps the blue count (defaults to no cap). */

@@ -45,6 +45,7 @@ export {
   deserializeSrsCard,
   migrateSrsStore,
   getCardState,
+  getSrsReviewStatus,
   countDeckStates,
   srsDueLabel,
   createSrsStore,
@@ -52,7 +53,7 @@ export {
   getActiveNewCardIds,
   mergeSrsCards,
 } from './fsrs-scheduler';
-export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating } from './fsrs-scheduler';
+export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating, SrsReviewStatus } from './fsrs-scheduler';
 /** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …). */
 export * as fsrs from './fsrs-scheduler';
 export {
