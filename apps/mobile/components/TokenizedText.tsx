@@ -1746,6 +1746,53 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     );
   }
 
+  // ── Plain render (no tokens yet) ──
+  // While flipping/loading the reader shows plain text. The metrics below
+  // (fontSize/linePitch/fontWeight/fontFamily) already match the tokenized
+  // render by construction, but the plain RN <Text> and the native paragraph
+  // engine disagree on CJK glyph weight/size at identical numbers — the
+  // visible size/weight jump when the tokens arrive. Route the plain render
+  // through the SAME native paragraph engine (one non-tappable run) exactly
+  // when the tokenized path uses it (ruby mode or selection, definitions off,
+  // non-inline), so the two states are identical (and no layout change
+  // flashes). Everywhere else the RN <Text> fallback stands.
+  if (NATIVE_PARAGRAPH_ACTIVE && !inline && !showDefinition && (plainRubyLayout.isRubyMode || selectionDictionary)) {
+    const plainRuns: ParagraphRun[] = [{
+      tokenId: 0,
+      text,
+      tappable: false,
+      color: rubyForeground,
+      readingColor: rubyForeground,
+      bold: false,
+      underline: false,
+      opacity: 1,
+    }];
+    if (__DEV__) {
+      log(`[TokenizedText] plain-fallback → native paragraph fontSize=${plainRubyLayout.tokenFontSize} linePitch=${plainRubyLayout.linePitch} fontFamily=${String(textStyle.fontFamily)}`);
+    }
+    return (
+      <RubyTextParagraphBlock
+        testID={testID}
+        runs={plainRuns}
+        taps={[]}
+        fontSize={plainRubyLayout.tokenFontSize}
+        lineHeight={plainRubyLayout.linePitch}
+        gridLineHeight={plainRubyLayout.linePitch}
+        readingSize={plainRubyLayout.readingSize}
+        fontFamily={debugFontFamily ?? textStyle.fontFamily ?? null}
+        language={glyphLang}
+        rubyFontFamily={debugRubyFontFamily ?? null}
+        diagnosticMetrics={debugRubyMetrics}
+        isRtl={plainRubyLayout.isRtl}
+        textAlign={textAlign}
+        fontWeight={textStyle.fontWeight === 'bold' ? 'bold' : 'normal'}
+        quizMode={false}
+        popupEnabled={false}
+        onPressWord={() => {}}
+        onReveal={() => {}}
+      />
+    );
+  }
   return <Text lang={glyphLang} testID={testID} className={textColor} style={[textStyle, fallbackStyle]}>{text}</Text>;
 }
 
