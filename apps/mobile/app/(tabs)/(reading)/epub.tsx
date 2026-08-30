@@ -588,7 +588,13 @@ export default function EpubReaderScreen() {
                 <X size={18} color={ICON_MUTED} />
               </Pressable>
             </View>
-            <ScrollView className="max-h-[70%]" keyboardShouldPersistTaps="handled">
+            {/* The list must be capped with a viewport-relative height (vh), not a
+                percentage of the card or flex-1. A card-relative `%` (max-h-[70%])
+                left a white gap at the card's bottom, and flex-1 collapsed the list
+                to zero because the card has only maxHeight (no definite height to
+                distribute flex space against). vh resolves against the screen, so
+                the list scrolls and the card shrinks to fit its content. */}
+            <ScrollView className="max-h-[70vh]" keyboardShouldPersistTaps="handled">
               <EpubChapterSidebar
                 toc={epub.toc}
                 chapterHref={nearestMarker?.href ?? null}
