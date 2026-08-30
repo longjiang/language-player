@@ -590,9 +590,6 @@ export default function EpubPage() {
                 onLoadChapter={handleLoadChapter}
               />
             </div>
-            <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-              {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
-            </p>
           </DialogContent>
         </Dialog>
       )}
