@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import type { SavedWordContext } from '@langplayer/shared';
+import { IMAGE_OCR_PROMPT, type SavedWordContext } from '@langplayer/shared';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -17,18 +17,6 @@ import { downscaleImage } from '@/lib/downscale-image';
 import {
   ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose,
 } from 'lucide-react';
-
-/** Vision-OCR prompt for the image reader — the model returns the image's
- *  text as clean, block-level markdown (deepseek-v4-flash-vision-exp via
- *  /vision): a leading `# <title>` heading the client extracts as the
- *  human-readable image title, followed by blocks separated by blank lines. */
-const IMAGE_OCR_PROMPT =
-  'Transcribe all text in this image into clean, well-formatted markdown. ' +
-  'Start with a single H1 heading (a line starting with "# ") giving a short, ' +
-  'human-readable title for the image. Read in natural reading order and join ' +
-  'wrapped lines into flowing prose — no hard line breaks inside a paragraph. ' +
-  'Preserve headings, paragraphs, lists, emphasis, and code blocks. Output ' +
-  'only the markdown.';
 
 /** Accepted image MIME types (mirrors msg.image_reader_supported). */
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp';
