@@ -7,7 +7,6 @@ import { Pressable } from '@/components/ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
-import { useReaderChrome } from '@/contexts/ReaderChromeContext';
 import {
   Compass, Music, Tv, Clapperboard, Upload,
   FileText, BookMarked, RotateCcw, Globe, BookOpen, ImageIcon,
@@ -88,7 +87,6 @@ interface HamburgerDrawerProps {
 
 export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawerProps) {
   const t = useT();
-  const { requestCloseReader } = useReaderChrome();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const drawerWidth = Math.min(256, screenWidth * 0.6);
@@ -158,13 +156,13 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
                   className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
                   onPress={() => {
                     onClose();
-                    // Tapping "Epub Reader" while a book is open closes it (an
-                    // alternative to the close button) instead of a no-op
-                    // same-route navigation. The epub screen registers its
-                    // close handler ONLY while a book is open, so
-                    // requestCloseReader returns true exactly when there is
-                    // something to close.
-                    if (link.href === '/(tabs)/(reading)/epub' && requestCloseReader()) return;
+                    // NOTE: tapping "Epub Reader" no longer closes an open book
+                    // from the nav (same-route close via requestCloseReader) —
+                    // that feature is disabled because it could feed back into
+                    // the epub auto-open effect and create an open->close->
+                    // reopen loop where a book could never be opened. The nav
+                    // item is a plain navigation. Leaving the reader is the
+                    // reader's own chromeless close button / back stack.
                     router.push(link.href as any);
                   }}
                 >

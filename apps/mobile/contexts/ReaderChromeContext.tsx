@@ -12,12 +12,10 @@ interface ReaderChromeValue {
   /**
    * Ask the open immersive reader to close itself (used by the nav menu when
    * the reader's own "Epub Reader" item is tapped while the reader is already
-   * open — an alternative to the reader's own close button). Returns true when
-   * a registered close handler actually ran; false when no reader screen has
-   * registered a close handler, so callers can fall through to a normal
-   * navigation (e.g. to the bookshelf).
+   * open — an alternative to the reader's own close button). No-op when no
+   * reader screen has registered a close handler.
    */
-  requestCloseReader: () => boolean;
+  requestCloseReader: () => void;
   /** Register the reader screen's close handler (or null to unregister). */
   registerCloseReader: (fn: (() => void) | null) => void;
 }
@@ -25,7 +23,7 @@ interface ReaderChromeValue {
 const ReaderChromeContext = createContext<ReaderChromeValue>({
   immersed: false,
   setImmersed: () => {},
-  requestCloseReader: () => false,
+  requestCloseReader: () => {},
   registerCloseReader: () => {},
 });
 
@@ -58,10 +56,10 @@ export function ReaderChromeProvider({
   // A nested (read-only) provider delegates registration to its parent, so a
   // reader screen registers its close handler on the outer provider and the
   // overlay Header (under the forced provider) reaches it through the parent.
-  const requestCloseReader = useCallback((): boolean => {
+  const requestCloseReader = useCallback(() => {
     log('[readerChrome] requestCloseReader', { hasCloseReader: Boolean(closeReader), forcedImmersed });
-    if (closeReader) { closeReader(); return true; }
-    return parent.requestCloseReader();
+    if (closeReader) closeReader();
+    else parent.requestCloseReader();
   }, [closeReader, parent.requestCloseReader]);
 
   const registerCloseReader = useCallback((fn: (() => void) | null) => {
