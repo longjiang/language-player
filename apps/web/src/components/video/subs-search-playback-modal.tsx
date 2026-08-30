@@ -110,6 +110,18 @@ export function SubsSearchPlaybackModal({
     }
   }, [persistModeKey]);
 
+  // Lock the page body scroll while the dialog is open. The sheet is sized
+  // with `max-h-[85vh]` (an indefinite ceiling) and clips with `overflow-hidden`,
+  // so on narrow screens the multiline subtitle list scrolls inside the nested
+  // panel rather than the document; without this lock a wheel/touch over the
+  // dialog scrolls the page behind it instead.
+  useEffect(() => {
+    if (index === null) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [index]);
+
   const handleToggleSubtitleMode = useCallback(() => {
     setSubtitleMode((m) => {
       const next = m === 'singleline' ? 'multiline' : 'singleline';
