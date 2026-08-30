@@ -7,7 +7,7 @@ import { createSrsStore, fsrs, mergeSrsCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity, subscribeSrsCapRejection } from '@/lib/sync-engine';
-import { getEntityCache, upsertEntityCache } from '@/lib/sync-db';
+import { getEntityCache, listOutbox, upsertEntityCache } from '@/lib/sync-db';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { getConnectivity } from '@/lib/connectivity';
 
@@ -37,6 +37,84 @@ export function useSrs() {
   const storeRef = useRef(store);
   storeRef.current = store;
   const pendingSrsPreviousRef = useRef(new Map<string, SrsFields>());
+  /** Latest authoritative server deck by language (set during row-API
+   *  hydration). Used by the pull-merge bridge to drop stale server-absent
+   *  local cards. */
+  const serverDeckRef = useRef<Record<string, Record<string, SrsFields>>>({});
+
+  /**
+   * Pull-merge bridge: apply remote SRS changes from another device by merging
+   * the offline entity-cache rows back into the deck. Merge, don't replace — a
+   * reviewed local card must not be clobbered by a stale "new" cache card, and
+   * vice versa.
+   *
+   * Reconciliation (SPEC-066 parity): entity-cache rows that are neither on the
+   * authoritative server deck NOR backed by unsynced local work (a pending/error
+   * outbox op) are stale local-only cards. They were never persisted to the
+   * server (so web, which is server-authoritative, doesn't show them) and have
+   * no pending op, so nothing is waiting to push them. Keeping them inflates the
+   * mobile deck vs web. Drop them here so the two decks converge after hydration.
+   */
+  const refreshFromCache = useCallback(async () => {
+    try {
+      const cardRows = await getEntityCache('srs_card');
+      const outboxRows = (await listOutbox()).filter((r) => r.entity === 'srs_card');
+      const outboxKeys = new Set(outboxRows.map((r) => r.entity_id));
+      const cardStates: Record<string, Record<string, SrsFields>> = {};
+      const deletedIds = new Set<string>();
+      for (const row of cardRows) {
+        if (row.deleted_at != null) {
+          deletedIds.add(row.entity_id);
+          continue;
+        }
+        const payload = JSON.parse(row.payload) as {
+          l2?: string;
+          wordId?: string;
+          state?: unknown;
+        };
+        if (!payload.l2 || !payload.wordId || !payload.state) continue;
+        const state = fsrs.normalizeFsrsCard(payload.state);
+        cardStates[payload.l2] = {
+          ...(cardStates[payload.l2] ?? {}),
+          [payload.wordId]: state,
+        };
+      }
+      const serverDeck = serverDeckRef.current;
+      setStore((prev) => {
+        const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
+        for (const [lang, cacheCards] of Object.entries(cardStates)) {
+          mergedCards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cacheCards);
+        }
+        // Reconcile stale local-only cards (bugfix): keep a card only if the
+        // server has it or there is unsynced local work. Skip languages whose
+        // server deck we haven't loaded, so we never drop legitimate offline
+        // cards before cloud hydration.
+        for (const [lang, langCards] of Object.entries(mergedCards)) {
+          const serverLang = serverDeck[lang];
+          if (!serverLang) continue;
+          const cleaned: Record<string, SrsFields> = {};
+          for (const [id, card] of Object.entries(langCards)) {
+            const onServer = !!serverLang[id];
+            const localWork = outboxKeys.has(`${lang}::${id}`);
+            if (onServer || localWork) cleaned[id] = card;
+          }
+          mergedCards[lang] = cleaned;
+        }
+        for (const entityId of deletedIds) {
+          const sep = entityId.indexOf('::');
+          if (sep < 0) continue;
+          const lang = entityId.slice(0, sep);
+          const wordId = entityId.slice(sep + 2);
+          delete mergedCards[lang]?.[wordId];
+        }
+        const next = { cards: mergedCards };
+        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+        return next;
+      });
+    } catch (e) {
+      logwarn('[srs] pull merge failed:', e);
+    }
+  }, []);
 
   useEffect(() => {
     if (loaded) return;
@@ -62,6 +140,8 @@ export function useSrs() {
         const res = await getSrs();
         if (cancelled) return;
         const cloud = { cards: res.cards ?? {} };
+        // Capture the authoritative server deck for pull-merge reconciliation.
+        serverDeckRef.current = cloud.cards;
         setStore((prev) => {
           const cards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
           for (const [lang, cloudCards] of Object.entries(cloud.cards)) {
@@ -72,6 +152,8 @@ export function useSrs() {
           return merged;
         });
         if (!cancelled) setCloudHydrated(true);
+        // Reconcile stale server-absent local cards against the fresh server deck.
+        if (!cancelled) void refreshFromCache();
       } catch (err) {
         logwarn('[srs] Could not load from server:', err);
         if (!cancelled && !isOfflineModeEnabled() && getConnectivity() !== 'offline') {
@@ -88,7 +170,7 @@ export function useSrs() {
       }
     })();
     return () => { cancelled = true; };
-  }, [user, loaded, getSrs, cloudRetry]);
+  }, [user, loaded, getSrs, cloudRetry, refreshFromCache]);
 
   // ── User change (logout/login): drop the previous user's in-memory state ──
   useEffect(() => {
@@ -222,56 +304,14 @@ export function useSrs() {
   const resetCapReached = useCallback(() => setCapReached(false), []);
 
   // ── Pull-merge bridge: apply remote SRS changes from another device ──
+  // (refreshFromCache is hoisted as a useCallback above so hydration can also
+  // trigger a reconcile right after the server deck arrives.)
   useEffect(() => {
-    const refreshFromCache = async () => {
-      try {
-        const cardRows = await getEntityCache('srs_card');
-        const cards: Record<string, Record<string, SrsFields>> = {};
-        const deletedIds = new Set<string>();
-        for (const row of cardRows) {
-          if (row.deleted_at != null) {
-            deletedIds.add(row.entity_id);
-            continue;
-          }
-          const payload = JSON.parse(row.payload) as {
-            l2?: string;
-            wordId?: string;
-            state?: unknown;
-          };
-          if (!payload.l2 || !payload.wordId || !payload.state) continue;
-          const state = fsrs.normalizeFsrsCard(payload.state);
-          cards[payload.l2] = {
-            ...(cards[payload.l2] ?? {}),
-            [payload.wordId]: state,
-          };
-        }
-        setStore((prev) => {
-          // Merge, don't replace: a reviewed local card must not be
-          // clobbered by a stale "new" card from the cache, and vice versa.
-          const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
-          for (const [lang, cacheCards] of Object.entries(cards)) {
-            mergedCards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cacheCards);
-          }
-          for (const entityId of deletedIds) {
-            const sep = entityId.indexOf('::');
-            if (sep < 0) continue;
-            const lang = entityId.slice(0, sep);
-            const wordId = entityId.slice(sep + 2);
-            delete mergedCards[lang]?.[wordId];
-          }
-          const next = { cards: mergedCards };
-          SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-          return next;
-        });
-      } catch (e) {
-        logwarn('[srs] pull merge failed:', e);
-      }
-    };
     const unsubCard = subscribeEntity('srs_card', () => void refreshFromCache());
     return () => {
       unsubCard();
     };
-  }, []);
+  }, [refreshFromCache]);
 
   return {
     store,
