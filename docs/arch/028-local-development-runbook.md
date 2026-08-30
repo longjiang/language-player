@@ -226,6 +226,13 @@ the app. There are two local workflows:
 2. **Metro + development build on a physical device** — native binary on iOS
    and Android
 
+> ⚠️ **Status change (2026-08-29): iOS Simulators are no longer used.**
+> All simulator runtimes/devices were removed from this machine and the
+> project no longer supports simulator workflows. Workflow 1 (Metro + Expo Go
+> in the iOS Simulator) is therefore **no longer available** — physical-device
+> debug builds (`node scripts/dev-build.mjs ios-device|android`) and
+> TestFlight/store builds are the only mobile-device paths now.
+
 ### Prerequisites for both
 
 ```bash
@@ -675,6 +682,51 @@ node apps/chrome-extension/build.mjs   # then Load unpacked at chrome://extensio
 ```
 
 ---
+
+## Disk cleanup (builds & caches)
+
+When disk space is tight, reclaim it without losing the ability to build
+later. Adopted 2026-08-29. Safe to delete (all regenerable):
+
+```bash
+# Web / admin build output
+rm -rf apps/web/.next apps/web/.next-check apps/admin/.next 2>/dev/null
+# Expo / Metro / turbo caches
+rm -rf apps/mobile/.expo .turbo apps/mobile/.turbo
+# iOS native build output + Xcode DerivedData / Archives
+rm -rf apps/mobile/ios/build
+rm -rf ~/Library/Developer/Xcode/DerivedData/LanguagePlayer*
+rm -rf ~/Library/Developer/Xcode/Archives
+# Android build output
+rm -rf apps/mobile/android/.gradle apps/mobile/android/app/build
+# Transient release artifacts (ARCH-029 deletes these after a successful upload)
+rm -rf tmp/release
+# Older dev builds beyond the 3-build retention window
+rm -rf .dev-builds/archive
+```
+
+Do **not** delete (needed to build again): `node_modules`,
+`apps/mobile/ios` (+ `Pods`), `apps/mobile/android` (native project,
+`key.properties`, `local.properties` — remember to recreate these after any
+`expo prebuild`, see SPEC-067 § 3.4), and the 3 most recent dev builds in
+`.dev-builds/` (current + 2 previous).
+
+### Python / pytest caches
+
+`.pytest_cache/`, `logs/` and the legacy `hs_err_pid*.log` are safe to remove;
+`~/.gradle`, `~/.cocoapods` and Xcode's module cache are large and can be
+cleared, but the next build just regenerates them (slower).
+
+### iOS & Android simulators
+
+Simulators are no longer used (removed 2026-08-29). To reclaim their space:
+
+```bash
+xcrun simctl delete all
+xcrun simctl runtime delete iOS 26.5   # or the installed runtime name
+```
+
+See ARCH-012 for the deprecation note.
 
 ## Common Issues
 

@@ -81,6 +81,12 @@ Maestro assertions to manual checks.
 
 - Test the **exact release build** you intend to ship (install the `.app` /
   `.aab` on a device or simulator — not Expo Go).
+> ⚠️ **Status change (2026-08-29): iOS Simulators are no longer used.**
+> All simulator runtimes/devices were removed from this machine and the
+> project no longer supports simulator workflows. Any checklist row below
+> marked "Run on: Simulator" must be run on a **physical device** instead
+> (a development build / TestFlight build). The iOS-simulator-specific
+> install instructions in § 1.4 are deprecated.
 - **Expo Go is SIMULATOR-ONLY for this project.** Physical-device testing
   (iPad/iPhone) requires a **development build** (`npx expo run:ios --device`)
   or a TestFlight / Ad Hoc build. Expo Go cannot run this app on a real
