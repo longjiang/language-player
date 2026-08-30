@@ -222,6 +222,32 @@ export function validateSrsPronunciationChoices(question: {
 }
 
 /**
+ * Validate a generated definition question against the answer-length leak
+ * (SPEC-066 test mode). The LLM tends to return the correct answer as the
+ * longest, most precisely-worded option, so a learner can pick the correct
+ * answer by length alone. This is a conservative safety net on top of the
+ * prompt's length-mixing directive: it rejects only the egregious case where
+ * the correct answer is the *unique* longest option and is at least 1.5× the
+ * length of the next-longest option — a very strong length cue. Legitimate
+ * length variation passes. Returns a human-readable reason when invalid.
+ */
+export function validateSrsDefinitionChoices(question: {
+  correctAnswer: string;
+  choices: string[];
+}): string | null {
+  const correctLen = question.correctAnswer.trim().length;
+  const lengths = question.choices.map((c) => c.trim().length);
+  const sortedDesc = [...lengths].sort((a, b) => b - a);
+  const max = sortedDesc[0] ?? 0;
+  const isUniqueLongest = lengths.filter((l) => l === max).length === 1 && correctLen === max;
+  const secondLongest = sortedDesc[1] ?? 0;
+  if (isUniqueLongest && max >= 1.5 * secondLongest) {
+    return `correct answer is the clearly longest option (${correctLen} chars vs next-longest ${secondLongest}) — answer length predicts it`;
+  }
+  return null;
+}
+
+/**
  * Localized prompt wording for the pronunciation question. The app composes the
  * question text deterministically (always the headword's reading) so the LLM is
  * never asked to phrase it — it only supplies distractors. Fallback is English.
@@ -297,6 +323,11 @@ export function buildSrsQuestionPrompt(input: {
       'Ask what the target word means in THIS sentence.',
       `correct_answer + 3 confounders: concise ${input.l1Code} definitions; all 4 distinct.`,
       'Confounders: plausible but clearly wrong for this sentence — never synonyms or other acceptable glosses.',
+      // SPEC-066: answer length must never predict the answer. The model tends
+      // to make the correct answer the longest, most precisely-worded option,
+      // so the learner can cheat by picking the longest. Force every option to
+      // be comparable in length and precision.
+      'Length-mix the options: make each option comparable in length and precision — no single option may be noticeably longer, shorter, or more precisely worded than the rest, so answer length cannot reveal the correct one.',
       `Word: ${input.word}`,
       `Context: ${context}`,
       input.definition ? `Ground truth: ${input.definition}` : '',

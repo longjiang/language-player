@@ -115,6 +115,7 @@ export {
   normalizeTestChoice,
   parseSrsQuestionResponse,
   isObviousPronunciationWrong,
+  validateSrsDefinitionChoices,
   validateSrsPronunciationChoices,
   surfaceFormOf,
   lemmaFormOf,

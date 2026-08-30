@@ -618,6 +618,17 @@ question reveals the card back and the rating buttons.
   unchanged — the model still returns question + correct answer + confounders,
   since a word has several definitions and the model must pick the
   contextually appropriate one.
+- **Definition confounders confound answer length (2026-08-30)** — the
+  definition prompt (`buildSrsQuestionPrompt`, definition branch) adds a
+  **length-mixing directive**: each option must be comparable in length and
+  precision, and no single option may be noticeably longer, shorter, or more
+  precisely worded than the rest, so answer length cannot reveal the correct
+  answer. The manager additionally runs a conservative client-side guard
+  (`validateSrsDefinitionChoices` in `packages/utils/src/srs-test-mode.ts`)
+  that rejects — triggering the existing one-shot auto-retry — only the
+  egregious case where the correct answer is the **unique longest** option and
+  at least **1.5×** the length of the next-longest. This stops the learner from
+  cheating by always picking the longest/precisely-worded option.
 - **Card-test cache + prefetch (2026-08-25)** — all test generation,
   regeneration, and retry requests route through the shared
   `SrsTestManager` (`packages/utils/src/srs-test-manager.ts`): a

@@ -22,6 +22,7 @@ import {
   buildSrsQuestionPrompt,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  validateSrsDefinitionChoices,
   validateSrsPronunciationChoices,
   type SrsTestQuestion,
   type TestQuestionKind,
@@ -532,11 +533,16 @@ export class SrsTestManager {
     if (choices.length !== 4) {
       throw new Error('Invalid question choices');
     }
-    return {
+    const definitionQuestion: SrsTestQuestion = {
       kind: input.kind,
       prompt: parsed.question,
       choices: choices.sort(() => Math.random() - 0.5),
       correctAnswer: parsed.correct_answer,
     };
+    const definitionProblem = validateSrsDefinitionChoices(definitionQuestion);
+    if (definitionProblem) {
+      throw new Error(`Definition choices leak the answer by length: ${definitionProblem}`);
+    }
+    return definitionQuestion;
   }
 }

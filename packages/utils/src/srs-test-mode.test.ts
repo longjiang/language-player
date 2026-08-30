@@ -10,6 +10,7 @@ import {
   parseSrsQuestionResponse,
   scoreTestResult,
   surfaceFormOf,
+  validateSrsDefinitionChoices,
   validateSrsPronunciationChoices,
 } from './srs-test-mode';
 
@@ -285,7 +286,50 @@ describe('buildSrsQuestionPrompt (terse, language-specific)', () => {
     });
     expect(def).toContain('tests the meaning of a Japanese phrase');
     expect(def).toContain('concise en definitions');
+    expect(def).toContain('Length-mix the options');
+    expect(def).toContain('answer length cannot reveal the correct one');
     expect(def).not.toContain('hiragana');
     expect(def).not.toContain('pronunciation');
+  });
+
+  describe('validateSrsDefinitionChoices', () => {
+    it('accepts options of comparable length', () => {
+      const problem = validateSrsDefinitionChoices({
+        correctAnswer: 'to push through despite opposition',
+        choices: [
+          'to push through despite opposition',
+          'to cut a piece off with scissors',
+          'to sit down and rest for a while',
+          'to speak very quietly and softly',
+        ],
+      });
+      expect(problem).toBeNull();
+    });
+
+    it('rejects when the correct answer is the unique, clearly longest option', () => {
+      const problem = validateSrsDefinitionChoices({
+        correctAnswer: 'to carry out a course of action in the face of strong resistance or pressure',
+        choices: [
+          'to carry out a course of action in the face of strong resistance or pressure',
+          'to chop food into small pieces',
+          'to make a bed',
+          'to read a book',
+        ],
+      });
+      expect(problem).toMatch(/longest option/);
+    });
+
+    it('allows the correct answer to be longest when lengths are close', () => {
+      const problem = validateSrsDefinitionChoices({
+        correctAnswer: 'the ability to be carried out despite resistance',
+        choices: [
+          'the ability to be carried out despite resistance',
+          'the act of cutting something into parts',
+          'the act of resting quietly for a time',
+          'the act of speaking in a very low voice',
+        ],
+      });
+      expect(problem).toBeNull();
+    });
   });
 });
