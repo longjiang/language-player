@@ -11,6 +11,15 @@
 
 This document standardizes the debugging workflow for the React Native mobile app (`apps/mobile/`). It covers server startup, log monitoring, idb usage for iOS Simulator interaction, and troubleshooting patterns.
 
+> ⚠️ **Status change (2026-08-29): iOS Simulators are no longer used.**
+> All simulator runtimes/devices were removed from this machine and the
+> project no longer supports simulator workflows (see [ARCH-028](028-local-development-runbook.md)).
+> The idb + iOS Simulator steps below are **deprecated** — physical-device
+> debug builds (`node scripts/dev-build.mjs ios-device|android`) and
+> TestFlight are the only mobile-device paths. Keep this doc for the
+> physical-device `idb` commands that still apply; the simulator-only
+> interaction (`idb ui`, `idb boot`, Expo Go) is historical.
+
 ---
 
 ## Server Startup (AI Agent Responsibility)
