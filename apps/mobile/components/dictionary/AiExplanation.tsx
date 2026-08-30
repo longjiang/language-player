@@ -6,6 +6,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useStreamingExplanation } from '@langplayer/api-client';
+import { buildWordExplainPrompt } from '@langplayer/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
@@ -141,26 +142,27 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   }, []);
 
   const buildPrompt = useCallback((): string => {
-    const l1Name = l1NameRef.current;
     const l2Name = l2NameRef.current;
     const code = l2CodeRef.current;
 
-    let prompt: string;
-    if (contextText && contextForm && contextForm !== word) {
-      prompt = t('prompt.explain_word_context_form', { l1Name, l2Name, code, word, contextForm, context: contextText });
-    } else if (contextText) {
-      prompt = t('prompt.explain_word_context', { l1Name, l2Name, code, word, context: contextText });
-    } else {
-      prompt = t('prompt.explain_word', { l1Name, l2Name, code, word });
-    }
-
-    const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
-    if (!nonInflecting.includes(code)) {
-      prompt += ' ' + t('prompt.explain_morphology');
-    }
-
-    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return `${prompt}\n\n${ticksPrompt}`;
+    // Shared assembly (SPEC-035) — identical to web: strips trailing context
+    // punctuation, picks the context-form/context/plain template, appends the
+    // morphology instruction for non-inflecting L2s, and appends the backtick
+    // instruction.
+    return buildWordExplainPrompt({
+      templates: {
+        contextForm: t('prompt.explain_word_context_form'),
+        context: t('prompt.explain_word_context'),
+        plain: t('prompt.explain_word'),
+        morphology: t('prompt.explain_morphology'),
+        ticks: t('prompt.explain_ticks'),
+      },
+      l2Name,
+      word,
+      contextForm,
+      context: contextText,
+      l2Code: code,
+    });
   }, [t, word, contextText, contextForm]);
 
   const buildFollowUpPrompt = useCallback((kind: FollowUpKind): string => {

@@ -2,6 +2,20 @@
 // Language Constants — all language lists used across the platform
 // ──────────────────────────────────────────────
 
+/**
+ * System-style preamble for the docs "Ask AI" assistant — shared by
+ * apps/web (ask-ai-dialog.tsx) and apps/mobile (AskAiButton.tsx) so the two
+ * help-assistant prompts can never diverge. English on purpose: it is a
+ * system instruction telling the model to answer in the user's own language.
+ */
+export const ASK_AI_PREAMBLE =
+  'You are the Language Player help assistant. Language Player is a language ' +
+  'learning platform: authentic videos with interactive dual subtitles, a popup ' +
+  'dictionary, a reader for ebooks/PDFs/images, saved words, SRS review, and ' +
+  'device sync. Answer the question about how to use the app concisely and ' +
+  'practically, in the user\u2019s own language. If you don\u2019t know, say so ' +
+  'and point them to the documentation.';
+
 /** Languages supported as a user's native language (L1). */
 export const SUPPORTED_L1S = [
   'en', 'zh-Hans', 'zh-Hant', 'ar', 'de', 'es', 'fr', 'id', 'it',

@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useSpeech } from '@/hooks/use-speech';
 import { useStreamingExplanation } from '@langplayer/api-client';
+import { buildExplainBlockPrompt } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -47,7 +48,7 @@ type ActionKind = 'explain' | 'translate';
  */
 export function TextActionMenu(props: TextActionMenuProps) {
   const { text, l2Code, l1Code, context, className, centered = false, fitContent = false, children } = props;
-  const { l1Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const effectiveL1 = l1Code ?? l1Lang.code;
   const t = useT();
   const { speak: speakTts, stop: stopTts, isSpeaking } = useSpeech();
@@ -94,19 +95,26 @@ export function TextActionMenu(props: TextActionMenuProps) {
 
   const handleExplain = useCallback(() => {
     setActiveAction('explain');
-    const l1Name = l1Lang?.name ?? '';
-    const header = t('prompt.explain_block_header', { l2Code });
-    const item1 = t('prompt.explain_block_item1', { l1Name });
-    const item2 = t('prompt.explain_block_item2');
-    const textLabel = t('prompt.explain_text_label');
-    const lines = [header, `1. ${item1}`, `2. ${item2}`];
-    if (context) {
-      const ctxLabel = t('prompt.explain_context_label');
-      lines.push('', `${ctxLabel}: ${context}`);
-    }
-    lines.push('', `${textLabel}: ${text}`);
-    streamExplain(lines.join('\n'));
-  }, [text, l2Code, context, l1Lang, t, streamExplain]);
+    // Shared assembly (parity with web): numbered breakdown list + backtick item
+    // + context/text labels. Web previously included the backtick item; mobile
+    // did not — now both agree.
+    const prompt = buildExplainBlockPrompt({
+      templates: {
+        header: t('prompt.explain_block_header'),
+        item1: t('prompt.explain_block_item1'),
+        item2: t('prompt.explain_block_item2'),
+        ticks: t('prompt.explain_ticks'),
+        contextLabel: t('prompt.explain_context_label'),
+        textLabel: t('prompt.explain_text_label'),
+      },
+      l2Code,
+      l1Name: l1Lang?.name ?? '',
+      l2Name: l2Lang?.name ?? l2Code,
+      context,
+      text,
+    });
+    streamExplain(prompt);
+  }, [text, l2Code, l1Lang, l2Lang, context, t, streamExplain]);
 
   const handleTranslate = useCallback(async () => {
     setActiveAction('translate');

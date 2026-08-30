@@ -9,6 +9,7 @@ import { languageName } from '@/lib/language-data';
 import { log, logwarn } from '@/lib/logger';
 import { copyText } from '@/lib/clipboard';
 import { useStreamingExplanation } from '@langplayer/api-client';
+import { buildExplainBlockPrompt } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { toast } from 'sonner';
 
@@ -77,19 +78,24 @@ export function useTextActions({ text, l2Code, l1Code, context }: UseTextActions
 
   const handleExplain = useCallback(() => {
     setActiveAction('explain');
-    const l1Name = l1.name;
-    const header = t('prompt.explain_block_header', { l2Code });
-    const item1 = t('prompt.explain_block_item1', { l1Name });
-    const item2 = t('prompt.explain_block_item2');
-    const item3 = t('prompt.explain_ticks', { l2Name: languageName(l2Code, effectiveL1) });
-    const textLabel = t('prompt.explain_text_label');
-    const lines = [header, `1. ${item1}`, `2. ${item2}`, `3. ${item3}`];
-    if (context) {
-      const ctxLabel = t('prompt.explain_context_label');
-      lines.push('', `${ctxLabel}: ${context}`);
-    }
-    lines.push('', `${textLabel}: ${text}`);
-    const prompt = lines.join('\n');
+    // Shared assembly (>web + mobile): numbered breakdown list + backtick item +
+    // context/text labels. Includes the backtick instruction so the AI output
+    // renders as interactive tokenized text.
+    const prompt = buildExplainBlockPrompt({
+      templates: {
+        header: t('prompt.explain_block_header'),
+        item1: t('prompt.explain_block_item1'),
+        item2: t('prompt.explain_block_item2'),
+        ticks: t('prompt.explain_ticks'),
+        contextLabel: t('prompt.explain_context_label'),
+        textLabel: t('prompt.explain_text_label'),
+      },
+      l2Code,
+      l1Name: l1.name,
+      l2Name: languageName(l2Code, effectiveL1),
+      context,
+      text,
+    });
     log('AI explain stream start', { l2Code, chars: prompt.length });
     streamExplain(prompt);
   }, [text, l2Code, effectiveL1, context, l1.name, t, streamExplain]);

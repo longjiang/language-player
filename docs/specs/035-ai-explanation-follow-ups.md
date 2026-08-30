@@ -27,6 +27,18 @@ The DeepSeek explanation card (dictionary popup and dictionary entry page) gets 
 
 Synonyms is the only follow-up that asks for several items per entry (head word, pronunciation, contrast, examples), so its prompts are the longest. Both variants end up followed by the shared backtick-formatting instruction (`prompt.explain_ticks`) appended in code.
 
+**Shared assembly (2026-08-30):** the word-explain prompt for the dictionary
+entry ("Let DeepSeek Explain") and the reader "explain selected text" prompt are
+now assembled by shared builders in `@langplayer/utils` —
+`buildWordExplainPrompt` and `buildExplainBlockPrompt` — consumed by both
+`apps/web` and `apps/mobile`, so the two apps can never diverge again
+(previously web/mobile each assembled the `prompt.*` templates in their own
+code, and web vs mobile disagreed on the morphology instruction and the
+explain-block backtick item). The `prompt.*` template strings remain centralized
+i18n keys; the builders only own the assembly (context punctuation cleaning,
+template selection, morphology/non-inflecting append for `zh/vi/th/lo/km`,
+backtick instruction).
+
 ### Template — base (no context; dictionary entry page)
 
 > Please list synonyms of the {l2Name} word "{word}". For each synonym, give the head word and its pronunciation, explain how it contrasts with "{word}" in meaning and in use, and provide example sentences illustrating the difference.

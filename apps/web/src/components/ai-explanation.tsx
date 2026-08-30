@@ -7,6 +7,7 @@ import { languageName, baseCode } from '@/lib/language-data';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useStreamingExplanation, type StreamDiagnostics } from '@langplayer/api-client';
+import { buildWordExplainPrompt } from '@langplayer/utils';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { log, logwarn } from '@/lib/logger';
@@ -205,29 +206,25 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // L2 name in the L1 language (e.g., "Japanese" for en, "日语" for zh-Hans)
     const l2Name = languageName(l2.code, l1.code);
 
-    // Strip trailing punctuation from context to avoid doubled periods
-    const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
-
-    let prompt: string;
-    if (cleanContext && contextForm && contextForm !== word) {
-      prompt = t('prompt.explain_word_context_form', { l2Name, word, contextForm, context: cleanContext });
-    } else if (cleanContext) {
-      prompt = t('prompt.explain_word_context', { l2Name, word, context: cleanContext });
-    } else {
-      prompt = t('prompt.explain_word', { l2Name, word });
-    }
-
-    // L2 strings are backticked so they render as interactive tokenized text
-    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return `${prompt}\n\n${ticksPrompt}`;
-  }, [
-    t,
-    l1.code,
-    l2.code,
-    word,
-    contextText,
-    contextForm,
-  ]);
+    // Shared assembly (SPEC-035): strips trailing context punctuation, picks the
+    // context-form/context/plain template, appends the morphology instruction
+    // for non-inflecting L2s, and appends the backtick-formatting instruction —
+    // identical on web + mobile.
+    return buildWordExplainPrompt({
+      templates: {
+        contextForm: t('prompt.explain_word_context_form'),
+        context: t('prompt.explain_word_context'),
+        plain: t('prompt.explain_word'),
+        morphology: t('prompt.explain_morphology'),
+        ticks: t('prompt.explain_ticks'),
+      },
+      l2Name,
+      word,
+      contextForm,
+      context: contextText,
+      l2Code: l2.code,
+    });
+  }, [t, l1.code, l2.code, word, contextText, contextForm]);
 
   const fetchExplanation = useCallback(() => {
     const prompt = buildPrompt();
