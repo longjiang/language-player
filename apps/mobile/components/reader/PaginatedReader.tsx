@@ -650,16 +650,40 @@ export function PaginatedReader({
     // leading so an unusually large inter-paragraph gap can be traced to either
     // an unexpected block kind (empty/heading/table) or an oversized leading /
     // ruby line pitch. Fires once per page (keyed above).
+    const visLayout = visibleBlocksProp.map((b) => {
+      const idx = blocks?.indexOf(b) ?? -1;
+      const rect = blockLayoutsRef.current[idx];
+      return {
+        idx,
+        kind: b.kind,
+        type: b.kind === 'text' ? (b as any).type : null,
+        textLen: 'text' in b ? (b as any).text?.length ?? 0 : 0,
+        // Actual rendered layout (from onBlockLayout): top + height. The
+        // gap after a block = (next.top) − (this.top + this.height).
+        top: rect?.top ?? null,
+        height: rect?.height ?? null,
+      };
+    });
+    // Compute the real inter-block gaps from the rendered layout.
+    const gaps: (number | null)[] = [];
+    for (let i = 1; i < visLayout.length; i++) {
+      const prev = visLayout[i - 1]!;
+      const cur = visLayout[i]!;
+      gaps.push(
+        prev.top != null && prev.height != null && cur.top != null
+          ? Math.round(cur.top - (prev.top + prev.height))
+          : null,
+      );
+    }
     appLog('[Reader] 📐 spacing diagnostic', {
       leading: translationLeading,
       leadingPx: Math.round(16 * translationLeading),
       viewportH: viewportHeightRef.current,
-      blocks: visibleBlocksProp.map((b) => ({
-        idx: blocks?.indexOf(b) ?? -1,
-        kind: b.kind,
-        type: b.kind === 'text' ? (b as any).type : null,
-        textLen: 'text' in b ? (b as any).text?.length ?? 0 : 0,
-      })),
+      contentH: visLayout.length
+        ? Math.round(Math.max(...visLayout.map((b) => (b.top ?? 0) + (b.height ?? 0))))
+        : 0,
+      blocks: visLayout,
+      interBlockGaps: gaps,
     });
   }, [hasMeasured, page, visibleBlocksProp]);
 
