@@ -3,15 +3,16 @@
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { BookmarkCheck, BookOpen, ExternalLink, Video } from 'lucide-react';
+import { BookmarkCheck, BookOpen, Circle, ExternalLink, Video } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
-import { formatPronunciation } from '@langplayer/utils';
+import { formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useSrs } from '@/hooks/use-srs';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { log } from '@/lib/logger';
 
@@ -25,8 +26,6 @@ interface DictionaryEntryCardProps {
    *  anywhere else on the card (definitions, source, save) does not navigate.
    *  Defaults to false (whole card navigates). */
   headOnlyLink?: boolean;
-  /** Optional indicator rendered beside the level badges in compact mode (e.g. SRS review dot). */
-  srsDot?: React.ReactNode;
   /** Context for the save/bookmark button. Omit to hide (compact) or show (full). */
   saveContext?: SavedWordContext;
   /** Size of the compact card's labeled "Save Word" button. Defaults to 'sm'
@@ -78,6 +77,20 @@ function capSourceTitle(title: string): string {
   return truncated ? `${capped.trim()}…` : trimmed;
 }
 
+/** SRS review-status dot colors (match the review page's blue/red/green counts). */
+const SRS_STATUS_DOT_CLASSES: Record<'new' | 'learning' | 'review', string> = {
+  new: 'text-blue-500 fill-blue-500',
+  learning: 'text-red-500 fill-red-500',
+  review: 'text-green-500 fill-green-500',
+};
+
+/** i18n key for a review-status dot's tooltip/aria label. */
+const SRS_STATUS_LABEL_KEY: Record<'new' | 'learning' | 'review', string> = {
+  new: 'msg.srs_status_new',
+  learning: 'msg.srs_status_learning',
+  review: 'msg.srs_status_review',
+};
+
 /** Renders the entry details for a dictionary lookup result — compact in popups, full on detail pages.
  *  No tabs. Use DictionaryEntryTabs to wrap this card with tabbed sections (Examples, DeepSeek, etc.). */
 export function DictionaryEntryCard({
@@ -85,7 +98,6 @@ export function DictionaryEntryCard({
   variant = 'compact',
   onClick,
   headOnlyLink = false,
-  srsDot,
   saveContext,
   saveButtonSize,
   pronunciation,
@@ -96,6 +108,7 @@ export function DictionaryEntryCard({
   const t = useT();
   const { l1 } = useLanguage();
   const { getSavedWords } = useSavedWordsContext();
+  const { getCard } = useSrs();
   const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
   // SPEC-080: glyph-safe lang for the L2 head/related forms.
   const glyphLang = useGlyphLang(l2Code ?? '');
@@ -154,6 +167,23 @@ export function DictionaryEntryCard({
   const sourceLabel = hasVideoSource
     ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
     : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
+
+  // ── Shared: SRS review-status dot (appears when this entry is a saved word
+  // with an SRS card). Uses the shared getSrsReviewStatus and matches the
+  // review page's blue/red/green deck-count indicator. Rendered beside the
+  // level badges in BOTH compact and full mode.
+  const srsStatus = l2Code && savedRecord
+    ? getSrsReviewStatus(getCard(l2Code, entry.id))
+    : null;
+  const srsDot = srsStatus ? (
+    <span
+      title={t(SRS_STATUS_LABEL_KEY[srsStatus])}
+      aria-label={t(SRS_STATUS_LABEL_KEY[srsStatus])}
+      className="flex-shrink-0"
+    >
+      <Circle className={`h-2.5 w-2.5 ${SRS_STATUS_DOT_CLASSES[srsStatus]}`} />
+    </span>
+  ) : null;
 
   // ── Shared: level badges ──
   const badges = (
@@ -376,6 +406,7 @@ export function DictionaryEntryCard({
           )}
           <div className="flex-1" />
           {badges}
+          {srsDot}
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">

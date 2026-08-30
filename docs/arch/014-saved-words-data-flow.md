@@ -416,14 +416,14 @@ SavedWordsPage                  (apps/web/src/app/[l1]/[l2]/saved-words/page.tsx
 ├── SearchBar / FilterToolbar   (sort toggle, text filter, export, clear-all)
 ├── SavedWordGroup              (inline sub-component, "Today"/"Earlier" header)
 │   └── WordList                (apps/web/src/components/dictionary/word-list.tsx)
-│       └── SavedWordRow        (apps/web/src/components/dictionary/saved-word-row.tsx)
-│           └── WordListItem    (apps/web/src/components/dictionary/word-list.tsx)
-│               ├── [prefix]    ← bookmark button + optional SRS dot
+│       └── SavedWordEntryCard  (apps/web/src/components/dictionary/saved-word-entry-card.tsx)
+│           └── DictionaryEntryCard variant="compact"  (components/dictionary-entry-card.tsx)
 │               ├── head        ← word.forms[0] ?? word.context.form ?? "?"
+│               ├── level badges + SRS status dot (compact & full, both apps)
 │               ├── contextForm ← surface form ≠ head, shown as "(form)"
-│               ├── InlineDefinition ← lazy-loaded via IntersectionObserver
+│               ├── definition  ← lazy-loaded entry fetch (saved-word-entry-card.tsx)
 │               ├── context line    ← subtitle text excerpt
-│               └── SavedWordSource ← 🎬 Title · date or 📖 Title · date
+│               └── SaveButton / SavedWordSource ← 🎬 Title · date or 📖 Title · date
 ```
 
 #### SavedWordRow Field Resolution
@@ -436,7 +436,7 @@ SavedWordsPage                  (apps/web/src/app/[l1]/[l2]/saved-words/page.tsx
 | **Pronunciation** | `InlineDefinition` component (see below) |
 | **Context line** | `safeCtx.text` (truncated, with `…` prefix/suffix), only when `≠ head` |
 | **Source** | `SavedWordSource` — reads `context.youtube_id`/`videoTitle` vs `textTitle` |
-| **SRS dot** | `useSrs().getCard(l2, word.id)` → color-coded by review status |
+| **SRS dot** | Rendered by the shared `DictionaryEntryCard` (compact + full, both apps) via `@langplayer/utils` `getSrsReviewStatus(useSrs().getCard(l2, word.id))` — blue/red/green matching the review page |
 | **Bookmark** | Filled amber icon → calls `removeSavedWord(l2, word.id)` |
 
 #### InlineDefinition — Lazy-Loaded Entry Fetch

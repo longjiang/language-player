@@ -303,6 +303,12 @@ export function useSrs() {
 
   const resetCapReached = useCallback(() => setCapReached(false), []);
 
+  // Get one card's SRS state (parity with the web useSrs.getCard — used by the
+  // dictionary entry card to render the review-status dot).
+  const getCard = useCallback((l2Code: string, wordId: string): SrsFields | undefined => {
+    return store.cards[l2Code]?.[wordId];
+  }, [store]);
+
   // ── Pull-merge bridge: apply remote SRS changes from another device ──
   // (refreshFromCache is hoisted as a useCallback above so hydration can also
   // trigger a reconcile right after the server deck arrives.)
@@ -322,5 +328,6 @@ export function useSrs() {
     updateCard,
     removeCard,
     pruneOrphans,
+    getCard,
   };
 }
