@@ -203,6 +203,12 @@ nearest preceding TOC chapter label. Pages are continuous across the entire
 book, and progress on the bookshelf is character-based
 (`readChars`/`totalChars`), so it never depends on the viewport.
 
+**Import:** a multi-file pick publishes each book to the shelf the moment its
+metadata is saved (a per-book `listEpubs` in `use-epub.pickFile`) rather than
+holding a single spinner for the whole batch, so books appear one at a time as
+they finish copying/unwrapping/parsing — the web `addBook` → `refreshBooks`
+per-file behavior, not a screens-wide spinning state.
+
 **Pagination (web parity update):** the EPUB reader now uses the same
 web-style lazy measured pagination as `usePaginatedBook` — only a window
 around the current page is rendered in the hidden measuring view (160 blocks
