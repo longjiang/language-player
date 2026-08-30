@@ -1339,11 +1339,20 @@ export default function ReviewScreen() {
     [l2SavedWords, langCardsForCounts, dailyNewLimit],
   );
   useEffect(() => {
+    // Diagnostic: log the raw per-state card breakdown (before the due filter)
+    // alongside countDeckStates' due-today counts, so web and mobile logs can
+    // be diffed to distinguish a divergent card store from a due-time/now
+    // window artifact.
+    const now = Date.now();
+    const stateBreakdown = Object.values(langCardsForCounts).reduce<Record<string, number>>(
+      (acc, c) => { const s = fsrs.getCardState(c); acc[s] = (acc[s] ?? 0) + 1; return acc; },
+      {},
+    );
     const budget = fsrs.getNewCardBudget(
       l2SavedWords,
       langCardsForCounts,
       dailyNewLimit,
-      Date.now(),
+      now,
       dayStartHour,
     );
     log('[srs] cardCounts', {
@@ -1354,6 +1363,8 @@ export default function ReviewScreen() {
       remaining: budget.remaining,
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCardsForCounts).length,
+      now,
+      stateBreakdown,
     });
   }, [cardCounts, dailyNewLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
 
