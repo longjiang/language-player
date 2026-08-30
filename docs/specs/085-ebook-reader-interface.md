@@ -323,9 +323,7 @@ The chapters modal is a **list dialog** — no input, no keyboard concern — so
  │   │     ▸ 二、私が赤シャツを嫌いになった訳            │   │  min-h-0, scrolls
  │   │  ▸ 三、…                                          │   │  indentation = TOC depth
  │   │  …                                               │   │  current entry (and its
- │   ├──────────────────────────────────────────────────┤   │  ancestors) highlighted
- │   │  11 chapters                                     │   │  footer — shrink-0
- │   └──────────────────────────────────────────────────┘   │
+ │   └──────────────────────────────────────────────────┘   │  ancestors) highlighted
  │                                                          │
  └──────────────────────────────────────────────────────────┘
 ```
@@ -334,7 +332,11 @@ Elements:
 
 - **Header (shrink-0):** "Chapters" title + previous/next-chapter buttons + close (✕).
 - **TOC list (flex-1, min-h-0, scrolls):** the full `TocNode` hierarchy; indentation reflects depth; the current entry and its ancestors are highlighted; tapping an entry closes the modal and jumps.
-- **Footer (shrink-0):** "N chapters" count.
+
+> **Revision (post-SPEC-085):** the "N chapters" **footer was removed on both
+> web and mobile** (the chapters dialog is now header + scrollable list only,
+> no chapter-count bar). A drag-out of the dialog is a plain list; there is no
+> summary strip.
 
 ## 11. Behavior matrix
 
@@ -380,7 +382,7 @@ Elements:
   - `DialogContent`: replace `max-h-[80vh]` with a fixed `h-[min(70vh,560px)]` (keep `flex flex-col`, `sm:max-w-lg`, `z-[70]`).
   - Restructure the panel so the header + search bar are `shrink-0` and the results region is `flex-1 min-h-0 overflow-y-auto`; the panel's own root becomes `flex min-h-0 flex-1 flex-col`.
   - Add the empty-state placeholder for the initial state (no query, no recents) and center the no-results message in the reserved region.
-- The chapters dialog already has the right column structure (`DialogHeader` shrink-0, `flex-1 overflow-y-auto` list, footer count); verify only.
+- The chapters dialog already has the right column structure (`DialogHeader` shrink-0, `flex-1 overflow-y-auto` list). The former "N chapters" footer was removed; verify only.
 
 ### 13.2 Mobile
 
@@ -395,12 +397,12 @@ Elements:
   - Modal container: fixed `height: '70%'` (capped), flex column; header + `SearchBar` shrink-0; results region `flex-1` with the `ScrollView` inside (drop the `max-h-[70%]` scroll wrapper).
   - Wrap the modal content in `KeyboardAvoidingView` (padding/height) so the bar clears the keyboard; keep `keyboardShouldPersistTaps="handled"` and `autoFocus`.
   - Add the initial empty-state hint region (icon + "search the book") so the reserved area exists before any query.
-- The chapters modal already has the right structure (header row, scroll list, no footer count — add the "N chapters" footer for parity if desired); verify only.
+- The chapters modal already has the right structure (header row, scroll list). The "N chapters" footer that was added for web parity (this spec previously claimed mobile had no footer) was removed on both apps; verify only.
 
 ### 13.3 Shared
 
 - No shared-package changes: this is view-layer work in both apps (AGENTS.md — UI is not shared).
-- Translation keys: reuse existing keys (`title.chapters`, `action.search`, `action.close`, `msg.no_results`, `placeholder.search` / `placeholder.search_dots`, `msg.chapters`, `msg.result_count`). A dedicated empty-state hint ("Search this book…") can reuse the search placeholder keys; no new keys are required.
+- Translation keys: reuse existing keys (`title.chapters`, `action.search`, `action.close`, `msg.no_results`, `placeholder.search` / `placeholder.search_dots`, `msg.result_count`). The `msg.chapters` key (used by the removed chapters footer) is now unused in code but retained in the CSV. A dedicated empty-state hint ("Search this book…") can reuse the search placeholder keys; no new keys are required.
 
 ## 14. Files changed
 

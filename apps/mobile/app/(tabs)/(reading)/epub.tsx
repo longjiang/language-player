@@ -595,12 +595,6 @@ export default function EpubReaderScreen() {
                 onSelect={handleChapterSelect}
               />
             </ScrollView>
-            {/* Chapter count footer — web parity (SPEC-085 §10). */}
-            <View className="border-t border-border px-4 py-2">
-              <Text className="text-xs text-muted-foreground">
-                {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
-              </Text>
-            </View>
           </View>
         </View>
         </Modal>
