@@ -254,7 +254,8 @@ export function useEpub(): UseEpubReturn {
     data: ArrayBuffer,
     fName: string,
     importLanguage?: string | null,
-  ): Promise<{ b: EpubBook; id: string; existing: boolean } | null> => {
+    opts?: { skipExisting?: boolean },
+  ): Promise<{ b: EpubBook | null; id: string; existing: boolean } | null> => {
     let id: string;
     try {
       id = await sha256Hex(data);
@@ -262,6 +263,14 @@ export function useEpub(): UseEpubReturn {
       id = `fn-${fName}-${data.byteLength}`;
     }
     setError(null);
+    // Content-hash dedupe (import path only): if the book is already in the
+    // library, skip re-parsing/re-saving. openBook does NOT pass skipExisting,
+    // because opening a stored book must re-parse the model to resume.
+    const existing = await loadEpub(id);
+    if (existing && opts?.skipExisting) {
+      epubLog(`import "${fName}" — already in library, skipped (${id})`);
+      return { b: null, id, existing: true };
+    }
     let b: EpubBook;
     try {
       b = await EpubBook.open(data);
@@ -270,7 +279,6 @@ export function useEpub(): UseEpubReturn {
       setError('msg.epub_parse_error');
       return null;
     }
-    const existing = await loadEpub(id);
     await saveEpub(id, data, {
       id,
       fileName: fName,
@@ -326,7 +334,7 @@ export function useEpub(): UseEpubReturn {
     }
 
     const parsed = await parseAndStore(stored.data, stored.meta.fileName);
-    if (!parsed) return null;
+    if (!parsed?.b) return null;
     const { b } = parsed;
     setPdfDoc(null);
     setOpenBook(b);
@@ -370,14 +378,19 @@ export function useEpub(): UseEpubReturn {
         id = `fn-${fName}-${data.byteLength}`;
       }
       const existing = await loadEpub(id);
-      let coverUrl: string | null = existing?.meta.coverUrl ?? null;
-      if (!coverUrl) {
+      // Content-hash dedupe: a PDF already in the library is skipped (no
+      // duplicate handle, no re-cover render).
+      if (existing) {
+        epubLog(`import "${fName}" — PDF already in library, skipped (${id})`);
+        await refreshBooks();
+        return { id };
+      }
+      let coverUrl: string | null = null;
         try {
           coverUrl = await renderPdfPage(data, 1, 1.2);
         } catch (err) {
           epubWarn(`PDF cover render failed: ${(err as Error)?.message ?? err}`);
         }
-      }
       // Log the byte length right before the IndexedDB put. A detached
       // ArrayBuffer reports 0 here — if a PDF with content logs 0 bytes, the
       // cover render detached the buffer (see pdf-book.ts openDoc).
@@ -388,7 +401,7 @@ export function useEpub(): UseEpubReturn {
         format: 'pdf',
         language: importLanguage
           ? normalizeLanguageCode(importLanguage)
-          : existing?.meta.language ?? null,
+          : null,
         coverUrl,
         lastReadAt: Date.now(),
       });
@@ -401,12 +414,12 @@ export function useEpub(): UseEpubReturn {
     if (alt) {
       epubLog(`alt format "${fName}" → ${alt.toc.length} TOC entries, ${alt.xhtml.length} chars`);
       const epubData = await buildMinimalEpub(alt);
-      const parsed = await parseAndStore(epubData, fName, importLanguage);
+      const parsed = await parseAndStore(epubData, fName, importLanguage, { skipExisting: true });
       if (!parsed) return null;
       await refreshBooks();
       return { id: parsed.id };
     }
-    const parsed = await parseAndStore(data, fName, importLanguage);
+    const parsed = await parseAndStore(data, fName, importLanguage, { skipExisting: true });
     if (!parsed) return null;
     await refreshBooks();
     return { id: parsed.id };
