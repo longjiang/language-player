@@ -8,6 +8,7 @@
  */
 
 import * as pdfjs from 'pdfjs-dist';
+import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { downscaleImage } from '@/lib/downscale-image';
 
@@ -149,12 +150,9 @@ export async function pdfPageToMarkdown(dataUrl: string): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       image: payload,
-      prompt:
-        'Transcribe all text on this page into clean, well-formatted markdown. ' +
-        'Read in natural reading order and join wrapped lines into flowing prose — ' +
-        'no hard line breaks inside a paragraph, and do not split a sentence across ' +
-        'separate lines. Preserve headings, paragraphs, lists, emphasis, and code ' +
-        'blocks. Output only the markdown.',
+      // Shared Vision-OCR prompt (also used by the image reader) so the PDF
+      // page-to-markdown path never drifts from the image OCR prompt.
+      prompt: IMAGE_OCR_PROMPT,
     }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

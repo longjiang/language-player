@@ -135,6 +135,8 @@ export type {
 } from './srs-test-manager';
 export type { HighlightToken, KanaEntryForm } from './highlight-match';
 export { pickSavedEntry } from './saved-gloss';
+export { buildWordExplainPrompt, buildExplainBlockPrompt } from './ai-prompts';
+export type { WordExplainPromptInput, ExplainBlockPromptInput } from './ai-prompts';
 export {
   getSyncEntityDef,
   validateSyncPayload,

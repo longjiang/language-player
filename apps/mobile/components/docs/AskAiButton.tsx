@@ -3,21 +3,10 @@ import { View, Text, TextInput, Modal, ScrollView, ActivityIndicator, KeyboardAv
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { useStreamingExplanation } from '@langplayer/api-client';
+import { ASK_AI_PREAMBLE } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { Sparkles, Send, X } from 'lucide-react-native';
-
-/**
- * System-style preamble for docs questions: keeps the assistant focused on
- * how to use Language Player and honest about what it doesn't know.
- */
-const ASK_AI_PREAMBLE =
-  'You are the Language Player help assistant. Language Player is a language ' +
-  'learning platform: authentic videos with interactive dual subtitles, a popup ' +
-  'dictionary, a reader for ebooks/PDFs/images, saved words, SRS review, and ' +
-  'device sync. Answer the question about how to use the app concisely and ' +
-  'practically, in the user\u2019s own language. If you don\u2019t know, say so ' +
-  'and point them to the documentation.';
 
 /** Ask-AI modal for the docs (web docs AskAiDialog parity). */
 function AskAiSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {

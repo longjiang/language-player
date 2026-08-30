@@ -2,22 +2,11 @@
 
 import { useCallback, useState } from 'react';
 import { useStreamingExplanation } from '@langplayer/api-client';
+import { ASK_AI_PREAMBLE } from '@langplayer/shared';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useT } from '@/hooks/use-t';
 import { Loader2, Send, Sparkles } from 'lucide-react';
 import { log } from '@/lib/logger';
-
-/**
- * System-style preamble for docs questions: keeps the assistant focused on
- * how to use Language Player and honest about what it doesn't know.
- */
-const ASK_AI_PREAMBLE =
-  'You are the Language Player help assistant. Language Player is a language ' +
-  'learning platform: authentic videos with interactive dual subtitles, a popup ' +
-  'dictionary, a reader for ebooks/PDFs/images, saved words, SRS review, and ' +
-  'device sync. Answer the question about how to use the app concisely and ' +
-  'practically, in the user\u2019s own language. If you don\u2019t know, say so ' +
-  'and point them to the documentation.';
 
 /**
  * "Ask AI" chat for the docs: type a question about how to use the app and
