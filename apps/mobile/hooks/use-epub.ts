@@ -203,7 +203,6 @@ export function useEpub(): UseEpubReturn {
     });
     if (result.canceled || !result.assets?.length) return;
     const assets = result.assets;
-    setLoading(true);
     setError(null);
 
     let importedCount = 0;
@@ -295,6 +294,10 @@ export function useEpub(): UseEpubReturn {
             addedAt: Date.now(),
           };
           await saveEpub(meta);
+          // Web parity (SPEC-049 §7): publish each book to the shelf as soon
+          // as it is imported, so a multi-file pick shows books appearing one
+          // at a time instead of a single long spinner.
+          setBooks(await listEpubs());
           await m.cleanup();
           importedCount++;
           log(`[LP Mobile] 📚 import done "${asset.name}" total=${Date.now() - assetStart}ms (copy+unwrap+inspect+cover+save)`);
@@ -306,8 +309,6 @@ export function useEpub(): UseEpubReturn {
 
       // Importing only adds to the bookshelf (web parity) — it never opens the
       // book. The user taps a card (or the mount auto-open) to open it.
-      setBooks(await listEpubs());
-
       if (importedCount === 0) {
         setError(firstError ?? 'Failed to import EPUB');
       }
