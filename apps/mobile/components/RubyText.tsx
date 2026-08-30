@@ -524,6 +524,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
       ) : (
         <Text
           pointerEvents="none"
+          lang={language ?? undefined}
           style={{
             fontSize,
             lineHeight: fallbackLineHeight,
