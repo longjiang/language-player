@@ -438,6 +438,11 @@ export function PaginatedReader({
   // string is identical to the previous page's.
   const prevScrollViewKeyRef = useRef(scrollViewKey);
   if (prevScrollViewKeyRef.current !== scrollViewKey) {
+    // DIAGNOSTIC (flash audit): a page-content remount re-mounts every block's
+    // native ruby paragraph, which re-measures each one — the flash the user
+    // sees on page turn / refine. Correlate with the per-paragraph
+    // "re-measure keep-mounted" log in RubyText.tsx to confirm the fix holds.
+    log(`[Reader] page content (re)mount ${prevScrollViewKeyRef.current} → ${scrollViewKey} t=${Date.now()}`);
     prevScrollViewKeyRef.current = scrollViewKey;
     lastVisibleKeyRef.current = '';
   }
@@ -1186,7 +1191,12 @@ function renderBlock(
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
             onTokenPress={getTokenPressHandler?.(globalIdx)}
-            onLineGrid={getLineGridHandler?.(globalIdx)}
+            // Only wire the line-grid reporter when the side-by-side
+            // translation column consumes it. Otherwise every block's native
+            // paragraph still reports its grid and each land triggers a
+            // wasted setLineGrids → full reader re-render, even though the
+            // stacked render never reads it (perf + fewer settle flashes).
+            onLineGrid={translationSideBySide ? getLineGridHandler?.(globalIdx) : undefined}
             leadingIndent={firstLineIndent && block.type === 'paragraph'}
             textScale={scale * headingFactor}
             debugFontFamily={debugFontFamily}
