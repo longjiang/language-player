@@ -1,18 +1,20 @@
 /**
  * Downscale + re-encode an image before sending it to DeepSeek Vision.
  *
- * The `/vision` endpoint charges per image region, so sending a huge photo
- * as-is wastes tokens and adds latency. This caps the longest side and
- * re-encodes to JPEG (preserving PNG for transparent images), producing a far
- * smaller payload without meaningfully hurting OCR for typical text/diagram
- * images. The source data URL is left untouched — thumbnails/preview still use
- * the full-resolution original.
+ * DeepSeek Vision resizes every image to a ~800x800 pixel budget and caps each
+ * image at ~384 input tokens, so image token cost is flat regardless of the
+ * resolution you send. That means we don't optimize for payload size — we
+ * optimize for the pixels the model actually reads. We cap the longest side to
+ * a sane working size, keep text/screenshot PNG sources lossless (PNG-for-text:
+ * sharp text, preserved alpha), and re-encode photographic JPEG sources at a
+ * higher quality. The source data URL is left untouched — thumbnails/preview
+ * still use the full-resolution original.
  */
 
 /** Longest-side cap (px) for images sent to DeepSeek Vision. */
 export const IMAGE_OCR_MAX_DIM = 1600;
-/** JPEG re-encode quality for the OCR payload. */
-export const IMAGE_OCR_QUALITY = 0.82;
+/** JPEG quality for photographic OCR payloads (PNG output is lossless). */
+export const IMAGE_OCR_QUALITY = 0.9;
 
 /** True when >1% of the canvas pixels are not fully opaque (transparency). */
 function hasTransparency(ctx: CanvasRenderingContext2D, width: number, height: number): boolean {
@@ -28,8 +30,9 @@ function hasTransparency(ctx: CanvasRenderingContext2D, width: number, height: n
   return false;
 }
 
-/** Downscale an image data URL, re-encoding to JPEG (or PNG if it has
- *  transparency). Never upscales; returns a smaller data URL for /vision. */
+/** Downscale an image data URL, re-encoding as lossless PNG for PNG sources and
+ *  transparent images, and as higher-quality JPEG otherwise. Never upscales;
+ *  returns a smaller data URL for /vision. */
 export async function downscaleImage(
   dataUrl: string,
   maxDim: number = IMAGE_OCR_MAX_DIM,
@@ -54,9 +57,14 @@ export async function downscaleImage(
           return;
         }
         ctx.drawImage(img, 0, 0, w, h);
+        // PNG-for-text: keep lossless PNG for PNG sources and transparent images
+        // (sharp text, preserved alpha); photographic JPEG sources re-encode as a
+        // higher-quality JPEG. Token cost is flat for this model, so we optimize
+        // for pixel fidelity rather than payload size.
         const isJpeg = /^data:image\/jpeg/i.test(dataUrl);
+        const isPngSource = /^data:image\/png/i.test(dataUrl);
         const transparent = !isJpeg && hasTransparency(ctx, w, h);
-        const type = transparent ? 'image/png' : 'image/jpeg';
+        const type = (isPngSource || transparent) ? 'image/png' : 'image/jpeg';
         resolve(canvas.toDataURL(type, quality));
       } catch (err) {
         reject(err instanceof Error ? err : new Error(String(err)));
