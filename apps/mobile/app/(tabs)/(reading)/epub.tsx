@@ -36,7 +36,7 @@ export default function EpubReaderScreen() {
   const epub = useEpub();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { setImmersed, registerCloseReader } = useReaderChrome();
+  const { setImmersed } = useReaderChrome();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
 
@@ -247,26 +247,12 @@ export default function EpubReaderScreen() {
     void handleClose();
   }, [handleClose]);
 
-  // Register the book's close handler ONLY while a book is open, so the nav
-  // menu's "Epub Reader" item closes it (an alternative to the close button)
-  // — `requestCloseReader` returns true when it runs, letting the nav fall
-  // through to a normal navigation on the bookshelf (no book). Registering
-  // only during an open book means a book can always be opened (no handler
-  // fires while the bookshelf/opening is on screen), and closing never feeds
-  // back into the auto-open effect (guarded by autoOpenedRef), so there is no
-  // open→close→reopen loop.
-  //
-  // The handler is STABLE (reads the latest `handleClose` via a ref) and is
-  // (re)registered only on discrete book-open-state transitions — never every
-  // render — so it cannot drive the register→render→register loop that once
-  // tore the reader down to the bookshelf.
-  const handleCloseRef = useRef(handleClose);
-  handleCloseRef.current = handleClose;
-  useEffect(() => {
-    if (!hasBook) { registerCloseReader(null); return; }
-    registerCloseReader(() => { void handleCloseRef.current(); });
-    return () => registerCloseReader(null);
-  }, [hasBook, registerCloseReader]);
+  // NOTE: the nav menu's same-route "Epub Reader" close (requestCloseReader /
+  // registerCloseReader) is DISABLED. It could feed back into the epub
+  // auto-open effect and create an open->close->reopen loop where a book could
+  // never be opened. Leaving the reader is the reader's own chromeless close
+  // button (handleCloseReader) and the back stack; the nav item is a plain
+  // navigation. No close handler is registered here.
 
   const handleChapterSelect = useCallback((href: string) => {
     setTocOpen(false);
