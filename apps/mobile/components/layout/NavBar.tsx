@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Platform } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useReaderChrome } from '@/contexts/ReaderChromeContext';
 import { ChevronDown } from 'lucide-react-native';
@@ -52,15 +52,14 @@ const NAV_GROUPS: NavGroup[] = [
 export function NavBar() {
   const t = useT();
   const { requestCloseReader } = useReaderChrome();
-  const pathname = usePathname();
 
   const navigate = (href: string) => {
-    // Tapping "Epub Reader" while already on the epub reader closes the open
-    // book (an alternative to the close button) instead of a no-op same-route
-    // navigation.
-    const onEpubSelfNav = href === '/(tabs)/(reading)/epub' && (pathname === '/epub' || pathname.endsWith('/epub'));
-    if (onEpubSelfNav) {
-      requestCloseReader();
+    // Tapping "Epub Reader" while a book is open closes it (an alternative to
+    // the close button) instead of a no-op same-route navigation. The epub
+    // screen registers its close handler ONLY while a book is open, so
+    // requestCloseReader returns true exactly when there is something to close;
+    // otherwise fall through to a normal navigation (e.g. to the bookshelf).
+    if (href === '/(tabs)/(reading)/epub' && requestCloseReader()) {
       return;
     }
     router.push(href as any);

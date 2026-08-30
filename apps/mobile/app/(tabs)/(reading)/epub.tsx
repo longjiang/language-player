@@ -247,26 +247,26 @@ export default function EpubReaderScreen() {
     void handleClose();
   }, [handleClose]);
 
-  // Register the book's close handler so the nav menu's "Epub Reader" item can
-  // close it (an alternative to the close button) when the reader is already
-  // open — the NavBar/drawer call requestCloseReader on a same-route tap.
+  // Register the book's close handler ONLY while a book is open, so the nav
+  // menu's "Epub Reader" item closes it (an alternative to the close button)
+  // — `requestCloseReader` returns true when it runs, letting the nav fall
+  // through to a normal navigation on the bookshelf (no book). Registering
+  // only during an open book means a book can always be opened (no handler
+  // fires while the bookshelf/opening is on screen), and closing never feeds
+  // back into the auto-open effect (guarded by autoOpenedRef), so there is no
+  // open→close→reopen loop.
   //
-  // Register a STABLE handler backed by a ref: `handleClose` depends on the
-  // freshly-created `useEpub()` object, so it changes identity every render.
-  // Depending on it here (a) re-registers on every render and (b) each
-  // `registerCloseReader(fn)` calls `setCloseReader(fn)` in ReaderChromeProvider
-  // — both drive an unbounded re-render loop between the reader screen and the
-  // provider (the "Cannot update EpubReaderScreen while rendering
-  // ReaderChromeProvider" error), which is what caused the reader to be torn
-  // down to the bookshelf. Register once on mount with a stable close wrapper
-  // that reads the latest handler from a ref.
+  // The handler is STABLE (reads the latest `handleClose` via a ref) and is
+  // (re)registered only on discrete book-open-state transitions — never every
+  // render — so it cannot drive the register→render→register loop that once
+  // tore the reader down to the bookshelf.
   const handleCloseRef = useRef(handleClose);
   handleCloseRef.current = handleClose;
   useEffect(() => {
+    if (!hasBook) { registerCloseReader(null); return; }
     registerCloseReader(() => { void handleCloseRef.current(); });
     return () => registerCloseReader(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerCloseReader]);
+  }, [hasBook, registerCloseReader]);
 
   const handleChapterSelect = useCallback((href: string) => {
     setTocOpen(false);
