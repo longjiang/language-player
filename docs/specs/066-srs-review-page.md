@@ -397,6 +397,18 @@ today" message.
 - `useSubscription()` — `isPro` for the free cap.
 - `useOfflineDictionaryAvailable()` / `getOfflineEntryById()` — offline
   dictionary resolution.
+- **Pull-merge reconciliation (2026-08-30):** `useSrs.refreshFromCache()`
+  merges offline `entity_cache` rows back into the deck so another device's
+  changes apply on load, but it now keeps an `srs_card` row only if the
+  authoritative `GET /srs` deck contains the card **or** a pending/error outbox
+  op exists for it (unsynced local work). Rows that are neither — stale
+  local-only cards never persisted to the server and with nothing queued to push
+  them — are dropped. This stops mobile from retaining server-absent cards that
+  web (server-authoritative) never shows, so the new/again/review header counts
+  converge between platforms after hydration. The server deck is captured during
+  row-API hydration and the reconcile re-runs right after it; it's skipped
+  per-language until that language's server deck has loaded, so legitimate
+  offline cards are never dropped before cloud hydration.
 
 ## Intended Page Behavior (both platforms)
 
