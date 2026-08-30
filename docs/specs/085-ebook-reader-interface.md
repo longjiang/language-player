@@ -446,6 +446,15 @@ Per product direction (paginated reader requirements), the affordance flipped:
 - **Chrome ON:** no close button. Escape hatches are the chromeless close and
   the nav-menu same-route close (`requestCloseReader`).
 
+> **Removed on mobile (2026-08-29):** the nav-menu same-route close
+> (`requestCloseReader` / `registerCloseReader`) is **disabled on mobile**. It
+> could feed back into the epub auto-open effect and create an open→close→reopen
+> loop where a book could never be opened, so the nav item is a plain navigation
+> again on mobile. Leaving the reader uses the chromeless close button and the
+> back stack. The dormant request/register API is retained in
+> `ReaderChromeContext` for a later, safe re-introduction; web is unaffected
+> (web was never wired through this path).
+
 ### 17.2 Horizontal geometry — content-container clamp + symmetric leading margins
 
 §6.2 previously specified `padding-left: L` / `padding-right: 16px`. The
