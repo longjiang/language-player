@@ -459,38 +459,41 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
 
   if (!NativeRubyTextParagraphView) return null;
 
+  // ── Anti-blank re-measure (SPEC-087 "no layout change flashes") ──
+  // The wrapper must claim the parent's full width explicitly: readers put
+  // blocks inside `items-center` containers, where a view with only
+  // absolutely-positioned children (the measuring Text) collapses to width 0.
+  // The measuring Text is `position: absolute`, so it contributes NO height to
+  // the wrapper — until `measured` lands the wrapper had no in-flow child and
+  // its height collapsed to 0, i.e. a visible BLANK for a frame on page turn /
+  // remount, and again on any content/size change that bumped `sizeKey`.
+  //
+  // Fix (keeps the renderer native — no RN-Text fallback for the L2 body):
+  // 1. Render a VISIBLE in-flow fallback <Text> (same font / line pitch /
+  //    color) for the mount so the wrapper always reserves its real height and
+  //    never shows a zero-height blank; it is removed the moment a box exists.
+  // 2. Keep the native view mounted across `sizeKey` changes — previously the
+  //    `measured.sizeKey === sizeKey` gate unmounted it (→ blank) until the
+  //    measuring Text re-fired onLayout. Now it keeps painting with the last
+  //    known box (re-measure corrects it next frame), so a plain→tokenized or
+  //    width change never blanks the paragraph.
+  const fallbackColor = runs[0]?.color ?? '#888888';
+  const fallbackLineHeight = gridLineHeight ?? lineHeight;
+
   return (
-    // The wrapper must claim the parent's full width explicitly: readers put
-    // blocks inside `items-center` containers, where a view with only
-    // absolutely-positioned children (the measuring Text) collapses to width
-    // 0. The old flex-row token container got its width from its children.
     <View testID={testID} style={{ width: '100%' }}>
-      {/* Invisible measuring text: RN Text wraps with the same font and line
-          box as the native paragraph, so its laid-out size is the exact box
-          the native view needs. Kept mounted so width changes (rotation,
-          zoom) re-measure automatically. */}
-      <Text
-        key={sizeKey}
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          opacity: 0,
-          fontSize,
-          lineHeight: gridLineHeight ?? lineHeight,
-          fontWeight: fontWeight ?? 'normal',
-          textAlign,
-          ...(fontFamily ? { fontFamily } : {}),
-        }}
-        onLayout={onLayout}
-        onTextLayout={onLineGrid ? (e) => setMeasuringLines(e.nativeEvent.lines) : undefined}
-      >
-        {plainText}
-      </Text>
-      {measured && measured.sizeKey === sizeKey ? (
+      {/* Visible layer: the native paragraph once a box exists (kept mounted
+          across sizeKey changes — blanking on `sizeKey` mismatch is exactly the
+          flash), else an in-flow fallback <Text> so the wrapper reserves its
+          real height (the absolute measuring text contributes none) and the
+          paragraph never collapses to a zero-height blank. */}
+      {measured ? (
         (() => {
+          if (__DEV__ && measured.sizeKey !== sizeKey) {
+            log(
+              `[LP Mobile] [RubyText] paragraph re-measure keep-mounted sizeKey=${measured.sizeKey === sizeKey ? 'matched' : 'stale'} w=${measured.width.toFixed(1)} h=${(renderedHeight ?? measured.height).toFixed(1)} runs=${runs.length} textLen=${plainText.length}`,
+            );
+          }
           return (
             <NativeRubyTextParagraphView
               ref={nativeRef}
@@ -518,7 +521,45 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
             />
           );
         })()
-      ) : null}
+      ) : (
+        <Text
+          pointerEvents="none"
+          style={{
+            fontSize,
+            lineHeight: fallbackLineHeight,
+            fontWeight: fontWeight ?? 'normal',
+            textAlign,
+            color: fallbackColor,
+            ...(fontFamily ? { fontFamily } : {}),
+          }}
+        >
+          {plainText}
+        </Text>
+      )}
+      {/* Invisible measuring text: RN Text wraps with the same font and line
+          box as the native paragraph, so its laid-out size is the exact box
+          the native view needs. Kept mounted so width changes (rotation,
+          zoom) re-measure automatically. */}
+      <Text
+        key={sizeKey}
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          opacity: 0,
+          fontSize,
+          lineHeight: fallbackLineHeight,
+          fontWeight: fontWeight ?? 'normal',
+          textAlign,
+          ...(fontFamily ? { fontFamily } : {}),
+        }}
+        onLayout={onLayout}
+        onTextLayout={onLineGrid ? (e) => setMeasuringLines(e.nativeEvent.lines) : undefined}
+      >
+        {plainText}
+      </Text>
     </View>
   );
 });
