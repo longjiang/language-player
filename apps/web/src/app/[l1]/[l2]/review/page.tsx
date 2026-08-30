@@ -1034,6 +1034,20 @@ export default function ReviewPage() {
       now,
       stateBreakdown,
     });
+    // Collapse-proof single-string snapshot so the console never truncates it;
+    // the due-review id list is the diff key between web & mobile.
+    const dueReviewIds = Object.entries(langCardsForCounts)
+      .filter(([, c]) => fsrs.getCardState(c) === 'review' && fsrs.isDue(c, now))
+      .map(([id]) => id)
+      .sort();
+    log(
+      `[SRS] deckDiff l2=${l2Code}` +
+        ` cards=${Object.keys(langCardsForCounts).length}` +
+        ` saved=${l2SavedWords.length}` +
+        ` state=new:${stateBreakdown.new ?? 0},learning:${stateBreakdown.learning ?? 0},review:${stateBreakdown.review ?? 0},relearning:${stateBreakdown.relearning ?? 0}` +
+        ` due=new:${cardCounts.newCount},again:${cardCounts.againCount},review:${cardCounts.reviewCount}` +
+        ` reviewDue[${dueReviewIds.length}]=${dueReviewIds.join(',')}`,
+    );
   }, [cardCounts, dailyLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
 
   const currentCard = cards[currentIndex];
