@@ -55,6 +55,7 @@ import {
 import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { lookupL1Text } from '@/lib/l1-lookup';
+import { getEntityCache, listOutbox } from '@/lib/sync-db';
 import {
   decomposeWordId,
   isSameEntryId,
@@ -1381,6 +1382,62 @@ export default function ReviewScreen() {
         ` reviewDue[${dueReviewIds.length}]=${dueReviewIds.join(',')}`,
     );
   }, [cardCounts, dailyNewLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
+
+  // ── Diagnostic: are mobile-only cards queued-but-never-confirmed, or
+  //    rejected-and-stuck? Diff the local ja deck against GET /srs (server),
+  //    then classify each extra card by its sync-cache row + outbox status.
+  const syncDiffLoggedRef = useRef(false);
+  useEffect(() => {
+    if (!srsLoaded || !srsCloudHydrated || !user) return;
+    if (syncDiffLoggedRef.current) return;
+    syncDiffLoggedRef.current = true;
+    (async () => {
+      const L2 = l2Code;
+      try {
+        const { getSrs } = await import('@langplayer/api-client');
+        const res = await getSrs();
+        const serverJaIds = new Set(Object.keys(res.cards?.[L2] ?? {}));
+        const localJaIds = Object.keys(store.cards[L2] ?? {});
+        const extraIds = localJaIds.filter((id) => !serverJaIds.has(id));
+        const [cacheRows, outboxRows] = await Promise.all([
+          getEntityCache('srs_card'),
+          listOutbox(),
+        ]);
+        const cacheById = new Map(cacheRows.map((r) => [r.entity_id, r]));
+        const outboxById = new Map(
+          outboxRows.filter((r) => r.entity === 'srs_card').map((r) => [r.entity_id, r]),
+        );
+        let pending = 0;
+        let error = 0;
+        const detailById = new Map<
+          string,
+          { cacheUpdated: number | null; cacheDeleted: number | null; obStatus: string; attempts: number; err: string }
+        >();
+        for (const id of extraIds) {
+          const entityId = `${L2}::${id}`;
+          const cache = cacheById.get(entityId);
+          const ob = outboxById.get(entityId);
+          if (ob?.status === 'pending') pending++;
+          else if (ob?.status === 'error') error++;
+          detailById.set(id, {
+            cacheUpdated: cache?.updated_at ?? null,
+            cacheDeleted: cache?.deleted_at ?? null,
+            obStatus: ob?.status ?? 'none',
+            attempts: ob?.attempts ?? 0,
+            err: (ob?.last_error ?? '').slice(0, 120),
+          });
+        }
+        const sample = extraIds.slice(0, 12).map((id) => ({ id, ...detailById.get(id) }));
+        log(
+          `[SRS] syncDiff l2=${L2} serverCards=${serverJaIds.size} localCards=${localJaIds.length}` +
+            ` extra=${extraIds.length} pending=${pending} error=${error} other=${extraIds.length - pending - error}` +
+            ` sample=${JSON.stringify(sample)}`,
+        );
+      } catch (e) {
+        log(`[SRS] syncDiff failed: ${(e as Error)?.message ?? String(e)}`);
+      }
+    })();
+  }, [srsLoaded, srsCloudHydrated, user, l2Code, store]);
 
   // ── Render states ──
 
