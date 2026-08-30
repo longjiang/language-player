@@ -305,6 +305,40 @@ Korean forms.
   dict reports base/reading ascender/descender/capHeight, `lineHeight`, and
   `rubyBaseTextOffset` so the gap can be verified from the Metro log.
 
+### Anti-blank measure gate (2026-08-27)
+
+Fabric/Yoga cannot size a custom host view, so JS measures the native
+paragraph with an invisible RN `<Text>` and passes the box via `style`. That
+measuring `<Text>` is `position: absolute`, so it contributes **no** height to
+the wrapper. Until `onLayout` lands, the paragraph renderer used to gate the
+native view behind `measured && measured.sizeKey === sizeKey` and have no other
+in-flow child — so on a page-content remount (page turn, or a boundary refine
+that changed the visible slice) the wrapper collapsed to height 0 and painted
+nothing for a frame, and again on any content/size change that bumped
+`sizeKey`. That is the reader's "flashes a blank between pages" symptom.
+
+Rules added in `RubyText.tsx` (`RubyTextParagraph`):
+
+1. **Never blank on the mount measure.** A visible in-flow fallback `<Text>`
+   (identical `fontSize` / `gridLineHeight` (/line pitch) / `fontWeight` /
+   `fontFamily` / the first run's L2 foreground color) is rendered for the
+   frame before the first `onLayout`, so the wrapper always reserves its real
+   height and the paragraph never collapses to a zero-height blank. The
+   fallback is removed the moment a box exists.
+2. **Keep the native view mounted across `sizeKey` changes.** The previous
+   `measured.sizeKey === sizeKey` gate unmounted the native view (→ blank)
+   until the measuring Text re-fired `onLayout`. Now it keeps painting with the
+   last-known box and corrects on re-measure, so a plain→tokenized transition
+   (identical `plainText`, metrics, and `sizeKey` — so the native view is not
+   re-measured at all) and a width/zoom change never blank the paragraph.
+
+`gridLineHeight` remains the real L2 pitch (linePitch), so the fallback and the
+native view agree on the box. `onLineGrid` is still reported from the invisible
+measuring text's `onTextLayout` and then the native view's grid, so translation
+baseline alignment is unchanged. Dev log: `paragraph re-measure keep-mounted`
+(in `RubyText.tsx`) plus `page content (re)mount` (in `PaginatedReader.tsx`)
+correlate any remaining flash with a content remount.
+
 ---
 
 ## Reference
