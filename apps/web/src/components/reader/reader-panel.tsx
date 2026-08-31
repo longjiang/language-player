@@ -351,7 +351,7 @@ export function ReaderPanel({
             [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-0
             [&_li]:mb-0 [&_li]:leading-relaxed
             [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
-            [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
+            [&_img]:max-w-full [&_img]:max-h-[var(--reader-page-height)] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain [&_img]:rounded-lg [&_img]:my-4
             [&_a]:text-primary [&_a]:underline [&_a]:hover:no-underline
             [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
             [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-1 [&_th]:text-left
