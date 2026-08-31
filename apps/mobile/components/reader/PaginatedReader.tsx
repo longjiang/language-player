@@ -467,6 +467,10 @@ export function PaginatedReader({
   visibleBlocksRef.current = visibleBlocks;
   const hasMeasured = scrollMode ? true : hasMeasuredProp;
   const contentWidth = scrollMode ? 300 : contentWidthProp;
+  /** Reader's visible page-viewport height — the cap for standalone image
+   *  blocks (SPEC-087 image sizing: "no taller than the scroll area"). 0 until
+   *  the viewport measures; the image renderer falls back to a generous cap. */
+  const maxImageHeight = viewportHeightRef.current;
   const loadingTokens = scrollMode ? false : (loadingTokensProp ?? false);
   const hasPrev = scrollMode ? false : (hasPrevProp ?? page > 0);
   const hasNext = scrollMode ? false : (hasNextProp ?? page < totalPages - 1);
@@ -761,7 +765,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}>
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, maxImageHeight),
           )}
         </View>
         {onToggleTranslation && (
@@ -830,7 +834,7 @@ export function PaginatedReader({
                         contentWidth + the hidden measuring mirror). */}
                     <View style={{ width: contentWidth, alignSelf: 'center' }}>
                       {visibleBlocks.map((block, bi) =>
-                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics),
+                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, maxImageHeight),
                       )}
                     </View>
                   </ScrollView>
@@ -990,6 +994,7 @@ export function PaginatedReader({
                 appliedSplit,
                 firstLineIndent,
                 readerPad.left,
+                maxImageHeight,
               ),
             );
           })()}
@@ -1034,6 +1039,68 @@ function TapSurfaceView({
 
 // ── Block rendering helpers ──
 
+/** Scale a natural image size to fit inside a box without upscaling: the scale
+ *  is capped at 1, so a small image is never blown up to fill the box
+ *  (SPEC-087 image sizing — "do not upscale smaller images"). */
+function fitImage(naturalW: number, naturalH: number, maxW: number, maxH: number) {
+  if (naturalW <= 0 || naturalH <= 0) return { width: maxW, height: maxH };
+  const scale = Math.min(1, maxW / naturalW, maxH / naturalH);
+  return { width: naturalW * scale, height: naturalH * scale };
+}
+
+/**
+ * A standalone reader image that is capped to the page's scroll area (max
+ * width = the content column, max height = the reader's visible viewport) and
+ * never upscaled (SPEC-087 image sizing). Sizes to the image's NATURAL
+ * dimensions via `Image.getSize`, so a small image renders small instead of
+ * being stretched to fill the column (the old `width:100%` + fixed 0.6 box).
+ * Before the natural size loads, falls back to an estimated box so pagination
+ * still has a height; `onContainerLayout` reports the rendered height (both
+ * the estimate and the final size) to the pagination hook.
+ */
+function ReaderImage({
+  uri,
+  maxWidth,
+  maxHeight,
+  onContainerLayout,
+}: {
+  uri: string;
+  maxWidth: number;
+  maxHeight: number;
+  onContainerLayout?: (h: number) => void;
+}) {
+  const [natural, setNatural] = useState<{ width: number; height: number } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    Image.getSize(
+      uri,
+      (w, h) => { if (alive) setNatural({ width: w, height: h }); },
+      () => { if (alive) setNatural({ width: 0, height: 0 }); },
+    );
+    return () => { alive = false; };
+  }, [uri]);
+
+  const sized = !!natural && natural.width > 0 && natural.height > 0;
+  const display = sized
+    ? fitImage(natural.width, natural.height, maxWidth, maxHeight)
+    : // Estimate until the natural size resolves — keeps the pagination hook
+      // measuring the block instead of collapsing to 0 height.
+      { width: maxWidth, height: maxWidth * 0.6 };
+
+  return (
+    <View
+      style={{ width: display.width, height: display.height }}
+      onLayout={onContainerLayout ? (e) => onContainerLayout(e.nativeEvent.layout.height) : undefined}
+    >
+      {sized ? (
+        <Image source={{ uri }} style={{ width: display.width, height: display.height }} resizeMode="contain" />
+      ) : (
+        <ActivityIndicator size="small" color={ICON_MUTED} style={{ flex: 1 }} />
+      )}
+    </View>
+  );
+}
+
 function renderBlock(
   block: ContentBlock, bi: number, allBlocks: ContentBlock[],
   visibleBlocks: ContentBlock[], tokenCache: Record<number, LemmatizedToken[]>,
@@ -1064,6 +1131,7 @@ function renderBlock(
   debugFontFamily: string | null = null,
   debugRubyFontFamily: string | null = null,
   debugRubyMetrics = false,
+  maxImageHeight = 0,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -1079,7 +1147,11 @@ function renderBlock(
         className="my-3 items-center"
         onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
       >
-        <Image source={{ uri: block.uri }} style={{ width: '100%', height: contentWidth * 0.6 }} resizeMode="contain" />
+        <ReaderImage
+          uri={block.uri}
+          maxWidth={contentWidth}
+          maxHeight={maxImageHeight > 0 ? maxImageHeight : contentWidth * 2}
+        />
       </View>
     );
   }
@@ -1411,6 +1483,7 @@ function renderMeasuringBlock(
    *  (= the text's leading). The mirror has no split handle, so this is the
    *  full leading — keeps the L2 column width identical to the visible row. */
   measureGap = 16,
+  maxImageHeight = 0,
 ) {
   /** Mirrors TextActionMenu's persistent ⋮ button column so short body
    *  blocks don't measure shorter than they render. */
@@ -1426,7 +1499,11 @@ function renderMeasuringBlock(
   if (block.kind === 'image') {
     return (
       <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="my-3">
-        <Image source={{ uri: block.uri }} style={{ width: contentWidth, height: contentWidth * 0.6 }} resizeMode="contain" />
+        <ReaderImage
+          uri={block.uri}
+          maxWidth={contentWidth}
+          maxHeight={maxImageHeight > 0 ? maxImageHeight : contentWidth * 2}
+        />
       </View>
     );
   }

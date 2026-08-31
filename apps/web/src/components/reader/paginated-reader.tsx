@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
@@ -273,12 +273,21 @@ export function PaginatedReader({
   // the bottom (or when the page fits) so it never blocks a page turn.
   const [canScrollDown, setCanScrollDown] = useState(false);
   const [atPageBottom, setAtPageBottom] = useState(false);
+  /** The reader's visible scroll-viewport height (px), used to cap standalone
+   *  image blocks so an image is never taller than the page it lives on
+   *  (SPEC-087/SPEC-077 image sizing). Exposed as `--reader-page-height` on the
+   *  content + measuring mirrors so the image max-height rule (which reads
+   *  that CSS variable) applies identically to visible content and the
+   *  pagination mirror. */
+  const [readerPageHeight, setReaderPageHeight] = useState(0);
   const updateScrollState = useCallback(() => {
     const vp = pager.viewportRef.current;
     if (!vp) return;
     const overflow = vp.scrollHeight - vp.clientHeight;
     setCanScrollDown(overflow > 8);
     setAtPageBottom(overflow > 8 && vp.scrollTop >= overflow - 8);
+    // Expose the scroll area's height for the image max-height cap.
+    if (vp.clientHeight > 0) setReaderPageHeight(vp.clientHeight);
   }, [pager.viewportRef]);
   // Re-check after every page renders, when the viewport resizes, and on scroll.
   useEffect(() => {
@@ -568,7 +577,7 @@ export function PaginatedReader({
         <div
           ref={dragRef}
           className={`${contentClassName} ${immersive ? 'flex min-h-full flex-col justify-center' : ''}`}
-          style={hPad}
+          style={{ ...hPad, '--reader-page-height': readerPageHeight > 0 ? `${readerPageHeight}px` : '100vh' } as CSSProperties}
           lang={glyphLang}
           dir={dir}
         >
@@ -727,7 +736,7 @@ export function PaginatedReader({
         ref={pager.measureRef}
         aria-hidden="true"
         className={`absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none ${measureClassName ?? contentClassName}`}
-        style={hPad}
+        style={{ ...hPad, '--reader-page-height': readerPageHeight > 0 ? `${readerPageHeight}px` : '100vh' } as CSSProperties}
         lang={glyphLang} dir={dir}
       >
         {pager.measureWindow.map((item, i) => renderMeasureBlock(item, i))}
