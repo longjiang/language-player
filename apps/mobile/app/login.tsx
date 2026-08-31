@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getUserSettings } from '@langplayer/api-client';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';
@@ -17,7 +18,7 @@ import { OfflineModeNotice } from '@/components/auth/OfflineModeNotice';
 export default function LoginScreen() {
   const t = useT();
   const { login } = useAuth();
-  const { hasStoredPair } = useLanguage();
+  const { hasStoredPair, setL1Lang, setL2Lang } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,23 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      if (hasStoredPair) {
+      // Immediately after login, restore the last-used L1/L2 pair across
+      // devices (recorded in the cloud settings). If the learner has never
+      // used the app there is no recorded pair → fall back to a stored local
+      // pair, else the select-language flow.
+      let restoredPair = false;
+      try {
+        const res = await getUserSettings();
+        const pair = res?.settings_v2?.languagePair;
+        if (pair?.l1 && pair?.l2) {
+          await setL1Lang(pair.l1);
+          await setL2Lang(pair.l2);
+          restoredPair = true;
+        }
+      } catch {
+        restoredPair = false;
+      }
+      if (restoredPair || hasStoredPair) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         router.replace('/(tabs)/(media)' as any);
       } else {

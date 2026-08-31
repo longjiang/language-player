@@ -389,6 +389,15 @@ export function useSettings() {
     [update],
   );
 
+  /** Record the learner's last-used L1/L2 pair in the cloud settings (via the
+   *  sync outbox) so after login on any device they land back on it instead of
+   *  a fresh select-language screen. Last-write-wins by the stamped ts. */
+  const setLanguagePair = useCallback(
+    (l1: string, l2: string) =>
+      update((prev) => ({ languagePair: { l1, l2, updatedAt: new Date().toISOString() } })),
+    [update],
+  );
+
   return {
     settings,
     loaded,
@@ -408,5 +417,6 @@ export function useSettings() {
     getL2,
     updateL2,
     ensureL2,
+    setLanguagePair,
   };
 }

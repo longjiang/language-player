@@ -390,6 +390,33 @@ export function useSettings() {
     });
   }, [persist]);
 
+  /** Record the learner's last-used L1/L2 pair in the cloud settings blob so
+   *  after login (on any device) they land back on it instead of a fresh
+   *  /language-select. Last-write-wins by the stamped ts. Pushed immediately
+   *  (not debounced) because a language change navigates away and the debounced
+   *  PUT would be dropped by the page unload. */
+  const setLanguagePair = useCallback((l1: string, l2: string) => {
+    setSettings((prev) => {
+      const next: SettingsV2 = {
+        ...prev,
+        ts: new Date().toISOString(),
+        languagePair: { l1, l2, updatedAt: new Date().toISOString() },
+      };
+      persist(next);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      if (session && hydratedFromSource.current) {
+        getOrCreateDeviceId(diagStorage).then((deviceId) =>
+          putUserSettings({
+            settings_v2: next,
+            updatedAt: Date.parse(next.ts) || Date.now(),
+            deviceId,
+          }).catch(() => {})
+        );
+      }
+      return next;
+    });
+  }, [persist, session, putUserSettings]);
+
   return {
     settings,
     loaded,
@@ -409,5 +436,6 @@ export function useSettings() {
     getL2: (code: string): L2Settings => settings.l2[code] ?? L2_DEFAULTS,
     updateL2,
     ensureL2,
+    setLanguagePair,
   };
 }

@@ -65,7 +65,7 @@ export function LanguagePicker({
 }: LanguagePickerProps) {
   const locale = useLocale();
   const t = useT();
-  const { getL2, updateL2 } = useSettingsContext();
+  const { getL2, updateL2, setLanguagePair } = useSettingsContext();
   const { switchLocale } = useLocaleSwitcher();
 
   // L2 names are translated into the UI locale (L1), so the L2 list follows
@@ -114,9 +114,13 @@ export function LanguagePicker({
       updateL2('zh', { display: { ...current.display, traditional: picker.useTraditional } });
     }
 
+    // Record the last-used L1/L2 pair so after login (on any device) the
+    // learner lands back here instead of a fresh /language-select.
+    setLanguagePair(picker.selectedL1, picker.selectedL2);
+
     // Notify caller
     onConfirm(picker.selectedL1, picker.selectedL2);
-  }, [picker.selectedL1, picker.selectedL2, picker.useTraditional, onConfirm, getL2, updateL2]);
+  }, [picker.selectedL1, picker.selectedL2, picker.useTraditional, onConfirm, getL2, updateL2, setLanguagePair]);
 
   // Picking a new L1 immediately retranslates the entire UI into that
   // language (before the user confirms and navigates).
