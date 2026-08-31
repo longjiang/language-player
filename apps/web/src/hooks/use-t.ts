@@ -47,9 +47,10 @@ export function useT() {
       return t(id as any, values as any, formats as any);
     }) as unknown as typeof t;
 
-    // Preserve next-intl's rich-text helpers (e.g. `t.rich('key', {...})`).
-    translation.rich = t.rich;
-    translation.markup = t.markup;
+    // Mirror next-intl's translator helpers (t.raw, t.rich, t.has, t.markup, …)
+    // onto the wrapper so callers that use them — SettingsListPanel's t.raw(),
+    // review's t.rich() — keep working. These are own enumerable props on `t`.
+    Object.assign(translation, t);
 
     return translation;
   }, [messages, t]);
