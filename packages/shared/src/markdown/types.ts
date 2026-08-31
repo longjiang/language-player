@@ -12,9 +12,13 @@
 export interface FormatRange {
   start: number;
   end: number;
-  type: 'link' | 'highlight' | 'bold' | 'italic' | 'code' | 'strikethrough';
-  /** Raw href from the source (relative or absolute, may carry #fragment). */
+  type: 'link' | 'highlight' | 'bold' | 'italic' | 'code' | 'strikethrough' | 'image';
+  /** Raw href from the source (relative or absolute, may carry #fragment);
+   *  for `type: 'image'` this is the image URI. */
   url?: string;
+  /** Image alt text — kept in the block text so copy/selection still yields a
+   *  readable source; the renderer draws the image instead of the alt text. */
+  alt?: string;
 }
 
 export type TextBlockType = 'heading' | 'paragraph' | 'list-item' | 'blockquote';

@@ -147,8 +147,11 @@ nowhere — delete it.
     walkers (`makeTextBlock`, `extractTextAndFormats`, `repairDelimiters`),
     relocated verbatim, extended for: `code` → `CodeBlock`, `thematicBreak` →
     `ThematicBreakBlock`, `html` → `HtmlBlock`, nested lists → flat items with
-    `listDepth`/`ordered`/`start`, mixed text+image paragraphs → split into
-    adjacent blocks, strikethrough (`delete`) → `strikethrough` format.
+    `listDepth`/`ordered`/`start`, mixed text+image paragraphs → one text block
+    with the image as an inline `image` format range (a paragraph of only
+    images stays a set of standalone `ImageBlock`s; web renders the inline
+    range, mobile splits it back until native inline drawing lands),
+    strikethrough (`delete`) → `strikethrough` format.
   - **Id-anchor mapping** (EPUB fragment support through markdown): an HTML
     token `<a id="sec1"></a>` (emitted by the converter) preceding a block
     assigns `srcElementId: "sec1"` to that block. CommonMark-compliant

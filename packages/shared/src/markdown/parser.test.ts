@@ -100,12 +100,23 @@ describe('parseMarkdownBlocks — block structure', () => {
     expect(blocks).toEqual([{ kind: 'image', uri: 'https://x/y.png', alt: 'alt' }]);
   });
 
-  it('splits mixed text+image paragraphs into adjacent blocks', () => {
+  it('keeps a mixed text+image paragraph inline as an image format range', () => {
     const blocks = parseMarkdownBlocks('before ![alt](u.png) after');
     expect(blocks).toEqual([
-      { kind: 'text', type: 'paragraph', text: 'before ', formats: [] },
-      { kind: 'image', uri: 'u.png', alt: 'alt' },
-      { kind: 'text', type: 'paragraph', text: ' after', formats: [] },
+      {
+        kind: 'text',
+        type: 'paragraph',
+        text: 'before alt after',
+        formats: [{ start: 7, end: 10, type: 'image', url: 'u.png', alt: 'alt' }],
+      },
+    ]);
+  });
+
+  it('emits only-image paragraphs as standalone ImageBlocks', () => {
+    const blocks = parseMarkdownBlocks('![a](u.png) ![b](v.png)');
+    expect(blocks).toEqual([
+      { kind: 'image', uri: 'u.png', alt: 'a' },
+      { kind: 'image', uri: 'v.png', alt: 'b' },
     ]);
   });
 
