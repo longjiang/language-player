@@ -222,39 +222,45 @@ function splitImagesFromPhrasing(
   opts: MarkdownParseOptions,
   state: { pendingSrcId: string | null },
 ): ContentBlock[] {
-  const out: ContentBlock[] = [];
-  let pending: any[] = [];
-
-  const flush = () => {
-    if (pending.length === 0) return;
-    const block = makeTextBlock(pending, type, depth, listMeta, opts, state);
-    if (block) out.push(block);
-    pending = [];
-  };
-
-  for (const c of phrasing) {
-    if (c.type === 'image') {
-      flush();
-      out.push({ kind: 'image', uri: c.url ?? '', alt: c.alt ?? '' });
-    } else if (c.type === 'html') {
-      // `<a id="…"></a>` anchors are INLINE html in CommonMark (not block
-      // html), so they surface as paragraph children. Consume them as
-      // srcElementId markers when preserveIds; otherwise drop (web parity —
-      // web's walker also ignores inline html).
-      if (opts.preserveIds) {
+  // `<a id="…"></a>` anchors are INLINE html in CommonMark (not block html),
+  // so they surface as paragraph children. Consume them as srcElementId
+  // markers when preserveIds; otherwise drop. They contribute no text, so
+  // `extractTextAndFormats` skips them and `makeTextBlock` picks up the id.
+  if (opts.preserveIds) {
+    for (const c of phrasing) {
+      if (c.type === 'html') {
         const id = anchorId(c.value);
-        if (id) {
-          state.pendingSrcId = id;
-          continue;
-        }
+        if (id) state.pendingSrcId = id;
       }
-      // Non-anchor inline html: dropped, not rendered as text.
-    } else {
-      pending.push(c);
     }
   }
-  flush();
-  return out;
+
+  // A run consisting ONLY of images (separated only by whitespace / anchors) is
+  // a set of standalone ImageBlocks — the reader sizes each to the page
+  // (SPEC-087 "block of only an image"). A run that contains any real text
+  // keeps the images INLINE as `image` format ranges on a single text block,
+  // so the reader can draw them inside TokenizedText instead of splitting the
+  // paragraph into separate blocks.
+  const hasText = phrasing.some((c) => nodeCarriesText(c));
+  if (!hasText) {
+    return phrasing
+      .filter((c) => c.type === 'image')
+      .map((c) => ({ kind: 'image', uri: c.url ?? '', alt: c.alt ?? '' }));
+  }
+
+  const block = makeTextBlock(phrasing, type, depth, listMeta, opts, state);
+  return block ? [block] : [];
+}
+
+/** True when a phrasing node carries actual visible text (not an image, not a
+ *  purely-whitespace text node, not an html/anchor node). Used to decide
+ *  whether a paragraph is "text with an inline image" (keep it inline) or
+ *  "only images" (emit standalone ImageBlocks). */
+function nodeCarriesText(node: any): boolean {
+  if (node.type === 'image' || node.type === 'html') return false;
+  if (node.type === 'text') return (node.value ?? '').trim().length > 0;
+  const children: any[] = node.children ?? [];
+  return children.length > 0 && children.some(nodeCarriesText);
 }
 
 function isPhrasing(node: any): boolean {
@@ -346,9 +352,18 @@ function extractTextAndFormats(children: PhrasingContent[]): {
           break;
         }
 
-        case 'image':
-          text += node.alt ?? '';
+        case 'image': {
+          // An image inside a text run is kept INLINE (SPEC-087 §2 revised):
+          // the alt text (or a single space for empty alt, so the range is
+          // non-empty) is placed in the string and an `image` format range
+          // marks it, so the renderer draws the image at that position instead
+          // of the alt text. Copy/selection still yields the alt text.
+          const alt = node.alt?.length ? node.alt : ' ';
+          const start = text.length;
+          text += alt;
+          formats.push({ start, end: text.length, type: 'image', url: node.url, alt: node.alt ?? undefined });
           break;
+        }
 
         case 'break':
           text += '\n';

@@ -55,7 +55,7 @@ These are grouped by feature area. Each requirement describes the finished behav
   - images;
   - GFM tables (real rows/columns, not preformatted text).
 - **Inline formatting.** Within a text block, bold, italic, code, links, strikethrough, and highlights are preserved.
-- **Images.** An image inside a paragraph is split into its own block, and book/embedded images are resolved to a displayable source.
+- **Images.** A block that contains **only** an image is a standalone image block, sized to the reader's visible page (never wider than the content column, never taller than the page's scroll area, never upscaled beyond its natural size). A block that contains **text and an inline image** keeps the image **inline** (as an `image` format range on the text block) and renders it inline inside the tokenized text, so it flows with the surrounding words rather than being split out. Book/embedded images are resolved to a displayable source. *(Mobile note: the native paragraph ruby renderer does not yet draw inline images — see the mobile feature-parity gap below — so the mobile reader currently splits a text+inline-image block back into adjacent text / standalone image blocks until native inline-image drawing lands.)*
 - **Books (EPUB).** Each chapter's XHTML is parsed into these blocks, preserving heading hierarchy, lists, tables, images, and code. Internal links resolve to in-book targets. **Each chapter starts a new page.**
 - **Plain pasted text.** Newlines become paragraphs.
 - **Paragraph indent.** Book paragraphs are indented by one full-width ideographic space. When shown, the stacked translation mirrors the same indent — and this mirroring is the **same behavior in every reader** (books and the notes/web reader alike), not just for books.
@@ -183,9 +183,10 @@ Terms used throughout this spec, in plain language.
 - SPEC-084 — native selection dictionary over ruby/plain text.
 - ARCH-030 — native ruby rendering and the line grid that underpins baseline alignment.
 
-> **Behavior gap note:** two requirements above are not yet fully met by the current implementation and are tracked here so they aren't lost:
+> **Behavior gap note:** three requirements above are not yet fully met by the current implementation and are tracked here so they aren't lost:
 > - *Side-by-side on portrait tablets* — both apps currently key side-by-side (and the drag handle) to a fixed `md`-width breakpoint (`768`). Most portrait iPads are ≥ `768` and already get side-by-side, but the smallest portrait iPad (`iPad mini`, 744pt) falls below it. The requirement above says portrait tablets get side-by-side; the breakpoint should be lowered/adjusted so even the smallest portrait iPad qualifies.
 > - *Stacked translation mirrors first-line indent in every reader* — the mobile EPUB reader already mirrors the indent for stacked translation, but the web notes reader does not match it. These should be unified so all readers behave identically.
+> - *Inline images inside the native ruby paragraph* — the shared parser keeps a text+inline-image block together (web renders the image inline), but triggering the mobile native `RubyTextParagraph` renderer requires the image to be threaded into the native run chain and drawn as an `NSTextAttachment` (iOS) / `ImageSpan` (Android), which is not yet implemented. Until it lands, the mobile reader splits a text+inline-image block back into adjacent text / standalone image blocks (native inline images are feasible on both platforms — confirmed via the platform docs — and must preserve the existing ruby rendering).
 
 ## Revision (2026-08-25) — Space scrolls instead of paging
 

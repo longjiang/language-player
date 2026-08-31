@@ -300,9 +300,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return null;
     let pos = 0;
-    const out: Array<'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | null> = [];
+    const out: Array<'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | 'image' | null> = [];
     for (const token of displayTokens) {
-      let fmt: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | null = null;
+      let fmt: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | 'image' | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
           // Link styling wins over bold/italic/code so linked tokens always
@@ -316,6 +316,27 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       pos += token.text.length;
     }
     return out;
+  }, [displayTokens, formats, text]);
+
+  // Token index → inline-image URI for tokens inside an `image` format range.
+  // The image replaces its alt text in the flow, so only the first token of a
+  // contiguous image run actually draws the image (the rest collapse to it).
+  const imageTokenMap = useMemo(() => {
+    if (!formats?.some((f) => f.type === 'image')) return null;
+    const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
+    if (total !== text.length) return null;
+    let pos = 0;
+    const map: Record<number, string> = {};
+    for (let i = 0; i < displayTokens.length; i++) {
+      const token = displayTokens[i];
+      if (!token) continue;
+      const start = pos;
+      const end = pos + token.text.length;
+      const imgFmt = formats.find((f) => f.type === 'image' && f.start < end && f.end > start);
+      if (imgFmt?.url) map[i] = imgFmt.url;
+      pos = end;
+    }
+    return map;
   }, [displayTokens, formats, text]);
 
   // Char ranges of each display token in `text` (same reconstruction guard as
@@ -803,7 +824,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               phoneticsOnHighlight={phoneticsOnHighlight}
               quickGlossOnHighlight={quickGlossOnHighlight}
               flat={flat}
-              format={flat ? fmt : null}
+              format={flat && fmt !== 'image' ? fmt : null}
             />
           );
           const withCjkBreak = (node: React.ReactNode) => (
@@ -812,6 +833,24 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               {node}
             </React.Fragment>
           );
+          // Inline image: an `image` format range replaces its alt text with
+          // the image, drawn inline in the line flow (SPEC-087 §2). Render it
+          // once at the first token of the contiguous image run; the remaining
+          // tokens of that run render nothing so the image takes their place.
+          if (fmt === 'image') {
+            if (tokenFormatStyles?.[i - 1] === 'image') return null;
+            const url = imageTokenMap?.[i];
+            if (!url) return null;
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={url}
+                alt=""
+                className="mx-0.5 inline-block max-h-[1.2em] max-w-[12em] w-auto h-auto object-contain align-middle"
+              />
+            );
+          }
           // Flat run: format styling is folded into the segment element
           // classes inside TokenSpan — no wrapper element, which would
           // re-create the per-token box (ADR-0039).

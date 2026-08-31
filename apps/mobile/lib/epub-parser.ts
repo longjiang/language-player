@@ -4,6 +4,7 @@ import {
   type ContentBlock,
   type FormatRange,
 } from '@langplayer/shared';
+import { splitInlineImageBlocks } from '@/lib/parse-markdown';
 
 export interface TocItem {
   label: string;
@@ -398,5 +399,8 @@ export function convertHtmlToBlocks(
       return resolveImage(resolvePath(contentDir, src));
     },
   });
-  return parseMarkdownBlocks(md, { preserveIds: true });
+  // Mobile native inline-image drawing isn't implemented yet (SPEC-087 §2
+  // gap), so split text+inline-image blocks back into adjacent text /
+  // standalone image blocks so the EPUB reader keeps showing the image.
+  return splitInlineImageBlocks(parseMarkdownBlocks(md, { preserveIds: true }));
 }
