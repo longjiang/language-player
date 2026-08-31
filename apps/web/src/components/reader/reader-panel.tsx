@@ -12,6 +12,12 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { translationFontSizeRem } from '@/lib/reader-text-size';
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   PaginatedReader,
   type BlockRenderCtx,
   type ReaderLoc,
@@ -19,7 +25,9 @@ import {
 } from '@/components/reader/paginated-reader';
 import { ReaderTextBlock, ReaderMarkdownBlock } from '@/components/reader/reader-block';
 import { blockTag, blockClass, translationClass } from '@/components/reader/shared-reader-styles';
-import { type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+import { ReaderHeadingToc, extractHeadings, type ReaderHeading } from '@/components/reader/reader-heading-toc';
+import { ReaderSearchPanel, type ReaderSearchResult } from '@/components/reader/reader-search-panel';
+import { type FormatRange, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { languageName } from '@/lib/language-data';
 import {
   BookOpen, Loader2, FileText, Sparkles, Plus, PanelRight,
@@ -112,6 +120,44 @@ export function ReaderPanel({
   // does not re-paginate on every pixel; re-measure happens on release.
   const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${persistedSplit}:${tokenizedText.translationSize}`;
 
+  // ── Table of contents + search (notes/web reader; SPEC-087 §8) ──
+  // TOC is heading-derived and shown only when the text has headings (h1–h6);
+  // search is always available when there is text.
+  const [tocOpen, setTocOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  /** Active search-match highlight (block + char range), if any. */
+  const [highlight, setHighlight] = useState<{ blockIndex: number; start: number; end: number } | null>(null);
+  /** Jump target for the paginator (markdown readers pass `{ blockIndex }`). */
+  const [jumpLoc, setJumpLoc] = useState<ReaderLoc | null>(null);
+  /** Increment to re-apply `jumpLoc` after a jump. */
+  const [jumpNonce, setJumpNonce] = useState(0);
+  /** Reader's current block (for the TOC active-entry highlight). */
+  const [currentBlockIndex, setCurrentBlockIndex] = useState<number | null>(null);
+
+  const headings = useMemo(() => extractHeadings(blocks), [blocks]);
+
+  const handleReaderLocationChange = useCallback((loc: ReaderLoc) => {
+    if ('blockIndex' in loc) setCurrentBlockIndex(loc.blockIndex);
+    onLocationChange?.(loc);
+  }, [onLocationChange]);
+
+  const openToc = useCallback(() => setTocOpen(true), []);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+
+  const handleTocSelect = useCallback((heading: ReaderHeading) => {
+    setTocOpen(false);
+    setHighlight(null);
+    setJumpLoc({ blockIndex: heading.blockIndex });
+    setJumpNonce(n => n + 1);
+  }, []);
+
+  const handleSearchNavigate = useCallback((result: ReaderSearchResult) => {
+    setSearchOpen(false);
+    setHighlight({ blockIndex: result.blockIndex, ...result.match });
+    setJumpLoc({ blockIndex: result.blockIndex });
+    setJumpNonce(n => n + 1);
+  }, []);
+
   // Markdown-block links (images, tables, raw-markdown fallbacks) open inside
   // the web reader instead of sending the user to the original site in a new
   // tab — matching how links behave in tokenized text.
@@ -149,6 +195,14 @@ export function ReaderPanel({
       );
     }
     const tb = item.block as TextBlock;
+    // Append the search-match highlight range when this block contains it.
+    const idx = (item.loc as { blockIndex: number }).blockIndex;
+    let extraFormats: FormatRange[] = [];
+    if (highlight && highlight.blockIndex === idx) {
+      const start = Math.max(0, Math.min(highlight.start, tb.text.length));
+      const end = Math.max(start, Math.min(highlight.end, tb.text.length));
+      if (end > start) extraFormats = [{ start, end, type: 'highlight' as const }];
+    }
     // First link in the block — surfaced as an "Open in Reader" action in
     // the token dictionary popup. Without a custom handler, only http(s)
     // links qualify.
@@ -161,6 +215,7 @@ export function ReaderPanel({
         block={tb}
         rctx={rctx}
         ctx={ctx}
+        extraFormats={extraFormats}
         href={blockHref}
         onOpenLink={onOpenLink}
         deferTokenization={!!onLemmatize}
@@ -173,7 +228,7 @@ export function ReaderPanel({
         l1Code={l1.code}
       />
     );
-  }, [ctx, onOpenLink, markdownComponents, onLemmatize, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, l2.code, l1.code]);
+  }, [ctx, onOpenLink, markdownComponents, onLemmatize, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, highlight, l2.code, l1.code]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block, matching spacing, the translation skeleton, and the
@@ -280,9 +335,13 @@ export function ReaderPanel({
           ctx={ctx}
           measureNonce={measureNonce}
           initialLocation={initialLocation}
-          onLocationChange={onLocationChange}
+          onLocationChange={handleReaderLocationChange}
           onLemmatize={onLemmatize}
           onPageTranslate={onPageTranslate}
+          location={jumpLoc}
+          jumpNonce={jumpNonce}
+          onOpenToc={headings.length > 0 ? openToc : undefined}
+          onOpenSearch={openSearch}
           contentClassName="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
             [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
             [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
@@ -365,6 +424,36 @@ export function ReaderPanel({
       <div className="flex-1 min-h-0 flex flex-col">
         {innerContent}
       </div>
+
+      {/* ── Table of contents modal (heading-derived, nested) ── */}
+      {headings.length > 0 && (
+        <Dialog open={tocOpen} onOpenChange={setTocOpen}>
+          <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{t('action.table_of_contents')}</DialogTitle>
+            </DialogHeader>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <ReaderHeadingToc
+                headings={headings}
+                activeIndex={currentBlockIndex ?? (initialLocation && 'blockIndex' in initialLocation ? initialLocation.blockIndex : null)}
+                onSelect={handleTocSelect}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* ── Search modal (block navigation + term highlight) ── */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="flex h-[min(70vh,560px)] flex-col sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('action.search')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <ReaderSearchPanel blocks={blocks} onNavigate={handleSearchNavigate} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

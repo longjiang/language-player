@@ -72,7 +72,7 @@ export interface PaginatedReaderProps {
   /** Whole-book stream (EPUB). Mutually exclusive with `blocks`. */
   book?: EpubBook | null;
   /** Desired reading location (EPUB restore / TOC / search / links). */
-  location?: BookLocation | null;
+  location?: ReaderLoc | null;
   /** Increment to re-apply `location` after a jump. */
   jumpNonce?: number;
   /** Called whenever the visible page's start changes. */

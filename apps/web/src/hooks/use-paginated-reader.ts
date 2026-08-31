@@ -142,7 +142,7 @@ export interface UsePaginatedReaderOptions {
   /** Whole-book stream (EPUB). Mutually exclusive with `blocks`. */
   book?: EpubBook | null;
   /** Desired reading location (EPUB restore / TOC / search / links). */
-  location?: BookLocation | null;
+  location?: ReaderLoc | null;
   /** Increment to re-apply `location` after a jump. */
   jumpNonce?: number;
   /** Initial reading location to restore on mount (saved position / jump).
@@ -797,13 +797,30 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
   const lastNonceRef = useRef<number | null | undefined>(null);
   const lastJumpBookRef = useRef<EpubBook | null | undefined>(null);
   useEffect(() => {
-    if (mode !== 'windowed' || !location) return;
+    if (mode !== 'windowed' || !location || !('spineIndex' in location)) return;
     if (lastNonceRef.current === jumpNonce && lastJumpBookRef.current === book) return;
     lastNonceRef.current = jumpNonce;
     lastJumpBookRef.current = book;
     windowedJumpTo(location);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, jumpNonce, book, location]);
+
+  // ── Full mode (markdown: notes + web reader) reactive jump ──
+  // EPUB drives jumps through `location` + `jumpNonce`; markdown readers use
+  // the same declarative mechanism so a TOC / Search click jumps the page to
+  // the target block without an imperative handle.
+  const lastFullJumpNonceRef = useRef<number | null | undefined>(null);
+  const latestFullJumpRef = useRef(location);
+  latestFullJumpRef.current = location;
+  useEffect(() => {
+    if (mode !== 'full') return;
+    const loc = latestFullJumpRef.current;
+    if (!loc || !('blockIndex' in loc)) return;
+    if (lastFullJumpNonceRef.current === jumpNonce) return;
+    lastFullJumpNonceRef.current = jumpNonce;
+    fullJumpTo(loc);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, jumpNonce, fullJumpTo]);
 
   // Persist the current page start whenever it changes.
   const lastSavedKeyRef = useRef<string | null>(null);
