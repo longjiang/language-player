@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { READING_CATEGORIES, getReadingSuggestions } from '@langplayer/shared';
+import { READING_CATEGORIES, getReadingSuggestions, fetchReaderPage, extractTitle, htmlToMarkdown } from '@langplayer/shared';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import type { ReaderLoc } from '@/components/reader/paginated-reader';
 import { Button } from '@/components/ui/button';
@@ -67,200 +67,9 @@ function saveVisitedSites(sites: VisitedSite[]) {
   try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(sites)); } catch {}
 }
 
-// Lazy-load turndown for HTML→markdown conversion
-let _turndown: any = null;
-async function getTurndown() {
-  if (!_turndown) {
-    const Turndown = (await import('turndown')).default;
-    _turndown = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
-    // Flatten whitespace inside link text. Source pages often put block elements
-    // inside <a> (e.g. title + source name), which turndown converts to blank
-    // lines inside `[...]` — invalid CommonMark, so remark would treat the whole
-    // link as literal text (broken-apart `[` … `](url)` tokens). Icon-only links
-    // (empty after flattening) are dropped instead of leaking stray brackets.
-    _turndown.addRule('readerLink', {
-      filter: (node: any) => node.nodeName === 'A' && !!node.getAttribute('href'),
-      replacement: (content: string, node: any) => {
-        // Block-level markers (e.g. `## ` from an <h2> nested inside the link)
-        // render as literal text inside a link label — strip them so readers
-        // never see raw markdown syntax.
-        const flat = content
-          .replace(/\s+/g, ' ')
-          .replace(/(^|\s)#{1,6}(?=\s|$)/g, '$1')
-          .trim();
-        if (!flat) return '';
-        const href = node.getAttribute('href');
-        const escaped = href.replace(/([<>()])/g, '\\$1');
-        const destination = escaped.indexOf(' ') >= 0 ? `<${escaped}>` : escaped;
-        const title = node.getAttribute('title');
-        const titlePart = title ? ` "${String(title).replace(/"/g, '\\"')}"` : '';
-        return `[${flat}](${destination}${titlePart})`;
-      },
-    });
-  }
-  return _turndown;
-}
-
-async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown: string; title: string }> {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  // Sniff the page's real title: <title> tag, then og:title, then first h1.
-  const sniffedTitle =
-    doc.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim()
-    || doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.replace(/\s+/g, ' ').trim()
-    || '';
-  // Article pages: strip site chrome (nav, header, footer, aside, …) so only the
-  // article body is converted. Pages without an article (homepages, indexes,
-  // link pages) keep the whole page — there the header/nav often IS the content.
-  const articleContent = doc.querySelector('#mw-content-text') || doc.querySelector('article');
-  if (articleContent) {
-    doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
-  } else {
-    // Whole-page fallback: only drop script/style (they'd leak raw text into
-    // markdown), keep everything else.
-    doc.querySelectorAll('script, style').forEach(el => el.remove());
-  }
-  // Nav menus are site chrome, never reading content — strip them on every
-  // page, including the whole-page fallback path.
-  doc.querySelectorAll('nav').forEach(el => el.remove());
-  // Ruby annotations (e.g. furigana on Japanese pages) are reading aids, not
-  // content — Turndown would leak the <rt> readings into the markdown as plain
-  // text and pollute tokenization. Drop the readings and unwrap <ruby> so only
-  // the base characters remain.
-  doc.querySelectorAll('rt, rp').forEach(el => el.remove());
-  doc.querySelectorAll('ruby').forEach(el => {
-    el.replaceWith(...Array.from(el.childNodes));
-  });
-  const mainContent = articleContent || doc.body;
-  // Lazy-loaded images: many sites ship a 1×1 placeholder in src and the real
-  // URL in data-src — promote it so the actual image renders. Images left with
-  // no usable source would convert to ![alt]() and render as <img src="">.
-  mainContent.querySelectorAll('img').forEach(el => {
-    const real = el.getAttribute('data-src')
-      || el.getAttribute('data-original')
-      || el.getAttribute('data-lazy-src');
-    if (real) el.setAttribute('src', real);
-    const src = el.getAttribute('src') ?? '';
-    if (!src || /^data:image\/gif;base64,R0lGODlhAQAB/i.test(src)) {
-      el.remove();
-      return;
-    }
-    // Resolve relative/absolute image srcs against the page URL (the same
-    // baseUrl rewrite applied to <a> hrefs above) so images render in the
-    // reader instead of showing a broken image — e.g. Aozora Bunko's
-    // ../../../gaiji/2-88/… character tiles resolve to the site's /gaiji/….
-    try {
-      el.setAttribute('src', new URL(src, baseUrl).href);
-    } catch {
-      // Keep the src as-is when it can't be resolved (data: URIs, etc.).
-    }
-  });
-  // Some sites (e.g. Yahoo News) render the article body as raw text nodes inside
-  // a single block element, with blank lines between paragraphs. Turndown
-  // collapses text-node whitespace, which would merge the whole article into one
-  // paragraph — split blank-line-separated runs into real <p> elements first.
-  mainContent.querySelectorAll('p, div, section, article, blockquote, li').forEach(el => {
-    if (el.closest('a')) return; // keep link contents (e.g. image captions) intact
-    splitTextParagraphs(el, doc);
-  });
-  mainContent.querySelectorAll('a').forEach(el => {
-    const href = el.getAttribute('href');
-    if (href) { try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {} }
-  });
-  const td = await getTurndown();
-  const markdown = td.turndown(mainContent.innerHTML);
-  return { markdown, title: sniffedTitle };
-}
-
-/** Block-level elements that terminate a text run when splitting <br>-separated
- *  paragraphs (a section heading div, nested section, list, table, etc.).
- *  Inline elements (a, ruby, span, strong, em, code, img) stay inside their run. */
-function isBlockElement(el: Element): boolean {
-  return ['DIV', 'SECTION', 'ARTICLE', 'BLOCKQUOTE', 'TABLE', 'UL', 'OL', 'LI', 'PRE', 'FIGURE', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName);
-}
-
-/** Narrow a ChildNode to Element so `tagName` is accessible. */
-function isElementNode(n: Node): n is Element {
-  return n.nodeType === Node.ELEMENT_NODE;
-}
-
-/** Split blank-line- AND <br>-separated text runs inside a block element into
- *  <p> paragraphs.
- *  Sources like Aozora Bunko render the whole body as one <div> of
- *  <br>-terminated lines with no <p> tags. Turndown turns each <br> into a
- *  hard break inside a single markdown paragraph, so remark would merge every
- *  paragraph in a section into one block (rendered as one action menu). Breaking
- *  on <br> too gives each paragraph its own block. When the container is
- *  itself a <p>, it is replaced by sibling paragraphs (nesting <p> inside <p>
- *  is invalid HTML). */
-function splitTextParagraphs(container: Element, doc: Document): void {
-  const children = Array.from(container.childNodes);
-  const hasBlankLines = children.some(c => c.nodeType === Node.TEXT_NODE && /\n\s*\n/.test(c.nodeValue ?? ''));
-  const hasBr = children.some(c => isElementNode(c) && c.tagName === 'BR');
-  if (!hasBlankLines && !hasBr) return;
-
-  // Each block is a text run (nodes to wrap in a <p>) or a block element
-  // (heading div, etc.) preserved as-is.
-  const blocks: Array<{ nodes?: Node[]; element?: Element }> = [];
-  let current: Node[] = [];
-  const closeRun = () => {
-    const meaningful = current.filter(n => n.nodeType !== Node.TEXT_NODE || (n.nodeValue ?? '').trim() !== '');
-    if (meaningful.length > 0) blocks.push({ nodes: meaningful });
-    current = [];
-  };
-
-  for (const child of children) {
-    if (isElementNode(child) && child.tagName === 'BR') {
-      closeRun();
-      continue;
-    }
-    if (isElementNode(child) && isBlockElement(child)) {
-      closeRun();
-      blocks.push({ element: child });
-      continue;
-    }
-    if (child.nodeType !== Node.TEXT_NODE) { current.push(child); continue; }
-    const v = child.nodeValue ?? '';
-    // Whitespace-only node at a run start (right after a <br>) is a line break
-    // separator, not content — drop it so it doesn't pad the next paragraph.
-    if (v.trim() === '' && current.length === 0) continue;
-    if (hasBlankLines && /\n\s*\n/.test(v)) {
-      const parts = v.split(/\n\s*\n/);
-      parts.forEach((part, i) => {
-        if (i === 0) {
-          if (part.trim()) current.push(doc.createTextNode(part));
-          closeRun();
-        } else if (i === parts.length - 1) {
-          if (part.trim()) current.push(doc.createTextNode(part));
-        } else if (part.trim()) {
-          current.push(doc.createTextNode(part));
-          closeRun();
-        } else {
-          closeRun();
-        }
-      });
-    } else {
-      current.push(child);
-    }
-  }
-  closeRun();
-
-  // Guard BEFORE moving nodes into <p>s — the map() below detaches children
-  // from the container, so an early return here would drop them entirely.
-  if (blocks.length < 2) return;
-
-  const paragraphs = blocks.map(b => {
-    if (b.element) return b.element;
-    const p = doc.createElement('p');
-    b.nodes!.forEach(n => p.appendChild(n));
-    return p;
-  });
-
-  if (container.tagName === 'P') {
-    container.replaceWith(...paragraphs as Element[]);
-  } else {
-    container.replaceChildren(...paragraphs as Element[]);
-  }
-}
+// HTML→Markdown conversion and the reader fetch live in @langplayer/shared
+// (htmlToMarkdown, extractTitle, fetchReaderPage) so web and mobile share one
+// pipeline (SPEC-083 / SPEC-087 §2).
 
 export default function WebReaderPage() {
   const searchParams = useSearchParams();
@@ -325,15 +134,14 @@ export default function WebReaderPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
+      // Fetch + convert through the shared reader pipeline (same as mobile).
+      const raw = await fetchReaderPage(targetUrl, PYTHON_API_URL);
       if (seq !== loadSeqRef.current) return;
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.text();
-      const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
+      const md = htmlToMarkdown(raw, targetUrl);
       if (seq !== loadSeqRef.current) return;
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
-      const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
+      const pageTitle = extractTitle(raw) || titleMatch?.[1]?.trim() || targetUrl;
       setTitle(pageTitle);
       document.title = pageTitle;
       setText(md);
