@@ -36,17 +36,26 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
      copy sent for OCR is downscaled.
 2. **`POST /vision`** (`deepseek-v4-flash-vision-exp`), cached server-side by
    prompt + image bytes.
-3. **OCR prompt** requests clean, block-level markdown that **starts with a
-   `# <title>` heading** (a short, human-readable title — never a filename),
-   then blank-line-separated block elements with each paragraph as flowing
-   prose. No client-side OCR post-processing: blocks break naturally at the
-   markdown level and reflow.
-4. **`extractTitle`** pulls the leading `# ` heading out as the image title
-   (used for the title bar and the saved-word context); the remaining text is
-   the body.
-5. The body markdown is parsed into reader blocks (web `parseMarkdown`; mobile
-   `useEpubPagination`). OCR is **lazy per image**; the first
-   pasted/dropped/picked image is opened by default and OCR'd immediately.
+3. **OCR prompt** requests clean, block-level markdown in the original
+   language, with blank-line-separated block elements and each paragraph as
+   flowing prose. The model wraps each block's lines as soft line breaks
+   (single `\n`) and separates blocks with blank lines. Reflow is handled by
+   the reader, not the prompt: **no client-side OCR post-processing splits
+   lines into separate blocks** — the soft breaks inside a block are kept so
+   the text reflows. (Verified against `/vision`: the model reliably emits
+   blank-line-separated paragraphs with soft-wrap lines; a prompt that asks
+   for "one line per paragraph" makes the model drop the blank-line
+   separators and collapse the whole page into one block, so it is avoided.)
+4. The reader **opportunistically** pulls a leading `# <title>` heading out as
+   the image title (web `extractTitle`; used for the title bar and the
+   saved-word context). The prompt does **not** require one, so if the model
+   doesn't emit it the title falls back to the filename. The body is then
+   parsed into reader blocks (web `parseMarkdown`; mobile `useEpubPagination`,
+   whose `parseMarkdownBlocks` shim folds single `\n` to `\n\n` only for
+   genuinely flat plain text — OCR image/PDF markdown keeps its soft breaks
+   inside a block and reflows).
+5. OCR is **lazy per image**; the first pasted/dropped/picked image is opened
+   by default and OCR'd immediately.
 
 ## Entry surfaces
 
@@ -116,8 +125,10 @@ Keys: `title.image_reader`, `msg.drop_images_here`, `msg.image_reader_supported`
 ## Logging
 
 Gated: web `epubLog` (flip `EPUB_LOGS_ENABLED`), mobile `log` / `logwarn`
-(app-wide `LOG_LEVEL`). Logs the OCR markdown length, the extracted title, and
-the downscaled payload byte size.
+(app-wide `LOG_LEVEL`). Logs the **exact prompt sent** to `/vision` and the
+**full markdown response** (in addition to its length, the extracted title,
+and the downscaled payload byte size), so OCR reflow/accuracy issues can be
+confirmed directly from the logs.
 
 ## Verification
 
@@ -136,3 +147,13 @@ the downscaled payload byte size.
   reader (routes, entry surfaces, vision pipeline incl. downscaling, LLM title,
   block-breaking, sidebar, preview/zoom, persistence, i18n, logging). Supersedes
   the image-reader notes previously folded into SPEC-089.
+- **Reflow, no line fragmentation**: the OCR text now reflows instead of
+  rendering one block per visual line. The model already emits
+  blank-line-separated paragraphs with soft-wrap lines, so the reader keeps a
+  block's soft breaks inside one paragraph (mobile `parse-markdown.ts` only
+  folds single `\n` for genuinely flat plain text) and the unused
+  `normalizeVisionMarkdown` force-split (which split every OCR line into its
+  own block) was removed.
+- **Log prompt + full response**: the image-reader OCR path logs the exact
+  prompt sent to `/vision` and the complete markdown returned (plus length,
+  title, and payload size).
