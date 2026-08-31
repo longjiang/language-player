@@ -14,6 +14,7 @@ import { localizedError } from '@/lib/errors';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
+import { fetchReaderPage } from '@langplayer/shared';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { VisitedSitesSidebar } from '@/components/reader/VisitedSitesSidebar';
@@ -90,11 +91,12 @@ export default function WebReaderScreen() {
     setError(null);
 
     try {
-      const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.text();
+      // Fetch + convert through the shared reader pipeline (same as web).
+      const raw = await fetchReaderPage(targetUrl, PYTHON_API_URL);
       const md = htmlToMarkdown(raw, targetUrl);
-      const extractedTitle = extractTitle(raw) || targetUrl;
+      // Fall back to the first h1, then the raw URL (same as web).
+      const titleMatch = md.match(/^#\s+(.+)$/m);
+      const extractedTitle = extractTitle(raw) || titleMatch?.[1]?.trim() || targetUrl;
       setTitle(extractedTitle);
       setText(md);
       setUrl(targetUrl);
