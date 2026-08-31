@@ -1,16 +1,22 @@
 /**
- * HTML → Markdown converter for React Native (SPEC-083).
+ * HTML → Markdown converter (SPEC-083).
  *
- * Ported from apps/mobile/lib/html-to-markdown.ts (which exists because RN
- * has no DOM — the Next.js web reader uses DOMParser + turndown instead).
- * Now shared: mobile's web-reader ingestion and its EPUB ingestion both use
- * this module, feeding the single `parseMarkdownBlocks` pipeline.
+ * The single, cross-platform HTML→Markdown converter for BOTH apps. It is
+ * string-based (React Native has no DOM, so this must not rely on DOMParser /
+ * turndown). The web reader used to run DOMParser + turndown inline; this
+ * module is the unification target so web and mobile ingest a fetched page
+ * through the exact same code path (SPEC-087 §2 "one shared pipeline").
  *
- * Extensions over the original:
+ * Extensions over the original mobile-only converter:
  * - `opts.resolveImage(src)` — rewrite image `src` (EPUB archive images).
  * - `opts.preserveIds` — emit `<a id="…"></a>` anchors before block-level
  *   elements that carry an element id (own or nearest ancestor), so the
  *   parser can map `#fragment` TOC links onto blocks (SPEC-049 §9.1).
+ * - Balanced site-chrome stripping (nested `.infobox`/`.navbox`/`.thumb`
+ *   tables are removed as whole elements, not just up to the first close tag).
+ * - Attribute-tolerant `<b>/<strong>/<em>/<i>` conversion (Wikipedia leads
+ *   use `<b class="…">`), lazy-image `data-src` promotion, and web-matching
+ *   title extraction (`<title>` → `og:title` → `<h1>`).
  */
 
 export interface HtmlToMarkdownOptions {
@@ -110,75 +116,6 @@ function nearestAncestorId(stack: string[]): string | null {
   return null;
 }
 
-/**
- * Strip unwanted elements from raw HTML.
- * Mirrors the Next.js web reader's querySelectorAll removal:
- *   script, style, nav, header, footer, aside,
- *   .sidebar, .menu, .navigation, .mw-jump-link,
- *   .mw-editsection, .reference, .noprint,
- *   .thumb, .infobox, .navbox, .metadata
- */
-function stripUnwanted(html: string): string {
-  return html
-    .replace(/<!DOCTYPE[^>]*>/gi, '')
-    .replace(/<\?xml[^>]*\?>/gi, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
-    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
-    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
-    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, '')
-    // Common class-based removals
-    .replace(/<[a-z]+[^>]*class="[^"]*\b(sidebar|menu|navigation|mw-jump-link|mw-editsection|reference|noprint|thumb|infobox|navbox|metadata)\b[^"]*"[^>]*>[\s\S]*?<\/[a-z]+>/gi, '')
-    // Self-closing variants
-    .replace(/<[a-z]+[^>]*class="[^"]*\b(sidebar|menu|navigation|mw-jump-link|mw-editsection|reference|noprint|thumb|infobox|navbox|metadata)\b[^"]*"[^>]*\/>/gi, '');
-}
-
-/** Remove HTML tags while respecting quoted attribute values, which can
- *  contain `>` and newlines (e.g. MediaWiki's `data-mw` JSON attributes).
- *  Preserves `<a id="…"></a>` anchors emitted by injectIdAnchors. */
-function stripHtmlTags(html: string): string {
-  let out = '';
-  let i = 0;
-  while (i < html.length) {
-    if (html[i] === '<') {
-      let j = i + 1;
-      let quote: string | null = null;
-      let closed = false;
-      while (j < html.length) {
-        const ch = html[j];
-        if (quote) {
-          if (ch === quote) quote = null;
-        } else if (ch === '"' || ch === "'") {
-          quote = ch;
-        } else if (ch === '>') {
-          closed = true;
-          break;
-        }
-        j++;
-      }
-      if (closed) {
-        const tag = html.slice(i, j + 1);
-        // Keep `<a id="…">` / `</a>` anchor markers (EPUB fragments).
-        if (/^<a\s+id=["'][^"']+["']\s*>/i.test(tag) || /^<\/a\s*>/i.test(tag)) {
-          out += tag;
-        }
-        i = j + 1;
-        continue;
-      }
-    }
-    out += html[i];
-    i++;
-  }
-  return out;
-}
-
-/**
- * Extract the main content area from HTML.
- * Looks for #mw-content-text (Wikipedia), <article>, <main>, or falls back to <body>.
- */
 /** Find the next HTML tag matching `re`, ignoring tag-like text inside
  *  quoted attribute values (e.g. `</div>` inside a JSON data attribute). */
 function indexOfTagOutsideQuotes(html: string, from: number, re: RegExp): number {
@@ -204,6 +141,31 @@ function indexOfTagOutsideQuotes(html: string, from: number, re: RegExp): number
       i = j + 1;
     } else {
       i++;
+    }
+  }
+  return -1;
+}
+
+/** Return the index just past the closing tag for the same-named element that
+ *  opens at `openIdx`, balancing nested elements. `-1` if unbalanced. */
+function findTagEnd(html: string, openIdx: number, tag: string): number {
+  const openRe = new RegExp(`<${tag}\\b[^>]*>`, 'i');
+  const closeRe = new RegExp(`</${tag}\\s*>`, 'i');
+  const first = html.slice(openIdx).match(openRe);
+  if (!first) return -1;
+  let depth = 1;
+  let pos = openIdx + first[0].length;
+  while (pos < html.length) {
+    const nextOpen = indexOfTagOutsideQuotes(html, pos, openRe);
+    const nextClose = indexOfTagOutsideQuotes(html, pos, closeRe);
+    if (nextClose === -1) return -1;
+    if (nextOpen !== -1 && nextOpen < nextClose) {
+      depth++;
+      pos = nextOpen + html.slice(nextOpen).match(openRe)![0].length;
+    } else {
+      depth--;
+      pos = nextClose + html.slice(nextClose).match(closeRe)![0].length;
+      if (depth === 0) return pos;
     }
   }
   return -1;
@@ -266,6 +228,77 @@ function extractMainContent(html: string): string {
   return html;
 }
 
+/** Tags stripped as site chrome (their whole element, balanced). */
+const STRIP_TAGS = ['script', 'style', 'nav', 'header', 'footer', 'aside'];
+
+/** Classes used by site chrome/boxes to strip as whole balanced elements.
+ *  Matches the Next.js reader's querySelectorAll removal list. */
+const STRIP_CLASSES = [
+  'sidebar', 'menu', 'navigation', 'mw-jump-link', 'mw-editsection',
+  'reference', 'noprint', 'thumb', 'infobox', 'navbox', 'metadata',
+];
+
+/** Remove whole elements (including all nested content) for a set of tags,
+ *  balancing nested same-name elements so an `<aside>` containing a table is
+ *  removed entirely rather than just its first row. */
+function removeElementsByTag(html: string): string {
+  let out = html;
+  for (const tag of STRIP_TAGS) {
+    const openRe = new RegExp(`<${tag}[\\s>]`, 'i');
+    while (true) {
+      const open = indexOfTagOutsideQuotes(out, 0, openRe);
+      if (open === -1) break;
+      const end = findTagEnd(out, open, tag);
+      if (end === -1) {
+        // Unbalanced: drop just the opening tag so we don't eat the article.
+        out = out.slice(0, open) + out.slice(open).replace(new RegExp(`<${tag}[\\s>]`, 'i'), '');
+        continue;
+      }
+      out = out.slice(0, open) + out.slice(end);
+    }
+  }
+  return out;
+}
+
+/** Remove whole elements whose `class` attribute contains any target class
+ *  token, balancing nested same-name elements. This is what actually strips a
+ *  Wikipedia `.infobox` table (which nests other tables) instead of leaking
+ *  its rows/images into the article. */
+function removeElementsByClass(html: string): string {
+  let out = html;
+  for (const cls of STRIP_CLASSES) {
+    const openRe = new RegExp(
+      `<([a-z][a-z0-9]*)\\b[^>]*\\bclass=(["'])[^"']*\\b${cls}\\b[^"']*\\2[^>]*>`,
+      'i',
+    );
+    while (true) {
+      const m = openRe.exec(out);
+      if (!m) break;
+      const tag = m[1]!;
+      const end = findTagEnd(out, m.index, tag);
+      if (end === -1) break; // unbalanced — leave it rather than destroy content
+      out = out.slice(0, m.index) + out.slice(end);
+    }
+  }
+  return out;
+}
+
+/** Promote lazy-loaded image sources (`data-src`/`data-original`/
+ *  `data-lazy-src`) into `src` so the real image renders instead of a 1×1
+ *  placeholder. Mirrors the Next.js reader's `getAttribute(real)` promote. */
+function promoteLazyImages(html: string): string {
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const real = attrValue(tag, 'data-src')
+      || attrValue(tag, 'data-original')
+      || attrValue(tag, 'data-lazy-src');
+    if (!real) return tag;
+    let cleaned = tag.replace(/\ssrc\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    const escaped = real.replace(/"/g, '&quot;');
+    cleaned = cleaned.replace(/^<img/i, `<img src="${escaped}"`);
+    return cleaned;
+  });
+}
+
 /**
  * Strip ruby annotations from raw HTML (EPUB/Japanese books): keep the base
  * text and drop the reading (`rt`), the annotation container (`rtc`) and the
@@ -296,11 +329,24 @@ export function htmlToMarkdown(
 ): string {
   let md = html;
 
-  // Remove unwanted elements
-  md = stripUnwanted(md);
+  // Document-level chrome: doctype, XML decl, comments, <head>.
+  md = md
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<\?xml[^>]*\?>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
 
-  // Extract main content
+  // Extract the main content area (Wikipedia #mw-content-text, <article>,
+  // <main>, or <body>) before stripping chrome so we only touch the body.
   md = extractMainContent(md);
+
+  // Strip site chrome (whole balanced elements): nav/header/footer/aside,
+  // then class-based boxes (.infobox/.navbox/.thumb/.metadata/…).
+  md = removeElementsByTag(md);
+  md = removeElementsByClass(md);
+
+  // Promote lazy-loaded images before class/data attrs are stripped below.
+  md = promoteLazyImages(md);
 
   // Insert fragment anchors before id-bearing blocks (EPUB)
   if (opts.preserveIds) {
@@ -346,18 +392,22 @@ export function htmlToMarkdown(
   md = md.replace(/<img[^>]*alt="([^"]*)"[^>]*src="([^"]*)"[^>]*\/?>/gi, (_m, alt: string, src: string) => `![${alt}](${resolveImgSrc(src)})`);
   md = md.replace(/<img[^>]*src="([^"]*)"[^>]*\/?>/gi, (_m, src: string) => `![](${resolveImgSrc(src)})`);
 
-  // Links: <a ... href="...">text</a> → [text](href)
+  // Links: <a ... href="...">text</a> (with optional title) → [text](href)
+  md = md.replace(/<a\s[^>]*?href="([^"]*)"[^>]*?title="([^"]*)"[^>]*?>([\s\S]*?)<\/a>/gi, (_m, href: string, title: string, text: string) => {
+    const escapedTitle = String(title).replace(/"/g, '\\"');
+    return `[${text}](${href} "${escapedTitle}")`;
+  });
   md = md.replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
 
   // Bold + Italic (must be before single bold/italic)
-  md = md.replace(/<(strong|b)>[\s]*<(em|i)>([\s\S]*?)<\/(em|i)>[\s]*<\/(strong|b)>/gi, '***$3***');
-  md = md.replace(/<(em|i)>[\s]*<(strong|b)>([\s\S]*?)<\/(strong|b)>[\s]*<\/(em|i)>/gi, '***$2***');
+  md = md.replace(/<(strong|b)\b[^>]*>[\s]*<(em|i)\b[^>]*>([\s\S]*?)<\/(em|i)>[\s]*<\/(strong|b)>/gi, '***$3***');
+  md = md.replace(/<(em|i)\b[^>]*>[\s]*<(strong|b)\b[^>]*>([\s\S]*?)<\/(strong|b)>[\s]*<\/(em|i)>/gi, '***$2***');
 
   // Bold
-  md = md.replace(/<(strong|b)>([\s\S]*?)<\/(strong|b)>/gi, '**$2**');
+  md = md.replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/(strong|b)>/gi, '**$2**');
 
   // Italic
-  md = md.replace(/<(em|i)>([\s\S]*?)<\/(em|i)>/gi, '*$2*');
+  md = md.replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/(em|i)>/gi, '*$2*');
 
   // Code blocks: <pre><code>...</code></pre> → ```...```
   md = md.replace(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, '\n```\n$1\n```\n');
@@ -419,18 +469,76 @@ export function htmlToMarkdown(
   return md;
 }
 
+/** Remove HTML tags while respecting quoted attribute values, which can
+ *  contain `>` and newlines (e.g. MediaWiki's `data-mw` JSON attributes).
+ *  Preserves `<a id="…"></a>` anchors emitted by injectIdAnchors. */
+function stripHtmlTags(html: string): string {
+  let out = '';
+  let i = 0;
+  while (i < html.length) {
+    if (html[i] === '<') {
+      let j = i + 1;
+      let quote: string | null = null;
+      let closed = false;
+      while (j < html.length) {
+        const ch = html[j];
+        if (quote) {
+          if (ch === quote) quote = null;
+        } else if (ch === '"' || ch === "'") {
+          quote = ch;
+        } else if (ch === '>') {
+          closed = true;
+          break;
+        }
+        j++;
+      }
+      if (closed) {
+        const tag = html.slice(i, j + 1);
+        // Keep `<a id="…">` / `</a>` anchor markers (EPUB fragments).
+        if (/^<a\s+id=["'][^"']+["']\s*>/i.test(tag) || /^<\/a\s*>/i.test(tag)) {
+          out += tag;
+        }
+        i = j + 1;
+        continue;
+      }
+    }
+    out += html[i];
+    i++;
+  }
+  return out;
+}
+
+/** Extract a meta tag's `content` for a given `property` (og:title), handling
+ *  either attribute order. */
+function metaContent(html: string, property: string): string | null {
+  const propQuoted = property.replace(/"/g, '\\"');
+  const a = new RegExp(`<meta\\b[^>]*property=["']${propQuoted}["'][^>]*content=["']([^"']*)["']`, 'i');
+  const b = new RegExp(`<meta\\b[^>]*content=["']([^"']*)["'][^>]*property=["']${propQuoted}["']`, 'i');
+  const m = html.match(a) || html.match(b);
+  return m?.[1]?.trim() || null;
+}
+
 /**
- * Extract a title from HTML.
- * Looks for the first <h1> or <title> tag.
+ * Extract a title from HTML, matching the web reader's order:
+ * `<title>` → `og:title` → first `<h1>`.
  */
 export function extractTitle(html: string): string | null {
-  // Try <h1> first
-  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-  if (h1Match) return h1Match[1]!.replace(/<[^>]+>/g, '').trim();
+  const stripTags = (s: string) => s.replace(/<[^>]+>/g, '').trim();
 
-  // Try <title>
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  if (titleMatch) return titleMatch[1]!.replace(/<[^>]+>/g, '').trim();
+  if (titleMatch) {
+    const t = stripTags(titleMatch[1]!);
+    if (t) return t;
+  }
+
+  const og = metaContent(html, 'og:title');
+  if (og) return og;
+
+  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  if (h1Match) {
+    const t = stripTags(h1Match[1]!);
+    if (t) return t;
+  }
 
   return null;
 }

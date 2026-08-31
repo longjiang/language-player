@@ -80,6 +80,51 @@ describe('htmlToMarkdown — basic conversion', () => {
   });
 });
 
+describe('htmlToMarkdown — site chrome & rendering hardening (SPEC-083 unification)', () => {
+  it('strips a nested .infobox table as a whole element', () => {
+    const md = htmlToMarkdown(
+      '<html><body><div id="mw-content-text">' +
+        '<p>Lead <b class="mw-selflink">Bold</b>.</p>' +
+        '<table class="infobox geography vcard"><tr><td>leak1</td></tr>' +
+        '<tr><td><table><tr><td>nested-leak</td></tr></table></td></tr></table>' +
+        '<p>Keep.</p>' +
+      '</div></body></html>',
+      'https://example.com',
+    );
+    expect(md).toContain('Lead **Bold**.');
+    expect(md).toContain('Keep.');
+    expect(md).not.toContain('leak1');
+    expect(md).not.toContain('nested-leak');
+  });
+
+  it('preserves bold/italic on tags that carry attributes', () => {
+    const md = htmlToMarkdown(
+      '<p><b class="mw-selflink">Bold</b> and <strong style="color:red">Strong</strong> and <em id="x">It</em>.</p>',
+      'https://example.com',
+    );
+    expect(md).toContain('**Bold**');
+    expect(md).toContain('**Strong**');
+    expect(md).toContain('*It*');
+  });
+
+  it('promotes lazy-loaded data-src images', () => {
+    const md = htmlToMarkdown(
+      '<img src="data:image/gif;base64,R0lGODlhAQAB" data-src="/real.png" alt="pic">',
+      'https://example.com',
+    );
+    expect(md).toContain('![pic](https://example.com/real.png)');
+    expect(md).not.toContain('R0lGODlhAQAB');
+  });
+
+  it('keeps link titles in the markdown (like the web reader)', () => {
+    const md = htmlToMarkdown(
+      '<a href="/page" title="Page Title">link</a>',
+      'https://example.com',
+    );
+    expect(md).toContain('[link](https://example.com/page "Page Title")');
+  });
+});
+
 describe('htmlToMarkdown — resolveImage', () => {
   it('rewrites image srcs through the resolver', () => {
     const md = htmlToMarkdown(
@@ -141,10 +186,17 @@ describe('htmlToMarkdown — preserveIds anchors', () => {
 });
 
 describe('extractTitle', () => {
-  it('prefers h1 over title', () => {
-    expect(extractTitle('<title>t</title><h1>H</h1>')).toBe('H');
+  // Priority matches the web reader: <title> → og:title → first <h1>.
+  it('prefers title over h1', () => {
+    expect(extractTitle('<title>t</title><h1>H</h1>')).toBe('t');
   });
-  it('falls back to title', () => {
-    expect(extractTitle('<title>t</title>')).toBe('t');
+  it('falls back to og:title when no <title>', () => {
+    expect(extractTitle('<meta property="og:title" content="og" /><h1>H</h1>')).toBe('og');
+  });
+  it('falls back to h1 when no title/og', () => {
+    expect(extractTitle('<h1>H</h1>')).toBe('H');
+  });
+  it('returns null when no title/og/h1', () => {
+    expect(extractTitle('<p>plain</p>')).toBeNull();
   });
 });
