@@ -76,6 +76,9 @@ export default function ImageReaderScreen() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
+      // Diagnostics: log the exact prompt sent and the full markdown returned.
+      log('[image-reader] OCR prompt: ' + IMAGE_OCR_PROMPT);
+      log('[image-reader] OCR response:\n' + md);
       setImages((prev) => prev.map((im) => (
         im.id === id ? { ...im, md, converting: false } : im
       )));
