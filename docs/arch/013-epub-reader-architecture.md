@@ -649,13 +649,17 @@ thumbnail the sidebar has a dashed **"add next image"** tile with
 "Select files" and "Paste" buttons; those actions were removed from the title
 bar, which also no longer has a back arrow. The first pasted/dropped/picked
 image is opened by default and OCR'd immediately. The vision prompt asks for
-clean, **block-level markdown** starting with a `# <title>` heading (a
-human-readable image title the reader extracts for the title bar and
-saved-word context, instead of the raw filename) — block elements separated by
-blank lines, each paragraph as flowing prose — so blocks break naturally and
-reflow independently (no client-side OCR post-processing). The markdown is
-read in the paginated reader as a non-persistent session. OCR is lazy per
-image and cached server-side by `/vision`.
+clean markdown containing **only the text written in the image**, reflowed
+like normal reading: each logical element (paragraph, sentence,
+receipt/list/menu row, caption, speech bubble) is emitted as **one continuous
+line** (wrapped image rows merged) with blank lines between elements, so
+sentences reflow on both web and mobile and never fragment — no intro,
+summary, description, translation, page/panel numbers, panel/sound-effect
+labels, or code-fence wrapper, and an **optional** leading `# <title>` heading
+(a human-readable image title the reader extracts for the title bar and
+saved-word context when the image has an obvious title, instead of the raw
+filename). The markdown is read in the paginated reader as a non-persistent
+session. OCR is lazy per image and cached server-side by `/vision`.
 
 Clicking the **current** image thumbnail opens a full-size **preview dialog**:
 click/pinch (mobile) or Ctrl+wheel (web) toggles/zooms, and dragging pans while

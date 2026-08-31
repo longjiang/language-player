@@ -60,16 +60,17 @@ The gallery persists across navigation/refresh and is restored on mount:
 Images are re-OCR'd lazily if they have no stored result (the `/vision`
 results are cached server-side).
 
-The vision model is prompted to return **clean, flowing markdown** in
-**natural reading order**: the text with wrapped lines joined into flowing
-prose (no hard line breaks inside a paragraph, no sentence split across
-separate lines). The image reader additionally asks for a leading
-`# <title>` heading giving a short, human-readable image title (which the
-reader extracts and uses for the title bar and the saved-word context — not
-the raw filename). That makes the reader break blocks naturally and reflow
-each block independently — there is **no** client-side post-processing of the
-OCR text. The PDF page→markdown path uses the same simplified style (minus
-the title heading).
+The vision model is prompted to return **clean markdown containing only the
+text written in the image**, in **natural reading order**, with each logical
+element (paragraph, sentence, receipt/list/menu row, caption, speech bubble)
+reflowed into **one continuous line** (wrapped image rows merged) and distinct
+elements separated by blank lines — so sentences never fragment and reflow on
+both web and mobile. The prompt also allows an **optional** leading
+`# <title>` heading giving a short, human-readable image title when the image
+has an obvious document title (which the reader extracts and uses for the
+title bar and the saved-word context — not the raw filename). There is **no**
+client-side post-processing of the OCR text. The PDF page→markdown path uses
+the same style (minus the title heading).
 
 > **Full detail moved to [SPEC-090 — Image Reader](090-image-reader.md).** This
 > section is a summary; the standalone image reader (routes, entry surfaces,
