@@ -4,8 +4,9 @@
  * The shared `parseMarkdownBlocks` (packages/shared/src/markdown) is the
  * single markdown parser for BOTH apps. This module keeps the mobile alias
  * `@/lib/parse-markdown` working for existing importers and preserves the
- * legacy web-reader normalization: plain pasted text with single line
- * breaks (no markdown markers) becomes separate paragraphs.
+ * legacy web-reader normalization: genuinely flat plain text (no markdown
+ * markers AND no existing blank-line paragraph breaks, e.g. an email or a
+ * document paste) becomes separate paragraphs.
  */
 
 import {
@@ -43,6 +44,12 @@ function normalizeNewlines(text: string): string {
 
 /** Parse markdown into shared content blocks (mobile web-reader path). */
 export function parseMarkdownBlocks(md: string): ContentBlock[] {
-  const normalized = isPlainText(md) ? normalizeNewlines(md) : md;
+  // Only fold single line breaks into paragraphs for genuinely "flat" plain
+  // text — no markdown markers AND no existing blank-line paragraph breaks.
+  // Structured text (image-reader OCR, PDF page→markdown) already separates
+  // its blocks with blank lines, so its soft line breaks are left in place and
+  // the shared parser groups them into one paragraph per block, letting the
+  // text reflow instead of fragmenting line-by-line.
+  const normalized = isPlainText(md) && !/\n\s*\n/.test(md) ? normalizeNewlines(md) : md;
   return sharedParseMarkdownBlocks(normalized);
 }

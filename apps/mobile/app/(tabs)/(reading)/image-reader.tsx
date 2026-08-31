@@ -12,7 +12,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { IMAGE_OCR_PROMPT, normalizeVisionMarkdown } from '@langplayer/shared';
+import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
@@ -76,9 +76,8 @@ export default function ImageReaderScreen() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
-      const normalized = normalizeVisionMarkdown(md);
       setImages((prev) => prev.map((im) => (
-        im.id === id ? { ...im, md: normalized, converting: false } : im
+        im.id === id ? { ...im, md, converting: false } : im
       )));
     } catch (err) {
       logwarn('[image-reader] OCR failed:', (err as Error)?.message ?? err);
