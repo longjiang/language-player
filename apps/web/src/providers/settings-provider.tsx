@@ -23,6 +23,9 @@ interface SettingsContextValue {
   getL2: (code: string) => L2Settings;
   updateL2: (code: string, patch: Partial<L2Settings>) => void;
   ensureL2: (code: string) => void;
+
+  /** Record the last-used L1/L2 pair in the cloud settings (cross-device login restore). */
+  setLanguagePair: (l1: string, l2: string) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);

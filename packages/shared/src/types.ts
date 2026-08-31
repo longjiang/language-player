@@ -824,6 +824,20 @@ export interface SettingsV2 {
 
   /** Per-L2 settings, keyed by ISO 639-1 code. Missing keys → L2_DEFAULTS. */
   l2: Record<string, L2Settings>;
+
+  /** Last-used L1/L2 pair, synced across devices (SPEC-086/ARCH-019 language
+   *  restoration). Written on every language change; read after login to land
+   *  the learner back on the pair they last used instead of a fresh
+   *  /language-select. Absent → the user has never used Language Player. */
+  languagePair?: LastLanguagePair;
+}
+
+/** The learner's last-used L1/L2 pair, reconstructed with its timestamp so a
+ *  later write on another device wins (LWW). */
+export interface LastLanguagePair {
+  l1: string;
+  l2: string;
+  updatedAt: string;
 }
 
 // ── Global ─────────────────────────────────────
@@ -1099,6 +1113,7 @@ export function normalizeSettingsV2(
     review: { ...base.review, ...(raw.review ?? {}) },
     search: { ...base.search, ...(raw.search ?? {}) },
     l2: raw.l2 ?? base.l2,
+    languagePair: raw.languagePair ?? base.languagePair,
   };
 }
 

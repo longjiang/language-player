@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { getExploreUrl } from '@/lib/last-language-pair';
+import { getUserSettings } from '@langplayer/api-client';
 
 function LoginForm() {
   const router = useRouter();
@@ -38,7 +39,24 @@ function LoginForm() {
         }
         setError(t('error.invalid_credentials'));
       } else if (result?.ok) {
-        router.push(explicitCallbackUrl ?? getExploreUrl());
+        // Immediately after login, land on the last-used L1/L2 pair across
+        // devices (stored in the cloud settings). An explicit callbackUrl (a
+        // gated deep link like /watch/...) wins; otherwise prefer the restored
+        // pair, falling back to the explore URL / language-select when the
+        // learner has never used Language Player (last-language-pair.ts).
+        let target = explicitCallbackUrl;
+        if (!target) {
+          try {
+            const res = await getUserSettings();
+            const pair = res?.settings_v2?.languagePair;
+            target = pair?.l1 && pair?.l2
+              ? `/${pair.l1}/${pair.l2}/explore`
+              : getExploreUrl();
+          } catch {
+            target = getExploreUrl();
+          }
+        }
+        router.push(target);
         router.refresh();
       }
     } catch {
