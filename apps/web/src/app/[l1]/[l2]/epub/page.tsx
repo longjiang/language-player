@@ -19,6 +19,9 @@ import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
 import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
 import type { EpubSearchMatch, EpubSearchResult } from '@/hooks/use-epub';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useSettingsContext } from '@/providers/settings-provider';
+import { CONTENT_CONTAINER_WIDTH, READER_DEFAULT_LEADING, readerLeadingPx } from '@/lib/reader-layout';
 import { Header } from '@/components/layout/header';
 import { ReaderChromeProvider, useReaderChrome } from '@/providers/reader-chrome-provider';
 import {
@@ -50,6 +53,34 @@ export default function EpubPage() {
   const router = useRouter();
   const epub = useEpub();
   const { setImmersed, registerCloseReader } = useReaderChrome();
+  const { tokenizedText } = useSettingsContext();
+
+  // Track the viewport width so the chromeless buttons' right edge follows the
+  // reader content column on resize / rotation (see `closeRightMargin`).
+  const [windowWidth, setWindowWidth] = useState<number | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const update = () => setWindowWidth(window.innerWidth);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // Right-edge alignment for the chromeless "show toolbars" / "close" buttons:
+  // the reader's text column is clamped to CONTENT_CONTAINER_WIDTH and centred
+  // with leading margins on both sides, and the per-block action-menu trigger
+  // (⋮) sits at the content column's right edge. The close button's right edge
+  // must line up with it, so its offset from the screen's right edge equals
+  // max(leading, (windowWidth − CONTENT_CONTAINER_WIDTH) / 2) — the leading
+  // margin on narrow screens, the centred container margin on wide ones.
+  const closeRightMargin = useMemo(() => {
+    const leadingPx = readerLeadingPx(
+      tokenizedText.zoom,
+      tokenizedText.leading ?? READER_DEFAULT_LEADING,
+    );
+    const width = windowWidth ?? (typeof window !== 'undefined' ? window.innerWidth : 0);
+    return Math.max(leadingPx, (width - CONTENT_CONTAINER_WIDTH) / 2);
+  }, [tokenizedText.zoom, tokenizedText.leading, windowWidth]);
 
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
@@ -392,33 +423,41 @@ export default function EpubPage() {
             </ReaderChromeProvider>
           </div>
 
-          {/* Chromeless controls: when the chrome is hidden, two icon-only
-              buttons sit top right, vertically aligned with the chapter
+          {/* Chromeless controls: when the chrome is hidden, two standard
+              shadcn buttons sit top right, vertically aligned with the chapter
               title (top = HEADER_HEIGHT + 8, the title line box) — "show
               toolbars" reveals the chrome and "close" leaves the reader.
-              Chrome-visible mode deliberately has NO close button (the
-              escape hatches are the chromeless close and the nav menu). */}
+              Text labels show on portrait iPads and wider (≥768px); below
+              that they collapse to icons. The close button's right edge lines
+              up with the per-block action-menu trigger (⋮) in the text below
+              (SPEC-085 §17.2 horizontal geometry). Chrome-visible mode
+              deliberately has NO close button (the escape hatches are the
+              chromeless close and the nav menu). */}
           {!chromeVisible && (
             <div
-              className="absolute right-3 z-40 flex items-center gap-2"
-              style={{ top: HEADER_HEIGHT + 8 }}
+              className="absolute z-40 flex items-center gap-2"
+              style={{ top: HEADER_HEIGHT + 8, right: closeRightMargin }}
             >
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={toggleChrome}
                 aria-label={t('action.show_toolbars')}
                 title={t('action.show_toolbars')}
-                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:text-foreground"
               >
                 <PanelTopOpen className="h-3.5 w-3.5" />
-              </button>
-              <button
+                <span className="hidden md:inline">{t('action.show_toolbars')}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleCloseReader}
                 aria-label={t('action.close')}
                 title={t('action.close')}
-                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
-              </button>
+                <span className="hidden md:inline">{t('action.close')}</span>
+              </Button>
             </div>
           )}
 
