@@ -401,7 +401,7 @@ Build the destination from the active language pair and the entry's dictionary a
 |---|---|---|
 | L1 | chrome.storage.local.l1Language | Existing key; updates runtime locale |
 | L2 | chrome.storage.local.l2Language | Existing key; notifies video/page content scripts |
-| Selected panel tab | chrome.storage.local.sidePanelTab | Global last-selected tab |
+| Selected panel tab | `chrome.storage.local.sidePanelTab` + `sidePanelTabByTab` | Global last-selected tab, plus a per-tab map so switching back to a tab and reopening restores that tab's own sub-tab |
 | Display/settings model | chrome.storage.local plus /user-settings when authenticated | Migrate legacy extension keys once |
 | L2 level | Existing progress local/cloud pathway | Same seven-level mapping as web |
 | Auth session | chrome.storage.local.lpv_auth | Existing rotating refresh-token implementation |

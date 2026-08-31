@@ -140,6 +140,7 @@ This document analyzes how settings are stored, mutated, and synced across all t
 | `voiceURI`, `speechRate` | **Per-L2** | TTS voice and speed are language-specific |
 | `tvShowFilter`, `categoryFilter` | **Per-L2** | Content filters are language-scoped |
 | `dailyNewLimit` | **Global** | The setting is one global number (set to 50 → 50 for every L2). But the new-card budget is ENFORCED per language — each L2's review deck gets its own `dailyNewLimit` cards/day, computed against that language's cards only. Russian having more cards never reduces Japanese's budget; the budgets don't share a pool |
+| `languagePair` (`{l1, l2, updatedAt}`) | **Global / cloud** | **Last-used L1/L2 pair**, written on every language change and read after login (any device) to land the learner back on the pair they last used instead of a fresh `/language-select`. Cross-device via `settings_v2` LWW. Absent on a brand-new account (user has never used Language Player). Mirrors Classic's `l2Settings[l2Code].l1` in the modern blob. |
 
 | App | Per-L2 Keying | Mechanism |
 |---|---|---|
