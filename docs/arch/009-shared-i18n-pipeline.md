@@ -185,6 +185,19 @@ Components never know which i18n library is underneath. The hook handles:
 - Complex ICU formatting (`{n, plural, ...}`, `{gender, select, ...}`) via `intl.formatMessage()`
 - Fallback to the key name itself if the message is not found (fail-visible in dev)
 
+> **Raw templates when no `values` are passed.** Both `useT()` hooks return the
+> **raw** message text (with `{placeholder}` intact) when `t(key)` is called
+> WITHOUT a `values` object. This is required by the shared LLM prompt builders
+> in `@langplayer/utils` (`buildWordExplainPrompt` / `buildExplainBlockPrompt`),
+> which receive the un-substituted `prompt.*` templates and substitute
+> `{l2Name}`, `{word}`, etc. themselves. Without this, the web hook (which wraps
+> `next-intl`) would throw a `FORMATTING_ERROR` on the unbound placeholders —
+> the "intl string context variable l2Name was not provided" crash that produced
+> empty "Let DeepSeek Explain" bubbles. `apps/web/src/hooks/use-t.ts` therefore
+> resolves the raw string from `useMessages()` when `values` is absent and only
+> delegates to `next-intl` when `values` is provided. This keeps the two apps in
+> lock-step with the documented contract.
+
 ## ICU MessageFormat
 
 Both libraries support the ICU MessageFormat standard:
