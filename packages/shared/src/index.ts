@@ -19,5 +19,6 @@ export * from './markdown/types';
 export * from './markdown/parser';
 export * from './markdown/reconstruct';
 export * from './markdown/html-to-markdown';
+export * from './markdown/fetch-page';
 export * from './markdown/inline';
 export * from './markdown/vision';
