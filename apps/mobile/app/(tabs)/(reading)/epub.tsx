@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, Modal, Animated, ScrollView, useWindowDimensions, Linking, KeyboardAvoidingView, Platform } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -10,6 +10,7 @@ import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
+import { readerLeadingPx, READER_DEFAULT_LEADING, CONTENT_CONTAINER_WIDTH } from '@/lib/reader-layout';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
@@ -31,14 +32,28 @@ const SAVE_LOCATION_DEBOUNCE_MS = 800;
 
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, updateDisplay, tokenizedText } = useSettingsContext();
   const t = useT();
   const epub = useEpub();
-  const { height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { setImmersed } = useReaderChrome();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
+
+  // Right-edge alignment for the chromeless "show toolbars" / "close" buttons:
+  // the reader's text column is clamped to CONTENT_CONTAINER_WIDTH and centred
+  // with leading margins on both sides, and the per-block action-menu trigger
+  // (⋮) sits at the content column's right edge. The close button's right edge
+  // must line up with it, so its offset from the screen's right edge equals
+  // max(leading, (windowWidth − CONTENT_CONTAINER_WIDTH) / 2).
+  const closeRightMargin = useMemo(() => {
+    const leadingPx = readerLeadingPx(
+      tokenizedText.zoom,
+      tokenizedText.leading ?? READER_DEFAULT_LEADING,
+    );
+    return Math.max(leadingPx, (windowWidth - CONTENT_CONTAINER_WIDTH) / 2);
+  }, [tokenizedText.zoom, tokenizedText.leading, windowWidth]);
 
   /** Top strip reserved for the app-header chrome + the muted chapter title:
    *  header (insets.top + 57) + 8 clearance + 16 title line + 8 breathing
@@ -516,33 +531,41 @@ export default function EpubReaderScreen() {
         </ReaderChromeProvider>
       </Animated.View>
 
-      {/* Chromeless controls: when the chrome is hidden, two icon-only
+      {/* Chromeless controls: when the chrome is hidden, two standard shadcn
           buttons sit top right, vertically aligned with the chapter title
           (top = insets.top + 65, the title line box) — "show toolbars"
-          reveals the chrome and "close" leaves the reader. Chrome-visible
-          mode deliberately has NO close button (the escape hatches are the
-          chromeless close and the nav menu). */}
+          reveals the chrome and "close" leaves the reader. Text labels show
+          on portrait iPads and wider (>=768px); below that they collapse to
+          icons. The close button's right edge lines up with the per-block
+          action-menu trigger (⋮) in the text below (SPEC-085 §17.2
+          horizontal geometry). Chrome-visible mode deliberately has NO close
+          button (the escape hatches are the chromeless close and the back
+          stack). */}
       {!chromeVisible && (
         <View
           className="absolute z-40 flex-row items-center gap-2"
-          style={{ top: insets.top + 65, right: 12 }}
+          style={{ top: insets.top + 65, right: closeRightMargin }}
         >
-          <Pressable
+          <Button
             onPress={toggleChrome}
-            className="h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
+            variant="outline"
+            size="sm"
             accessibilityRole="button"
             accessibilityLabel={t('action.show_toolbars')}
           >
             <PanelTopOpen size={14} color={ICON_MUTED} />
-          </Pressable>
-          <Pressable
+            {isMd && <Text className={buttonTextClass('outline')}>{t('action.show_toolbars')}</Text>}
+          </Button>
+          <Button
             onPress={handleCloseReader}
-            className="h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
+            variant="outline"
+            size="sm"
             accessibilityRole="button"
             accessibilityLabel={t('action.close')}
           >
             <X size={14} color={ICON_MUTED} />
-          </Pressable>
+            {isMd && <Text className={buttonTextClass('outline')}>{t('action.close')}</Text>}
+          </Button>
         </View>
       )}
 
