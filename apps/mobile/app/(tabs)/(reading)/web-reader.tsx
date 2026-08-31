@@ -15,6 +15,7 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { VisitedSitesSidebar } from '@/components/reader/VisitedSitesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveUrlAnchor, getUrlAnchor } from '@/lib/reader-storage';
@@ -49,6 +50,8 @@ export default function WebReaderScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
+  /** Reader's current global block (for the TOC active-entry highlight). */
+  const [currentBlockIndex, setCurrentBlockIndex] = useState<number | null>(null);
   /** Visited-sites history (SPEC-049 §10.3) — shown in the sidebar (web parity). */
   const [visitedSites, setVisitedSites] = useState<VisitedSite[]>([]);
 
@@ -70,6 +73,13 @@ export default function WebReaderScreen() {
     resetKey: title || null,
     initialAnchor,
     onAnchorChange: handleAnchorChange,
+    onBlockChange: setCurrentBlockIndex,
+  });
+
+  const tocSearch = useReaderTocSearch({
+    blocks: pagination.blocks,
+    goToBlock: pagination.goToBlock,
+    currentBlockIndex,
   });
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
@@ -245,6 +255,9 @@ export default function WebReaderScreen() {
                   translationSideBySide={isMd}
                   selectionDictionary
                   onOpenLink={handleOpenLinkInReader}
+                  onOpenToc={tocSearch.headings.length > 0 ? tocSearch.openToc : undefined}
+                  onOpenSearch={tocSearch.openSearch}
+                  highlight={tocSearch.highlight}
                   t={t}
                 />
               </View>
@@ -295,6 +308,19 @@ export default function WebReaderScreen() {
           />
         </Sidebar>
       </View>
+
+      {/* ── Heading TOC + Search modals (web reader; SPEC-087 §8) ── */}
+      <ReaderTocSearchOverlays
+        headings={tocSearch.headings}
+        tocOpen={tocSearch.tocOpen}
+        onTocClose={() => tocSearch.setTocOpen(false)}
+        onTocSelect={tocSearch.handleTocSelect}
+        searchOpen={tocSearch.searchOpen}
+        onSearchClose={() => tocSearch.setSearchOpen(false)}
+        onSearchSelect={tocSearch.handleSearchSelect}
+        blocks={pagination.blocks}
+        activeIndex={currentBlockIndex}
+      />
     </PageContainer>
   );
 }

@@ -11,6 +11,7 @@ import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { NotesSidebar } from '@/components/reader/NotesSidebar';
+import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveNoteAnchor, getNoteAnchor } from '@/lib/reader-storage';
 import { BookOpen, PenLine, PanelRightOpen, PanelRightClose, Sparkles } from 'lucide-react-native';
@@ -34,6 +35,8 @@ export default function ReaderScreen() {
   const [savedFlash, setSavedFlash] = useState(false);
   const [loadingSample, setLoadingSample] = useState(false);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
+  /** Reader's current global block (for the TOC active-entry highlight). */
+  const [currentBlockIndex, setCurrentBlockIndex] = useState<number | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
@@ -89,6 +92,13 @@ export default function ReaderScreen() {
     resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
     initialAnchor,
     onAnchorChange: handleAnchorChange,
+    onBlockChange: setCurrentBlockIndex,
+  });
+
+  const tocSearch = useReaderTocSearch({
+    blocks: pagination.blocks,
+    goToBlock: pagination.goToBlock,
+    currentBlockIndex,
   });
 
   // Auto-save with 2s debounce
@@ -273,6 +283,9 @@ export default function ReaderScreen() {
                 showTextActions
                 translationSideBySide={isMd}
                 selectionDictionary
+                onOpenToc={tocSearch.headings.length > 0 ? tocSearch.openToc : undefined}
+                onOpenSearch={tocSearch.openSearch}
+                highlight={tocSearch.highlight}
                 t={t}
               />
             </View>
@@ -314,6 +327,19 @@ export default function ReaderScreen() {
           />
         </Sidebar>
       </View>
+
+      {/* ── Heading TOC + Search modals (notes reader; SPEC-087 §8) ── */}
+      <ReaderTocSearchOverlays
+        headings={tocSearch.headings}
+        tocOpen={tocSearch.tocOpen}
+        onTocClose={() => tocSearch.setTocOpen(false)}
+        onTocSelect={tocSearch.handleTocSelect}
+        searchOpen={tocSearch.searchOpen}
+        onSearchClose={() => tocSearch.setSearchOpen(false)}
+        onSearchSelect={tocSearch.handleSearchSelect}
+        blocks={pagination.blocks}
+        activeIndex={currentBlockIndex}
+      />
     </PageContainer>
   );
 }
