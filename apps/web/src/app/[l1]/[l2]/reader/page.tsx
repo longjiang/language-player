@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@langplayer/shared';
+import { fetchReaderPage, htmlToMarkdown } from '@langplayer/shared';
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
@@ -20,33 +21,9 @@ import { NotesSidebar } from '@/components/reader/notes-sidebar';
 import { Sidebar } from '@/components/ui/sidebar';
 import { getNotePosition, saveNotePosition } from '@/lib/reader-position';
 
-// Lazy-load turndown for HTML→markdown conversion
-let _turndown: any = null;
-async function getTurndown() {
-  if (!_turndown) {
-    const Turndown = (await import('turndown')).default;
-    _turndown = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
-  }
-  return _turndown;
-}
-
-async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
-  const mainContent = doc.querySelector('#mw-content-text') || doc.querySelector('article') || doc.body;
-  mainContent.querySelectorAll('a').forEach(el => {
-    const href = el.getAttribute('href');
-    if (href) { try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {} }
-  });
-  // Resolve relative/absolute image srcs against the page URL (same as the
-  // <a> rewrite above) so images render instead of showing a broken image.
-  mainContent.querySelectorAll('img').forEach(el => {
-    const src = el.getAttribute('src');
-    if (src) { try { el.setAttribute('src', new URL(src, baseUrl).href); } catch {} }
-  });
-  const td = await getTurndown();
-  return td.turndown(mainContent.innerHTML);
-}
+// HTML→Markdown conversion and the reader fetch live in @langplayer/shared
+// (htmlToMarkdown, fetchReaderPage) so web and mobile share one pipeline
+// (SPEC-083 / SPEC-087 §2).
 
 const READER_TEXT_KEY = 'lp_reader_text';
 const READER_TITLE_KEY = 'lp_reader_title';
@@ -259,11 +236,10 @@ export default function ReaderPage() {
     setLoading(true); setError(null); setInitialLocation(null);
     router.replace(`/${l1.code}/${l2.code}/reader?url=${encodeURIComponent(url)}`, { scroll: false });
     try {
-      const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(url)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.text();
+      // Fetch + convert through the shared reader pipeline (same as mobile).
+      const raw = await fetchReaderPage(url, PYTHON_API_URL);
       if (isMarkdown) setText(raw);
-      else { const md = await htmlToMarkdown(raw, url); setText(md); }
+      else setText(htmlToMarkdown(raw, url));
     } catch (e: any) { setError(e?.message || t('msg.failed_to_load_url')); }
     finally { setLoading(false); }
   }, [l1.code, l2.code, router, t]);
