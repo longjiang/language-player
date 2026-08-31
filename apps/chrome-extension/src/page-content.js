@@ -22,6 +22,12 @@ const OWN_HOST_RE = /(^|\.)(languageplayer\.io|language-player\.netlify\.app)$/i
 // the leaf-only filter below keeps wrapper divs (those containing other blocks)
 // out, so only text-bearing leaf divs are tokenized.
 const BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote, td, figcaption, dt, dd, div';
+// Uppercase tag set mirroring BLOCK_SELECTOR — used to stop a text-run walk at
+// a descendant block element so a wrapper's own paragraphs (aozora's bare
+// <div class="main_text"> body) are tokenized instead of being dropped by the
+// leaf-only filter (ARCH-019). A wrapper that ALSO has block descendants keeps
+// its own text runs; the descendant blocks are tokenized separately.
+const BLOCK_TAG_SET = new Set(['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'FIGCAPTION', 'DT', 'DD', 'DIV']);
 const SKIP_SELECTOR = 'script, style, noscript, template, svg, canvas, iframe, input, textarea, select, [contenteditable], #lpv-transcript-panel';
 /** Tokenize blocks this far before they scroll into view (matches web TokenizedText). */
 const NEAR_VIEWPORT_MARGIN = '200px';
@@ -533,6 +539,13 @@ function getTextRuns(el) {
           if (node.tagName === 'BR') return NodeFilter.FILTER_ACCEPT;
           if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
           if (isHidden(node) || isInsideSkipped(node)) return NodeFilter.FILTER_REJECT;
+          // Stop at a descendant block element: its text is tokenized by that
+          // block's own pass (ARCH-019 leaf-only filter), not by this wrapper.
+          // The wrapper's OWN direct text (inline containers like span/a/ruby)
+          // is still collected so a bare <div> body (aozora) gets its
+          // paragraphs. The root `el` is a block element, so it is skipped
+          // (descended) rather than rejected.
+          if (node !== el && BLOCK_TAG_SET.has(node.tagName)) return NodeFilter.FILTER_REJECT;
           // Inline container (span/a): descend into its text children.
           return NodeFilter.FILTER_SKIP;
         }
@@ -600,8 +613,14 @@ function getPageTranslationSnapshot() {
   const blocks = [];
   let totalChars = 0;
   for (const el of document.querySelectorAll(BLOCK_SELECTOR)) {
-    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el) || hasVisibleBlockDescendant(el)) continue;
+    if (blocks.length >= 300 || isHidden(el) || isInsideSkipped(el)) continue;
     const runs = getTextRuns(el);
+    // getTextRuns returns the element's OWN paragraph runs, stopping at
+    // descendant block elements. A pure wrapper (all text inside descendant
+    // blocks) yields no runs and is skipped; a wrapper that owns its own
+    // paragraphs (aozora bare <div> body) contributes them here too — keeping
+    // the page-translation feed on the same granularity as the tokenizer.
+    if (runs.length === 0) continue;
     const anchor = el.closest('a[href]');
     const href = anchor?.href || null;
     for (const run of runs) {
@@ -763,7 +782,6 @@ function onIntersect(entries) {
     const el = entry.target;
     if (tokenizedBlocks.has(el) || pendingBlocks.has(el)) continue;
     if (isHidden(el) || isInsideSkipped(el)) continue;
-    if (hasVisibleBlockDescendant(el)) continue; // became nested — children tokenize as their own leaf blocks
     pendingBlocks.add(el);
     queued = true;
   }
@@ -793,11 +811,13 @@ async function flushPending() {
     const emptyBlocks = [];
     for (const block of blocks) {
       if (tokenizedBlocks.has(block)) continue;
-      if (hasVisibleBlockDescendant(block)) continue; // became nested — leave to its leaf children
       if (block.__lpvOriginalHtml === undefined) block.__lpvOriginalHtml = block.innerHTML;
       // Split the block into paragraph runs so each is tokenized + stamped with
       // its own run id (data-lpv-run) — a bare <div> post body yields one block
-      // per <br>-separated paragraph instead of one clumped block.
+      // per <br>-separated paragraph instead of one clumped block. getTextRuns
+      // stops at descendant block elements, so a wrapper that owns its own
+      // paragraphs (aozora main_text) tokenizes only those; descendant blocks
+      // are handled by their own pass.
       const runs = getTextRuns(block);
       const nodeRuns = [];
       for (const run of runs) {
@@ -883,6 +903,7 @@ async function tokenizePage() {
   const skippedSamples = [];
   const leafVisible = [];
   for (const el of allCandidates) {
+    if (tokenizedBlocks.has(el) || pendingBlocks.has(el)) continue;
     if (isHidden(el)) {
       hiddenCount++;
       if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:hidden`);
@@ -890,8 +911,17 @@ async function tokenizePage() {
       insideSkippedCount++;
       if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:insideSkipped`);
     } else if (hasVisibleBlockDescendant(el)) {
-      nestedCount++;
-      if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:nested`);
+      // A wrapper with its own paragraph text (e.g. aozora's bare <div
+      // class="main_text"> whose body paragraphs are direct children alongside
+      // heading sub-blocks) is tokenized for its own runs; getTextRuns stops at
+      // descendant blocks so only the wrapper's direct paragraphs are used.
+      // A pure wrapper (all text inside descendant blocks) is skipped so its
+      // leaf children are tokenized instead (ARCH-019 leaf-only filter).
+      if (getTextRuns(el).length > 0) leafVisible.push(el);
+      else {
+        nestedCount++;
+        if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:nested`);
+      }
     } else {
       leafVisible.push(el);
     }
@@ -912,6 +942,13 @@ async function tokenizePage() {
     }
   }
   if (queued > 0 || pendingBlocks.size > 0) scheduleFlush();
+  log('[PAGE] tokenizePage scan', {
+    candidates: allCandidates.length,
+    hidden: hiddenCount,
+    insideSkipped: insideSkippedCount,
+    nestedPureSkipped: nestedCount,
+    tokenizable: leafVisible.length,
+  });
 }
 
 /** Push page-mode state to the side panel (via the background relay) so it
