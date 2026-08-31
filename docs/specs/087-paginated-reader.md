@@ -108,14 +108,14 @@ These are grouped by feature area. Each requirement describes the finished behav
 
 ### 7. Reader chrome
 
-- **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and (for books) table-of-contents and search buttons, plus the current chapter name.
+- **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and table-of-contents and search buttons (a chapter tree for books, a heading list for the notes/web reader — the TOC button is shown only when the text has headings), plus the current chapter name (books).
 - **Empty / pending states.** A load state (pulsing skeleton) shows while a page's words and translation are prepared, so the layout doesn't jump.
 - **Notes.** The notes reader has a sidebar to create, rename, delete, and switch between notes.
 
 ### 8. Search, table of contents, and place
 
-- **Search (books).** A whole-book search panel: results show a snippet with the matched span highlighted and a chapter label; clicking a result jumps to and highlights the matching block. Recent searches are remembered (and can be cleared).
-- **Table of contents.** A nested chapter tree highlighting the current chapter and its ancestors; clicking jumps to the chapter. Previous/next chapter controls are available.
+- **Search.** A search panel over the reader's content. For books it searches the whole book; for the notes/web reader it searches the block stream. Results show a snippet with the matched span highlighted (and a chapter label for books); clicking a result jumps to and highlights the matching block. Recent searches are remembered (and can be cleared).
+- **Table of contents.** Books show a nested chapter tree highlighting the current chapter and its ancestors; the notes/web reader shows a heading-derived nested list (h1–h6, indentation = heading depth) highlighting the entry nearest the reader's position. Clicking an entry jumps to it. Previous/next chapter controls are available for books.
 - **Position restore.** The reader remembers where you were (the block you were reading) and restores it when you reopen the same note, book, or URL — and survives a reload or a window resize.
 
 ## Glossary of Terms

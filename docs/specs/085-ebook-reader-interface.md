@@ -441,10 +441,16 @@ Elements:
 §7.1/§8.1 previously had the close button visible only when the chrome is ON.
 Per product direction (paginated reader requirements), the affordance flipped:
 
-- **Chrome OFF (chromeless):** two icon-only buttons sit top-right, aligned
-  with the chapter title (web: `top = HEADER_HEIGHT + 8`; mobile:
+- **Chrome OFF (chromeless):** two standard **shadcn buttons** (rectangular,
+  rounded corners — not 24 px circles) sit top-right, aligned with the
+  chapter title (web: `top = HEADER_HEIGHT + 8`; mobile:
   `top = insets.top + 65`): **"show toolbars"** (reveals the chrome) and
-  **"close"** (leaves the reader).
+  **"close"** (leaves the reader). Text labels show on **portrait iPad and
+  wider** (≥ 768 px, the same breakpoint as side-by-side translation); below
+  that they collapse to icons. On wide screens the label is the action string
+  (`action.show_toolbars` / `action.close`); the close button's **right edge
+  lines up with the per-block action-menu trigger (⋮)** in the text below —
+  see §17.2.
 - **Chrome ON:** no close button. Escape hatches are the chromeless close and
   the nav-menu same-route close (`requestCloseReader`).
 
@@ -485,3 +491,25 @@ sides**:
 - Vertically, short pages (immersive epub) are centered like a book page
   (web: `flex min-h-full flex-col justify-center` on the visible column;
   mobile: `contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}`).
+
+#### The chromeless close button's right edge mirrors the action-menu trigger
+
+Because the text column is a centered, width-clamped box, the per-block
+action-menu trigger (⋮, at the end of each block row) sits at the content
+column's right edge — not at a fixed `right` inset. The chromeless close
+button's **right edge must line up with that trigger's right edge**, so its
+offset from the screen's right edge is **not** a constant 12 px:
+
+```
+closeButtonRight = max(L, (screen width − CONTENT_CONTAINER_WIDTH) / 2)
+```
+
+- On narrow screens (`screen − 2L ≤ CONTENT_CONTAINER_WIDTH`) the column fills
+  the screen minus a leading margin on each side, so the margin is `L` (the
+  leading).
+- On wide screens the column is the centered container, so the margin is
+  `(screen − CONTENT_CONTAINER_WIDTH) / 2`.
+- Applies to web (`epub/page.tsx`, `right = closeRightMargin`) and mobile
+  (`epub.tsx`, `right = closeRightMargin`), recomputed on window resize
+  (web) / from `useWindowDimensions` (mobile). The "show toolbars" button sits
+  to the left of the close button; both share the same right-anchored row.
