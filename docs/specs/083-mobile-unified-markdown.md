@@ -166,7 +166,12 @@ nowhere — delete it.
   - `opts.resolveImage(path) -> uri` — rewrite image `src` (EPUB archive
     images).
   - Same noise-stripping, entity decoding, list/heading/code/blockquote
-    conversion as today. Web keeps turndown for now (see Out of Scope).
+    conversion as today — and, since the web-reader unification landed,
+    additionally balanced `.infobox`/`.navbox`/`.thumb` chrome stripping,
+    attribute-tolerant `<b>/<strong>/<em>/<i>` (Wikipedia leads use
+    `<b class="…">`), lazy-image `data-src` promotion, and web-matching
+    title extraction (`<title>` → `og:title` → `<h1>`). Both apps call this
+    exact module (see Out of Scope — resolved).
 - **`inline.ts`** — pure `parseInlineRanges(text)` (the regex walker from
   `lib/inline-markdown.tsx`), so translations/corpus highlighting shares one
   implementation; the RN `renderInlineMarkdown` wrapper stays app-side.
@@ -271,14 +276,18 @@ for text blocks so L2 tokenization, translations, and formats keep working):
   rendering (via shared `reconstructRaw`) after the parser swap; rendering the
   typed blocks with dedicated DOM components is a follow-up (rendering stays
   per-platform; parsing is now identical).
-- **Web turndown → shared `htmlToMarkdown`** — web's web-reader ingestion
-  keeps DOMParser+turndown for now (its output quality is well-tested; the
-  shared converter serves mobile's two ingestion paths). Adoption is a
-  follow-up with its own fixtures. Web's turndown path resolves relative
-  `<img>` srcs (and `<a>` hrefs) against the page URL via `new URL(src,
-  baseUrl)` — parity with the shared converter's `resolveImgSrc`, so e.g.
-  Aozora Bunko's `../../../gaiji/2-88/…` character tiles render instead of
-  showing a broken image.
+- **Web turndown → shared `htmlToMarkdown`** — **Resolved (2026-08-31).**
+  The web reader (and the notes `reader` page) now use the shared
+  `@langplayer/shared` `htmlToMarkdown` + `fetchReaderPage`; web's inline
+  DOMParser+turndown path was removed. The web reader previously resolved
+  relative `<img>` srcs (and `<a>` hrefs) against the page URL via
+  `new URL(src, baseUrl)`; the shared converter keeps that via `resolveImgSrc`
+  and the baseUrl `<a>`/`<img>` resolution, so e.g. Aozora Bunko's
+  `../../../gaiji/2-88/…` character tiles still resolve. Remaining known gap:
+  the shared converter does not port web's DOM `splitTextParagraphs` (splitting
+  a single `<div>` of `<br>`-terminated lines into `<p>`s — Aozora-style
+  bodies); that behaviour is now identical on both platforms (neither runs it)
+  and is tracked as a follow-up.
 - **Web EPUB ingestion unification** — web keeps its native EpubBlock +
   1:1 bridge (`epub-reader-blocks.ts`); it already ends at the shared block
   stream. A later task can move web EPUB to the shared
