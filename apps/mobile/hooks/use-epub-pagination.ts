@@ -921,14 +921,24 @@ export function useEpubPagination({
   useEffect(() => {
     if (estimate || !blocks || blocks.length === 0) return;
     const heights = blockHeightsRef.current;
-    if (heights.length < blocks.length || heights.some(h => h == null)) return;
+    const mets = blockMetricsRef.current;
     // A split-drag / width change re-measures blocks, which can clear (or
     // partially populate) blockMetricsRef while blockHeightsRef still passes
-    // the guard above. Accessing an undefined metric here crashed
-    // ('Cannot read property height of undefined') on every split drag, so
-    // mirror the heights guard on the metrics array before reading it.
-    const mets = blockMetricsRef.current;
-    if (mets.length < blocks.length || mets.some(m => m == null)) return;
+    // a length guard. Accessing an undefined metric here crashed
+    // ('Cannot read property height of undefined'). The old `.some(m => m ==
+    // null)` guard skips SPARSE holes, so an index that was never measured
+    // (its onLayout did not fire yet) slipped through and read `undefined`.
+    // Check every index in [0, blocks.length) explicitly so a hole defers the
+    // page-break computation until that block is measured, instead of crashing.
+    if (heights.length < blocks.length || mets.length < blocks.length) return;
+    let hole = -1;
+    for (let i = 0; i < blocks.length; i++) {
+      if (heights[i] == null || mets[i] == null) { hole = i; break; }
+    }
+    if (hole >= 0) {
+      paginationLog(`[Pagination] ⏳ waiting on unmeasured block ${hole}/${blocks.length} kind=${blocks[hole]?.kind ?? '?'} measured=${measuredBlockCount} t=${Date.now()}`);
+      return;
+    }
 
     const breaks: number[] = [];
     let accumulated = 0;
