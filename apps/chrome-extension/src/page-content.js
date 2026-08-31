@@ -481,6 +481,42 @@ function normalizeBlockText(text) {
   return (text || '').replace(/\s+/g, ' ').trim();
 }
 
+/** Base text of a <ruby>: the concatenated <rb> characters, dropping the <rt>
+ *  reading and the <rp> parens so a page's own ruby never double-renders over
+ *  the tokenizer's ruby (buildRuby adds its own reading). Falls back to the
+ *  ruby's text minus rt/rp when no explicit <rb> is present. */
+function rubyBaseText(ruby) {
+  const rb = [...ruby.querySelectorAll('rb')].map((n) => n.textContent).join('');
+  if (rb.trim()) return rb;
+  const parts = [];
+  const walker = document.createTreeWalker(ruby, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest?.('rt, rp')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  let node;
+  while ((node = walker.nextNode())) parts.push(node.nodeValue);
+  return parts.join('');
+}
+
+/** Remove existing <ruby> markup from a block's OWN text runs — i.e. ruby
+ *  that belongs to this block (a ruby inside a descendant block element is
+ *  handled by that block's own pass). Each <ruby> is replaced by its base text
+ *  so the tokenizer renders fresh ruby from the token pronunciation instead of
+ *  the page's reading either doubling up or leaving stray <rp> parens. Must be
+ *  called after `block.__lpvOriginalHtml` is captured (so restore keeps the
+ *  original, ruby-bearing HTML). */
+function stripRuby(el) {
+  const rubies = el.querySelectorAll('ruby');
+  for (const ruby of rubies) {
+    const blockAncestor = ruby.closest(BLOCK_SELECTOR);
+    if (blockAncestor !== el) continue; // belongs to a descendant block
+    ruby.replaceWith(document.createTextNode(rubyBaseText(ruby)));
+  }
+}
+
 /** Visible text of a block, from non-skipped text nodes only. `innerText` can
  *  be empty while `textContent` is a big non-rendered blob — e.g. a wrapper
  *  around YouTube's `<script type="application/ld+json">` VideoObject that
@@ -492,7 +528,7 @@ function getVisibleBlockText(el) {
   try {
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
-        if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+        if (node.parentElement?.closest?.('rt, rp, .select-none')) return NodeFilter.FILTER_REJECT;
         const value = (node.nodeValue || '').trim();
         if (!value) return NodeFilter.FILTER_REJECT;
         const parent = node.parentElement;
@@ -537,7 +573,7 @@ function getTextRuns(el) {
       acceptNode(node) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           if (node.tagName === 'BR') return NodeFilter.FILTER_ACCEPT;
-          if (node.parentElement?.closest?.('rt, .select-none')) return NodeFilter.FILTER_REJECT;
+          if (node.parentElement?.closest?.('rt, rp, .select-none')) return NodeFilter.FILTER_REJECT;
           if (isHidden(node) || isInsideSkipped(node)) return NodeFilter.FILTER_REJECT;
           // Stop at a descendant block element: its text is tokenized by that
           // block's own pass (ARCH-019 leaf-only filter), not by this wrapper.
@@ -812,6 +848,12 @@ async function flushPending() {
     for (const block of blocks) {
       if (tokenizedBlocks.has(block)) continue;
       if (block.__lpvOriginalHtml === undefined) block.__lpvOriginalHtml = block.innerHTML;
+      // Strip any existing <ruby> markup from the block's own runs BEFORE
+      // building them, so the tokenizer renders fresh ruby from the token
+      // pronunciation instead of the page's reading double-rendering (or
+      // leaving stray <rp> parens). __lpvOriginalHtml was captured above, so
+      // restoreTokens/render keep the original ruby-bearing HTML on close.
+      stripRuby(block);
       // Split the block into paragraph runs so each is tokenized + stamped with
       // its own run id (data-lpv-run) — a bare <div> post body yields one block
       // per <br>-separated paragraph instead of one clumped block. getTextRuns
@@ -852,7 +894,12 @@ async function flushPending() {
     if (missing.length > 0) {
       const results = await fetchTokensForTexts(missing, l2Code);
       if (!enabled) {
-        for (const { block } of blocksWithNodes) block.classList.remove('lpv-page-tokenizing');
+        for (const { block } of blocksWithNodes) {
+          block.classList.remove('lpv-page-tokenizing');
+          // Restore the original HTML (with any ruby stripped earlier) so a
+          // mid-flush close never leaves the page ruby-less but un-tokenized.
+          if (block.__lpvOriginalHtml !== undefined) block.innerHTML = block.__lpvOriginalHtml;
+        }
         return; // toggled off mid-fetch — discard everything
       }
       missing.forEach((text, i) => {
