@@ -37,8 +37,8 @@ export function useT() {
 
   return useMemo(() => {
     // Cast the wrapper to `typeof t` so the existing call sites keep their
-    // exact translator type (with `.rich` / `.markup`); next-intl resolves the
-    // key at runtime. Values are delegated verbatim to the underlying `t`.
+    // exact translator type; next-intl resolves the key at runtime. Values are
+    // delegated verbatim to the underlying `t`.
     const translation = ((id: string, values?: unknown, formats?: unknown) => {
       if (values === undefined) {
         const raw = resolveNested(messages as Record<string, unknown>, id);
