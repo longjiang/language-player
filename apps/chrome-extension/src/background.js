@@ -90,9 +90,17 @@ const tabIdMap = {};
 // on load and disconnects on close. Content scripts push panel state through
 // runtime.sendMessage; we tag it with the sender's tabId and relay it over
 // the port. We also tell the active tab's content script whether the side
-// panel is open (gates ArrowUp/Down cue seeking).
+// panel is open (gates ArrowUp/Down cue seeking and — critically — page
+// tokenization: a tab must not tokenize unless the panel is genuinely open on
+// it, per page-content's panelOpen + pageTranslationTabOpen lifecycle).
 let sidePanelPort = null;
 let sidePanelConnected = false;
+/** True only while the side panel is actually open (shown) in a window. This
+ *  mirrors the browser's real state via chrome.sidePanel.onOpened/onClosed and
+ *  is reset synchronously on a tab switch, so a concurrent getSidePanelState
+ *  from the side panel can NEVER claim the newly-activated tab (the bug where
+ *  switching away from a page-translation tab tokenized the next page). */
+let sidePanelOpen = false;
 let sidePanelTabId = null;
 let sidePanelWindowId = null;
 
@@ -100,25 +108,24 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'lpv-sidepanel') return;
   sidePanelPort = port;
   sidePanelConnected = true;
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const activeTab = tabs?.[0];
-    if (!activeTab?.id) return;
-    if (sidePanelTabId != null && activeTab.id !== sidePanelTabId) {
-      const windowId = sidePanelWindowId ?? activeTab.windowId;
-      chrome.sidePanel.close({ windowId }).catch(() => {});
-      return;
-    }
-    sidePanelTabId = activeTab.id;
-    sidePanelWindowId = activeTab.windowId;
-    notifyTabPanelOpenState(activeTab.id, true);
-  });
+  // Tell the just-connected side panel whether the panel is open and on which
+  // tab, so it can decide whether to pull/claim the active tab's state.
+  try {
+    port.postMessage({ action: 'sidePanelOpenState', open: sidePanelOpen, tabId: sidePanelTabId });
+  } catch {}
   port.onDisconnect.addListener(() => {
     const previousTabId = sidePanelTabId;
     sidePanelPort = null;
     sidePanelConnected = false;
-    sidePanelTabId = null;
-    sidePanelWindowId = null;
-    notifyTabPanelOpenState(previousTabId, false);
+    // The side-panel document unloading (port end) also closes the panel. Leave
+    // the tracked open state to chrome.sidePanel.onClosed, which fires reliably;
+    // notify the panel's tab to restore in case onClosed didn't cover it.
+    if (sidePanelOpen) {
+      sidePanelOpen = false;
+      sidePanelTabId = null;
+      sidePanelWindowId = null;
+      notifyTabPanelOpenState(previousTabId, false);
+    }
   });
 });
 
@@ -129,10 +136,39 @@ function notifyTabPanelOpenState(tabId, open) {
   });
 }
 
-/** Close the open side panel if any. The port's onDisconnect resets the
- *  tracked tab/window and notifies the panel tab of the closed state. */
+/** chrome.sidePanel.onOpened/onClosed are the real open/close signal and are
+ *  re-registered on MV3 service-worker wake. onOpened may omit tabId for a
+ *  global panel, so fall back to the window's active tab. */
+if (chrome.sidePanel?.onOpened) {
+  chrome.sidePanel.onOpened.addListener(async ({ tabId, windowId }) => {
+    let resolvedTabId = tabId;
+    if (resolvedTabId == null) {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, windowId });
+        resolvedTabId = tab?.id ?? null;
+      } catch {}
+    }
+    sidePanelOpen = true;
+    sidePanelTabId = resolvedTabId;
+    sidePanelWindowId = windowId;
+    if (resolvedTabId != null) notifyTabPanelOpenState(resolvedTabId, true);
+    try { sidePanelPort?.postMessage({ action: 'sidePanelOpenState', open: true, tabId: resolvedTabId }); } catch {}
+  });
+}
+if (chrome.sidePanel?.onClosed) {
+  chrome.sidePanel.onClosed.addListener(() => {
+    const previousTabId = sidePanelTabId;
+    sidePanelOpen = false;
+    sidePanelTabId = null;
+    sidePanelWindowId = null;
+    if (previousTabId != null) notifyTabPanelOpenState(previousTabId, false);
+    try { sidePanelPort?.postMessage({ action: 'sidePanelOpenState', open: false }); } catch {}
+  });
+}
+
+/** Close the open side panel if any. onClosed performs the final state reset. */
 function closeSidePanelIfOpen() {
-  if (!sidePanelConnected || sidePanelWindowId == null) return;
+  if (!sidePanelOpen || sidePanelWindowId == null) return;
   try {
     chrome.sidePanel.close({ windowId: sidePanelWindowId }).catch(() => {});
   } catch {}
@@ -149,25 +185,30 @@ chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => 
 async function toggleSidePanel(tab) {
   if (!tab?.id) return;
   try {
-    if (sidePanelConnected && chrome.sidePanel?.close) {
+    if (sidePanelOpen && chrome.sidePanel?.close) {
       // The manifest uses one global side panel. Closing by windowId works
       // across Chrome versions where close({ tabId }) rejects for a global
       // panel. This path is used by the keyboard commands (Alt+T etc.).
       console.log('[LP Extension] Toggle → closing side panel');
       const prevTabId = sidePanelTabId;
       const prevWindowId = sidePanelWindowId ?? tab.windowId;
-      // Clear the tracked state first so a subsequent toggle opens again even
-      // if the port's onDisconnect is delayed or skipped.
-      sidePanelConnected = false;
+      // Mark closed synchronously so a concurrent toggle/query sees it closed.
+      sidePanelOpen = false;
       sidePanelTabId = null;
       sidePanelWindowId = null;
       notifyTabPanelOpenState(prevTabId, false);
+      try { sidePanelPort?.postMessage({ action: 'sidePanelOpenState', open: false }); } catch {}
       await chrome.sidePanel.close({ windowId: prevWindowId });
     } else {
       console.log('[LP Extension] Toggle → opening side panel');
+      sidePanelOpen = true;
       sidePanelTabId = tab.id;
       sidePanelWindowId = tab.windowId;
       await chrome.sidePanel.open({ tabId: tab.id });
+      // onOpened also fires and notifies; a direct notify here covers the case
+      // where the service worker is woken fresh (onOpened listener already
+      // registered on wake) so the tab restores promptly.
+      notifyTabPanelOpenState(tab.id, true);
     }
   } catch {}
 }
@@ -180,13 +221,18 @@ async function toggleSidePanel(tab) {
 // The native side panel is global to a window. Close it when the user changes
 // tabs so opening the panel on one reading page never affects other tabs.
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
-  if (!sidePanelConnected) return;
+  if (!sidePanelOpen) return;
   if (tabId === sidePanelTabId) return;
   const previousTabId = sidePanelTabId;
   const panelWindowId = sidePanelWindowId ?? windowId;
+  // Reset synchronously BEFORE closing so a concurrent getSidePanelState (from
+  // the side panel's active-tab effect) never claims the new tab. The actual
+  // close fires chrome.sidePanel.onClosed for the final teardown.
+  sidePanelOpen = false;
   sidePanelTabId = null;
   sidePanelWindowId = null;
   notifyTabPanelOpenState(previousTabId, false);
+  try { sidePanelPort?.postMessage({ action: 'sidePanelOpenState', open: false }); } catch {}
   chrome.sidePanel.close({ windowId: panelWindowId }).catch(() => {});
 });
 
@@ -236,6 +282,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ tabId: sender.tab?.id });
     } else if (request.action === "getTabId") {
         sendResponse(sender.tab?.id || null);
+    } else if (request.action === "getSidePanelState") {
+        // The side panel asks whether the panel is currently open and on which
+        // tab, before it claims page-translation/subtitles mode on the active
+        // tab. On a tab switch the background resets this synchronously, so a
+        // stale side panel can never tokenize a tab the panel isn't on.
+        sendResponse({ open: sidePanelOpen, tabId: sidePanelTabId });
     } else if (request.action === "loadSubtitlesInTab") {
         // Popup wants to load a specific subtitle in the active tab
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -494,7 +546,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         // tokenization / translation / subscription calls on a page the
         // learner has navigated away from (e.g. autoplay). Reopening is a
         // deliberate user action (icon / shortcut / token click).
-        if (sidePanelConnected && tabId === sidePanelTabId) {
+        if (sidePanelOpen && tabId === sidePanelTabId) {
             closeSidePanelIfOpen();
         }
     }
