@@ -173,6 +173,9 @@ export default function ImageReaderPage() {
       });
       const data = res.ok ? await res.json() : null;
       const md = typeof data?.response === 'string' ? data.response : '';
+      // Diagnostics: log the exact prompt sent and the full markdown returned.
+      epubLog(`image reader OCR prompt: ${IMAGE_OCR_PROMPT}`);
+      epubLog(`image reader OCR response:\n${md}`);
       const { title, body } = extractTitle(md);
       epubLog(`image reader OCR md length=${md.length} title=${title ?? '(none)'}`);
       epubLog(`image reader OCR sample: ${body.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
