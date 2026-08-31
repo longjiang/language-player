@@ -156,6 +156,13 @@ function SidePanelApp() {
   /** Set when the mode never resolves (stale page / no content script) so the
    *  panel degrades to a friendly error + Retry rather than sitting blank. */
   const [panelError, setPanelError] = useState<string | null>(null);
+  /** True while the side panel is genuinely open (shown) on the active tab.
+   *  Drives the guard that a tab is never claimed for page-translation /
+   *  subtitles unless the panel is open on it: on a tab switch the background
+   *  closes the panel and posts sidePanelOpenState {open:false}, so the side
+   *  panel leaves the next tab alone instead of tokenizing it (the bug where
+   *  switching away from a page-translation tab tokenized the next page). */
+  const [panelOpen, setPanelOpen] = useState(true);
   /** Auto-recovery poll counter (caps the retry loop before showing an error). */
   const panelPollCountRef = useRef(0);
   const pageModalEventRef = useRef<(event: any) => void>(() => {});
@@ -169,6 +176,18 @@ function SidePanelApp() {
       return tab?.id ?? null;
     } catch {
       return null;
+    }
+  }, []);
+
+  /** Ask the background whether the panel is currently open and on which tab.
+   *  On a tab switch the background resets this synchronously, so returning
+   *  `false`/`other-tab` prevents the side panel from claiming the new tab. */
+  const getPanelOpenState = useCallback(async (): Promise<{ open: boolean; tabId: number | null }> => {
+    try {
+      const res: any = await chrome.runtime.sendMessage({ action: 'getSidePanelState' });
+      return { open: res?.open === true, tabId: res?.tabId ?? null };
+    } catch {
+      return { open: false, tabId: null };
     }
   }, []);
 
@@ -232,7 +251,19 @@ function SidePanelApp() {
 
   const selectTab = useCallback((next: SidePanelTab) => {
     setSelectedTab(next);
-    chrome.storage.local.set({ sidePanelTab: next }).catch(() => {});
+    const tid = tabIdRef.current;
+    const patch: Record<string, unknown> = { sidePanelTab: next };
+    // Remember the sub-tab per browser tab so switching back to a tab and
+    // reopening the panel restores that tab's own sub-tab ('subtitles' or
+    // 'page-translation') rather than the last-used one globally.
+    if (tid != null) {
+      chrome.storage.local.get('sidePanelTabByTab').then((store) => {
+        const map: Record<string, string> = { ...((store as any)['sidePanelTabByTab'] || {}) };
+        map[String(tid)] = next;
+        chrome.storage.local.set({ sidePanelTabByTab: map }).catch(() => {});
+      }).catch(() => {});
+    }
+    chrome.storage.local.set(patch).catch(() => {});
   }, []);
 
   // ── Active tab tracking ──
@@ -259,6 +290,19 @@ function SidePanelApp() {
         setLookup(null);
         panelPollCountRef.current = 0;
       }
+      // If the panel is not actually open on this tab right now (switching tabs
+      // closes it), go neutral and don't pull/claim — the panel re-pulls when it
+      // reopens on this tab (sidePanelOpenState {open:true}).
+      const st = await getPanelOpenState();
+      if (!st.open || st.tabId !== target) {
+        setPanelLoading(false);
+        setPanelError(null);
+        setMode(null);
+        setVideoState(null);
+        setPageState(null);
+        setLookup(null);
+        return;
+      }
       await pullState(target);
     };
     refresh();
@@ -277,7 +321,7 @@ function SidePanelApp() {
       chrome.tabs.onActivated.removeListener(onActivated);
       chrome.tabs.onUpdated.removeListener(onUpdated);
     };
-  }, [getActiveTabId, pullState]);
+  }, [getActiveTabId, getPanelOpenState, pullState]);
 
   // ── Auto-recovery ──
   // When the panel first opens, the content script may not have finished its
@@ -340,12 +384,22 @@ function SidePanelApp() {
         setLookup(msg.payload);
       } else if (msg.action === 'pageModalEvent') {
         pageModalEventRef.current(msg.event);
+      } else if (msg.action === 'sidePanelOpenState') {
+        setPanelOpen(msg.open === true);
+        if (msg.open === true && msg.tabId === tabIdRef.current) {
+          // Panel (re)opened on the current tab — re-pull fresh state (clears any
+          // stale "closed" neutral state or lingering poll error).
+          panelPollCountRef.current = 0;
+          setPanelError(null);
+          setPanelLoading(true);
+          pullState(tabIdRef.current);
+        }
       }
     });
     return () => {
       port.disconnect();
     };
-  }, []);
+  }, [pullState]);
 
   // Keep the System theme in sync while the side panel remains open.
   useEffect(() => {
@@ -432,22 +486,57 @@ function SidePanelApp() {
     : 'page-translation';
 
   useEffect(() => {
-    if (activeTab !== 'subtitles' || !tabId) return;
+    if (!tabId || !panelOpen) return;
     requestSubtitleDetection();
-  }, [activeTab, requestSubtitleDetection, tabId]);
+  }, [activeTab, requestSubtitleDetection, tabId, panelOpen]);
 
   useEffect(() => {
     if (!tabId) return;
-    sendToTab('pageTranslationVisibility', {
-      open: activeTab === 'page-translation',
-    });
-  }, [activeTab, sendToTab, tabId]);
+    let cancelled = false;
+    (async () => {
+      // Never claim the panel is open to the page-translation tab on a tab
+      // unless the panel is actually open on it. On a tab switch the background
+      // closes the panel and resets its open state synchronously, so this
+      // returns false here and the new tab is left alone (the tokenizing-on-
+      // tab-switch bug). 
+      const st = await getPanelOpenState();
+      if (cancelled) return;
+      const isOpenForTab = panelOpen && st.open && st.tabId === tabId;
+      sendToTab('pageTranslationVisibility', {
+        open: isOpenForTab && activeTab === 'page-translation',
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [activeTab, sendToTab, tabId, panelOpen, getPanelOpenState]);
+
+  // Restore the per-tab sub-tab when the panel (re)opens on a tab: each browser
+  // tab remembers which sub-tab ('subtitles' / 'page-translation') the panel
+  // was last on for it, per SPEC-086 §2.2 per-tab tracking. Falls back to the
+  // global last-selected tab.
+  useEffect(() => {
+    if (!panelOpen || tabId == null) return;
+    let cancelled = false;
+    (async () => {
+      const store: any = await chrome.storage.local.get(['sidePanelTabByTab', 'sidePanelTab']);
+      if (cancelled) return;
+      const perTab = store.sidePanelTabByTab?.[String(tabId)] as SidePanelTab | undefined;
+      if (perTab === 'subtitles' || perTab === 'page-translation') {
+        setSelectedTab(perTab);
+      } else if (store.sidePanelTab === 'subtitles' || store.sidePanelTab === 'page-translation') {
+        setSelectedTab(store.sidePanelTab as SidePanelTab);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [panelOpen, tabId]);
 
   const handleSeek = useCallback((timeSec: number) => {
     sendToTab('panelSeek', { timeSec });
   }, [sendToTab]);
 
   const closePanel = useCallback(async () => {
+    // Closing the panel stops the side panel from claiming the active tab;
+    // the background's chrome.sidePanel.onClosed then restores the page.
+    setPanelOpen(false);
     try {
       // Chrome 141+ closes programmatically. The panel is a GLOBAL side panel
       // (manifest side_panel.default_path, no per-tab setOptions), so
