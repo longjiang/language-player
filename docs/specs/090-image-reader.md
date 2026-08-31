@@ -31,29 +31,36 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
    - **Web**: `apps/web/src/lib/downscale-image.ts` (browser `Image` + canvas).
    - **Mobile**: `apps/mobile/lib/downscale-image.ts` via `expo-image-manipulator`.
    - Longest side capped at `IMAGE_OCR_MAX_DIM` (1600px) and re-encoded to JPEG
-     `IMAGE_OCR_QUALITY` (0.82); web preserves PNG for transparent images. The
+     `IMAGE_OCR_QUALITY` (0.9); web preserves PNG for transparent images. The
      thumbnail and preview still use the full-resolution original — only the
      copy sent for OCR is downscaled.
 2. **`POST /vision`** (`deepseek-v4-flash-vision-exp`), cached server-side by
    prompt + image bytes.
-3. **OCR prompt** requests clean, block-level markdown in the original
-   language, with blank-line-separated block elements and each paragraph as
-   flowing prose. The model wraps each block's lines as soft line breaks
-   (single `\n`) and separates blocks with blank lines. Reflow is handled by
-   the reader, not the prompt: **no client-side OCR post-processing splits
-   lines into separate blocks** — the soft breaks inside a block are kept so
-   the text reflows. (Verified against `/vision`: the model reliably emits
-   blank-line-separated paragraphs with soft-wrap lines; a prompt that asks
-   for "one line per paragraph" makes the model drop the blank-line
-   separators and collapse the whole page into one block, so it is avoided.)
+3. **OCR prompt** requests clean markdown in the original language that emits
+   **only** the text literally present in the image and reflows like normal
+   reading while preserving structure. Each logical element (a paragraph, a
+   sentence, a receipt/list/menu row, a table row, a caption, or a speech
+   bubble) is emitted as **one continuous line** (its wrapped image rows
+   merged), and distinct elements are separated by a blank line. The model
+   must not add any other text — no intro, summary, description, translation,
+   guesses about blurry/cut-off text, page/panel numbers, panel/sound-effect
+   labels, or a code fence wrapper. (Verified against `/vision`: the model
+   keeps blank-line-separated blocks and does not collapse the whole page into
+   one block.) The previous prompt emitted soft line breaks (`\n`) inside a
+   block and relied on the reader to collapse them: the web reader does (HTML
+   `white-space: normal`) but the mobile reader (React Native `<Text>`, which
+   renders `block.text` directly) **preserves** `\n` as a hard line break, so
+   sentences fragmented on mobile instead of reflowing. One continuous line
+   per element reflows identically on both, so the reader needs no
+   post-processing.
 4. The reader **opportunistically** pulls a leading `# <title>` heading out as
    the image title (web `extractTitle`; used for the title bar and the
-   saved-word context). The prompt does **not** require one, so if the model
-   doesn't emit it the title falls back to the filename. The body is then
-   parsed into reader blocks (web `parseMarkdown`; mobile `useEpubPagination`,
-   whose `parseMarkdownBlocks` shim folds single `\n` to `\n\n` only for
-   genuinely flat plain text — OCR image/PDF markdown keeps its soft breaks
-   inside a block and reflows).
+   saved-word context). The prompt asks for a `# <title>` line **only when the
+   image has an obvious document title**; otherwise it emits none and the
+   title falls back to the filename. The body is then parsed into reader
+   blocks (web `parseMarkdown`; mobile `useEpubPagination`, whose
+   `parseMarkdownBlocks` shim keeps OCR image/PDF markdown's blank-line-
+   separated blocks intact).
 5. OCR is **lazy per image**; the first pasted/dropped/picked image is opened
    by default and OCR'd immediately.
 
@@ -157,3 +164,18 @@ confirmed directly from the logs.
 - **Log prompt + full response**: the image-reader OCR path logs the exact
   prompt sent to `/vision` and the complete markdown returned (plus length,
   title, and payload size).
+- **Prompt wording (no extra text + cross-platform reflow)**: the shared
+  `IMAGE_OCR_PROMPT` (packages/shared/src/markdown/vision.ts) was tightened.
+  It now (a) forbids any text beyond the image's own words — no intro,
+  summary, description, translation, guesses about blurry/cut-off text,
+  page/panel numbers, panel/sound-effect labels, or a code fence wrapper
+  (previously the model could add e.g. a parenthetical "(or something
+  similar, cut off at bottom)" on a receipt or per-panel/labels annotations
+  on a manga); and (b) reflows each element (paragraph, sentence,
+  receipt/list/menu row, caption, speech bubble) into **one continuous line**
+  with blank lines between elements, so a sentence that wraps across several
+  image rows renders as one line and reflows on both web and mobile. This
+  replaces the earlier "soft line breaks inside a block + the reader collapses
+  them" strategy, which reflowed on web but fragmented on mobile because the
+  React Native reader preserves `\n`. Downscale quality constant was
+  `IMAGE_OCR_QUALITY = 0.9` (was documented as 0.82).
