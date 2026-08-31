@@ -36,22 +36,33 @@ interface ReaderHeadingTocProps {
  * Heading-based table of contents for the notes/web reader (SPEC-087 §8).
  * Headings render as a nested list — indentation reflects the heading depth —
  * and the entry containing (or immediately before) the reader's position is
- * highlighted, mirroring the EPUB chapter tree's active-entry behaviour.
+ * highlighted, together with its ancestor headings, mirroring the EPUB chapter
+ * tree's active-entry behaviour.
  */
 export function ReaderHeadingToc({ headings, activeIndex, onSelect }: ReaderHeadingTocProps) {
-  let activeDepth = Infinity;
+  // Active section: the last heading at or before the reader's block.
+  let current = -1;
+  for (let i = 0; i < headings.length; i++) {
+    if (activeIndex != null && headings[i]!.blockIndex <= activeIndex) current = i;
+    else break;
+  }
+  // Ancestor path: headings before `current` whose depth is strictly smaller
+  // than every heading after them up to `current` (the parent chain).
+  const ancestors = new Set<number>();
+  if (current >= 0) {
+    let minDepth = headings[current]!.depth;
+    for (let i = current - 1; i >= 0; i--) {
+      if (headings[i]!.depth < minDepth) {
+        ancestors.add(i);
+        minDepth = headings[i]!.depth;
+      }
+    }
+  }
   return (
     <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
       {headings.map((h, i) => {
-        // Whether this heading is on the path to the active entry (the deepest
-        // heading whose block index is <= activeIndex). Its ancestors (smaller
-        // depth, earlier index, not yet passed) highlight.
-        const isActive =
-          activeIndex != null
-          && activeIndex >= h.blockIndex
-          && h.depth < activeDepth;
-        if (isActive) activeDepth = h.depth;
-        const isCurrent = h.blockIndex === activeIndex;
+        const isCurrent = i === current;
+        const isActive = ancestors.has(i);
         return (
           <Pressable
             key={`${h.blockIndex}-${i}`}
