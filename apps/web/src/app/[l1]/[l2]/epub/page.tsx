@@ -31,7 +31,8 @@ import { epubLog } from '@/lib/epub-log';
 import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
 
 /** Height of the app header (h-14 content + border-b) — the reader's top
- *  chrome bar. */
+ *  chrome bar. The chromeless "show toolbars" / "close" buttons centre on
+ *  its vertical middle (SPEC-085 §17.1). */
 const HEADER_HEIGHT = 57;
 /** Height of the reader's bottom pagination bar (py-2 + 24px button row +
  *  1px border). */
@@ -424,19 +425,20 @@ export default function EpubPage() {
           </div>
 
           {/* Chromeless controls: when the chrome is hidden, two standard
-              shadcn buttons sit top right, vertically aligned with the chapter
-              title (top = HEADER_HEIGHT + 8, the title line box) — "show
-              toolbars" reveals the chrome and "close" leaves the reader.
-              Text labels show on portrait iPads and wider (≥768px); below
-              that they collapse to icons. The close button's right edge lines
-              up with the per-block action-menu trigger (⋮) in the text below
-              (SPEC-085 §17.2 horizontal geometry). Chrome-visible mode
-              deliberately has NO close button (the escape hatches are the
-              chromeless close and the nav menu). */}
+              shadcn buttons sit top right, vertically centred on the site top
+              bar's middle (top = (HEADER_HEIGHT − 36) / 2 = 10.5 for a 36px
+              h-9 button → center y = 28.5 = 57 / 2) — "show toolbars" reveals
+              the chrome and "close" leaves the reader. Text labels show on
+              portrait iPads and wider (≥768px); below that they collapse to
+              icons. The close button's right edge lines up with the per-block
+              action-menu trigger (⋮) in the text below (SPEC-085 §17.2
+              horizontal geometry). Chrome-visible mode deliberately has NO
+              close button (the escape hatches are the chromeless close and the
+              nav menu). */}
           {!chromeVisible && (
             <div
               className="absolute z-40 flex items-center gap-2"
-              style={{ top: HEADER_HEIGHT + 8, right: closeRightMargin }}
+              style={{ top: (HEADER_HEIGHT - 36) / 2, right: closeRightMargin }}
             >
               <Button
                 variant="outline"
