@@ -2,10 +2,10 @@ import type { SampleContent } from './types';
 
 const content: SampleContent = {
   title: 'Stonehenge',
-  short: `**Stonehenge** is one of the world's most famous prehistoric monuments. Standing on the plains of southern England, its massive stones have puzzled visitors for centuries. *"How was it built?"* people still ask. At sunrise, the ancient circle feels truly magical.`,
+  short: `![travel](/travel.png) **Stonehenge** is one of the world's most famous prehistoric monuments. Standing on the plains of southern England, its massive stones have puzzled visitors for centuries. *"How was it built?"* people still ask. At sunrise, the ancient circle feels truly magical.`,
   long: `# Stonehenge
 
-**Stonehenge** is one of the world's most famous prehistoric monuments. It stands on Salisbury Plain in southern England, a circle of massive standing stones that has puzzled visitors for thousands of years. *“How was it built?”* is the question everyone asks.
+![travel](/travel.png) **Stonehenge** is one of the world's most famous prehistoric monuments. It stands on Salisbury Plain in southern England, a circle of massive standing stones that has puzzled visitors for thousands of years. *“How was it built?”* is the question everyone asks.
 
 ## History
 
