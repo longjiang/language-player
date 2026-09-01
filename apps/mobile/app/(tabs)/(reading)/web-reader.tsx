@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, ActivityIndicator,
 } from 'react-native';
@@ -20,7 +20,7 @@ import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader
 import { VisitedSitesSidebar } from '@/components/reader/VisitedSitesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveUrlAnchor, getUrlAnchor } from '@/lib/reader-storage';
-import {
+import { log as appLog } from '@/lib/logger';import {
   loadVisitedSites,
   recordVisit,
   removeVisitedSite,
@@ -32,6 +32,8 @@ import { Globe, Home, PanelRightOpen, PanelRightClose } from 'lucide-react-nativ
 import { PageContainer } from '@/components/layout/PageContainer';
 import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 import { ICON_MUTED } from '@/lib/theme-colors';
+
+const log = appLog;
 
 export default function WebReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -75,6 +77,11 @@ export default function WebReaderScreen() {
     initialAnchor,
     onAnchorChange: handleAnchorChange,
     onBlockChange: setCurrentBlockIndex,
+    // Lazy (estimated) pagination — the first page renders after measuring a
+    // small window of blocks instead of the whole document (the old all-at-
+    // once measure kept the spinner up for the entire page on long articles;
+    // the EPUB reader already works this way). Page count becomes an estimate.
+    estimate: true,
   });
 
   const tocSearch = useReaderTocSearch({
@@ -87,25 +94,34 @@ export default function WebReaderScreen() {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
 
+    // Per-phase timing so a slow load can be attributed: proxy fetch →
+    // HTML→markdown → parse → first page (the reader logs its own phases).
+    const t0 = Date.now();
     setLoading(true);
     setError(null);
 
     try {
       // Fetch + convert through the shared reader pipeline (same as web).
       const raw = await fetchReaderPage(targetUrl, PYTHON_API_URL);
+      const tFetch = Date.now();
+      log(`[WebReader] ⏱️ fetch ${tFetch - t0}ms bytes=${raw.length} url=${targetUrl}`);
       const md = htmlToMarkdown(raw, targetUrl);
+      const tConvert = Date.now();
+      log(`[WebReader] ⏱️ htmlToMarkdown ${tConvert - tFetch}ms mdChars=${md.length}`);
       // Fall back to the first h1, then the raw URL (same as web).
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const extractedTitle = extractTitle(raw) || titleMatch?.[1]?.trim() || targetUrl;
       setTitle(extractedTitle);
       setText(md);
       setUrl(targetUrl);
+      log(`[WebReader] ⏱️ state set ${Date.now() - tConvert}ms — total ${Date.now() - t0}ms (pagination + first render follow)`);
       // Load saved anchor for this URL
       const savedAnchor = await getUrlAnchor(targetUrl);
       setInitialAnchor(savedAnchor);
       // Track the visit (SPEC-049 §10.3)
       recordVisit(targetUrl, extractedTitle).then(setVisitedSites);
     } catch (e: any) {
+      log(`[WebReader] ⏱️ fetch FAILED after ${Date.now() - t0}ms:`, e?.message ?? e);
       setError(localizedError(t, e, 'msg.failed_to_load_url'));
     } finally {
       setLoading(false);
@@ -265,7 +281,9 @@ export default function WebReaderScreen() {
               </View>
             )}
 
-            {/* ── Loading state: spinner ── */}
+            {/* ── Loading state: spinner only until the first content is
+                ready (with lazy pagination the estimated first page renders
+                as soon as a small block window is measured) ── */}
             {loading && !text && (
               <View className="flex-1 items-center justify-center py-16">
                 <ActivityIndicator size="large" color={ICON_MUTED} />
