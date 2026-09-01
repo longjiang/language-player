@@ -34,7 +34,7 @@ export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay, tokenizedText } = useSettingsContext();
   const t = useT();
-  const epub = useEpub();
+  const epub = useEpub(l2Lang.code);
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { setImmersed } = useReaderChrome();
@@ -217,8 +217,18 @@ export default function EpubReaderScreen() {
   // bookshelf. Same language filter as the bookshelf (legacy untagged books
   // count everywhere); opens straight to content like a card tap. Fires once
   // per mount so an explicit Close keeps the shelf for this session.
+  //
+  // Explicit close ALSO latches (persisted per-L2, `epub.readerClosed`): a
+  // book closed by the reader's close button stays closed across tab
+  // navigation AND app relaunch — no auto-open — until the user opens a book
+  // again (user request; ARCH-013 Rule B amended).
   useEffect(() => {
     if (autoOpenedRef.current || !epub.ready || epub.openBookId != null) return;
+    if (epub.readerClosed) {
+      autoOpenedRef.current = true;
+      log('[epub] auto-open skipped — reader explicitly closed (persisted latch)');
+      return;
+    }
     autoOpenedRef.current = true;
     const l2Primary = baseCode(l2Lang.code);
     const last = [...epub.books]
@@ -232,7 +242,7 @@ export default function EpubReaderScreen() {
       books: epub.books.length,
     });
     if (last) void handleOpenBook(last.id);
-  }, [epub.ready, epub.books, epub.openBookId, l2Lang.code, handleOpenBook]);
+  }, [epub.ready, epub.books, epub.openBookId, epub.readerClosed, l2Lang.code, handleOpenBook]);
 
   const handleAddBook = useCallback(async () => {
     setLocation(null);

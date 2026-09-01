@@ -44,6 +44,45 @@ export type EpubSummary = EpubMeta;
 
 const STORAGE_KEY = 'lp_epub_library_v1';
 
+/**
+ * Explicit "the reader was closed" flag (user request: a book closed by the
+ * reader's close button must STAY closed across tab navigation and app
+ * relaunch — no auto-open on return). Keyed per L2 primary subtag because the
+ * bookshelf itself is per-L2. Cleared whenever a book is opened again, so the
+ * normal resume behavior returns.
+ */
+const READER_CLOSED_KEY = 'lp_epub_reader_closed_v1';
+
+/** Mark the reader as closed for this L2 (persists across app relaunch). */
+export async function setReaderClosed(l2Code: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(READER_CLOSED_KEY, JSON.stringify({ l2: l2Code }));
+  } catch { /* non-critical */ }
+}
+
+/** Clear the closed flag for this L2 (called when a book is opened). */
+export async function clearReaderClosed(l2Code: string): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(READER_CLOSED_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { l2?: string };
+    if (parsed?.l2 === l2Code) await AsyncStorage.removeItem(READER_CLOSED_KEY);
+  } catch { /* non-critical */ }
+}
+
+/** Whether the reader was explicitly closed for this L2 (latches the
+ *  bookshelf against the mount-time auto-open). */
+export async function isReaderClosed(l2Code: string): Promise<boolean> {
+  try {
+    const raw = await AsyncStorage.getItem(READER_CLOSED_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { l2?: string };
+    return parsed?.l2 === l2Code;
+  } catch {
+    return false;
+  }
+}
+
 /** Directory holding imported EPUB files + extracted covers. */
 export const LIBRARY_DIR = FileSystem.documentDirectory + 'epub_library/';
 

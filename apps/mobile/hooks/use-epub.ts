@@ -21,6 +21,9 @@ import {
   ensureLibraryDir,
   libraryFileUri,
   LIBRARY_DIR,
+  setReaderClosed,
+  clearReaderClosed,
+  isReaderClosed,
   type EpubMeta,
   type EpubSummary,
 } from '@/lib/epub-store';
@@ -79,6 +82,10 @@ export interface UseEpubReturn {
   loading: boolean;
   /** Error message (already localized, or null). */
   error: string | null;
+  /** True when the reader was explicitly closed for this L2 (persisted) —
+   *  the bookshelf must NOT auto-open the last book until a book is opened
+   *  again (user request: closed stays closed across nav + relaunch). */
+  readerClosed: boolean;
   /** Nested TOC items of the open book. */
   toc: TocItem[];
   /** Flattened TOC entries resolved to whole-book locations. */
@@ -117,7 +124,7 @@ export interface UseEpubReturn {
   removeBook: (id: string) => Promise<void>;
 }
 
-export function useEpub(): UseEpubReturn {
+export function useEpub(l2Code?: string): UseEpubReturn {
   const t = useT();
   const [books, setBooks] = useState<EpubSummary[]>([]);
   const [openBookId, setOpenBookId] = useState<string | null>(null);
@@ -127,6 +134,24 @@ export function useEpub(): UseEpubReturn {
   const [coverTapped, setCoverTapped] = useState(false);
   const [initialLocation, setInitialLocation] = useState<BookLocation | null>(null);
   const [ready, setReady] = useState(false);
+  /** Persisted "reader closed" latch for this L2 — true after an explicit
+   *  close, blocks the mount-time auto-open until a book is opened again. */
+  const [readerClosed, setReaderClosedState] = useState(false);
+  /** Keep the latest L2 available to close()/openBook() without re-creating
+   *  them (their identities must stay stable). */
+  const l2Ref = useRef('');
+  useEffect(() => {
+    l2Ref.current = l2Code ?? '';
+  }, [l2Code]);
+  // Load the latch (and re-check when the L2 changes).
+  useEffect(() => {
+    let cancelled = false;
+    if (!l2Code) { setReaderClosedState(false); return; }
+    void isReaderClosed(l2Code).then((closed) => {
+      if (!cancelled) setReaderClosedState(closed);
+    });
+    return () => { cancelled = true; };
+  }, [l2Code]);
 
   const modelRef = useRef<EpubBookModel | null>(null);
   const openBookIdRef = useRef<string | null>(null);
@@ -361,6 +386,10 @@ export function useEpub(): UseEpubReturn {
   /** Open a stored book; returns the location to resume at. */
   const openBook = useCallback(async (id: string, opts?: { skipCover?: boolean }): Promise<BookLocation | null> => {
     const skipCover = opts?.skipCover ?? false;
+    // Opening a book clears the persisted "reader closed" latch — from here
+    // on, leaving and returning resumes normally (until the next explicit
+    // close).
+    void clearReaderClosed(l2Ref.current).then(() => setReaderClosedState(false));
     if (openBookIdRef.current === id && modelRef.current) {
       setCoverTapped(skipCover);
       return initialLocation;
@@ -406,6 +435,10 @@ export function useEpub(): UseEpubReturn {
 
   const close = useCallback(async () => {
     log('[epub] close() — reset open book', { openBookIdRef: openBookIdRef.current });
+    // Latch the reader closed for this L2 — persisted, so the bookshelf stays
+    // put across tab navigation AND app relaunch (no auto-open on return)
+    // until the user opens a book again (user request).
+    void setReaderClosed(l2Ref.current).then(() => setReaderClosedState(true));
     await modelRef.current?.close().catch(() => {});
     modelRef.current = null;
     openBookIdRef.current = null;
@@ -449,6 +482,8 @@ export function useEpub(): UseEpubReturn {
     openBookId,
     loading,
     error,
+    /** Persisted explicit-close latch for this L2 (blocks auto-open). */
+    readerClosed,
     toc: model?.toc ?? [],
     markers: model?.markers ?? [],
     blocks: model?.blocks ?? null,

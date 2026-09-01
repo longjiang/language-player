@@ -63,6 +63,15 @@ On screens narrower than 1024px, the sidebar collapses to a top bar that expands
   **already on** the epub screen closes the open book and returns to the
   bookshelf (`requestCloseReader` → the registered close handler). This is a
   deliberate escape hatch, distinct from cross-nav.
+- **Explicit close latches (Rule B amendment, 2026-08-31):** a book closed via
+  the reader's close button (`epub.close()`) latches the reader shut for the
+  active L2 — `lp_epub_reader_closed_v1` in AsyncStorage via
+  `setReaderClosed()`/`isReaderClosed()` (`lib/epub-store.ts`). The latch
+  survives tab navigation AND app relaunch: the auto-open effect skips while
+  `readerClosed` is true, so the bookshelf shows instead of the book. Opening
+  any book (`openBook`) clears the latch and normal resume behavior returns.
+  This overrides the auto-open half of Rule B; an open-but-not-closed book
+  still resumes across navigation exactly as before.
 
 These must not be conflated: a same-route re-tap of the nav item is the *only*
 nav trigger for a close; navigating away and back never closes the book. (The
