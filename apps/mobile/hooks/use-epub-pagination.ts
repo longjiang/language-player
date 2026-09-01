@@ -660,8 +660,9 @@ export function useEpubPagination({
     }
     if (!text.trim()) { setBlocks(null); return; }
     try {
+      const t0 = Date.now();
       const parsed = parseMarkdownBlocks(text);
-      paginationLog(`[Pagination] 📚 parsed markdown blocks=${parsed.length}`);
+      paginationLog(`[Pagination] 📚 parsed markdown blocks=${parsed.length} chars=${text.length} parse=${Date.now() - t0}ms`);
       setBlocks(parsed);
     } catch {
       paginationWarn(`[Pagination] ⚠️ markdown parse failed — blocks=null`);
@@ -715,6 +716,7 @@ export function useEpubPagination({
     setPage(Math.max(0, lazyPageForBlock(base) - 1));
     setHasMeasured(true);
     boundariesExactRef.current = est.exact;
+    paginationLog(`[Pagination] ⚡ first estimated page [${base},${est.end}) exact=${est.exact} at ${Date.now()}ms (epoch)`);
     startRefine(base, est.end);
   }, [estimate, blocks, initialAnchor, initialBlockIndex, lazyPageForBlock, estimateForwardEnd, startRefine]);
 
