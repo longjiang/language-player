@@ -532,19 +532,20 @@ export default function EpubReaderScreen() {
       </Animated.View>
 
       {/* Chromeless controls: when the chrome is hidden, two standard shadcn
-          buttons sit top right, vertically aligned with the chapter title
-          (top = insets.top + 65, the title line box) — "show toolbars"
-          reveals the chrome and "close" leaves the reader. Text labels show
-          on portrait iPads and wider (>=768px); below that they collapse to
-          icons. The close button's right edge lines up with the per-block
-          action-menu trigger (⋮) in the text below (SPEC-085 §17.2
-          horizontal geometry). Chrome-visible mode deliberately has NO close
-          button (the escape hatches are the chromeless close and the back
-          stack). */}
+          buttons sit top right, vertically centred on the app-header bar's
+          middle — the bar spans y ∈ [0, insets.top + 57] (safe-area inset +
+          8 + 40 + 8 + 1 border), so a 36px h-9 button gets
+          top = (insets.top + 57) / 2 − 18 — "show toolbars" reveals the
+          chrome and "close" leaves the reader. Text labels show on portrait
+          iPads and wider (>=768px); below that they collapse to icons. The
+          close button's right edge lines up with the per-block action-menu
+          trigger (⋮) in the text below (SPEC-085 §17.2 horizontal geometry).
+          Chrome-visible mode deliberately has NO close button (the escape
+          hatches are the chromeless close and the back stack). */}
       {!chromeVisible && (
         <View
           className="absolute z-40 flex-row items-center gap-2"
-          style={{ top: insets.top + 65, right: closeRightMargin }}
+          style={{ top: (insets.top + 57) / 2 - 18, right: closeRightMargin }}
         >
           <Button
             onPress={toggleChrome}
