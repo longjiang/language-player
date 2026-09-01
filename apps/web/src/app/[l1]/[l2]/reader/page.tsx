@@ -570,7 +570,9 @@ export default function ReaderPage() {
       {/* ── Content row ── */}
       <div className="flex gap-4 flex-1 min-h-0">
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
-          {currentNoteId == null && !loading ? defaultScreen : noteScreen}
+          {/* Default screen only when truly nothing is loaded: no open note AND
+              no text pushed in from the extension / ?url= / method-arg flows. */}
+          {currentNoteId == null && !loading && !text.trim() ? defaultScreen : noteScreen}
         </div>
 
         {/* Sidebar — shared desktop panel + mobile sheet */}
