@@ -691,8 +691,9 @@ links, falling back to headings).
   screens, or the screen minus a leading margin per side on phones — with
   leading margins on BOTH sides (was left=leading/right=16px).
 - **Chromeless controls**: chromeless mode shows "show toolbars" + "close"
-  icon buttons top-right aligned with the chapter title; chrome-visible mode
-  has NO close button (SPEC-085 §7.1/8.1 updated).
+  buttons top-right, vertically centred on the site top bar's middle
+  (revised 2026-09-01; previously aligned with the chapter title);
+  chrome-visible mode has NO close button (SPEC-085 §17.1 updated).
 - **Long-page arrow**: a floating down-arrow above the page counter scrolls
   an overflowing page to the bottom.
 
