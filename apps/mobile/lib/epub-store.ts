@@ -10,6 +10,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 import type { BookLocation } from '@/lib/epub-book';
+import { log } from '@/lib/logger';
 
 export interface EpubMeta {
   /** Stable id derived from the file name (re-import updates the handle). */
@@ -112,14 +113,57 @@ function normalizeCoverUrl(coverUrl: string | null): string | null {
   return coverUrl;
 }
 
+/**
+ * Re-anchor a cover URI stored under an OLD app container onto the CURRENT
+ * one (iOS changes the app-container UUID on every reinstall/update, which
+ * turned every persisted absolute cover path stale after an app update —
+ * covers then fell back to placeholders while the books themselves still
+ * opened, because their paths are recomputed at open time).
+ *
+ * Strategy: if the stored URI doesn't exist but its path tail matches a file
+ * in the CURRENT library dir, return the re-anchored current URI (and let the
+ * caller persist it). Returns the (possibly normalized) original when the
+ * file already exists or no re-anchor target can be derived.
+ */
+async function reanchorCoverUrl(coverUrl: string | null): Promise<string | null> {
+  if (!coverUrl?.startsWith('file://')) return coverUrl;
+  const info = await FileSystem.getInfoAsync(coverUrl);
+  if (info.exists) return coverUrl;
+  // Candidate path in the current container: same file-name tail.
+  const tail = coverUrl.split('/').pop();
+  if (!tail) return coverUrl;
+  const candidate = libraryFileUri(tail);
+  const candidateInfo = await FileSystem.getInfoAsync(candidate);
+  if (candidateInfo.exists) {
+    log(`[LP Mobile] 📖 cover re-anchored after container change: ${coverUrl} → ${candidate}`);
+    return candidate;
+  }
+  log(`[LP Mobile] 📖 cover missing (no re-anchor target): stored=${coverUrl} tried=${candidate}`);
+  return coverUrl;
+}
+
 async function readAll(): Promise<EpubMeta[]> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     const arr = raw ? JSON.parse(raw) : [];
-    return (Array.isArray(arr) ? arr : []).map((b) => ({
-      ...b,
-      coverUrl: normalizeCoverUrl(b?.coverUrl ?? null),
-    }));
+    if (!Array.isArray(arr)) return [];
+    const out: EpubMeta[] = [];
+    let persisted = false;
+    for (const b of arr) {
+      // Normalize the legacy doubled scheme, then re-anchor a stale absolute
+      // path onto the current app container (iOS container UUID changes on
+      // reinstall/update — see reanchorCoverUrl).
+      const normalized = normalizeCoverUrl(b?.coverUrl ?? null);
+      // eslint-disable-next-line no-await-in-loop
+      const reanchored = await reanchorCoverUrl(normalized);
+      if (reanchored !== b?.coverUrl) persisted = true; // persist the fix below
+      out.push({ ...b, coverUrl: reanchored });
+    }
+    if (persisted) {
+      log('[LP Mobile] 📖 persisting re-anchored cover URIs to storage');
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+    }
+    return out;
   } catch {
     return [];
   }
