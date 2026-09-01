@@ -13,6 +13,9 @@ interface NotesSidebarProps {
   notesLoading: boolean;
   notesError: string | null;
   currentNoteId: number | null;
+  /** Ids of notes imported this session — they show an "Imported" badge
+   *  (session-only, cleared on app restart). */
+  importedNoteIds?: Set<number>;
   onSelectNote: (noteId: number) => void;
   onNewNote: () => void;
   onRenameNote: (noteId: number, title: string) => Promise<void> | void;
@@ -28,6 +31,7 @@ export function NotesSidebar({
   notesLoading,
   notesError,
   currentNoteId,
+  importedNoteIds,
   onSelectNote,
   onNewNote,
   onRenameNote,
@@ -93,9 +97,18 @@ export function NotesSidebar({
                   <Cloud size={14} color={ICON_MUTED} />
                 )}
                 <View className="flex-1">
-                  <Text className={`text-sm truncate ${currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
-                    {n.title ?? t('msg.untitled_note')}
-                  </Text>
+                  <View className="flex-row items-center gap-1.5">
+                    <Text className={`flex-shrink text-sm ${currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
+                      {n.title ?? t('msg.untitled_note')}
+                    </Text>
+                    {importedNoteIds?.has(n.id) && (
+                      <View className="rounded-full bg-primary/10 px-1.5 py-0.5">
+                        <Text className="text-[10px] font-medium leading-tight text-primary">
+                          {t('label.imported')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Text className="text-xs text-muted-foreground">
                     {`#${n.id}`}
                     {n.created_on ? ` · ${new Date(n.created_on).toLocaleDateString()}` : ''}

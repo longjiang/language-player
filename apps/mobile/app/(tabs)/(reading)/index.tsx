@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as Clipboard from 'expo-clipboard';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
@@ -14,9 +16,12 @@ import { NotesSidebar } from '@/components/reader/NotesSidebar';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveNoteAnchor, getNoteAnchor } from '@/lib/reader-storage';
-import { BookOpen, PenLine, PanelRightOpen, PanelRightClose, Sparkles } from 'lucide-react-native';
+import { apiClient } from '@langplayer/api-client';
+import type { Note } from '@langplayer/shared';
+import { log, logwarn } from '@/lib/logger';
+import { BookOpen, PenLine, PanelRightOpen, PanelRightClose, Sparkles, FileText, FolderOpen, Clipboard as ClipboardIcon } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { loadSampleContent } from '@langplayer/shared';
 
 export default function ReaderScreen() {
@@ -24,7 +29,7 @@ export default function ReaderScreen() {
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const notes = useReaderNotes(l2Lang.code);
-  const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
+  const { isWide, sidebarOpen, setSidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
   // while the outer sidebar layout still switches at the wider breakpoint.
   const { isMd } = useResponsive();
@@ -40,6 +45,15 @@ export default function ReaderScreen() {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
+  // ── Default screen (no note open) ──
+  /** Per-session ids of notes created by a text-file import — they show the
+   *  "Imported" badge in the sidebar until the app restarts (session-only). */
+  const [importedIds, setImportedIds] = useState<Set<number>>(new Set());
+  const [notice, setNotice] = useState<string | null>(null);
+  const importingRef = useRef(false);
+
+  /** A note is open — the reader UI. Null → the default screen. */
+  const hasOpenNote = notes.currentNoteId != null && notes.currentNote != null;
 
   // Clear saved-flash timers on unmount.
   useEffect(() => {
@@ -72,7 +86,7 @@ export default function ReaderScreen() {
         })();
       }
     }
-  }, [notes.currentNoteId]);
+  }, [notes.currentNote]);
 
   const handleAnchorChange = useCallback((anchor: string) => {
     if (notes.currentNoteId != null) {
@@ -151,6 +165,83 @@ export default function ReaderScreen() {
     void notes.createNote(t('msg.untitled_note'));
   };
 
+  // ── Default screen: text-file import (Browse) + clipboard paste ──
+
+  /** Import text files: each becomes its own note titled with its file name
+   *  (extension included). The LAST import opens; multiple imports also open
+   *  the side panel so the "Imported" badges are visible (web parity). */
+  const importTextFiles = useCallback(async () => {
+    if (importingRef.current) return;
+    importingRef.current = true;
+    const startedAt = Date.now();
+    try {
+      const pick = await DocumentPicker.getDocumentAsync({
+        type: ['text/plain', 'text/markdown', 'application/octet-stream', '*/*'],
+        copyToCacheDirectory: true,
+        multiple: true,
+      });
+      if (pick.canceled || !pick.assets?.length) return;
+      const imported: { id: number; title: string }[] = [];
+      const skipped: string[] = [];
+      for (const asset of pick.assets) {
+        const isText = /\.(txt|md|markdown)$/i.test(asset.name)
+          || (asset.mimeType?.startsWith('text/') ?? false);
+        if (!isText) { skipped.push(asset.name); continue; }
+        try {
+          const content = await fetch(asset.uri).then(r => r.text());
+          if (!content.trim()) { skipped.push(asset.name); continue; }
+          const created = await apiClient.post<Note>('/user-notes', {
+            title: asset.name, text: content, translation: '', l2: l2Lang.code,
+          });
+          imported.push({ id: created.id, title: created.title || asset.name });
+          log('[LP Mobile] notes import ok', { file: asset.name, chars: content.length, noteId: created.id });
+        } catch (e: any) {
+          skipped.push(asset.name);
+          logwarn('[LP Mobile] notes import failed:', asset.name, e?.message ?? e);
+        }
+      }
+      log('[LP Mobile] notes import batch', {
+        files: pick.assets.length, imported: imported.length, skipped: skipped.length, elapsed: `${Date.now() - startedAt}ms`,
+      });
+      if (imported.length > 0) {
+        setImportedIds(prev => new Set([...prev, ...imported.map(im => im.id)]));
+        // Refresh the list from the hook's cache path, then open the LAST
+        // imported note; multiple files also open the side panel.
+        await notes.loadNotes();
+        const last = imported[imported.length - 1]!;
+        await notes.selectNote(last.id);
+        if (imported.length > 1) {
+          if (isWide) setSidebarOpen(true);
+          else setMobileOpen(true);
+        }
+      }
+      setNotice(skipped.length > 0 ? `${t('msg.notes_import_failed')} ${skipped.join(', ')}` : null);
+    } finally {
+      importingRef.current = false;
+    }
+  }, [l2Lang.code, notes, isWide, t]);
+
+  /** Paste button — create a new note from the clipboard text. The note is
+   *  saved before the note-change effect flips the reader into it, so the
+   *  pasted text is already in the note body when the editor opens. */
+  const pasteClipboardIntoNewNote = useCallback(async () => {
+    try {
+      const content = await Clipboard.getStringAsync();
+      if (!content.trim()) { setNotice(t('msg.no_text_in_clipboard')); return; }
+      setNotice(null);
+      setMobileOpen(false);
+      const id = await notes.createNote(t('msg.untitled_note'));
+      if (id >= 0) {
+        await notes.saveNote(id, content, '');
+        // Mark as a fresh create AFTER saving so the note-change effect keeps
+        // the editor open on this note (with its text) instead of read mode.
+        justCreatedRef.current = true;
+      }
+    } catch {
+      setNotice(t('msg.no_text_in_clipboard'));
+    }
+  }, [notes, t]);
+
   // Load the per-language sample (long for popular L2s, short otherwise) into
   // the editor, matching the web Notes reader's "Add Sample Text" button.
   const handleAddSampleText = async () => {
@@ -167,6 +258,83 @@ export default function ReaderScreen() {
 
   return (
     <PageContainer maxWidth="7xl">
+      {/* ── Default screen (no note open): dashed import area ── */}
+      {!hasOpenNote ? (
+        <View className="flex-1 px-4 pb-6">
+          <View className="flex-1 items-center justify-center gap-4 rounded-xl border-2 border-dashed border-border px-6 py-10">
+            <FileText size={44} color={ICON_MUTED} />
+            <Text className="text-center text-sm font-medium text-foreground">
+              {t('title.notes_reader')}
+            </Text>
+            <Text className="max-w-md text-center text-xs leading-relaxed text-muted-foreground">
+              {t('msg.notes_reader_intro')}
+            </Text>
+            {notice && <Text className="text-center text-xs text-destructive">{notice}</Text>}
+            {/* New Note + Browse on one row (two buttons fit), Paste + List All below */}
+            <View className="flex-row items-center justify-center gap-2">
+              <Pressable
+                onPress={handleNewNote}
+                className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
+                accessibilityRole="button"
+                accessibilityLabel={t('action.new_note')}
+              >
+                <FileText size={14} color={ICON_ON_PRIMARY} />
+                <Text className="text-xs font-medium text-primary-foreground">{t('action.new_note')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => void importTextFiles()}
+                className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
+                accessibilityRole="button"
+                accessibilityLabel={t('action.browse')}
+              >
+                <FolderOpen size={14} color={ICON_ON_PRIMARY} />
+                <Text className="text-xs font-medium text-primary-foreground">{t('action.browse')}</Text>
+              </Pressable>
+            </View>
+            <View className="flex-row items-center justify-center gap-2">
+              <Pressable
+                onPress={() => void pasteClipboardIntoNewNote()}
+                className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
+                accessibilityRole="button"
+                accessibilityLabel={t('action.paste')}
+              >
+                <ClipboardIcon size={14} color={ICON_MUTED} />
+                <Text className="text-xs font-medium text-foreground">{t('action.paste')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => (isWide ? setSidebarOpen(true) : setMobileOpen(true))}
+                className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
+                accessibilityRole="button"
+                accessibilityLabel={t('action.list_all_notes')}
+              >
+                <PanelRightOpen size={14} color={ICON_MUTED} />
+                <Text className="text-xs font-medium text-foreground">{t('action.list_all_notes')}</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Notes sidebar — shared panel + sheet (List All Notes target) */}
+          <Sidebar
+            open={mobileOpen}
+            onOpenChange={setMobileOpen}
+            sidebarOpen={sidebarOpen}
+            title={t('title.notes')}
+          >
+            <NotesSidebar
+              notes={notes.notes}
+              notesLoading={notes.notesLoading}
+              notesError={notes.notesError}
+              currentNoteId={notes.currentNoteId}
+              importedNoteIds={importedIds}
+              onSelectNote={handleSelectNote}
+              onNewNote={handleNewNote}
+              onRenameNote={(id, title) => notes.renameNote(id, title)}
+              onDeleteNote={handleDelete}
+            />
+          </Sidebar>
+        </View>
+      ) : (
+      <>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
           {notes.currentNote ? notes.currentNote.title : t('title.notes_reader')}
@@ -320,6 +488,7 @@ export default function ReaderScreen() {
             notesLoading={notes.notesLoading}
             notesError={notes.notesError}
             currentNoteId={notes.currentNoteId}
+            importedNoteIds={importedIds}
             onSelectNote={handleSelectNote}
             onNewNote={handleNewNote}
             onRenameNote={(id, title) => notes.renameNote(id, title)}
@@ -340,6 +509,8 @@ export default function ReaderScreen() {
         blocks={pagination.blocks}
         activeIndex={currentBlockIndex}
       />
+      </>
+      )}
     </PageContainer>
   );
 }

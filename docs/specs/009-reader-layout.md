@@ -201,6 +201,7 @@ On screens too narrow for side-by-side layout:
 - Scrollable list of saved notes
 - Each note shows its title (or "Untitled") and creation date
 - The currently selected note is highlighted
+- Notes imported this session show an **"Imported" badge** (see §"Notes Reader Default Screen")
 - Each note has a "more" menu (rename, delete)
 - When not logged in, shows a prompt to log in
 
@@ -215,6 +216,39 @@ On screens too narrow for side-by-side layout:
 
 - Placeholder shell with a "Notes" header
 - Content to be added in a future iteration
+
+## Notes Reader Default Screen
+
+When **no note is open**, the Notes Reader shows a default screen instead of
+the editor/reader and its Edit/Read tabs (the tabs only exist for an open
+note). Both apps implement it — web `apps/web/src/app/[l1]/[l2]/reader/page.tsx`,
+mobile `apps/mobile/app/(tabs)/(reading)/index.tsx`:
+
+- **Title bar** reads "Notes Reader"
+- A **dotted (dashed) drag-and-drop area** — visually matching the Image
+  Reader's drop zone — with a message explaining what the Notes Reader is and
+  that text files can be dragged/pasted in to import them
+- **Buttons:**
+  - **New Note** — creates an empty note and opens it (editor mode)
+  - **Browse** — opens the OS file picker, **multi-select**; each text file
+    (`.txt`/`.md`) is imported as its own note titled with the file name
+    (extension included). After importing: the **last** imported note opens,
+    and if **more than one** was imported the side panel also opens. Imported
+    notes carry an **"Imported" badge** in the notes list for the rest of the
+    session (cleared on reload/restart — session-only, no data-model change).
+  - **Paste** — creates a new note with the clipboard text; **Ctrl/Cmd-V**
+    (web) does the same while no note is open
+  - **List All Notes** — opens the notes side panel (persistent panel on wide
+    screens, slide-in sheet on narrow)
+
+### Auto-restore vs. nav re-entry (web)
+
+- **Auto-restore**: a fresh visit to the reader reopens the last-open note
+  (`lp_reader_last_note` in localStorage) — parity with the mobile reader's
+  saved-active-note restore.
+- **Nav re-entry**: tapping Nav → Notes Reader while a note is **already open**
+  (the URL loses its `?noteId` param) closes the note and lands on the default
+  screen — mirroring the EPUB reader's same-route Rule A close.
 
 ## Edge Cases
 

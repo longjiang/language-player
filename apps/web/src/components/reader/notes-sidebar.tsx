@@ -25,6 +25,9 @@ export interface NotesSidebarProps {
   notesError: string | null;
   currentNoteId: number | null;
   session: any;
+  /** Ids of notes imported this session — they show an "Imported" badge
+   *  (session-only, cleared on reload). */
+  importedNoteIds?: Set<number>;
   onSelectNote: (noteId: number) => void;
   onNewNote: () => void;
   onRenameNote: (noteId: number, newTitle: string) => Promise<void>;
@@ -37,6 +40,7 @@ export function NotesSidebar({
   notesError,
   currentNoteId,
   session,
+  importedNoteIds,
   onSelectNote,
   onNewNote,
   onRenameNote,
@@ -121,7 +125,14 @@ export function NotesSidebar({
             onClick={() => onSelectNote(note.id)}
           >
             <div className="min-w-0 flex-1">
-              <div className="truncate">{note.title || t('msg.untitled_note')}</div>
+              <div className="flex items-center gap-1.5">
+                <span className="truncate">{note.title || t('msg.untitled_note')}</span>
+                {importedNoteIds?.has(note.id) && (
+                  <span className="flex-shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">
+                    {t('label.imported')}
+                  </span>
+                )}
+              </div>
               {note.created_on && (
                 <div className="text-xs text-muted-foreground">
                   {new Date(note.created_on).toLocaleDateString()}
