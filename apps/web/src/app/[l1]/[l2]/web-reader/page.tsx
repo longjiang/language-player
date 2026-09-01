@@ -139,6 +139,15 @@ export default function WebReaderPage() {
       if (seq !== loadSeqRef.current) return;
       const md = htmlToMarkdown(raw, targetUrl);
       if (seq !== loadSeqRef.current) return;
+      // DIAGNOSTIC (images not loading): log the fetched→markdown output so the
+      // conversion result can be inspected. Verbose level — run setLogLevel(3)
+      // in the devtools console (or NEXT_PUBLIC_LOG_LEVEL=3) to see it.
+      log('WebReader: markdown generated', {
+        url: targetUrl,
+        mdLength: md.length,
+        imageCount: (md.match(/!\[/g) || []).length,
+      });
+      log('WebReader: markdown output', md);
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const pageTitle = extractTitle(raw) || titleMatch?.[1]?.trim() || targetUrl;
@@ -153,6 +162,9 @@ export default function WebReaderPage() {
       try {
         const parsed = parseMarkdown(md);
         setBlocks(parsed);
+        // DIAGNOSTIC: how many blocks the parser produced (images become either
+        // inline `image` format ranges on text blocks or raw-markdown blocks).
+        log('WebReader: parsed blocks', { blockCount: parsed.length });
       } catch {
         setBlocks(null);
       }
