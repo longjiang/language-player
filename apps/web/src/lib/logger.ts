@@ -32,3 +32,10 @@ try {
 
 export const { log, logwarn, logerr } = createLogger('[LP Web]');
 export { getLogLevel, setLogLevel };
+
+/**
+ * Per-aspect logger for the notes reader's text-file import pipeline
+ * (ARCH-027 — per-aspect logging). Default-off; enable with
+ * NEXT_PUBLIC_LOG_LEVEL_NOTES_IMPORT=3 or setLogLevel(3, 'notes-import').
+ */
+export const notesImportLogger = createLogger('[LP Web]', 'notes-import');
