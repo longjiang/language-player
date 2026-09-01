@@ -152,12 +152,16 @@ async function readAll(): Promise<EpubMeta[]> {
     for (const b of arr) {
       // Normalize the legacy doubled scheme, then re-anchor a stale absolute
       // path onto the current app container (iOS container UUID changes on
-      // reinstall/update — see reanchorCoverUrl).
-      const normalized = normalizeCoverUrl(b?.coverUrl ?? null);
-      // eslint-disable-next-line no-await-in-loop
-      const reanchored = await reanchorCoverUrl(normalized);
-      if (reanchored !== b?.coverUrl) persisted = true; // persist the fix below
-      out.push({ ...b, coverUrl: reanchored });
+      // reinstall/update — see reanchorCoverUrl). Per-book try/catch: one
+      // broken record must never blank the whole shelf.
+      let coverUrl: string | null = null;
+      try {
+        coverUrl = await reanchorCoverUrl(normalizeCoverUrl(b?.coverUrl ?? null));
+      } catch {
+        coverUrl = normalizeCoverUrl(b?.coverUrl ?? null);
+      }
+      if (coverUrl !== b?.coverUrl) persisted = true; // persist the fix below
+      out.push({ ...b, coverUrl });
     }
     if (persisted) {
       log('[LP Mobile] 📖 persisting re-anchored cover URIs to storage');
