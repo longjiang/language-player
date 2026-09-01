@@ -442,15 +442,19 @@ Elements:
 Per product direction (paginated reader requirements), the affordance flipped:
 
 - **Chrome OFF (chromeless):** two standard **shadcn buttons** (rectangular,
-  rounded corners — not 24 px circles) sit top-right, aligned with the
-  chapter title (web: `top = HEADER_HEIGHT + 8`; mobile:
-  `top = insets.top + 65`): **"show toolbars"** (reveals the chrome) and
-  **"close"** (leaves the reader). Text labels show on **portrait iPad and
-  wider** (≥ 768 px, the same breakpoint as side-by-side translation); below
-  that they collapse to icons. On wide screens the label is the action string
-  (`action.show_toolbars` / `action.close`); the close button's **right edge
-  lines up with the per-block action-menu trigger (⋮)** in the text below —
-  see §17.2.
+  rounded corners — not 24 px circles) sit top-right, **vertically centred on
+  the site top bar's middle** (revised 2026-09-01 — they previously aligned
+  with the chapter title). The bar spans `y ∈ [0, H]` (mobile:
+  `H = insets.top + 57`), so a 36 px `h-9` button gets
+  `top = (H − 36) / 2` — web: `top = (HEADER_HEIGHT − 36) / 2 = 10.5`
+  (center y 28.5); mobile: `top = (insets.top + 57) / 2 − 18` (the full bar,
+  safe-area inset included, matches the web math): **"show toolbars"**
+  (reveals the chrome) and **"close"** (leaves the reader). Text labels show
+  on **portrait iPad and wider** (≥ 768 px, the same breakpoint as
+  side-by-side translation); below that they collapse to icons. On wide
+  screens the label is the action string (`action.show_toolbars` /
+  `action.close`); the close button's **right edge lines up with the
+  per-block action-menu trigger (⋮)** in the text below — see §17.2.
 - **Chrome ON:** no close button. Escape hatches are the chromeless close and
   the nav-menu same-route close (`requestCloseReader`).
 
