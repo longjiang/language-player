@@ -79,6 +79,19 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 > highlight. Each card has internal padding. Short samples use a content-sized
 > card with a 240px minimum and the normal card height as the maximum; long
 > samples retain the normal card height.
+>
+> **Sample-content travel image (2026-08-31):** every POPULAR_L2S sample
+> (`short` and `long`) now begins its first paragraph with an inline
+> `![travel](/travel.png)` markdown image. The asset is added to both apps:
+> `apps/web/public/travel.png` (served at `/travel.png`) and
+> `apps/mobile/assets/travel.png`. Both apps render the shared content through
+> one markdown engine (SPEC-083), so the image flows as an **inline** `image`
+> format range on the first text block. On web it draws inline in
+> `TokenizedText`; on mobile the existing `splitInlineImageBlocks` pass splits
+> it into a leading standalone `ImageBlock` (SPEC-087 — native inline-image
+> drawing is not yet implemented). Note the shared markdown src is a string, so
+> mobile can't resolve it to the bundled asset without extra resolution logic
+> (best-effort per the SPEC-087 gap).
 
 | `POPULAR_L2S` | Test case |
 |---|---|
