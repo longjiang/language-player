@@ -2,10 +2,10 @@ import type { SampleContent } from './types';
 
 const content: SampleContent = {
   title: 'Amsterdamse grachten',
-  short: `De **Amsterdamse grachten** behoren tot het mooiste van Nederland. De stad wordt doorkruist door honderden grachten en bruggen. *“God schiep de wereld, maar de Hollanders schiepen Holland”*, zegt men. Een rondvaart is de beste manier om de stad te zien.`,
+  short: `![travel](/travel.png) De **Amsterdamse grachten** behoren tot het mooiste van Nederland. De stad wordt doorkruist door honderden grachten en bruggen. *“God schiep de wereld, maar de Hollanders schiepen Holland”*, zegt men. Een rondvaart is de beste manier om de stad te zien.`,
   long: `# De Amsterdamse grachten
 
-De **Amsterdamse grachten** behoren tot het mooiste van Nederland. De stad wordt doorkruist door honderden grachten en bruggen. *“God schiep de wereld, maar de Hollanders schiepen Holland”*, zegt men.
+![travel](/travel.png) De **Amsterdamse grachten** behoren tot het mooiste van Nederland. De stad wordt doorkruist door honderden grachten en bruggen. *“God schiep de wereld, maar de Hollanders schiepen Holland”*, zegt men.
 
 ## Geschiedenis
 
