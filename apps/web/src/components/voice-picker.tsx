@@ -7,7 +7,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
 import { Volume2, Square } from 'lucide-react';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from '@/components/ui/select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectSeparator } from '@/components/ui/select';
 
 interface VoicePickerProps {
   className?: string;
@@ -63,10 +63,10 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
               <span className="truncate">{t('label.auto_best_available')}</span>
             </SelectItem>
 
-            {/* L2 voices */}
+            {/* L2 voices (flat list, no group header) */}
             {l2Voices.length > 0 && (
-              <SelectGroup>
-                <SelectLabel>{t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}</SelectLabel>
+              <>
+                <SelectSeparator />
                 {l2Voices.map(v => (
                   <SelectItem key={v.voiceURI} value={v.voiceURI}>
                     <span className="truncate">{v.name}</span>
@@ -75,7 +75,7 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
                     </span>
                   </SelectItem>
                 ))}
-              </SelectGroup>
+              </>
             )}
           </SelectContent>
         </Select>
