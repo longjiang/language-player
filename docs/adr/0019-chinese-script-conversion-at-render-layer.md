@@ -1,7 +1,9 @@
 # ADR-0019 — Chinese Script Conversion at Render Layer
 
 **Date**: 2026-07-26
-**Status**: Accepted
+**Status**: Accepted (amended 2026-09-01: presets corrected from `twp`↔`cn`
+to script-level `t`↔`cn` — see § Amendment: script-level presets, not
+TW-locale presets)
 
 ## Context
 
@@ -101,3 +103,32 @@ const displayText = useMemo(() => {
 - [Jieba README: Other Dictionaries](https://github.com/fxsjy/jieba#%E5%85%B6%E4%BB%96%E8%AF%8D%E5%85%B8) — `dict.txt.big` for better traditional support
 - `apps/web/src/lib/chinese-script.ts` — OpenCC wrapper (reused by TokenSpan)
 - `apps/web/src/components/token-span.tsx:119-135` — `byeonggiText` pattern (same as script conversion)
+
+## Amendment: script-level presets, not TW-locale presets (2026-09-01)
+
+The original implementation used opencc-js's TW-locale presets
+(`cn → twp`, `twp → cn`). Those presets run **phrase normalization before
+script conversion**, which breaks the idempotency this ADR relies on:
+
+- The `twp` normalization table (`TWVariantsRev`) maps the standalone /
+  word-final particle 么 to the TW dictionary form 幺 **before**
+  simplification. Verified in opencc-js 1.4.1: `twp→cn` converts
+  什么 → 什幺, 这么 → 这幺, 为什么 → 为幺, 么 → 幺 — corrupting
+  already-simplified input (the common case: mainland subtitles with a
+  learner who prefers simplified). A full scan of CJK codepoints
+  U+3400–9FFF + U+F900–FAFF found no other simplified→simplified
+  corruption; the only other remap is 苧 → 苎 (a benign variant
+  normalization of a rare character).
+- Locale presets also localize **vocabulary**: 滑鼠 → 鼠标,
+  軟體 → 软件, 影片 → 视频. That silently replaces the word actually
+  spoken in the audio, which harms comprehension.
+
+**Decision (amendment):** use the script-level presets `cn ↔ t` in
+`apps/web/src/lib/chinese-script.ts` and
+`apps/mobile/lib/chinese-script.ts`. They convert glyphs only, are
+idempotent in both directions (verified over all CJK codepoints), and
+match the Classic app's `chinese-conv` behavior (滑鼠 stays 滑鼠,
+什么 stays 什么). The original claim below — "OpenCC cn→twp is
+idempotent on already-traditional text" — was true for `cn→twp` but not
+for the reverse direction under the locale presets; the generic `t`
+presets restore it for both.
