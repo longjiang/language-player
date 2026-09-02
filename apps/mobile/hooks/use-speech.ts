@@ -1,56 +1,50 @@
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState } from 'react';
 import * as Speech from 'expo-speech';
-import * as SecureStore from 'expo-secure-store';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { log } from '@/lib/logger';
+import { SPEECH_DEFAULTS } from '@langplayer/shared';
 
-const SETTINGS_KEY = 'zthSpeechSettings';
-
-interface SpeechSettings {
-  voiceURI?: string;
-  rate?: number;
-}
-
+/**
+ * TTS via expo-speech.
+ *
+ * Speech settings (voiceURI, rate) are read per-L2 from the unified
+ * settings_v2 store (`l2[code].speech`) — the same values the Settings →
+ * Speech page writes via `updateL2` (ARCH-011, SPEC-015). The legacy
+ * `zthSpeechSettings` SecureStore key is no longer read or written.
+ */
 export function useSpeech() {
+  const { getL2, loaded } = useSettingsContext();
+  const { l2Lang } = useLanguage();
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [settings, setSettings] = useState<SpeechSettings>({ rate: 0.75 });
-  const finishListenerRef = useRef<ReturnType<typeof Speech.isSpeakingAsync> | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const raw = await SecureStore.getItemAsync(SETTINGS_KEY);
-        if (raw) setSettings((prev) => ({ ...prev, ...JSON.parse(raw) }));
-      } catch {}
-    })();
-  }, []);
+  const l2Settings = loaded ? getL2(l2Lang.code) : null;
+  const speech = l2Settings?.speech ?? SPEECH_DEFAULTS;
+  const voiceURI = speech.voiceURI;
+  const rate = speech.rate ?? SPEECH_DEFAULTS.rate;
 
-  const saveSettings = useCallback(async (s: SpeechSettings) => {
-    await SecureStore.setItemAsync(SETTINGS_KEY, JSON.stringify(s));
-    setSettings(s);
-  }, []);
-
-  const speak = useCallback((text: string, langCode: string) => {
+  /** Speak text in the given language, using the saved voice + rate. */
+  const speak = useCallback((text: string, langCode: string, fallbackRate?: number) => {
     Speech.stop();
-    Speech.speak(text, {
+    const options: Speech.SpeechOptions = {
       language: langCode,
-      rate: settings.rate ?? 0.75,
+      rate: rate || fallbackRate || 1.0,
       onStart: () => setIsSpeaking(true),
       onDone: () => setIsSpeaking(false),
       onStopped: () => setIsSpeaking(false),
-    });
-  }, [settings.rate]);
+      onError: () => setIsSpeaking(false),
+    };
+    if (voiceURI) {
+      options.voice = voiceURI;
+      log('using saved voice:', voiceURI, 'rate:', options.rate);
+    }
+    Speech.speak(text, options);
+  }, [voiceURI, rate]);
 
   const stop = useCallback(() => {
     Speech.stop();
     setIsSpeaking(false);
   }, []);
 
-  const setVoice = useCallback((voiceURI: string) => {
-    saveSettings({ ...settings, voiceURI });
-  }, [settings, saveSettings]);
-
-  const setRate = useCallback((rate: number) => {
-    saveSettings({ ...settings, rate });
-  }, [settings, saveSettings]);
-
-  return { speak, stop, isSpeaking, settings, setVoice, setRate };
+  return { speak, stop, isSpeaking, settings: { voiceURI, rate } };
 }

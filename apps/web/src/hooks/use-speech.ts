@@ -1,13 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const SETTINGS_KEY = 'zthSpeechSettings';
-
-interface SpeechSettings {
-  voiceURI?: string;
-  rate?: number;
-}
+import { useSettingsContext } from '@/providers/settings-provider';
+import { useLanguage } from '@/providers/language-provider';
+import { logwarn } from '@/lib/logger';
+import { SPEECH_DEFAULTS } from '@langplayer/shared';
 
 /**
  * Best-effort language code → BCP 47 / speechSynthesis lang tag.
@@ -26,7 +23,7 @@ const LANG_TO_SPEECH_TAG: Record<string, string> = {
 };
 
 /** Heuristic: pick the best voice for a given language code. */
-function pickBestVoice(langCode: string, preferredURI?: string): SpeechSynthesisVoice | null {
+function pickBestVoice(langCode: string, preferredURI?: string | null): SpeechSynthesisVoice | null {
   const voices = speechSynthesis.getVoices();
   if (voices.length === 0) return null;
 
@@ -56,57 +53,58 @@ function pickBestVoice(langCode: string, preferredURI?: string): SpeechSynthesis
   return voices[0] ?? null;
 }
 
-function loadSettings(): SpeechSettings {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return {};
-}
-
-function saveSettings(settings: SpeechSettings): void {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
-}
-
+/**
+ * TTS via the Web Speech API.
+ *
+ * Speech settings (voiceURI, rate) are read per-L2 from the unified
+ * settings_v2 store (`l2[code].speech`) — the same values the Settings →
+ * Speech page writes via `updateL2` (ARCH-011). The legacy
+ * `zthSpeechSettings` localStorage key is no longer read or written.
+ */
 export function useSpeech() {
+  const { getL2, loaded } = useSettingsContext();
+  const { l2 } = useLanguage();
   const [isSpeaking, setIsSpeaking] = useState(false);
-  // Initialize with defaults only — no localStorage read during render.
-  // Loading from localStorage in a useState initializer causes hydration
-  // mismatches (server has no localStorage → default 0.75, client has stored 0.95).
-  const [settings, setSettingsState] = useState<SpeechSettings>({});
-
-  // Load persisted settings on mount (client-side only)
-  useEffect(() => {
-    setSettingsState(loadSettings());
-  }, []);
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Ensure voices are loaded
+  // Re-render when voices arrive (first pickBestVoice call may see an empty list).
+  const [voicesReady, setVoicesReady] = useState(speechSynthesis.getVoices().length > 0);
   useEffect(() => {
-    if (speechSynthesis.getVoices().length === 0) {
-      speechSynthesis.addEventListener('voiceschanged', () => {
-        // Force re-render so pickBestVoice gets updated list
-        setSettingsState(s => ({ ...s }));
-      }, { once: true });
+    if (speechSynthesis.getVoices().length > 0) {
+      setVoicesReady(true);
+      return;
     }
+    const onVoicesChanged = () => setVoicesReady(true);
+    speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+    return () => speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
   }, []);
 
+  const l2Settings = loaded && l2 ? getL2(l2.code) : null;
+  const speech = l2Settings?.speech ?? SPEECH_DEFAULTS;
+  const voiceURI = speech.voiceURI;
+  const rate = speech.rate ?? SPEECH_DEFAULTS.rate;
+
   /** Speak text using Web Speech API in the given L2 language. */
-  const speak = useCallback((text: string, l2Code: string, rate = 0.75) => {
+  const speak = useCallback((text: string, l2Code: string, fallbackRate?: number) => {
     speechSynthesis.cancel();
-    const voice = pickBestVoice(l2Code, settings.voiceURI);
-    if (!voice) return;
+    const voice = pickBestVoice(l2Code, voiceURI);
+    if (!voice) {
+      logwarn('no TTS voice available for', l2Code);
+      return;
+    }
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.voice = voice;
-    utterance.rate = settings.rate ?? rate;
+    utterance.lang = voice.lang;
+    utterance.rate = rate ?? fallbackRate ?? 1.0;
     utterance.volume = 1;
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
     speechSynthesis.speak(utterance);
-  }, [settings]);
+    // voicesReady is only here to re-create `speak` once the voice list
+    // arrives, so pickBestVoice can see it.
+  }, [voiceURI, rate, voicesReady]);
 
   /** Play an audio file (e.g., Wiktionary OGG/MP3). */
   const playAudio = useCallback((url: string) => {
@@ -143,24 +141,6 @@ export function useSpeech() {
     return speechSynthesis.getVoices();
   }, []);
 
-  /** Set preferred voice and persist. */
-  const setVoiceURI = useCallback((uri: string | undefined) => {
-    setSettingsState(prev => {
-      const next = { ...prev, voiceURI: uri };
-      saveSettings(next);
-      return next;
-    });
-  }, []);
-
-  /** Set speech rate and persist. */
-  const setRate = useCallback((rate: number) => {
-    setSettingsState(prev => {
-      const next = { ...prev, rate };
-      saveSettings(next);
-      return next;
-    });
-  }, []);
-
   /** Build a Wiktionary Commons audio URL from a filename. */
   const wiktionaryAudioUrl = useCallback((filename: string): string => {
     return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
@@ -173,10 +153,8 @@ export function useSpeech() {
     isSpeaking,
     getVoicesForLang,
     getAllVoices,
-    voiceURI: settings.voiceURI,
-    setVoiceURI,
-    rate: settings.rate ?? 0.75,
-    setRate,
+    voiceURI,
+    rate,
     wiktionaryAudioUrl,
   };
 }

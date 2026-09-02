@@ -300,6 +300,14 @@ is actually in the tree.
 section defaults (`*_DEFAULTS`), `createSettingsV2()` (stamps an **epoch ts** so
 fresh defaults lose LWW — commit `32154e91`), `normalizeSettingsV2()`.
 
+**Speech consumption (2026-09-01):** both apps' `use-speech.ts` hooks read
+`voiceURI` / `rate` per-L2 from `settings_v2` (`getL2(code).speech`) — the
+same values the Settings → Speech pages write via `updateL2`. The hooks no
+longer read or write the legacy `zthSpeechSettings` localStorage/SecureStore
+key (nothing wrote it since the V2 migration, so picking a voice in Settings
+had no effect on TTS playback). The one-time legacy migration in
+`use-settings.ts` is unchanged.
+
 **Anti-reset guards (commit `c90214e8`, 2026-08-24):**
 - `persist()` drops (and logs) any write while the in-memory state is still
   pristine defaults (`hydratedFromSource` ref) — a fresh-ts defaults blob would
