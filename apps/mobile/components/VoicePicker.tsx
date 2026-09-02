@@ -27,7 +27,8 @@ export function VoicePicker() {
   const rate = l2Settings?.speech.rate ?? 1.0;
   const selectedVoice = l2Settings?.speech.voiceURI ?? null;
 
-  // Load available voices (iOS only — Android doesn't expose this API)
+  // Load installed voices (expo-speech enumerates on both iOS and Android;
+  // the web build throws, which the catch tolerates — picker stays hidden).
   useEffect(() => {
     Speech.getAvailableVoicesAsync().then((voices) => {
       setVoiceList(voices.map((v) => ({ identifier: v.identifier, name: v.name, language: v.language })));

@@ -36,6 +36,7 @@ export const syncLogger = createLogger('[LP Mobile]', 'sync');
 export const srsLogger = createLogger('[LP Mobile]', 'srs');
 export const dictionaryEntryLogger = createLogger('[LP Mobile]', 'dictionaryEntry');
 export const tabbedPanelLogger = createLogger('[LP Mobile]', 'tabbedPanel');
+export const speechLogger = createLogger('[LP Mobile]', 'speech');
 
 /**
  * Default a domain to OFF unless its env override is explicitly set, e.g.
