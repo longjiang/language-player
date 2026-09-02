@@ -7,7 +7,7 @@
 - **Type**: runbook / reference
 - **Status**: draft
 - **Created**: 2026-08-14
-- **Last Updated**: 2026-08-14
+- **Last Updated**: 2026-09-01
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic web (v2), Next.js web (v3), iOS App Store, Google Play, Chrome Web Store, Flask backend
 - **See also**:
