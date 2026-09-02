@@ -57,11 +57,11 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[min(var(--radix-select-content-available-height),20rem)]">
             {/* Auto option */}
             <SelectItem value={autoValue}>
-              <Volume2 className="h-4 w-4" />
-              {t('label.auto_best_available')}
+              <Volume2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <span className="truncate">{t('label.auto_best_available')}</span>
             </SelectItem>
 
             {/* L2 voices */}
@@ -70,9 +70,11 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
                 <SelectLabel>{t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}</SelectLabel>
                 {l2Voices.map(v => (
                   <SelectItem key={v.voiceURI} value={v.voiceURI}>
-                    <Volume2 className="h-4 w-4 flex-shrink-0" />
+                    <Volume2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate">{v.name}</span>
-                    <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{v.lang}</span>
+                    <span className="ml-auto flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                      {v.lang}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -84,9 +86,11 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
                 <SelectLabel>{t('label.all_voices')}</SelectLabel>
                 {allLangVoices.map(v => (
                   <SelectItem key={v.voiceURI} value={v.voiceURI}>
-                    <Volume2 className="h-4 w-4 flex-shrink-0" />
+                    <Volume2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate">{v.name}</span>
-                    <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{v.lang}</span>
+                    <span className="ml-auto flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                      {v.lang}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectGroup>
