@@ -347,7 +347,7 @@ Per [ADR-0019](../adr/0019-chinese-script-conversion-at-render-layer.md), Chines
 
 **Before (removed):**
 ```
-text → [OpenCC cn→twp] → POST /lemmatize-normalized → tokens → TokenSpan (no conversion)
+text → [OpenCC cn→t] → POST /lemmatize-normalized → tokens → TokenSpan (no conversion)
 ```
 
 **After (current):**
@@ -383,10 +383,17 @@ for (const text of uniqueTexts) {
 ```
 
 **Bidirectional (2026-08-08):** conversion runs in both directions, per
-ADR-0019 — `cn→twp` when the user prefers traditional, `twp→cn` when the
+ADR-0019 — `cn→t` when the user prefers traditional, `t→cn` when the
 user prefers simplified. Both OpenCC converters are idempotent on
 already-matching text, so no script detection is needed; conversion is
 still applied only at the render layer, never to the lemmatizer input.
+
+**Presets (amended 2026-09-01):** the converters use the script-level
+presets `cn` ↔ `t` — NOT the TW/HK locale presets (`twp`/`tw`/`hk`).
+Locale presets normalize phrases before script conversion, which corrupts
+already-simplified input (the `twp` table maps the particle 么 → 幺
+first, so 什么 → 什幺; see the ADR-0019 amendment) and localizes
+vocabulary (滑鼠 → 鼠标) instead of only converting glyphs.
 
 Legacy notes (pre-bidirectional):
 ```
