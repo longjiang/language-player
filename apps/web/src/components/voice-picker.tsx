@@ -36,9 +36,9 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
     return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices);
   }, [getAllVoices]);
 
-  // Filter voices for current L2
+  // Only voices for the current L2 are offered — unrelated voices don't apply
+  // to this language and would read it with the wrong phonetics.
   const l2Voices = l2 ? voices.filter(v => v.lang.startsWith(`${l2.code}-`) || v.lang === l2.code) : [];
-  const allLangVoices = l2 ? voices.filter(v => !v.lang.startsWith(`${l2.code}-`)) : voices;
 
   const autoValue = '__auto__';
 
@@ -68,21 +68,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
               <SelectGroup>
                 <SelectLabel>{t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}</SelectLabel>
                 {l2Voices.map(v => (
-                  <SelectItem key={v.voiceURI} value={v.voiceURI}>
-                    <span className="truncate">{v.name}</span>
-                    <span className="ml-auto flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                      {v.lang}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            )}
-
-            {/* All other voices */}
-            {allLangVoices.length > 0 && (
-              <SelectGroup>
-                <SelectLabel>{t('label.all_voices')}</SelectLabel>
-                {allLangVoices.map(v => (
                   <SelectItem key={v.voiceURI} value={v.voiceURI}>
                     <span className="truncate">{v.name}</span>
                     <span className="ml-auto flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">

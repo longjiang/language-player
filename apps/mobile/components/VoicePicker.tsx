@@ -35,7 +35,6 @@ export function VoicePicker() {
   }, []);
 
   const l2Voices = voiceList.filter((v) => v.language.startsWith(l2Lang.code + '-') || v.language === l2Lang.code);
-  const otherVoices = voiceList.filter((v) => !l2Voices.includes(v));
 
   // Test speak — uses locale-aware language name (matching web VoicePicker)
   const handleTest = useCallback(() => {
@@ -77,24 +76,15 @@ export function VoicePicker() {
               }
             }}
             actions={[
-              // "Auto" option — only shown when a custom voice is already set.
-              ...(selectedVoice
-                ? [{ id: '__auto__', title: t('label.auto_best_available'), state: 'off' as const }]
-                : []),
+              // "Auto" option — always present, matching the web picker, so a
+              // saved voice can always be reset to auto-selection.
+              { id: '__auto__', title: t('label.auto_best_available'), state: selectedVoice ? ('on' as const) : ('off' as const) },
               // L2 voices (preferred).
               ...l2Voices.map((v) => ({
                 id: v.identifier,
                 title: v.name,
                 state: (selectedVoice === v.identifier ? 'on' : 'off') as 'on' | 'off',
               })),
-              // Other voices — only shown when no L2 voices are available.
-              ...(l2Voices.length === 0
-                ? otherVoices.slice(0, 10).map((v) => ({
-                    id: v.identifier,
-                    title: v.name,
-                    state: (selectedVoice === v.identifier ? 'on' : 'off') as 'on' | 'off',
-                  }))
-                : []),
             ]}
           >
             <Pressable className="flex-row items-center justify-between rounded-lg border border-border bg-card px-3 py-3">
