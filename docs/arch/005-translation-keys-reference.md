@@ -190,7 +190,6 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `footnote.lifetime_assumption` | 1. Assuming you will live longer than 2.4 years. |
 | `label.ai_generated` | AI-Generated |
 | `label.ai_says` | DeepSeek says: |
-| `label.all_voices` | All Voices |
 | `label.auto_best_available` | Auto (best available) |
 | `label.auto_best_for` | Auto (best for {l2}) |
 | `label.auto_pause` | Auto-Pause |
@@ -210,7 +209,6 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `label.karaoke` | Karaoke Mode |
 | `label.key_vocabulary` | Key Vocabulary |
 | `label.playlist_name` | Playlist name |
-| `label.l2_voices` | {l2} Voices |
 | `label.lifetime_one_time` | Lifetime — $169 one-time |
 | `label.measure_word` | Measure: |
 | `label.native_level` | Native |
