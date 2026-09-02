@@ -227,7 +227,7 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.3.3 build 12 → App Store Connect / TestFlight (2026-08-22).
+**last upload:** 3.4.6 build 20 → App Store Connect / TestFlight (2026-09-01).
 
 ### 4.1 Version gate
 
@@ -451,7 +451,7 @@ TestFlight metadata in § 4.3.1.
 
 **Store record:** Google Play app ID `4975392680448759197` · package
 `ca.zerotohero.go` · full runbook in [SPEC-067](../specs/067-google-play-release-runbook.md) ·
-**last upload:** 3.2.3 versionCode 8 → Internal testing (2026-08-19).
+**last upload:** 3.4.6 versionCode 20 → Internal testing (2026-09-01).
 
 ### 5.1 Version gate
 
