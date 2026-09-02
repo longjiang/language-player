@@ -39,3 +39,10 @@ export { getLogLevel, setLogLevel };
  * NEXT_PUBLIC_LOG_LEVEL_NOTES_IMPORT=3 or setLogLevel(3, 'notes-import').
  */
 export const notesImportLogger = createLogger('[LP Web]', 'notes-import');
+
+/**
+ * Per-aspect logger for TTS voice selection (ARCH-027 / ARCH-031). Shows
+ * which voice the quality-ranked auto-picker chose and why. Enable with
+ * NEXT_PUBLIC_LOG_LEVEL_SPEECH=3 or setLogLevel(3, 'speech').
+ */
+export const speechLogger = createLogger('[LP Web]', 'speech');

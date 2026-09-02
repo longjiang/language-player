@@ -3,54 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useLanguage } from '@/providers/language-provider';
-import { logwarn } from '@/lib/logger';
-import { SPEECH_DEFAULTS } from '@langplayer/shared';
+import { log, logwarn } from '@/lib/logger';
+import { speechLogger } from '@/lib/logger';
+import { SPEECH_DEFAULTS, LANG_TO_SPEECH_TAG, pickBestVoice, type VoiceCandidate } from '@langplayer/shared';
 
-/**
- * Best-effort language code → BCP 47 / speechSynthesis lang tag.
- * Web Speech API uses BCP 47 tags like "ja-JP", "zh-CN", "ko-KR", etc.
- */
-const LANG_TO_SPEECH_TAG: Record<string, string> = {
-  af: 'af-ZA', ar: 'ar-SA', bg: 'bg-BG', ca: 'ca-ES', cs: 'cs-CZ',
-  da: 'da-DK', de: 'de-DE', el: 'el-GR', en: 'en-US', es: 'es-MX',
-  fi: 'fi-FI', fr: 'fr-FR', he: 'he-IL', hi: 'hi-IN', hr: 'hr-HR',
-  hu: 'hu-HU', id: 'id-ID', it: 'it-IT', ja: 'ja-JP', ko: 'ko-KR',
-  ms: 'ms-MY', nb: 'nb-NO', nl: 'nl-NL', pl: 'pl-PL',
-  pt: 'pt-BR', ro: 'ro-RO', ru: 'ru-RU', sk: 'sk-SK',
-  sv: 'sv-SE', sw: 'sw-KE', th: 'th-TH', tr: 'tr-TR',
-  uk: 'uk-UA', vi: 'vi-VN', yue: 'zh-HK', nan: 'zh-TW',
-  zh: 'zh-CN',
-};
-
-/** Heuristic: pick the best voice for a given language code. */
-function pickBestVoice(langCode: string, preferredURI?: string | null): SpeechSynthesisVoice | null {
-  const voices = speechSynthesis.getVoices();
-  if (voices.length === 0) return null;
-
-  // 1. User's preferred voice
-  if (preferredURI) {
-    const preferred = voices.find(v => v.voiceURI === preferredURI);
-    if (preferred) return preferred;
-  }
-
-  // 2. Native voice matching the BCP 47 tag
-  const bcpTag = LANG_TO_SPEECH_TAG[langCode];
-  if (bcpTag) {
-    const native = voices.find(v => v.lang === bcpTag && v.localService);
-    if (native) return native;
-  }
-
-  // 3. Any voice matching the language prefix (e.g., "zh" matches "zh-CN", "zh-TW")
-  const prefix = `${langCode}-`;
-  const langMatch = voices.find(v => v.lang.startsWith(prefix) && v.localService);
-  if (langMatch) return langMatch;
-
-  // 4. Any voice matching the language prefix (even non-local)
-  const anyMatch = voices.find(v => v.lang.startsWith(prefix));
-  if (anyMatch) return anyMatch;
-
-  // 5. Default voice
-  return voices[0] ?? null;
+/** Map a Web Speech API voice to the shared platform-agnostic candidate shape. */
+function toCandidate(v: SpeechSynthesisVoice): VoiceCandidate & { source: SpeechSynthesisVoice } {
+  return {
+    identifier: v.voiceURI,
+    name: v.name,
+    lang: v.lang,
+    localService: v.localService,
+    isDefault: v.default,
+    source: v,
+  };
 }
 
 /**
@@ -60,6 +26,11 @@ function pickBestVoice(langCode: string, preferredURI?: string | null): SpeechSy
  * settings_v2 store (`l2[code].speech`) — the same values the Settings →
  * Speech page writes via `updateL2` (ARCH-011). The legacy
  * `zthSpeechSettings` localStorage key is no longer read or written.
+ *
+ * Voice auto-selection is quality-ranked per platform — see ARCH-031 /
+ * `pickBestVoice` in @langplayer/shared. When no voice matches the L2,
+ * speak() does nothing (beyond a warning): reading e.g. Japanese text with
+ * an English voice produces gibberish.
  */
 export function useSpeech() {
   const { getL2, loaded } = useSettingsContext();
@@ -87,11 +58,20 @@ export function useSpeech() {
   /** Speak text using Web Speech API in the given L2 language. */
   const speak = useCallback((text: string, l2Code: string, fallbackRate?: number) => {
     speechSynthesis.cancel();
-    const voice = pickBestVoice(l2Code, voiceURI);
-    if (!voice) {
-      logwarn('no TTS voice available for', l2Code);
+    const allVoices = speechSynthesis.getVoices();
+    const candidates = allVoices.map(toCandidate);
+    const best = pickBestVoice(candidates, l2Code, voiceURI ?? undefined);
+    if (!best) {
+      logwarn('[LP Web] no TTS voice matches L2 "' + l2Code + '" — not speaking (' + allVoices.length + ' voices installed)');
+      speechLogger.log('no match for l2=%s — available langs: %o', l2Code, allVoices.map(v => v.lang));
       return;
     }
+
+    const voice = best.source;
+    speechLogger.log(
+      'l2=%s → "%s" (%s) local=%s | %d candidates, chosen score-ranked (ARCH-031)',
+      l2Code, voice.name, voice.lang, voice.localService, candidates.length,
+    );
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.voice = voice;
@@ -158,3 +138,6 @@ export function useSpeech() {
     wiktionaryAudioUrl,
   };
 }
+
+// Re-exported for convenience so the voice picker can reuse the shared tag map.
+export { LANG_TO_SPEECH_TAG };

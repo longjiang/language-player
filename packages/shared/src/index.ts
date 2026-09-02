@@ -22,3 +22,4 @@ export * from './markdown/html-to-markdown';
 export * from './markdown/fetch-page';
 export * from './markdown/inline';
 export * from './markdown/vision';
+export * from './voice-selection';
