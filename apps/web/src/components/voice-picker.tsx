@@ -60,7 +60,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
           <SelectContent className="max-h-[min(var(--radix-select-content-available-height),20rem)]">
             {/* Auto option */}
             <SelectItem value={autoValue}>
-              <Volume2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span className="truncate">{t('label.auto_best_available')}</span>
             </SelectItem>
 
@@ -70,7 +69,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
                 <SelectLabel>{t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}</SelectLabel>
                 {l2Voices.map(v => (
                   <SelectItem key={v.voiceURI} value={v.voiceURI}>
-                    <Volume2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate">{v.name}</span>
                     <span className="ml-auto flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                       {v.lang}
@@ -86,7 +84,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
                 <SelectLabel>{t('label.all_voices')}</SelectLabel>
                 {allLangVoices.map(v => (
                   <SelectItem key={v.voiceURI} value={v.voiceURI}>
-                    <Volume2 className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate">{v.name}</span>
                     <span className="ml-auto flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                       {v.lang}
