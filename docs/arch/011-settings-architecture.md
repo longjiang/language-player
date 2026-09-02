@@ -9,7 +9,7 @@
   [known issue](#known-issue-settings_v2-resets-to-default-debug-in-progress-2026-08-24)
   at the top of this page
 - **Created**: 2026-07-17
-- **Last updated**: 2026-08-24
+- **Last updated**: 2026-09-02 (voice auto-selection note, ARCH-031)
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic (legacy, `settings_classic` only), GO (reference),
   Next.js Web (active, `settings_v2`), React Native Mobile (active,
@@ -307,6 +307,16 @@ longer read or write the legacy `zthSpeechSettings` localStorage/SecureStore
 key (nothing wrote it since the V2 migration, so picking a voice in Settings
 had no effect on TTS playback). The one-time legacy migration in
 `use-settings.ts` is unchanged.
+
+**Voice auto-selection (2026-09-02, ARCH-031):** when `speech.voiceURI` is
+`null` (the "Auto" option) the hooks resolve a concrete voice via the
+quality-ranked picker in `packages/shared/src/voice-selection.ts`
+(`pickBestVoice`) — the user's saved id always wins when it still exists, a
+stale id falls back to auto-pick, and when no voice matches the L2 the app
+does not speak (logs a warning) rather than reading L2 text with a
+wrong-language voice. A stale id now also stops being written back — it is
+simply ignored for that utterance. Diagnostics via the `speech` log domain
+(ARCH-027).
 
 **Anti-reset guards (commit `c90214e8`, 2026-08-24):**
 - `persist()` drops (and logs) any write while the in-memory state is still

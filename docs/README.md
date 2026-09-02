@@ -72,6 +72,7 @@ docs/
 | 020 | [Sketch Engine Architecture](arch/020-sketch-engine-architecture.md) | Corpus features (collocations, examples, thesaurus, mistakes) — Classic PHP proxy ported to Flask with server-side parsing for web/mobile |
 | 022 | [Payment, Subscription & MailerLite](arch/022-payment-subscription-mailerlite.md) | End-to-end payment/subscription flows, free trial, renewal, subscription management, and MailerLite group sync |
 | 025 | [Language Content Audit](arch/025-language-content-audit.md) | Aggregated L2 content library, study activity, and popular-L2 picker evidence |
+| 031 | [TTS Voice Selection](arch/031-tts-voice-selection.md) | Cross-platform voice quality research + quality-ranked auto-select algorithm (web + mobile) |
 
 ## Quick Reference
 
