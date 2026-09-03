@@ -45,9 +45,33 @@ The result: line spacing comes from the system font (uniform), glyph shapes come
 
 - `apps/mobile/components/TokenizedText.tsx` — base font = system (no `glyphFontFamily`); passes the resolved L2 `glyphLang` as the paragraph `language`.
 - `apps/mobile/modules/ruby-text/ios/RubyTextParagraphView.swift` — sets `kCTLanguageAttributeName` on each base run and on the ruby annotation's reading attributes.
-- `apps/mobile/modules/ruby-text/ios/RubyTextModule.swift`, `modules/ruby-text/src/index.ts` — the `language` prop.
+- `apps/mobile/modules/ruby-text/android/…/RubyTextParagraphView.kt` — sets `textLocale` from the same `language` prop (on the TextView and on each span's paint) so the span-free runs get locale-sensitive fallback too.
+- `apps/mobile/modules/ruby-text/src/index.ts` — the `language` prop.
 - `apps/mobile/components/RubyText.tsx`, `tokenized-text-spans.tsx` — plumb the language to the native view.
 - `packages/shared/src/sample-content/{zh,ja,yue}.ts` — the CJK glyph test poem (门/将/骨/直/足/今/言/道/神/空/青/花/草/竹/雨/风/近/首/高/福/米/羽 …) rendered in simplified (zh), Japanese kanji (ja), and traditional (yue).
+
+### Exception: the serif typeFace setting (2026-09-03)
+
+The "base text uses the system font" rule describes the DEFAULT appearance.
+The user-facing `typeFace: 'serif'` setting is an explicit override:
+`typeFaceFontFamily(typeFace, glyphLang)` then resolves a real family — per
+script, so the serif choice reaches Han glyphs:
+
+- iOS: `Hiragino Mincho ProN` (ja), `Songti SC`/`Songti TC` (zh), system font (ko — no built-in serif hangul face), `Georgia` (Latin).
+- Android: `Noto Serif CJK JP/SC/TC/KR` (best-effort — Pixel/AOSP ship no CJK serif, so Han falls back to the device's sans face), `serif` (Latin).
+- Web: `globals.css` `[lang]` rules resolve `--lp-font-{script}-serif` stacks
+  for containers that carry BOTH the `.font-serif` class (from the typeFace
+  setting, applied by tokenized-text.tsx) and a lang tag (SPEC-080) —
+  `.font-serif[lang="zh-Hans"]` etc. Each serif stack ends in its matching
+  sans stack so a missing face degrades to the correct regional sans.
+  Tailwind's `font-serif` deliberately stays Latin-only — merging per-script
+  stacks into one class would let one language's Han face win for every
+  language — and lang-tagged content WITHOUT `.font-serif` (dictionary
+  entries, examples) keeps the sans stacks, matching mobile where typeFace
+  restyles only TokenizedText.
+
+The language tag keeps doing the glyph-variant work whenever the resolved
+family itself lacks Han coverage (e.g. Georgia, or Android's `serif`).
 
 ## Verification (tokenizer test)
 

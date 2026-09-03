@@ -6,7 +6,7 @@
 - **Type**: as-built + reference
 - **Status**: accepted
 - **Created**: 2026-08-16
-- **Last Updated**: 2026-08-16
+- **Last Updated**: 2026-09-03 (Android line-grid units; span-free plain runs; serif exception)
 - **ROADMAP Phase**: Cross-cutting (mobile rendering)
 - **Scope**: Mobile (`apps/mobile/modules/ruby-text`, `apps/mobile/components/RubyText.tsx`, `apps/mobile/components/TokenizedText.tsx`)
 - **See also**:
@@ -273,18 +273,35 @@ Today (single source of truth, `apps/mobile/lib/ruby-layout.ts` →
   annotation size across scripts so the engine sizes every line the same.
 - The Android paragraph gets the same `lineHeight` and draws the reading
   inside its span box; the pitch math (≥ base glyph body + reading glyph body)
-  makes it fit.
+  makes it fit. Its `onLineGrid` reports the live TextView layout **in dp**
+  (`getLineTop/Baseline/Below ÷ density`) — Layout's raw values are px, and
+  the JS side consumes dp; emitting raw px inflated the grid by the device
+  density (2.75x on a Pixel 5a) and the JS side sized the view to that
+  inflated height, leaving a blank band below the paragraph about as tall as
+  the paragraph itself (2026-09-03 fix).
 
 ### Base font / CJK glyphs (2026-08-24)
 
 The base text uses the **system font**, and each base + reading run is tagged
-with the L2 BCP-47 language (`kCTLanguageAttributeName`), so Core Text's CJK
-fallback picks the correct script font and glyph variants (spec: SPEC-088).
-`glyphFontFamily` is no longer forced on the base — forcing Hiragino for ja
-grew the line pitch (45 vs the 39 pin) and broke consistent spacing across
-scripts; the system font's tight, uniform metrics keep every script on the
-pin, and the language tag renders the correct simplified/traditional/Japanese/
-Korean forms.
+with the L2 BCP-47 language (`kCTLanguageAttributeName` on iOS;
+`textLocale` on the Android paragraph view and on each span's paint), so the
+platform's CJK fallback picks the correct script font and glyph variants
+(spec: SPEC-088). `glyphFontFamily` is no longer forced on the base — forcing
+Hiragino for ja grew the line pitch (45 vs the 39 pin) and broke consistent
+spacing across scripts; the system font's tight, uniform metrics keep every
+script on the pin, and the language tag renders the correct
+simplified/traditional/Japanese/Korean forms.
+
+**Serif (`typeFace` setting, 2026-09-03):** when the user selects serif, the
+base+reading family resolves per script (`typeFaceFontFamily(typeFace,
+glyphLang)`): Hiragino Mincho/Songti SC/TC on iOS, the Noto Serif CJK
+families (best-effort — many Android devices ship none and fall back to their
+sans CJK face) on Android, Georgia/`serif` for Latin. On web the same choice
+swaps the per-script stacks in `globals.css` via the `.font-serif[lang]`
+rules (the tokenized-text container carries both the class and the lang tag).
+This is a documented exception to "base text uses the system font": the
+system font is still the **default** path; serif is an explicit user override
+whose family change reflows lines through the same measuring pipeline.
 
 **Verification logs** (keep these; they are the audit trail):
 
