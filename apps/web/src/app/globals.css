@@ -8,6 +8,19 @@
     --lp-font-zh-hans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
     --lp-font-zh-hant: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
     --lp-font-ko: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    /* Serif faces for the 'serif' typeFace setting — per script, so CJK
+       actually renders serif (the plain `serif` generic maps Han to the OS
+       sans face on many platforms). Each stack ends in its matching sans
+       stack: when the serif face is missing the Han glyphs still land on the
+       correct regional sans face, never a generic Latin serif. Applied by the
+       `.font-serif[lang]` rules below — tokenized-text containers carry both
+       the class (typeFace setting, tokenized-text.tsx) and the lang tag
+       (SPEC-080), so dictionary entries or other lang-tagged L2 content are
+       NOT affected. */
+    --lp-font-ja-serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", var(--lp-font-ja);
+    --lp-font-zh-hans-serif: "Songti SC", "SimSun", "Noto Serif SC", "Noto Serif CJK SC", var(--lp-font-zh-hans);
+    --lp-font-zh-hant-serif: "Songti TC", "Noto Serif TC", "Noto Serif CJK TC", var(--lp-font-zh-hant);
+    --lp-font-ko-serif: "Nanum Myeongjo", "Noto Serif KR", "Noto Serif CJK KR", var(--lp-font-ko);
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
@@ -70,6 +83,23 @@
   :root [lang^="zh-Hans-"] { font-family: var(--lp-font-zh-hans); }
   :root [lang="zh-Hant"],
   :root [lang^="zh-Hant-"] { font-family: var(--lp-font-zh-hant); }
+
+  /* 'serif' typeFace (tokenized text): the container carries BOTH the
+     .font-serif class (from the typeFace setting, tokenized-text.tsx) and the
+     lang tag (SPEC-080). The higher-specificity rules below swap the sans
+     stack for the per-script serif stack so the serif choice reaches Han
+     glyphs and their ruby readings. Non-CJK scripts keep Tailwind's serif
+     stack; lang-tagged content WITHOUT .font-serif (dictionary entries,
+     examples, ...) keeps the sans stacks — the serif setting only restyles
+     tokenized text, matching mobile (typeFace applies to TokenizedText). */
+  :root .font-serif[lang="ja"],
+  :root .font-serif[lang^="ja-"] { font-family: var(--lp-font-ja-serif); }
+  :root .font-serif[lang="ko"],
+  :root .font-serif[lang^="ko-"] { font-family: var(--lp-font-ko-serif); }
+  :root .font-serif[lang="zh-Hans"],
+  :root .font-serif[lang^="zh-Hans-"] { font-family: var(--lp-font-zh-hans-serif); }
+  :root .font-serif[lang="zh-Hant"],
+  :root .font-serif[lang^="zh-Hant-"] { font-family: var(--lp-font-zh-hant-serif); }
 }
 
 @layer base {
