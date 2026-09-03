@@ -5,6 +5,7 @@ import {
   getTestKinds,
   isObviousPronunciationWrong,
   lemmaFormOf,
+  pronunciationTargetOf,
   needsPronunciationTest,
   normalizeTestChoice,
   parseSrsQuestionResponse,
@@ -234,6 +235,31 @@ describe('surfaceFormOf / lemmaFormOf', () => {
   it('lemmaFormOf skips placeholder heads and forms', () => {
     expect(lemmaFormOf({ head: '?', forms: ['押し切る'] }, 'fallback')).toBe('押し切る');
     expect(lemmaFormOf({ head: '押し切る', forms: ['?'] }, 'fallback')).toBe('押し切る');
+  });
+});
+
+describe('pronunciationTargetOf (question/answer same-word guard)', () => {
+  it('uses the resolved entry headword over the record inference', () => {
+    // forms[0] is length-sorted and can be a non-lemma variant; the entry
+    // resolved by saved id carries the true lemma headword.
+    expect(
+      pronunciationTargetOf(
+        { forms: ['研ぎすまし', '研ぎ澄ます'] },
+        '研ぎすまし',
+        { head: '研ぎ澄ます' },
+      ),
+    ).toBe('研ぎ澄ます');
+  });
+
+  it('falls back to lemmaFormOf when no entry resolved', () => {
+    expect(pronunciationTargetOf({ head: '押し切る' }, 'x', null)).toBe('押し切る');
+    expect(pronunciationTargetOf({ forms: ['見せつけ'] }, '見せつけ', undefined)).toBe('見せつけ');
+  });
+
+  it('ignores placeholder or blank entry headwords', () => {
+    expect(pronunciationTargetOf({ head: '押し切る' }, 'x', { head: '?' })).toBe('押し切る');
+    expect(pronunciationTargetOf({ head: '押し切る' }, 'x', { head: '  ' })).toBe('押し切る');
+    expect(pronunciationTargetOf({ head: '押し切る' }, 'x', {})).toBe('押し切る');
   });
 });
 

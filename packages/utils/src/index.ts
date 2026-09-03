@@ -121,6 +121,7 @@ export {
   validateSrsPronunciationChoices,
   surfaceFormOf,
   lemmaFormOf,
+  pronunciationTargetOf,
 } from './srs-test-mode';
 export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo } from './srs-test-mode';
 export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
