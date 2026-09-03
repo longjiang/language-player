@@ -99,6 +99,8 @@ Each returns: `{ "md5_hash": [ {word, lemma, pos}, ... ] }`
 | `/translate_array` | POST | Batch-translate array of texts. |
 | `/translate_video_and_save` | GET | Translate video subtitles and save to DB. |
 
+Same-language pairs (`l1`/`l2` share a BCP-47 base subtag, e.g. `zh-Hans` ↔ `zh`) **modernize** instead of translating: archaic/literary/legalese/technical prose is rewritten as easy-to-read modern prose with no information loss (`is_same_language` in `utils_language.py`, prompt branch in `app_translator_chatgpt.py`, 2026-09-02). Long paragraphs get an input-scaled output-token budget (`_output_budget`) so the model never silently truncates the tail; the array path additionally splits >300-char texts at sentence boundaries and rejoins them. See SPEC-006 § "Same-Language / Long-Paragraph Translation".
+
 ### Dictionary (`routes/dictionary.py`)
 
 | Endpoint | Method | Purpose |
