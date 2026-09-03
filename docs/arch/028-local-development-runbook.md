@@ -406,6 +406,21 @@ the bundle.
 adb works over TCP/IP, so a physical Android device does **not** need to stay
 tethered. Verified 2026-08-15 on a Pixel 5a (barbet).
 
+**Where adb lives (per machine — not on PATH by default):**
+
+- **MacBook Air M2**:
+  `/opt/homebrew/share/android-commandlinetools/platform-tools/adb`
+  (Homebrew `android-commandlinetools`, platform-tools 37.0.1). The
+  authoritative pointer is `apps/mobile/android/local.properties`
+  (`sdk.dir=...`), which the Android/Gradle tooling writes.
+- On any other machine, locate it the same way: read `sdk.dir` from
+  `apps/mobile/android/local.properties` and append `/platform-tools/adb`
+  (fallback: `mdfind -name adb`). Then optionally make plain `adb` work:
+  ```bash
+  export ANDROID_HOME=<sdk.dir-value>
+  export PATH="$ANDROID_HOME/platform-tools:$PATH"
+  ```
+
 **One-time pairing (Android 11+):**
 
 1. Phone: **Settings → Developer options → Wireless debugging** → on.
