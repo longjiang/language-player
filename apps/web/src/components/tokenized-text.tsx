@@ -28,6 +28,7 @@ import {
   mergePhraseTokens,
   sentenceContaining,
   sentenceForToken,
+  splitPhraseTokens,
   tokenMatchesAnyForm,
   tokenMatchesAnyTerm,
 } from '@langplayer/utils';
@@ -287,10 +288,77 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // Tokens with saved multi-token phrases merged into single atomic tokens
   // (pure client-side retokenization — total length is preserved, so format
   // offsets, karaoke pacing, and sentence context stay aligned).
-  const displayTokens = useMemo(
-    () => mergePhraseTokens(text, tokens, [...savedPhraseCandidates, ...highlightKanaForms]),
-    [text, tokens, savedPhraseCandidates, highlightKanaForms],
+  //
+  // SPEC-033 cross-boundary retokenization runs first: saved/search forms
+  // that cross a token boundary (掘藏 inside 想掘|藏) or sit inside one token
+  // (革命 inside 抓革命促) split their tokens into an atomic phrase token plus
+  // placeholder fragments; mergePhraseTokens then collapses boundary-aligned
+  // phrases as before. Fragments carry `lemmas: []` (non-interactive until
+  // re-lemmatized) and are spliced back once their own lemmatization
+  // resolves — the splice only applies when the results tile the fragment
+  // exactly, so reconstruction can never break.
+  const splitForms = useMemo(
+    () => [...savedPhraseCandidates, ...highlightKanaForms, ...(highlightForm ? [highlightForm] : []), ...(highlightForms ?? [])],
+    [savedPhraseCandidates, highlightKanaForms, highlightForm, highlightForms],
   );
+  const splitResult = useMemo(
+    () => splitPhraseTokens(text, tokens, splitForms),
+    [text, tokens, splitForms],
+  );
+  const splitPlaceholders = splitResult.placeholders;
+
+  // Re-lemmatize the placeholder fragments (e.g. 想 from 想掘) so they regain
+  // their own lemma + pronunciation and become interactive again. Queued
+  // through the shared batch queue; results land in a keyed map that the
+  // splice memo reads. Cache-first: the fragment key is the same
+  // `${l2Code}:${text}` key the line tokenizer uses. `attemptedRef` keeps
+  // fragments that already resolved (successfully or empty) from being
+  // re-requested when the effect re-runs for a sibling fragment.
+  const [fragmentLemmas, setFragmentLemmas] = useState<Map<string, LemmatizedToken[]>>(new Map());
+  const attemptedFragmentsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (splitPlaceholders.length === 0) return;
+    let cancelled = false;
+    for (const p of splitPlaceholders) {
+      const key = `${l2Code}:${p.text}`;
+      if (fragmentLemmas.has(key) || attemptedFragmentsRef.current.has(key)) continue;
+      const cached = lemmatizeCache.get(key);
+      if (cached && cached.length > 0) {
+        attemptedFragmentsRef.current.add(key);
+        setFragmentLemmas((prev) => new Map(prev).set(key, cached));
+        continue;
+      }
+      attemptedFragmentsRef.current.add(key);
+      enqueueLemmatize(p.text, l2Code)
+        .then((result) => {
+          if (cancelled || result.length === 0) return;
+          setFragmentLemmas((prev) => new Map(prev).set(key, result));
+        })
+        .catch(() => { /* fragment stays non-interactive — same as before */ });
+    }
+    return () => { cancelled = true; };
+  }, [splitPlaceholders, l2Code, fragmentLemmas]);
+
+  const displayTokens = useMemo(() => {
+    const { tokens: splitTokens } = splitResult;
+    if (splitTokens === tokens) return mergePhraseTokens(text, tokens, splitForms);
+    // Splice re-lemmatized fragments back in place of the placeholders. Each
+    // splice clones the replacement tokens so identical fragments (想 twice)
+    // never share object identity — TokenSpan's `selectedToken === token`
+    // check and the isSaved/highlight memos key off object identity.
+    let spliced = splitTokens;
+    for (const p of splitPlaceholders) {
+      const replacement = fragmentLemmas.get(`${l2Code}:${p.text}`);
+      // Only splice when the re-lemmatized tokens tile the fragment exactly —
+      // otherwise the fragment stays a non-interactive placeholder.
+      if (!replacement) continue;
+      const total = replacement.reduce((sum, t) => sum + t.text.length, 0);
+      if (total !== p.text.length) continue;
+      const cloned = replacement.map((t) => ({ ...t }));
+      spliced = spliced.flatMap((t) => (t === p ? cloned : [t]));
+    }
+    return mergePhraseTokens(text, spliced, splitForms);
+  }, [splitResult, splitPlaceholders, fragmentLemmas, l2Code, text, splitForms, tokens]);
 
   // Map markdown format ranges onto token indices by reconstructing character
   // offsets from the surface tokens (they concatenate back to `text`). Bails

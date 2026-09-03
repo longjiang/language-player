@@ -95,12 +95,19 @@ export function splitPhraseTokens(
 
   const lowerText = text.toLowerCase();
 
+  // First-char pre-filter: skip candidates whose first character doesn't
+  // occur in the text at all (same optimization as mergePhraseTokens) —
+  // saved-word lists can be long and every rendered line runs this scan.
+  const chars = new Set(lowerText);
+  const candidates = unique.filter((p) => chars.has(p[0]!.toLowerCase()));
+  if (candidates.length === 0) return { tokens, placeholders: [] };
+
   // Claim occurrences longest-first: non-overlapping, and no two claimed
   // occurrences may touch the same token (their leftover fragments would
   // overlap). Boundary-aligned occurrences are skipped — mergePhraseTokens
   // collapses those, and single-token phrases must keep their lemmas.
   const accepted: Array<{ start: number; end: number; first: number; last: number }> = [];
-  for (const phrase of unique) {
+  for (const phrase of candidates) {
     const phraseLower = phrase.toLowerCase();
     const len = phraseLower.length;
     let from = 0;
