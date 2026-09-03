@@ -412,6 +412,7 @@ export default function EpubReaderScreen() {
           l2Code={l2Lang.code}
           l2Name={l2Lang.name}
           openingId={openingId}
+          importing={epub.importing}
           error={errorText}
           onOpenBook={handleOpenBook}
           onRemoveBook={handleRemoveBook}

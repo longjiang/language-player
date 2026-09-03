@@ -80,6 +80,9 @@ export interface UseEpubReturn {
   /** Id of the currently open book, or null when showing the bookshelf. */
   openBookId: string | null;
   loading: boolean;
+  /** Books currently being imported — the shelf renders a pulsating
+   *  skeleton card per entry (title from the file name) until it lands. */
+  importing: Array<{ id: string; fileName: string; phase: number }>;
   /** Error message (already localized, or null). */
   error: string | null;
   /** True when the reader was explicitly closed for this L2 (persisted) —
@@ -129,6 +132,11 @@ export function useEpub(l2Code?: string): UseEpubReturn {
   const [books, setBooks] = useState<EpubSummary[]>([]);
   const [openBookId, setOpenBookId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  /** In-flight imports (one skeleton card per picked file). Phase is a
+   *  coarse 0–1 progress over the import pipeline (copy → parse → cover →
+   *  save); the parser itself is a single inspect pass with no incremental
+   *  callback, so finer granularity isn't available. */
+  const [importing, setImporting] = useState<Array<{ id: string; fileName: string; phase: number }>>([]);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<EpubBookModel | null>(null);
   const [coverTapped, setCoverTapped] = useState(false);
@@ -254,11 +262,33 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     // together only import once (same as re-importing a shelf book).
     const importedBookIds = new Set<string>();
 
+    // Skeleton cards for every picked file, in pick order. The display name
+    // matches what the import will store (zip files are unwrapped later — the
+    // skeleton shows the picked name until then, which is immediate).
+    const phaseOf = (id: string, phase: number) =>
+      setImporting((prev) => prev.map((it) => (it.id === id ? { ...it, phase } : it)));
+    setImporting(assets.map((a) => ({
+      id: sanitizeEpubId(
+        /\.(epub\.)?zip$/i.test(a.name)
+          ? `${a.name.replace(/\.epub\.zip$/i, '').replace(/\.zip$/i, '')}.epub`
+          : a.name,
+      ),
+      fileName: a.name,
+      phase: 0,
+    })));
+
     try {
       await ensureLibraryDir();
       for (const asset of assets) {
         const assetStart = Date.now();
         log(`[LP Mobile] 📚 import start "${asset.name}" t=${assetStart}`);
+        // Skeleton id is derived from the picked name (before any zip
+        // unwrap) — hoisted so the catch block can drop the card on failure.
+        const skeletonId = sanitizeEpubId(
+          /\.(epub\.)?zip$/i.test(asset.name)
+            ? `${asset.name.replace(/\.epub\.zip$/i, '').replace(/\.zip$/i, '')}.epub`
+            : asset.name,
+        );
         try {
           const isZipName = /\.(epub\.)?zip$/i.test(asset.name);
           let displayName = isZipName
@@ -269,7 +299,10 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           // update their handle in place instead of duplicating the entry.
           const existingEntry = books.find((b) => b.fileName === displayName);
           const id = existingEntry ? existingEntry.id : sanitizeEpubId(displayName);
+          const dropSkeleton = () =>
+            setImporting((prev) => prev.filter((it) => it.id !== skeletonId && it.id !== id));
           const dest = libraryFileUri(id);
+          phaseOf(skeletonId, 0.15);
           const assetInfo = await FileSystem.getInfoAsync(asset.uri);
           const existing = await FileSystem.getInfoAsync(dest);
           if (existing.exists) {
@@ -308,6 +341,7 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           if (duplicate) {
             log(`[LP Mobile] ⏭️ skipping "${asset.name}" — already in library (${contentHash})`);
             await FileSystem.deleteAsync(dest, { idempotent: true }).catch(() => {});
+            dropSkeleton();
             continue;
           }
           if (contentHash) importedBookIds.add(contentHash);
@@ -320,6 +354,7 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           // conversion is deferred until the book is opened (openEpubBook).
           // This is why web import feels instant.
           const m = await inspectEpubBook(dest, displayName);
+          phaseOf(skeletonId, 0.6);
           let coverUrl = m.coverUrl;
           if (coverUrl?.startsWith('file://')) {
             // Persist the extracted cover next to the book (cacheDirectory
@@ -364,12 +399,14 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           // as it is imported, so a multi-file pick shows books appearing one
           // at a time instead of a single long spinner.
           setBooks(await listEpubs());
+          dropSkeleton();
           await m.cleanup();
           importedCount++;
           log(`[LP Mobile] 📚 import done "${asset.name}" total=${Date.now() - assetStart}ms (copy+unwrap+inspect+cover+save)`);
         } catch (e: any) {
           firstError ??= e?.message ?? String(e);
           log(`[LP Mobile] 📚 import FAILED "${asset.name}" elapsed=${Date.now() - assetStart}ms err=${e?.message ?? e}`);
+          setImporting((prev) => prev.filter((it) => it.fileName !== asset.name && it.id !== skeletonId));
         }
       }
 
@@ -379,6 +416,7 @@ export function useEpub(l2Code?: string): UseEpubReturn {
         setError(firstError ?? 'Failed to import EPUB');
       }
     } finally {
+      setImporting([]);
       setLoading(false);
     }
   }, [books]);
@@ -484,6 +522,7 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     error,
     /** Persisted explicit-close latch for this L2 (blocks auto-open). */
     readerClosed,
+    importing,
     toc: model?.toc ?? [],
     markers: model?.markers ?? [],
     blocks: model?.blocks ?? null,
