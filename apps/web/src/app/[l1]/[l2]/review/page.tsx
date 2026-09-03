@@ -91,14 +91,15 @@ type TestSlot = {
  * Tiny "Diagnostic" link shown next to a test error. It reveals, in plain
  * text, the prompt that was sent to the LLM, the raw LLM response, and the
  * error — deliberately hidden behind a link so the normal error UI stays
- * generic.
+ * generic. The expanded block renders as its own full-width row BELOW the
+ * buttons (never squeezed beside them).
  */
 function DiagnosticButton({ diagnostic }: { diagnostic?: SrsTestDiagnostic }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   if (!diagnostic) return null;
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="w-full">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
@@ -1463,15 +1464,11 @@ export default function ReviewPage() {
           </span>
       </div>
 
-      {/* Card */}
+      {/* Card — reveal is button/keyboard-only: tapping the card no longer
+          flips it (accidental taps revealed the answer before the user was
+          ready). Rating stays on the explicit buttons below. */}
       <div
-        className={`bg-card border rounded-xl p-4 sm:p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none
-          ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}`}
-        onClick={() => {
-          // Tapping the card front reveals the answer. Rating is done only via
-          // the explicit buttons — no tap-to-rate zones on the card.
-          if (!showDefinition && !rated) handleReveal();
-        }}
+        className="bg-card border rounded-xl p-4 sm:p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none"
       >
         {/* Context sentence — always visible, tokenized/interactive */}
         {wordCtx.text && (
@@ -1566,7 +1563,7 @@ export default function ReviewPage() {
             manager — a failing test shows its own error + retry + diagnostic
             and never blocks the other test's loading. */}
         {reviewMode === 'test' && testSlots.length > 0 ? (
-          <div className="mt-4 w-full space-y-6 text-left" onClick={(e) => e.stopPropagation()}>
+          <div className="mt-4 w-full space-y-6 text-left">
             {visibleTestSlots.map((slot, slotIndex) => {
               const result = testAnswers[slotIndex];
               const isCurrent = slotIndex === testQuestionIndex;
@@ -1633,7 +1630,8 @@ export default function ReviewPage() {
                   </div>
                 );
               }
-              // Terminal error: generic message + retry / skip + tiny Diagnostic link.
+              // Terminal error: generic message + retry / skip buttons row,
+              // then the Diagnostic disclosure as its own full-width row below.
               return (
                 <div key={`${slot.kind}-${slotIndex}`} className="border-t border-border pt-4 first:border-t-0 first:pt-0" role="alert">
                   <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
@@ -1655,6 +1653,8 @@ export default function ReviewPage() {
                       >
                         {t('action.skip')}
                       </button>
+                    </div>
+                    <div className="mt-1 w-full">
                       <DiagnosticButton diagnostic={slot.diagnostic} />
                     </div>
                   </div>
