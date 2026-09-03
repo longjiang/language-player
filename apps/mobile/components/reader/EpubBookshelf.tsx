@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Platform, TextInput } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Animated, Platform, TextInput } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import { BookOpen, MoreVertical, Search, Upload, X } from 'lucide-react-native';
@@ -18,6 +18,8 @@ interface EpubBookshelfProps {
   l2Name: string;
   /** Id of the book currently being opened (spinner on its card). */
   openingId: string | null;
+  /** Books currently being imported — one pulsating skeleton card each. */
+  importing?: Array<{ id: string; fileName: string; phase: number }>;
   /** Localized import/parse error to display. */
   error?: string | null;
   /** Open a stored book at its saved location (straight to content). */
@@ -43,6 +45,7 @@ export function EpubBookshelf({
   l2Code,
   l2Name,
   openingId,
+  importing = [],
   error,
   onOpenBook,
   onRemoveBook,
@@ -89,6 +92,10 @@ export function EpubBookshelf({
     );
   }
 
+  // The "no books yet" empty states must not hide in-flight import skeletons.
+  const showEmptyState = books.length === 0 && importing.length === 0;
+  const showNoLanguage = !showEmptyState && books.length > 0 && visibleBooks.length === 0 && importing.length === 0;
+
   const confirmRemove = (book: EpubSummary) => {
     Alert.alert(
       book.fileName,
@@ -108,14 +115,14 @@ export function EpubBookshelf({
         </View>
       ) : null}
 
-      {books.length === 0 ? (
+      {showEmptyState ? (
         <>
           <AddBookTile width={cardWidth} onPress={onAddBook} t={t} />
           <Text className="mt-6 text-center text-sm text-muted-foreground">
             {t('msg.epub_library_empty')}
           </Text>
         </>
-      ) : visibleBooks.length === 0 ? (
+      ) : showNoLanguage ? (
         <>
           <AddBookTile width={cardWidth} onPress={onAddBook} t={t} />
           <Text className="mt-6 text-center text-sm text-muted-foreground">
@@ -255,6 +262,13 @@ export function EpubBookshelf({
               );
             })}
 
+            {/* In-flight imports — one pulsating placeholder card each, with
+                the title from the file name (known immediately). Phase is a
+                coarse copy→parse→save progress over the import pipeline. */}
+            {importing.map((item) => (
+              <ImportingBookCard key={`importing-${item.id}`} width={cardWidth} item={item} />
+            ))}
+
             {/* Add-a-book slot — dashed tile after the last book */}
             <AddBookTile width={cardWidth} onPress={onAddBook} t={t} />
           </View>
@@ -286,5 +300,64 @@ function AddBookTile({
         {t('msg.add_book')}
       </Text>
     </Pressable>
+  );
+}
+
+/**
+ * Pulsating placeholder card for a book being imported: the cover area is a
+ * muted placeholder that pulses (opacity animation), the title comes from
+ * the file name (known immediately), and a progress bar tracks the coarse
+ * import phases (copy → parse → cover → save) inside the cover.
+ */
+function ImportingBookCard({
+  width,
+  item,
+}: {
+  width: number;
+  item: { id: string; fileName: string; phase: number };
+}) {
+  const pulse = useRef(new Animated.Value(0.45)).current;
+
+  useEffect(() => {
+    // Looping opacity pulse; stops when the card unmounts (import finished).
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.45, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
+  const pct = Math.round(Math.min(1, Math.max(0, item.phase)) * 100);
+
+  return (
+    <View style={{ width }} accessibilityLabel={item.fileName}>
+      <View className="rounded-lg p-2">
+        <View className="relative w-full items-center justify-center overflow-hidden rounded-md border border-border bg-muted" style={{ aspectRatio: 2 / 3 }}>
+          <Animated.View
+            className="absolute inset-0 bg-muted-foreground/15"
+            style={{ opacity: pulse }}
+          />
+          <BookOpen size={32} color={ICON_MUTED} style={{ opacity: 0.5 }} />
+          {/* Import progress bar inside the book cover */}
+          <View className="absolute bottom-2 left-2 right-2 h-1 overflow-hidden rounded-full bg-background/70">
+            <View
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${pct}%` }}
+            />
+          </View>
+        </View>
+        <View className="mt-2 flex-row items-center">
+          <Text
+            className="min-w-0 flex-1 truncate pr-7 text-sm font-medium text-muted-foreground"
+            numberOfLines={1}
+          >
+            {item.fileName.replace(/\.epub$/i, '')}
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }
