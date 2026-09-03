@@ -54,6 +54,22 @@ Same as POST but uses query parameters. Used by the `translateText()` utility fo
 | **Response** | `{ "translated_text": string }` |
 | **Used by** | `lib/translate.ts` → TV show detail, video watch page metadata |
 
+### Same-Language Translation (Modernization) — 2026-09-02
+
+When `l1` and `l2` name the **same language** (compared by BCP-47 base subtag, so `zh` ↔ `zh-Hans` ↔ `zh-Hant` are all "identical", as are `en` ↔ `en`), the endpoints **modernize** instead of echoing: the LLM rewrites archaic, literary, dialectal, legal, or heavily technical prose as clear, easy-to-read modern prose **with no information loss** — not a summary. Examples: Chaucer/Shakespeare/legalese → modern English; Classical-Chinese 三国演义 → modern Mandarin.
+
+- Implemented server-side in `app_translator_chatgpt.py` (`chatgpt_translate_text` + the array pipeline), so **every** surface benefits: readers, subtitles, review context sentences, and the action menu. Chinese output honors an explicit script subtag on `l1` (`zh-Hant` → Traditional, `zh-Hans` → Simplified; no subtag → keep the source's script).
+- The web client's own `l1 === l2` short-circuit (`lib/translate.ts`) only fires for *string-identical* codes, so `zh-Hans → zh` still reaches the server and gets modernized there.
+- Same-language modernization can expand the text, so the output-token budget is raised for that case (see Long-Paragraph Translation below).
+
+### Long-Paragraph Translation — 2026-09-02
+
+`/translate` (single text) previously sent the whole text in one LLM call with **no output-token budget**: a long paragraph (e.g. a full EPUB page) could be silently truncated by the model's output limit. Both endpoints now bound the output budget to the input size:
+
+- `_output_budget()` sets `max_tokens` ≈ total input chars (+ per-line overhead), floored at 400; the same-language case gets a 1.5× multiplier and a higher cap (8000) because modernization expands text; cross-language stays capped at 4000.
+- (Array path, pre-existing since the EPUB-paragraph starvation fix) texts longer than 300 chars are split at sentence boundaries, translated as separate numbered lines, and rejoined; chunks are bounded by both line count (40) and total chars (2200); empty tail lines from a truncated chunk are retried up to 3×.
+- Verified with the user's 三国演义 example: a 716-char classical-Chinese paragraph now returns its complete ~4200-char English translation with the final sentence intact.
+
 ## Implementation (Next.js Web)
 
 ### 1. Subtitle Translation — Automatic, Progressive, Chunked
