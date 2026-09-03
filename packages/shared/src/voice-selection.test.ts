@@ -114,8 +114,8 @@ describe('rankVoicesForL2', () => {
 
   it('puts the enhanced Apple voice ahead of compact and novelty voices (macOS)', () => {
     const ranked = rankVoicesForL2(macJaVoices, 'ja');
-    expect(ranked[0].identifier).toBe('com.apple.voice.enhanced.ja-JP.Otoya');
-    expect(ranked[1].identifier).toBe('com.apple.voice.compact.ja-JP.Kyoko');
+    expect(ranked[0]!.identifier).toBe('com.apple.voice.enhanced.ja-JP.Otoya');
+    expect(ranked[1]!.identifier).toBe('com.apple.voice.compact.ja-JP.Kyoko');
     // Novelty/Eloquence voices sink to the very bottom.
     const ids = ranked.map(v => v.identifier);
     expect(ids[ids.length - 1]).toBe('com.apple.speech.synthesis.voice.Zarvox');
@@ -125,19 +125,19 @@ describe('rankVoicesForL2', () => {
 
   it('ranks Edge natural voices above local SAPI voices (Windows)', () => {
     const ranked = rankVoicesForL2(edgeVoices, 'ja');
-    expect(ranked[0].name).toContain('(Natural)');
+    expect(ranked[0]!.name).toContain('(Natural)');
   });
 
   it('ranks Android Enhanced (network) voices above Default (local) ones', () => {
     const ranked = rankVoicesForL2(androidVoices, 'zh');
-    expect(ranked[0].identifier).toBe('cmn-cn-x-ccc-network');
+    expect(ranked[0]!.identifier).toBe('cmn-cn-x-ccc-network');
   });
 
   it('breaks score ties deterministically by name', () => {
     const a = voice({ identifier: 'b-voice', name: 'Bernard', lang: 'en-US' });
     const b = voice({ identifier: 'a-voice', name: 'Alice', lang: 'en-US' });
     const ranked = rankVoicesForL2([a, b], 'en');
-    expect(ranked[0].name).toBe('Alice');
+    expect(ranked[0]!.name).toBe('Alice');
   });
 
   it('dedupes identical identifiers (iOS lists some voices twice)', () => {
@@ -188,7 +188,7 @@ describe('pickBestVoice', () => {
 
 describe('scoreVoice determinism', () => {
   it('is stable across repeated calls', () => {
-    const v = macJaVoices[4];
+    const v = macJaVoices[4]!;
     expect(scoreVoice(v, 'ja')).toBe(scoreVoice(v, 'ja'));
   });
 });
