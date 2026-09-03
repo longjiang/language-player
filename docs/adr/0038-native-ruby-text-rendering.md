@@ -2,7 +2,8 @@
 
 - **Status**: Accepted
 - **Created**: 2026-08-15
-- **Last updated**: 2026-08-16 (corrected to match the implemented code)
+- **Last updated**: 2026-09-03 (Android paragraph described as implemented:
+  AppCompatTextView + spans, span-free plain runs; line grid in dp)
 - **Scope**: Mobile (`apps/mobile`)
 
 ## Context
@@ -56,11 +57,17 @@ line as a single layout):
   tokens (JIS-style overhang into punctuation blanks and at line edges,
   group distribution across a jukugo) instead of one token-sized box at a
   time.
-- **Android** (`RubyTextParagraphView.kt`): a custom `ExpoView` that draws the
-  entire line itself with `Canvas` — base text plus readings — in the view's
-  own `draw()`. Each run advances by the wider of base/reading, so a long
-  reading never spills into the neighboring token's box (no accidental
-  overhang/collisions).
+- **Android** (`RubyTextParagraphView.kt`): an `AppCompatTextView` with ONE
+  `SpannableStringBuilder` for the whole block (SPEC-084 Task 2 rewrite of the
+  original Canvas-painted ExpoView, which could not host native text
+  selection). `RubyReplacementSpan`s paint the reading above their base text.
+  The spans are attached ONLY to ruby-bearing word runs: a `ReplacementSpan`
+  is atomic to Android's line breaker, so span-free runs (punctuation,
+  whitespace, the pre-tokenization whole-block run) wrap character by
+  character. When every run was spanned, each token rendered as one
+  unbreakable "word" and the pre-tokenization plain render didn't wrap at all
+  (2026-09-03 fix). The view's `textLocale` (from the `language` prop) drives
+  locale-sensitive glyph fallback for the span-free runs.
 
 ### JS bridge (`apps/mobile/components/RubyText.tsx`)
 
@@ -120,11 +127,10 @@ the View-column renderer there; `RubyTextParagraph` renders nothing and
   `kCTForegroundColorAttributeName` in the `CTRubyAnnotation` attributes.
   Android draws the reading with its own `readingPaint` color. Both platforms
   support a muted reading color (web's per-ruby CSS equivalent).
-- **Android paragraph renderer** is a deliberately simplified layout:
-  readings are centered over each run and never overhang (each run advances
-  by the wider of base/reading). iOS gets real overhang/distribution via Core
-  Text. The Canvas renderer works on all API levels (no framework `RubySpan`
-  dependency).
+- **Android paragraph renderer** applies ruby spans per run: readings are
+  centered over each run and never overhang, and the spanned (ruby-bearing)
+  runs stay atomic to the line breaker. iOS gets real overhang/distribution
+  via Core Text, and its ruby-annotated runs can still break across lines.
 - **Per-token highlights**: saved-word and search highlights are applied to
   the whole native token box rather than just the base glyph run. The
   paragraph renderer applies highlights per run instead.
