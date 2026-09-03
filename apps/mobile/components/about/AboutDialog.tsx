@@ -109,7 +109,12 @@ export function AboutDialog({
   };
 
   const body = (
-    <ScrollView style={{ maxHeight: 520 }}>
+    // flexGrow 0 + flexShrink 1: the scroll view takes only the content's
+    // height (the sheet hugs its content on tall screens) but SHRINKS within
+    // the sheet's max-h when the content is taller than the space (the sheet
+    // scrolls instead of overflowing). Default flexShrink is 0 in Yoga, which
+    // let the content overflow a short sheet.
+    <ScrollView style={{ maxHeight: 520, flexGrow: 0, flexShrink: 1 }}>
       <View className="items-center pt-4 pb-2">
         {logoSource && (
           <Image source={logoSource} className="mb-3 h-16 w-16 rounded-xl" resizeMode="contain" />

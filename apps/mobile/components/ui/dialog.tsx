@@ -82,11 +82,22 @@ type ContentProps = DialogPrimitive.ContentProps & {
   className?: string;
 };
 
-export function Content({ children, className, ...props }: ContentProps) {
+/**
+ * The primitive's Content claims the JS responder on every touch start
+ * (`onStartShouldSetResponder: () => true`). A ScrollView inside the dialog
+ * never contests it (its own start handler returns false by default), and an
+ * ancestor that IS the JS responder makes the native scroll view bar its pan
+ * recognizer (RCTScrollViewComponentView `touchesShouldCancelInContentView`) —
+ * so nothing inside the dialog can scroll. Default the handler to false so
+ * touch passes through to the scrollable content; callers may still override
+ * it via props.
+ */
+export function Content({ children, className, onStartShouldSetResponder, ...props }: ContentProps) {
   return (
     <View className="absolute inset-0 flex items-center justify-center">
       <DialogPrimitive.Content
         className={`bg-background border-border z-50 w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 ${className ?? ''}`}
+        onStartShouldSetResponder={onStartShouldSetResponder ?? (() => false)}
         {...props}
       >
         {children}
@@ -101,7 +112,12 @@ type SheetContentProps = DialogPrimitive.ContentProps & {
   className?: string;
 };
 
-export function SheetContent({ children, className, ...props }: SheetContentProps) {
+export function SheetContent({
+  children,
+  className,
+  onStartShouldSetResponder,
+  ...props
+}: SheetContentProps) {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -123,15 +139,24 @@ export function SheetContent({ children, className, ...props }: SheetContentProp
   return (
     <Animated.View
       pointerEvents="box-none"
-      className="absolute bottom-0 left-0 right-0"
+      // Anchored to BOTH edges of the portal container (which is the
+      // full-screen root PortalHost): the sheet gets a definite height to
+      // resolve max-h-[…] against, so it grows from and hugs the true bottom
+      // (a content-height wrapper left it floating mid-screen).
+      className="absolute bottom-0 left-0 right-0 top-0"
       style={{ transform: [{ translateY }], opacity }}
     >
-      <DialogPrimitive.Content
-        className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
-        {...props}
-      >
-        {children}
-      </DialogPrimitive.Content>
+      <View className="flex-1 justify-end" pointerEvents="box-none">
+        <DialogPrimitive.Content
+          className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
+          // Same scroll fix as Content (see above): the sheet must never
+          // claim the JS responder away from its ScrollView.
+          onStartShouldSetResponder={onStartShouldSetResponder ?? (() => false)}
+          {...props}
+        >
+          {children}
+        </DialogPrimitive.Content>
+      </View>
     </Animated.View>
   );
 }
