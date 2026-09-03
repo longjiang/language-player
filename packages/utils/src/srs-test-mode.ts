@@ -156,6 +156,32 @@ export function lemmaFormOf(word: SrsWordFormInfo | undefined, fallback: string)
   return typeof first === 'string' && first && first !== '?' ? first : fallback;
 }
 
+/**
+ * The word the pronunciation question must probe, together with a guard that
+ * keeps the question and the correct answer about the SAME word.
+ *
+ * SPEC-066 (2026-09-02 fix): `lemmaFormOf` infers the lemma from
+ * `forms[0]` when the saved record has no explicit head — but `forms[]` is
+ * length-sorted at save time, so `forms[0]` can be an inflected or kana
+ * variant (研ぎすまし / 見せつけ) rather than the lemma (研ぎ澄ます /
+ * 見せつける). The correct answer, however, is always the ground-truth
+ * reading of the RESOLVED DICTIONARY ENTRY (the true lemma) — producing the
+ * mismatch where 「研ぎすまし」怎么读? is answered with とぎすます.
+ *
+ * The fix: when the resolved entry exists, ITS headword is the lemma — use
+ * it for the question. The saved-record inference is only a fallback for
+ * cards whose entry cannot be resolved (and matches the old behavior then).
+ */
+export function pronunciationTargetOf(
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry?: { head?: string | null } | null,
+): string {
+  const entryHead = typeof entry?.head === 'string' ? entry.head.trim() : '';
+  if (entryHead && entryHead !== '?') return entryHead;
+  return lemmaFormOf(word, fallback);
+}
+
 /** Normalize an answer for duplicate-choice detection without changing display text. */
 export function normalizeTestChoice(choice: string): string {
   return choice.trim().replace(/\s+/g, ' ').toLocaleLowerCase();

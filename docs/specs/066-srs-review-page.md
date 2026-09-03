@@ -563,6 +563,18 @@ question reveals the card back and the rating buttons.
   `surfaceFormOf` (surface). Both the current-card generation and the
   prefetch use the same target, so prefetched pronunciation tests are cache
   hits when the card is tested.
+- **Question and answer name the same word (2026-09-02 fix)** — the lemma was
+  previously inferred from `forms[0]` of the saved record when no explicit
+  head exists, but `forms[]` is length-sorted at save time, so `forms[0]`
+  can be a kana/inflected variant (研ぎすまし, 見せつけ) while the ground-truth
+  reading comes from the resolved entry's true lemma (研ぎ澄ます → とぎすます,
+  見せつける → みせつける) — the question probed one word and the correct
+  answer belonged to another. The pronunciation target is now the **resolved
+  dictionary entry's headword** whenever an entry resolves (`pronunciationTargetOf`
+  in `packages/utils/src/srs-test-mode.ts`, used by both loadSlot and the
+  prefetch on web and mobile); the record inference remains only the
+  fallback for cards whose entry cannot be resolved. Cache keys include the
+  word form, so previously-generated mismatched questions regenerate once.
 - **Japanese surface-form gate (2026-08-25)** — for Japanese, the
   pronunciation test only appears when the **surface form as it appears in
   the context sentence** contains kanji (e.g. 然るべき). A kana-only surface

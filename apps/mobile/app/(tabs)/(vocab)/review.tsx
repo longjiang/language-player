@@ -24,6 +24,7 @@ import {
   pronunciationReadingOf,
   surfaceFormOf,
   lemmaFormOf,
+  pronunciationTargetOf,
   scoreTestAnswer,
   scoreTestResult,
   type SrsTestQuestion,
@@ -48,6 +49,7 @@ import { lemmatizeText } from '@/lib/tokenizer';
 import {
   enqueueLookupWords,
   getCachedEntries,
+  getCachedEntryById,
   getL1CachedEntry,
   setL1CachedEntry,
   setCachedEntryById,
@@ -659,8 +661,11 @@ export default function ReviewScreen() {
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     // The pronunciation test targets the LEMMA (dictionary form), never the
     // inflected surface form; the definition test keeps the surface form.
+    // The target is the RESOLVED ENTRY's headword when available: the ground
+    // truth below is that entry's reading, so question and answer must name
+    // the same word (pronunciationTargetOf — SPEC-066 fix 2026-09-02).
     const targetWord = kind === 'pronunciation'
-      ? lemmaFormOf(card.word, wordForm)
+      ? pronunciationTargetOf(card.word, wordForm, entryForQuestion)
       : wordForm;
     setTestSlots((prev) => {
       if (!prev[index]) return prev;
@@ -786,13 +791,14 @@ export default function ReviewScreen() {
       // The pronunciation test targets the lemma; the Japanese presence check
       // uses the surface form. Both must match loadSlot exactly so the
       // prefetched test is a cache hit when the card is tested.
-      const lemma = lemmaFormOf(card.word, word);
-      // Resolve the headword's kana reading the same way loadSlot does, so the
-      // prefetched utterance uses the identical ground-truth mode (and cache
-      // key). If the entry is not resolved yet, leave it empty — the manager
-      // falls back to the model-supplied correct answer.
-      const prefetchEntry = getCachedEntries(baseCode(l2Code), lemma)?.[0]
+      // Resolve the entry the same way loadSlot will (exact saved id first,
+      // then form cache) and use ITS headword as the pronunciation target —
+      // the ground truth below is that entry's reading (SPEC-066 fix).
+      const prefetchExact = getCachedEntryById(l2Code, card.word.id);
+      const prefetchEntry = prefetchExact
+        ?? getCachedEntries(baseCode(l2Code), word)?.find((e) => e.id === card.word.id)
         ?? getCachedEntries(baseCode(l2Code), word)?.[0];
+      const lemma = pronunciationTargetOf(card.word, word, prefetchEntry);
       const kinds: TestQuestionKind[] = getTestKinds(l2Code, surfaceFormOf(card.word, word));
       for (const kind of kinds) {
         void manager.requestTest({
