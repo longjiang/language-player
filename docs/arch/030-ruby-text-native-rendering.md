@@ -6,7 +6,7 @@
 - **Type**: as-built + reference
 - **Status**: accepted
 - **Created**: 2026-08-16
-- **Last Updated**: 2026-09-03 (Android line-grid units; span-free plain runs; serif exception)
+- **Last Updated**: 2026-09-03 (Android line-grid units; span-free plain runs; serif exception; Android baseline pin — one baseline per line)
 - **ROADMAP Phase**: Cross-cutting (mobile rendering)
 - **Scope**: Mobile (`apps/mobile/modules/ruby-text`, `apps/mobile/components/RubyText.tsx`, `apps/mobile/components/TokenizedText.tsx`)
 - **See also**:
@@ -279,6 +279,45 @@ Today (single source of truth, `apps/mobile/lib/ruby-layout.ts` →
   density (2.75x on a Pixel 5a) and the JS side sized the view to that
   inflated height, leaving a blank band below the paragraph about as tall as
   the paragraph itself (2026-09-03 fix).
+
+### Android baseline pin (2026-09-03 — punctuation aligned with ruby text)
+
+**One baseline per line, owned by a `LineHeightSpan`.** The Android paragraph
+(`RubyTextParagraphView.kt`) pins every line box to `dp(lineHeight)` with a
+`PinLineHeightSpan` (`android.text.style.LineHeightSpan`) that **absorbs the
+extra leading into the TOP of each line** — `fm.ascent = −(leadingAdd +
+ascent)` in `chooseHeight` — instead of the old `setLineSpacing(add, 1f)`
+which added the extra height **below each line's descent**.
+
+The old pin produced two baselines per line. StaticLayout puts a line's
+baseline at `lineTop + ascent` and the extra spacing after the descent
+(`StaticLayout.out()`: `extra` added to `below`), so TextView's own glyph
+path — used by the SPAN-FREE runs (punctuation, whitespace, reading-less
+words; see ADR-0038) — painted HIGH in the line box, while
+`RubyReplacementSpan.draw()` anchored the ruby words' base glyphs at the box
+BOTTOM (`bottom − descent`). CJK punctuation floated up into the reading
+band; ruby-free lines floated entirely (Android reader, pinyin on,
+2026-09-03 report). AOSP evidence chain: `Layout.drawLine` →
+`lbaseline = getLineTop(n+1) − getLineDescent(n)`; `getLineDescent` stores
+the post-pin `fm.descent`; `chooseHeight` fires per line with the max metrics
+of the line's runs (`MeasuredParagraph` records each run's paint metrics; the
+ruby spans contribute the base font's metrics via `getSize`'s `fm`).
+
+With the pin: baseline = `lineTop + leadingAdd + ascent` for EVERY run —
+ruby words (`draw` now anchors at the `y` baseline parameter instead of
+`bottom − descent`; pixel-identical position) and span-free runs alike. The
+pin requires the TextView's own paint to carry the requested base font
+(`setTextSize(dp) + typeface` in `rebuild()`), because span-free runs paint
+with it and it supplies the layout's default metrics. Plain runs also carry
+their per-run color/size through `ForegroundColorSpan` /
+`AbsoluteSizeSpan` — neither is atomic to the line breaker, so the 2026-09-03
+span-free wrapping fix stays intact (glosses were painting white and full
+size; byeonggi painted at base size).
+
+Verification from `adb logcat` (`[RubyText] paragraph rebuild …
+pin(add=… ascent=… descent=…)`): `add + ascent + descent` must equal the
+pinned `dp(lineHeight)`; the `line-grid-android` line baselines are the
+ruby-correct geometry the translation column aligns to.
 
 ### Base font / CJK glyphs (2026-08-24)
 

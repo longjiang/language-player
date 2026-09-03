@@ -3,7 +3,8 @@
 - **Status**: Accepted
 - **Created**: 2026-08-15
 - **Last updated**: 2026-09-03 (Android paragraph described as implemented:
-  AppCompatTextView + spans, span-free plain runs; line grid in dp)
+  AppCompatTextView + spans, span-free plain runs; line grid in dp;
+  LineHeightSpan baseline pin)
 - **Scope**: Mobile (`apps/mobile`)
 
 ## Context
@@ -68,6 +69,12 @@ line as a single layout):
   unbreakable "word" and the pre-tokenization plain render didn't wrap at all
   (2026-09-03 fix). The view's `textLocale` (from the `language` prop) drives
   locale-sensitive glyph fallback for the span-free runs.
+  The line box is pinned with a `LineHeightSpan` (2026-09-03 baseline fix,
+  supersedes the original `setLineSpacing` pin): the extra leading is
+  absorbed into the TOP of each line so span-free runs and ruby spans share
+  ONE baseline — previously `setLineSpacing` put the extra BELOW the descent,
+  and punctuation painted high in the line box while ruby words anchored at
+  the box bottom (see ARCH-030 "Android baseline pin").
 
 ### JS bridge (`apps/mobile/components/RubyText.tsx`)
 
