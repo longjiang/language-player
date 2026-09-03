@@ -547,7 +547,12 @@ question reveals the card back and the rating buttons.
   context sentence plus a "Start Test" button; no test question is shown
   (and no questions are generated for the current card) until the user taps
   it, so they can read the context and reflect on the word's usage first.
-  Tapping the card or pressing Space/Enter also starts the test.
+  Pressing Space/Enter also starts the test.
+  **Reveal is button/keyboard-only (2026-09-02):** tapping the card no longer
+  reveals the back (recall mode) or starts the test (test mode) — accidental
+  taps revealed the answer before the learner was ready. The explicit "Show
+  Definition" / "Start Test" buttons and the Space/Enter shortcuts are the
+  only reveal paths.
 - **Progress bar (2026-08-25)** — after Start Test, a progress bar counts
   down a total budget of **T = 10 s × totalTests** (totalTests = the number
   of test slots for the card, 1 or 2). It is **blue** while more than

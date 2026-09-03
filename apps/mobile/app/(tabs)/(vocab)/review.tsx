@@ -91,19 +91,20 @@ type TestSlot = {
  * Tiny "Diagnostic" link shown next to a test error. It reveals, in plain
  * text, the prompt that was sent to the LLM, the raw LLM response, and the
  * error — deliberately hidden behind a link so the normal error UI stays
- * generic.
+ * generic. The expanded block renders as its own full-width row BELOW the
+ * buttons (never squeezed beside them).
  */
 function DiagnosticButton({ diagnostic }: { diagnostic?: SrsTestDiagnostic }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   if (!diagnostic) return null;
   return (
-    <View className="items-start">
+    <View className="w-full">
       <Pressable
         onPress={() => setOpen((prev) => !prev)}
         accessibilityRole="button"
         accessibilityLabel={t('review.diagnostic')}
-        className="py-1"
+        className="self-start py-1"
       >
         <Text className="text-[10px] font-medium text-muted-foreground underline">
           {t('review.diagnostic')}
@@ -1667,7 +1668,8 @@ export default function ReviewScreen() {
                     </View>
                   );
                 }
-                // Terminal error: generic message + retry / skip + tiny Diagnostic link.
+                // Terminal error: generic message + retry / skip buttons row,
+                // then the Diagnostic disclosure as its own full-width row below.
                 return (
                   <View key={`${slot.kind}-${slotIndex}`} className="border-t border-border pt-4 first:border-t-0 first:pt-0">
                     <View className="rounded-lg border border-destructive/40 bg-destructive/10 p-3">
@@ -1679,6 +1681,8 @@ export default function ReviewScreen() {
                         <Button onPress={() => handleSkipTest(slot.kind)} variant="outline" size="sm">
                           <Text className={buttonTextClass('outline')}>{t('action.skip')}</Text>
                         </Button>
+                      </View>
+                      <View className="mt-1 w-full">
                         <DiagnosticButton diagnostic={slot.diagnostic} />
                       </View>
                     </View>
