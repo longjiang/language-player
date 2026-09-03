@@ -9,8 +9,12 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.Selection
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.LineHeightSpan
 import android.text.style.ReplacementSpan
 import android.util.Log
+import android.util.TypedValue
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
@@ -22,6 +26,7 @@ import expo.modules.kotlin.viewevent.EventDispatcher
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 /** One tappable text run inside a paragraph-level ruby renderer. */
 class RubyParagraphRun(
@@ -270,29 +275,69 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     }
     val basePaint = makeBasePaint()
     basePaint.textSize = dp(fontSize)
-    // Force every line box to exactly dp(lineHeight): base line (font metrics
-    // with includeFontPadding=false) plus the reserved reading slot.
+    // Span-free runs (punctuation, whitespace, reading-less words, the
+    // pre-tokenization whole-block run) paint with the TextView's OWN paint,
+    // so it must carry the requested base font — otherwise they draw at the
+    // platform default size and the pin/baseline math (computed here from
+    // makeBasePaint) doesn't describe the real glyphs.
+    setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize)
+    typeface = makeTypeface(null)
+    // Pin every line box to exactly dp(lineHeight) with a LineHeightSpan (see
+    // the class below): the span ABSORBS the extra leading into the TOP of
+    // each line, so every run — ruby-bearing or plain — paints on the line's
+    // natural baseline. setLineSpacing(…, 1f) was the previous pin and is the
+    // punctuation misalignment: it adds the extra height BELOW each line's
+    // descent, so TextView's natural baseline sat high in the box while the
+    // ruby spans anchored their base glyphs at the box BOTTOM — two baselines
+    // per line, punctuation floating up into the reading band.
+    val pinnedLineHeight = dp(lineHeight)
     val fm = basePaint.fontMetricsInt
     val baseLineHeight = (fm.descent - fm.ascent).toFloat()
-    setLineSpacing(dp(lineHeight) - baseLineHeight, 1f)
+    // Leading added above each line's ascent (negative = compress, matching
+    // what setLineSpacing did when the pin was smaller than the font box).
+    val leadingAdd = pinnedLineHeight - baseLineHeight
+    val baseAscent = -fm.ascent.toFloat()
+    val baseDescent = fm.descent.toFloat()
     setTextDirection(if (isRtl) TEXT_DIRECTION_RTL else TEXT_DIRECTION_LTR)
 
     val builder = SpannableStringBuilder()
+    // The pin span is attached once, after the loop, to the WHOLE string —
+    // one span, every line of every paragraph.
     val spans = ArrayList<RubyReplacementSpan>(runs.size)
     for (run in runs) {
       if (run.text.isEmpty()) continue
       val start = builder.length
       builder.append(run.text)
       // Plain runs (whitespace, punctuation, the pre-tokenization whole-block
-      // run, glosses) must stay SPAN-FREE: a ReplacementSpan is an atomic
-      // object to Android's line breaker, so a spanned run can never break
-      // across lines — token runs rendered one unbreakable "word" each and the
-      // pre-tokenization whole-block run didn't wrap at all (clipping at the
-      // right edge). Only ruby-bearing word runs get the span; the span draws
-      // the base glyphs itself (see RubyReplacementSpan.draw), so an unspanned
-      // run paints through TextView's own path and breaks character by
-      // character. Tap lookup consults [tapSpans], not the buffer.
-      if (!run.tappable) continue
+      // run, glosses) must stay SPAN-FREE of ReplacementSpans: a
+      // ReplacementSpan is an atomic object to Android's line breaker, so a
+      // spanned run can never break across lines — token runs rendered one
+      // unbreakable "word" each and the pre-tokenization whole-block run
+      // didn't wrap at all (clipping at the right edge). Only ruby-bearing
+      // word runs get the replacement span; the span draws the base glyphs
+      // itself (see RubyReplacementSpan.draw), so an unspanned run paints
+      // through TextView's own path and breaks character by character. Tap
+      // lookup consults [tapSpans], not the buffer.
+      //
+      // Plain runs still carry their per-run color/size through
+      // ForegroundColorSpan / AbsoluteSizeSpan — neither is atomic (they are
+      // plain CharacterStyle / non-replacement MetricAffectingSpans), so the
+      // line breaker keeps splitting these runs character by character while
+      // the runs no longer paint with the TextView's default color/size
+      // (glosses were white instead of muted; byeonggi painted full-size).
+      if (!run.tappable) {
+        builder.setSpan(
+          ForegroundColorSpan(applyAlpha(run.color, run.opacity)),
+          start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+        run.fontSize?.let { size ->
+          builder.setSpan(
+            AbsoluteSizeSpan(dp(size).roundToInt(), false),
+            start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        continue
+      }
       val span = RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily, language)
       spans.add(span)
       if (!run.reading.isNullOrEmpty()) {
@@ -300,10 +345,16 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       }
     }
     tapSpans = spans
+    builder.setSpan(
+      PinLineHeightSpan(leadingAdd, baseAscent, baseDescent),
+      0,
+      builder.length,
+      Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
     setText(builder)
     Log.i(
       "LP Mobile",
-      "[RubyText] paragraph rebuild runs=${runs.size} spans=${spans.size} chars=${builder.length} lineHeight=$lineHeight"
+      "[RubyText] paragraph rebuild runs=${runs.size} spans=${spans.size} chars=${builder.length} lineHeight=$lineHeight pin(add=${leadingAdd} ascent=$baseAscent descent=$baseDescent)"
     )
   }
 
@@ -331,6 +382,57 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
   private fun applyAlpha(color: Int, alpha: Float): Int {
     val a = ((Color.alpha(color) * alpha).toInt().coerceIn(0, 255))
     return (a shl 24) or (color and 0x00ffffff)
+  }
+}
+
+/**
+ * Pins every line box to the requested pitch by ABSORBING the extra leading
+ * into the TOP of each line (before the ascent), instead of letting
+ * TextView's setLineSpacing add it below the descent.
+ *
+ * This is the baseline fix for the ruby paragraph: the ruby replacement spans
+ * anchor their base glyphs at the line BOTTOM (bottom − descent), and with
+ * setLineSpacing the extra height went BELOW the descent, so the natural
+ * baseline (used by span-free runs — punctuation, whitespace, reading-less
+ * words) sat higher than the ruby spans' baseline. Two baselines per line:
+ * punctuation floated up into the reading band (2026-09-03 reader report).
+ *
+ * chooseHeight receives the max metrics of all spans in the line (the ruby
+ * spans report their base font's metrics via getSize's fm), so the natural
+ * ascent/descent here matches the ruby span glyphs and the single resulting
+ * baseline is shared by every run.
+ */
+private class PinLineHeightSpan(
+  private val leadingAdd: Float,
+  private val baseAscent: Float,
+  private val baseDescent: Float
+) : LineHeightSpan {
+  override fun chooseHeight(
+    text: CharSequence,
+    start: Int,
+    end: Int,
+    spanstartv: Int,
+    v: Int,
+    fm: android.graphics.Paint.FontMetricsInt
+  ) {
+    // The line's natural ascent/descent (what TextView's own glyph path will
+    // paint against): fm already holds the MAX over the line's runs (ruby
+    // spans report the base font's metrics via getSize's fm), so
+    // needAscent/needDescent match both the span glyphs and the span-free
+    // runs — one shared baseline per line. ascent/descent (not top/bottom —
+    // those carry font padding the view disabled) keep the box exactly the
+    // pin, mirroring the old setLineSpacing baseLineHeight = descent − ascent.
+    val needAscent = maxOf(-fm.ascent, baseAscent.toInt())
+    val needDescent = maxOf(fm.descent, baseDescent.toInt())
+    // Rewrite the metrics so the line box is
+    //   [ leadingAdd | ascent | descent ]  →  total == pinned height,
+    // i.e. the extra leading is absorbed ABOVE the glyphs. The baseline then
+    // sits leadingAdd below the line top, and TextView's span-free glyph path
+    // lands on exactly the baseline the ruby spans anchor to (draw uses y).
+    fm.ascent = (-leadingAdd - needAscent).toInt()
+    fm.top = fm.ascent
+    fm.descent = needDescent
+    fm.bottom = needDescent
   }
 }
 
@@ -378,7 +480,7 @@ private class RubyReplacementSpan(
     val reading = readingPaint(paint)
     val baseWidth = base.measureText(text, start, end)
     val readingWidth = if (!run.reading.isNullOrEmpty()) reading.measureText(run.reading) else 0f
-    // fm intentionally untouched: the TextView's setLineSpacing owns the line
+    // fm intentionally untouched: the [PinLineHeightSpan] owns the line
     // height, so the span contributes width only.
     return max(baseWidth, readingWidth).toInt()
   }
@@ -414,9 +516,15 @@ private class RubyReplacementSpan(
       canvas.drawRect(x, drawTop, x + advance, bottom.toFloat(), bgPaint)
     }
 
-    // Line box: reading sits at the top, base text at the bottom (mirrors the
-    // canvas renderer: baseBaseline = lineBottom - baseDescent).
-    val baseBaseline = bottom.toFloat() - baseMetrics.descent
+    // Anchor the base glyphs ON the line baseline (y): [PinLineHeightSpan]
+    // absorbs the pinned leading ABOVE the ascent, so the line's natural
+    // baseline is exactly the box-bottom position the old setLineSpacing
+    // renderer produced — ruby glyphs stay pixel-identical — while span-free
+    // runs (punctuation, whitespace, reading-less words) paint on the SAME
+    // baseline through TextView's own path. The old bottom-anchored math
+    // (bottom − baseDescent) matched only when every run shared the base
+    // font's metrics; with the pin, y is unambiguous.
+    val baseBaseline = y.toFloat()
     val readingBaseline = baseBaseline + baseMetrics.ascent - readingMetrics.descent
     if (!run.reading.isNullOrEmpty()) {
       canvas.drawText(run.reading, rubyX, readingBaseline, reading)
