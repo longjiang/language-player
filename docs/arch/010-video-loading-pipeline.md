@@ -82,6 +82,7 @@ watch page (page.tsx)
 ### Key facts
 
 - **Directus is the source of truth for L2 subtitles.** `subs_l2` (original language) is stored as a CSV string in the `youtube_videos_{suffix}` table, uploaded during video ingestion.
+- **HTML entities are decoded server-side (SPEC-091).** The DB stores YouTube's raw encoding (`isn&#39;t`, double-encoded `&amp;#39;`); Flask decodes the `line` text on every subtitle-returning endpoint (`/videos`, `/videos/subtitles`, `/subs-search`, caption fallbacks), and `parseCSVSubtitles()`/`parseSubtitleCSV()` apply an idempotent client-side decode as a safety net.
 - **`subs_l1` is deprecated and no longer read.** The API route no longer parses `subs_l1` from Directus and does not set `video.subs_l1`. The field remains in the `YouTubeVideo` type only for backward compatibility with cached API responses.
 - **No `syncLines` call in the API.** Each L2 line is directly mapped to a `SyncedLine` struct with `l1Line: ''`. Translations are applied later by `SubtitleDisplay` via `/translate_array`.
 - **YouTube fallback for L2 only.** If Directus has no L2 subtitles, the API calls `/get_best_l2_subs` (YouTube auto-captions). L1 subtitles are never fetched from YouTube — all translations come from `/translate_array` (see Pipeline 4).

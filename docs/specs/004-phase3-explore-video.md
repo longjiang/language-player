@@ -130,7 +130,7 @@ starttime,line
 33.78,AND LET YOU KNOW THAT WE&#39;RE THE BEST
 ```
 - Must parse with CSV parser (header row: `starttime,line`)
-- HTML entities need unescaping: `&#39;` → `'`, `&amp;` → `&`
+- HTML entities need unescaping: `&#39;` → `'`, `&amp;` → `&` — since SPEC-091 the Flask endpoints decode before returning, and the shared `parseSubtitleCSV()` keeps an idempotent decode as a safety net
 - GO app uses PapaParse; our implementation uses a simple manual parser
 
 ### Python Backend Endpoints (Actual)

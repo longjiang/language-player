@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import type { SubtitleLine } from '@langplayer/shared';
+import { decodeHtmlEntities } from './entities';
 
 /**
  * Parse CSV subtitle data into SubtitleLine[] using PapaParse.
@@ -9,6 +10,12 @@ import type { SubtitleLine } from '@langplayer/shared';
  * with "starttime", optionally "duration", and "line" columns. Data rows
  * may have quoted line fields containing embedded newlines, commas, and
  * escaped double-quotes — all handled correctly by PapaParse.
+ *
+ * SPEC-091: decodes HTML entities (`&#39;` → `'`, double-encoded `&amp;#39;`
+ * included) on the parsed `line` text. Since SPEC-091 the Flask endpoints
+ * decode server-side; this idempotent pass is a safety net for the Chrome
+ * extension and any consumer of raw DB CSV, and it's a no-op on already
+ * decoded text.
  *
  * @param csv — Raw CSV string (header + data rows)
  * @returns Parsed subtitle lines, or [] if CSV is empty or malformed
@@ -29,7 +36,7 @@ export function parseSubtitleCSV(csv: string): SubtitleLine[] {
       const starttime = parseFloat(row.starttime ?? '');
       if (isNaN(starttime)) return null;
 
-      const line = (row.line ?? '').trim();
+      const line = decodeHtmlEntities((row.line ?? '').trim());
       if (!line) return null;
 
       const entry: SubtitleLine = { starttime, line };
