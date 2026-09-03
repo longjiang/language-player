@@ -100,8 +100,10 @@ export interface TokenSpanProps {
   /** ko: show hanja alongside hangul. vi: show hán tự alongside quốc ngữ. Ignored otherwise. */
   byeonggi: boolean;
   /** Called when the token is clicked; passes the clicked span's bounding
-   *  rect so callers can anchor popups to the word (e.g. spawn animations). */
-  onClick: (rect?: DOMRect) => void;
+   *  rect so callers can anchor popups to the word (e.g. spawn animations),
+   *  and the clicked element itself so callers can arbitrate against a live
+   *  text selection (`Range.intersectsNode`) before clearing it. */
+  onClick: (rect?: DOMRect, el?: Element) => void;
   /** Called with true when the pointer enters the token and false when it
    *  leaves. Used by the readers to highlight the matching sentence in the
    *  translation. Optional — no-op when absent. */
@@ -422,12 +424,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     : '';
 
   // ── Handle click: in quiz mode, reveal blank first; otherwise open popup ──
-  const handleClick = (rect?: DOMRect) => {
+  const handleClick = (rect?: DOMRect, el?: Element) => {
     if (isQuizBlanking) {
       setQuizRevealed(true);
       return;
     }
-    onClick(rect);
+    onClick(rect, el);
   };
 
   // ── Flat run (ADR-0039): format styling folded into element classes ──
@@ -459,7 +461,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     : segmentClasses;
   const segmentClick = (e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation();
-    handleClick(e.currentTarget.getBoundingClientRect());
+    handleClick(e.currentTarget.getBoundingClientRect(), e.currentTarget);
   };
 
   // Enter/leave handlers for the readers' translation-sentence highlight.
@@ -578,7 +580,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
-      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} style={karaokeStyle} {...hoverHandlers}>
+      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect(), e.currentTarget); }} className={wrapperClass} style={karaokeStyle} {...hoverHandlers}>
         <span className="inline-flex flex-col items-center">
           {wordWithGloss}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
@@ -597,7 +599,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──
   return (
-    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} style={karaokeDimmed ? { opacity: karaokeDimOpacity } : undefined} {...hoverHandlers}>
+    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect(), e.currentTarget); }} className={wrapperClass} style={karaokeDimmed ? { opacity: karaokeDimOpacity } : undefined} {...hoverHandlers}>
       {wordWithGloss}
     </span>
   );

@@ -13,6 +13,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode, isRTL } from '@/lib/language-data';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log } from '@/lib/logger';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSavedPhraseCandidates, useHighlightKanaForms } from '@/hooks/use-highlight-forms';
 import { useProgressLevel } from '@/hooks/use-progress';
@@ -549,14 +550,38 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightForm, highlightForms, l2Code]);
 
-  const handleTokenClick = useCallback((token: LemmatizedToken, rect?: DOMRect) => {
+  const handleTokenClick = useCallback((token: LemmatizedToken, rect?: DOMRect, el?: Element) => {
+    // SPEC-033 (substring selection): when the user drag-selects a substring
+    // inside one token (e.g. 革命 inside 抓革命促), the mouseup that ends the
+    // drag also fires a click on that token — and click runs BEFORE the
+    // deferred selection capture in useSelectionPopup. Without this guard the
+    // click clears the selection (`clearTextSelection`) and opens the
+    // whole-token popup, so the substring popup never appears. Read the LIVE
+    // browser selection (not the hook's state): when a non-collapsed
+    // selection intersects this token's DOM node, defer to it — the selection
+    // popup (selected substring as the lookup term) opens and the click is
+    // swallowed. Multi-token selections never fire a token click at all
+    // (click targets the mousedown/mouseup common ancestor), so this only
+    // arbitrates the same-token case. Only in selectionDictionary contexts —
+    // per SPEC-033 §Where Enabled the SRS review card stays tap-only.
+    if (selectionDictionary && el) {
+      const sel = typeof window !== 'undefined' ? window.getSelection() : null;
+      if (sel && !sel.isCollapsed && sel.rangeCount > 0 && sel.toString().trim()) {
+        if (sel.getRangeAt(0).intersectsNode(el)) {
+          // Diagnostic (gated by LOG_LEVEL): confirms the click was
+          // suppressed in favor of the selection popup.
+          log('TokenizedText: token click suppressed — active selection intersects token:', JSON.stringify(token.text));
+          return;
+        }
+      }
+    }
     setSelectedToken(prev => prev === token ? null : token);
     if (rect) {
       setPopupPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
     }
     // A token popup supersedes the selection popup.
     clearTextSelection();
-  }, [clearTextSelection]);
+  }, [selectionDictionary, clearTextSelection]);
 
   // A new text selection supersedes the token dictionary popup.
   useEffect(() => {
@@ -814,7 +839,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               savedWordId={savedWordIdForToken(token)}
               isHighlighted={tokenMatchesHighlight(token)}
               nextTokenIsSeparator={nextTokenIsSeparator}
-              onClick={(rect) => handleTokenClick(token, rect)}
+              onClick={(rect, el) => handleTokenClick(token, rect, el)}
               onHoverChange={onTokenHover && tokenRanges
                 ? (hovering) => onTokenHover(hovering ? tokenRanges[i]! : null)
                 : undefined}
