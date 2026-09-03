@@ -5,7 +5,7 @@
 - **Feature**: Lemmatization, dictionary batch lookup, and request optimization strategies
 - **Status**: active (maintained)
 - **Created**: 2026-07-26
-- **Updated**: 2026-07-28 — mobile gap status updated; video lemmatization flow documented; server-side normalizer chain detailed
+- **Updated**: 2026-09-02 — web cross-boundary retokenization (split stage + fragment re-lemmatization) added to the token-rendering architecture
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask)
 - **See also**: [SPEC-019: Mobile Tokenization & Batch Lookup Completion](../specs/019-mobile-tokenization-batch-lookup-completion.md) — mobile gap closure plan
@@ -227,6 +227,12 @@ interface DictionaryEntry {
 TokenizedText (container)
 ├── IntersectionObserver ← lazy loading
 ├── Lemmatize cache + in-flight dedup
+├── Split stage: splitPhraseTokens (SPEC-033 cross-boundary, 2026-09-02)
+│   └── saved/search phrases crossing a token boundary (掘藏 in 想掘|藏)
+│       → atomic phrase token + placeholder fragments; fragments
+│       re-lemmatized via the batch queue and spliced back (tiles-exactly
+│       guard, cloned per splice)
+├── Merge stage: mergePhraseTokens (boundary-aligned saved phrases)
 ├── Batch dictionary lookup (bulkLookupWords)
 ├── Saved words context (isSaved per token)
 └── TokenSpan × N (individual tokens)
@@ -240,8 +246,34 @@ TokenizedText (container)
     └── Karaoke highlight (isKaraokeSpoken dimming)
 ```
 
-**File:** `apps/web/src/components/tokenized-text.tsx` (418 lines)
-**File:** `apps/web/src/components/token-span.tsx` (260 lines)
+**File:** `apps/web/src/components/tokenized-text.tsx` (~470 lines)
+**File:** `apps/web/src/components/token-span.tsx` (~265 lines)
+
+### Cross-boundary Retokenization (Web, 2026-09-02)
+
+Saved-word and search-term highlighting is whole-token, and `mergePhraseTokens`
+only collapses phrases aligned to token boundaries on both edges. A form like
+掘藏 whose tokens split as 想掘｜藏 starts mid-token and could never highlight.
+The web `TokenizedText` adds a split stage before the merge:
+
+1. `splitPhraseTokens(text, tokens, forms)` (packages/utils) — `forms` = saved
+   phrase candidates + highlight kana forms + `highlightForm` +
+   `highlightForms`. Each boundary-crossing occurrence (≥2 chars, spaceless
+   scripts only: Han/Kana/Thai/Lao/Khmer) becomes one atomic phrase token;
+   each leftover partial token becomes a placeholder fragment (`lemmas: []`).
+   Occurrences claim longest-first, non-overlapping, never sharing a token;
+   the output always tiles the source text, so format offsets, karaoke
+   pacing, hover ranges, and sentence context stay aligned.
+2. Fragment re-lemmatization — each unique fragment (想 from 想掘) is enqueued
+   through the same `/lemmatize-normalized/batch` queue as whole lines
+   (cache-first, deduped via `attemptedFragmentsRef`). Results are spliced
+   back only when they tile the fragment exactly; each splice clones the
+   replacement tokens so duplicate fragments never share object identity.
+   Failed/empty fragments stay non-interactive placeholders.
+3. `mergePhraseTokens` then runs unchanged over the spliced stream.
+
+Mobile keeps the merge-only pipeline (no split stage) — see SPEC-033 §
+Cross-boundary retokenization and its Open Questions for the parity task.
 
 ### Lazy Loading Strategy (Web)
 

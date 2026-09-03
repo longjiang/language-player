@@ -432,10 +432,15 @@ today" message.
   splits the surface form. Multi-token selections saved from the web text
   selection feature (e.g. "got even with me" saved under the canonical "to get
   even with someone") are merged into atomic tokens and highlighted from the
-  per-instance surface forms. The highlighted keyword gets a **text
-  background** for notability, matching the rest of the app (web:
-  `bg-primary/15` + ring in `token-span.tsx`; mobile: `bg-primary/20` in all
-  `TokenizedText` render paths, parity added 2026-08-24).
+  per-instance surface forms. Since 2026-09-02 (SPEC-033 cross-boundary
+  retokenization) a saved form that starts or ends **inside** a token — e.g.
+  掘藏 in 想掘｜藏 — is also highlighted: the web review context runs the
+  same split stage as the source text, splitting the straddled tokens into an
+  atomic phrase token plus re-lemmatized fragments. The highlighted keyword
+  gets a **text background** for notability, matching the rest of the app
+  (web: `bg-primary/15` + ring in `token-span.tsx`; mobile: `bg-primary/20`
+  in all `TokenizedText` render paths, parity added 2026-08-24; the
+  cross-boundary split is web-only for now — see SPEC-033 Open Questions).
 - A text-action menu (copy / speak / AI explain / translate) on the context.
 - Source attribution (video/book title + localized date).
 - SRS info line: `{interval}d` (or "new") and reviewed count.
