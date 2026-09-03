@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useColorScheme } from 'nativewind';
-import { colors } from '@langplayer/shared';
+import { colors, glyphScript } from '@langplayer/shared';
 import { semanticColorsForMobile, hslToHex } from '@langplayer/shared';
 import { isNativeRubyActive, isNativeRubyParagraphActive } from '@/components/RubyText';
 
@@ -20,10 +20,42 @@ export const NATIVE_PARAGRAPH_ACTIVE = isNativeRubyParagraphActive();
  * Platform-specific font family for a typeFace display setting (serif /
  * sans-serif): real named fonts on iOS (Georgia / Avenir Next), generic
  * families on Android. undefined for the 'default' typeface.
+ *
+ * Han scripts resolve to per-script SERIF faces so the serif setting applies
+ * to CJK too: Georgia has no CJK glyphs, and Android's generic `serif` falls
+ * back to a CJK **sans** face (Pixel/AOSP ship no Noto Serif CJK). The serif
+ * names are therefore best-effort — devices without the face fall back to the
+ * generic family / platform sans, never a crash. `glyphLangTag` already
+ * resolves script-less codes (zh → zh-Hans) via the user's
+ * simplified/traditional preference, so pass the RESOLVED tag. iOS Korean has
+ * no built-in serif hangul face, so ko falls back to the system font.
  */
-export function typeFaceFontFamily(typeFace: 'default' | 'serif' | 'sans-serif'): string | undefined {
-  if (typeFace === 'serif') return Platform.OS === 'ios' ? 'Georgia' : 'serif';
+export function typeFaceFontFamily(
+  typeFace: 'default' | 'serif' | 'sans-serif',
+  glyphLang?: string | null,
+): string | undefined {
   if (typeFace === 'sans-serif') return Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif';
+  if (typeFace === 'serif') {
+    const script = glyphScript(glyphLang ?? '');
+    if (Platform.OS === 'ios') {
+      // Regional serif: Songti ships on current iOS images; Hiragino Mincho
+      // for Japanese. Korean has no built-in serif hangul face → system font
+      // (the platform serif that iOS picks for `serif` has no hangul either).
+      if (script === 'ja') return 'Hiragino Mincho ProN';
+      if (script === 'zh-Hans') return 'Songti SC';
+      if (script === 'zh-Hant') return 'Songti TC';
+      if (script === 'ko') return undefined;
+      return 'Georgia';
+    }
+    // Android: regional Noto Serif CJK families when the OEM ships them;
+    // generic `serif` otherwise (Latin serif for all scripts — Pixel/AOSP
+    // devices have no CJK serif, so CJK falls back to the sans face there).
+    if (script === 'ja') return 'Noto Serif CJK JP';
+    if (script === 'zh-Hans') return 'Noto Serif CJK SC';
+    if (script === 'zh-Hant') return 'Noto Serif CJK TC';
+    if (script === 'ko') return 'Noto Serif CJK KR';
+    return 'serif';
+  }
   return undefined;
 }
 

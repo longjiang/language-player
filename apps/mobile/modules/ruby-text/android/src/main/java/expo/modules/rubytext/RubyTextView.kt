@@ -124,6 +124,10 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     basePaint.isUnderlineText = underline
     readingPaint.textSize = dp(readingSize)
     readingPaint.color = readingColor
+    // Readings follow the same family (serif/sans-serif setting) as the base
+    // text, mirroring iOS's makeReadingFont; missing glyphs (e.g. kana in
+    // Georgia) cascade through Android's font fallback.
+    readingPaint.typeface = makeTypeface()
     invalidate()
     Log.i(
       "LP Mobile",

@@ -25,7 +25,8 @@ import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
-import { computeRubyLayout } from '@/lib/ruby-layout';
+import { computeRubyLayout, typeFaceFontFamily } from '@/lib/ruby-layout';
+import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
 
 const { log } = readerLogger;
 const displayLoggedState = new WeakMap<ContentBlock, boolean>();
@@ -521,11 +522,11 @@ export function PaginatedReader({
   const leadingPx = readerLeadingPx(tokenSettings.zoom, translationLeading, textScale ?? 1);
   const readerPad = readerHorizontalPadding(tokenSettings.zoom, translationLeading, textScale ?? 1);
   const measureFontSize = 16 * effectiveScale;
-  const measureFontFamily = tokenSettings.typeFace === 'serif'
-    ? (Platform.OS === 'ios' ? 'Georgia' : 'serif')
-    : tokenSettings.typeFace === 'sans-serif'
-      ? (Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif')
-      : undefined;
+  // Same script-aware family TokenizedText renders with (serif → Songti /
+  // Noto Serif CJK on Han, Georgia/'serif' otherwise) so hidden page
+  // measurement matches the visible render exactly.
+  const measureGlyphLang = glyphLangTag(l2Code, isHanLanguage(l2Code) && l2Settings.display.traditional);
+  const measureFontFamily = typeFaceFontFamily(tokenSettings.typeFace, measureGlyphLang);
   // The L2 body line pitch the TOKENIZED reader actually renders: the native
   // ruby paragraph pins every line to `computeRubyLayout().linePitch` (base
   // leading + reading band when ruby is on). The hidden measuring view must

@@ -387,7 +387,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       style.fontSize = 16 * effectiveScale;
     }
 
-    const family = typeFaceFontFamily(tokenSettings.typeFace);
+    // Resolved per-script family (serif → Songti/Noto Serif CJK for Han,
+    // Georgia/'serif' otherwise). The resolved glyphLang tag picks the
+    // regional face so the serif setting applies to CJK scripts too
+    // (best-effort on Android — no built-in CJK serif there).
+    const family = typeFaceFontFamily(tokenSettings.typeFace, glyphLang);
     if (family) style.fontFamily = family;
     // else: no fontFamily → the __system__ font. The L2 language tag (the
     // `language`/`lang` attributes on the paragraph and RN Text) drives Core
@@ -1812,6 +1816,10 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 // a ref and only gets a new identity when `tokenCacheLoaded` flips (the video
 // cache's useMemo is keyed on `loaded`), which the comparator does include.
 function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextProps): boolean {
+  // Settings (tokenizedText.typeFace / zoom / leading / mode…) are read via
+  // useSettingsContext() inside the component — context updates re-render
+  // consumers directly and are NOT blocked by this comparator, so the serif
+  // toggle applies to mounted blocks without any prop change.
   return (
     prev.text === next.text &&
     prev.l2Code === next.l2Code &&
