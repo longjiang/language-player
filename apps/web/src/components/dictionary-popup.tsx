@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo, useRef, type CSSProperties } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
@@ -61,14 +61,22 @@ const POPUP_TOP = 96;
  * speak / AI explain / translate), plus its L1 translation (fetched once on
  * first expand). Hidden behind a toggle button so the popup stays compact.
  */
-function ContextSentenceCard({
+/**
+ * Context-sentence section: the "Context Sentence" toggle and the image
+ * button share one row; the expanded sentence block breaks out as its own
+ * full-width row beneath (never squeezed beside the image button). The
+ * image button is injected so this component owns only the expand state.
+ */
+function ContextSentenceSection({
   context,
   l2Code,
   l1Code,
+  imageButton,
 }: {
   context: string;
   l2Code: string;
   l1Code: string;
+  imageButton: ReactNode;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -89,28 +97,32 @@ function ContextSentenceCard({
   };
 
   return (
-    <div>
-      {/* The toggle is styled like the "Let DeepSeek explain" / "Search
-          images" buttons (outline) so the popup's controls read as one
-          family: same size, centered icon + label, chevron at the right. */}
-      <button
-        type="button"
-        onClick={toggle}
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative w-full pr-9')}
-        aria-expanded={open}
-      >
-        <span className="flex items-center gap-2">
-          <Quote className="h-4 w-4" />
-          <span className="text-sm font-medium">{t('label.context_sentence')}</span>
-        </span>
-        {open
-          ? <ChevronUp className="absolute right-3 h-3.5 w-3.5" />
-          : <ChevronDown className="absolute right-3 h-3.5 w-3.5" />}
-      </button>
+    <>
+      <div className="mb-2 flex gap-2">
+        <button
+          type="button"
+          onClick={toggle}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative min-w-0 flex-1 pr-9')}
+          aria-expanded={open}
+        >
+          <span className="flex items-center gap-2">
+            <Quote className="h-4 w-4 shrink-0" />
+            <span className="text-sm font-medium">{t('label.context_sentence')}</span>
+          </span>
+          {open
+            ? <ChevronUp className="absolute right-3 h-3.5 w-3.5" />
+            : <ChevronDown className="absolute right-3 h-3.5 w-3.5" />}
+        </button>
+        {imageButton}
+      </div>
       {open && (
-        <div className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+        <div className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
           <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
-            <TokenizedText text={context} l2Code={l2Code} textScale={1} disablePopup />
+            {/* Tokens open their own stacked dictionary popup — the same
+                behavior as tokens inside a "Let DeepSeek explain" response
+                (MarkdownExplanation renders TokenizedText without
+                disablePopup). Do NOT restore disablePopup here. */}
+            <TokenizedText text={context} l2Code={l2Code} textScale={1} />
           </TextActionMenu>
           {translating ? (
             <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -121,7 +133,7 @@ function ContextSentenceCard({
           ) : null}
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -526,7 +538,10 @@ export function DictionaryPopup({
                 if (onOpenLink) onOpenLink(linkUrl);
                 else router.push(`/${l1Code}/${l2Code}/web-reader?url=${encodeURIComponent(linkUrl)}`);
               }}
-              className="flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted"
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'w-full justify-center px-3',
+              )}
             >
               <ExternalLink className="h-4 w-4" />
               {t('action.open_in_reader')}
@@ -558,32 +573,42 @@ export function DictionaryPopup({
             entryFound={entries.length > 0}
           />
 
-          {/* Context sentence (collapsible) + Search Google Images (icon-only)
-              on one row — the popup's secondary action row. The context
-              sentence card expands beneath the row. */}
-          <div className="mb-3 flex gap-2">
-            {context?.text ? (
-              <div className="min-w-0 flex-1">
-                <ContextSentenceCard
-                  context={context.text}
-                  l2Code={l2Code}
-                  l1Code={l1Code}
-                />
-              </div>
-            ) : null}
-            {/* Search Google Images — icon-only external link (replaces the
-                in-popup gallery), same outline button family as the row. */}
-            <a
-              href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-9 shrink-0 px-0')}
-              title={t('action.search_images')}
-              aria-label={t('action.search_images')}
-            >
-              <ImageIcon className="h-4 w-4" />
-            </a>
-          </div>
+          {/* Context sentence + Search Google Images: the two buttons share
+              one row; the expanded context block breaks out as its own
+              full-width row beneath the row (not squeezed beside the image
+              button). */}
+          {context?.text ? (
+            <ContextSentenceSection
+              context={context.text}
+              l2Code={l2Code}
+              l1Code={l1Code}
+              imageButton={
+                <a
+                  href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-9 shrink-0 px-0')}
+                  title={t('action.search_images')}
+                  aria-label={t('action.search_images')}
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </a>
+              }
+            />
+          ) : (
+            <div className="mb-3 flex gap-2 justify-end">
+              <a
+                href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-9 shrink-0 px-0')}
+                title={t('action.search_images')}
+                aria-label={t('action.search_images')}
+              >
+                <ImageIcon className="h-4 w-4" />
+              </a>
+            </div>
+          )}
 
           {/* Entry cards are loading — show a stable card skeleton instead of
               a spinner so the popup's shape (and fixed top) doesn't shift. */}

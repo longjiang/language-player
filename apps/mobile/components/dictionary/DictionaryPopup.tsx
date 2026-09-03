@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, buttonTextClass } from '@/components/ui/button';
@@ -45,14 +45,22 @@ const { log } = popupLogger;
  * translation (fetched once on first expand). Hidden behind a toggle button
  * so the popup stays compact by default.
  */
-function ContextSentenceCard({
+/**
+ * Context-sentence section: the "Context Sentence" toggle and the image
+ * button share one row; the expanded sentence block breaks out as its own
+ * full-width row beneath (never squeezed beside the image button). The
+ * image button is injected so this component owns only the expand state.
+ */
+function ContextSentenceSection({
   context,
   l2Code,
   l1Code,
+  imageButton,
 }: {
   context: string;
   l2Code: string;
   l1Code: string;
+  imageButton: ReactNode;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -82,33 +90,36 @@ function ContextSentenceCard({
   };
 
   return (
-    <View>
-      {/* The toggle is styled like the "Let DeepSeek explain" / "Search
-          images" buttons (outline) so the popup's controls read as one
-          family: same size, centered icon + label, chevron at the right. */}
-      <Button
-        onPress={toggle}
-        variant="outline"
-        className="relative w-full pr-9"
-        accessibilityRole="button"
-        accessibilityLabel={t('label.context_sentence')}
-      >
-        <Quote size={16} color={ICON_PRIMARY} />
-        <Text className={buttonTextClass('outline')}>{t('label.context_sentence')}</Text>
-        <View className="absolute right-3">
-          {open
-            ? <ChevronUp size={14} color={ICON_MUTED} />
-            : <ChevronDown size={14} color={ICON_MUTED} />}
-        </View>
-      </Button>
+    <>
+      <View className="mb-2 flex-row gap-2">
+        <Button
+          onPress={toggle}
+          variant="outline"
+          className="relative min-w-0 flex-1 pr-9"
+          accessibilityRole="button"
+          accessibilityLabel={t('label.context_sentence')}
+        >
+          <Quote size={16} color={ICON_PRIMARY} />
+          <Text className={buttonTextClass('outline')} numberOfLines={1}>{t('label.context_sentence')}</Text>
+          <View className="absolute right-3">
+            {open
+              ? <ChevronUp size={14} color={ICON_MUTED} />
+              : <ChevronDown size={14} color={ICON_MUTED} />}
+          </View>
+        </Button>
+        {imageButton}
+      </View>
       {open && (
-        <View className="mt-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+        <View className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
           <TextActionMenu text={context} l2Code={l2Code} l1Code={l1Code}>
+            {/* Tokens open their own stacked dictionary popup — the same
+                behavior as tokens inside a "Let DeepSeek explain" response
+                (MarkdownExplanation renders TokenizedText without
+                disablePopup). Do NOT restore disablePopup here. */}
             <TokenizedText
               text={context}
               l2Code={l2Code}
               textScale={1}
-              disablePopup
             />
           </TextActionMenu>
           {translating ? (
@@ -123,7 +134,7 @@ function ContextSentenceCard({
           ) : null}
         </View>
       )}
-    </View>
+    </>
   );
 }
 
@@ -692,7 +703,7 @@ export function DictionaryPopup({
                     size="sm"
                     className="mb-3"
                   >
-                    <ExternalLink size={14} color={ICON_PRIMARY} />
+                    <ExternalLink size={14} color={ICON_MUTED} />
                     <Text className={buttonTextClass('outline')}>{t('action.open_in_reader')}</Text>
                   </Button>
                 ) : null}
@@ -710,24 +721,36 @@ export function DictionaryPopup({
                   </>
                 )}
 
-                {/* Context sentence (collapsible) + Search Google Images
-                    (icon-only) on one row — the popup's secondary action row.
-                    The context sentence card expands beneath the row. */}
+                {/* Context sentence + Search Google Images: the two buttons
+                    share one row; the expanded context block breaks out as
+                    its own full-width row beneath the row (not squeezed
+                    beside the image button). */}
                 {(context || !status.effectiveOffline) && (
-                  <View className="mb-3 flex-row gap-2">
-                    {context ? (
-                      <View className="min-w-0 flex-1">
-                        <ContextSentenceCard
-                          context={context}
-                          l2Code={l2}
-                          l1Code={baseCode(l1Lang.code)}
-                        />
-                      </View>
-                    ) : null}
-                    {!status.effectiveOffline && (
-                      /* Search Google Images — opens the in-app browser
-                         (replaces the in-popup gallery), icon-only, same
-                         outline button family as the row. */
+                  context ? (
+                    <ContextSentenceSection
+                      context={context}
+                      l2Code={l2}
+                      l1Code={baseCode(l1Lang.code)}
+                      imageButton={
+                        !status.effectiveOffline ? (
+                          /* Search Google Images — opens the in-app browser
+                             (replaces the in-popup gallery), icon-only, same
+                             outline button family as the row. */
+                          <Button
+                            onPress={() => setShowImageSearch(true)}
+                            variant="outline"
+                            size="icon"
+                            className="shrink-0"
+                            accessibilityRole="button"
+                            accessibilityLabel={t('action.search_images')}
+                          >
+                            <ImageIcon size={16} color={ICON_PRIMARY} />
+                          </Button>
+                        ) : null
+                      }
+                    />
+                  ) : (
+                    <View className="mb-3 flex-row gap-2 justify-end">
                       <Button
                         onPress={() => setShowImageSearch(true)}
                         variant="outline"
@@ -738,8 +761,8 @@ export function DictionaryPopup({
                       >
                         <ImageIcon size={16} color={ICON_PRIMARY} />
                       </Button>
-                    )}
-                  </View>
+                    </View>
+                  )
                 )}
 
                 {!status.effectiveOffline && (
