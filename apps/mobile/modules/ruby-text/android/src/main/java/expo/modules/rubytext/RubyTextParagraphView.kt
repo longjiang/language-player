@@ -19,6 +19,7 @@ import android.view.ViewConfiguration
 import androidx.appcompat.widget.AppCompatTextView
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -44,16 +45,19 @@ class RubyParagraphRun(
  *
  * Replaces the previous Canvas-painted ExpoView with a real AppCompatTextView
  * so Android's native text selection (long-press handles, selection highlight,
- * onSelectionChanged) works on ruby text. One [RubyReplacementSpan] per token
- * paints the reading above the base text inside the span's box — the same
- * advance/line-height math as the old canvas renderer, so the ruby visuals are
- * unchanged. The span's CharSequence is BASE TEXT ONLY (readings live in the
- * span's draw()), so selection.toString() matches the source text like web's
- * select-none annotations.
+ * onSelectionChanged) works on ruby text. [RubyReplacementSpan]s paint the
+ * reading above the base text — the same advance/line-height math as the old
+ * canvas renderer, so the ruby visuals are unchanged. The spanned
+ * CharSequence is BASE TEXT ONLY (readings live in the span's draw()), so
+ * selection.toString() matches the source text like web's select-none
+ * annotations.
  *
- * Atomic spans are acceptable: the old canvas renderer already never split a
- * run across lines (buildLines() wrapped whole tokens), so span atomicity is
- * behavior parity, not a regression.
+ * Spans are attached ONLY to ruby-bearing word runs (2026-09-03). A
+ * ReplacementSpan is an atomic object to Android's line breaker: when every
+ * run was spanned, each token rendered as one unbreakable "word" (ragged CJK
+ * lines starting with punctuation) and the pre-tokenization whole-block run
+ * did not wrap at all (clipped at the right edge). Span-free runs paint
+ * through TextView's own path and break character by character.
  *
  * Fabric/Yoga does not lay out children of custom ExpoViews, so JS measures an
  * invisible RN Text and passes the exact box via `style` — this view is the
@@ -102,6 +106,17 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       rebuild()
     }
 
+  /** BCP-47 language of the base text (e.g. "ja", "zh-Hans"). Set as the
+   *  TextView's locale so Android's font fallback picks the correct CJK
+   *  script font + glyph variants for the SPAN-FREE runs (plain text paints
+   *  through TextView's own path — the replacement spans choose their own
+   *  typefaces). Mirrors iOS's kCTLanguageAttributeName (SPEC-088). */
+  var language: String? = null
+    set(value) {
+      field = value
+      applyTextLocale()
+    }
+
   /** Bump to collapse the native selection (dictionary popup dismiss) —
    *  SPEC-084 Task 1.3 / Task 2. */
   var clearSelection: Int = 0
@@ -116,12 +131,29 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
   private val onSelection by EventDispatcher<Map<String, Any>>()
   private val onLineGrid by EventDispatcher<Map<String, Any>>()
 
+  /** Tappable span per [RubyParagraphRun.tokenId]; parallel to the last
+   *  [runs] list. Plain (non-tappable) runs never get a span, so Android's
+   *  line breaker sees them as ordinary characters. */
+  private var tapSpans: List<RubyReplacementSpan> = emptyList()
+
   // RN passes sizes in dp; Canvas/TextView draw in px.
   private val density: Float = resources.displayMetrics.density
   private var downX = 0f
   private var downY = 0f
 
   private fun dp(value: Float): Float = value * density
+
+  /** Apply the language tag to the TextView (locale-sensitive font fallback
+   *  and line breaking). Safe to call before the view is attached. */
+  private fun applyTextLocale() {
+    val tag = language
+    if (tag.isNullOrEmpty()) return
+    try {
+      textLocale = Locale.forLanguageTag(tag)
+    } catch (e: Exception) {
+      Log.w("LP Mobile", "[RubyText] textLocale rejected \"$tag\": ${e.message}")
+    }
+  }
 
   init {
     Log.i("LP Mobile", "[RubyText] Android RubyTextParagraphView created (TextView + spans)")
@@ -165,7 +197,14 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
    *  readings are painted inside each span's box, so the base baseline is the
    *  span's own baseline). The reader's translation column baseline-aligns to
    *  this (SPEC-082 parity; iOS emits the same shape from its TextKit 1
-   *  replica). */
+   *  replica).
+   *
+   *  Units: Layout reports PIXELS, but RN consumes dp (this view's own props
+   *  are dp — see [dp]). Emitting raw px inflated the grid ~2.75x on a Pixel
+   *  5a, and the JS side sized the view to that inflated height: the paragraph
+   *  rendered at the top with a blank band below it roughly as tall as the
+   *  paragraph itself. Convert to dp here so both iOS and Android report dp.
+   */
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
     super.onLayout(changed, left, top, right, bottom)
     emitLineGrid()
@@ -176,13 +215,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     if (layout.lineCount <= 0) return
     val lines = ArrayList<Map<String, Double>>(layout.lineCount)
     for (i in 0 until layout.lineCount) {
-      val lineTop = layout.getLineTop(i).toDouble()
-      val lineBottom = layout.getLineBottom(i).toDouble()
+      val lineTop = layout.getLineTop(i) / density
+      val lineBottom = layout.getLineBottom(i) / density
       lines.add(
         mapOf(
           "y" to lineTop,
           "height" to (lineBottom - lineTop),
-          "ascender" to (layout.getLineBaseline(i).toDouble() - lineTop),
+          "ascender" to (layout.getLineBaseline(i) / density - lineTop),
         )
       )
     }
@@ -225,6 +264,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
 
   private fun rebuild() {
     if (runs.isEmpty()) {
+      tapSpans = emptyList()
       setText("")
       return
     }
@@ -238,21 +278,32 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     setTextDirection(if (isRtl) TEXT_DIRECTION_RTL else TEXT_DIRECTION_LTR)
 
     val builder = SpannableStringBuilder()
+    val spans = ArrayList<RubyReplacementSpan>(runs.size)
     for (run in runs) {
       if (run.text.isEmpty()) continue
       val start = builder.length
       builder.append(run.text)
-      builder.setSpan(
-        RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily),
-        start,
-        start + run.text.length,
-        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-      )
+      // Plain runs (whitespace, punctuation, the pre-tokenization whole-block
+      // run, glosses) must stay SPAN-FREE: a ReplacementSpan is an atomic
+      // object to Android's line breaker, so a spanned run can never break
+      // across lines — token runs rendered one unbreakable "word" each and the
+      // pre-tokenization whole-block run didn't wrap at all (clipping at the
+      // right edge). Only ruby-bearing word runs get the span; the span draws
+      // the base glyphs itself (see RubyReplacementSpan.draw), so an unspanned
+      // run paints through TextView's own path and breaks character by
+      // character. Tap lookup consults [tapSpans], not the buffer.
+      if (!run.tappable) continue
+      val span = RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily, language)
+      spans.add(span)
+      if (!run.reading.isNullOrEmpty()) {
+        builder.setSpan(span, start, start + run.text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      }
     }
+    tapSpans = spans
     setText(builder)
     Log.i(
       "LP Mobile",
-      "[RubyText] paragraph rebuild runs=${runs.size} chars=${builder.length} lineHeight=$lineHeight"
+      "[RubyText] paragraph rebuild runs=${runs.size} spans=${spans.size} chars=${builder.length} lineHeight=$lineHeight"
     )
   }
 
@@ -284,19 +335,37 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
 }
 
 /**
- * One token's ruby cell: draws the reading above the base text inside the
- * span's box (centered per token, advance = wider of base/reading) — exactly
- * the old canvas renderer's per-run math, now inside a selectable TextView.
+ * One ruby-bearing token's cell: draws the reading above the base text,
+ * centered per token (advance = wider of base/reading) — exactly the old
+ * canvas renderer's per-run math, now inside a selectable TextView.
+ *
+ * The span is attached ONLY to ruby-bearing word runs (see [RubyTextParagraphView.rebuild]):
+ * a ReplacementSpan is atomic to Android's line breaker, so spans never split
+ * across lines and [draw] always receives a full token. Plain runs stay
+ * span-free and wrap character by character through TextView's own paint path.
  */
 private class RubyReplacementSpan(
   val run: RubyParagraphRun,
   private val density: Float,
   private val fontSize: Float,
   private val readingSize: Float,
-  private val fontFamily: String?
+  private val fontFamily: String?,
+  private val language: String?
 ) : ReplacementSpan() {
 
   private fun dp(value: Float): Float = value * density
+
+  /** Locale for this run's glyph fallback (mirrors the TextView's textLocale —
+   *  spans copy the paint, so the locale is set explicitly per paint). */
+  private fun applyLocale(p: Paint) {
+    val tag = language ?: return
+    if (tag.isEmpty()) return
+    try {
+      p.textLocale = Locale.forLanguageTag(tag)
+    } catch (_: Exception) {
+      // Invalid tags fall back to the paint's default locale.
+    }
+  }
 
   override fun getSize(
     paint: Paint,
@@ -335,12 +404,14 @@ private class RubyReplacementSpan(
     val baseX = x + (advance - baseWidth) / 2f
     val rubyX = x + (advance - readingWidth) / 2f
 
-    // Background highlight (saved word / search hit) over the whole box.
+    // Background highlight (saved word / search hit) over the whole box,
+    // clamped to the drawable region.
     if (run.background != null) {
       val bgPaint = Paint().apply {
         color = applyAlpha(run.background, run.backgroundAlpha)
       }
-      canvas.drawRect(x, top.toFloat(), x + advance, bottom.toFloat(), bgPaint)
+      val drawTop = max(top.toFloat(), y + baseMetrics.ascent - readingBandHeight(reading))
+      canvas.drawRect(x, drawTop, x + advance, bottom.toFloat(), bgPaint)
     }
 
     // Line box: reading sits at the top, base text at the bottom (mirrors the
@@ -353,6 +424,13 @@ private class RubyReplacementSpan(
     canvas.drawText(text, start, end, baseX, baseBaseline, base)
   }
 
+  /** Vertical extent the reading occupies above the base glyphs: its glyph
+   *  body plus the ~2px gap. Clamps the highlight band so a wide (base >
+   *  reading) run doesn't paint its background above the line box into the
+   *  previous line. */
+  private fun readingBandHeight(reading: Paint): Float =
+    reading.descent - reading.ascent + dp(2f)
+
   /** Base glyph paint: per-run size/typeface/color/opacity + decorations. */
   private fun basePaint(paint: Paint): Paint {
     val p = Paint(paint)
@@ -360,6 +438,7 @@ private class RubyReplacementSpan(
     p.color = applyAlpha(run.color, run.opacity)
     p.typeface = makeTypeface(run)
     p.isUnderlineText = run.underline
+    applyLocale(p)
     return p
   }
 
@@ -367,6 +446,11 @@ private class RubyReplacementSpan(
     val p = Paint(paint)
     p.textSize = dp(readingSize)
     p.color = applyAlpha(run.readingColor, run.opacity)
+    // The reading follows the same family (serif/sans-serif setting) as the
+    // base text, mirroring iOS's makeReadingFont; missing glyphs (e.g. kana in
+    // Georgia) cascade through Android's font fallback.
+    p.typeface = makeTypeface(null)
+    applyLocale(p)
     return p
   }
 
