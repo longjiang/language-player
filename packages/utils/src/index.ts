@@ -92,6 +92,7 @@ export {
 export type { WrittenFormEntry, ReduceSearchTermsOptions } from './search-terms';
 export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';
+export { splitPhraseTokens, type SplitPhraseTokensResult } from './split-phrase-tokens';
 export {
   dailyReviewCounterKey,
   msUntilNextDay,
