@@ -10,9 +10,12 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.Selection
 import android.text.style.AbsoluteSizeSpan
+import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.LineHeightSpan
 import android.text.style.ReplacementSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.util.Log
 import android.util.TypedValue
 import android.view.ActionMode
@@ -136,10 +139,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
   private val onSelection by EventDispatcher<Map<String, Any>>()
   private val onLineGrid by EventDispatcher<Map<String, Any>>()
 
-  /** Tappable span per [RubyParagraphRun.tokenId]; parallel to the last
-   *  [runs] list. Plain (non-tappable) runs never get a span, so Android's
-   *  line breaker sees them as ordinary characters. */
-  private var tapSpans: List<RubyReplacementSpan> = emptyList()
+  /** Offset index of the built string: one (start, end, run) entry per run,
+   *  in string order. Tap lookup walks this instead of querying spans —
+   *  reading-less word runs ("hard words only" filter) carry no
+   *  ReplacementSpan (they paint through TextView's own path), but must stay
+   *  tappable like every other word run. Mirrors iOS's
+   *  run(atUtf16Offset:) offset arithmetic. */
+  private var runRanges: List<Triple<Int, Int, RubyParagraphRun>> = emptyList()
 
   // RN passes sizes in dp; Canvas/TextView draw in px.
   private val density: Float = resources.displayMetrics.density
@@ -254,9 +260,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
             // getOffsetForPosition is a TextView method (not on Layout on
             // this compile stub); Layout exposes getOffsetForHorizontal.
             val offset = getOffsetForPosition(event.x, event.y)
-            val span = (text as? Spanned)?.getSpans(offset, offset, RubyReplacementSpan::class.java)
-              ?.firstOrNull()
-            val run = span?.run
+            val run = runAt(offset)
             if (run?.tappable == true) {
               onTokenTap(mapOf("tokenId" to run.tokenId))
             }
@@ -267,9 +271,18 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     return super.onTouchEvent(event)
   }
 
+  /** The run containing [offset] in the built base-text string, or null when
+   *  the tap landed outside any run (past the end of the last run). */
+  private fun runAt(offset: Int): RubyParagraphRun? {
+    for ((start, end, run) in runRanges) {
+      if (offset in start until end) return run
+    }
+    return null
+  }
+
   private fun rebuild() {
     if (runs.isEmpty()) {
-      tapSpans = emptyList()
+      runRanges = emptyList()
       setText("")
       return
     }
@@ -303,11 +316,12 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     val builder = SpannableStringBuilder()
     // The pin span is attached once, after the loop, to the WHOLE string —
     // one span, every line of every paragraph.
-    val spans = ArrayList<RubyReplacementSpan>(runs.size)
+    val ranges = ArrayList<Triple<Int, Int, RubyParagraphRun>>(runs.size)
     for (run in runs) {
       if (run.text.isEmpty()) continue
       val start = builder.length
       builder.append(run.text)
+      ranges.add(Triple(start, builder.length, run))
       // Plain runs (whitespace, punctuation, the pre-tokenization whole-block
       // run, glosses) must stay SPAN-FREE of ReplacementSpans: a
       // ReplacementSpan is an atomic object to Android's line breaker, so a
@@ -317,7 +331,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       // word runs get the replacement span; the span draws the base glyphs
       // itself (see RubyReplacementSpan.draw), so an unspanned run paints
       // through TextView's own path and breaks character by character. Tap
-      // lookup consults [tapSpans], not the buffer.
+      // lookup consults [runRanges], not the buffer.
       //
       // Plain runs still carry their per-run color/size through
       // ForegroundColorSpan / AbsoluteSizeSpan — neither is atomic (they are
@@ -338,13 +352,50 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
         }
         continue
       }
-      val span = RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily, language)
-      spans.add(span)
-      if (!run.reading.isNullOrEmpty()) {
-        builder.setSpan(span, start, start + run.text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+      // Tappable runs without a reading (e.g. the "hard words only" phonetics
+      // filter skips easy words) have no RubyReplacementSpan to paint them —
+      // they fall through to TextView's own path, which knows nothing about
+      // the run's requested color. Without explicit spans they painted with
+      // the TextView's default theme color and rendered DIMMER than
+      // ruby-bearing neighbors (2026-09-03 Android reader report). Fix: apply
+      // the same non-atomic styling spans used by plain runs. None of these
+      // is atomic to the line breaker (CharacterStyle / non-replacement
+      // MetricAffectingSpans), so the span-free wrapping fix stays intact.
+      if (run.reading.isNullOrEmpty()) {
+        builder.setSpan(
+          ForegroundColorSpan(applyAlpha(run.color, run.opacity)),
+          start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+        if (run.bold) {
+          builder.setSpan(
+            StyleSpan(Typeface.BOLD),
+            start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        if (run.italic) {
+          builder.setSpan(
+            StyleSpan(Typeface.ITALIC),
+            start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        if (run.underline) {
+          builder.setSpan(
+            UnderlineSpan(),
+            start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        run.background?.let { bg ->
+          builder.setSpan(
+            BackgroundColorSpan(applyAlpha(bg, run.backgroundAlpha)),
+            start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+          )
+        }
+        continue
       }
+      val span = RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily, language)
+      builder.setSpan(span, start, start + run.text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
-    tapSpans = spans
+    runRanges = ranges
     builder.setSpan(
       PinLineHeightSpan(leadingAdd, baseAscent, baseDescent),
       0,
@@ -352,9 +403,10 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
     )
     setText(builder)
+    val rubySpanCount = ranges.count { !it.third.reading.isNullOrEmpty() }
     Log.i(
       "LP Mobile",
-      "[RubyText] paragraph rebuild runs=${runs.size} spans=${spans.size} chars=${builder.length} lineHeight=$lineHeight pin(add=${leadingAdd} ascent=$baseAscent descent=$baseDescent)"
+      "[RubyText] paragraph rebuild runs=${runs.size} rubySpans=$rubySpanCount chars=${builder.length} lineHeight=$lineHeight pin(add=${leadingAdd} ascent=$baseAscent descent=$baseDescent)"
     )
   }
 
