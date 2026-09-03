@@ -25,6 +25,11 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'ca.zerotohero.go',
       buildNumber: String(PRODUCT_BUILD_NUMBER),
+      // Apple Developer Team (matches exportOptions.plist teamID). Without
+      // this, a regenerated native project (expo prebuild) has no
+      // DEVELOPMENT_TEAM and xcodebuild fails with "Signing for
+      // 'LanguagePlayer3' requires a development team".
+      appleTeamId: '9CS9PCBX32',
       infoPlist: {
         // The app only uses standard, exempt encryption (TLS/HTTPS through
         // Apple frameworks). ITSAppUsesNonExemptEncryption=false tells App
