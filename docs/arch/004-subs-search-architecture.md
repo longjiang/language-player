@@ -212,7 +212,10 @@ slow (`中国` ~31 s, rare 1-2 char terms >30 s). SPEC-045 adds:
 `_reduce_subs_to_context` uses `re.escape` on each term before building the
 match regex (so terms like `c++` can't raise `multiple repeat`), then converts
 the search wildcards back to regex tokens (`*` → any run, `?`/`_` → any single
-char) to stay consistent with the ILIKE path.
+char) to stay consistent with the ILIKE path. Since SPEC-091 it also matches
+the entity-DECODED line text (so a decoded term like `isn't` matches a row
+stored as `isn&#39;t`) and decodes the `line` field of the returned context
+rows — clients never see raw entities.
 
 Measured plan gates (SPEC-045 verification): common terms → `(l2, views)` walk
 stopping at LIMIT; rare/zero-match terms → Bitmap Index Scan on the n-gram GIN
@@ -322,10 +325,11 @@ SubsSearchResults
 
 1. **Fetch**: `GET /subs-search?terms=…&l2=ja&limit=500&context=3`
 2. **Parse**: `parseSubsL2()` (PapaParse) converts CSV → `SubtitleLine[]`. Handles embedded newlines in quoted fields.
-3. **Match**: `findMatchLine(lines, term)` returns index of first line containing any search form.
-4. **Filter**: Client-side removes videos where zero lines match (the ~81 header-only results from the server).
-5. **Sort**: Lines sorted by `starttime` ascending — **required** by `SubtitleDisplay`'s sequential active-index logic.
-6. **Display**: Sorted lines passed as `initialLines` to `SubtitleDisplay` in singleline mode.
+3. **Entities**: decoded server-side since SPEC-091 (`_reduce_subs_to_context` decodes the `line` field after CSV parsing); `parseSubtitleCSV()` still applies an idempotent client-side decode as a safety net for raw-CSV consumers.
+4. **Match**: `findMatchLine(lines, term)` returns index of first line containing any search form.
+5. **Filter**: Client-side removes videos where zero lines match (the ~81 header-only results from the server).
+6. **Sort**: Lines sorted by `starttime` ascending — **required** by `SubtitleDisplay`'s sequential active-index logic.
+7. **Display**: Sorted lines passed as `initialLines` to `SubtitleDisplay` in singleline mode.
 
 ### YouTube Player Integration
 
@@ -399,7 +403,7 @@ The `line` field in the subtitle CSV often contains embedded newlines (the subti
 
 ### 6. Cache Invalidation
 
-The server's disk cache for subs-search results has no automatic invalidation. If subtitle data is updated in Directus, the cache must be manually cleared:
+The server's disk cache for subs-search results has no automatic invalidation. If subtitle data is updated in Directus — or server-side response post-processing changes, as in SPEC-091 (entity decoding) — the cache must be manually cleared:
 
 ```bash
 find cache/subs_search -type f -delete

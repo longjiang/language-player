@@ -92,7 +92,7 @@ Response:
 
 **Server-side flow:**
 1. Fetch subtitle CSV from Directus `youtube_videos.subs_l2` or YouTube transcript API
-2. Parse CSV into individual subtitle lines
+2. Parse CSV into individual subtitle lines (HTML entities decoded first — SPEC-091 — so keys match the decoded text clients hash)
 3. For each line, compute `MD5(line_text)` as the cache key
 4. Call `lemmatize_unified.lemmatize(line_text, l2)` → `LemmatizedToken[]`
 5. Store on disk via `utils_cache.py` (`save_to_lemmatized_subs_cache`)
