@@ -118,6 +118,10 @@ interface PaginatedReaderProps {
   onViewportLayout?: (width: number, height: number) => void;
   /** Follow an in-book link (SPEC-049 §9.7) — passed to linked tokens. */
   onOpenLink?: (href: string) => void;
+  /** Reader attribution context threaded to TokenizedText → DictionaryPopup:
+   *  saved words carry `textTitle` (book/chapter/webpage/image title) — web
+   *  parity of apps/web's ReaderTextBlock `ctx` prop. */
+  ctx?: { textTitle?: string; youtube_id?: string; videoTitle?: string };
   /** Active search-match highlight (block + char range), if any. */
   highlight?: { blockIndex: number; start: number; end: number } | null;
   /** Text scale for reader blocks (1 = user zoom, SPEC-051). */
@@ -188,6 +192,7 @@ export function PaginatedReader({
   measureNonce = 0,
   onViewportLayout,
   onOpenLink,
+  ctx,
   highlight,
   textScale = 1,
   onVisibleBlocksChange,
@@ -765,7 +770,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}>
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, maxImageHeight),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, maxImageHeight, ctx),
           )}
         </View>
         {onToggleTranslation && (
@@ -834,7 +839,7 @@ export function PaginatedReader({
                         contentWidth + the hidden measuring mirror). */}
                     <View style={{ width: contentWidth, alignSelf: 'center' }}>
                       {visibleBlocks.map((block, bi) =>
-                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, maxImageHeight),
+                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, maxImageHeight, ctx),
                       )}
                     </View>
                   </ScrollView>
@@ -1132,6 +1137,8 @@ function renderBlock(
   debugRubyFontFamily: string | null = null,
   debugRubyMetrics = false,
   maxImageHeight = 0,
+  /** Reader attribution context → TokenizedText → DictionaryPopup save flow. */
+  ctx?: { textTitle?: string; youtube_id?: string; videoTitle?: string },
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -1167,7 +1174,7 @@ function renderBlock(
         <View className="flex-row bg-muted/50">
           {block.header.map((cell, ci) => (
             <View key={ci} className={`px-2 py-1.5 ${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} deferTokenization={deferTokenization} textScale={scale} /></Text>
+              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} deferTokenization={deferTokenization} textScale={scale} ctx={ctx} /></Text>
             </View>
           ))}
         </View>
@@ -1176,7 +1183,7 @@ function renderBlock(
           <View key={ri} className={`flex-row ${ri < block.rows.length - 1 ? 'border-b border-border' : ''}`}>
             {row.map((cell, ci) => (
               <View key={ci} className={`px-2 py-1.5 ${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} deferTokenization={deferTokenization} textScale={scale} />
+                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} deferTokenization={deferTokenization} textScale={scale} ctx={ctx} />
               </View>
             ))}
           </View>
@@ -1276,6 +1283,7 @@ function renderBlock(
             debugRubyMetrics={debugRubyMetrics}
             bold={block.type === 'heading'}
             selectionDictionary={selectionDictionary}
+            ctx={ctx}
           />
     );
     // SPEC-082 Task 4: when a translation sentence is active for this block,

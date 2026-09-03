@@ -276,6 +276,9 @@ export default function WebReaderScreen() {
                   onOpenToc={tocSearch.headings.length > 0 ? tocSearch.openToc : undefined}
                   onOpenSearch={tocSearch.openSearch}
                   highlight={tocSearch.highlight}
+                  // Saved words carry the page <title> (web parity:
+                  // apps/web web-reader passes `title || 'Web Reader'`).
+                  ctx={{ textTitle: title || t('title.web_reader') }}
                   t={t}
                 />
               </View>

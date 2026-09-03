@@ -454,6 +454,9 @@ export default function ReaderScreen() {
                 onOpenToc={tocSearch.headings.length > 0 ? tocSearch.openToc : undefined}
                 onOpenSearch={tocSearch.openSearch}
                 highlight={tocSearch.highlight}
+                // Saved words carry the note's title (web parity:
+                // apps/web reader page passes `title || 'Reader'`).
+                ctx={{ textTitle: notes.currentNote?.title || t('title.notes_reader') }}
                 t={t}
               />
             </View>
