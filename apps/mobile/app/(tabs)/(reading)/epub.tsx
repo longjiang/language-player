@@ -18,7 +18,7 @@ import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
-import { PanelTopOpen, X, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { PanelTopOpen, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react-native';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger, log, logwarn } from '@/lib/logger';
@@ -82,6 +82,13 @@ export default function EpubReaderScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
+  /** The page each history entry was pushed FROM, parallel to historyRef —
+   *  labels the "Back to page {n}" button (1-based, like the page counter). */
+  const historyPageRef = useRef<number[]>([]);
+  /** Whether a jump is undoable (drives the chromeless Back-to-page button). */
+  const [canJumpBack, setCanJumpBack] = useState(false);
+  /** Latest page the pagination reported (for the button label). */
+  const [currentPage, setCurrentPage] = useState(1);
   const pendingJumpRef = useRef<BookLocation | null>(null);
   const saveLocationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Auto-open the last-read book once per mount (returning to the epub
@@ -90,6 +97,7 @@ export default function EpubReaderScreen() {
   const autoOpenedRef = useRef(false);
 
   useEffect(() => { locationRef.current = location; }, [location]);
+
 
   /** Persist the current position — debounced so rapid flipping doesn't write
    *  the location to disk on every turn. Flushed on close/unmount. */
@@ -138,6 +146,12 @@ export default function EpubReaderScreen() {
     viewportReserve: { top: TOP_CHROME_RESERVE, bottom: BOTTOM_CHROME_RESERVE },
   });
 
+  // Track the 1-based page for the chromeless "Back to page {n}" label.
+  // pagination.page is 0-based (the reader's pageInfoOverlay adds 1).
+  useEffect(() => {
+    setCurrentPage((p) => (pagination.page + 1 === p ? p : pagination.page + 1));
+  }, [pagination.page]);
+
   // Seek to the resume location once the reader enters content (cover tap or
   // straight-to-content bookshelf open).
   useEffect(() => {
@@ -153,6 +167,8 @@ export default function EpubReaderScreen() {
     const last = stack[stack.length - 1];
     if (last && last.blockIndex === cur.blockIndex) return;
     historyRef.current = [...stack, cur].slice(-50);
+    historyPageRef.current = [...historyPageRef.current, paginationRef.current.page].slice(-50);
+    setCanJumpBack(true);
   }, []);
 
   // Stable refs to the epub/pagination objects so callbacks passed down to
@@ -201,6 +217,8 @@ export default function EpubReaderScreen() {
     setOpeningId(id);
     setLocation(null);
     historyRef.current = [];
+    historyPageRef.current = [];
+    setCanJumpBack(false);
     log('[epub] handleOpenBook start', { id, label: epub.books.find((b) => b.id === id)?.fileName ?? null });
     try {
       const start = await epub.openBook(id, { skipCover: true });
@@ -247,6 +265,8 @@ export default function EpubReaderScreen() {
   const handleAddBook = useCallback(async () => {
     setLocation(null);
     historyRef.current = [];
+    historyPageRef.current = [];
+    setCanJumpBack(false);
     await epub.pickFile(l2Lang.code);
   }, [epub, l2Lang.code]);
 
@@ -260,6 +280,8 @@ export default function EpubReaderScreen() {
     flushSaveLocation(); // persist the final position before the book closes
     setLocation(null);
     historyRef.current = [];
+    historyPageRef.current = [];
+    setCanJumpBack(false);
     setChromeVisible(false);
     setTocOpen(false);
     setSearchOpen(false);
@@ -292,6 +314,21 @@ export default function EpubReaderScreen() {
     pushHistory();
     jumpToBlock({ blockIndex: match.blockIndex, offset: match.start });
   }, [pushHistory, jumpToBlock]);
+
+  // Chromeless "Back to page {n}": undo the last in-book jump (TOC, search,
+  // internal link) and return to the page it was made from.
+  const handleJumpBack = useCallback(() => {
+    const prev = historyRef.current.pop();
+    const prevPage = historyPageRef.current.pop();
+    if (prev) {
+      setHighlight(null);
+      setCanJumpBack(historyRef.current.length > 0);
+      jumpToBlock(prev);
+      if (prevPage) setCurrentPage(prevPage);
+    } else {
+      setCanJumpBack(false);
+    }
+  }, [jumpToBlock]);
 
   const handleOpenLink = useCallback((href: string) => {
     if (/^https?:\/\//i.test(href)) {
@@ -563,6 +600,18 @@ export default function EpubReaderScreen() {
           className="absolute z-40 flex-row items-center gap-2"
           style={{ top: (insets.top + 57) / 2 - 18, right: closeRightMargin }}
         >
+          {canJumpBack && (
+            <Button
+              onPress={handleJumpBack}
+              variant="outline"
+              size="sm"
+              accessibilityRole="button"
+              accessibilityLabel={t('action.back_to_page', { n: currentPage })}
+            >
+              <ArrowLeft size={14} color={ICON_MUTED} />
+              {isMd && <Text className={buttonTextClass('outline')}>{t('action.back_to_page', { n: currentPage })}</Text>}
+            </Button>
+          )}
           <Button
             onPress={toggleChrome}
             variant="outline"

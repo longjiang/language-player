@@ -31,6 +31,7 @@
         "back_to_documentation": "กลับไปยังเอกสาร",
         "back_to_home_page": "กลับไปหน้าแรก",
         "back_to_login": "กลับไปเข้าสู่ระบบ",
+        "back_to_page": "กลับไปหน้า {n}",
         "back_to_search": "กลับไปที่การค้นหา",
         "browse": "เรียกดู",
         "browse_folder": "เรียกดูโฟลเดอร์",

@@ -95,6 +95,14 @@ export default function EpubPage() {
   /** Locations to return to via Back — pushed on in-book jumps (TOC clicks,
    *  search results, internal links), never on plain page turns. */
   const historyRef = useRef<BookLocation[]>([]);
+  /** The 1-based page each history entry was pushed FROM, parallel to
+   *  historyRef — labels the "Back to page {n}" button. */
+  const historyPageRef = useRef<number[]>([]);
+  /** Current reader page (reported by the panel) for labeling the Back
+   *  button and for pushing onto historyPageRef. */
+  const [currentPage, setCurrentPage] = useState(1);
+  /** Whether the Back-to-page button should show (a jump is undoable). */
+  const [canJumpBack, setCanJumpBack] = useState(false);
   /** Immersive reader chrome: hidden by default, toggled by tapping blank space. */
   const [chromeVisible, setChromeVisible] = useState(false);
   /** TOC and Search are modals now (the sidebar is gone). */
@@ -119,7 +127,9 @@ export default function EpubPage() {
       return; // same page — don't grow the stack
     }
     historyRef.current = [...stack, loc].slice(-50);
-  }, []);
+    historyPageRef.current = [...historyPageRef.current, currentPage].slice(-50);
+    setCanJumpBack(true);
+  }, [currentPage]);
 
   /** Jump from a user action, remembering the page they came from. */
   const navigateTo = useCallback((loc: BookLocation | null) => {
@@ -277,6 +287,8 @@ export default function EpubPage() {
     setLocation(null);
     pendingStartRef.current = null;
     historyRef.current = [];
+    historyPageRef.current = [];
+    setCanJumpBack(false);
   }, [epub]);
 
   // Close the book and return to the bookshelf (the handle is kept).
@@ -303,14 +315,20 @@ export default function EpubPage() {
     return () => registerCloseReader(null);
   }, [registerCloseReader]);
 
-  // Back: undo the last in-book jump (e.g. a footnote link); when there is
-  // nothing to return to, close the book and go back to the bookshelf.
+  // Back (chromeless row button): undo the last in-book jump (TOC, search,
+  // internal link) and return to the page it was made from. Falls back to
+  // closing the book when the stack is empty (title-row back arrow keeps its
+  // original close/shelf behavior).
   const handleBack = useCallback(() => {
     const prev = historyRef.current.pop();
+    const prevPage = historyPageRef.current.pop();
     if (prev) {
       setHighlight(null);
+      setCanJumpBack(historyRef.current.length > 0);
       gotoLocation(prev);
+      if (prevPage) setCurrentPage(prevPage);
     } else {
+      setCanJumpBack(false);
       void handleClose();
     }
   }, [gotoLocation, handleClose]);
@@ -440,6 +458,18 @@ export default function EpubPage() {
               className="absolute z-40 flex items-center gap-2"
               style={{ top: (HEADER_HEIGHT - 36) / 2, right: closeRightMargin }}
             >
+              {canJumpBack && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBack}
+                  aria-label={t('action.back_to_page', { n: currentPage })}
+                  title={t('action.back_to_page', { n: currentPage })}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">{t('action.back_to_page', { n: currentPage })}</span>
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -496,6 +526,7 @@ export default function EpubPage() {
                   {total > 0 ? ` / ${isEstimate ? '~' : ''}${total}` : ''}
                 </span>
               )}
+              onPageChange={(page) => setCurrentPage(page)}
             />
           </div>
         </>

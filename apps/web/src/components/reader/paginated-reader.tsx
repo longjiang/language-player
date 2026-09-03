@@ -135,6 +135,9 @@ export interface PaginatedReaderProps {
   topOverlay?: ReactNode;
   /** Immersive: overlay rendered in the bottom reserved strip (muted page count). */
   pageInfoOverlay?: (page: number, total: number, isEstimate: boolean) => ReactNode;
+  /** Reports the current 1-based page (and total) whenever it changes — used
+   *  by the epub page to label the "Back to page {n}" jump-undo button. */
+  onPageChange?: (page: number, totalPages: number) => void;
 
   /**
    * When true, arrow/PageUp/PageDown/space keys do NOT page this reader.
@@ -180,6 +183,7 @@ export function PaginatedReader({
   onOpenThumbnails,
   topOverlay,
   pageInfoOverlay,
+  onPageChange,
   disableKeyboardPaging = false,
   renderBlock,
   renderMeasureBlock,
@@ -295,6 +299,11 @@ export function PaginatedReader({
     window.addEventListener('resize', updateScrollState);
     return () => window.removeEventListener('resize', updateScrollState);
   }, [updateScrollState, pager.page, pager.measureWindow, showTranslation]);
+
+  // Report page changes upward (epub page's "Back to page {n}" button).
+  useEffect(() => {
+    onPageChange?.(pager.page, pager.totalPages);
+  }, [onPageChange, pager.page, pager.totalPages]);
   const scrollPageToBottom = useCallback(() => {
     const vp = pager.viewportRef.current;
     if (!vp) return;

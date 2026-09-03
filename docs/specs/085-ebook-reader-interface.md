@@ -441,7 +441,7 @@ Elements:
 §7.1/§8.1 previously had the close button visible only when the chrome is ON.
 Per product direction (paginated reader requirements), the affordance flipped:
 
-- **Chrome OFF (chromeless):** two standard **shadcn buttons** (rectangular,
+- **Chrome OFF (chromeless):** standard **shadcn buttons** (rectangular,
   rounded corners — not 24 px circles) sit top-right, **vertically centred on
   the site top bar's middle** (revised 2026-09-01 — they previously aligned
   with the chapter title). The bar spans `y ∈ [0, H]` (mobile:
@@ -455,6 +455,15 @@ Per product direction (paginated reader requirements), the affordance flipped:
   screens the label is the action string (`action.show_toolbars` /
   `action.close`); the close button's **right edge lines up with the
   per-block action-menu trigger (⋮)** in the text below — see §17.2.
+- **Back to page {n} (2026-09-02):** a third chromeless button appears to the
+  LEFT of "show toolbars" **only while an in-book jump is undoable** — i.e.
+  after a search-navigation, chapter-navigation, or internal-link jump
+  pushed the pre-jump page onto the history stack. Pressing it pops the
+  stack and returns to the page the jump was made from (label
+  `action.back_to_page`, icon-only below 768 px). Plain page turns never
+  push history, so the button stays hidden during normal reading. Both
+  platforms (web `historyRef` + `historyPageRef`; mobile the same via
+  `pagination.page`).
 - **Chrome ON:** no close button. Escape hatches are the chromeless close and
   the nav-menu same-route close (`requestCloseReader`).
 

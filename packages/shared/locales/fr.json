@@ -31,6 +31,7 @@
         "back_to_documentation": "Retour à la documentation",
         "back_to_home_page": "Retour à la page d'accueil",
         "back_to_login": "Retour à la connexion",
+        "back_to_page": "Retour à la page {n}",
         "back_to_search": "Retour à la recherche",
         "browse": "Parcourir",
         "browse_folder": "Parcourir le dossier",

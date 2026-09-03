@@ -31,6 +31,7 @@
         "back_to_documentation": "Back to Documentation",
         "back_to_home_page": "Back to Home Page",
         "back_to_login": "Back to login",
+        "back_to_page": "Back to page {n}",
         "back_to_search": "Back to Search",
         "browse": "Browse",
         "browse_folder": "Browse folder",

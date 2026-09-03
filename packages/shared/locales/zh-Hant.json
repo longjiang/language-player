@@ -31,6 +31,7 @@
         "back_to_documentation": "返回文件",
         "back_to_home_page": "返回首頁",
         "back_to_login": "返回登入",
+        "back_to_page": "返回第 {n} 頁",
         "back_to_search": "返回搜尋",
         "browse": "瀏覽",
         "browse_folder": "瀏覽資料夾",
