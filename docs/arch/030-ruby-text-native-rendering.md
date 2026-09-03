@@ -6,7 +6,7 @@
 - **Type**: as-built + reference
 - **Status**: accepted
 - **Created**: 2026-08-16
-- **Last Updated**: 2026-09-03 (Android line-grid units; span-free plain runs; serif exception; Android baseline pin — one baseline per line)
+- **Last Updated**: 2026-09-03 (Android line-grid units; span-free plain runs; reading-less word-run color parity + offset-based taps; serif exception; Android baseline pin — one baseline per line)
 - **ROADMAP Phase**: Cross-cutting (mobile rendering)
 - **Scope**: Mobile (`apps/mobile/modules/ruby-text`, `apps/mobile/components/RubyText.tsx`, `apps/mobile/components/TokenizedText.tsx`)
 - **See also**:
@@ -313,6 +313,22 @@ their per-run color/size through `ForegroundColorSpan` /
 `AbsoluteSizeSpan` — neither is atomic to the line breaker, so the 2026-09-03
 span-free wrapping fix stays intact (glosses were painting white and full
 size; byeonggi painted at base size).
+
+**Reading-less word runs need styling spans too (2026-09-03 — color parity).**
+With phonetics on "hard words only", easy words are tappable runs with no
+reading: no `RubyReplacementSpan` paints them, and — before this fix — no
+other span carried their color, so they painted through TextView's own path
+with the TextView's **default theme color** and rendered visibly dimmer than
+ruby-bearing neighbors (screenshot measurement: p90 glyph luminance 188 vs
+245 for ruby words on the same line). Fix: tappable-without-reading runs get
+the same non-atomic `ForegroundColorSpan` (+ `StyleSpan`/`UnderlineSpan`/
+`BackgroundColorSpan` when requested) that plain runs get; all remain
+character-breakable. **Tap mapping is offset-based** (`runRanges` walk in
+`onTouchEvent`, mirroring iOS `run(atUtf16Offset:)`) — a span query
+(`getSpans(…, RubyReplacementSpan)`) misses exactly these runs and made easy
+words un-tappable; verify from `adb logcat` with
+`[RubyText] paragraph rebuild … rubySpans=N` (N < runs count is expected with
+the hard-words filter on).
 
 Verification from `adb logcat` (`[RubyText] paragraph rebuild …
 pin(add=… ascent=… descent=…)`): `add + ascent + descent` must equal the

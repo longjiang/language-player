@@ -3,7 +3,8 @@
 - **Status**: Accepted
 - **Created**: 2026-08-15
 - **Last updated**: 2026-09-03 (Android paragraph described as implemented:
-  AppCompatTextView + spans, span-free plain runs; line grid in dp;
+  AppCompatTextView + spans, span-free plain runs; reading-less word runs get
+  styling spans + offset-based taps; line grid in dp;
   LineHeightSpan baseline pin)
 - **Scope**: Mobile (`apps/mobile`)
 
@@ -69,6 +70,13 @@ line as a single layout):
   unbreakable "word" and the pre-tokenization plain render didn't wrap at all
   (2026-09-03 fix). The view's `textLocale` (from the `language` prop) drives
   locale-sensitive glyph fallback for the span-free runs.
+  Word runs whose phonetics are filtered out (e.g. "hard words only") have no
+  reading and therefore no `RubyReplacementSpan` — they paint through the
+  TextView's own path with non-atomic styling spans (`ForegroundColorSpan`,
+  `StyleSpan`, `UnderlineSpan`, `BackgroundColorSpan`) so their color matches
+  ruby-bearing neighbors (without them they rendered dimmer — 2026-09-03
+  Android fix). Taps map the touched offset to its run by offset arithmetic
+  (`runRanges`), so reading-less word runs stay tappable like iOS.
   The line box is pinned with a `LineHeightSpan` (2026-09-03 baseline fix,
   supersedes the original `setLineSpacing` pin): the extra leading is
   absorbed into the TOP of each line so span-free runs and ruby spans share
