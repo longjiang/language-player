@@ -215,13 +215,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     if (layout.lineCount <= 0) return
     val lines = ArrayList<Map<String, Double>>(layout.lineCount)
     for (i in 0 until layout.lineCount) {
-      val lineTop = layout.getLineTop(i) / density
-      val lineBottom = layout.getLineBottom(i) / density
+      val lineTop = layout.getLineTop(i).toDouble() / density
+      val lineBottom = layout.getLineBottom(i).toDouble() / density
       lines.add(
         mapOf(
           "y" to lineTop,
           "height" to (lineBottom - lineTop),
-          "ascender" to (layout.getLineBaseline(i) / density - lineTop),
+          "ascender" to (layout.getLineBaseline(i).toDouble() / density - lineTop),
         )
       )
     }
@@ -429,7 +429,7 @@ private class RubyReplacementSpan(
    *  reading) run doesn't paint its background above the line box into the
    *  previous line. */
   private fun readingBandHeight(reading: Paint): Float =
-    reading.descent - reading.ascent + dp(2f)
+    reading.fontMetrics.descent - reading.fontMetrics.ascent + dp(2f)
 
   /** Base glyph paint: per-run size/typeface/color/opacity + decorations. */
   private fun basePaint(paint: Paint): Paint {
@@ -454,11 +454,11 @@ private class RubyReplacementSpan(
     return p
   }
 
-  private fun makeTypeface(run: RubyParagraphRun): Typeface {
+  private fun makeTypeface(run: RubyParagraphRun?): Typeface {
     val style = when {
-      run.bold && run.italic -> Typeface.BOLD_ITALIC
-      run.bold -> Typeface.BOLD
-      run.italic -> Typeface.ITALIC
+      run?.bold == true && run.italic == true -> Typeface.BOLD_ITALIC
+      run?.bold == true -> Typeface.BOLD
+      run?.italic == true -> Typeface.ITALIC
       else -> Typeface.NORMAL
     }
     return if (fontFamily != null) {
