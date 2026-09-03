@@ -261,6 +261,19 @@ export default function ReaderScreen() {
       {/* ── Default screen (no note open): dashed import area ── */}
       {!hasOpenNote ? (
         <View className="flex-1 px-4 pb-6">
+          {/* List All Notes — its own row ABOVE the drop area, aligned right
+              (the usual sidebar-toggle button position). */}
+          <View className="flex-row justify-end pb-2">
+            <Pressable
+              onPress={() => (isWide ? setSidebarOpen(true) : setMobileOpen(true))}
+              className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
+              accessibilityRole="button"
+              accessibilityLabel={t('action.list_all_notes')}
+            >
+              <PanelRightOpen size={14} color={ICON_MUTED} />
+              <Text className="text-xs font-medium text-foreground">{t('action.list_all_notes')}</Text>
+            </Pressable>
+          </View>
           <View className="flex-1 items-center justify-center gap-4 rounded-xl border-2 border-dashed border-border px-6 py-10">
             <FileText size={44} color={ICON_MUTED} />
             <Text className="text-center text-sm font-medium text-foreground">
@@ -270,25 +283,25 @@ export default function ReaderScreen() {
               {t('msg.notes_reader_intro')}
             </Text>
             {notice && <Text className="text-center text-xs text-destructive">{notice}</Text>}
-            {/* New Note + Browse on one row (two buttons fit), Paste + List All below */}
+            {/* New + Import Files on one row, Paste centered below */}
             <View className="flex-row items-center justify-center gap-2">
               <Pressable
                 onPress={handleNewNote}
                 className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
                 accessibilityRole="button"
-                accessibilityLabel={t('action.new_note')}
+                accessibilityLabel={t('action.new')}
               >
                 <FileText size={14} color={ICON_ON_PRIMARY} />
-                <Text className="text-xs font-medium text-primary-foreground">{t('action.new_note')}</Text>
+                <Text className="text-xs font-medium text-primary-foreground">{t('action.new')}</Text>
               </Pressable>
               <Pressable
                 onPress={() => void importTextFiles()}
                 className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
                 accessibilityRole="button"
-                accessibilityLabel={t('action.browse')}
+                accessibilityLabel={t('action.import_files')}
               >
                 <FolderOpen size={14} color={ICON_ON_PRIMARY} />
-                <Text className="text-xs font-medium text-primary-foreground">{t('action.browse')}</Text>
+                <Text className="text-xs font-medium text-primary-foreground">{t('action.import_files')}</Text>
               </Pressable>
             </View>
             <View className="flex-row items-center justify-center gap-2">
@@ -300,15 +313,6 @@ export default function ReaderScreen() {
               >
                 <ClipboardIcon size={14} color={ICON_MUTED} />
                 <Text className="text-xs font-medium text-foreground">{t('action.paste')}</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => (isWide ? setSidebarOpen(true) : setMobileOpen(true))}
-                className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
-                accessibilityRole="button"
-                accessibilityLabel={t('action.list_all_notes')}
-              >
-                <PanelRightOpen size={14} color={ICON_MUTED} />
-                <Text className="text-xs font-medium text-foreground">{t('action.list_all_notes')}</Text>
               </Pressable>
             </View>
           </View>
