@@ -48,7 +48,9 @@ export interface NativeRubyTextParagraphRun {
   reading?: string | null;
   /** Per-run base font size override (e.g. byeonggi at readingSize). */
   fontSize?: number;
-  /** Whether taps on this run dispatch onTokenTap (words only). */
+  /** Whether taps on this run dispatch onTokenTap (words only). On Android,
+   *  non-tappable runs stay span-free so they can break across lines; taps
+   *  are mapped through the paragraph's own tap-span table. */
   tappable: boolean;
   color: string;
   readingColor: string;
@@ -75,8 +77,10 @@ export interface NativeRubyTextParagraphLineGrid {
  * Props for the paragraph-level RubyText view.
  *
  * The view renders ALL runs as one attributed string so Core Text can apply
- * ruby alignment/overhang against real neighbors. iOS only for now; Android
- * and Expo Go fall back to per-token RubyText views.
+ * ruby alignment/overhang against real neighbors. Implemented on iOS
+ * (UITextView + CTRubyAnnotation) and Android (AppCompatTextView + ruby
+ * replacement spans on ruby-bearing runs only); Expo Go falls back to
+ * per-token RubyText views.
  */
 export interface NativeRubyTextParagraphProps {
   runs: NativeRubyTextParagraphRun[];
@@ -92,8 +96,9 @@ export interface NativeRubyTextParagraphProps {
   textAlign?: 'left' | 'center' | 'right';
   fontFamily?: string | null;
   /** BCP-47 language of the base text (ja / zh-Hans / zh-Hant / ko …). Applied
-   *  as the language attribute on base + reading runs so the system font's CJK
-   *  fallback picks the correct script font and glyph variants (SPEC-087). */
+   *  as the language attribute on base + reading runs (iOS) and as the text
+   *  locale (Android) so the system font's CJK fallback picks the correct
+   *  script font and glyph variants (SPEC-087/SPEC-088). */
   language?: string | null;
   /** Optional separate font for READINGS only (furigana/kana). When not set,
    *  readings use `fontFamily`. Diagnostic: compare Hiragino vs the system
@@ -109,8 +114,10 @@ export interface NativeRubyTextParagraphProps {
    *  (per-line y/height/ascender — ascender is the BASE baseline's offset from
    *  the line top, ruby band included, so the reader's translation baseline
    *  alignment can match the real render). iOS measures it on an in-memory
-   *  TextKit 1 replica of the live view; Android reports its own live
-   *  TextView layout. */
+   *  TextKit 2 replica of the live view; Android reports its own live
+   *  TextView layout. Both platforms report DP (Android converts from its
+   *  pixel-based Layout — emitting raw px inflated the grid by the device
+   *  density and sized the view ~2.75x too tall on a Pixel 5a). */
   onLineGrid?: (event: { nativeEvent: { lines: NativeRubyTextParagraphLineGrid[] } }) => void;
   /** Dispatched with { start, end } (UTF-16 offsets into the BASE text —
    *  readings are ruby attributes, not part of the string) when the user

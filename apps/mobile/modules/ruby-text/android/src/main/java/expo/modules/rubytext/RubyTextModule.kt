@@ -115,6 +115,10 @@ class RubyTextModule : Module() {
         view.fontFamily = family
       }
 
+      Prop("language") { view: RubyTextParagraphView, language: String? ->
+        view.language = language
+      }
+
       Prop("clearSelection") { view: RubyTextParagraphView, nonce: Int ->
         view.clearSelection = nonce
       }
