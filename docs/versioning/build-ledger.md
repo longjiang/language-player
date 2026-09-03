@@ -54,7 +54,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 35 | ccf27b9e | 2026-08-24 | — | dev 26 (Debug; deleted; lp-dev-26-ios-device-ccf27b9e1450.zip; 6cc8c55d3b4473c0e0844e1ed160fb9b78bd6f059bedccba60d003c038fa11b8) |
 | 36 | 57c4d862 | 2026-08-24 | 3.3.4 — iOS TestFlight (b13, consumed) · 3.3.4 — Android Internal testing (b13, consumed) | — |
 | 37 | a7b9b1c3 | 2026-08-25 | 3.4.0 — Android Internal testing (b14, consumed) · 3.4.0 — iOS TestFlight (b14, consumed) | — |
-| 38 | a9f95469 | 2026-08-27 | — | dev 27 (Debug; active; lp-dev-27-ios-device-a9f95469f3da.zip; 44ef0901cbb24d8be11ed1b8c5d377223bea9ca0742eb0bb251cf8223a4f0e86) |
+| 38 | a9f95469 | 2026-08-27 | — | dev 27 (Debug; archived; lp-dev-27-ios-device-a9f95469f3da.zip; 44ef0901cbb24d8be11ed1b8c5d377223bea9ca0742eb0bb251cf8223a4f0e86) |
 | 39 | 01828c34 | 2026-08-27 | 3.4.1 — iOS TestFlight (b15, consumed) · 3.4.1 — Android Internal testing (b15, consumed) | — |
 | 40 | 2d8e744c | 2026-08-29 | 3.4.2 — Android internal (b16, consumed) · 3.4.2 — iOS TestFlight (b16, consumed) | — |
 | 41 | 3738fedc | 2026-08-29 | 3.4.3 — Android internal (b17, consumed) · 3.4.3 — iOS TestFlight (b17, consumed) | — |
@@ -63,6 +63,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 44 | 286d455a | 2026-08-29 | 3.4.4 — iOS TestFlight (b18, consumed) · 3.4.4 — Android Internal testing (b18, consumed) | — |
 | 45 | e2e61965 | 2026-08-31 | 3.4.5 — iOS TestFlight (b19, consumed) | — |
 | 46 | 7cdbc852 | 2026-09-01 | 3.4.6 — iOS TestFlight (b20, consumed) · 3.4.6 — Android Internal testing (b20, consumed) | — |
+| 47 | 79c75149 | 2026-09-03 | — | dev 30 (Debug; active; lp-dev-30-ios-device-79c751494df8.zip; 3742de1cf4dd248e60de602fdca5b5a78a5d97e47d0102982b567134bba1250e) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
