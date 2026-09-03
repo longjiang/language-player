@@ -31,6 +31,7 @@
         "back_to_documentation": "ドキュメントに戻る",
         "back_to_home_page": "ホームページに戻る",
         "back_to_login": "ログインに戻る",
+        "back_to_page": "{n} ページに戻る",
         "back_to_search": "検索に戻る",
         "browse": "参照",
         "browse_folder": "フォルダを選択",

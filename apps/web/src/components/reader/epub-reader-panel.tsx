@@ -87,6 +87,9 @@ interface EpubReaderPanelProps {
   topOverlay?: React.ReactNode;
   /** Muted page count rendered in the bottom reserved strip. */
   pageInfoOverlay?: (page: number, total: number, isEstimate: boolean) => React.ReactNode;
+  /** Reports the current 1-based page whenever it changes (the epub page's
+   *  "Back to page {n}" jump-undo button). */
+  onPageChange?: (page: number, totalPages: number) => void;
 }
 
 export function EpubReaderPanel({
@@ -110,6 +113,7 @@ export function EpubReaderPanel({
   onOpenSearch,
   topOverlay,
   pageInfoOverlay,
+  onPageChange,
 }: EpubReaderPanelProps) {
   const { display, getL2, tokenizedText, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
@@ -298,6 +302,7 @@ export function EpubReaderPanel({
       onOpenSearch={onOpenSearch}
       topOverlay={topOverlay}
       pageInfoOverlay={pageInfoOverlay}
+      onPageChange={onPageChange}
       readerHorizontalPadding={readerPadding}
       onLemmatize={onLemmatize}
       onPageTranslate={onPageTranslate}
