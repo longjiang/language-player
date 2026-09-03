@@ -397,10 +397,18 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
  * words) sat higher than the ruby spans' baseline. Two baselines per line:
  * punctuation floated up into the reading band (2026-09-03 reader report).
  *
- * chooseHeight receives the max metrics of all spans in the line (the ruby
- * spans report their base font's metrics via getSize's fm), so the natural
- * ascent/descent here matches the ruby span glyphs and the single resulting
- * baseline is shared by every run.
+ * The rewrite is CONSTANT, never derived from the incoming fm: StaticLayout
+ * carries fm across line breaks that land inside a span (`generate()` keeps
+ * `fmAscent = min(…, fm.ascent)` when `endPos < spanEnd`), so a chooseHeight
+ * that builds on the incoming ascent compounds — each line grew by exactly
+ * leadingAdd over the previous one (build 33: gaps 167→220→275→343px,
+ * +53.375 = leadingAdd of the 39dp pin). Writing the same fixed metrics
+ * every time makes the carried value a fixed point.
+ *
+ * Fixed metrics are safe for the CJK fallback font: its ascent (≈1.16em)
+ * exceeds Roboto's (≈0.93em), but the glyph top still lands inside the box
+ * because the baseline sits leadingAdd below the line top, and its descent
+ * bleeds a few px into the NEXT line's empty top slab — never into ink.
  */
 private class PinLineHeightSpan(
   private val leadingAdd: Float,
@@ -415,24 +423,16 @@ private class PinLineHeightSpan(
     v: Int,
     fm: android.graphics.Paint.FontMetricsInt
   ) {
-    // The line's natural ascent/descent (what TextView's own glyph path will
-    // paint against): fm already holds the MAX over the line's runs (ruby
-    // spans report the base font's metrics via getSize's fm), so
-    // needAscent/needDescent match both the span glyphs and the span-free
-    // runs — one shared baseline per line. ascent/descent (not top/bottom —
-    // those carry font padding the view disabled) keep the box exactly the
-    // pin, mirroring the old setLineSpacing baseLineHeight = descent − ascent.
-    val needAscent = maxOf(-fm.ascent, baseAscent.toInt())
-    val needDescent = maxOf(fm.descent, baseDescent.toInt())
-    // Rewrite the metrics so the line box is
-    //   [ leadingAdd | ascent | descent ]  →  total == pinned height,
-    // i.e. the extra leading is absorbed ABOVE the glyphs. The baseline then
-    // sits leadingAdd below the line top, and TextView's span-free glyph path
-    // lands on exactly the baseline the ruby spans anchor to (draw uses y).
-    fm.ascent = (-leadingAdd - needAscent).toInt()
+    // Box = [ leadingAdd | baseAscent | baseDescent ] == the pin exactly;
+    // the baseline sits leadingAdd below the line top, and TextView's
+    // span-free glyph path lands on exactly the baseline the ruby spans
+    // anchor to (draw uses y). ascent/descent (not top/bottom — those carry
+    // font padding the view disabled) mirror the old setLineSpacing
+    // baseLineHeight = descent − ascent.
+    fm.ascent = (-leadingAdd - baseAscent).toInt()
     fm.top = fm.ascent
-    fm.descent = needDescent
-    fm.bottom = needDescent
+    fm.descent = baseDescent.toInt()
+    fm.bottom = fm.descent
   }
 }
 
