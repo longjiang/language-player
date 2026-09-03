@@ -26,7 +26,11 @@ interface ImageEntry {
   /** Thumbnail + OCR source (base64 data URL). */
   dataUrl: string;
   uri: string;
+  /** OCR markdown with the leading `# title` heading stripped. */
   md: string;
+  /** Title extracted from the OCR markdown's leading `# heading` (web parity:
+   *  apps/web image-reader extractTitle). Null when the OCR had no title. */
+  title: string | null;
   converting: boolean;
   error?: boolean;
 }
@@ -35,6 +39,23 @@ let counter = 0;
 function nextId(): string {
   counter += 1;
   return `img-${Date.now()}-${counter}`;
+}
+
+/** Pull the leading `# <title>` heading out of the OCR markdown as the
+ *  image's human-readable title; the rest is the body. Ported from apps/web
+ *  image-reader/page.tsx so saved words get the same title on both platforms. */
+function extractTitle(md: string): { title: string | null; body: string } {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  let i = 0;
+  while (i < lines.length && lines[i]!.trim() === '') i++;
+  const first = lines[i];
+  const m = first?.match(/^#\s+(.+)$/);
+  if (m) {
+    const title = m[1]!.trim();
+    const body = lines.slice(i + 1).join('\n').replace(/^\n+/, '');
+    return { title, body };
+  }
+  return { title: null, body: md };
 }
 
 function mimeFor(name: string): string {
@@ -79,8 +100,10 @@ export default function ImageReaderScreen() {
       // Diagnostics: log the exact prompt sent and the full markdown returned.
       log('[image-reader] OCR prompt: ' + IMAGE_OCR_PROMPT);
       log('[image-reader] OCR response:\n' + md);
+      const { title, body } = extractTitle(md);
+      log(`[image-reader] OCR md length=${md.length} title=${title ?? '(none)'}`);
       setImages((prev) => prev.map((im) => (
-        im.id === id ? { ...im, md, converting: false } : im
+        im.id === id ? { ...im, md: body, title: title ?? im.title, converting: false } : im
       )));
     } catch (err) {
       logwarn('[image-reader] OCR failed:', (err as Error)?.message ?? err);
@@ -127,6 +150,7 @@ export default function ImageReaderScreen() {
           dataUrl,
           uri: dataUrl,
           md: '',
+          title: null,
           converting: false,
         });
       } catch (err) {
@@ -151,6 +175,7 @@ export default function ImageReaderScreen() {
         dataUrl,
         uri: dataUrl,
         md: '',
+        title: null,
         converting: false,
       }]);
     } catch (err) {
@@ -258,7 +283,7 @@ export default function ImageReaderScreen() {
           <ArrowLeft size={20} color={ICON_MUTED} />
         </Pressable>
         <Text numberOfLines={1} className="flex-1 text-lg font-bold text-foreground">
-          {current?.name || t('title.image_reader')}
+          {current?.title || current?.name || t('title.image_reader')}
         </Text>
         <Pressable
           onPress={() => void addFromPicker()}
@@ -371,6 +396,9 @@ export default function ImageReaderScreen() {
             selectionDictionary
             firstLineIndent
             onOpenLink={handleOpenLink}
+            // Saved words carry the OCR `# title` (web parity: apps/web
+            // image-reader passes `title || name || Image Reader`).
+            ctx={{ textTitle: current?.title || current?.name || t('title.image_reader') }}
             textScale={1}
             t={t}
           />

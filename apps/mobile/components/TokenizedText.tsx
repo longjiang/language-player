@@ -186,6 +186,11 @@ export interface TokenizedTextProps {
    *  tokenized text rendered inside the popup itself (the context-sentence
    *  card) where a nested popup would stack on top. */
   disablePopup?: boolean;
+  /** Reader attribution context threaded to the dictionary popup's save
+   *  flow: saved words carry `ctx.textTitle` (book/chapter/webpage/image
+   *  title) — web parity of the `context` prop on apps/web TokenizedText
+   *  (apps/web/src/components/tokenized-text.tsx). */
+  ctx?: { textTitle?: string; youtube_id?: string; videoTitle?: string };
 }
 
 /**
@@ -202,7 +207,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -1713,6 +1718,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             // popup's AI explanation, image search, and saved-word context
             // are limited to the sentence the token was tapped in.
             context={popupContext}
+            // Reader attribution (book/chapter/page title) for saved words.
+            ctx={ctx}
             onClose={() => { popupCloseStartRef.current = Date.now(); setSelectedWord(null); setSelectedTokenIndex(null); setSelectedLemma(null); setSelectedTokenPron(null); setSelectedLinkUrl(null); }}
           />
         )}
@@ -1725,6 +1732,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             visible
             word={selectionTerm}
             context={selectionContext ?? text}
+            ctx={ctx}
             extractPhrases
             onClose={closeTextSelection}
           />
@@ -1830,7 +1838,10 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.onLineGrid === next.onLineGrid &&
     prev.debugFontFamily === next.debugFontFamily &&
     prev.debugRubyFontFamily === next.debugRubyFontFamily &&
-    prev.debugRubyMetrics === next.debugRubyMetrics
+    prev.debugRubyMetrics === next.debugRubyMetrics &&
+    prev.ctx?.textTitle === next.ctx?.textTitle &&
+    prev.ctx?.youtube_id === next.ctx?.youtube_id &&
+    prev.ctx?.videoTitle === next.ctx?.videoTitle
   );
 }
 

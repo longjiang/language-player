@@ -507,6 +507,11 @@ export default function EpubReaderScreen() {
           selectionDictionary
           firstLineIndent
           onOpenLink={handleOpenLink}
+          // Saved words carry the nearest preceding TOC chapter label (web
+          // parity: apps/web epub page passes `chapterLabel || fileName`).
+          ctx={{
+            textTitle: nearestMarker?.label || epub.fileName || t('title.epub_reader'),
+          }}
           highlight={highlight}
           textScale={1}
           t={t}

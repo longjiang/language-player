@@ -146,6 +146,11 @@ interface DictionaryPopupProps {
   /** Pronunciation from the lemmatizer, shown in [brackets] next to the headword. */
   tokenPron?: string | null;
   context?: string;
+  /** Reader attribution context (book/chapter/webpage/image title + source
+   *  ids), threaded from PaginatedReader → TokenizedText. When set, saved
+   *  words carry its `textTitle` (web parity — apps/web passes ctx through
+   *  the same chain); when absent the save context has no title. */
+  ctx?: { textTitle?: string; youtube_id?: string; videoTitle?: string };
   /** Optional link attached to the tapped token — shows "Open in Reader". */
   linkUrl?: string | null;
   /** Custom handler for the link action (e.g. in-book EPUB navigation). */
@@ -197,6 +202,7 @@ export function DictionaryPopup({
   lemma,
   tokenPron,
   context,
+  ctx,
   linkUrl,
   onOpenLink,
   extractPhrases = false,
@@ -798,7 +804,7 @@ export function DictionaryPopup({
                         <SaveButton
                           entry={entry}
                           size={20}
-                          context={context ? { form: word, text: context, textTitle: '' } : undefined}
+                          context={context ? { form: word, text: context, textTitle: ctx?.textTitle, youtube_id: ctx?.youtube_id, videoTitle: ctx?.videoTitle } : undefined}
                         />
                       }
                     />
@@ -824,7 +830,7 @@ export function DictionaryPopup({
                             <SaveButton
                               entry={entry}
                               size={20}
-                              context={context ? { form: word, text: context, textTitle: '' } : undefined}
+                              context={context ? { form: word, text: context, textTitle: ctx?.textTitle, youtube_id: ctx?.youtube_id, videoTitle: ctx?.videoTitle } : undefined}
                             />
                           }
                         />
