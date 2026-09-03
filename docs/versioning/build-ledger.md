@@ -65,9 +65,10 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 46 | 7cdbc852 | 2026-09-01 | 3.4.6 — iOS TestFlight (b20, consumed) · 3.4.6 — Android Internal testing (b20, consumed) | — |
 | 47 | 79c75149 | 2026-09-03 | — | dev 30 (Debug; archived; lp-dev-30-ios-device-79c751494df8.zip; 3742de1cf4dd248e60de602fdca5b5a78a5d97e47d0102982b567134bba1250e) |
 | 48 | 324937e7 | 2026-09-03 | — | dev 31 (Debug; archived; lp-dev-31-android-324937e7113a.apk; 3984d833f277f41f619b031fdb122be8bdfce2813b7d22760bd9ceb65b4b0313) |
-| 49 | 90cf86dd | 2026-09-03 | — | dev 32 (Debug; active; lp-dev-32-android-90cf86ddc628.apk; 13aaf0cb71436514108b93cdf92970e84813d451fba2f97123708218454be8d9) |
+| 49 | 90cf86dd | 2026-09-03 | — | dev 32 (Debug; archived; lp-dev-32-android-90cf86ddc628.apk; 13aaf0cb71436514108b93cdf92970e84813d451fba2f97123708218454be8d9) |
 | 50 | 3fdcb4f7 | 2026-09-03 | — | dev 33 (Debug; active; lp-dev-33-android-3fdcb4f7ce64.apk; 191fc7f25ef919b80b840f280c24816367ad0d6805111281df8d1c6b5c64a845) |
 | 51 | 3b3a8ee2 | 2026-09-03 | — | dev 34 (Debug; active; lp-dev-34-android-3b3a8ee27312.apk; ea83c89fd29855932e03125c78e94ffbf55b1effc2b72dccc0efb023869b80de) |
+| 52 | c1ae1557 | 2026-09-03 | — | dev 35 (Debug; active; lp-dev-35-android-c1ae1557790c.apk; 3e7aa4c0a81e36158ba0f3c2fbc7323dbc0682e1405248d8012990772cb389a2) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
