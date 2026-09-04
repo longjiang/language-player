@@ -135,9 +135,12 @@ tap a preset button **or** send a free-form message to get an answer (the
   the model to cite exact passages as `[[exact L2 passage||L1 translation]]` on
   their own line — never as markdown blockquotes (`READER_AI_QUOTE_INSTRUCTION` +
   `parseAiQuotes`). Each citation renders as a tappable chip showing both the
-  original (L2) and the model's L1 translation. Tapping a chip opens the reader
-  **search** pre-filled with that passage and highlights the first match (the
-  search dialogs accept `initialQuery` / `queryNonce` for this external trigger).
+  original (L2) and the model's L1 translation. Wrapping quote marks are
+  stripped, and a quote is only rendered if it is actually present in the reader
+  content (`textContainsQuote` / `filterReaderQuotes`) — hallucinated or
+  abbreviated quotes are dropped. Tapping a chip opens the reader **search**
+  pre-filled with that passage and highlights the first match (the search
+  dialogs accept `initialQuery` / `queryNonce` for this external trigger).
 
 `PaginatedReader` exposes `onOpenAskAi` (render the button) and
 `onPageTextChange` (report the current page's joined text) so a surface can
