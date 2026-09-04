@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SearchBar } from '@/components/ui/search-bar';
@@ -13,6 +13,10 @@ interface EpubSearchPanelProps {
   chapterLabels?: { blockIndex: number; label: string }[];
   /** Called when the user taps a result — jump to the block and highlight it. */
   onSelect: (match: { blockIndex: number; start: number; end: number }) => void;
+  /** Pre-fill the query when `queryNonce` changes (quote chips). */
+  initialQuery?: string;
+  /** Bump to re-apply the `initialQuery`. */
+  queryNonce?: number;
 }
 
 interface Match {
@@ -28,9 +32,15 @@ interface Match {
  * In-book search body for the EPUB sidebar (SPEC-049 §9.4/9.5) — content-only
  * version of BookSearchDialog, rendered inside the shared sidebar's tabs.
  */
-export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSearchPanelProps) {
+export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect, initialQuery, queryNonce }: EpubSearchPanelProps) {
   const t = useT();
   const [query, setQuery] = useState('');
+
+  // Pre-fill the query when the parent opens the panel for a specific quote.
+  useEffect(() => {
+    if (initialQuery && queryNonce != null) setQuery(initialQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryNonce]);
 
   const labelForBlock = useMemo(() => {
     const sorted = [...chapterLabels].sort((a, b) => a.blockIndex - b.blockIndex);

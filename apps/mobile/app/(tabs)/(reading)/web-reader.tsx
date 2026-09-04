@@ -351,6 +351,8 @@ export default function WebReaderScreen() {
         onSearchSelect={tocSearch.handleSearchSelect}
         blocks={pagination.blocks}
         activeIndex={currentBlockIndex}
+        searchQuery={tocSearch.searchQuery}
+        searchNonce={tocSearch.searchNonce}
       />
 
       {/* ── "Ask AI" summary chat (auto-summarize current page + text presets) ── */}
@@ -367,6 +369,7 @@ export default function WebReaderScreen() {
             bookUpToChapter: null,
           } satisfies ReaderAiContent
         }
+        onQuotePress={tocSearch.openSearchFor}
       />
     </PageContainer>
   );

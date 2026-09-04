@@ -87,6 +87,9 @@ export default function EpubReaderScreen() {
   const [currentPageText, setCurrentPageText] = useState('');
   const [epubChapterText, setEpubChapterText] = useState('');
   const [epubBookUpToText, setEpubBookUpToText] = useState('');
+  /** Pre-fill the search (quote chips) — `searchNonce` re-applies the query. */
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchNonce, setSearchNonce] = useState(0);
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   /** The page each history entry was pushed FROM, parallel to historyRef —
@@ -321,6 +324,13 @@ export default function EpubReaderScreen() {
     pushHistory();
     jumpToBlock({ blockIndex: match.blockIndex, offset: match.start });
   }, [pushHistory, jumpToBlock]);
+
+  /** Open the search modal pre-filled with a query (quote chip tap). */
+  const openSearchFor = useCallback((query: string) => {
+    setSearchQuery(query);
+    setSearchNonce((n) => n + 1);
+    setSearchOpen(true);
+  }, []);
 
   // Chromeless "Back to page {n}": undo the last in-book jump (TOC, search,
   // internal link) and return to the page it was made from.
@@ -737,6 +747,8 @@ export default function EpubReaderScreen() {
                   blocks={pagination.blocks}
                   chapterLabels={epub.chapterLabels}
                   onSelect={handleSearchSelect}
+                  initialQuery={searchQuery}
+                  queryNonce={searchNonce}
                 />
               </View>
             </View>
@@ -761,6 +773,7 @@ export default function EpubReaderScreen() {
             ),
           } satisfies ReaderAiContent
         }
+        onQuotePress={openSearchFor}
       />
     </View>
   );
