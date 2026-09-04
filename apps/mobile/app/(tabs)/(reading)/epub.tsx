@@ -16,6 +16,8 @@ import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
+import { READER_ASK_AI_EPUB_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
 import { PanelTopOpen, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react-native';
@@ -80,6 +82,11 @@ export default function EpubReaderScreen() {
   /** TOC and Search are modals now (the sidebar is gone). */
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /** Reader "Ask AI" summary chat. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [currentPageText, setCurrentPageText] = useState('');
+  const [epubChapterText, setEpubChapterText] = useState('');
+  const [epubBookUpToText, setEpubBookUpToText] = useState('');
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   /** The page each history entry was pushed FROM, parallel to historyRef —
@@ -558,6 +565,8 @@ export default function EpubReaderScreen() {
           onToggleChrome={toggleChrome}
           onOpenToc={epub.toc.length > 0 ? () => setTocOpen(true) : undefined}
           onOpenSearch={() => setSearchOpen(true)}
+          onOpenAskAi={() => setAskAiOpen(true)}
+          onPageTextChange={setCurrentPageText}
           topOverlay={
             <Text
               className="max-w-[85%] text-xs text-muted-foreground"
@@ -734,6 +743,25 @@ export default function EpubReaderScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* ── "Ask AI" summary chat (epub reader) — auto-summarize current page;
+          chapter/book presets source from the book's blocks. ── */}
+      <ReaderAskAiSheet
+        open={askAiOpen}
+        onClose={() => setAskAiOpen(false)}
+        title={nearestMarker?.label || epub.fileName || t('title.epub_reader')}
+        presets={READER_ASK_AI_EPUB_PRESETS}
+        content={
+          {
+            text: '',
+            page: truncateReaderAiContent(currentPageText),
+            chapter: truncateReaderAiContent(currentPageText),
+            bookUpToChapter: truncateReaderAiContent(
+              epub.blocks?.map((b) => ((b as any).text ?? '')).join('\n') ?? '',
+            ),
+          } satisfies ReaderAiContent
+        }
+      />
     </View>
   );
 }

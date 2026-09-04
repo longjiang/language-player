@@ -12,6 +12,8 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
+import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
 import { NotesSidebar } from '@/components/reader/NotesSidebar';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
@@ -42,6 +44,9 @@ export default function ReaderScreen() {
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
   /** Reader's current global block (for the TOC active-entry highlight). */
   const [currentBlockIndex, setCurrentBlockIndex] = useState<number | null>(null);
+  /** Reader "Ask AI" summary chat. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [currentPageText, setCurrentPageText] = useState('');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
@@ -457,6 +462,8 @@ export default function ReaderScreen() {
                 selectionDictionary
                 onOpenToc={tocSearch.headings.length > 0 ? tocSearch.openToc : undefined}
                 onOpenSearch={tocSearch.openSearch}
+                onOpenAskAi={() => setAskAiOpen(true)}
+                onPageTextChange={setCurrentPageText}
                 highlight={tocSearch.highlight}
                 // Saved words carry the note's title (web parity:
                 // apps/web reader page passes `title || 'Reader'`).
@@ -518,6 +525,22 @@ export default function ReaderScreen() {
       />
       </>
       )}
+
+      {/* ── "Ask AI" summary chat (notes reader) ── */}
+      <ReaderAskAiSheet
+        open={askAiOpen}
+        onClose={() => setAskAiOpen(false)}
+        title={notes.currentNote?.title || t('title.notes_reader')}
+        presets={READER_ASK_AI_TEXT_PRESETS}
+        content={
+          {
+            text: truncateReaderAiContent(text),
+            page: truncateReaderAiContent(currentPageText),
+            chapter: null,
+            bookUpToChapter: null,
+          } satisfies ReaderAiContent
+        }
+      />
     </PageContainer>
   );
 }
