@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  View, Text, ScrollView, ActivityIndicator,
+  View, Text, ScrollView, ActivityIndicator, Image,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
@@ -27,13 +27,23 @@ import { log as appLog } from '@/lib/logger';import {
   renameVisitedSite,
   type VisitedSite,
 } from '@/lib/reader-history';
-import { getReadingSuggestions, type ReadingCategory, type ReadingSuggestionItem } from '@langplayer/shared';
+import { getReadingSuggestions, READING_CATEGORIES } from '@langplayer/shared';
 import { Globe, Home, PanelRightOpen, PanelRightClose } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 const log = appLog;
+
+/** Google favicon for a URL's host — mirrors the web reader suggestion cards. */
+function faviconUrl(url: string): string {
+  try {
+    const host = new URL(url).hostname;
+    return host ? `https://www.google.com/s2/favicons?domain=${host}&sz=32` : '';
+  } catch {
+    return '';
+  }
+}
 
 export default function WebReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -293,20 +303,11 @@ export default function WebReaderScreen() {
               </View>
             )}
 
-            {/* ── Empty state: suggestions only (visited sites live in the sidebar) ── */}
+            {/* ── Empty state: suggestions only (web parity — no hero block;
+                the curated reading cards fill the space). Visited sites live
+                in the sidebar. ── */}
             {!text && !loading && (
               <View className="flex-1 px-4 py-6">
-                <View className="items-center mb-6">
-                  <Globe size={48} color={ICON_MUTED} style={{ opacity: 0.4 }} />
-                  <Text className="mt-3 text-lg font-semibold text-muted-foreground">
-                    {t('title.web_reader')}
-                  </Text>
-                  <Text className="mt-1 max-w-md text-center text-sm text-muted-foreground">
-                    {t('msg.web_reader_empty_state', { l2: t(`lang.${l2Lang.code}`) })}
-                  </Text>
-                </View>
-
-                {/* Curated reading suggestions (SPEC-049 §10.1) */}
                 <ReadingSuggestionsList
                   l2Code={l2Lang.code}
                   onLoad={handleLoad}
@@ -350,8 +351,9 @@ export default function WebReaderScreen() {
 
 /**
  * Curated reading suggestions for the current L2 (SPEC-049 §10.1), grouped by
- * category. Uses the shared getReadingSuggestions() (curated JSON per language,
- * falling back to a derived Wikipedia suggestion).
+ * category, rendered as tappable button cards (web parity). Uses the shared
+ * getReadingSuggestions() + READING_CATEGORIES so category order and titles
+ * (`title.{category}`) match the web reader exactly.
  */
 function ReadingSuggestionsList({ l2Code, onLoad }: { l2Code: string; onLoad: (url: string) => void }) {
   const t = useT();
@@ -360,25 +362,42 @@ function ReadingSuggestionsList({ l2Code, onLoad }: { l2Code: string; onLoad: (u
 
   return (
     <View>
-      <Text className="mb-2 text-sm font-medium text-muted-foreground">
+      <Text className="mb-3 text-sm font-semibold text-muted-foreground">
         {t('title.suggested_reading')}
       </Text>
-      {(Object.keys(suggestions) as ReadingCategory[]).map((category) => {
+      {READING_CATEGORIES.map((category) => {
         const items = suggestions[category];
         if (!items || items.length === 0) return null;
         return (
-          <View key={category} className="mb-4">
-            <Text className="mb-1 text-sm text-muted-foreground/70">{category}</Text>
-            {items.map((item: ReadingSuggestionItem) => (
-              <Pressable
-                key={item.url}
-                onPress={() => onLoad(item.url)}
-                className="py-2 border-b border-border active:bg-muted"
-              >
-                <Text className="text-sm text-primary" numberOfLines={2}>{item.title}</Text>
-                <Text className="mt-0.5 text-[10px] text-muted-foreground/70" numberOfLines={1}>{item.url}</Text>
-              </Pressable>
-            ))}
+          <View key={category} className="mb-5">
+            <Text className="mb-2 text-sm font-semibold text-foreground">
+              {t(`title.${category}` as any)}
+            </Text>
+            {/* Wrap grid of bordered button cards — mirrors the web reader's
+                `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4` card grid. */}
+            <View className="flex-row flex-wrap gap-2">
+              {items.map((item) => {
+                const favicon = faviconUrl(item.url);
+                return (
+                  <Pressable
+                    key={item.url}
+                    onPress={() => onLoad(item.url)}
+                    style={{ flexBasis: '48%', flexGrow: 1 }}
+                    className="min-w-0 flex-row items-center gap-2 rounded-lg border border-border bg-card px-2.5 py-2 active:bg-muted"
+                  >
+                    {favicon ? (
+                      <Image
+                        source={{ uri: favicon }}
+                        style={{ width: 16, height: 16, borderRadius: 2 }}
+                      />
+                    ) : null}
+                    <Text className="flex-1 text-sm text-foreground" numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         );
       })}
