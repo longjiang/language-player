@@ -12,6 +12,8 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
+import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
 import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -74,6 +76,9 @@ export default function ImageReaderScreen() {
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  /** Reader "Ask AI" summary chat. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [currentPageText, setCurrentPageText] = useState('');
   const imagesRef = useRef<ImageEntry[]>([]);
   useEffect(() => { imagesRef.current = images; }, [images]);
 
@@ -396,6 +401,8 @@ export default function ImageReaderScreen() {
             selectionDictionary
             firstLineIndent
             onOpenLink={handleOpenLink}
+            onOpenAskAi={() => setAskAiOpen(true)}
+            onPageTextChange={setCurrentPageText}
             // Saved words carry the OCR `# title` (web parity: apps/web
             // image-reader passes `title || name || Image Reader`).
             ctx={{ textTitle: current?.title || current?.name || t('title.image_reader') }}
@@ -404,6 +411,22 @@ export default function ImageReaderScreen() {
           />
         )) : null}
       </View>
+
+      {/* ── "Ask AI" summary chat (image reader) ── */}
+      <ReaderAskAiSheet
+        open={askAiOpen}
+        onClose={() => setAskAiOpen(false)}
+        title={current?.title || current?.name || t('title.image_reader')}
+        presets={READER_ASK_AI_TEXT_PRESETS}
+        content={
+          {
+            text: truncateReaderAiContent(current?.md ?? ''),
+            page: truncateReaderAiContent(currentPageText),
+            chapter: null,
+            bookUpToChapter: null,
+          } satisfies ReaderAiContent
+        }
+      />
     </View>
   );
 }
