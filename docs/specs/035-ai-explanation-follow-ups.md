@@ -2,7 +2,13 @@
 
 ## Summary
 
-The DeepSeek explanation card (dictionary popup and dictionary entry page) gets five follow-up buttons: **Inflection**, **Morphemes**, **Etymology**, **Syntax**, and **Synonyms**. Each streams a new explanation focused on that aspect of the looked-up word.
+The DeepSeek explanation card (dictionary popup and dictionary entry page) is a
+multi-turn chat: after the initial explanation it lets the user type **any**
+follow-up message (a free-form text input) and offers a configurable set of
+one-tap preset follow-up buttons — **Inflection**, **Morphemes**,
+**Etymology**, **Syntax**, and **Synonyms** — plus the **Examples from Videos**
+flow. Each preset streams a new explanation focused on that aspect of the
+looked-up word.
 
 ## Behavior
 
@@ -11,9 +17,38 @@ The DeepSeek explanation card (dictionary popup and dictionary entry page) gets 
 - Once a follow-up button is pressed, it disappears from the list for the rest of the conversation (each follow-up can be used once per transcript).
 - The card renders as a chat transcript. The initial explanation appears as the first assistant bubble on the left.
 - Clicking a follow-up appends a user chat bubble on the right (labelled with the button, e.g. "Inflection"), then streams the DeepSeek reply into a new assistant bubble below it.
+- **Free-form follow-up (multi-turn):** a text input at the bottom of the card lets the user type anything. Submitting appends a user bubble with the typed text and streams the reply. Follow-up turns (free-form and preset) send the prior conversation to the backend so the model keeps the word/context grounding; the initial explanation is a single-turn request.
 - Regenerate re-runs that reply's prompt in place (cache bypassed); copy copies that reply's text.
-- Follow-up prompts reuse the same backtick formatting instruction as the main prompt, so L2 words and examples stay tokenized and clickable.
+- Preset prompts reuse the same backtick formatting instruction as the main prompt, so L2 words and examples stay tokenized and clickable.
 - When there is a context sentence, it is included in the prompt; the dictionary entry page (no context) uses the generic variants.
+
+### Configurable presets (`followUpPresets` prop)
+
+Preset buttons are now a prop, not hardcoded. `AiExplanation` takes
+`followUpPresets?: AiFollowUpPreset[]` (default `[]` — no preset buttons, only
+the free-form chat). A preset is:
+
+- `{ kind: 'prompt', labelKey, promptKey }` — a one-tap button that streams a
+  prompt built from `promptKey` (resolved with `{ l1Name, l2Name, word,
+  context, contextForm }` plus the shared backtick instruction).
+- `{ kind: 'examples', labelKey }` — the "Examples from Videos" subs-search
+  flow (a special, non-streaming fetch + LLM analysis).
+
+`@langplayer/utils` exports `AiFollowUpPreset`, `DEFAULT_AI_FOLLOW_UPS` (the
+dictionary preset set: the five word-aspect presets plus Examples from Videos),
+and `presetKey()` (for used-once-per-transcript tracking). The dictionary popup
+and detail tab pass `DEFAULT_AI_FOLLOW_UPS` to keep their historical buttons;
+a future AI-chat surface can pass a different set or `[]`.
+
+### Multi-turn endpoint
+
+`POST /chatgpt/stream` now accepts `{ prompt, messages }` in addition to the
+single-turn `{ prompt }`. `messages` is the prior conversation
+(`[{ role, content }]`); the server streams `[...messages, { role: 'user',
+content: prompt }]`. With no `messages` it keeps the single-turn path
+(cache key `md5(prompt)`), so the initial explanation still hits existing
+caches. The client hook `useStreamingExplanation` exposes this via
+`stream(prompt, { messages })`.
 
 ## Prompts
 
@@ -106,6 +141,7 @@ New keys:
 
 - Labels: `action.inflection`, `action.morphemes`, `action.etymology`, `action.syntax`, `action.synonyms`
 - Prompts: `prompt.followup_inflection`, `prompt.followup_inflection_context`, `prompt.followup_inflection_context_form`, `prompt.followup_morphemes`, `prompt.followup_morphemes_context`, `prompt.followup_etymology`, `prompt.followup_syntax`, `prompt.followup_syntax_context`, `prompt.followup_synonyms`, `prompt.followup_synonyms_context`
+- Free-form input: `placeholder.ask_follow_up` (input placeholder), `action.send` (send button label)
 
 All keys are translated in all 18 locales via `translations.csv` (header order: en, zh-Hans, zh-Hant, ar, de, es, fr, id, it, ja, ko, nl, pl, pt, ru, th, tr, vi), then regenerated to `packages/shared/locales/*.json` with:
 
@@ -118,26 +154,36 @@ node scripts/sync-translations.mjs csv-to-json
 
 ### 1. Translations
 
-- Add `action.synonyms` (button label, e.g. "Synonyms"), `prompt.followup_synonyms`, and `prompt.followup_synonyms_context` to `translations.csv` via `scripts/add-translation-key.mjs` — one payload per key, all 18 locales, translations supplied from multilingual knowledge (no external translation APIs).
+- Add `placeholder.ask_follow_up` and `action.send` to `translations.csv` via `scripts/add-translation-key.mjs` — one payload per key, all 18 locales, translations supplied from multilingual knowledge (no external translation APIs).
 - Regenerate locale JSONs: `node scripts/sync-translations.mjs csv-to-json`.
 
-### 2. Web — `apps/web/src/components/ai-explanation.tsx`
+### 2. Shared config — `@langplayer/utils`
 
-- Extend the union: `type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms';`
-- Append to `FOLLOW_UPS`: `{ kind: 'synonyms', labelKey: 'action.synonyms' }` (5th button).
-- In `buildFollowUpPrompt`, add a `kind === 'synonyms'` branch (and make `syntax` an explicit branch):
-  - with a clean context sentence → `t('prompt.followup_synonyms_context', { ...wordParams, context: cleanContext })`
-  - otherwise → `t('prompt.followup_synonyms', wordParams)`
-- No UI changes: the button row, used-once-per-transcript logic, regenerate/copy, and the appended `prompt.explain_ticks` suffix are all reused as-is.
+- Add `AiFollowUpPreset` (discriminated union: `{ kind: 'prompt', labelKey, promptKey }` | `{ kind: 'examples', labelKey }`), `DEFAULT_AI_FOLLOW_UPS` (the dictionary preset set), and `presetKey()` in a shared module, exported from the utils index.
 
-### 3. Mobile — `apps/mobile/components/dictionary/AiExplanation.tsx`
+### 3. Backend — `/chatgpt/stream`
 
-- Identical changes to web: extend `FollowUpKind`, append the `FOLLOW_UPS` entry, add the synonyms branch to `buildFollowUpPrompt` (same context/non-context split), and update the header doc comment listing the follow-up kinds.
+- Accept `{ prompt, messages }`; stream `[...messages, { role: 'user', content: prompt }]`. Keep the single-turn path (no `messages`) for the initial explanation (cache key `md5(prompt)`). Add `ask_stream_messages` / `ask_stream_messages_with_cache` to `app_chatgpt`.
 
-### 4. Docs
+### 4. api-client — `useStreamingExplanation`
 
-- Update `docs/specs/059-web-release-qa-checklist.md` AI Explain line to include synonyms.
+- Extend `stream(prompt, options)` to forward an optional `messages` list to the endpoint.
 
-### 5. Verification
+### 5. Web — `apps/web/src/components/ai-explanation.tsx`
+
+- Add the `followUpPresets` prop (default `[]`) and drive the preset buttons from it (replacing the hardcoded `FOLLOW_UPS`).
+- Replace the per-kind `buildFollowUpPrompt` variant machinery with a single `buildPresetPrompt` that resolves `promptKey` with `{ l1Name, l2Name, word, context, contextForm }` + the ticks instruction (context is carried by the multi-turn history).
+- Add a free-form text input + send button; send the typed message as a new user turn with `stream(text, { messages: buildHistory() })`, where `buildHistory()` reconstructs prior turns from each completed assistant reply's `.prompt`/`.text`.
+- Update the dictionary popup and detail tab to pass `followUpPresets={DEFAULT_AI_FOLLOW_UPS}` (preserving their historical buttons) and to satisfy the new multi-turn behavior.
+
+### 6. Mobile — `apps/mobile/components/dictionary/AiExplanation.tsx`
+
+- Mirror the web changes: `followUpPresets` prop, `buildPresetPrompt`, `buildHistory`, a `TextInput` + send button, and update the dictionary popup/detail tab callers to pass `DEFAULT_AI_FOLLOW_UPS`.
+
+### 7. Docs
+
+- Update `docs/specs/059-web-release-qa-checklist.md` AI Explain line (include the free-form input + configurable presets).
+
+### 8. Verification
 
 - `npx turbo typecheck` from the repo root (safe with dev servers running). No production builds unless explicitly requested.
