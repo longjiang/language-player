@@ -10,6 +10,7 @@ import { useStreamingExplanation, type StreamDiagnostics, type StreamHistoryTurn
 import {
   buildWordExplainPrompt,
   parseAiQuotes,
+  filterReaderQuotes,
   presetKey,
   READER_AI_QUOTE_INSTRUCTION,
   type AiFollowUpPreset,
@@ -734,7 +735,20 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                   ? parseAiQuotes(message.text)
                   : null;
                 const cleanText = parsedQuotes ? parsedQuotes.clean : message.text;
-                const quotes = parsedQuotes?.quotes ?? [];
+                // Only render quotes that actually appear in the reader content
+                // (drop hallucinated / abbreviated ones), and without any
+                // wrapping quote marks.
+                const quoteContent = readerContent
+                  ? [
+                      readerContent.text,
+                      readerContent.page,
+                      readerContent.chapter ?? '',
+                      readerContent.bookUpToChapter ?? '',
+                    ]
+                  : [];
+                const quotes = parsedQuotes
+                  ? filterReaderQuotes(parsedQuotes.quotes, quoteContent)
+                  : [];
                 return (
                   <div key={message.id} className="flex justify-start">
                     <div className="max-w-[95%]">
