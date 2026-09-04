@@ -32,10 +32,13 @@ export const DEFAULT_AI_FOLLOW_UPS: AiFollowUpPreset[] = [
   { kind: 'examples', labelKey: 'title.examples_from_videos' },
 ];
 
-/** Stable identity for a preset — used to track "used once per transcript". */
+/** Stable identity for a preset — used to track "used once per transcript".
+ *  Keys must be unique per button; several presets may share a `promptKey` (e.g.
+ *  the reader summary buttons all use `prompt.summarize`), so the label is
+ *  included to disambiguate them. */
 export function presetKey(preset: AiFollowUpPreset): string {
   return preset.kind === 'prompt'
-    ? `prompt:${preset.promptKey}`
+    ? `prompt:${preset.promptKey}:${preset.labelKey}`
     : `examples:${preset.labelKey}`;
 }
 
