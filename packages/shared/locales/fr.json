@@ -26,7 +26,7 @@
         "advanced_search": "Avancé",
         "all_results": "Tous les résultats",
         "apply": "Appliquer",
-        "ask_ai": "Demander à l'IA",
+        "ask_ai": "Interroger l'IA",
         "back": "Retour",
         "back_to_documentation": "Retour à la documentation",
         "back_to_home_page": "Retour à la page d'accueil",
@@ -155,6 +155,10 @@
         "start_writing": "Commencer à écrire",
         "stop": "Arrêter",
         "subscribe": "S'abonner",
+        "summarize_book_up_to_chapter": "Résumer le livre jusqu'à ce chapitre",
+        "summarize_this_chapter": "Résumer ce chapitre",
+        "summarize_this_page": "Résumer cette page",
+        "summarize_this_text": "Résumer ce texte",
         "sync_now": "Synchroniser maintenant",
         "synonyms": "Synonymes",
         "syntax": "Syntaxe",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Expliquez si le mot {l2Name} \"{word}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
         "followup_syntax_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
         "subs_ai_examples": "Vous êtes un assistant d'apprentissage des langues. Voici des lignes de sous-titres de {n} vidéos, chacune en {l2Name}, contenant le terme « {term} ». Les lignes commençant par * sont les lignes correspondantes.",
-        "subs_ai_group": "Vous êtes un assistant d'apprentissage des langues. Voici {n} lignes de sous-titres de vidéos, chacune en {l2Name}, contenant le terme \"{term}\"."
+        "subs_ai_group": "Vous êtes un assistant d'apprentissage des langues. Voici {n} lignes de sous-titres de vidéos, chacune en {l2Name}, contenant le terme \"{term}\".",
+        "summarize": "Résumez le texte suivant en {l1Name} : {text}"
     },
     "review": {
         "again": "Encore",

@@ -155,6 +155,10 @@
         "start_writing": "Zacznij pisać",
         "stop": "Zatrzymaj",
         "subscribe": "Subskrybuj",
+        "summarize_book_up_to_chapter": "Podsumuj książkę do tego rozdziału",
+        "summarize_this_chapter": "Podsumuj ten rozdział",
+        "summarize_this_page": "Podsumuj tę stronę",
+        "summarize_this_text": "Podsumuj ten tekst",
         "sync_now": "Synchronizuj teraz",
         "synonyms": "Synonimy",
         "syntax": "Składnia",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
         "followup_syntax_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
         "subs_ai_examples": "Jesteś asystentem nauki języków. Poniżej znajdują się linie napisów z {n} filmów, każda w języku {l2Name}, zawierające termin \"{term}\". Linie zaczynające się od * to linie pasujące.",
-        "subs_ai_group": "Jesteś asystentem nauki języków. Poniżej znajduje się {n} linii napisów z filmów, każda w języku {l2Name}, zawierających termin \"{term}\"."
+        "subs_ai_group": "Jesteś asystentem nauki języków. Poniżej znajduje się {n} linii napisów z filmów, każda w języku {l2Name}, zawierających termin \"{term}\".",
+        "summarize": "Podsumuj poniższy tekst po {l1Name}: {text}"
     },
     "review": {
         "again": "Ponownie",

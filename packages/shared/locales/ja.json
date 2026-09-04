@@ -26,7 +26,7 @@
         "advanced_search": "詳細検索",
         "all_results": "すべての結果",
         "apply": "適用",
-        "ask_ai": "AIに質問",
+        "ask_ai": "AI に質問",
         "back": "戻る",
         "back_to_documentation": "ドキュメントに戻る",
         "back_to_home_page": "ホームページに戻る",
@@ -155,6 +155,10 @@
         "start_writing": "書き始める",
         "stop": "停止",
         "subscribe": "購読する",
+        "summarize_book_up_to_chapter": "この章まで本を要約",
+        "summarize_this_chapter": "この章を要約",
+        "summarize_this_page": "このページを要約",
+        "summarize_this_text": "このテキストを要約",
         "sync_now": "今すぐ同期",
         "synonyms": "類義語",
         "syntax": "統語",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。",
         "followup_syntax_context": "\"{context}\"における{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。",
         "subs_ai_examples": "あなたは語学学習アシスタントです。以下は\"{term}\"を含む{n}本の動画の字幕行（すべて{l2Name}）です。先頭に*が付いた行が一致行です。",
-        "subs_ai_group": "あなたは言語学習アシスタントです。以下は、{l2Name}の動画の字幕{n}行で、いずれも用語「{term}」を含んでいます。"
+        "subs_ai_group": "あなたは言語学習アシスタントです。以下は、{l2Name}の動画の字幕{n}行で、いずれも用語「{term}」を含んでいます。",
+        "summarize": "以下のテキストを{l1Name}で要約してください：{text}"
     },
     "review": {
         "again": "もう一度",

@@ -155,6 +155,10 @@
         "start_writing": "Começar a escrever",
         "stop": "Parar",
         "subscribe": "Subscrever",
+        "summarize_book_up_to_chapter": "Resumir o livro até este capítulo",
+        "summarize_this_chapter": "Resumir este capítulo",
+        "summarize_this_page": "Resumir esta página",
+        "summarize_this_text": "Resumir este texto",
         "sync_now": "Sincronizar agora",
         "synonyms": "Sinônimos",
         "syntax": "Sintaxe",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Explica se a palavra em {l2Name} \"{word}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
         "followup_syntax_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
         "subs_ai_examples": "Você é um assistente de aprendizado de idiomas. Abaixo estão linhas de legendas de {n} vídeos, cada uma em {l2Name}, que contêm o termo \"{term}\". As linhas que começam com * são as linhas correspondentes.",
-        "subs_ai_group": "Você é um assistente de aprendizado de idiomas. Abaixo estão {n} linhas de legendas de vídeos, cada uma em {l2Name}, que contêm o termo \"{term}\"."
+        "subs_ai_group": "Você é um assistente de aprendizado de idiomas. Abaixo estão {n} linhas de legendas de vídeos, cada uma em {l2Name}, que contêm o termo \"{term}\".",
+        "summarize": "Resuma o texto a seguir em {l1Name}: {text}"
     },
     "review": {
         "again": "Novamente",

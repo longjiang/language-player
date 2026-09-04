@@ -26,7 +26,7 @@
         "advanced_search": "高级搜索",
         "all_results": "所有结果",
         "apply": "应用",
-        "ask_ai": "问AI",
+        "ask_ai": "问 AI",
         "back": "返回",
         "back_to_documentation": "返回文档",
         "back_to_home_page": "返回首页",
@@ -151,6 +151,10 @@
         "start_writing": "开始写作",
         "stop": "停止",
         "subscribe": "订阅",
+        "summarize_book_up_to_chapter": "总结本书截至目前章节",
+        "summarize_this_chapter": "总结本章",
+        "summarize_this_page": "总结本页",
+        "summarize_this_text": "总结这段文本",
         "sync_now": "立即同步",
         "synonyms": "同义词",
         "syntax": "句法",
@@ -1253,7 +1257,8 @@
         "followup_syntax": "请解释{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
         "followup_syntax_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
         "subs_ai_examples": "你是一名语言学习助手。以下是来自{n}个视频的字幕行，均为{l2Name}，包含术语\"{term}\"。以*开头的行是匹配行。",
-        "subs_ai_group": "你是一名语言学习助手。以下是来自视频的{n}行字幕，均为{l2Name}，包含术语\"{term}\"。"
+        "subs_ai_group": "你是一名语言学习助手。以下是来自视频的{n}行字幕，均为{l2Name}，包含术语\"{term}\"。",
+        "summarize": "请用{l1Name}总结下面的文字：{text}"
     },
     "review": {
         "again": "重来",
