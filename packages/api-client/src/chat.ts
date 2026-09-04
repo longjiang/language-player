@@ -1,6 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
 import { apiClient } from './client';
 
+/** One turn of the prior conversation sent with a follow-up request. */
+export interface StreamHistoryTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface StreamState {
   text: string;
   error: string | null;
@@ -9,8 +15,10 @@ export interface StreamState {
 
 export interface StreamActions {
   /** Start streaming a DeepSeek explanation for the given prompt.
-   *  Pass { regenerate: true } to bypass server-side cache and get a fresh response. */
-  stream: (prompt: string, options?: { regenerate?: boolean }) => Promise<void>;
+   *  Pass `{ regenerate: true }` to bypass server-side cache and get a fresh
+   *  response. Pass `{ messages }` (prior conversation turns) to continue a
+   *  multi-turn chat — the server appends this prompt as the new user turn. */
+  stream: (prompt: string, options?: { regenerate?: boolean; messages?: StreamHistoryTurn[] }) => Promise<void>;
   /** Reset state and abort any in-flight request. */
   reset: () => void;
   /** Abort the current stream without resetting accumulated text. */
@@ -74,7 +82,7 @@ export function useStreamingExplanation(
     setLoading(false);
   }, []);
 
-  const stream = useCallback(async (prompt: string, options?: { regenerate?: boolean }) => {
+  const stream = useCallback(async (prompt: string, options?: { regenerate?: boolean; messages?: StreamHistoryTurn[] }) => {
     abort();
     setLoading(true);
     setError(null);
@@ -115,6 +123,9 @@ export function useStreamingExplanation(
     try {
       const baseURL = apiClient.instance.defaults.baseURL ?? '';
       const body: Record<string, unknown> = { prompt };
+      if (options?.messages && options.messages.length > 0) {
+        body.messages = options.messages;
+      }
       if (options?.regenerate) {
         body.regenerate = true;
       }

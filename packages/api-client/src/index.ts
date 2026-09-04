@@ -24,7 +24,7 @@ export type {
 export { useNotes } from './notes';
 export { useInflection } from './inflection';
 export { useStreamingExplanation } from './chat';
-export type { StreamState, StreamActions, StreamDiagnostics } from './chat';
+export type { StreamState, StreamActions, StreamDiagnostics, StreamHistoryTurn } from './chat';
 export type { ApiClientConfig } from './client';
 export { fetchPrices } from './prices';
 export {
