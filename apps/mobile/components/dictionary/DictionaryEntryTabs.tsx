@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
+import { DEFAULT_AI_FOLLOW_UPS } from '@langplayer/utils';
 import { BookOpen, Film, Binary, Sparkles, Library } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -138,6 +139,10 @@ export function DictionaryEntryTabs({
         contextForm={contextForm}
         entryFound={true}
         autoLoad
+        // Keep the historical one-tap preset follow-up buttons (Inflection /
+        // Morphemes / Etymology / Syntax / Synonyms / Examples from Videos)
+        // alongside the new free-form input.
+        followUpPresets={DEFAULT_AI_FOLLOW_UPS}
         // Same term set the Examples tab's subs search uses — the AI
         // "Examples from Videos" follow-up must find the same videos.
         searchTerms={allTerms}
