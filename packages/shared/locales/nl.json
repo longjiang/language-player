@@ -155,6 +155,10 @@
         "start_writing": "Begin met schrijven",
         "stop": "Stoppen",
         "subscribe": "Abonneren",
+        "summarize_book_up_to_chapter": "Vat het boek samen tot dit hoofdstuk",
+        "summarize_this_chapter": "Vat dit hoofdstuk samen",
+        "summarize_this_page": "Vat deze pagina samen",
+        "summarize_this_text": "Vat deze tekst samen",
         "sync_now": "Nu synchroniseren",
         "synonyms": "Synoniemen",
         "syntax": "Syntaxis",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Leg uit of het {l2Name}-woord \"{word}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
         "followup_syntax_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
         "subs_ai_examples": "Je bent een taalleerassistent. Hieronder staan ondertitelregels uit {n} video's, elk in het {l2Name}, die de term \"{term}\" bevatten. Regels die met een * beginnen zijn de overeenkomende regels.",
-        "subs_ai_group": "Je bent een taalhulp-assistent. Hieronder staan {n} ondertitelregels uit video's, elk in het {l2Name}, die de term \"{term}\" bevatten."
+        "subs_ai_group": "Je bent een taalhulp-assistent. Hieronder staan {n} ondertitelregels uit video's, elk in het {l2Name}, die de term \"{term}\" bevatten.",
+        "summarize": "Vat de volgende tekst samen in {l1Name}: {text}"
     },
     "review": {
         "again": "Opnieuw",

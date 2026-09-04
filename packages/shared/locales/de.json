@@ -155,6 +155,10 @@
         "start_writing": "Schreiben beginnen",
         "stop": "Stopp",
         "subscribe": "Abonnieren",
+        "summarize_book_up_to_chapter": "Buch bis zu diesem Kapitel zusammenfassen",
+        "summarize_this_chapter": "Dieses Kapitel zusammenfassen",
+        "summarize_this_page": "Diese Seite zusammenfassen",
+        "summarize_this_text": "Diesen Text zusammenfassen",
         "sync_now": "Jetzt synchronisieren",
         "synonyms": "Synonyme",
         "syntax": "Syntax",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
         "followup_syntax_context": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" in \"{context}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
         "subs_ai_examples": "Du bist ein Sprachlern-Assistent. Unten findest du Untertitelzeilen aus {n} Videos, jeweils auf {l2Name}, die den Begriff \"{term}\" enthalten. Zeilen mit führendem * sind die Trefferzeilen.",
-        "subs_ai_group": "Du bist ein Sprachlern-Assistent. Unten sind {n} Untertitelzeilen aus Videos, jeweils auf {l2Name}, die den Begriff \"{term}\" enthalten."
+        "subs_ai_group": "Du bist ein Sprachlern-Assistent. Unten sind {n} Untertitelzeilen aus Videos, jeweils auf {l2Name}, die den Begriff \"{term}\" enthalten.",
+        "summarize": "Fasse den folgenden Text auf {l1Name} zusammen: {text}"
     },
     "review": {
         "again": "Erneut",

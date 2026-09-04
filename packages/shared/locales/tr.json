@@ -26,7 +26,7 @@
         "advanced_search": "Gelişmiş",
         "all_results": "Tüm sonuçlar",
         "apply": "Uygula",
-        "ask_ai": "Yapay Zekâya Sor",
+        "ask_ai": "AI'ya sor",
         "back": "Geri",
         "back_to_documentation": "Dokümantasyona geri dön",
         "back_to_home_page": "Ana Sayfaya Dön",
@@ -155,6 +155,10 @@
         "start_writing": "Yazmaya başla",
         "stop": "Durdur",
         "subscribe": "Abone Ol",
+        "summarize_book_up_to_chapter": "Kitabı bu bölüme kadar özetle",
+        "summarize_this_chapter": "Bu bölümü özetle",
+        "summarize_this_page": "Bu sayfayı özetle",
+        "summarize_this_text": "Bu metni özetle",
         "sync_now": "Şimdi eşitle",
         "synonyms": "Eş anlamlılar",
         "syntax": "Sözdizimi",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
         "followup_syntax_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
         "subs_ai_examples": "Sen bir dil öğrenme asistanısın. Aşağıda, \"{term}\" terimini içeren {n} videonun her biri {l2Name} dilindeki altyazı satırları yer alıyor. * ile başlayan satırlar eşleşen satırlardır.",
-        "subs_ai_group": "Sen bir dil öğrenme asistanısın. Aşağıda {l2Name} dilindeki videolardan \"{term}\" terimini içeren {n} altyazı satırı var."
+        "subs_ai_group": "Sen bir dil öğrenme asistanısın. Aşağıda {l2Name} dilindeki videolardan \"{term}\" terimini içeren {n} altyazı satırı var.",
+        "summarize": "Aşağıdaki metni {l1Name} ile özetle: {text}"
     },
     "review": {
         "again": "Tekrar",

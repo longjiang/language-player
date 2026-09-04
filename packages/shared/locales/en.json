@@ -155,6 +155,10 @@
         "start_writing": "Start Writing",
         "stop": "Stop",
         "subscribe": "Subscribe",
+        "summarize_book_up_to_chapter": "Summarize book up to this chapter",
+        "summarize_this_chapter": "Summarize this chapter",
+        "summarize_this_page": "Summarize this page",
+        "summarize_this_text": "Summarize this text",
         "sync_now": "Sync now",
         "synonyms": "Synonyms",
         "syntax": "Syntax",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Please explain whether the {l2Name} word \"{word}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
         "followup_syntax_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
         "subs_ai_examples": "You are a language-learning assistant. Below are subtitle lines from {n} videos, each in {l2Name}, that contain the term \"{term}\". Lines marked with a leading * are the matched lines.",
-        "subs_ai_group": "You are a language-learning assistant. Below are {n} subtitle lines from videos, each in {l2Name}, that contain the term \"{term}\"."
+        "subs_ai_group": "You are a language-learning assistant. Below are {n} subtitle lines from videos, each in {l2Name}, that contain the term \"{term}\".",
+        "summarize": "In {l1Name}, summarize the following text: {text}"
     },
     "review": {
         "again": "Again",

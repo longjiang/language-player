@@ -155,6 +155,10 @@
         "start_writing": "Inizia a scrivere",
         "stop": "Ferma",
         "subscribe": "Abbònati",
+        "summarize_book_up_to_chapter": "Riepiloga il libro fino a questo capitolo",
+        "summarize_this_chapter": "Riepiloga questo capitolo",
+        "summarize_this_page": "Riepiloga questa pagina",
+        "summarize_this_text": "Riepiloga questo testo",
         "sync_now": "Sincronizza ora",
         "synonyms": "Sinonimi",
         "syntax": "Sintassi",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Spiega se la parola {l2Name} \"{word}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.).",
         "followup_syntax_context": "Spiega se la parola {l2Name} \"{word}\" in \"{context}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.).",
         "subs_ai_examples": "Sei un assistente per l'apprendimento delle lingue. Di seguito ci sono righe di sottotitoli di {n} video, ciascuna in {l2Name}, che contengono il termine \"{term}\". Le righe che iniziano con * sono quelle corrispondenti.",
-        "subs_ai_group": "Sei un assistente per l'apprendimento delle lingue. Di seguito ci sono {n} righe di sottotitoli di video, ciascuna in {l2Name}, che contengono il termine \"{term}\"."
+        "subs_ai_group": "Sei un assistente per l'apprendimento delle lingue. Di seguito ci sono {n} righe di sottotitoli di video, ciascuna in {l2Name}, che contengono il termine \"{term}\".",
+        "summarize": "Riepiloga il seguente testo in {l1Name}: {text}"
     },
     "review": {
         "again": "Di nuovo",

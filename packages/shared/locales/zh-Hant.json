@@ -26,7 +26,7 @@
         "advanced_search": "進階搜尋",
         "all_results": "所有結果",
         "apply": "套用",
-        "ask_ai": "問AI",
+        "ask_ai": "問 AI",
         "back": "返回",
         "back_to_documentation": "返回文件",
         "back_to_home_page": "返回首頁",
@@ -151,6 +151,10 @@
         "start_writing": "開始寫作",
         "stop": "停止",
         "subscribe": "訂閱",
+        "summarize_book_up_to_chapter": "總結本書截至本章",
+        "summarize_this_chapter": "總結本章",
+        "summarize_this_page": "總結本頁",
+        "summarize_this_text": "總結這段文字",
         "sync_now": "立即同步",
         "synonyms": "同義詞",
         "syntax": "句法",
@@ -1245,7 +1249,8 @@
         "followup_syntax": "請解釋{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
         "followup_syntax_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
         "subs_ai_examples": "你是一名語言學習助手。以下是來自{n}個影片的字幕行，均為{l2Name}，包含術語\"{term}\"。以*開頭的行是匹配行。",
-        "subs_ai_group": "你是一名語言學習助手。以下是來自影片的{n}行字幕，均為{l2Name}，包含術語\"{term}\"。"
+        "subs_ai_group": "你是一名語言學習助手。以下是來自影片的{n}行字幕，均為{l2Name}，包含術語\"{term}\"。",
+        "summarize": "請用{l1Name}總結下面的文字：{text}"
     },
     "review": {
         "again": "重來",

@@ -155,6 +155,10 @@
         "start_writing": "Bắt đầu viết",
         "stop": "Dừng",
         "subscribe": "Đăng ký",
+        "summarize_book_up_to_chapter": "Tóm tắt cuốn sách đến chương này",
+        "summarize_this_chapter": "Tóm tắt chương này",
+        "summarize_this_page": "Tóm tắt trang này",
+        "summarize_this_text": "Tóm tắt văn bản này",
         "sync_now": "Đồng bộ ngay",
         "synonyms": "Từ đồng nghĩa",
         "syntax": "Cú pháp",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
         "followup_syntax_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
         "subs_ai_examples": "Bạn là trợ lý học ngôn ngữ. Dưới đây là các dòng phụ đề từ {n} video, mỗi dòng bằng tiếng {l2Name}, có chứa từ \"{term}\". Các dòng bắt đầu bằng * là các dòng khớp.",
-        "subs_ai_group": "Bạn là trợ lý học ngôn ngữ. Dưới đây là {n} dòng phụ đề từ video, mỗi dòng bằng tiếng {l2Name}, có chứa thuật ngữ \"{term}\"."
+        "subs_ai_group": "Bạn là trợ lý học ngôn ngữ. Dưới đây là {n} dòng phụ đề từ video, mỗi dòng bằng tiếng {l2Name}, có chứa thuật ngữ \"{term}\".",
+        "summarize": "Tóm tắt văn bản sau bằng {l1Name}: {text}"
     },
     "review": {
         "again": "Lại nữa",

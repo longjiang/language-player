@@ -155,6 +155,10 @@
         "start_writing": "Mulai menulis",
         "stop": "Berhenti",
         "subscribe": "Berlangganan",
+        "summarize_book_up_to_chapter": "Ringkas buku sampai bab ini",
+        "summarize_this_chapter": "Ringkas bab ini",
+        "summarize_this_page": "Ringkas halaman ini",
+        "summarize_this_text": "Ringkas teks ini",
         "sync_now": "Sinkronkan sekarang",
         "synonyms": "Sinonim",
         "syntax": "Sintaksis",
@@ -1276,7 +1280,8 @@
         "followup_syntax": "Jelaskan apakah kata {l2Name} \"{word}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
         "followup_syntax_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
         "subs_ai_examples": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah baris subtitle dari {n} video, masing-masing dalam {l2Name}, yang mengandung istilah \"{term}\". Baris yang diawali * adalah baris yang cocok.",
-        "subs_ai_group": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah {n} baris subtitle dari video, masing-masing dalam {l2Name}, yang mengandung istilah \"{term}\"."
+        "subs_ai_group": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah {n} baris subtitle dari video, masing-masing dalam {l2Name}, yang mengandung istilah \"{term}\".",
+        "summarize": "Ringkas teks berikut dalam {l1Name}: {text}"
     },
     "review": {
         "again": "Lagi",
