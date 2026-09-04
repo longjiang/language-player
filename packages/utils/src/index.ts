@@ -205,3 +205,5 @@ export {
   truncateReaderAiContent,
 } from './ai-follow-ups';
 export type { AiFollowUpPreset, ReaderAiContent } from './ai-follow-ups';
+export { parseAiQuotes, READER_AI_QUOTE_INSTRUCTION } from './ai-quotes';
+export type { AiQuote } from './ai-quotes';
