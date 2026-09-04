@@ -697,12 +697,11 @@ export function PaginatedReader({
         {onOpenAskAi && (
           <button
             onClick={onOpenAskAi}
-            className="ml-1 inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
+            className="rounded p-1 hover:bg-muted"
             aria-label={t('action.ask_ai')}
             title={t('action.ask_ai')}
           >
-            <Sparkles className="h-3.5 w-3.5" />
-            {t('action.ask_ai')}
+            <Sparkles className="h-4 w-4" />
           </button>
         )}
         {onOpenThumbnails && (

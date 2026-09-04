@@ -20,7 +20,7 @@ import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { GridLine } from '@/lib/aligned-translation';
 import { ChevronDown, ChevronLeft, ChevronRight, List, Loader2, Search, Sparkles } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
@@ -986,11 +986,10 @@ export function PaginatedReader({
           {onOpenAskAi && (
             <Pressable
               onPress={onOpenAskAi}
-              className="ml-1 flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted"
+              className="rounded p-1 active:bg-muted"
               accessibilityLabel={t('action.ask_ai')}
             >
-              <Sparkles size={14} color={ICON_PRIMARY} />
-              <Text className="text-xs font-medium text-primary">{t('action.ask_ai')}</Text>
+              <Sparkles size={18} color={ICON_MUTED} />
             </Pressable>
           )}
         </Animated.View>
