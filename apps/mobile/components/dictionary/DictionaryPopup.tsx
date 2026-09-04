@@ -25,7 +25,7 @@ import { popupLogger } from '@/lib/logger';
 import { suppressReaderTap } from '@/lib/reader-tap-guard';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { TOKENIZER_CONFIG, type DictionaryEntry } from '@langplayer/shared';
-import { baseCode } from '@langplayer/utils';
+import { baseCode, DEFAULT_AI_FOLLOW_UPS } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
@@ -723,6 +723,9 @@ export function DictionaryPopup({
                       word={word}
                       contextText={context}
                       entryFound={(results?.length ?? 0) > 0}
+                      // Keep the historical one-tap preset follow-up buttons
+                      // alongside the new free-form input.
+                      followUpPresets={DEFAULT_AI_FOLLOW_UPS}
                     />
                   </>
                 )}

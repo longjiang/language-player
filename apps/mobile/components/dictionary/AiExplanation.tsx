@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
-import { useStreamingExplanation } from '@langplayer/api-client';
-import { buildWordExplainPrompt } from '@langplayer/utils';
+import { useStreamingExplanation, type StreamHistoryTurn } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
@@ -14,24 +13,13 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, type AiFollowUpPreset } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react-native';
+import { Sparkles, RefreshCw, Copy, Check, Send } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-
-type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms' | 'examples';
-
-const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
-  { kind: 'inflection', labelKey: 'action.inflection' },
-  { kind: 'morphemes', labelKey: 'action.morphemes' },
-  { kind: 'etymology', labelKey: 'action.etymology' },
-  { kind: 'syntax', labelKey: 'action.syntax' },
-  { kind: 'synonyms', labelKey: 'action.synonyms' },
-  { kind: 'examples', labelKey: 'title.examples_from_videos' },
-];
 
 /** One AI-selected video example: the search result (for the chip) plus the
  *  LLM's explanation of the word's usage in that line. */
@@ -92,14 +80,19 @@ interface AiExplanationProps {
    *  (or written-form) mismatch can't zero out the results. Falls back to
    *  head + inflected surface form when omitted (dictionary popup). */
   searchTerms?: string[];
+  /** Optional one-tap preset follow-up buttons (prompt templates or the
+   *  "Examples from Videos" flow). Defaults to `[]` (no preset buttons — the
+   *  card shows only the free-form chat input); pass `DEFAULT_AI_FOLLOW_UPS`
+   *  for the dictionary preset set. */
+  followUpPresets?: AiFollowUpPreset[];
 }
 
 /**
  * "Let DeepSeek Explain" — Pro-only feature for the dictionary popup.
- * Matches web: streaming chat with regenerate, copy, and follow-up question
- * buttons (inflection / morphemes / etymology / syntax / synonyms).
+ * Matches web: multi-turn streaming chat with regenerate, copy, a free-form
+ * follow-up input, and optional configurable one-tap preset buttons.
  */
-export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms }: AiExplanationProps) {
+export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [] }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
@@ -108,7 +101,8 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const [showAi, setShowAi] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingId, setStreamingId] = useState<number | null>(null);
-  const [usedFollowUps, setUsedFollowUps] = useState<Set<FollowUpKind>>(new Set());
+  const [usedFollowUps, setUsedFollowUps] = useState<Set<string>>(new Set());
+  const [freeFormText, setFreeFormText] = useState('');
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -165,49 +159,44 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     });
   }, [t, word, contextText, contextForm]);
 
-  const buildFollowUpPrompt = useCallback((kind: FollowUpKind): string => {
+  const buildPresetPrompt = useCallback((preset: AiFollowUpPreset & { kind: 'prompt' }): string => {
     const l1Name = l1NameRef.current;
     const l2Name = l2NameRef.current;
+    // Strip trailing punctuation from context to avoid doubled periods.
     const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
-    const wordParams = { l1Name, l2Name, word };
-
-    let prompt: string;
-    if (kind === 'inflection') {
-      if (cleanContext && contextForm && contextForm !== word) {
-        prompt = t('prompt.followup_inflection_context_form', { ...wordParams, contextForm, context: cleanContext });
-      } else if (cleanContext) {
-        prompt = t('prompt.followup_inflection_context', { ...wordParams, context: cleanContext });
-      } else {
-        prompt = t('prompt.followup_inflection', wordParams);
-      }
-    } else if (kind === 'morphemes') {
-      prompt = cleanContext
-        ? t('prompt.followup_morphemes_context', { ...wordParams, context: cleanContext })
-        : t('prompt.followup_morphemes', wordParams);
-    } else if (kind === 'etymology') {
-      prompt = t('prompt.followup_etymology', wordParams);
-    } else if (kind === 'syntax') {
-      prompt = cleanContext
-        ? t('prompt.followup_syntax_context', { ...wordParams, context: cleanContext })
-        : t('prompt.followup_syntax', wordParams);
-    } else {
-      // synonyms
-      prompt = cleanContext
-        ? t('prompt.followup_synonyms_context', { ...wordParams, context: cleanContext })
-        : t('prompt.followup_synonyms', wordParams);
-    }
-
-    const synonymExamplesPrompt = kind === 'synonyms'
-      ? t('prompt.followup_synonyms_examples', { l2Name })
-      : '';
+    // Resolve the preset's prompt template with every known param. Empty-string
+    // fallbacks keep next-intl from throwing on an unbound placeholder when a
+    // template references {context}/{contextForm} but none is on hand.
+    const body = t(preset.promptKey, {
+      l1Name,
+      l2Name,
+      word,
+      context: cleanContext ?? '',
+      contextForm: contextForm ?? '',
+    });
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return [prompt, synonymExamplesPrompt, ticksPrompt].filter(Boolean).join('\n\n');
+    return [body, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, word, contextText, contextForm]);
 
-  const startStream = useCallback((prompt: string, regenerate = false) => {
+  // Reconstruct the prior conversation as {role, content} turns for the
+  // multi-turn endpoint. Every streamed assistant message stores the exact
+  // prompt that produced it (.prompt), so its user turn is reconstructed from
+  // that prompt. "Examples from Videos" turns (no streaming prompt) and any
+  // still-empty in-flight placeholder are skipped.
+  const buildHistory = useCallback((): StreamHistoryTurn[] => {
+    const turns: StreamHistoryTurn[] = [];
+    for (const m of messages) {
+      if (m.role !== 'assistant' || m.examples || !m.text) continue;
+      if (m.prompt) turns.push({ role: 'user', content: m.prompt });
+      turns.push({ role: 'assistant', content: m.text });
+    }
+    return turns;
+  }, [messages]);
+
+  const startStream = useCallback((prompt: string, options?: { regenerate?: boolean; messages?: StreamHistoryTurn[] }) => {
     const aiId = appendMessage({ role: 'assistant', text: '', prompt });
     setStreamingId(aiId);
-    void stream(prompt, regenerate ? { regenerate: true } : undefined);
+    void stream(prompt, options);
   }, [appendMessage, stream]);
 
   const fetchExplanation = useCallback(() => {
@@ -265,11 +254,6 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   );
 
   const handleExamplesFollowUp = useCallback(async () => {
-    setUsedFollowUps((prev) => {
-      const next = new Set(prev);
-      next.add('examples');
-      return next;
-    });
     appendMessage({ role: 'user', text: '', label: t('title.examples_from_videos') });
     const aiId = appendMessage({ role: 'assistant', text: '', loading: true });
     log('AI examples follow-up start', { word });
@@ -355,20 +339,40 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     }
   }, [word, contextForm, contextText, searchTerms, t, appendMessage, updateMessage, fetchSubsSearch]);
 
-  const handleFollowUp = useCallback((kind: FollowUpKind) => {
-    if (kind === 'examples') {
+  const handleFollowUp = useCallback((preset: AiFollowUpPreset) => {
+    // Mark used once-per-transcript for every preset kind (incl. examples).
+    setUsedFollowUps((prev) => {
+      const next = new Set(prev);
+      next.add(presetKey(preset));
+      return next;
+    });
+    if (preset.kind === 'examples') {
       void handleExamplesFollowUp();
       return;
     }
-    const followUp = FOLLOW_UPS.find((f) => f.kind === kind);
-    setUsedFollowUps((prev) => {
-      const next = new Set(prev);
-      next.add(kind);
-      return next;
+    const prompt = buildPresetPrompt(preset);
+    // Reuse the buildHistory computed before this follow-up's bubbles are
+    // appended — it reconstructs the prior conversation (assistant replies
+    // with their prompts), not the turn we're about to start.
+    const history = buildHistory();
+    appendMessage({
+      role: 'user',
+      text: '',
+      label: t(preset.labelKey),
     });
-    appendMessage({ role: 'user', text: '', label: followUp ? t(followUp.labelKey) : '' });
-    startStream(buildFollowUpPrompt(kind));
-  }, [appendMessage, startStream, buildFollowUpPrompt, t, handleExamplesFollowUp]);
+    startStream(prompt, { messages: history });
+  }, [appendMessage, startStream, buildPresetPrompt, t, handleExamplesFollowUp, buildHistory]);
+
+  const handleSendFreeForm = useCallback((raw: string) => {
+    const text = raw.trim();
+    if (!text) return;
+    setFreeFormText('');
+    const history = buildHistory();
+    // Send the typed message as the new user turn; the prior conversation
+    // (reconstructed above) grounds it in the word/context already discussed.
+    appendMessage({ role: 'user', text, label: text, prompt: text });
+    startStream(text, { messages: history });
+  }, [startStream, appendMessage, buildHistory]);
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -610,20 +614,53 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           <ErrorNotice message={localizedError(t, error)} className="mt-2" />
         )}
 
-        {FOLLOW_UPS.filter((followUp) => !usedFollowUps.has(followUp.kind)).length > 0 && (
+        {followUpPresets.filter((p) => !usedFollowUps.has(presetKey(p))).length > 0 && (
           <View className="mt-3 flex-row flex-wrap justify-end gap-2">
-            {FOLLOW_UPS.filter((followUp) => !usedFollowUps.has(followUp.kind)).map((followUp) => (
-              <Pressable
-                key={followUp.kind}
-                onPress={() => handleFollowUp(followUp.kind)}
-                disabled={loading}
-                className="rounded-lg rounded-br-none border border-border px-3 py-1.5 active:bg-muted disabled:opacity-40"
-              >
-                <Text className="text-sm font-medium text-foreground">{t(followUp.labelKey)}</Text>
-              </Pressable>
-            ))}
+            {followUpPresets
+              .filter((p) => !usedFollowUps.has(presetKey(p)))
+              .map((p) => (
+                <Pressable
+                  key={presetKey(p)}
+                  onPress={() => handleFollowUp(p)}
+                  disabled={loading}
+                  className="rounded-lg rounded-br-none border border-border px-3 py-1.5 active:bg-muted disabled:opacity-40"
+                >
+                  <Text className="text-sm font-medium text-foreground">{t(p.labelKey)}</Text>
+                </Pressable>
+              ))}
           </View>
         )}
+
+        {/* Free-form follow-up input — lets the user ask anything about the
+            word/phrase in the ongoing multi-turn chat. Disabled while a reply
+            is streaming so turns stay ordered. */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          enabled={Platform.OS === 'ios'}
+        >
+          <View className="mt-3 flex-row items-center gap-2">
+            <TextInput
+              value={freeFormText}
+              onChangeText={setFreeFormText}
+              placeholder={t('placeholder.ask_follow_up')}
+              editable={!loading}
+              placeholderTextColor={ICON_MUTED}
+              onSubmitEditing={() => handleSendFreeForm(freeFormText)}
+              returnKeyType="send"
+              className="h-9 flex-1 rounded-md border border-border bg-background px-3 text-sm text-foreground"
+            />
+            <Button
+              onPress={() => handleSendFreeForm(freeFormText)}
+              disabled={loading || !freeFormText.trim()}
+              variant="outline"
+              size="sm"
+              accessibilityLabel={t('action.send')}
+            >
+              <Send size={14} color={ICON_PRIMARY} />
+              <Text className={buttonTextClass('outline')}>{t('action.send')}</Text>
+            </Button>
+          </View>
+        </KeyboardAvoidingView>
 
         {/* ── Example player modal — the same shared modal the subs-search
             results rows open (mini player + controls + subtitles with
