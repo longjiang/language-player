@@ -22,7 +22,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AiExplanation } from '@/components/ai-explanation';
 import {
   READER_ASK_AI_EPUB_PRESETS,
-  READER_ASK_AI_INITIAL_PRESET,
   truncateReaderAiContent,
   type ReaderAiContent,
 } from '@langplayer/utils';
@@ -758,9 +757,8 @@ export default function EpubPage() {
               contextText={undefined}
               contextForm={undefined}
               entryFound={true}
-              autoLoad
+              demandMode
               followUpPresets={READER_ASK_AI_EPUB_PRESETS}
-              initialPreset={READER_ASK_AI_INITIAL_PRESET}
               quoteChips
               onQuotePress={openSearchFor}
               readerContent={
