@@ -97,6 +97,9 @@ interface AiExplanationProps {
   quoteChips?: boolean;
   /** Reader "Ask AI": fired when a quote chip is tapped (opens reader search). */
   onQuotePress?: (original: string) => void;
+  /** Reader "Ask AI": open the chat but do NOT auto-stream. The user must tap a
+   *  preset button or send a message to get a response (readers only). */
+  demandMode?: boolean;
 }
 
 /**
@@ -104,13 +107,13 @@ interface AiExplanationProps {
  * Matches web: multi-turn streaming chat with regenerate, copy, a free-form
  * follow-up input, and optional configurable one-tap preset buttons.
  */
-export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress }: AiExplanationProps) {
+export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress, demandMode = false }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display } = useSettingsContext();
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
-  const [showAi, setShowAi] = useState(false);
+  const [showAi, setShowAi] = useState(demandMode);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingId, setStreamingId] = useState<number | null>(null);
   const [usedFollowUps, setUsedFollowUps] = useState<Set<string>>(new Set());
@@ -388,11 +391,14 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     if (!text) return;
     setFreeFormText('');
     const history = buildHistory();
+    // Reader Ask-AI: also carry the [[original||translation]] quote instruction
+    // so follow-up answers keep producing tappable quote chips.
+    const prompt = quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
-    appendMessage({ role: 'user', text, label: text, prompt: text });
-    startStream(text, { messages: history });
-  }, [startStream, appendMessage, buildHistory]);
+    appendMessage({ role: 'user', text, label: text, prompt });
+    startStream(prompt, { messages: history });
+  }, [startStream, appendMessage, buildHistory, quoteChips]);
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -474,10 +480,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
 
   // Fetch when `showAi` is toggled, or when autoLoad + Pro resolve.
   useEffect(() => {
+    if (demandMode) return; // reader Ask-AI: no auto response — user must act
     if ((showAi || autoLoad) && isPro && subLoaded && messages.length === 0 && !loading) {
       fetchExplanation();
     }
-  }, [showAi, autoLoad, isPro, subLoaded, messages.length, loading, fetchExplanation]);
+  }, [demandMode, showAi, autoLoad, isPro, subLoaded, messages.length, loading, fetchExplanation]);
 
   useEffect(() => () => {
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
@@ -500,8 +507,8 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     );
   }
 
-  // Not yet toggled — show the button (skip when autoLoad)
-  if (!showAi && !autoLoad) {
+  // Not yet toggled — show the button (skip when autoLoad or demandMode)
+  if (!showAi && !autoLoad && !demandMode) {
     return (
       <View className="mt-4 pb-2">
         <Button
@@ -528,7 +535,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   }
 
   // Streaming or complete — show the chat transcript
-  if (messages.length > 0 || loading || error) {
+  if (demandMode || messages.length > 0 || loading || error) {
     return (
       <View className="mt-4 mb-2">
         <View className="mb-2 flex-row items-center gap-2">

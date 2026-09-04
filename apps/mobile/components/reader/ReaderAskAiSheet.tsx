@@ -3,7 +3,6 @@ import { View, Text, Modal, ScrollView, Pressable, KeyboardAvoidingView, Platfor
 import { useT } from '@/hooks/use-t';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
 import {
-  READER_ASK_AI_INITIAL_PRESET,
   type AiFollowUpPreset,
   type ReaderAiContent,
 } from '@langplayer/utils';
@@ -25,9 +24,9 @@ interface ReaderAskAiSheetProps {
 
 /**
  * Reader "Ask AI" summary chat — a centered modal styled identically to the
- * reader's TOC / Search dialogs. Auto-summarizes the current page (via
- * READER_ASK_AI_INITIAL_PRESET) and preloads the reader's summary follow-up
- * buttons. Shared by the notes / web / image / epub readers.
+ * reader's TOC / Search dialogs. No auto-response: the user taps a summary
+ * preset button or types a message to get a response. Preloads the reader's
+ * summary follow-up buttons; shared by the notes / web / image / epub readers.
  */
 export function ReaderAskAiSheet({ open, onClose, title, content, presets, onQuotePress }: ReaderAskAiSheetProps) {
   const t = useT();
@@ -55,9 +54,8 @@ export function ReaderAskAiSheet({ open, onClose, title, content, presets, onQuo
               <AiExplanation
                 word={title}
                 entryFound={true}
-                autoLoad
+                demandMode
                 followUpPresets={presets}
-                initialPreset={READER_ASK_AI_INITIAL_PRESET}
                 readerContent={content}
                 quoteChips={!!onQuotePress}
                 onQuotePress={onQuotePress}
