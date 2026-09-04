@@ -115,9 +115,11 @@ These are grouped by feature area. Each requirement describes the finished behav
 ### 7.1 Reader "Ask AI" summary chat
 
 The **Ask AI** button (next to Search in the reader chrome) opens a Pro-gated
-multi-turn chat that **auto-summarizes the current page on open** and preloads
-one-tap summary follow-up buttons scoped to the surface. It reuses the shared
-`AiExplanation` chat (SPEC-035) with content-based presets:
+multi-turn chat that preloads one-tap summary follow-up buttons scoped to the
+surface. It reuses the shared `AiExplanation` chat (SPEC-035) with content-based
+presets. **There is no auto-response** — the chat opens empty and the user must
+tap a preset button **or** send a free-form message to get an answer (the
+`demandMode` prop; readers only):
 
 - **Notes / web / image readers** — presets: *Summarize this text* (the whole
   loaded text) and *Summarize this page* (the current visible page).
@@ -129,21 +131,20 @@ one-tap summary follow-up buttons scoped to the surface. It reuses the shared
   `prompt.summarize` template and is truncated to
   `READER_ASK_AI_CONTENT_MAX` (12 000 chars) so very long books/chapters stay
   within budget.
-- **Quote chips.** The summary prompt also asks the model to cite exact passages
-  as `[[exact L2 passage||L1 translation]]` on their own line (`parseAiQuotes`).
-  Each citation renders as a tappable chip showing both the original (L2) and
-  the model's L1 translation. Tapping a chip opens the reader **search**
-  pre-filled with that passage and highlights the first match (the search
-  dialogs accept `initialQuery` / `queryNonce` for this external trigger).
+- **Quote chips.** Every reader prompt (summary presets and free-form) also asks
+  the model to cite exact passages as `[[exact L2 passage||L1 translation]]` on
+  their own line — never as markdown blockquotes (`READER_AI_QUOTE_INSTRUCTION` +
+  `parseAiQuotes`). Each citation renders as a tappable chip showing both the
+  original (L2) and the model's L1 translation. Tapping a chip opens the reader
+  **search** pre-filled with that passage and highlights the first match (the
+  search dialogs accept `initialQuery` / `queryNonce` for this external trigger).
 
 `PaginatedReader` exposes `onOpenAskAi` (render the button) and
 `onPageTextChange` (report the current page's joined text) so a surface can
-wire the chat; the initial preset is `READER_ASK_AI_INITIAL_PRESET`
-(summarize the current page). Quote chips are enabled by passing `quoteChips` +
-`onQuotePress` to `AiExplanation`. Preset config lives in `@langplayer/utils`
+wire the chat. Quote chips are enabled by passing `quoteChips` + `onQuotePress`
+to `AiExplanation`. Preset config lives in `@langplayer/utils`
 (`READER_ASK_AI_TEXT_PRESETS` / `READER_ASK_AI_EPUB_PRESETS` /
-`READER_ASK_AI_INITIAL_PRESET` / `truncateReaderAiContent` /
-`parseAiQuotes` / `READER_AI_QUOTE_INSTRUCTION`).
+`truncateReaderAiContent` / `parseAiQuotes` / `READER_AI_QUOTE_INSTRUCTION`).
 
 ### 8. Search, table of contents, and place
 
