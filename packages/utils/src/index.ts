@@ -198,5 +198,10 @@ export { decodeHtmlEntities } from './entities';
 export {
   DEFAULT_AI_FOLLOW_UPS,
   presetKey,
+  READER_ASK_AI_TEXT_PRESETS,
+  READER_ASK_AI_EPUB_PRESETS,
+  READER_ASK_AI_INITIAL_PRESET,
+  READER_ASK_AI_CONTENT_MAX,
+  truncateReaderAiContent,
 } from './ai-follow-ups';
-export type { AiFollowUpPreset } from './ai-follow-ups';
+export type { AiFollowUpPreset, ReaderAiContent } from './ai-follow-ups';
