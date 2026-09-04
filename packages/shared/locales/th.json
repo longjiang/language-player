@@ -137,6 +137,7 @@
         "search_images": "ค้นหารูปภาพ",
         "see_all": "ดูทั้งหมด",
         "select_files": "เลือกไฟล์",
+        "send": "ส่ง",
         "send_reset_link": "ส่งลิงก์รีเซ็ต",
         "share": "แชร์",
         "show_less": "แสดงน้อยลง",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "เวแชทเพย์"
     },
     "placeholder": {
+        "ask_follow_up": "ถามคำถามเพิ่มเติมเกี่ยวกับคำนี้…",
         "confirm_password": "ยืนยันรหัสผ่าน",
         "custom_search_terms": "คำค้นแบบกำหนดเอง คั่นด้วยเครื่องหมายจุลภาค…",
         "dict_search_1": "ค้นหา {param1}",

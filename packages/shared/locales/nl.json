@@ -137,6 +137,7 @@
         "search_images": "Afbeeldingen zoeken",
         "see_all": "Alles bekijken",
         "select_files": "Bestanden selecteren",
+        "send": "Verzenden",
         "send_reset_link": "Resetlink versturen",
         "share": "Delen",
         "show_less": "Toon minder",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "Stel een vervolgvraag over dit woord…",
         "confirm_password": "Bevestig wachtwoord",
         "custom_search_terms": "Eigen termen, gescheiden door komma's…",
         "dict_search_1": "Zoek {param1}",

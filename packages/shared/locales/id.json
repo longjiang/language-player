@@ -137,6 +137,7 @@
         "search_images": "Cari gambar",
         "see_all": "Lihat Semua",
         "select_files": "Pilih file",
+        "send": "Kirim",
         "send_reset_link": "Kirim Tautan Reset",
         "share": "Bagikan",
         "show_less": "Tampilkan lebih sedikit",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "Ajukan pertanyaan lanjutan tentang kata ini…",
         "confirm_password": "Konfirmasi Kata Sandi",
         "custom_search_terms": "Istilah khusus, dipisahkan koma…",
         "dict_search_1": "Cari {param1}",

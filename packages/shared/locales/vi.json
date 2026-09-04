@@ -137,6 +137,7 @@
         "search_images": "Tìm kiếm hình ảnh",
         "see_all": "Xem tất cả",
         "select_files": "Chọn tệp",
+        "send": "Gửi",
         "send_reset_link": "Gửi liên kết đặt lại",
         "share": "Chia sẻ",
         "show_less": "Ẩn bớt",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "Hỏi câu hỏi tiếp theo về từ này…",
         "confirm_password": "Xác nhận mật khẩu",
         "custom_search_terms": "Cụm từ tùy chỉnh, phân tách bằng dấu phẩy…",
         "dict_search_1": "Tìm kiếm {param1}",

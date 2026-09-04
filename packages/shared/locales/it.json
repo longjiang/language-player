@@ -137,6 +137,7 @@
         "search_images": "Cerca immagini",
         "see_all": "Vedi tutto",
         "select_files": "Seleziona file",
+        "send": "Invia",
         "send_reset_link": "Invia link di ripristino",
         "share": "Condividi",
         "show_less": "Mostra di meno",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "Fai una domanda di approfondimento su questa parola…",
         "confirm_password": "Conferma password",
         "custom_search_terms": "Termini personalizzati separati da virgole…",
         "dict_search_1": "Cerca {param1}",

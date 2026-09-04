@@ -137,6 +137,7 @@
         "search_images": "Görsel ara",
         "see_all": "Tümünü Gör",
         "select_files": "Dosya seç",
+        "send": "Gönder",
         "send_reset_link": "Sıfırlama Bağlantısı Gönder",
         "share": "Paylaş",
         "show_less": "Daha az göster",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "Bu kelimeyle ilgili bir takip sorusu sor…",
         "confirm_password": "Şifreyi Doğrula",
         "custom_search_terms": "Virgülle ayrılmış özel terimler…",
         "dict_search_1": "Ara {param1}",
