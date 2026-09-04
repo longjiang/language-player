@@ -13,7 +13,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, parseAiQuotes, READER_AI_QUOTE_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, parseAiQuotes, filterReaderQuotes, READER_AI_QUOTE_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -400,6 +400,19 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     startStream(prompt, { messages: history });
   }, [startStream, appendMessage, buildHistory, quoteChips]);
 
+  // Reader Ask-AI: extract quotes from a response and drop any that aren't
+  // actually present in the reader content (hallucinated / abbreviated).
+  const visibleQuotes = useCallback((text: string) => {
+    if (!quoteChips || !readerContent) return [];
+    const parsed = parseAiQuotes(text);
+    return filterReaderQuotes(parsed.quotes, [
+      readerContent.text,
+      readerContent.page,
+      readerContent.chapter ?? '',
+      readerContent.bookUpToChapter ?? '',
+    ]);
+  }, [quoteChips, readerContent]);
+
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
     () => messages.find((m) => m.examples && m.examples.length > 0),
@@ -576,9 +589,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                       streaming={loading && message.id === streamingId}
                     />
                   )}
-                  {quoteChips && onQuotePress && message.text && parseAiQuotes(message.text).quotes.length > 0 && (
+                  {quoteChips && onQuotePress && message.text && visibleQuotes(message.text).length > 0 && (
                     <View className="mt-2 flex-row flex-wrap gap-2">
-                      {parseAiQuotes(message.text).quotes.map((q, i) => (
+                      {visibleQuotes(message.text).map((q, i) => (
                         <Pressable
                           key={i}
                           onPress={() => onQuotePress?.(q.original)}
