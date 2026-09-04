@@ -19,6 +19,13 @@ import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
 import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
 import type { EpubSearchMatch, EpubSearchResult } from '@/hooks/use-epub';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AiExplanation } from '@/components/ai-explanation';
+import {
+  READER_ASK_AI_EPUB_PRESETS,
+  READER_ASK_AI_INITIAL_PRESET,
+  truncateReaderAiContent,
+  type ReaderAiContent,
+} from '@langplayer/utils';
 import { Button } from '@/components/ui/button';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { CONTENT_CONTAINER_WIDTH, READER_DEFAULT_LEADING, readerLeadingPx } from '@/lib/reader-layout';
@@ -108,6 +115,39 @@ export default function EpubPage() {
   /** TOC and Search are modals now (the sidebar is gone). */
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /** Reader "Ask AI" summary chat. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [currentPageText, setCurrentPageText] = useState('');
+  /** Current chapter text + book-so-far text, fetched when the Ask AI opens. */
+  const [epubChapterText, setEpubChapterText] = useState('');
+  const [epubBookUpToText, setEpubBookUpToText] = useState('');
+
+  // When the Ask AI chat opens, fetch the current chapter and book-so-far text
+  // so the reader can scope "summarize this chapter" / "book up to this chapter".
+  useEffect(() => {
+    if (!askAiOpen || !epub.book || !location) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const chapter = await epub.book!.spineTextData(location.spineIndex);
+        if (cancelled) return;
+        let bookUpTo = '';
+        for (let i = 0; i <= location.spineIndex; i++) {
+          const c = await epub.book!.spineTextData(i);
+          if (cancelled) return;
+          bookUpTo += c.text;
+        }
+        if (cancelled) return;
+        setEpubChapterText(chapter.text);
+        setEpubBookUpToText(bookUpTo);
+      } catch {
+        /* spine text unavailable — leave the summary buttons empty */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [askAiOpen, epub.book, location]);
 
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
@@ -515,6 +555,8 @@ export default function EpubPage() {
               chromeVisible={chromeVisible}
               onOpenToc={epub.toc.length > 0 ? () => setTocOpen(true) : undefined}
               onOpenSearch={() => setSearchOpen(true)}
+              onOpenAskAi={() => setAskAiOpen(true)}
+              onPageTextChange={setCurrentPageText}
               topOverlay={
                 <span className="max-w-[85%] truncate text-xs text-muted-foreground">
                   {chapterLabel || epub.fileName || t('title.epub_reader')}
@@ -683,6 +725,38 @@ export default function EpubPage() {
             <EpubSearchPanel
               onSearch={epub.searchBook}
               onNavigate={handleSearchNavigate}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── "Ask AI" summary chat — auto-summarizes the current page on open and
+          preloads the chapter / book-so-far summary buttons. ── */}
+      <Dialog open={askAiOpen} onOpenChange={(o) => {
+        if (!o) suppressReaderTap();
+        setAskAiOpen(o);
+      }}>
+        <DialogContent className="flex h-[min(70vh,560px)] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
+          <DialogHeader>
+            <DialogTitle>{t('action.ask_ai')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <AiExplanation
+              word={epub.fileName ?? t('title.epub_reader')}
+              contextText={undefined}
+              contextForm={undefined}
+              entryFound={true}
+              autoLoad
+              followUpPresets={READER_ASK_AI_EPUB_PRESETS}
+              initialPreset={READER_ASK_AI_INITIAL_PRESET}
+              readerContent={
+                {
+                  text: '',
+                  page: truncateReaderAiContent(currentPageText),
+                  chapter: truncateReaderAiContent(epubChapterText),
+                  bookUpToChapter: truncateReaderAiContent(epubBookUpToText),
+                } satisfies ReaderAiContent
+              }
             />
           </div>
         </DialogContent>

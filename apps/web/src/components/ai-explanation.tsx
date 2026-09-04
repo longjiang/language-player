@@ -11,6 +11,7 @@ import {
   buildWordExplainPrompt,
   presetKey,
   type AiFollowUpPreset,
+  type ReaderAiContent,
 } from '@langplayer/utils';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
@@ -88,6 +89,13 @@ interface AiExplanationProps {
    *  card shows only the free-form chat input); pass `DEFAULT_AI_FOLLOW_UPS`
    *  for the dictionary preset set. */
   followUpPresets?: AiFollowUpPreset[];
+  /** Reader "Ask AI": content blocks injected into presets that carry a
+   *  `contentKey` (e.g. the shared `prompt.summarize`). Ignored by the word /
+   *  dictionary path. */
+  readerContent?: ReaderAiContent;
+  /** Reader "Ask AI": when set (with autoLoad), stream this preset's prompt
+   *  instead of the word-explain prompt (e.g. summarize the current page). */
+  initialPreset?: AiFollowUpPreset & { kind: 'prompt' };
 }
 
 // ── Subs-search helpers (mirror subs-search-results.tsx) ──
@@ -121,7 +129,7 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
  * history so the model keeps the word/context grounding without re-assembling
  * a flat prompt.
  */
-export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [] }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset }: AiExplanationProps) {
   const { data: session } = useSession();
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -232,8 +240,36 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     });
   }, [t, l1.code, l2.code, word, contextText, contextForm]);
 
+  const buildPresetPrompt = useCallback((preset: AiFollowUpPreset & { kind: 'prompt' }): string => {
+    const l1Name = languageName(l1.code, l1.code);
+    const l2Name = languageName(l2.code, l1.code);
+    // Strip trailing punctuation from context to avoid doubled periods.
+    const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
+    // Reader "Ask AI": inject the preset's named content block (e.g. the
+    // current page/chapter text) into the prompt template.
+    const contentKey = preset.contentKey;
+    const text = contentKey ? (readerContent?.[contentKey] ?? '') : '';
+    // Resolve the preset's prompt template with every known param. Empty-string
+    // fallbacks keep next-intl from throwing on an unbound placeholder when a
+    // template references {context}/{contextForm} but none is on hand.
+    const body = t(preset.promptKey, {
+      l1Name,
+      l2Name,
+      word,
+      context: cleanContext ?? '',
+      contextForm: contextForm ?? '',
+      ...(contentKey ? { text } : {}),
+    });
+    // Content-based presets (reader summaries) are prose in L1, not interactive
+    // L2 text — skip the backtick-formatting instruction for them.
+    if (contentKey) return body;
+    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+    return [body, ticksPrompt].filter(Boolean).join('\n\n');
+  }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent]);
+
   const fetchExplanation = useCallback(() => {
-    const prompt = buildPrompt();
+    // Reader "Ask AI": stream the initial preset instead of the word explain.
+    const prompt = initialPreset ? buildPresetPrompt(initialPreset) : buildPrompt();
     // Reuse the latest empty assistant placeholder (e.g. retry after an error
     // or StrictMode's double-mount abort) instead of stacking a new message.
     // Tracked in a ref because the StrictMode second effect pass re-runs this
@@ -253,7 +289,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       reusing: existingEmptyId !== null,
     });
     stream(prompt);
-  }, [stream, buildPrompt, word, appendMessage, updateMessage]);
+  }, [stream, buildPrompt, buildPresetPrompt, initialPreset, word, appendMessage, updateMessage]);
 
   const handleRegenerate = useCallback((messageId: number) => {
     const target = messages.find((m) => m.id === messageId);
@@ -264,25 +300,6 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     log('AI explain stream start (regenerate)', { word, messageId });
     stream(prompt, { regenerate: true });
   }, [stream, buildPrompt, word, messages, updateMessage]);
-
-  const buildPresetPrompt = useCallback((preset: AiFollowUpPreset & { kind: 'prompt' }): string => {
-    const l1Name = languageName(l1.code, l1.code);
-    const l2Name = languageName(l2.code, l1.code);
-    // Strip trailing punctuation from context to avoid doubled periods.
-    const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
-    // Resolve the preset's prompt template with every known param. Empty-string
-    // fallbacks keep next-intl from throwing on an unbound placeholder when a
-    // template references {context}/{contextForm} but none is on hand.
-    const body = t(preset.promptKey, {
-      l1Name,
-      l2Name,
-      word,
-      context: cleanContext ?? '',
-      contextForm: contextForm ?? '',
-    });
-    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return [body, ticksPrompt].filter(Boolean).join('\n\n');
-  }, [t, l1.code, l2.code, word, contextText, contextForm]);
 
   // Reconstruct the prior conversation as {role, content} turns for the
   // multi-turn endpoint. Every streamed assistant message stores the exact

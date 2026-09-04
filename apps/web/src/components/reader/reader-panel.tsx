@@ -27,6 +27,13 @@ import { ReaderTextBlock, ReaderMarkdownBlock } from '@/components/reader/reader
 import { blockTag, blockClass, translationClass } from '@/components/reader/shared-reader-styles';
 import { ReaderHeadingToc, extractHeadings, type ReaderHeading } from '@/components/reader/reader-heading-toc';
 import { ReaderSearchPanel, type ReaderSearchResult } from '@/components/reader/reader-search-panel';
+import { AiExplanation } from '@/components/ai-explanation';
+import {
+  READER_ASK_AI_TEXT_PRESETS,
+  READER_ASK_AI_INITIAL_PRESET,
+  truncateReaderAiContent,
+  type ReaderAiContent,
+} from '@langplayer/utils';
 import { type FormatRange, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { languageName } from '@/lib/language-data';
 import {
@@ -125,6 +132,9 @@ export function ReaderPanel({
   // search is always available when there is text.
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /** Reader "Ask AI" summary chat (SPEC-087 §…): current page text + dialog. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [currentPageText, setCurrentPageText] = useState('');
   /** Active search-match highlight (block + char range), if any. */
   const [highlight, setHighlight] = useState<{ blockIndex: number; start: number; end: number } | null>(null);
   /** Jump target for the paginator (markdown readers pass `{ blockIndex }`). */
@@ -143,6 +153,7 @@ export function ReaderPanel({
 
   const openToc = useCallback(() => setTocOpen(true), []);
   const openSearch = useCallback(() => setSearchOpen(true), []);
+  const openAskAi = useCallback(() => setAskAiOpen(true), []);
 
   const handleTocSelect = useCallback((heading: ReaderHeading) => {
     setTocOpen(false);
@@ -342,6 +353,8 @@ export function ReaderPanel({
           jumpNonce={jumpNonce}
           onOpenToc={headings.length > 0 ? openToc : undefined}
           onOpenSearch={openSearch}
+          onOpenAskAi={openAskAi}
+          onPageTextChange={setCurrentPageText}
           contentClassName="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
             [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
             [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
@@ -451,6 +464,35 @@ export function ReaderPanel({
           </DialogHeader>
           <div className="flex min-h-0 flex-1 flex-col">
             <ReaderSearchPanel blocks={blocks} onNavigate={handleSearchNavigate} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── "Ask AI" summary chat — opens on the toolbar button, auto-summarizes
+          the current page, and preloads the summary follow-up buttons. ── */}
+      <Dialog open={askAiOpen} onOpenChange={setAskAiOpen}>
+        <DialogContent className="flex h-[min(70vh,560px)] flex-col sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('action.ask_ai')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <AiExplanation
+              word={ctx.textTitle || t('title.web_reader')}
+              contextText={undefined}
+              contextForm={undefined}
+              entryFound={true}
+              autoLoad
+              followUpPresets={READER_ASK_AI_TEXT_PRESETS}
+              initialPreset={READER_ASK_AI_INITIAL_PRESET}
+              readerContent={
+                {
+                  text: truncateReaderAiContent(text),
+                  page: truncateReaderAiContent(currentPageText),
+                  chapter: null,
+                  bookUpToChapter: null,
+                } satisfies ReaderAiContent
+              }
+            />
           </div>
         </DialogContent>
       </Dialog>

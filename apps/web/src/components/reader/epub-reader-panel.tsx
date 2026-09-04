@@ -83,6 +83,10 @@ interface EpubReaderPanelProps {
   onOpenToc?: () => void;
   /** Opens the Search modal from the bottom bar. */
   onOpenSearch?: () => void;
+  /** Opens the "Ask AI" summary chat from the bottom bar. */
+  onOpenAskAi?: () => void;
+  /** Reports the current page's joined text (for "Ask AI → summarize this page"). */
+  onPageTextChange?: (text: string) => void;
   /** Muted chapter title rendered in the top reserved strip. */
   topOverlay?: React.ReactNode;
   /** Muted page count rendered in the bottom reserved strip. */
@@ -111,6 +115,8 @@ export function EpubReaderPanel({
   onToggleChrome,
   onOpenToc,
   onOpenSearch,
+  onOpenAskAi,
+  onPageTextChange,
   topOverlay,
   pageInfoOverlay,
   onPageChange,
@@ -300,6 +306,8 @@ export function EpubReaderPanel({
       onToggleChrome={onToggleChrome}
       onOpenToc={onOpenToc}
       onOpenSearch={onOpenSearch}
+      onOpenAskAi={onOpenAskAi}
+      onPageTextChange={onPageTextChange}
       topOverlay={topOverlay}
       pageInfoOverlay={pageInfoOverlay}
       onPageChange={onPageChange}
