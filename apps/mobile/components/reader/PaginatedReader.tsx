@@ -19,8 +19,8 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { GridLine } from '@/lib/aligned-translation';
-import { ChevronDown, ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react-native';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ChevronDown, ChevronLeft, ChevronRight, List, Loader2, Search, Sparkles } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
@@ -172,6 +172,11 @@ interface PaginatedReaderProps {
   onOpenToc?: () => void;
   /** Immersive: renders the Search button in the bottom bar. */
   onOpenSearch?: () => void;
+  /** Immersive: renders the "Ask AI" button in the bottom bar (reader summary
+   *  chat with preloaded follow-up presets). */
+  onOpenAskAi?: () => void;
+  /** Reports the current page's joined block text (reader "Ask AI" summary). */
+  onPageTextChange?: (text: string) => void;
   /** Immersive: overlay rendered in the top reserved strip (muted chapter title). */
   topOverlay?: React.ReactNode;
   /** Immersive: overlay rendered in the bottom reserved strip (muted page count);
@@ -214,6 +219,8 @@ export function PaginatedReader({
   onToggleChrome,
   onOpenToc,
   onOpenSearch,
+  onOpenAskAi,
+  onPageTextChange,
   topOverlay,
   pageInfoOverlay,
 }: PaginatedReaderProps) {
@@ -471,6 +478,19 @@ export function PaginatedReader({
   }, [goToPage, t]);
   const visibleBlocks = scrollMode ? blocks : visibleBlocksProp;
   visibleBlocksRef.current = visibleBlocks;
+
+  // Report the current page's joined text so the reader can scope its
+  // "Ask AI → summarize this page" request to the visible page.
+  useEffect(() => {
+    if (!onPageTextChange) return;
+    const parts: string[] = [];
+    for (const b of visibleBlocks ?? []) {
+      const t = (b as any).block?.text ?? (b as any).text;
+      if (typeof t === 'string' && t.trim()) parts.push(t);
+    }
+    onPageTextChange(parts.join('\n'));
+  }, [visibleBlocks, onPageTextChange]);
+
   const hasMeasured = scrollMode ? true : hasMeasuredProp;
   const contentWidth = scrollMode ? 300 : contentWidthProp;
   /** Reader's visible page-viewport height — the cap for standalone image
@@ -961,6 +981,16 @@ export function PaginatedReader({
               accessibilityLabel={t('action.search')}
             >
               <Search size={18} color={ICON_MUTED} />
+            </Pressable>
+          )}
+          {onOpenAskAi && (
+            <Pressable
+              onPress={onOpenAskAi}
+              className="ml-1 flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted"
+              accessibilityLabel={t('action.ask_ai')}
+            >
+              <Sparkles size={14} color={ICON_PRIMARY} />
+              <Text className="text-xs font-medium text-primary">{t('action.ask_ai')}</Text>
             </Pressable>
           )}
         </Animated.View>

@@ -13,7 +13,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, type AiFollowUpPreset } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -85,6 +85,13 @@ interface AiExplanationProps {
    *  card shows only the free-form chat input); pass `DEFAULT_AI_FOLLOW_UPS`
    *  for the dictionary preset set. */
   followUpPresets?: AiFollowUpPreset[];
+  /** Reader "Ask AI": content blocks injected into presets that carry a
+   *  `contentKey` (e.g. the shared `prompt.summarize`). Ignored by the word /
+   *  dictionary path. */
+  readerContent?: ReaderAiContent;
+  /** Reader "Ask AI": when set (with autoLoad), stream this preset's prompt
+   *  instead of the word-explain prompt (e.g. summarize the current page). */
+  initialPreset?: AiFollowUpPreset & { kind: 'prompt' };
 }
 
 /**
@@ -92,7 +99,7 @@ interface AiExplanationProps {
  * Matches web: multi-turn streaming chat with regenerate, copy, a free-form
  * follow-up input, and optional configurable one-tap preset buttons.
  */
-export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [] }: AiExplanationProps) {
+export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
@@ -164,6 +171,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     const l2Name = l2NameRef.current;
     // Strip trailing punctuation from context to avoid doubled periods.
     const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
+    // Reader "Ask AI": inject the preset's named content block into the prompt.
+    const contentKey = preset.contentKey;
+    const text = contentKey ? (readerContent?.[contentKey] ?? '') : '';
     // Resolve the preset's prompt template with every known param. Empty-string
     // fallbacks keep next-intl from throwing on an unbound placeholder when a
     // template references {context}/{contextForm} but none is on hand.
@@ -173,10 +183,14 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       word,
       context: cleanContext ?? '',
       contextForm: contextForm ?? '',
+      ...(contentKey ? { text } : {}),
     });
+    // Content-based presets (reader summaries) are prose in L1, not interactive
+    // L2 text — skip the backtick-formatting instruction for them.
+    if (contentKey) return body;
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
-  }, [t, word, contextText, contextForm]);
+  }, [t, word, contextText, contextForm, readerContent]);
 
   // Reconstruct the prior conversation as {role, content} turns for the
   // multi-turn endpoint. Every streamed assistant message stores the exact
@@ -200,8 +214,8 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   }, [appendMessage, stream]);
 
   const fetchExplanation = useCallback(() => {
-    startStream(buildPrompt());
-  }, [startStream, buildPrompt]);
+    startStream(initialPreset ? buildPresetPrompt(initialPreset) : buildPrompt());
+  }, [startStream, buildPrompt, buildPresetPrompt, initialPreset]);
 
   const handleRegenerate = useCallback((messageId: number) => {
     const target = messages.find((m) => m.id === messageId);

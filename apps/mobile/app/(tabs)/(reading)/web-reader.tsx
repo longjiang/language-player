@@ -16,6 +16,8 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { fetchReaderPage } from '@langplayer/shared';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
+import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { VisitedSitesSidebar } from '@/components/reader/VisitedSitesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
@@ -67,6 +69,9 @@ export default function WebReaderScreen() {
   const [currentBlockIndex, setCurrentBlockIndex] = useState<number | null>(null);
   /** Visited-sites history (SPEC-049 §10.3) — shown in the sidebar (web parity). */
   const [visitedSites, setVisitedSites] = useState<VisitedSite[]>([]);
+  /** Reader "Ask AI" summary chat. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [currentPageText, setCurrentPageText] = useState('');
 
   // Load visited-sites history on mount and when L2 changes.
   useEffect(() => {
@@ -285,6 +290,8 @@ export default function WebReaderScreen() {
                   onOpenLink={handleOpenLinkInReader}
                   onOpenToc={tocSearch.headings.length > 0 ? tocSearch.openToc : undefined}
                   onOpenSearch={tocSearch.openSearch}
+                  onOpenAskAi={() => setAskAiOpen(true)}
+                  onPageTextChange={setCurrentPageText}
                   highlight={tocSearch.highlight}
                   // Saved words carry the page <title> (web parity:
                   // apps/web web-reader passes `title || 'Web Reader'`).
@@ -344,6 +351,22 @@ export default function WebReaderScreen() {
         onSearchSelect={tocSearch.handleSearchSelect}
         blocks={pagination.blocks}
         activeIndex={currentBlockIndex}
+      />
+
+      {/* ── "Ask AI" summary chat (auto-summarize current page + text presets) ── */}
+      <ReaderAskAiSheet
+        open={askAiOpen}
+        onClose={() => setAskAiOpen(false)}
+        title={title || t('title.web_reader')}
+        presets={READER_ASK_AI_TEXT_PRESETS}
+        content={
+          {
+            text: truncateReaderAiContent(text),
+            page: truncateReaderAiContent(currentPageText),
+            chapter: null,
+            bookUpToChapter: null,
+          } satisfies ReaderAiContent
+        }
       />
     </PageContainer>
   );
