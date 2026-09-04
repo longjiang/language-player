@@ -19,7 +19,7 @@
  */
 
 export type AiFollowUpPreset =
-  | { kind: 'prompt'; labelKey: string; promptKey: string; contentKey?: string }
+  | { kind: 'prompt'; labelKey: string; promptKey: string; contentKey?: keyof ReaderAiContent }
   | { kind: 'examples'; labelKey: string };
 
 /** The preset set historically shown in the dictionary popup and detail tab. */
@@ -71,7 +71,7 @@ export const READER_ASK_AI_EPUB_PRESETS: AiFollowUpPreset[] = [
 ];
 
 /** Auto-triggered on open: summarize the current page. */
-export const READER_ASK_AI_INITIAL_PRESET: AiFollowUpPreset = {
+export const READER_ASK_AI_INITIAL_PRESET: AiFollowUpPreset & { kind: 'prompt' } = {
   kind: 'prompt',
   labelKey: 'action.summarize_this_page',
   promptKey: 'prompt.summarize',
