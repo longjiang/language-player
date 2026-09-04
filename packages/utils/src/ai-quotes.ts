@@ -18,7 +18,7 @@ export interface AiQuote {
  *  emit `[[original||translation]]` quote markers. This is a prompt to the LLM,
  *  not UI chrome, so it is kept in English (not localized). */
 export const READER_AI_QUOTE_INSTRUCTION =
-  'Where relevant, quote exact passages from the text. For each quote, write it on its own line as [[exact L2 passage||L1 translation]].';
+  'Quote exact passages from the text. For EVERY quoted passage, output it on its own line in EXACTLY this format: [[exact L2 passage||L1 translation]]. Use ONLY the [[...||...]] format for quotes — never markdown blockquotes (>), quotation marks, or any other styling. Copy the L2 passage exactly from the text, and put its L1 translation after ||.';
 
 /** Extract `[[original||translation]]` markers from an AI response.
  *  Returns the text with the markers stripped (for markdown rendering) plus the
