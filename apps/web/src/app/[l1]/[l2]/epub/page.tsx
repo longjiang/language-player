@@ -118,6 +118,9 @@ export default function EpubPage() {
   /** Reader "Ask AI" summary chat. */
   const [askAiOpen, setAskAiOpen] = useState(false);
   const [currentPageText, setCurrentPageText] = useState('');
+  /** Pre-fill + auto-run search (quote chips) — `searchNonce` re-triggers. */
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchNonce, setSearchNonce] = useState(0);
   /** Current chapter text + book-so-far text, fetched when the Ask AI opens. */
   const [epubChapterText, setEpubChapterText] = useState('');
   const [epubBookUpToText, setEpubBookUpToText] = useState('');
@@ -291,6 +294,13 @@ export default function EpubPage() {
       });
     }
   }, [navigateTo]);
+
+  /** Open the search panel pre-filled with a query (quote chip tap). */
+  const openSearchFor = useCallback((query: string) => {
+    setSearchQuery(query);
+    setSearchNonce((n) => n + 1);
+    setSearchOpen(true);
+  }, []);
 
   // Internal / external links from the dictionary popup.
   const handleOpenLink = useCallback((href: string) => {
@@ -725,6 +735,8 @@ export default function EpubPage() {
             <EpubSearchPanel
               onSearch={epub.searchBook}
               onNavigate={handleSearchNavigate}
+              initialQuery={searchQuery}
+              queryNonce={searchNonce}
             />
           </div>
         </DialogContent>
@@ -749,6 +761,8 @@ export default function EpubPage() {
               autoLoad
               followUpPresets={READER_ASK_AI_EPUB_PRESETS}
               initialPreset={READER_ASK_AI_INITIAL_PRESET}
+              quoteChips
+              onQuotePress={openSearchFor}
               readerContent={
                 {
                   text: '',

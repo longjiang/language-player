@@ -132,6 +132,9 @@ export function ReaderPanel({
   // search is always available when there is text.
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /** Pre-fill + auto-run search (quote chips) — `searchNonce` re-triggers. */
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchNonce, setSearchNonce] = useState(0);
   /** Reader "Ask AI" summary chat (SPEC-087 §…): current page text + dialog. */
   const [askAiOpen, setAskAiOpen] = useState(false);
   const [currentPageText, setCurrentPageText] = useState('');
@@ -154,6 +157,12 @@ export function ReaderPanel({
   const openToc = useCallback(() => setTocOpen(true), []);
   const openSearch = useCallback(() => setSearchOpen(true), []);
   const openAskAi = useCallback(() => setAskAiOpen(true), []);
+  /** Open the search panel pre-filled with a query (quote chip tap). */
+  const openSearchFor = useCallback((query: string) => {
+    setSearchQuery(query);
+    setSearchNonce((n) => n + 1);
+    setSearchOpen(true);
+  }, []);
 
   const handleTocSelect = useCallback((heading: ReaderHeading) => {
     setTocOpen(false);
@@ -463,7 +472,12 @@ export function ReaderPanel({
             <DialogTitle>{t('action.search')}</DialogTitle>
           </DialogHeader>
           <div className="flex min-h-0 flex-1 flex-col">
-            <ReaderSearchPanel blocks={blocks} onNavigate={handleSearchNavigate} />
+            <ReaderSearchPanel
+              blocks={blocks}
+              onNavigate={handleSearchNavigate}
+              initialQuery={searchQuery}
+              queryNonce={searchNonce}
+            />
           </div>
         </DialogContent>
       </Dialog>
@@ -484,6 +498,8 @@ export function ReaderPanel({
               autoLoad
               followUpPresets={READER_ASK_AI_TEXT_PRESETS}
               initialPreset={READER_ASK_AI_INITIAL_PRESET}
+              quoteChips
+              onQuotePress={openSearchFor}
               readerContent={
                 {
                   text: truncateReaderAiContent(text),

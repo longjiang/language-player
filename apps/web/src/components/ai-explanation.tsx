@@ -9,7 +9,9 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useStreamingExplanation, type StreamDiagnostics, type StreamHistoryTurn } from '@langplayer/api-client';
 import {
   buildWordExplainPrompt,
+  parseAiQuotes,
   presetKey,
+  READER_AI_QUOTE_INSTRUCTION,
   type AiFollowUpPreset,
   type ReaderAiContent,
 } from '@langplayer/utils';
@@ -96,6 +98,11 @@ interface AiExplanationProps {
   /** Reader "Ask AI": when set (with autoLoad), stream this preset's prompt
    *  instead of the word-explain prompt (e.g. summarize the current page). */
   initialPreset?: AiFollowUpPreset & { kind: 'prompt' };
+  /** Reader "Ask AI": render quote chips from `[[original||translation]]`
+   *  markers in each assistant reply (requires `onQuotePress`). */
+  quoteChips?: boolean;
+  /** Reader "Ask AI": fired when a quote chip is tapped (opens reader search). */
+  onQuotePress?: (original: string) => void;
 }
 
 // ── Subs-search helpers (mirror subs-search-results.tsx) ──
@@ -129,7 +136,7 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
  * history so the model keeps the word/context grounding without re-assembling
  * a flat prompt.
  */
-export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress }: AiExplanationProps) {
   const { data: session } = useSession();
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -261,8 +268,9 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       ...(contentKey ? { text } : {}),
     });
     // Content-based presets (reader summaries) are prose in L1, not interactive
-    // L2 text — skip the backtick-formatting instruction for them.
-    if (contentKey) return body;
+    // L2 text — skip the backtick-formatting instruction and instead ask the
+    // model to cite exact passages as [[original||translation]] quote chips.
+    if (contentKey) return `${body}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent]);
@@ -715,6 +723,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                   });
                 }
                 const isExamplesMessage = (message.examples?.length ?? 0) > 0;
+                const parsedQuotes = quoteChips && onQuotePress && message.text
+                  ? parseAiQuotes(message.text)
+                  : null;
+                const cleanText = parsedQuotes ? parsedQuotes.clean : message.text;
+                const quotes = parsedQuotes?.quotes ?? [];
                 return (
                   <div key={message.id} className="flex justify-start">
                     <div className="max-w-[95%]">
@@ -729,12 +742,28 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                     ) : message.text ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
                         <MarkdownExplanation
-                          text={message.text}
+                          text={cleanText}
                           l2Code={l2.code}
                           streaming={loading && message.id === streamingId}
                         />
                       </div>
                     ) : null}
+                    {quotes.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {quotes.map((q, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => onQuotePress?.(q.original)}
+                            title={t('action.search')}
+                            className="flex max-w-full flex-col gap-0.5 rounded-lg border border-border bg-muted/60 px-2 py-1 text-left transition-colors hover:border-primary hover:bg-muted"
+                          >
+                            <span className="truncate text-xs font-medium text-foreground">{q.original}</span>
+                            <span className="truncate text-[11px] text-muted-foreground">{q.translation}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {isExamplesMessage && (
                       <div className="mt-2 space-y-2">
                         {message.pattern && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '@/hooks/use-t';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { EpubSearchResult } from '@/hooks/use-epub';
@@ -23,6 +23,10 @@ interface EpubSearchPanelProps {
   onSearch: (query: string) => Promise<EpubSearchResult[]>;
   /** Navigate to a result's chapter + page. */
   onNavigate: (result: EpubSearchResult) => void;
+  /** Pre-fill + auto-run a search when `queryNonce` changes (quote chips). */
+  initialQuery?: string;
+  /** Bump to re-trigger the `initialQuery` search. */
+  queryNonce?: number;
 }
 
 /** Highlight the exact matched range inside a snippet. */
@@ -49,7 +53,7 @@ function HighlightSnippet({
   );
 }
 
-export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) {
+export function EpubSearchPanel({ onSearch, onNavigate, initialQuery, queryNonce }: EpubSearchPanelProps) {
   const t = useT();
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState<string[]>(loadRecent);
@@ -75,6 +79,15 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
       setSearching(false);
     }
   }, [onSearch]);
+
+  // Pre-fill + auto-run a search when the parent opens the panel for a specific
+  // quote (reader "Ask AI" quote chips).
+  useEffect(() => {
+    if (initialQuery && queryNonce != null) {
+      void runSearch(initialQuery);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryNonce]);
 
   const clearRecent = useCallback(() => {
     setRecent([]);
