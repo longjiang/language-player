@@ -137,6 +137,7 @@
         "search_images": "画像を検索",
         "see_all": "すべて表示",
         "select_files": "ファイルを選択",
+        "send": "送信",
         "send_reset_link": "リセットリンクを送信",
         "share": "共有",
         "show_less": "折りたたむ",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "この単語について追加で質問する…",
         "confirm_password": "パスワードの確認",
         "custom_search_terms": "カスタム語（カンマ区切り）…",
         "dict_search_1": "検索 {param1}",

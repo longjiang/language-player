@@ -133,6 +133,7 @@
         "search_images": "搜尋圖片",
         "see_all": "查看全部",
         "select_files": "選擇檔案",
+        "send": "傳送",
         "send_reset_link": "傳送重設連結",
         "share": "分享",
         "show_less": "收起",
@@ -1128,6 +1129,7 @@
         "wechat_pay": "微信支付"
     },
     "placeholder": {
+        "ask_follow_up": "關於這個詞繼續追問…",
         "confirm_password": "再輸入一次密碼",
         "custom_search_terms": "自訂詞，逗號分隔…",
         "dict_search_1": "搜索{param1}",

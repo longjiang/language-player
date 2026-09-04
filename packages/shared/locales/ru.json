@@ -137,6 +137,7 @@
         "search_images": "Поиск изображений",
         "see_all": "Показать всё",
         "select_files": "Выбрать файлы",
+        "send": "Отправить",
         "send_reset_link": "Отправить ссылку для сброса",
         "share": "Поделиться",
         "show_less": "Показать меньше",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "WeChat Pay"
     },
     "placeholder": {
+        "ask_follow_up": "Задайте уточняющий вопрос об этом слове…",
         "confirm_password": "Подтвердить пароль",
         "custom_search_terms": "Свои термины через запятую…",
         "dict_search_1": "Искать {param1}",

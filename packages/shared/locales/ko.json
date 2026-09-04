@@ -137,6 +137,7 @@
         "search_images": "이미지 검색",
         "see_all": "모두 보기",
         "select_files": "파일 선택",
+        "send": "보내기",
         "send_reset_link": "재설정 링크 보내기",
         "share": "공유",
         "show_less": "접기",
@@ -1154,6 +1155,7 @@
         "wechat_pay": "위챗페이"
     },
     "placeholder": {
+        "ask_follow_up": "이 단어에 대해 후속 질문하기…",
         "confirm_password": "비밀번호 확인",
         "custom_search_terms": "사용자 지정 검색어(쉼표로 구분)…",
         "dict_search_1": "검색 {param1}",
