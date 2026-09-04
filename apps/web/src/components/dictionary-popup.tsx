@@ -15,7 +15,7 @@ import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { removeCardFromStorage } from '@/hooks/use-srs';
 import { baseCode } from '@/lib/language-data';
-import { formatPronunciation } from '@langplayer/utils';
+import { formatPronunciation, DEFAULT_AI_FOLLOW_UPS } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import { suppressReaderTap } from '@/lib/reader-tap-guard';
@@ -571,6 +571,9 @@ export function DictionaryPopup({
             word={token.text}
             contextText={context?.text}
             entryFound={entries.length > 0}
+            // Keep the historical one-tap preset follow-up buttons alongside
+            // the new free-form input.
+            followUpPresets={DEFAULT_AI_FOLLOW_UPS}
           />
 
           {/* Context sentence + Search Google Images: the two buttons share

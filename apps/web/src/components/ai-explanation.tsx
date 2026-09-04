@@ -6,8 +6,12 @@ import { useLanguage } from '@/providers/language-provider';
 import { languageName, baseCode } from '@/lib/language-data';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { useStreamingExplanation, type StreamDiagnostics } from '@langplayer/api-client';
-import { buildWordExplainPrompt } from '@langplayer/utils';
+import { useStreamingExplanation, type StreamDiagnostics, type StreamHistoryTurn } from '@langplayer/api-client';
+import {
+  buildWordExplainPrompt,
+  presetKey,
+  type AiFollowUpPreset,
+} from '@langplayer/utils';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { log, logwarn } from '@/lib/logger';
@@ -33,18 +37,8 @@ import {
   RefreshCw,
   Check,
   Copy,
+  Send,
 } from 'lucide-react';
-
-type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms' | 'examples';
-
-const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
-  { kind: 'inflection', labelKey: 'action.inflection' },
-  { kind: 'morphemes', labelKey: 'action.morphemes' },
-  { kind: 'etymology', labelKey: 'action.etymology' },
-  { kind: 'syntax', labelKey: 'action.syntax' },
-  { kind: 'synonyms', labelKey: 'action.synonyms' },
-  { kind: 'examples', labelKey: 'title.examples_from_videos' },
-];
 
 /** One AI-selected video example: the search result (for the chip) plus the
  *  LLM's explanation of the word's usage in that line. */
@@ -89,6 +83,11 @@ interface AiExplanationProps {
    *  (or written-form) mismatch can't zero out the results. Falls back to
    *  head + inflected surface form when omitted (dictionary popup). */
   searchTerms?: string[];
+  /** Optional one-tap preset follow-up buttons (prompt templates or the
+   *  "Examples from Videos" flow). Defaults to `[]` (no preset buttons — the
+   *  card shows only the free-form chat input); pass `DEFAULT_AI_FOLLOW_UPS`
+   *  for the dictionary preset set. */
+  followUpPresets?: AiFollowUpPreset[];
 }
 
 // ── Subs-search helpers (mirror subs-search-results.tsx) ──
@@ -115,8 +114,14 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
  * - Free users see an upgrade prompt
  * - Pro users get an AI explanation of the word in context
  * - The prompt asks for a succinct explanation plus 2 translated examples
+ *
+ * Runs as a multi-turn chat: after the initial explanation the user can type
+ * any follow-up message (free-form input) and/or tap the configured one-tap
+ * preset buttons (`followUpPresets`). Follow-up turns carry the conversation
+ * history so the model keeps the word/context grounding without re-assembling
+ * a flat prompt.
  */
-export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [] }: AiExplanationProps) {
   const { data: session } = useSession();
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -127,7 +132,8 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingId, setStreamingId] = useState<number | null>(null);
-  const [usedFollowUps, setUsedFollowUps] = useState<Set<FollowUpKind>>(new Set());
+  const [usedFollowUps, setUsedFollowUps] = useState<Set<string>>(new Set());
+  const [freeFormText, setFreeFormText] = useState('');
   const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialStreamStartedRef = useRef(false);
@@ -259,46 +265,39 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     stream(prompt, { regenerate: true });
   }, [stream, buildPrompt, word, messages, updateMessage]);
 
-  const buildFollowUpPrompt = useCallback((kind: FollowUpKind): string => {
+  const buildPresetPrompt = useCallback((preset: AiFollowUpPreset & { kind: 'prompt' }): string => {
+    const l1Name = languageName(l1.code, l1.code);
     const l2Name = languageName(l2.code, l1.code);
-
-    // Strip trailing punctuation from context to avoid doubled periods
+    // Strip trailing punctuation from context to avoid doubled periods.
     const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
-
-    const wordParams = { l2Name, word };
-    let prompt: string;
-    if (kind === 'inflection') {
-      if (cleanContext && contextForm && contextForm !== word) {
-        prompt = t('prompt.followup_inflection_context_form', { ...wordParams, contextForm, context: cleanContext });
-      } else if (cleanContext) {
-        prompt = t('prompt.followup_inflection_context', { ...wordParams, context: cleanContext });
-      } else {
-        prompt = t('prompt.followup_inflection', wordParams);
-      }
-    } else if (kind === 'morphemes') {
-      prompt = cleanContext
-        ? t('prompt.followup_morphemes_context', { ...wordParams, context: cleanContext })
-        : t('prompt.followup_morphemes', wordParams);
-    } else if (kind === 'etymology') {
-      prompt = t('prompt.followup_etymology', wordParams);
-    } else if (kind === 'syntax') {
-      prompt = cleanContext
-        ? t('prompt.followup_syntax_context', { ...wordParams, context: cleanContext })
-        : t('prompt.followup_syntax', wordParams);
-    } else {
-      // synonyms
-      prompt = cleanContext
-        ? t('prompt.followup_synonyms_context', { ...wordParams, context: cleanContext })
-        : t('prompt.followup_synonyms', wordParams);
-    }
-
-    // L2 strings are backticked so they render as interactive tokenized text
-    const synonymExamplesPrompt = kind === 'synonyms'
-      ? t('prompt.followup_synonyms_examples', { l2Name })
-      : '';
+    // Resolve the preset's prompt template with every known param. Empty-string
+    // fallbacks keep next-intl from throwing on an unbound placeholder when a
+    // template references {context}/{contextForm} but none is on hand.
+    const body = t(preset.promptKey, {
+      l1Name,
+      l2Name,
+      word,
+      context: cleanContext ?? '',
+      contextForm: contextForm ?? '',
+    });
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return [prompt, synonymExamplesPrompt, ticksPrompt].filter(Boolean).join('\n\n');
+    return [body, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, l1.code, l2.code, word, contextText, contextForm]);
+
+  // Reconstruct the prior conversation as {role, content} turns for the
+  // multi-turn endpoint. Every streamed assistant message stores the exact
+  // prompt that produced it (.prompt), so its user turn is reconstructed from
+  // that prompt. "Examples from Videos" turns (no streaming prompt) and any
+  // still-empty in-flight placeholder are skipped.
+  const buildHistory = useCallback((): StreamHistoryTurn[] => {
+    const turns: StreamHistoryTurn[] = [];
+    for (const m of messages) {
+      if (m.role !== 'assistant' || m.examples || !m.text) continue;
+      if (m.prompt) turns.push({ role: 'user', content: m.prompt });
+      turns.push({ role: 'assistant', content: m.text });
+    }
+    return turns;
+  }, [messages]);
 
   // ── "Examples from Videos" follow-up ──
   // 1. Search subtitles (limit 50) for the word being explained.
@@ -343,11 +342,6 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   );
 
   const handleExamplesFollowUp = useCallback(async () => {
-    setUsedFollowUps((prev) => {
-      const next = new Set(prev);
-      next.add('examples');
-      return next;
-    });
     appendMessage({ role: 'user', text: '', label: t('title.examples_from_videos') });
     const aiId = appendMessage({ role: 'assistant', text: '', loading: true });
     log('AI examples follow-up start', { word });
@@ -433,28 +427,50 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
   }, [word, contextForm, contextText, searchTerms, l1.code, l2.code, t, appendMessage, updateMessage, fetchSubsSearch]);
 
-  const handleFollowUp = useCallback((kind: FollowUpKind) => {
-    if (kind === 'examples') {
+  const handleFollowUp = useCallback((preset: AiFollowUpPreset) => {
+    // Mark used once-per-transcript for every preset kind (incl. examples).
+    setUsedFollowUps((prev) => {
+      const next = new Set(prev);
+      next.add(presetKey(preset));
+      return next;
+    });
+    if (preset.kind === 'examples') {
       void handleExamplesFollowUp();
       return;
     }
-    const followUp = FOLLOW_UPS.find((f) => f.kind === kind);
-    const prompt = buildFollowUpPrompt(kind);
-    setUsedFollowUps((prev) => {
-      const next = new Set(prev);
-      next.add(kind);
-      return next;
-    });
-    const userId = appendMessage({
+    const prompt = buildPresetPrompt(preset);
+    // Reuse the buildHistory computed before this follow-up's bubbles are
+    // appended — it reconstructs the prior conversation (assistant replies
+    // with their prompts), not the turn we're about to start.
+    const history = buildHistory();
+    appendMessage({
       role: 'user',
       text: '',
-      label: followUp ? t(followUp.labelKey) : '',
+      label: t(preset.labelKey),
     });
     const aiId = appendMessage({ role: 'assistant', text: '', prompt });
     setStreamingId(aiId);
-    log('AI explain follow-up stream start', { word, kind });
-    stream(prompt);
-  }, [buildFollowUpPrompt, stream, word, appendMessage, t, handleExamplesFollowUp]);
+    log('AI explain follow-up stream start', {
+      word,
+      promptKey: preset.promptKey,
+      history: history.length,
+    });
+    stream(prompt, { messages: history });
+  }, [buildPresetPrompt, stream, word, appendMessage, t, handleExamplesFollowUp, buildHistory]);
+
+  const handleSendFreeForm = useCallback((raw: string) => {
+    const text = raw.trim();
+    if (!text) return;
+    setFreeFormText('');
+    const history = buildHistory();
+    // Send the typed message as the new user turn; the prior conversation
+    // (reconstructed above) grounds it in the word/context already discussed.
+    appendMessage({ role: 'user', text, label: text, prompt: text });
+    const aiId = appendMessage({ role: 'assistant', text: '', prompt: text });
+    setStreamingId(aiId);
+    log('AI explain free-form stream start', { word, chars: text.length, history: history.length });
+    stream(text, { messages: history });
+  }, [stream, word, appendMessage, buildHistory]);
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -779,20 +795,53 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
             {error}
           </div>
         )}
-        <div className="mt-3 flex flex-wrap justify-end gap-2">
-          {FOLLOW_UPS.filter((followUp) => !usedFollowUps.has(followUp.kind)).map((followUp) => (
-            <Button
-              key={followUp.kind}
-              variant="secondary"
-              size="sm"
-              className="rounded-lg rounded-br-none border border-border shadow-sm"
-              disabled={loading}
-              onClick={() => handleFollowUp(followUp.kind)}
-            >
-              {t(followUp.labelKey)}
-            </Button>
-          ))}
-        </div>
+        {followUpPresets.length > 0 && (
+          <div className="mt-3 flex flex-wrap justify-end gap-2">
+            {followUpPresets
+              .filter((p) => !usedFollowUps.has(presetKey(p)))
+              .map((p) => (
+                <Button
+                  key={presetKey(p)}
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-lg rounded-br-none border border-border shadow-sm"
+                  disabled={loading}
+                  onClick={() => handleFollowUp(p)}
+                >
+                  {t(p.labelKey)}
+                </Button>
+              ))}
+          </div>
+        )}
+
+        {/* Free-form follow-up input — lets the user ask anything about the
+            word/phrase in the ongoing multi-turn chat. Disabled while a reply
+            is streaming so turns stay ordered. */}
+        <form
+          className="mt-3 flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendFreeForm(freeFormText);
+          }}
+        >
+          <input
+            type="text"
+            value={freeFormText}
+            onChange={(e) => setFreeFormText(e.target.value)}
+            placeholder={t('placeholder.ask_follow_up')}
+            disabled={loading}
+            className="h-9 w-full flex-1 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          />
+          <Button
+            type="submit"
+            size="sm"
+            className="shrink-0 gap-2"
+            disabled={loading || !freeFormText.trim()}
+          >
+            <Send className="h-4 w-4" />
+            {t('action.send')}
+          </Button>
+        </form>
 
         {/* ── Example player modal — the same shared modal the subs-search
             results rows open (header, mini player, controls, subtitles with
