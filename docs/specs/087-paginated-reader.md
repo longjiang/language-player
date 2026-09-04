@@ -108,9 +108,34 @@ These are grouped by feature area. Each requirement describes the finished behav
 
 ### 7. Reader chrome
 
-- **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and table-of-contents and search buttons (a chapter tree for books, a heading list for the notes/web reader — the TOC button is shown only when the text has headings), plus the current chapter name (books).
+- **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and table-of-contents and search buttons (a chapter tree for books, a heading list for the notes/web reader — the TOC button is shown only when the text has headings), plus the current chapter name (books). An **Ask AI** button sits next to Search and opens the reader summary chat (see §7.1).
 - **Empty / pending states.** A load state (pulsing skeleton) shows while a page's words and translation are prepared, so the layout doesn't jump.
 - **Notes.** The notes reader has a sidebar to create, rename, delete, and switch between notes.
+
+### 7.1 Reader "Ask AI" summary chat
+
+The **Ask AI** button (next to Search in the reader chrome) opens a Pro-gated
+multi-turn chat that **auto-summarizes the current page on open** and preloads
+one-tap summary follow-up buttons scoped to the surface. It reuses the shared
+`AiExplanation` chat (SPEC-035) with content-based presets:
+
+- **Notes / web / image readers** — presets: *Summarize this text* (the whole
+  loaded text) and *Summarize this page* (the current visible page).
+- **EPUB reader** — presets: *Summarize this page*, *Summarize this chapter*
+  (the current chapter), and *Summarize book up to this chapter* (chapters
+  1…current, concatenated).
+- Every prompt injects a named block of the reader's `ReaderAiContent`
+  (`text` / `page` / `chapter` / `bookUpToChapter`) into the shared
+  `prompt.summarize` template and is truncated to
+  `READER_ASK_AI_CONTENT_MAX` (12 000 chars) so very long books/chapters stay
+  within budget.
+
+`PaginatedReader` exposes `onOpenAskAi` (render the button) and
+`onPageTextChange` (report the current page's joined text) so a surface can
+wire the chat; the initial preset is `READER_ASK_AI_INITIAL_PRESET`
+(summarize the current page). Preset config lives in `@langplayer/utils`
+(`READER_ASK_AI_TEXT_PRESETS` / `READER_ASK_AI_EPUB_PRESETS` /
+`READER_ASK_AI_INITIAL_PRESET` / `truncateReaderAiContent`).
 
 ### 8. Search, table of contents, and place
 
