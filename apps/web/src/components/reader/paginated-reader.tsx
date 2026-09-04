@@ -27,7 +27,7 @@ import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
 import { READER_DEFAULT_LEADING, readerHorizontalPadding as defaultReaderHorizontalPadding } from '@/lib/reader-layout';
 import { isReaderTapSuppressed } from '@/lib/reader-tap-guard';
-import { ArrowDown, ChevronLeft, ChevronRight, LayoutGrid, List, Loader2, Search } from 'lucide-react';
+import { ArrowDown, ChevronLeft, ChevronRight, LayoutGrid, List, Loader2, Search, Sparkles } from 'lucide-react';
 
 export type { BlockRenderCtx, ReaderLoc, ReaderPageItem } from '@/hooks/use-paginated-reader';
 
@@ -128,6 +128,12 @@ export interface PaginatedReaderProps {
   onOpenToc?: () => void;
   /** Immersive: renders the Search button in the bottom bar. */
   onOpenSearch?: () => void;
+  /** Immersive: renders the "Ask AI" button in the bottom bar (reader summary
+   *  chat with preloaded follow-up presets). */
+  onOpenAskAi?: () => void;
+  /** Reports the current page's text (joined block text) — used by the reader's
+   *  "Ask AI" summary to scope "summarize this page". */
+  onPageTextChange?: (text: string) => void;
   /** Immersive: renders a "thumbnails" button in the bottom bar (PDF reader —
    *  returns to the page-thumbnails grid). */
   onOpenThumbnails?: () => void;
@@ -180,6 +186,8 @@ export function PaginatedReader({
   onToggleChrome,
   onOpenToc,
   onOpenSearch,
+  onOpenAskAi,
+  onPageTextChange,
   onOpenThumbnails,
   topOverlay,
   pageInfoOverlay,
@@ -321,6 +329,18 @@ export function PaginatedReader({
   const dragRef = useRef<HTMLDivElement>(null);
   const pagerActionsRef = useRef({ hasPrev: pager.hasPrev, hasNext: pager.hasNext, prevPage, nextPage });
   pagerActionsRef.current = { hasPrev: pager.hasPrev, hasNext: pager.hasNext, prevPage, nextPage };
+
+  // Report the current page's joined text so the reader can scope its
+  // "Ask AI → summarize this page" request to the visible page.
+  useEffect(() => {
+    if (!onPageTextChange) return;
+    const parts: string[] = [];
+    for (const item of pager.pageBlocks) {
+      const t = (item as any).block?.text ?? (item as any).text;
+      if (typeof t === 'string' && t.trim()) parts.push(t);
+    }
+    onPageTextChange(parts.join('\n'));
+  }, [pager.pageBlocks, onPageTextChange]);
   const dragStateRef = useRef({
     active: false,
     tracking: false,
@@ -672,6 +692,17 @@ export function PaginatedReader({
             title={t('action.search')}
           >
             <Search className="h-4 w-4" />
+          </button>
+        )}
+        {onOpenAskAi && (
+          <button
+            onClick={onOpenAskAi}
+            className="ml-1 inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-primary hover:bg-muted"
+            aria-label={t('action.ask_ai')}
+            title={t('action.ask_ai')}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {t('action.ask_ai')}
           </button>
         )}
         {onOpenThumbnails && (
