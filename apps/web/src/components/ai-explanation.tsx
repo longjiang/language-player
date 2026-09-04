@@ -103,6 +103,9 @@ interface AiExplanationProps {
   quoteChips?: boolean;
   /** Reader "Ask AI": fired when a quote chip is tapped (opens reader search). */
   onQuotePress?: (original: string) => void;
+  /** Reader "Ask AI": open the chat but do NOT auto-stream. The user must tap a
+   *  preset button or send a message to get a response (readers only). */
+  demandMode?: boolean;
 }
 
 // ── Subs-search helpers (mirror subs-search-results.tsx) ──
@@ -136,14 +139,14 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
  * history so the model keeps the word/context grounding without re-assembling
  * a flat prompt.
  */
-export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress, demandMode = false }: AiExplanationProps) {
   const { data: session } = useSession();
   const { l1, l2 } = useLanguage();
   const t = useT();
   const { isPro, loaded: subLoaded } = useSubscriptionContext();
   const { display } = useSettingsContext();
 
-  const [showAi, setShowAi] = useState(false);
+  const [showAi, setShowAi] = useState(demandMode);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingId, setStreamingId] = useState<number | null>(null);
@@ -488,14 +491,17 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     if (!text) return;
     setFreeFormText('');
     const history = buildHistory();
+    // Reader Ask-AI: also carry the [[original||translation]] quote instruction
+    // so follow-up answers keep producing tappable quote chips.
+    const prompt = quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
-    appendMessage({ role: 'user', text, label: text, prompt: text });
-    const aiId = appendMessage({ role: 'assistant', text: '', prompt: text });
+    appendMessage({ role: 'user', text, label: text, prompt });
+    const aiId = appendMessage({ role: 'assistant', text: '', prompt });
     setStreamingId(aiId);
     log('AI explain free-form stream start', { word, chars: text.length, history: history.length });
-    stream(text, { messages: history });
-  }, [stream, word, appendMessage, buildHistory]);
+    stream(prompt, { messages: history });
+  }, [stream, word, appendMessage, buildHistory, quoteChips]);
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -623,15 +629,16 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
+    if (demandMode) return; // reader Ask-AI: no auto response — user must act
     if ((showAi || autoLoad) && isPro && subLoaded && !explanation && !loading) {
       if (initialStreamStartedRef.current) return;
       initialStreamStartedRef.current = true;
       fetchExplanation();
     }
-  }, [showAi, autoLoad, isPro, subLoaded, explanation, loading, fetchExplanation]);
+  }, [demandMode, showAi, autoLoad, isPro, subLoaded, explanation, loading, fetchExplanation]);
 
   // Pro gate — free user (skip the gate while still loading — show the button optimistically)
-  if (subLoaded && !isPro && (showAi || autoLoad)) {
+  if (subLoaded && !isPro && (showAi || autoLoad || demandMode)) {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950">
         <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -643,7 +650,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   }
 
   // Waiting for subscription check after user clicked — show spinner
-  if (!subLoaded && (showAi || autoLoad)) {
+  if (!subLoaded && (showAi || autoLoad || demandMode)) {
     return (
       <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -655,7 +662,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   }
 
   // Not yet toggled — always show the button (don't wait for subscription check)
-  if (!showAi && !autoLoad) {
+  if (!showAi && !autoLoad && !demandMode) {
     return (
       <div>
         <Button
@@ -684,7 +691,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   }
 
   // Streaming or complete — show the chat transcript
-  if (messages.length > 0 || loading || error) {
+  if (demandMode || messages.length > 0 || loading || error) {
     return (
       <div>
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">

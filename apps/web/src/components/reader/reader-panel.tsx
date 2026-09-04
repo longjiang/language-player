@@ -30,7 +30,6 @@ import { ReaderSearchPanel, type ReaderSearchResult } from '@/components/reader/
 import { AiExplanation } from '@/components/ai-explanation';
 import {
   READER_ASK_AI_TEXT_PRESETS,
-  READER_ASK_AI_INITIAL_PRESET,
   truncateReaderAiContent,
   type ReaderAiContent,
 } from '@langplayer/utils';
@@ -495,9 +494,8 @@ export function ReaderPanel({
               contextText={undefined}
               contextForm={undefined}
               entryFound={true}
-              autoLoad
+              demandMode
               followUpPresets={READER_ASK_AI_TEXT_PRESETS}
-              initialPreset={READER_ASK_AI_INITIAL_PRESET}
               quoteChips
               onQuotePress={openSearchFor}
               readerContent={
