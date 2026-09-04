@@ -13,7 +13,6 @@ import {
 import { renderInlineMarkdown } from '@/components/text-action-panels';
 import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
 import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
-import { log, logwarn } from '@/lib/logger';
 import type { SentenceMap } from '@langplayer/utils';
 
 /**
@@ -177,8 +176,6 @@ export function AlignedTranslation({
   // `[&_p]:indent-[1em]`. Mirrored onto the stacked (narrow-screen) fallback
   // so the translation starts at the same indentation as the tokenized text.
   const [l2TextIndent, setL2TextIndent] = useState(0);
-  // Short text preview so log lines from different blocks are distinguishable.
-  const tag = text.slice(0, 24).replace(/\s+/g, ' ');
 
   // Read the anchor's rendered first-line indent whenever the layout identity
   // changes (the indent lives on the L2 block's element, not the column div).
@@ -195,9 +192,7 @@ export function AlignedTranslation({
     const anchor = anchorRef.current;
     const root = rootRef.current;
     const probe = probeRef.current;
-    log(`[AlignedTranslation] measure:start tag="${tag}" textLen=${text.length} anchor=${!!anchor} root=${!!root} probe=${!!probe}`);
     if (!anchor || !root || !probe || !text) {
-      logwarn(`[AlignedTranslation] measure:bail reason=missing-element tag="${tag}" anchor=${!!anchor} root=${!!root} probe=${!!probe} textLen=${text.length}`);
       setLayout(null);
       return;
     }
@@ -208,26 +203,21 @@ export function AlignedTranslation({
       const rRect = root.getBoundingClientRect();
       const topDelta = Math.round(aRect.top - rRect.top);
       if (Math.abs(topDelta) > 4) {
-        log(`[AlignedTranslation] measure:bail reason=not-side-by-side tag="${tag}" anchorTop=${Math.round(aRect.top)} rootTop=${Math.round(rRect.top)} delta=${topDelta}`);
         setLayout(null);
         return;
       }
-      log(`[AlignedTranslation] measure:side-by-side-ok tag="${tag}" anchorTop=${Math.round(aRect.top)} rootTop=${Math.round(rRect.top)} delta=${topDelta}`);
 
       // The L2 base text's font metrics (the first real text node's chain —
       // inline token spans inherit the TokenizedText font-size/leading).
       const base = firstTextNode(anchor);
       if (!base) {
-        log(`[AlignedTranslation] measure:bail reason=no-base-text-node tag="${tag}"`);
         setLayout(null);
         return;
       }
       const cs = getComputedStyle(base.parentElement!);
       const f2 = parseFloat(cs.fontSize);
       const lh2 = parseFloat(cs.lineHeight);
-      log(`[AlignedTranslation] measure:l2-metrics tag="${tag}" fontFamily="${cs.fontFamily}" fontSize=${f2} lineHeight=${lh2} (computed of ${base.parentElement!.tagName}.${base.parentElement!.className.slice(0, 30)})`);
       if (!isFinite(f2) || !isFinite(lh2) || f2 <= 0 || lh2 <= 0) {
-        log(`[AlignedTranslation] measure:bail reason=bad-metrics tag="${tag}" f2=${f2} lh2=${lh2}`);
         setLayout(null);
         return;
       }
@@ -240,7 +230,6 @@ export function AlignedTranslation({
       }
       const f2r = f2 * z;
       const lh2r = lh2 * z;
-      log(`[AlignedTranslation] measure:zoom tag="${tag}" z=${z} f2Rendered=${f2r} lh2Rendered=${lh2r}`);
 
       // Line boxes of the whole L2 block. With interlinear definitions the
       // tokens are inline-flex columns, so individual glyph rects are only
@@ -252,7 +241,6 @@ export function AlignedTranslation({
       const fullRange = document.createRange();
       fullRange.selectNodeContents(anchor);
       const fullRects = Array.from(fullRange.getClientRects());
-      const heights = fullRects.map(r => r.height);
       const minGlyph = Math.max(4, f2r * 0.45);
       const nonTiny = fullRects.filter(r => r.height >= minGlyph).map(r => r.height);
       const freq = new Map<number, number>();
@@ -266,9 +254,7 @@ export function AlignedTranslation({
         if (count > run) { run = count; runMode = key; }
       }
       const lineRects = fullRects.filter(r => Math.abs(r.height - runMode) < Math.max(2.5, runMode * 0.2));
-      log(`[AlignedTranslation] measure:l2-line-grid tag="${tag}" fullRects=${fullRects.length} f2R=${Math.round(f2r * 10) / 10} minGlyph=${Math.round(minGlyph * 10) / 10} glyphCandidates=${nonTiny.length} runModH=${runMode} (x${run}) glyphRects=${lineRects.length} rectHeights=${heights.map(h => Math.round(h * 10) / 10).join(',')}`);
       if (lineRects.length === 0) {
-        log(`[AlignedTranslation] measure:bail reason=no-base-lines tag="${tag}" fullRects=${fullRects.length}`);
         setLayout(null);
         return;
       }
@@ -301,7 +287,6 @@ export function AlignedTranslation({
         }
         return r.top + band;
       });
-      log(`[AlignedTranslation] measure:base-tops tag="${tag}" rtRects=${rtRects.length} rows=${rows.length} tops=${baseTops.map(t => Math.round(t)).join(',')}`);
 
       // L2 font's content height (ascent + descent), measured on canvas —
       // exact for the real fonts (falls back to 1em). With ruby on, the
@@ -326,7 +311,6 @@ export function AlignedTranslation({
       } catch { /* canvas unavailable — keep the 1em fallback */ }
       const halfLeading = Math.max(0, (lh2r - contentH) / 2);
       const topPad = Math.min(lh2r, Math.max(0, baseTops[0]! - rRect.top - halfLeading));
-      log(`[AlignedTranslation] measure:top-pad tag="${tag}" contentH=${Math.round(contentH * 10) / 10} halfLeading=${Math.round(halfLeading * 10) / 10} band0=${Math.round((baseTops[0]! - rRect.top) * 10) / 10} topPad=${Math.round(topPad * 10) / 10}`);
 
       // Inter-base gaps: what separates consecutive L2 baselines, plus the
       // last line's tail (interlinear definitions extend it downward).
@@ -337,7 +321,6 @@ export function AlignedTranslation({
       const lastBottom = rows[rows.length - 1]!.bottom;
       const lastGap = Math.max(0, lastBottom - baseTops[baseTops.length - 1]! - lh2r);
       gaps.push(Math.min(lastGap, lh2r * 0.6));
-      log(`[AlignedTranslation] measure:gaps tag="${tag}" lh2=${Math.round(lh2r)} gaps=${gaps.map(g => Math.round(g * 10) / 10).join(',')}`);
 
       // Slice the translation into its visual lines on a hidden probe that
       // shares the column width and the translation column's own font
@@ -355,8 +338,6 @@ export function AlignedTranslation({
       if (node && node.length > 0) {
         const probeRange = document.createRange();
         probeRange.selectNodeContents(probe);
-        const rects = Array.from(probeRange.getClientRects());
-        log(`[AlignedTranslation] measure:probe tag="${tag}" fontFamily="${rcs.fontFamily}" trSize=${Math.round(trSize * 10) / 10} lh=${Math.round(lh2r)} probeRects=${rects.length} probeWidth=${Math.round(probe.getBoundingClientRect().width)} probeTextLen=${node.length}`);
         // Slice by grouping consecutive chars whose computed top is the same
         // VISUAL line. The previous implementation binary-searched each
         // getClientRects() rect and used `rect.bottom` as the line boundary,
@@ -387,9 +368,6 @@ export function AlignedTranslation({
           }
         }
         pushLine(lineStart, node.length);
-        log(`[AlignedTranslation] measure:slices tag="${tag}" count=${lines.length} ${lines.map((l, i) => `${i}:${l.start}-${l.end}:"${text.slice(l.start, l.end).slice(0, 18)}"`).join(' | ')}`);
-      } else {
-        log(`[AlignedTranslation] measure:slices tag="${tag}" probeEmptyOrNoText`);
       }
 
       setLayout({
@@ -400,12 +378,10 @@ export function AlignedTranslation({
         l2LineHeight: lh2r,
         anchorFont: { family: cs.fontFamily, weight: cs.fontWeight, style: cs.fontStyle },
       });
-      log(`[AlignedTranslation] measure:ready tag="${tag}" l2Lines=${gaps.length} trLines=${lines.length} f2=${Math.round(f2r)} lh2=${Math.round(lh2r)}`);
-    } catch (err) {
-      logwarn(`[AlignedTranslation] measure:bail reason=exception tag="${tag}" err=${(err as Error)?.message ?? String(err)}`);
+    } catch {
       setLayout(null);
     }
-  }, [anchorRef, text, tag, translationFactor]);
+  }, [anchorRef, text, translationFactor]);
 
   useLayoutEffect(() => {
     measure();
@@ -428,38 +404,6 @@ export function AlignedTranslation({
     });
     return () => { alive = false; };
   }, [measure]);
-
-  // Post-layout probe of the RENDERED row geometry — confirms the rows land
-  // on the L2 line grid (each row ≈ lh2, spacers = gaps) and that the
-  // translation baselines fall inside their rows (not overflowing).
-  useEffect(() => {
-    if (!layout) return;
-    const rowsEl = rowsRef.current;
-    if (!rowsEl) return;
-    const id = requestAnimationFrame(() => {
-      const children = Array.from(rowsEl.children) as HTMLElement[];
-      const rowHeights = children.map(c => Math.round(c.offsetHeight));
-      const rowsStyle =
-        children.length > 0
-          ? getComputedStyle(children[0]!)
-          : null;
-      // First non-empty row's translation baseline vs its row box: confirm the
-      // translation glyph sits within the row (baseline top < row bottom).
-      let transBaselineInfo = 'n/a';
-      const firstLineSpan = children[0]?.querySelector(':scope > span:nth-child(2)') as HTMLElement | null;
-      if (firstLineSpan) {
-        const boxTop = children[0]!.getBoundingClientRect().top;
-        const sp = getComputedStyle(firstLineSpan);
-        const fs = parseFloat(sp.fontSize);
-        const lh = parseFloat(sp.lineHeight);
-        const spTop = firstLineSpan.getBoundingClientRect().top;
-        // approx baseline = top + ascent(~0.8*fontSize)
-        transBaselineInfo = `rowTop=${Math.round(boxTop)} spanTop=${Math.round(spTop)} fs=${Math.round(fs * 10) / 10} lh=${Math.round(lh)} baseline≈${Math.round(spTop + 0.8 * fs)}`;
-      }
-      log(`[AlignedTranslation] render:row-heights tag="${tag}" children=${rowHeights.length} heights=${rowHeights.join(',')} rowStyleH=${rowsStyle?.height ?? 'n/a'} ${transBaselineInfo}`);
-    });
-    return () => cancelAnimationFrame(id);
-  }, [layout, tag]);
 
   if (!layout) {
     // Plain fallback: unpaired paragraph (same as the pre-alignment column).
