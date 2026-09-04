@@ -129,13 +129,21 @@ one-tap summary follow-up buttons scoped to the surface. It reuses the shared
   `prompt.summarize` template and is truncated to
   `READER_ASK_AI_CONTENT_MAX` (12 000 chars) so very long books/chapters stay
   within budget.
+- **Quote chips.** The summary prompt also asks the model to cite exact passages
+  as `[[exact L2 passage||L1 translation]]` on their own line (`parseAiQuotes`).
+  Each citation renders as a tappable chip showing both the original (L2) and
+  the model's L1 translation. Tapping a chip opens the reader **search**
+  pre-filled with that passage and highlights the first match (the search
+  dialogs accept `initialQuery` / `queryNonce` for this external trigger).
 
 `PaginatedReader` exposes `onOpenAskAi` (render the button) and
 `onPageTextChange` (report the current page's joined text) so a surface can
 wire the chat; the initial preset is `READER_ASK_AI_INITIAL_PRESET`
-(summarize the current page). Preset config lives in `@langplayer/utils`
+(summarize the current page). Quote chips are enabled by passing `quoteChips` +
+`onQuotePress` to `AiExplanation`. Preset config lives in `@langplayer/utils`
 (`READER_ASK_AI_TEXT_PRESETS` / `READER_ASK_AI_EPUB_PRESETS` /
-`READER_ASK_AI_INITIAL_PRESET` / `truncateReaderAiContent`).
+`READER_ASK_AI_INITIAL_PRESET` / `truncateReaderAiContent` /
+`parseAiQuotes` / `READER_AI_QUOTE_INSTRUCTION`).
 
 ### 8. Search, table of contents, and place
 
