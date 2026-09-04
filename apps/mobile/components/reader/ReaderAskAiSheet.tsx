@@ -19,6 +19,8 @@ interface ReaderAskAiSheetProps {
   content: ReaderAiContent;
   /** The summary preset set for this reader (text page / epub). */
   presets: AiFollowUpPreset[];
+  /** Fired when a quote chip is tapped (opens the reader search for that text). */
+  onQuotePress?: (original: string) => void;
 }
 
 /**
@@ -27,7 +29,7 @@ interface ReaderAskAiSheetProps {
  * READER_ASK_AI_INITIAL_PRESET) and preloads the reader's summary follow-up
  * buttons. Shared by the notes / web / image / epub readers.
  */
-export function ReaderAskAiSheet({ open, onClose, title, content, presets }: ReaderAskAiSheetProps) {
+export function ReaderAskAiSheet({ open, onClose, title, content, presets, onQuotePress }: ReaderAskAiSheetProps) {
   const t = useT();
   return (
     <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
@@ -57,6 +59,8 @@ export function ReaderAskAiSheet({ open, onClose, title, content, presets }: Rea
                 followUpPresets={presets}
                 initialPreset={READER_ASK_AI_INITIAL_PRESET}
                 readerContent={content}
+                quoteChips={!!onQuotePress}
+                onQuotePress={onQuotePress}
               />
             </ScrollView>
           </View>

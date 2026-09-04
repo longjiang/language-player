@@ -29,10 +29,19 @@ export function useReaderTocSearch({ blocks, goToBlock, currentBlockIndex }: Use
   const headings = useMemo(() => extractHeadings(blocks), [blocks]);
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /** Pre-fill the search (quote chips) — `searchNonce` re-applies the query. */
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchNonce, setSearchNonce] = useState(0);
   const [highlight, setHighlight] = useState<ReaderHighlight | null>(null);
 
   const openToc = useCallback(() => setTocOpen(true), []);
   const openSearch = useCallback(() => setSearchOpen(true), []);
+  /** Open the search panel pre-filled with a query (quote chip tap). */
+  const openSearchFor = useCallback((query: string) => {
+    setSearchQuery(query);
+    setSearchNonce((n) => n + 1);
+    setSearchOpen(true);
+  }, []);
 
   const handleTocSelect = useCallback((heading: ReaderHeading) => {
     setTocOpen(false);
@@ -52,6 +61,9 @@ export function useReaderTocSearch({ blocks, goToBlock, currentBlockIndex }: Use
     setTocOpen,
     searchOpen,
     setSearchOpen,
+    searchQuery,
+    searchNonce,
+    openSearchFor,
     highlight,
     openToc,
     openSearch,
@@ -73,6 +85,9 @@ interface ReaderTocSearchOverlaysProps {
   blocks: ContentBlock[] | null;
   /** Optional TOC icon visible in the bottom bar (not rendered here). */
   activeIndex?: number | null;
+  /** Pre-fill the search for a quote-chip tap (re-applied on `searchNonce`). */
+  searchQuery?: string;
+  searchNonce?: number;
 }
 
 /** Renders the TOC + Search modals for the notes/web readers (native parity). */
@@ -86,6 +101,8 @@ export function ReaderTocSearchOverlays({
   onSearchSelect,
   blocks,
   activeIndex,
+  searchQuery,
+  searchNonce,
 }: ReaderTocSearchOverlaysProps) {
   const t = useT();
   return (
@@ -142,7 +159,12 @@ export function ReaderTocSearchOverlays({
                 </Pressable>
               </View>
               <View className="flex-1">
-                <EpubSearchPanel blocks={blocks} onSelect={onSearchSelect} />
+                <EpubSearchPanel
+                  blocks={blocks}
+                  onSelect={onSearchSelect}
+                  initialQuery={searchQuery}
+                  queryNonce={searchNonce}
+                />
               </View>
             </View>
           </View>

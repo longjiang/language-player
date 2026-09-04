@@ -13,6 +13,7 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
+import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
 import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
@@ -220,6 +221,13 @@ export default function ImageReaderScreen() {
     }
   }, []);
 
+  // In-content search over the current image's OCR'd blocks (quote chips open it).
+  const tocSearch = useReaderTocSearch({
+    blocks: pagination.blocks,
+    goToBlock: pagination.goToBlock,
+    currentBlockIndex: undefined,
+  });
+
   // ── Empty state ──
   if (images.length === 0) {
     return (
@@ -401,6 +409,7 @@ export default function ImageReaderScreen() {
             selectionDictionary
             firstLineIndent
             onOpenLink={handleOpenLink}
+            onOpenSearch={tocSearch.openSearch}
             onOpenAskAi={() => setAskAiOpen(true)}
             onPageTextChange={setCurrentPageText}
             // Saved words carry the OCR `# title` (web parity: apps/web
@@ -426,6 +435,21 @@ export default function ImageReaderScreen() {
             bookUpToChapter: null,
           } satisfies ReaderAiContent
         }
+        onQuotePress={tocSearch.openSearchFor}
+      />
+
+      {/* ── In-content search modal (image reader) ── */}
+      <ReaderTocSearchOverlays
+        headings={tocSearch.headings}
+        tocOpen={tocSearch.tocOpen}
+        onTocClose={() => tocSearch.setTocOpen(false)}
+        onTocSelect={tocSearch.handleTocSelect}
+        searchOpen={tocSearch.searchOpen}
+        onSearchClose={() => tocSearch.setSearchOpen(false)}
+        onSearchSelect={tocSearch.handleSearchSelect}
+        blocks={pagination.blocks}
+        searchQuery={tocSearch.searchQuery}
+        searchNonce={tocSearch.searchNonce}
       />
     </View>
   );

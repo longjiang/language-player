@@ -522,6 +522,8 @@ export default function ReaderScreen() {
         onSearchSelect={tocSearch.handleSearchSelect}
         blocks={pagination.blocks}
         activeIndex={currentBlockIndex}
+        searchQuery={tocSearch.searchQuery}
+        searchNonce={tocSearch.searchNonce}
       />
       </>
       )}
@@ -540,6 +542,7 @@ export default function ReaderScreen() {
             bookUpToChapter: null,
           } satisfies ReaderAiContent
         }
+        onQuotePress={tocSearch.openSearchFor}
       />
     </PageContainer>
   );

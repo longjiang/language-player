@@ -13,7 +13,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, parseAiQuotes, READER_AI_QUOTE_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -92,6 +92,11 @@ interface AiExplanationProps {
   /** Reader "Ask AI": when set (with autoLoad), stream this preset's prompt
    *  instead of the word-explain prompt (e.g. summarize the current page). */
   initialPreset?: AiFollowUpPreset & { kind: 'prompt' };
+  /** Reader "Ask AI": render quote chips from `[[original||translation]]`
+   *  markers in each assistant reply (requires `onQuotePress`). */
+  quoteChips?: boolean;
+  /** Reader "Ask AI": fired when a quote chip is tapped (opens reader search). */
+  onQuotePress?: (original: string) => void;
 }
 
 /**
@@ -99,7 +104,7 @@ interface AiExplanationProps {
  * Matches web: multi-turn streaming chat with regenerate, copy, a free-form
  * follow-up input, and optional configurable one-tap preset buttons.
  */
-export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset }: AiExplanationProps) {
+export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
@@ -186,8 +191,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       ...(contentKey ? { text } : {}),
     });
     // Content-based presets (reader summaries) are prose in L1, not interactive
-    // L2 text — skip the backtick-formatting instruction for them.
-    if (contentKey) return body;
+    // L2 text — skip the backtick-formatting instruction and instead ask the
+    // model to cite exact passages as [[original||translation]] quote chips.
+    if (contentKey) return `${body}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, word, contextText, contextForm, readerContent]);
@@ -554,10 +560,32 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                     <ActivityIndicator size="small" color={ICON_MUTED} />
                   ) : (
                     <MarkdownExplanation
-                      text={message.text}
+                      text={
+                        quoteChips && onQuotePress && message.text
+                          ? parseAiQuotes(message.text).clean
+                          : message.text
+                      }
                       l2Code={l2Lang.code}
                       streaming={loading && message.id === streamingId}
                     />
+                  )}
+                  {quoteChips && onQuotePress && message.text && parseAiQuotes(message.text).quotes.length > 0 && (
+                    <View className="mt-2 flex-row flex-wrap gap-2">
+                      {parseAiQuotes(message.text).quotes.map((q, i) => (
+                        <Pressable
+                          key={i}
+                          onPress={() => onQuotePress?.(q.original)}
+                          className="max-w-full rounded-lg border border-border bg-muted/60 px-2 py-1 active:bg-muted"
+                        >
+                          <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
+                            {q.original}
+                          </Text>
+                          <Text className="text-[11px] text-muted-foreground" numberOfLines={1}>
+                            {q.translation}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
                   )}
                   {(message.examples?.length ?? 0) > 0 && (
                     <View className="mt-2">
