@@ -195,3 +195,8 @@ export {
 } from './alt-formats';
 export type { AltBookContent } from './alt-formats';
 export { decodeHtmlEntities } from './entities';
+export {
+  DEFAULT_AI_FOLLOW_UPS,
+  presetKey,
+} from './ai-follow-ups';
+export type { AiFollowUpPreset } from './ai-follow-ups';
