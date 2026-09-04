@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useT } from '@/hooks/use-t';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { ReaderBlock } from '@/lib/parse-markdown';
@@ -86,6 +86,10 @@ interface ReaderSearchPanelProps {
   blocks: ReaderBlock[] | null;
   /** Navigate to a result's block. */
   onNavigate: (result: ReaderSearchResult) => void;
+  /** Pre-fill + auto-run a search when `queryNonce` changes (quote chips). */
+  initialQuery?: string;
+  /** Bump to re-trigger the `initialQuery` search. */
+  queryNonce?: number;
 }
 
 /** Highlight the exact matched range inside a snippet. */
@@ -112,7 +116,7 @@ function HighlightSnippet({
   );
 }
 
-export function ReaderSearchPanel({ blocks, onNavigate }: ReaderSearchPanelProps) {
+export function ReaderSearchPanel({ blocks, onNavigate, initialQuery, queryNonce }: ReaderSearchPanelProps) {
   const t = useT();
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState<string[]>(loadRecent);
@@ -141,6 +145,15 @@ export function ReaderSearchPanel({ blocks, onNavigate }: ReaderSearchPanelProps
     setRecent([]);
     try { localStorage.removeItem(RECENT_KEY); } catch { /* ignore */ }
   }, []);
+
+  // Pre-fill + auto-run a search when the parent opens the panel for a specific
+  // quote (reader "Ask AI" quote chips).
+  useEffect(() => {
+    if (initialQuery && queryNonce != null) {
+      void runSearch(initialQuery);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryNonce]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-2">
