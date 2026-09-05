@@ -106,6 +106,27 @@ These are grouped by feature area. Each requirement describes the finished behav
 - **Interactive words.** Every word in the tokenized text is tappable: tapping opens the dictionary popup (definition, add to vocabulary, linked examples). Selecting text opens the dictionary for the selected span.
 - **Formatting honored.** Bold/italic/code/links/underline in the source render in the tokenized text; linked phrases open the link.
 
+#### 6.1 Trigger geometry — the ⋮ scales with the text
+
+The action-menu trigger follows the tokenized text's rendered size instead of
+a fixed icon box. Both platforms compute the same footprint from
+`@langplayer/utils/action-trigger`:
+
+- **Icon size** = the adjacent L2 text's rendered font size:
+  16px × user zoom (`ZOOM_TO_REM[zoom]`) × per-surface `textScale`
+  (1.33 only for single-line subtitles / the video band — SPEC-051).
+- **Tap box** = one line pitch of that text: icon size × the user's leading
+  setting (default 1.625). There is **no** `mt-1`: the box's top edge is the
+  first line's top edge, and centering the icon in the box puts it on the
+  first line's center. Box width stays the fixed 24px tap target
+  (`ACTION_TRIGGER_SIZE_PX`).
+- **Measuring mirrors must replicate it.** The readers' measuring passes
+  reserve a spacer column for the trigger (web: `epub-reader-panel`,
+  `pdf-reader-panel`, `tokenizer-language-card`; mobile: `PaginatedReader`'s
+  `withActionSpacer`). Those spacers derive the same height from the same
+  helpers — never hardcode `h-6 w-6` / `h-7 w-7` again, or pagination
+  mis-measures short blocks at non-default zoom/leading.
+
 ### 7. Reader chrome
 
 - **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and table-of-contents and search buttons (a chapter tree for books, a heading list for the notes/web reader — the TOC button is shown only when the text has headings), plus the current chapter name (books). An **Ask AI** button sits next to Search and opens the reader summary chat (see §7.1).
@@ -136,11 +157,17 @@ tap a preset button **or** send a free-form message to get an answer (the
   so very long books/chapters stay within budget.
 - **Quote chips.** The model is asked to quote only a FEW short exact passages
   (`[[exact L2 passage||L1 translation]]` — never the whole text, and never a
-  trailing dump of every passage). Each marker renders as a small tappable
-  chip **inline** at the position the model cited it: `MarkdownExplanation`
-  (web, via a remark plugin) and the mobile inline renderer walk
-  `splitAiQuotes` output so chips land in prose flow rather than being
-  stripped to the bottom (`READER_AI_QUOTE_INSTRUCTION` +
+  trailing dump of every passage), each on its OWN line as a standalone
+  paragraph at the point it supports (never inside a sentence). Each marker
+  renders as a full-width **block** chip at the position the model cited it:
+  a row with a quote icon on the left and a right-chevron on the right, the
+  passage (and its translation, beneath it) truncated in between. Both
+  platforms keep chips out of the prose flow: `MarkdownExplanation` (web, via
+  a remark plugin over `normalizeQuoteBlocks` output) and the mobile inline
+  renderer walk `splitAiQuotes(normalizeQuoteBlocks(text))` so a marker the
+  model slipped into the middle of a sentence is hoisted onto its own line —
+  the chip is a block, never an inline span
+  (`READER_AI_QUOTE_INSTRUCTION` + `normalizeQuoteBlocks` +
   `splitAiQuotes`). Use ONLY the `[[…||…]]` format — never markdown
   blockquotes. Wrapping quote marks are stripped (`cleanAiQuote`). **Every**
   marker renders as a chip (empty/malformed markers only are dropped), so a
@@ -155,7 +182,8 @@ tap a preset button **or** send a free-form message to get an answer (the
 wire the chat. Quote chips are enabled by passing `quoteChips` + `onQuotePress`
 to `AiExplanation`. Preset config lives in `@langplayer/utils`
 (`READER_ASK_AI_TEXT_PRESETS` / `READER_ASK_AI_EPUB_PRESETS` /
-`truncateReaderAiContent` / `splitAiQuotes` / `cleanAiQuote` /
+`truncateReaderAiContent` / `splitAiQuotes` / `normalizeQuoteBlocks` /
+`cleanAiQuote` /
 `READER_AI_SUMMARY_INSTRUCTION` / `READER_AI_QUOTE_INSTRUCTION`).
 
 ### 8. Search, table of contents, and place
@@ -242,3 +270,18 @@ the page (product decision). Page turns stay on `←/↑/PageUp` and
 `→/↓/PageDown` plus buttons/swipes. On a non-scrollable page Space is a
 no-op. Long pages additionally show a floating down-arrow above the page
 counter that scrolls to the bottom.
+
+## Revision (2026-09-04) — Quote chips are blocks, not inline spans
+
+The §7.1 quote-chip rule "each marker renders as a small tappable chip
+**inline**" is superseded: quote chips render as **full-width block
+elements**, one per line. The chip is a row — quote icon on the left, the
+quoted passage (translation beneath it, both truncated) in the middle, a
+right-chevron on the right — and tapping it still opens the reader search.
+The prompt (`READER_AI_QUOTE_INSTRUCTION`) now asks the model to emit each
+quote as its own standalone paragraph, and `normalizeQuoteBlocks` hoists any
+marker the model still placed mid-sentence onto its own line before
+rendering, so a chip never interrupts the sentence around it (web:
+`MarkdownExplanation`; mobile: `AiExplanation`'s inline-quote renderer).
+Motivated by real responses where two inline chips broke one sentence into
+fragments (screenshot, 2026-09-04).
