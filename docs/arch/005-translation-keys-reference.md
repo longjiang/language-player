@@ -178,6 +178,22 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `feature.tap_to_dictionary_desc` | Tap any word in the subtitles for an instant dictionary lookup with definitions and examples. |
 | `feature.use_all_ai` | Use all AI features throughout the app. |
 | `feature.view_entire_transcripts` | View entire transcripts beyond the first ten lines. |
+| `category.autos_and_vehicles` | Autos & Vehicles |
+| `category.comedy` | Comedy |
+| `category.education` | Education |
+| `category.entertainment` | Entertainment |
+| `category.film_and_animation` | Film & Animation |
+| `category.gaming` | Gaming |
+| `category.howto_and_style` | How-to & Style |
+| `category.movies` | Movies |
+| `category.music` | Music |
+| `category.news_and_politics` | News & Politics |
+| `category.nonprofits_and_activism` | Non-profits & Activism |
+| `category.people_and_blogs` | People & Blogs |
+| `category.pets_and_animals` | Pets & Animals |
+| `category.science_and_technology` | Science & Technology |
+| `category.sports` | Sports |
+| `category.travel_and_events` | Travel & Events |
 | `filter.all` | All |
 | `filter.all_locales` | All Locales |
 | `filter.cefr_a1` | A1 |
@@ -576,6 +592,8 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `setting.traditional` | 繁體 Traditional |
 | `setting.word_level_display` | Word-Level Display |
 | `sort.most_viewed` | Most Viewed |
+| `sort.by_title` | Sort by Title |
+| `sort.by_views` | Sort by Views |
 | `sort.title` | Title |
 | `sort.year` | Year |
 | `subscription.annual` | annual |

@@ -69,7 +69,8 @@
 - ✅ Word saving / vocabulary list 🔄
 - ✅ Tokenization + lemmatization display
 - ✅ Pronunciation (TTS) — Web Speech API with per-language quality-ranked voice auto-selection (ARCH-031) + VoicePicker settings
-- ✅ TV Shows page — browse shows with search, sort (views/title/year), locale filter, poster grid
+- ✅ TV Shows page — browse shows with search, sort (views/title), locale filter, poster grid
+- ✅ Localized video category names on watch page + subs search; TV-show badge linking to the episode list; TV-shows toolbar polish, no-op year sort removed (SPEC-092)
 - ✅ Dictionary database rebuild, add classifier for cedict, gender and audio for wiktionary, and add pytohn code to supply inflections via inflectors
 - ✅ Shared Radix sidebar primitive (dictionary, reader, EPUB, web-reader) + Radix migration of all web ui primitives (SPEC-030, ADR-0020)
 - ✅ Corpus tab in the web dictionary (Sketch Engine collocations, examples, related words, and Chinese learner mistakes) (SPEC-047)
