@@ -31,6 +31,7 @@ import {
 } from '@langplayer/utils';
 import type { AiGroupingResult, SubsSearchSortKey } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
+import { youTubeCategoryLabel } from '@langplayer/shared';
 
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { SubsSearchRow } from './SubsSearchRow';
@@ -799,7 +800,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   }, [pool]);
 
   const categoryLabel = (id: number) =>
-    id === 10 ? t('filter.music') : id === 24 ? t('title.music_and_entertainment') : t('label.category_n', { n: id });
+    youTubeCategoryLabel(id, t, (n) => t('label.category_n', { n }));
 
   const toggleShow = (id: number) =>
     setTvShowIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));

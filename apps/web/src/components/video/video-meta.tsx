@@ -1,6 +1,6 @@
 import { Eye, ThumbsUp, MessageCircle, Calendar } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
-import { getLevelFromDifficulty, formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { getLevelFromDifficulty, formatNumericLevel, primaryScale, youTubeCategoryLabel } from '@langplayer/shared';
 import { levelSubtleClass } from '@/lib/level-colors';
 import { displayLanguageName } from '@/lib/language-data';
 import { useLanguage } from '@/providers/language-provider';
@@ -72,7 +72,7 @@ export function VideoMeta({ video }: VideoMetaProps) {
         )}
         {video.category && (
           <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-            {video.category}
+            {youTubeCategoryLabel(Number(video.category), t, (id) => t('label.category_n', { n: id }))}
           </span>
         )}
       </div>

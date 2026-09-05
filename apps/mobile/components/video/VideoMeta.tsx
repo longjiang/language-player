@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Eye, ThumbsUp, MessageCircle, Calendar, Clock } from 'lucide-react-native';
 import type { YouTubeVideo } from '@langplayer/shared';
-import { getLevelFromDifficulty, formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { getLevelFromDifficulty, formatNumericLevel, primaryScale, youTubeCategoryLabel } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
@@ -111,7 +111,9 @@ export function VideoMeta({ video }: VideoMetaProps) {
         )}
         {video.category && (
           <View className="rounded-full bg-muted px-3 py-1">
-            <Text className="text-xs text-muted-foreground">{video.category}</Text>
+            <Text className="text-xs text-muted-foreground">
+              {youTubeCategoryLabel(Number(video.category), t, (id) => t('label.category_n', { n: id }))}
+            </Text>
           </View>
         )}
       </View>

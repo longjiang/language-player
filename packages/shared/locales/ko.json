@@ -195,6 +195,24 @@
         "reset_time_to_zero": "시간을 0으로 재설정",
         "switch_to_lifetime": "평생 이용으로 전환"
     },
+    "category": {
+        "autos_and_vehicles": "자동차 및 교통수단",
+        "comedy": "코미디",
+        "education": "교육",
+        "entertainment": "엔터테인먼트",
+        "film_and_animation": "영화 및 애니메이션",
+        "gaming": "게임",
+        "howto_and_style": "노하우 및 스타일",
+        "movies": "영화",
+        "music": "음악",
+        "news_and_politics": "뉴스 및 정치",
+        "nonprofits_and_activism": "비영리 및 사회운동",
+        "people_and_blogs": "사람 및 블로그",
+        "pets_and_animals": "반려동물 및 동물",
+        "science_and_technology": "과학 및 기술",
+        "sports": "스포츠",
+        "travel_and_events": "여행 및 이벤트"
+    },
     "corpus": {
         "corpus_name": "말뭉치: {name}",
         "mistake_description": "이 실수는 {errorLevel}({errorType})와 관련이 있으며, {country} 출신의 {proficiency} 수준 학습자가 저지른 것입니다.",

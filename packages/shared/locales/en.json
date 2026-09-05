@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Reset Time to Zero",
         "switch_to_lifetime": "Switch to Lifetime"
     },
+    "category": {
+        "autos_and_vehicles": "Autos & Vehicles",
+        "comedy": "Comedy",
+        "education": "Education",
+        "entertainment": "Entertainment",
+        "film_and_animation": "Film & Animation",
+        "gaming": "Gaming",
+        "howto_and_style": "How-to & Style",
+        "movies": "Movies",
+        "music": "Music",
+        "news_and_politics": "News & Politics",
+        "nonprofits_and_activism": "Non-profits & Activism",
+        "people_and_blogs": "People & Blogs",
+        "pets_and_animals": "Pets & Animals",
+        "science_and_technology": "Science & Technology",
+        "sports": "Sports",
+        "travel_and_events": "Travel & Events"
+    },
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "This mistake has to do with {errorLevel} ({errorType}), committed by a {proficiency} learner from {country}.",

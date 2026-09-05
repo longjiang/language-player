@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Zeit auf Null Zurücksetzen",
         "switch_to_lifetime": "Auf Lebenszeit umstellen"
     },
+    "category": {
+        "autos_and_vehicles": "Autos & Fahrzeuge",
+        "comedy": "Comedy",
+        "education": "Bildung",
+        "entertainment": "Unterhaltung",
+        "film_and_animation": "Film & Animation",
+        "gaming": "Spiele",
+        "howto_and_style": "Tipps & Stil",
+        "movies": "Filme",
+        "music": "Musik",
+        "news_and_politics": "Nachrichten & Politik",
+        "nonprofits_and_activism": "Gemeinnütziges & Aktivismus",
+        "people_and_blogs": "Menschen & Blogs",
+        "pets_and_animals": "Haustiere & Tiere",
+        "science_and_technology": "Wissenschaft & Technologie",
+        "sports": "Sport",
+        "travel_and_events": "Reisen & Veranstaltungen"
+    },
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Dieser Fehler hat mit {errorLevel} ({errorType}) zu tun und wurde von einem {proficiency}-Lernenden aus {country} gemacht.",

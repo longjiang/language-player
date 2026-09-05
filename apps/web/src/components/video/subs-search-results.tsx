@@ -32,6 +32,7 @@ import { SubsSearchPlaybackModal } from './subs-search-playback-modal';
 import { Button } from '@/components/ui/button';
 import { SubsSearchRow } from './subs-search-row';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
+import { youTubeCategoryLabel } from '@langplayer/shared';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import {
   Search,
@@ -1033,7 +1034,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   }, [pool]);
 
   const categoryLabel = (id: number) =>
-    id === 10 ? t('filter.music') : id === 24 ? t('title.music_and_entertainment') : t('label.category_n', { n: id });
+    youTubeCategoryLabel(id, t, (n) => t('label.category_n', { n }));
 
   const toggleShow = (id: number) =>
     setTvShowIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));

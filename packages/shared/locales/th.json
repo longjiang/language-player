@@ -195,6 +195,24 @@
         "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์",
         "switch_to_lifetime": "สลับเป็นแบบ Lifetime"
     },
+    "category": {
+        "autos_and_vehicles": "ยานยนต์และพาหนะ",
+        "comedy": "ตลก",
+        "education": "การศึกษา",
+        "entertainment": "บันเทิง",
+        "film_and_animation": "ภาพยนตร์และแอนิเมชัน",
+        "gaming": "เกม",
+        "howto_and_style": "วิธีใช้และสไตล์",
+        "movies": "ภาพยนตร์",
+        "music": "เพลง",
+        "news_and_politics": "ข่าวและการเมือง",
+        "nonprofits_and_activism": "องค์กรไม่แสวงหากำไรและกิจกรรม",
+        "people_and_blogs": "บุคคลและบล็อก",
+        "pets_and_animals": "สัตว์เลี้ยงและสัตว์",
+        "science_and_technology": "วิทยาศาสตร์และเทคโนโลยี",
+        "sports": "กีฬา",
+        "travel_and_events": "ท่องเที่ยวและกิจกรรม"
+    },
     "corpus": {
         "corpus_name": "คลังข้อมูลภาษา: {name}",
         "mistake_description": "ข้อผิดพลาดนี้เกี่ยวข้องกับ {errorLevel} ({errorType}) โดยผู้เรียนระดับ {proficiency} จาก {country}",

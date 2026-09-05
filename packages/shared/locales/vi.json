@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Đặt Lại Thời Gian Về Không",
         "switch_to_lifetime": "Chuyển sang Gói trọn đời"
     },
+    "category": {
+        "autos_and_vehicles": "Xe cộ",
+        "comedy": "Hài",
+        "education": "Giáo dục",
+        "entertainment": "Giải trí",
+        "film_and_animation": "Phim & hoạt hình",
+        "gaming": "Trò chơi",
+        "howto_and_style": "Hướng dẫn & phong cách",
+        "movies": "Phim",
+        "music": "Âm nhạc",
+        "news_and_politics": "Tin tức & chính trị",
+        "nonprofits_and_activism": "Phi lợi nhuận & hoạt động xã hội",
+        "people_and_blogs": "Con người & blog",
+        "pets_and_animals": "Thú cưng & động vật",
+        "science_and_technology": "Khoa học & công nghệ",
+        "sports": "Thể thao",
+        "travel_and_events": "Du lịch & sự kiện"
+    },
     "corpus": {
         "corpus_name": "Kho ngữ liệu: {name}",
         "mistake_description": "Lỗi này liên quan đến {errorLevel} ({errorType}), do người học trình độ {proficiency} đến từ {country} mắc phải.",

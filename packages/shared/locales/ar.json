@@ -195,6 +195,24 @@
         "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر",
         "switch_to_lifetime": "التبديل إلى الخطة مدى الحياة"
     },
+    "category": {
+        "autos_and_vehicles": "سيارات ومركبات",
+        "comedy": "كوميديا",
+        "education": "التعليم",
+        "entertainment": "الترفيه",
+        "film_and_animation": "أفلام ورسوم متحركة",
+        "gaming": "الألعاب",
+        "howto_and_style": "الإرشادات والموضة",
+        "movies": "الأفلام",
+        "music": "الموسيقى",
+        "news_and_politics": "أخبار وسياسة",
+        "nonprofits_and_activism": "المنظمات غير الربحية والنشاط",
+        "people_and_blogs": "أشخاص ومدونات",
+        "pets_and_animals": "الحيوانات الأليفة والحيوانات",
+        "science_and_technology": "العلوم والتكنولوجيا",
+        "sports": "الرياضة",
+        "travel_and_events": "السفر والأحداث"
+    },
     "corpus": {
         "corpus_name": "المدوّنة: {name}",
         "mistake_description": "يرتبط هذا الخطأ بـ {errorLevel} ({errorType})، وقد ارتكبه متعلم {proficiency} من {country}.",

@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Azzera il Tempo",
         "switch_to_lifetime": "Passa a Vitalizio"
     },
+    "category": {
+        "autos_and_vehicles": "Auto e veicoli",
+        "comedy": "Commedia",
+        "education": "Istruzione",
+        "entertainment": "Intrattenimento",
+        "film_and_animation": "Film e animazione",
+        "gaming": "Videogiochi",
+        "howto_and_style": "Guide e stile",
+        "movies": "Film",
+        "music": "Musica",
+        "news_and_politics": "Notizie e politica",
+        "nonprofits_and_activism": "Organizzazioni non lucrative e attivismo",
+        "people_and_blogs": "Persone e blog",
+        "pets_and_animals": "Animali domestici e animali",
+        "science_and_technology": "Scienza e tecnologia",
+        "sports": "Sport",
+        "travel_and_events": "Viaggi ed eventi"
+    },
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Questo errore ha a che fare con {errorLevel} ({errorType}), commesso da uno studente di livello {proficiency} proveniente da {country}.",
