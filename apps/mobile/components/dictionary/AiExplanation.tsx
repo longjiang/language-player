@@ -13,7 +13,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, parseAiQuotes, filterReaderQuotes, READER_AI_QUOTE_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, textContainsQuote, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -195,8 +195,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     });
     // Content-based presets (reader summaries) are prose in L1, not interactive
     // L2 text — skip the backtick-formatting instruction and instead ask the
-    // model to cite exact passages as [[original||translation]] quote chips.
-    if (contentKey) return `${body}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
+    // model for a concise overview supported by a few inline [[original||translation]]
+    // quote chips.
+    if (contentKey) return `${body}\n\n${READER_AI_SUMMARY_INSTRUCTION}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, word, contextText, contextForm, readerContent]);
@@ -400,18 +401,55 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     startStream(prompt, { messages: history });
   }, [startStream, appendMessage, buildHistory, quoteChips]);
 
-  // Reader Ask-AI: extract quotes from a response and drop any that aren't
-  // actually present in the reader content (hallucinated / abbreviated).
-  const visibleQuotes = useCallback((text: string) => {
-    if (!quoteChips || !readerContent) return [];
-    const parsed = parseAiQuotes(text);
-    return filterReaderQuotes(parsed.quotes, [
-      readerContent.text,
-      readerContent.page,
-      readerContent.chapter ?? '',
-      readerContent.bookUpToChapter ?? '',
-    ]);
-  }, [quoteChips, readerContent]);
+  // Reader Ask-AI: many chat messages interleave [[original||translation]]
+  // quote markers with prose. `renderInlineQuotes` splits the raw text on those
+  // markers and renders each as a small tappable chip INLINE at its position
+  // (RN's <Text> nests), rather than stripping them out and piling every chip
+  // at the bottom. Validated quotes (present in the reader content) only.
+  const quoteSources = readerContent
+    ? [
+        readerContent.text,
+        readerContent.page,
+        readerContent.chapter ?? '',
+        readerContent.bookUpToChapter ?? '',
+      ].filter((s): s is string => Boolean(s))
+    : [];
+  const validateQuote =
+    quoteSources.length === 0
+      ? (() => true)
+      : (original: string) => quoteSources.some((s) => textContainsQuote(original, s));
+
+  const renderInlineQuotes = useCallback(
+    (text: string) => {
+      const segments = splitAiQuotes(text).filter(
+        (seg) => seg.type === 'text' || validateQuote(seg.original),
+      );
+      return (
+        <Text className="text-sm leading-relaxed text-foreground">
+          {segments.map((seg, i) =>
+            seg.type === 'text' ? (
+              <Text key={i}>{seg.value}</Text>
+            ) : (
+              <Text
+                key={i}
+                onPress={() => onQuotePress?.(seg.original)}
+                className="mx-0.5 rounded border border-border bg-muted/60 px-1.5 py-0.5"
+              >
+                <Text className="text-xs font-medium text-foreground">{seg.original}</Text>
+                {seg.translation ? (
+                  <>
+                    {'\n'}
+                    <Text className="text-[10px] text-muted-foreground">{seg.translation}</Text>
+                  </>
+                ) : null}
+              </Text>
+            ),
+          )}
+        </Text>
+      );
+    },
+    [onQuotePress, validateQuote],
+  );
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -578,34 +616,14 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                     </View>
                   ) : loading && message.id === streamingId && !message.text ? (
                     <ActivityIndicator size="small" color={ICON_MUTED} />
+                  ) : quoteChips && onQuotePress && message.text ? (
+                    renderInlineQuotes(message.text)
                   ) : (
                     <MarkdownExplanation
-                      text={
-                        quoteChips && onQuotePress && message.text
-                          ? parseAiQuotes(message.text).clean
-                          : message.text
-                      }
+                      text={message.text}
                       l2Code={l2Lang.code}
                       streaming={loading && message.id === streamingId}
                     />
-                  )}
-                  {quoteChips && onQuotePress && message.text && visibleQuotes(message.text).length > 0 && (
-                    <View className="mt-2 flex-row flex-wrap gap-2">
-                      {visibleQuotes(message.text).map((q, i) => (
-                        <Pressable
-                          key={i}
-                          onPress={() => onQuotePress?.(q.original)}
-                          className="max-w-full rounded-lg border border-border bg-muted/60 px-2 py-1 active:bg-muted"
-                        >
-                          <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
-                            {q.original}
-                          </Text>
-                          <Text className="text-[11px] text-muted-foreground" numberOfLines={1}>
-                            {q.translation}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
                   )}
                   {(message.examples?.length ?? 0) > 0 && (
                     <View className="mt-2">
