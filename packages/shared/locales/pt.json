@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Redefinir Tempo para Zero",
         "switch_to_lifetime": "Mudar para plano Vitalício"
     },
+    "category": {
+        "autos_and_vehicles": "Carros e veículos",
+        "comedy": "Comédia",
+        "education": "Educação",
+        "entertainment": "Entretenimento",
+        "film_and_animation": "Filmes e animação",
+        "gaming": "Jogos",
+        "howto_and_style": "Guias e estilo",
+        "movies": "Filmes",
+        "music": "Música",
+        "news_and_politics": "Notícias e política",
+        "nonprofits_and_activism": "Sem fins lucrativos e ativismo",
+        "people_and_blogs": "Pessoas e blogs",
+        "pets_and_animals": "Animais de estimação e animais",
+        "science_and_technology": "Ciência e tecnologia",
+        "sports": "Desportos",
+        "travel_and_events": "Viagens e eventos"
+    },
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Este erro tem a ver com {errorLevel} ({errorType}), cometido por um estudante de nível {proficiency} de {country}.",

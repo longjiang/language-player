@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Réinitialiser le Temps à Zéro",
         "switch_to_lifetime": "Passer à l'abonnement à vie"
     },
+    "category": {
+        "autos_and_vehicles": "Auto et véhicules",
+        "comedy": "Comédie",
+        "education": "Éducation",
+        "entertainment": "Divertissement",
+        "film_and_animation": "Films et animation",
+        "gaming": "Jeux vidéo",
+        "howto_and_style": "Tutoriels et style",
+        "movies": "Films",
+        "music": "Musique",
+        "news_and_politics": "Actualités et politique",
+        "nonprofits_and_activism": "Associations et militantisme",
+        "people_and_blogs": "Personnes et blogs",
+        "pets_and_animals": "Animaux",
+        "science_and_technology": "Sciences et technologie",
+        "sports": "Sports",
+        "travel_and_events": "Voyages et événements"
+    },
     "corpus": {
         "corpus_name": "Corpus : {name}",
         "mistake_description": "Cette erreur a un rapport avec {errorLevel} ({errorType}), commise par un apprenant de niveau {proficiency} originaire de {country}.",

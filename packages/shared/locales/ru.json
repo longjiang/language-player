@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Сбросить Время на Ноль",
         "switch_to_lifetime": "Перейти на пожизненный план"
     },
+    "category": {
+        "autos_and_vehicles": "Автомобили и транспорт",
+        "comedy": "Юмор",
+        "education": "Образование",
+        "entertainment": "Развлечения",
+        "film_and_animation": "Фильмы и анимация",
+        "gaming": "Игры",
+        "howto_and_style": "Советы и стиль",
+        "movies": "Кино",
+        "music": "Музыка",
+        "news_and_politics": "Новости и политика",
+        "nonprofits_and_activism": "Некоммерческие организации и активизм",
+        "people_and_blogs": "Люди и блоги",
+        "pets_and_animals": "Домашние животные и дикие животные",
+        "science_and_technology": "Наука и технологии",
+        "sports": "Спорт",
+        "travel_and_events": "Путешествия и события"
+    },
     "corpus": {
         "corpus_name": "Корпус: {name}",
         "mistake_description": "Эта ошибка связана с {errorLevel} ({errorType}) и допущена учащимся уровня {proficiency} из {country}.",

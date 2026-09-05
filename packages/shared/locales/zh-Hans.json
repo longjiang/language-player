@@ -188,6 +188,24 @@
         "purchase": "购买",
         "reset_time_to_zero": "将时间重置为零"
     },
+    "category": {
+        "autos_and_vehicles": "汽车与交通工具",
+        "comedy": "喜剧",
+        "education": "教育",
+        "entertainment": "娱乐",
+        "film_and_animation": "影视与动画",
+        "gaming": "游戏",
+        "howto_and_style": "生活窍门与时尚",
+        "movies": "电影",
+        "music": "音乐",
+        "news_and_politics": "新闻与时事",
+        "nonprofits_and_activism": "非营利与社会活动",
+        "people_and_blogs": "人物与博客",
+        "pets_and_animals": "宠物与动物",
+        "science_and_technology": "科学与技术",
+        "sports": "体育",
+        "travel_and_events": "旅行与活动"
+    },
     "corpus": {
         "corpus_name": "语料库：{name}",
         "mistake_description": "这个错误与{errorLevel}（{errorType}）有关，由来自{country}的{proficiency}学习者所犯。",

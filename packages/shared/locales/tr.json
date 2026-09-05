@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Zamanı Sıfırla",
         "switch_to_lifetime": "Ömür Boyu’na geç"
     },
+    "category": {
+        "autos_and_vehicles": "Otomobiller ve Araçlar",
+        "comedy": "Komedi",
+        "education": "Eğitim",
+        "entertainment": "Eğlence",
+        "film_and_animation": "Film ve Animasyon",
+        "gaming": "Oyun",
+        "howto_and_style": "Nasıl Yapılır ve Stil",
+        "movies": "Filmler",
+        "music": "Müzik",
+        "news_and_politics": "Haber ve Politika",
+        "nonprofits_and_activism": "Kar Amacı Gütmeyen Kuruluşlar ve Aktivizm",
+        "people_and_blogs": "İnsanlar ve Bloglar",
+        "pets_and_animals": "Evcil Hayvanlar ve Hayvanlar",
+        "science_and_technology": "Bilim ve Teknoloji",
+        "sports": "Spor",
+        "travel_and_events": "Gezi ve Etkinlikler"
+    },
     "corpus": {
         "corpus_name": "Derlem: {name}",
         "mistake_description": "Bu hata, {country} ülkesinden {proficiency} seviyesinde bir öğrenci tarafından yapılmış olup {errorLevel} ({errorType}) ile ilgilidir.",

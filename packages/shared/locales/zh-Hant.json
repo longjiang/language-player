@@ -188,6 +188,24 @@
         "purchase": "購買",
         "reset_time_to_zero": "將時間歸零"
     },
+    "category": {
+        "autos_and_vehicles": "汽車與交通工具",
+        "comedy": "喜劇",
+        "education": "教育",
+        "entertainment": "娛樂",
+        "film_and_animation": "影視與動畫",
+        "gaming": "遊戲",
+        "howto_and_style": "生活竅門與時尚",
+        "movies": "電影",
+        "music": "音樂",
+        "news_and_politics": "新聞與政治",
+        "nonprofits_and_activism": "非營利與社會運動",
+        "people_and_blogs": "人物與網誌",
+        "pets_and_animals": "寵物與動物",
+        "science_and_technology": "科學與技術",
+        "sports": "體育",
+        "travel_and_events": "旅行與活動"
+    },
     "corpus": {
         "corpus_name": "語料庫：{name}",
         "mistake_description": "這個錯誤與{errorLevel}（{errorType}）有關，由來自{country}的{proficiency}學習者所犯。",

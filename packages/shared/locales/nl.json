@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Tijd op Nul Zetten",
         "switch_to_lifetime": "Overschakelen naar Levenslang"
     },
+    "category": {
+        "autos_and_vehicles": "Auto's & voertuigen",
+        "comedy": "Comedy",
+        "education": "Onderwijs",
+        "entertainment": "Amusement",
+        "film_and_animation": "Film & animatie",
+        "gaming": "Games",
+        "howto_and_style": "Hoe het moet & stijl",
+        "movies": "Films",
+        "music": "Muziek",
+        "news_and_politics": "Nieuws & politiek",
+        "nonprofits_and_activism": "Non-profit & activisme",
+        "people_and_blogs": "Mensen & blogs",
+        "pets_and_animals": "Huisdieren & dieren",
+        "science_and_technology": "Wetenschap & technologie",
+        "sports": "Sport",
+        "travel_and_events": "Reizen & evenementen"
+    },
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Deze fout heeft te maken met {errorLevel} ({errorType}) en is gemaakt door een {proficiency}-leerling uit {country}.",

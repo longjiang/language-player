@@ -195,6 +195,24 @@
         "reset_time_to_zero": "Zresetuj Czas do Zera",
         "switch_to_lifetime": "Przełącz na dożywotni"
     },
+    "category": {
+        "autos_and_vehicles": "Samochody i pojazdy",
+        "comedy": "Komedia",
+        "education": "Edukacja",
+        "entertainment": "Rozrywka",
+        "film_and_animation": "Filmy i animacje",
+        "gaming": "Gry",
+        "howto_and_style": "Instrukcje i styl",
+        "movies": "Filmy",
+        "music": "Muzyka",
+        "news_and_politics": "Wiadomości i polityka",
+        "nonprofits_and_activism": "Organizacje non-profit i aktywizm",
+        "people_and_blogs": "Ludzie i blogi",
+        "pets_and_animals": "Zwierzęta domowe i dzikie",
+        "science_and_technology": "Nauka i technologia",
+        "sports": "Sport",
+        "travel_and_events": "Podróże i wydarzenia"
+    },
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Ten błąd ma związek z {errorLevel} ({errorType}) i został popełniony przez ucznia na poziomie {proficiency} z kraju {country}.",

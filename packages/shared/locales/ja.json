@@ -195,6 +195,24 @@
         "reset_time_to_zero": "時間をゼロにリセット",
         "switch_to_lifetime": "ライフタイムプランに切り替える"
     },
+    "category": {
+        "autos_and_vehicles": "乗り物と車",
+        "comedy": "コメディー",
+        "education": "教育",
+        "entertainment": "エンタメ",
+        "film_and_animation": "映画とアニメ",
+        "gaming": "ゲーム",
+        "howto_and_style": "ハウツーとスタイル",
+        "movies": "映画",
+        "music": "音楽",
+        "news_and_politics": "ニュースと時事",
+        "nonprofits_and_activism": "非営利と社会運動",
+        "people_and_blogs": "人物とブログ",
+        "pets_and_animals": "ペットと動物",
+        "science_and_technology": "科学と技術",
+        "sports": "スポーツ",
+        "travel_and_events": "旅行とイベント"
+    },
     "corpus": {
         "corpus_name": "コーパス：{name}",
         "mistake_description": "この間違いは{errorLevel}（{errorType}）に関係しており、{country}出身の{proficiency}レベルの学習者によるものです。",
