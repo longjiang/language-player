@@ -126,28 +126,36 @@ tap a preset button **or** send a free-form message to get an answer (the
 - **EPUB reader** — presets: *Summarize this page*, *Summarize this chapter*
   (the current chapter), and *Summarize book up to this chapter* (chapters
   1…current, concatenated).
-- Every prompt injects a named block of the reader's `ReaderAiContent`
+- Every preset injects a named block of the reader's `ReaderAiContent`
   (`text` / `page` / `chapter` / `bookUpToChapter`) into the shared
-  `prompt.summarize` template and is truncated to
-  `READER_ASK_AI_CONTENT_MAX` (12 000 chars) so very long books/chapters stay
-  within budget.
-- **Quote chips.** Every reader prompt (summary presets and free-form) also asks
-  the model to cite exact passages as `[[exact L2 passage||L1 translation]]` on
-  their own line — never as markdown blockquotes (`READER_AI_QUOTE_INSTRUCTION` +
-  `parseAiQuotes`). Each citation renders as a tappable chip showing both the
-  original (L2) and the model's L1 translation. Wrapping quote marks are
-  stripped, and a quote is only rendered if it is actually present in the reader
-  content (`textContainsQuote` / `filterReaderQuotes`) — hallucinated or
-  abbreviated quotes are dropped. Tapping a chip opens the reader **search**
-  pre-filled with that passage and highlights the first match (the search
-  dialogs accept `initialQuery` / `queryNonce` for this external trigger).
+  `prompt.summarize` template. Content-carrying presets also append the
+  summary-shape instruction (`READER_AI_SUMMARY_INSTRUCTION`: a concise
+  overview of the arc, the key events, and the main characters — never a
+  retelling) and the quote instruction (`READER_AI_QUOTE_INSTRUCTION`). The
+  injected content is truncated to `READER_ASK_AI_CONTENT_MAX` (12 000 chars)
+  so very long books/chapters stay within budget.
+- **Quote chips.** The model is asked to quote only a FEW short exact passages
+  (`[[exact L2 passage||L1 translation]]` — never the whole text, and never a
+  trailing dump of every passage). Each marker renders as a small tappable
+  chip **inline** at the position the model cited it: `MarkdownExplanation`
+  (web, via a remark plugin) and the mobile inline renderer walk
+  `splitAiQuotes` output so chips land in prose flow rather than being
+  stripped to the bottom (`READER_AI_QUOTE_INSTRUCTION` +
+  `splitAiQuotes`). Use ONLY the `[[…||…]]` format — never markdown
+  blockquotes. Wrapping quote marks are stripped (`cleanAiQuote`), and a
+  citation is only rendered if it actually appears in the reader content
+  (`textContainsQuote`) — hallucinated or abbreviated quotes are dropped.
+  Tapping a chip opens the reader **search** pre-filled with that passage and
+  highlights the first match (the search dialogs accept `initialQuery` /
+  `queryNonce` for this external trigger).
 
 `PaginatedReader` exposes `onOpenAskAi` (render the button) and
 `onPageTextChange` (report the current page's joined text) so a surface can
 wire the chat. Quote chips are enabled by passing `quoteChips` + `onQuotePress`
 to `AiExplanation`. Preset config lives in `@langplayer/utils`
 (`READER_ASK_AI_TEXT_PRESETS` / `READER_ASK_AI_EPUB_PRESETS` /
-`truncateReaderAiContent` / `parseAiQuotes` / `READER_AI_QUOTE_INSTRUCTION`).
+`truncateReaderAiContent` / `splitAiQuotes` / `cleanAiQuote` /
+`READER_AI_SUMMARY_INSTRUCTION` / `READER_AI_QUOTE_INSTRUCTION`).
 
 ### 8. Search, table of contents, and place
 
