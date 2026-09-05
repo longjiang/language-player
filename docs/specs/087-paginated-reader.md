@@ -142,12 +142,13 @@ tap a preset button **or** send a free-form message to get an answer (the
   `splitAiQuotes` output so chips land in prose flow rather than being
   stripped to the bottom (`READER_AI_QUOTE_INSTRUCTION` +
   `splitAiQuotes`). Use ONLY the `[[…||…]]` format — never markdown
-  blockquotes. Wrapping quote marks are stripped (`cleanAiQuote`), and a
-  citation is only rendered if it actually appears in the reader content
-  (`textContainsQuote`) — hallucinated or abbreviated quotes are dropped.
-  Tapping a chip opens the reader **search** pre-filled with that passage and
-  highlights the first match (the search dialogs accept `initialQuery` /
-  `queryNonce` for this external trigger).
+  blockquotes. Wrapping quote marks are stripped (`cleanAiQuote`). **Every**
+  marker renders as a chip (empty/malformed markers only are dropped), so a
+  quote the model didn't copy verbatim still appears — tapping it opens the
+  reader search, which may simply find nothing rather than leaving a gap in
+  the response. Tapping a chip opens the reader **search** pre-filled with
+  that passage and highlights the first match (the search dialogs accept
+  `initialQuery` / `queryNonce` for this external trigger).
 
 `PaginatedReader` exposes `onOpenAskAi` (render the button) and
 `onPageTextChange` (report the current page's joined text) so a surface can

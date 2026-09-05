@@ -13,7 +13,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, textContainsQuote, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -405,25 +405,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   // quote markers with prose. `renderInlineQuotes` splits the raw text on those
   // markers and renders each as a small tappable chip INLINE at its position
   // (RN's <Text> nests), rather than stripping them out and piling every chip
-  // at the bottom. Validated quotes (present in the reader content) only.
-  const quoteSources = readerContent
-    ? [
-        readerContent.text,
-        readerContent.page,
-        readerContent.chapter ?? '',
-        readerContent.bookUpToChapter ?? '',
-      ].filter((s): s is string => Boolean(s))
-    : [];
-  const validateQuote =
-    quoteSources.length === 0
-      ? (() => true)
-      : (original: string) => quoteSources.some((s) => textContainsQuote(original, s));
-
+  // at the bottom. Every marker renders as a chip (the model is asked to quote
+  // exactly; a chip whose passage isn't verbatim simply opens a search that
+  // finds nothing rather than dropping the quote and leaving a gap).
   const renderInlineQuotes = useCallback(
     (text: string) => {
-      const segments = splitAiQuotes(text).filter(
-        (seg) => seg.type === 'text' || validateQuote(seg.original),
-      );
+      const segments = splitAiQuotes(text);
       return (
         <Text className="text-sm leading-relaxed text-foreground">
           {segments.map((seg, i) =>
@@ -448,7 +435,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         </Text>
       );
     },
-    [onQuotePress, validateQuote],
+    [onQuotePress],
   );
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
