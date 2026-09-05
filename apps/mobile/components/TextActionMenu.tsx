@@ -17,6 +17,15 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { MoreVertical, X } from 'lucide-react-native';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
+import {
+  ACTION_TRIGGER_DEFAULT_LEADING,
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerBoxPx,
+  actionTriggerFontPx,
+  actionTriggerIconPx,
+} from '@langplayer/utils';
 
 interface TextActionMenuProps {
   /** Plain text content to act on. */
@@ -34,6 +43,11 @@ interface TextActionMenuProps {
   centered?: boolean;
   /** Keeps the content row intrinsic-width instead of stretching it. */
   fitContent?: boolean;
+  /** Extra multiplier on top of the user's zoom for the ⋮ trigger's size.
+   *  Must match the `textScale` the adjacent tokenized text renders with
+   *  (1.33 for single-line subtitles — SPEC-051's only non-default value);
+   *  default 1. */
+  triggerTextScale?: number;
   children: React.ReactNode;
 }
 
@@ -47,10 +61,19 @@ type ActionKind = 'explain' | 'translate';
  * AI explain and translate open their own result modals.
  */
 export function TextActionMenu(props: TextActionMenuProps) {
-  const { text, l2Code, l1Code, context, className, centered = false, fitContent = false, children } = props;
+  const { text, l2Code, l1Code, context, className, centered = false, fitContent = false, triggerTextScale = 1, children } = props;
   const { l1Lang, l2Lang } = useLanguage();
   const effectiveL1 = l1Code ?? l1Lang.code;
   const t = useT();
+  // ── Trigger geometry (shared rule, see @langplayer/utils/action-trigger) ──
+  // The ⋮ trigger scales with the adjacent L2 text: the icon is the text's
+  // rendered font size and the tap box spans one line pitch (font × leading),
+  // so the icon centers vertically on the first line at any zoom/leading.
+  // No `mt-1` — the box top edge IS the first line's top edge.
+  const { tokenizedText: triggerTokenSettings } = useSettingsContext();
+  const triggerFontPx = actionTriggerFontPx(ZOOM_TO_REM[triggerTokenSettings.zoom] ?? 1, triggerTextScale);
+  const triggerBoxPx = actionTriggerBoxPx(triggerFontPx, triggerTokenSettings.leading ?? ACTION_TRIGGER_DEFAULT_LEADING);
+  const triggerIconPx = actionTriggerIconPx(triggerFontPx);
   const { speak: speakTts, stop: stopTts, isSpeaking } = useSpeech();
   const {
     text: explainText,
@@ -198,11 +221,12 @@ export function TextActionMenu(props: TextActionMenuProps) {
       actions={actions}
     >
       <Pressable
-        className="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
+        className="items-center justify-center rounded-md active:bg-muted"
+        style={{ width: ACTION_TRIGGER_SIZE_PX, height: triggerBoxPx }}
         hitSlop={6}
         accessibilityRole="button"
       >
-        <MoreVertical size={16} color={ICON_MUTED} />
+        <MoreVertical size={triggerIconPx} color={ICON_MUTED} />
       </Pressable>
     </MenuView>
   );

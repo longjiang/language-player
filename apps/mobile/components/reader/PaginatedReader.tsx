@@ -27,6 +27,11 @@ import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-hi
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import { computeRubyLayout, typeFaceFontFamily } from '@/lib/ruby-layout';
 import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
+import {
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerBoxPx,
+  actionTriggerFontPx,
+} from '@langplayer/utils';
 
 const { log } = readerLogger;
 const displayLoggedState = new WeakMap<ContentBlock, boolean>();
@@ -573,6 +578,13 @@ export function PaginatedReader({
     lineHeight: measureLineHeight,
     ...(measureFontFamily ? { fontFamily: measureFontFamily } : {}),
   }), [measureFontSize, measureLineHeight, measureFontFamily]);
+  // The visible TextActionMenu's ⋮ trigger box is one line pitch of the
+  // adjacent L2 text (shared trigger geometry, @langplayer/utils) — the
+  // measuring mirror's spacer column must match it exactly.
+  const actionTriggerBoxHeight = actionTriggerBoxPx(
+    actionTriggerFontPx(effectiveScale),
+    tokenSettings.leading,
+  );
 
   // ── Swipe/flick left/right page turns (drag follows the finger) ──
   // The pan is tuned for flicks: it activates on a small horizontal offset,
@@ -1030,6 +1042,7 @@ export function PaginatedReader({
                 firstLineIndent,
                 readerPad.left,
                 maxImageHeight,
+                actionTriggerBoxHeight,
               ),
             );
           })()}
@@ -1522,14 +1535,22 @@ function renderMeasuringBlock(
    *  full leading — keeps the L2 column width identical to the visible row. */
   measureGap = 16,
   maxImageHeight = 0,
+  /** Height of the ⋮ action-trigger spacer (px) — one line pitch of the
+   *  adjacent L2 text (shared trigger geometry, @langplayer/utils). */
+  actionTriggerBoxHeight = 0,
 ) {
   /** Mirrors TextActionMenu's persistent ⋮ button column so short body
-   *  blocks don't measure shorter than they render. */
+   *  blocks don't measure shorter than they render. Shared trigger geometry
+   *  (see @langplayer/utils/action-trigger) — height = one line pitch of the
+   *  measure text, matching TextActionMenu's trigger box. */
   const withActionSpacer = (content: React.ReactNode) => (
     showTextActions ? (
       <View className="flex-row items-start gap-1">
         <View className="flex-1 min-w-0">{content}</View>
-        <View className="mt-1 h-7 w-7 shrink-0" />
+        <View
+          className="shrink-0"
+          style={{ width: ACTION_TRIGGER_SIZE_PX, height: actionTriggerBoxHeight }}
+        />
       </View>
     ) : content
   );
