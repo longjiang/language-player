@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -257,11 +258,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
         if (abs(event.x - downX) <= slop && abs(event.y - downY) <= slop) {
           val layout = layout
           if (layout != null) {
-            // getOffsetForPosition is a TextView method (not on Layout on
-            // this compile stub); Layout exposes getOffsetForHorizontal.
-            val offset = getOffsetForPosition(event.x, event.y)
+            val offset = characterOffsetAt(layout, event.x, event.y)
             val run = runAt(offset)
             if (run?.tappable == true) {
+              Log.i(
+                "LP Mobile",
+                "[RubyText] paragraph tap x=${event.x.toInt()} y=${event.y.toInt()} offset=$offset token=${run.tokenId} text=\"${run.text}\""
+              )
               onTokenTap(mapOf("tokenId" to run.tokenId))
             }
           }
@@ -269,6 +272,40 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       }
     }
     return super.onTouchEvent(event)
+  }
+
+  /** Code-unit offset of the CHARACTER under (x, y).
+   *
+   *  `getOffsetForPosition` (→ `Layout.getOffsetForHorizontal`) returns the
+   *  closest character BOUNDARY (insertion point), not the character under
+   *  the finger: a tap on the right half of a glyph resolved to the boundary
+   *  AFTER it, so tapping the last character of a token opened the NEXT
+   *  token's popup (e.g. 人 ending a wrapped reader line opened 也 — the next
+   *  line's first token; 2026-09-04 report). Two corrections:
+   *  1. A tap past a line's end is clamped to the line's LAST character
+   *     (the boundary answer is the next line's start offset).
+   *  2. Otherwise the tap x is compared against the boundary's caret x
+   *     (`getPrimaryHorizontal`) — left of it (right of it on RTL lines)
+   *     belongs to the character BEFORE the boundary. Mirrors iOS
+   *     `characterOffset(at:)` in RubyTextParagraphView.swift. */
+  private fun characterOffsetAt(layout: Layout, x: Float, y: Float): Int {
+    val line = layout.getLineForVertical(y.toInt())
+    var offset = layout.getOffsetForHorizontal(line, x)
+    val lineEnd = layout.getLineEnd(line)
+    if (lineEnd <= layout.getLineStart(line)) {
+      // Empty line (e.g. after a trailing \n run): no character to enclose.
+      return lineEnd
+    }
+    if (offset >= lineEnd) {
+      return lineEnd - 1
+    }
+    if (offset > layout.getLineStart(line)) {
+      val isRtlLine = layout.getParagraphDirection(line) == Layout.DIR_RIGHT_TO_LEFT
+      val boundaryX = layout.getPrimaryHorizontal(offset)
+      val onPreviousSide = if (isRtlLine) x > boundaryX else x < boundaryX
+      if (onPreviousSide) offset -= 1
+    }
+    return offset
   }
 
   /** The run containing [offset] in the built base-text string, or null when

@@ -200,10 +200,57 @@ internal final class RubyTextParagraphView: ExpoView {
   @objc
   private func handleTap(_ gesture: UITapGestureRecognizer) {
     let point = gesture.location(in: textView)
-    guard let position = textView.closestPosition(to: point) else { return }
-    let offset = textView.offset(from: textView.beginningOfDocument, to: position)
+    guard let offset = characterOffset(at: point) else { return }
     guard let run = run(atUtf16Offset: offset), run.tappable else { return }
+    print("[LP Mobile] [RubyTextParagraph] tap x=\(Int(point.x)) y=\(Int(point.y)) offset=\(offset) token=\(run.tokenId) text=\"\(run.text)\"")
     onTokenTap(["tokenId": run.tokenId])
+  }
+
+  /// UTF-16 offset of the CHARACTER under `point`.
+  ///
+  /// `closestPosition(to:)` returns the closest character BOUNDARY (insertion
+  /// point), not the character under the finger: a tap on the right half of a
+  /// glyph resolved to the boundary AFTER it, so tapping the last character of
+  /// a token opened the NEXT token's popup (e.g. 人 ending a wrapped reader
+  /// line opened 也, the next line's first token — 2026-09-04 report).
+  /// `characterRange(at:)` can't decide this either (its UITextView
+  /// implementation is itself boundary-derived and imprecise at glyph edges),
+  /// so the boundary is disambiguated from caret GEOMETRY, mirroring
+  /// `characterOffsetAt` on Android:
+  ///   1. The boundary caret on a DIFFERENT line than the tap (the next
+  ///      line's start — tapping a wrapped line's last glyph or its trailing
+  ///      empty space) resolves to the character BEFORE the boundary.
+  ///   2. Same line: a tap left of the boundary caret (right of it on RTL
+  ///      lines) belongs to the character before the boundary.
+  /// Only `caretRect(for:)`/`baseWritingDirection` are used — UITextInput
+  /// geometry queries the selection engine already drives; no
+  /// `textView.layoutManager` access (ARCH-030 hard rule 1).
+  private func characterOffset(at point: CGPoint) -> Int? {
+    guard let position = textView.closestPosition(to: point) else { return nil }
+    let boundary = textView.offset(from: textView.beginningOfDocument, to: position)
+    guard boundary > 0,
+          let previous = textView.position(from: position, offset: -1) else { return boundary }
+    let caret = textView.caretRect(for: position)
+    let previousCaret = textView.caretRect(for: previous)
+    // A null/zero-height rect means that position isn't laid out yet — keep
+    // the boundary answer rather than guessing from garbage geometry.
+    // (Width is not checked: insertion-point carets can be hairline.)
+    if caret.isNull || caret.height <= 0 || previousCaret.isNull || previousCaret.height <= 0 {
+      return boundary
+    }
+    let previousOffset = textView.offset(from: textView.beginningOfDocument, to: previous)
+
+    // Correction 1: the boundary sits on another line than the tap.
+    let inBoundaryLine = point.y >= caret.minY && point.y <= caret.maxY
+    let inPreviousLine = point.y >= previousCaret.minY && point.y <= previousCaret.maxY
+    if !inBoundaryLine && inPreviousLine {
+      return previousOffset
+    }
+
+    // Correction 2: same line — pick the side of the boundary caret.
+    let rtl = textView.baseWritingDirection(for: position, in: .forward) == .rightToLeft
+    let onPreviousSide = rtl ? point.x > caret.midX : point.x < caret.midX
+    return onPreviousSide ? previousOffset : boundary
   }
 
   private func run(atUtf16Offset offset: Int) -> RubyTextParagraphRun? {
