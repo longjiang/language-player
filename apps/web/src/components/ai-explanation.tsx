@@ -9,7 +9,6 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useStreamingExplanation, type StreamDiagnostics, type StreamHistoryTurn } from '@langplayer/api-client';
 import {
   buildWordExplainPrompt,
-  textContainsQuote,
   presetKey,
   READER_AI_QUOTE_INSTRUCTION,
   READER_AI_SUMMARY_INSTRUCTION,
@@ -332,25 +331,14 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Reader "Ask AI": stable config for rendering [[original||translation]]
   // quote chips inline. Memoized (not recreated per message/effect) so the
   // MarkdownExplanation `components` object keeps a stable identity and
-  // doesn't remount tokenized spans on every re-render. Validation drops
-  // hallucinated / abbreviated quotes not actually present in the reader
-  // content.
+  // doesn't remount tokenized spans on every re-render. Every marker renders
+  // as a tappable chip (the model is asked to quote exactly; a chip whose
+  // passage isn't verbatim simply opens a search that finds nothing rather
+  // than dropping the quote and leaving a gap).
   const readerQuoteChipsConfig = useMemo(() => {
     if (!quoteChips || !onQuotePress) return undefined;
-    const quoteSources = readerContent
-      ? [
-          readerContent.text,
-          readerContent.page,
-          readerContent.chapter ?? '',
-          readerContent.bookUpToChapter ?? '',
-        ].filter((s): s is string => Boolean(s))
-      : [];
-    const validateQuote =
-      quoteSources.length === 0
-        ? (() => true)
-        : (original: string) => quoteSources.some((s) => textContainsQuote(original, s));
-    return { onQuotePress, validate: validateQuote };
-  }, [quoteChips, onQuotePress, readerContent]);
+    return { onQuotePress };
+  }, [quoteChips, onQuotePress]);
 
   // ── "Examples from Videos" follow-up ──
   // 1. Search subtitles (limit 50) for the word being explained.

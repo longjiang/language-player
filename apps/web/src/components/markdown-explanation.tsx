@@ -16,11 +16,9 @@ interface MarkdownExplanationProps {
   streaming?: boolean;
   /** Reader "Ask AI": render `[[original||translation]]` markers as small
    *  tappable chips INLINE at the position the model placed them (instead of
-   *  raw text). `onQuotePress` opens the reader search; `validate` drops
-   *  hallucinated / abbreviated quotes (returns false). */
+   *  raw text). `onQuotePress` opens the reader search. */
   quoteChips?: {
     onQuotePress: (original: string) => void;
-    validate?: (original: string) => boolean;
   };
 }
 
@@ -99,7 +97,6 @@ export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChip
         const o = String(original ?? '').trim();
         const t = String(translation ?? '').trim();
         if (!o) return null;
-        if (quoteChips.validate && !quoteChips.validate(o)) return null;
         return (
           <button
             type="button"
