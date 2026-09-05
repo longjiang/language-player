@@ -9,10 +9,10 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useStreamingExplanation, type StreamDiagnostics, type StreamHistoryTurn } from '@langplayer/api-client';
 import {
   buildWordExplainPrompt,
-  parseAiQuotes,
-  filterReaderQuotes,
+  textContainsQuote,
   presetKey,
   READER_AI_QUOTE_INSTRUCTION,
+  READER_AI_SUMMARY_INSTRUCTION,
   type AiFollowUpPreset,
   type ReaderAiContent,
 } from '@langplayer/utils';
@@ -273,8 +273,9 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     });
     // Content-based presets (reader summaries) are prose in L1, not interactive
     // L2 text — skip the backtick-formatting instruction and instead ask the
-    // model to cite exact passages as [[original||translation]] quote chips.
-    if (contentKey) return `${body}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
+    // model for a concise overview supported by a few inline [[original||translation]]
+    // quote chips.
+    if (contentKey) return `${body}\n\n${READER_AI_SUMMARY_INSTRUCTION}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent]);
@@ -327,6 +328,29 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
     return turns;
   }, [messages]);
+
+  // Reader "Ask AI": stable config for rendering [[original||translation]]
+  // quote chips inline. Memoized (not recreated per message/effect) so the
+  // MarkdownExplanation `components` object keeps a stable identity and
+  // doesn't remount tokenized spans on every re-render. Validation drops
+  // hallucinated / abbreviated quotes not actually present in the reader
+  // content.
+  const readerQuoteChipsConfig = useMemo(() => {
+    if (!quoteChips || !onQuotePress) return undefined;
+    const quoteSources = readerContent
+      ? [
+          readerContent.text,
+          readerContent.page,
+          readerContent.chapter ?? '',
+          readerContent.bookUpToChapter ?? '',
+        ].filter((s): s is string => Boolean(s))
+      : [];
+    const validateQuote =
+      quoteSources.length === 0
+        ? (() => true)
+        : (original: string) => quoteSources.some((s) => textContainsQuote(original, s));
+    return { onQuotePress, validate: validateQuote };
+  }, [quoteChips, onQuotePress, readerContent]);
 
   // ── "Examples from Videos" follow-up ──
   // 1. Search subtitles (limit 50) for the word being explained.
@@ -731,24 +755,8 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                   });
                 }
                 const isExamplesMessage = (message.examples?.length ?? 0) > 0;
-                const parsedQuotes = quoteChips && onQuotePress && message.text
-                  ? parseAiQuotes(message.text)
-                  : null;
-                const cleanText = parsedQuotes ? parsedQuotes.clean : message.text;
-                // Only render quotes that actually appear in the reader content
-                // (drop hallucinated / abbreviated ones), and without any
-                // wrapping quote marks.
-                const quoteContent = readerContent
-                  ? [
-                      readerContent.text,
-                      readerContent.page,
-                      readerContent.chapter ?? '',
-                      readerContent.bookUpToChapter ?? '',
-                    ]
-                  : [];
-                const quotes = parsedQuotes
-                  ? filterReaderQuotes(parsedQuotes.quotes, quoteContent)
-                  : [];
+                const quoteChipsConfig =
+                  readerQuoteChipsConfig && message.text ? readerQuoteChipsConfig : undefined;
                 return (
                   <div key={message.id} className="flex justify-start">
                     <div className="max-w-[95%]">
@@ -763,28 +771,13 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                     ) : message.text ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
                         <MarkdownExplanation
-                          text={cleanText}
+                          text={message.text}
                           l2Code={l2.code}
                           streaming={loading && message.id === streamingId}
+                          quoteChips={quoteChipsConfig}
                         />
                       </div>
                     ) : null}
-                    {quotes.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {quotes.map((q, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => onQuotePress?.(q.original)}
-                            title={t('action.search')}
-                            className="flex max-w-full flex-col gap-0.5 rounded-lg border border-border bg-muted/60 px-2 py-1 text-left transition-colors hover:border-primary hover:bg-muted"
-                          >
-                            <span className="truncate text-xs font-medium text-foreground">{q.original}</span>
-                            <span className="truncate text-[11px] text-muted-foreground">{q.translation}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                     {isExamplesMessage && (
                       <div className="mt-2 space-y-2">
                         {message.pattern && (
