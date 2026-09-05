@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { cleanAiQuote } from '@langplayer/utils';
 import { TokenizedText } from '@/components/tokenized-text';
 
 interface MarkdownExplanationProps {
@@ -40,8 +41,8 @@ function remarkReaderQuote() {
       for (const m of matches) {
         const start = m.index ?? 0;
         if (start > last) children.push({ type: 'text', value: value.slice(last, start) });
-        const original = (m[1] ?? '').trim();
-        const translation = (m[2] ?? '').trim();
+        const original = cleanAiQuote(m[1] ?? '');
+        const translation = cleanAiQuote(m[2] ?? '');
         if (original) {
           children.push({
             type: 'quoteChip',
