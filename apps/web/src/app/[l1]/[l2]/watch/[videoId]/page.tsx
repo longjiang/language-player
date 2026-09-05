@@ -78,6 +78,11 @@ export default function WatchPage() {
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
+  const col1Ref = useRef<HTMLDivElement>(null);
+  // Visible height of the scrollable left column (SPEC-010 wide layout). The
+  // player contain-fits against this so a non-16:9 video (e.g. 4:3) renders
+  // larger instead of being letterboxed inside a forced 16:9 box.
+  const [playerAvailHeight, setPlayerAvailHeight] = useState(0);
   const [isWide, setIsWide] = useState(false);
   const isWideRef = useRef(isWide);
   isWideRef.current = isWide;
@@ -125,6 +130,22 @@ export default function WatchPage() {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // Measure the visible height of the left column so the player can contain-fit
+  // to it (SPEC-010 wide layout). Re-measures on resize / layout changes.
+  useEffect(() => {
+    const el = col1Ref.current;
+    if (!el) return;
+    const update = () => setPlayerAvailHeight(el.clientHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   useEffect(() => {
@@ -300,6 +321,10 @@ export default function WatchPage() {
       onTimeUpdate={handleTimeUpdate}
       onDuration={handleDuration}
       onStateChange={handleStateChange}
+      // SPEC-010 wide layout: contain-fit non-16:9 videos to the visible part
+      // of the scrollable column. Only on widescreen (narrow keeps 16:9).
+      aspectRatio={isWide ? video?.aspect_ratio : undefined}
+      availableHeight={isWide ? playerAvailHeight || undefined : undefined}
     />
   );
 
@@ -356,7 +381,7 @@ export default function WatchPage() {
     <div className={outerClass}>
       <div className={layoutClass}>
         {/* Player slot — same tree position in every mode */}
-        <div className={col1Class}>
+        <div ref={col1Ref} className={col1Class}>
           <div ref={videoWrapperRef} className={playerSlotClass}>
             {playerElement}
           </div>

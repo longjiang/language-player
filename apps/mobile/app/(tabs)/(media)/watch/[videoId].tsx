@@ -85,6 +85,9 @@ export default function WatchScreen() {
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
   const [playerContainerWidth, setPlayerContainerWidth] = useState(0);
+  // Visible height of the player column (SPEC-010 wide layout) — the player
+  // contain-fits against this so a non-16:9 video renders larger.
+  const [playerAvailHeight, setPlayerAvailHeight] = useState(0);
   const [subtitleLines, setSubtitleLines] = useState<SubtitleSyncedLine[]>([]);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
@@ -206,6 +209,9 @@ export default function WatchScreen() {
           channel_id: rawVideo.channel_id,
           tv_show: rawVideo.tv_show,
           tags: rawVideo.tags,
+          // SPEC-010: native aspect ratio (width/height) — lets the player
+          // contain-fit non-16:9 videos instead of forcing a 16:9 box.
+          aspect_ratio: rawVideo.aspect_ratio,
         };
         setVideo(v);
         setDuration(v.duration ?? 0);
@@ -384,6 +390,10 @@ export default function WatchScreen() {
       // Prevent the iframe from sizing to the full window in landscape —
       // it must fit the measured player column (SPEC-052 watch parity).
       containerWidth={playerContainerWidth || undefined}
+      // SPEC-010 wide layout: contain-fit non-16:9 videos to the visible part
+      // of the column. Only on widescreen (narrow keeps 16:9).
+      aspectRatio={isWide ? v.aspect_ratio : undefined}
+      availableHeight={isWide ? (playerAvailHeight || undefined) : undefined}
     />
   );
 
@@ -396,6 +406,7 @@ export default function WatchScreen() {
           onLayout={(e) => {
             setPlayerContainerWidth(e.nativeEvent.layout.width);
             const frameHeight = e.nativeEvent.layout.height;
+            setPlayerAvailHeight(frameHeight);
             bandFrameHeightRef.current = frameHeight;
             if (bandTopRef.current !== null && bandHeightRef.current > 0) {
               const maxTop = Math.max(0, frameHeight - bandHeightRef.current);
@@ -547,7 +558,10 @@ export default function WatchScreen() {
     <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 bg-background">
       {/* Wide (landscape): player + info left, transcript/queue right column */}
       <View className={isWide ? 'flex-1 flex-row min-h-0' : 'flex-1 min-h-0'}>
-        <View className={isWide ? 'min-w-0 flex-1 space-y-4 overflow-y-auto px-4 py-6' : ''}>
+        <View
+          className={isWide ? 'min-w-0 flex-1 space-y-4 overflow-y-auto px-4 py-6' : ''}
+          onLayout={isWide ? (e) => setPlayerAvailHeight(e.nativeEvent.layout.height) : undefined}
+        >
           <View onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}>
             {playerElement}
           </View>
