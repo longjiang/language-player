@@ -263,6 +263,14 @@ Two-row layout: controls on top, subtitle text below.
 
 **Rewind**: tapping any empty space in the subtitle row seeks to the start of the current line. `R` key has the same effect. No visual button.
 
+> **Popup-dismissal guard:** the subtitle row's tap-to-rewind is suppressed
+> while a dictionary popup dialog is open and for a short window after it
+> closes (`isReaderTapSuppressed`, shared with the EPUB reader). Without this,
+> the click that dismisses the popup is re-targeted onto the row beneath as
+> the dialog overlay unmounts, seeking back to the line start and "replaying"
+> the line. Closing the popup dictionary must never affect video playback.
+> The same guard covers the singleline and multiline click-to-seek surfaces.
+
 **Positioning:**
 - **Wide (w:h > 1)**: `absolute bottom-14 left-4 right-4 z-10` — overlays the video.
 - **Narrow (w:h ≤ 1)**: Fixed-height block below the player (not absolute).

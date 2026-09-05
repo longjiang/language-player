@@ -12,6 +12,8 @@ import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isReaderTapSuppressed } from '@/lib/reader-tap-guard';
+import { log } from '@/lib/logger';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import type { SubtitleLine } from '@langplayer/shared';
@@ -375,6 +377,16 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   }, [bandActiveIndex, bandLines, onSeekToLine, bandIsLastLine]);
   const handleBandRowClick = useCallback(
     (e: React.MouseEvent) => {
+      // A dismissing dictionary-popup Dialog (Radix portal) can re-target its
+      // click onto whatever is under the pointer as the overlay unmounts. When
+      // that lands on the band row, the "tap empty space to rewind" rule below
+      // fires and replays the current line. Suppress it: closing the popup
+      // must never affect playback (isReaderTapSuppressed is true while a
+      // dialog overlay is mounted and for a short window after it closes).
+      if (isReaderTapSuppressed()) {
+        log('subtitle band row click suppressed (dictionary dialog dismissal)');
+        return;
+      }
       if (bandActiveLine && e.target === e.currentTarget) {
         onSeekToLine?.(bandActiveLine.starttime);
       }
@@ -598,7 +610,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           >
             <div
               className="text-center text-xl font-medium leading-relaxed cursor-pointer"
-              onClick={() => onSeekToLine?.(shownLine.starttime)}
+              onClick={() => {
+                // A dismissing dictionary popup must not replay the line via
+                // this click-to-seek surface either (see handleBandRowClick).
+                if (!isReaderTapSuppressed()) onSeekToLine?.(shownLine.starttime);
+              }}
             >
               <TokenizedText
                 text={shownLine.line}
@@ -657,7 +673,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             <div
               key={i}
               data-subtitle-index={i}
-              onClick={() => onSeekToLine?.(line.starttime)}
+              onClick={() => {
+                // A dismissing dictionary popup must not replay this line via
+                // the click-to-seek row either (see handleBandRowClick).
+                if (!isReaderTapSuppressed()) onSeekToLine?.(line.starttime);
+              }}
               className={`cursor-pointer rounded-lg px-3 py-2 transition-colors ${
                 isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-muted/50'
               }`}
