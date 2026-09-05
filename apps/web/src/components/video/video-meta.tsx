@@ -3,6 +3,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { getLevelFromDifficulty, formatNumericLevel, primaryScale, youTubeCategoryLabel } from '@langplayer/shared';
 import { levelSubtleClass } from '@/lib/level-colors';
 import { displayLanguageName } from '@/lib/language-data';
+import { TVShowBadge } from '@/components/video/tv-show-badge';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
@@ -75,6 +76,7 @@ export function VideoMeta({ video }: VideoMetaProps) {
             {youTubeCategoryLabel(Number(video.category), t, (id) => t('label.category_n', { n: id }))}
           </span>
         )}
+        {video.tv_show && <TVShowBadge tvShowId={video.tv_show} />}
       </div>
     </div>
   );

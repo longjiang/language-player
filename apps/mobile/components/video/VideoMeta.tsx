@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { TVShowBadge } from '@/components/video/TVShowBadge';
 
 interface VideoMetaProps {
   video: YouTubeVideo;
@@ -116,6 +117,7 @@ export function VideoMeta({ video }: VideoMetaProps) {
             </Text>
           </View>
         )}
+        {video.tv_show && <TVShowBadge tvShowId={String(video.tv_show)} />}
       </View>
     </View>
   );
