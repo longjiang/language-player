@@ -2,9 +2,9 @@
 
 - **Status**: Accepted
 - **Created**: 2026-08-15
-- **Last updated**: 2026-09-03 (Android paragraph described as implemented:
+- **Last updated**: 2026-09-04 (Android paragraph described as implemented:
   AppCompatTextView + spans, span-free plain runs; reading-less word runs get
-  styling spans + offset-based taps; line grid in dp;
+  styling spans + character-resolved taps; line grid in dp;
   LineHeightSpan baseline pin)
 - **Scope**: Mobile (`apps/mobile`)
 
@@ -75,8 +75,11 @@ line as a single layout):
   TextView's own path with non-atomic styling spans (`ForegroundColorSpan`,
   `StyleSpan`, `UnderlineSpan`, `BackgroundColorSpan`) so their color matches
   ruby-bearing neighbors (without them they rendered dimmer — 2026-09-03
-  Android fix). Taps map the touched offset to its run by offset arithmetic
-  (`runRanges`), so reading-less word runs stay tappable like iOS.
+  Android fix). Taps resolve the CHARACTER under the finger — offset
+  arithmetic over `runRanges` (reading-less word runs stay tappable like
+  iOS) fed by a boundary-disambiguated hit test: `getOffsetForPosition`
+  returns the closest character BOUNDARY, so right-half glyph taps used to
+  open the NEXT token's popup (2026-09-04 fix; see ARCH-030 "Tap mapping").
   The line box is pinned with a `LineHeightSpan` (2026-09-03 baseline fix,
   supersedes the original `setLineSpacing` pin): the extra leading is
   absorbed into the TOP of each line so span-free runs and ruby spans share

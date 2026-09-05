@@ -6,7 +6,10 @@
 - **Type**: as-built + reference
 - **Status**: accepted
 - **Created**: 2026-08-16
-- **Last Updated**: 2026-09-03 (Android line-grid units; span-free plain runs; reading-less word-run color parity + offset-based taps; serif exception; Android baseline pin — one baseline per line)
+- **Last Updated**: 2026-09-04 (tap mapping — character hit-test, not boundary;
+  Android line-grid units; span-free plain runs; reading-less word-run color
+  parity + offset-based taps; serif exception; Android baseline pin — one
+  baseline per line)
 - **ROADMAP Phase**: Cross-cutting (mobile rendering)
 - **Scope**: Mobile (`apps/mobile/modules/ruby-text`, `apps/mobile/components/RubyText.tsx`, `apps/mobile/components/TokenizedText.tsx`)
 - **See also**:
@@ -334,6 +337,50 @@ Verification from `adb logcat` (`[RubyText] paragraph rebuild …
 pin(add=… ascent=… descent=…)`): `add + ascent + descent` must equal the
 pinned `dp(lineHeight)`; the `line-grid-android` line baselines are the
 ruby-correct geometry the translation column aligns to.
+
+### Tap mapping (2026-09-04 — character hit-test, not boundary)
+
+A tap must resolve to the token whose **glyphs** are under the finger, but
+both platform primitives the paragraph views originally used return the
+closest character **boundary** (insertion point) instead:
+
+- iOS `UITextView.closestPosition(to:)` — "the position in a document that is
+  closest to a specified point".
+- Android `TextView.getOffsetForPosition` → `Layout.getOffsetForHorizontal` —
+  "the character offset whose **position** is closest to the specified
+  horizontal position" (AOSP `Layout.java`).
+
+A tap on the **right half** of a glyph therefore resolved to the boundary
+**after** it — the next run — and the next token's popup opened. The report
+that exposed it: tapping the last character of a token (人) that ends a
+wrapped reader line opened the next line's first token (也).
+
+Both views now disambiguate the boundary from caret geometry
+(`characterOffset(at:)` on iOS, `characterOffsetAt` in
+`RubyTextParagraphView.kt` — same two rules):
+
+1. **Past-the-line-end clamp**: a boundary on a different line than the tap
+   (Android: returned offset ≥ the line's end; iOS: the boundary caret's line
+   does not contain the tap y) is the next line's start — resolve to the
+   character BEFORE the boundary (the tapped line's last character).
+2. **Caret-side split** (same line): a tap left of the boundary caret
+   (`caretRect(for:)` on iOS, `Layout.getPrimaryHorizontal` on Android; the
+   right side on RTL lines/paragraphs) belongs to the character before the
+   boundary.
+
+Constraints: iOS uses only `caretRect(for:)` + `baseWritingDirection`
+(UITextInput queries the selection engine already drives — never
+`textView.layoutManager`, [hard rule 1](#hard-rules)). `characterRange(at:)`
+was considered and rejected as the decider: its UITextView implementation is
+itself boundary-derived and imprecise at glyph edges. Android's
+empty-line case (`lineEnd == lineStart`, e.g. after a trailing `\n` run)
+returns the boundary unchanged.
+
+**Verification**: both platforms print a `paragraph tap` diagnostic line —
+tap point, resolved offset, tokenId, and run text — so a wrong-token report
+is traceable against the `attach-ruby` run ranges in the device console
+(`xcrun devicectl device process launch --console` on iOS, `adb logcat` on
+Android).
 
 ### Base font / CJK glyphs (2026-08-24)
 
