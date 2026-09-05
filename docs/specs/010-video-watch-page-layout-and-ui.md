@@ -86,6 +86,24 @@ The mode can be toggled via:
 
 ### Layout: Wide Screen (aspect ratio w:h > 1)
 
+> **Video contain-fit (SPEC-010 addition):** The player is no longer locked
+> to a 16:9 box in widescreen. Because YouTube letterboxes content inside the
+> embed iframe, a 4:3 clip forced into a 16:9 container renders small with
+> black bars. The backend now supplies a native `aspect_ratio` field on the
+> video object (from YouTube's `player.embedWidth`/`embedHeight`). When it's
+> present, the player additionally receives the **visible height of the left
+> column**, and sizes itself to the largest rectangle of that aspect ratio
+> that fits inside `column width × visible height` — its width equal to the
+> column width OR its height equal to the visible part of the column,
+> whichever yields the bigger fit. So a 4:3 video renders larger (e.g. 4:3,
+> not letterboxed 16:9); a genuine 16:9 video is unchanged. When no
+> `aspect_ratio` is available, the player falls back to a 16:9 box. The
+> contain-fit runs in both transcript mode and subtitles mode, and only on
+> widescreen (narrow keeps 16:9).
+>
+> Rewind detail: the player is centered horizontally in the column; the
+> subtitle band still overlays it as before.
+
 #### Transcript Mode (reduced control bar, side panel open)
 
 ```

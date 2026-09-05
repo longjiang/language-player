@@ -34,6 +34,12 @@ export interface YouTubeVideo {
   type?: string;
   made_for_kids?: boolean;
   channel_id?: string;
+  /** Native aspect ratio (width ÷ height) of the video content — e.g. 16/9 ≈
+   *  1.778, 4/3 ≈ 1.333. Populated from YouTube's player.embedWidth/Height.
+   *  When present the player can contain-fit to the column instead of forcing
+   *  a 16:9 box, so odd aspect ratios (e.g. 4:3 TV shows) render larger
+   *  without letterboxing (SPEC-010 wide layout). */
+  aspect_ratio?: number;
 }
 
 /** A video the user has liked, as returned by GET /likes. */

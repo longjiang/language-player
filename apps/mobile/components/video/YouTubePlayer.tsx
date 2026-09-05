@@ -56,6 +56,15 @@ interface YouTubePlayerProps {
   onError?: (error: Error, info?: { messageKey: string; skippable: boolean }) => void;
   /** Width of the parent container. When provided, overrides useWindowDimensions to prevent overflow. */
   containerWidth?: number;
+  /** Native aspect ratio (width ÷ height) of the video content, from YouTube
+   *  metadata (e.g. ~1.778 for 16:9, ~1.333 for 4:3). Defaults to 16:9. When
+   *  combined with `availableHeight`, the player contain-fits to its column so
+   *  non-16:9 videos render larger without pillarboxing (SPEC-010 wide). */
+  aspectRatio?: number;
+  /** Max height (px) the player may occupy — the visible part of the column.
+   *  When set (with `aspectRatio`), the player is contained rather than
+   *  stretched to the column's full width. */
+  availableHeight?: number;
 }
 
 export interface YouTubePlayerHandle {
@@ -67,7 +76,7 @@ export interface YouTubePlayerHandle {
 }
 
 export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
-  function YouTubePlayer({ youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange, onError, containerWidth }, ref) {
+  function YouTubePlayer({ youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange, onError, containerWidth, aspectRatio, availableHeight }, ref) {
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
     const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -76,7 +85,12 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const t = useT();
     const { width: screenWidth } = useWindowDimensions();
     const playerWidth = containerWidth ?? screenWidth;
-    const videoHeight = (playerWidth / 16) * 9;
+    // SPEC-010 wide layout: contain-fit to the available height using the
+    // video's native aspect ratio. Defaults to 16:9 (matches prior behaviour).
+    const AR = aspectRatio && aspectRatio > 0 ? aspectRatio : 16 / 9;
+    const availH = availableHeight && availableHeight > 0 ? availableHeight : null;
+    const videoWidth = availH ? Math.min(playerWidth, availH * AR) : playerWidth;
+    const videoHeight = videoWidth / AR;
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pollInFlightRef = useRef(false);
@@ -176,7 +190,10 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     if (errorKey) {
       const embedBlocked = errorKey === 'msg.youtube_error_embed_disabled';
       return (
-        <View style={{ width: playerWidth, height: videoHeight }} className="items-center justify-center gap-2 bg-muted p-4">
+        <View
+          className="items-center justify-center gap-2 bg-muted p-4"
+          style={{ width: videoWidth, height: videoHeight, alignSelf: availH ? 'center' : undefined }}
+        >
           <Text className="text-center text-sm text-muted-foreground">{t(errorKey)}</Text>
           {embedBlocked && (
             <Pressable
@@ -209,7 +226,10 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     };
 
     return (
-      <View className="w-full bg-black" style={{ height: videoHeight }}>
+      <View
+        className={`bg-black ${availH ? '' : 'w-full'}`}
+        style={{ width: videoWidth, height: videoHeight, alignSelf: availH ? 'center' : undefined }}
+      >
         {!ready && (
           <View className="absolute inset-0 items-center justify-center">
             <ActivityIndicator size="large" color={ICON_ON_PRIMARY} />
@@ -219,7 +239,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           ref={playerRef}
           play={autoplay}
           height={videoHeight}
-          width={playerWidth}
+          width={videoWidth}
           videoId={youtubeId}
           playbackRate={playbackRate}
           // Let YouTube render its own progress bar, captions, settings,

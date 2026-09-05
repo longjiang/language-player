@@ -97,6 +97,9 @@ export async function GET(request: Request, props: { params: Promise<{ videoId: 
       category: item.category ? String(item.category) : undefined,
       talk: item.talk ? String(item.talk) : undefined,
       channel_id: item.channel_id ?? undefined,
+      // SPEC-010: native aspect ratio (width/height) from YouTube — lets the
+      // player contain-fit non-16:9 videos instead of forcing a 16:9 box.
+      aspect_ratio: typeof item.aspect_ratio === 'number' ? item.aspect_ratio : undefined,
       subs_l2: l2Lines,
     };
 

@@ -13,6 +13,16 @@ interface YouTubePlayerProps {
   onStateChange?: (state: number) => void;
   /** Called when the YouTube player fails to load (invalid ID, not embeddable, etc.) */
   onError?: (error: Error, info?: YouTubePlayerErrorInfo) => void;
+  /** Native aspect ratio (width ÷ height) of the video content, from YouTube
+   *  metadata (e.g. ~1.778 for 16:9, ~1.333 for 4:3). Defaults to 16:9. When
+   *  combined with `availableHeight`, the player contain-fits to its column
+   *  instead of forcing a 16:9 box, so non-16:9 videos render larger without
+   *  pillarboxing (SPEC-010 wide layout). */
+  aspectRatio?: number;
+  /** Max height (px) the player may occupy — the visible part of the column.
+   *  When set (with `aspectRatio`), the player is contained rather than
+   *  stretched to the column's full width. */
+  availableHeight?: number;
 }
 
 export interface YouTubePlayerHandle {
@@ -132,10 +142,13 @@ interface YouTubePlayerInstance {
 
 export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
   function YouTubePlayer(
-    { youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange, onError },
+    { youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange, onError, aspectRatio, availableHeight },
     ref,
   ) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // The outer wrapper spans the column; we measure its width to contain-fit
+  // the player box inside it (SPEC-010 wide layout).
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const uid = useId();
@@ -143,7 +156,35 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   const startAppliedRef = useRef(false);
   const [apiReady, setApiReady] = useState(false);
   const [playerError, setPlayerError] = useState<PlayerErrorInfo | null>(null);
+  const [wrapperWidth, setWrapperWidth] = useState(0);
   const t = useT();
+
+  // ── Contain-fit (SPEC-010) ──
+  // When the caller provides the video's native aspect ratio plus the column's
+  // available height, size the player box to the largest rectangle of that
+  // aspect ratio that fits inside width×availableHeight. This makes a 4:3
+  // video render larger than a letterboxed 16:9 box would allow.
+  const AR = aspectRatio && aspectRatio > 0 ? aspectRatio : 16 / 9;
+  const containEnabled = !!(availableHeight && availableHeight > 0);
+  const containWidth = containEnabled && wrapperWidth > 0
+    ? Math.min(wrapperWidth, availableHeight! * AR)
+    : 0;
+  const containHeight = containWidth > 0 ? containWidth / AR : 0;
+  const containReady = containWidth > 0 && containHeight > 0;
+
+  // Track the wrapper's rendered width so contain-fit stays correct through
+  // window resize / orientation changes without remounting the iframe.
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setWrapperWidth(entry.contentRect.width);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Silence the transient postMessage race described above (see
   // isYouTubePostMessageRace). preventDefault() stops Chrome from printing
@@ -334,12 +375,22 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
 
   // Expose controls via ref or events — for now, YouTube's built-in controls handle this
   return (
-    <div className="relative w-full overflow-hidden rounded-xl bg-black">
+    <div
+      ref={wrapperRef}
+      className={containEnabled
+        ? 'relative flex w-full items-center justify-center'
+        : 'relative w-full overflow-hidden rounded-xl bg-black'}
+    >
       {/* The player container must stay mounted even while an error overlay is
           shown: the creation effect bails out when containerRef.current is
           null, which would leave a stale error (and no player) after the user
           navigates to the next/previous video. */}
-      <div className="relative aspect-video">
+      <div
+        className={containEnabled
+          ? (containReady ? 'relative overflow-hidden rounded-xl bg-black' : 'relative aspect-video w-full')
+          : 'relative aspect-video'}
+        style={containEnabled && containReady ? { width: containWidth, height: containHeight } : undefined}
+      >
         <div ref={containerRef} id={playerIdRef.current} className="h-full w-full" />
         {playerError && (
           <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 bg-black px-4 text-center text-muted-foreground">
