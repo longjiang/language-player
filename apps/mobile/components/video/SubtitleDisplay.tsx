@@ -250,6 +250,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
               className={overlay ? undefined : 'w-full'}
               centered={!overlay}
               fitContent={overlay}
+              triggerTextScale={singlelineTextScale}
               text={shownLine.l2Line}
               l2Code={l2Lang.code}
               l1Code={baseCode(l1Lang.code)}
