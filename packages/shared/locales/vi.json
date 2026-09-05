@@ -1379,6 +1379,8 @@
     "sort": {
         "ai": "AI",
         "alphabetical": "Theo bảng chữ cái",
+        "by_title": "Sắp xếp theo tiêu đề",
+        "by_views": "Sắp xếp theo lượt xem",
         "most_viewed": "Xem nhiều nhất",
         "newest": "Mới nhất",
         "title": "Tiêu đề",

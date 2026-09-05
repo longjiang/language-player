@@ -24,12 +24,11 @@ interface ShowWithMeta {
   poster?: string; youtube_id?: string | null;
 }
 
-type SortKey = 'views' | 'title' | 'year';
+type SortKey = 'views' | 'title';
 
 const SORT_OPTIONS: { key: SortKey; labelKey: string }[] = [
-  { key: 'views', labelKey: 'sort.most_viewed' },
-  { key: 'title', labelKey: 'sort.title' },
-  { key: 'year', labelKey: 'sort.year' },
+  { key: 'views', labelKey: 'sort.by_views' },
+  { key: 'title', labelKey: 'sort.by_title' },
 ];
 
 /** Dropdown picker — native UIMenu on iOS, PopupMenu on Android. */
@@ -56,7 +55,10 @@ function DropdownPicker<T extends string>({
       onPressAction={({ nativeEvent }) => onChange(nativeEvent.event as T)}
       actions={actions}
     >
-      <Pressable className="flex-row items-center gap-1 rounded-lg border border-border bg-card px-3 py-2">
+      <Pressable
+        className="flex-row items-center gap-1 rounded-md border border-input bg-background px-3 shadow-sm shadow-black/5"
+        style={{ height: 40 }}
+      >
         <Text className="text-sm text-foreground flex-1" numberOfLines={1}>
           {getLabel(value)}
         </Text>
@@ -133,7 +135,6 @@ export default function TvShowsScreen() {
     result.sort((a, b) => {
       switch (sortKey) {
         case 'title': return (a.title ?? '').localeCompare(b.title ?? '');
-        case 'year': return (b.year ?? 0) - (a.year ?? 0);
         case 'views':
         default: return (b.avg_views ?? 0) - (a.avg_views ?? 0);
       }
@@ -177,12 +178,14 @@ export default function TvShowsScreen() {
       </View>
       <OfflineFeatureNotice />
 
-      {/* Toolbar: search + sort + locale filter */}
+      {/* Toolbar: search + sort + locale filter.
+          md+: one row (search flexes, dropdowns fixed-width).
+          small: search on its own row, dropdowns share the next row. */}
       <View
         className={
           isMd
             ? 'flex-row items-center gap-2 border-b border-border px-4 py-2'
-            : 'gap-2 border-b border-border px-4 py-2'
+            : 'border-b border-border px-4 py-2 gap-2'
         }
       >
         {/* Search */}
@@ -194,9 +197,9 @@ export default function TvShowsScreen() {
           onChangeText={setSearch}
         />
 
-        {/* Sort + Locale filter — dropdowns side by side */}
+        {/* Sort + Locale filter */}
         <View className="flex-row gap-2">
-          <View className={isMd ? 'min-w-[140px]' : 'flex-1'}>
+          <View className={isMd ? 'w-[140px]' : 'flex-1'}>
             <DropdownPicker
               value={sortKey}
               options={SORT_OPTIONS.map((o) => o.key)}
@@ -206,7 +209,7 @@ export default function TvShowsScreen() {
           </View>
 
           {locales.length > 2 && (
-            <View className={isMd ? 'min-w-[140px]' : 'flex-1'}>
+            <View className={isMd ? 'w-[140px]' : 'flex-1'}>
               <DropdownPicker
                 value={localeFilter}
                 options={locales}

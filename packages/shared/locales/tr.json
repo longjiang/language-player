@@ -1379,6 +1379,8 @@
     "sort": {
         "ai": "Yapay Zekâ",
         "alphabetical": "Alfabetik",
+        "by_title": "Başlığa göre sırala",
+        "by_views": "Görüntülemeye göre sırala",
         "most_viewed": "En Çok İzlenen",
         "newest": "En yeni",
         "title": "Başlık",

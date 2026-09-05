@@ -19,7 +19,7 @@ interface ShowWithMeta extends TVShow {
   youtube_id?: string | null;
 }
 
-type SortKey = 'views' | 'title' | 'year';
+type SortKey = 'views' | 'title';
 
 export default function TVShowsPage() {
   const { l1, l2 } = useLanguage();
@@ -80,7 +80,6 @@ export default function TVShowsPage() {
     result.sort((a, b) => {
       switch (sortKey) {
         case 'title': return a.title.localeCompare(b.title);
-        case 'year': return (b.year ?? 0) - (a.year ?? 0);
         case 'views':
         default: return (b.avg_views ?? 0) - (a.avg_views ?? 0);
       }
@@ -102,7 +101,7 @@ export default function TVShowsPage() {
       {/* Toolbar: search + sort + locale filter */}
       <div className="mb-6 flex flex-wrap gap-3">
         {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative min-w-[200px] flex-1 max-md:min-w-full">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
@@ -113,33 +112,35 @@ export default function TVShowsPage() {
           />
         </div>
 
-        {/* Sort */}
-        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-          <SelectTrigger className="h-10">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="views">{t('sort.most_viewed')}</SelectItem>
-            <SelectItem value="title">{t('sort.title')}</SelectItem>
-            <SelectItem value="year">{t('sort.year')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Locale filter */}
-        {locales.length > 2 && (
-          <Select value={localeFilter} onValueChange={setLocaleFilter}>
-            <SelectTrigger className="h-10">
+        {/* Sort + Locale filter — max-md: their own full-width row; md+: inline with search */}
+        <div className="flex gap-3 max-md:w-full">
+          {/* Sort */}
+          <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+            <SelectTrigger className="h-10 rounded-lg w-[180px] flex-1 md:flex-none">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {locales.map(loc => (
-                <SelectItem key={loc} value={loc}>
-                  {loc === 'all' ? t('title.filter_by_locale') : loc.toUpperCase()}
-                </SelectItem>
-              ))}
+              <SelectItem value="views">{t('sort.by_views')}</SelectItem>
+              <SelectItem value="title">{t('sort.by_title')}</SelectItem>
             </SelectContent>
           </Select>
-        )}
+
+          {/* Locale filter */}
+          {locales.length > 2 && (
+            <Select value={localeFilter} onValueChange={setLocaleFilter}>
+              <SelectTrigger className="h-10 rounded-lg w-[180px] flex-1 md:flex-none">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {locales.map(loc => (
+                  <SelectItem key={loc} value={loc}>
+                    {loc === 'all' ? t('title.filter_by_locale') : loc.toUpperCase()}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {/* Loading */}

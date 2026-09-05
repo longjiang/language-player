@@ -1379,6 +1379,8 @@
     "sort": {
         "ai": "AI",
         "alphabetical": "アルファベット順",
+        "by_title": "タイトル順",
+        "by_views": "再生回数順",
         "most_viewed": "最も視聴された",
         "newest": "最新",
         "title": "タイトル",
