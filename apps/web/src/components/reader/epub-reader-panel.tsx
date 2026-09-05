@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { isPhoneticsEligible } from '@langplayer/utils';
+import {
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerBoxPx,
+  actionTriggerFontPx,
+} from '@langplayer/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useTextScale } from '@/hooks/use-text-scale';
@@ -286,8 +291,12 @@ export function EpubReaderPanel({
             </div>
           )}
         </div>
-        {/* Mirrors the action-menu button column's minimum height. */}
-        <div className="mt-1 h-6 w-6 shrink-0" />
+        {/* Mirrors the action-menu button column's minimum height
+            (shared trigger geometry — @langplayer/utils/action-trigger). */}
+        <div
+          className="shrink-0"
+          style={{ width: ACTION_TRIGGER_SIZE_PX, height: actionTriggerBoxPx(actionTriggerFontPx(textZoom), tokenizedText.leading) }}
+        />
       </div>
     );
   }, [phoneticsEstimate, showTranslation, textZoom, markdownComponents, tokenizedText.translationSize, readerLeading]);

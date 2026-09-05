@@ -15,6 +15,11 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { ZoomableImage } from '@/components/reader/zoomable-image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
+import {
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerBoxPx,
+  actionTriggerFontPx,
+} from '@langplayer/utils';
 import { PanelRight, PanelRightClose, X, Loader2 } from 'lucide-react';
 import { log } from '@/lib/logger';
 import ReactMarkdown from 'react-markdown';
@@ -264,7 +269,10 @@ export function PdfReaderPanel({
             </div>
           )}
         </div>
-        <div className="mt-1 h-6 w-6 shrink-0" />
+        <div
+          className="shrink-0"
+          style={{ width: ACTION_TRIGGER_SIZE_PX, height: actionTriggerBoxPx(actionTriggerFontPx(textZoom), tokenizedText.leading) }}
+        />
       </div>
     );
   }, [showTranslation, textZoom, readerLeading, tokenizedText.translationSize]);
