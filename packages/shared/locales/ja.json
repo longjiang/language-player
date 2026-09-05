@@ -1119,6 +1119,7 @@
         "translation_size_desc": "原文に対する翻訳テキストのサイズ。",
         "tried_lemmas": "試したレンマ",
         "try_again_or_contact": "もう一度お試しいただくか、サポートにお問い合わせください。",
+        "tv_show_badge_error": "テレビ番組",
         "tv_shows_desc": "{l2}のテレビ番組を字幕付きで閲覧する。",
         "unexpected_error": "このページの読み込み中に予期しないエラーが発生しました。",
         "unrecognized_saved_word": "未認識の保存単語",
