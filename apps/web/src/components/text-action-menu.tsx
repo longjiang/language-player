@@ -13,6 +13,7 @@ import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
 import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { clampTranslationSize } from '@/lib/reader-text-size';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { isRTL } from '@/lib/language-data';
 import { log } from '@/lib/logger';
 import type { SentenceMap } from '@langplayer/utils';
@@ -20,6 +21,13 @@ import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
 } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import {
+  ACTION_TRIGGER_DEFAULT_LEADING,
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerBoxPx,
+  actionTriggerFontPx,
+  actionTriggerIconPx,
+} from '@langplayer/utils';
 
 interface TextActionMenuProps {
   /** Plain text of the block/line. */
@@ -35,6 +43,11 @@ interface TextActionMenuProps {
   /** Center the content while keeping the action trigger out of the layout
    *  flow. Used by single-line subtitle displays. */
   centered?: boolean;
+  /** Extra multiplier on top of the user's zoom for the ⋮ trigger's size.
+   *  Must match the `textScale` the adjacent tokenized text renders with
+   *  (1.33 for single-line subtitles — SPEC-051's only non-default value);
+   *  default 1. */
+  triggerTextScale?: number;
   /** Pre-fetched translation to show inline to the right of children. */
   translation?: ReactNode;
   /** Tailwind classes for the translation element (e.g. match heading size). */
@@ -92,6 +105,7 @@ export function TextActionMenu({
   context,
   alwaysShow = false,
   centered = false,
+  triggerTextScale = 1,
   translation,
   translationClass = '',
   translationBelow = false,
@@ -170,6 +184,15 @@ export function TextActionMenu({
   const sideBySideGapStyle = sideBySideGap == null
     ? undefined
     : { '--reader-side-gap': `${sideBySideGap}px` } as CSSProperties;
+
+  // ── Trigger geometry (shared rule, see @langplayer/utils/action-trigger) ──
+  // The ⋮ trigger scales with the adjacent L2 text: the icon is the text's
+  // rendered font size and the tap box spans one line pitch (font × leading),
+  // so the icon centers vertically on the first line at any zoom/leading.
+  // No `mt-1` — the box top edge IS the first line's top edge.
+  const triggerFontPx = actionTriggerFontPx(ZOOM_TO_REM[tokenizedText.zoom] ?? 1, triggerTextScale);
+  const triggerBoxPx = actionTriggerBoxPx(triggerFontPx, tokenizedText.leading ?? ACTION_TRIGGER_DEFAULT_LEADING);
+  const triggerIconPx = actionTriggerIconPx(triggerFontPx);
 
   // `translationAligned` is supplied by reader blocks even while their
   // responsive row is stacked. Baseline alignment is meaningful only in the
@@ -305,8 +328,12 @@ export function TextActionMenu({
       {/* Action menu dropdown — controlled so any option click closes it
           immediately (Radix popovers don't auto-close on item click). */}
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-        <PopoverTrigger className={`z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100 ${centered ? 'col-start-3 row-start-1 mt-1 justify-self-end' : 'mt-1'}`} aria-label={t('action.more')}>
-          <MoreVertical className="h-4 w-4" />
+        <PopoverTrigger
+          className={`z-10 flex shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100 ${centered ? 'col-start-3 row-start-1 justify-self-end' : ''}`}
+          style={{ width: ACTION_TRIGGER_SIZE_PX, height: triggerBoxPx }}
+          aria-label={t('action.more')}
+        >
+          <MoreVertical style={{ width: triggerIconPx, height: triggerIconPx }} />
         </PopoverTrigger>
         <PopoverContent side="bottom" align="end" sideOffset={4} className="min-w-[180px] p-1">
           {menuItems.map((item) => (

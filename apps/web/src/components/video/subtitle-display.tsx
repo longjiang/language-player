@@ -497,6 +497,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               l2Code={l2Code}
               l1Code={l1Code}
               centered
+              triggerTextScale={singlelineTextScale}
               translation={showTranslation && bandActiveTranslation ? bandActiveTranslation : undefined}
               translationClass={cn('text-center', transClass)}
               translationBelow
@@ -570,6 +571,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             l2Code={l2Code}
             l1Code={l1Code}
             centered
+            triggerTextScale={singlelineTextScale}
             translation={
               showTranslation && activeTranslation ? (
                 // Sizing follows the column's default rule — when `translationFactor`

@@ -208,6 +208,7 @@ export type { AiFollowUpPreset, ReaderAiContent } from './ai-follow-ups';
 export {
   parseAiQuotes,
   splitAiQuotes,
+  normalizeQuoteBlocks,
   cleanAiQuote,
   READER_AI_QUOTE_INSTRUCTION,
   READER_AI_SUMMARY_INSTRUCTION,
@@ -215,3 +216,11 @@ export {
   textContainsQuote,
 } from './ai-quotes';
 export type { AiQuote, AiTextSegment } from './ai-quotes';
+export {
+  L2_BASE_FONT_SIZE_PX,
+  ACTION_TRIGGER_DEFAULT_LEADING,
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerFontPx,
+  actionTriggerBoxPx,
+  actionTriggerIconPx,
+} from './action-trigger';

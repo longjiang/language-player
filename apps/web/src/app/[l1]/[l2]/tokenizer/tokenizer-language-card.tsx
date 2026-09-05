@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { loadSampleContent, type SavedWordContext } from '@langplayer/shared';
+import {
+  ACTION_TRIGGER_SIZE_PX,
+  actionTriggerBoxPx,
+  actionTriggerFontPx,
+} from '@langplayer/utils';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
@@ -250,8 +255,12 @@ export function TokenizerLanguageCard({
               </div>
             )}
           </div>
-          {/* Mirrors the action-menu button column's minimum height. */}
-          <div className="mt-1 h-6 w-6 shrink-0" />
+          {/* Mirrors the action-menu button column's minimum height
+              (shared trigger geometry — @langplayer/utils/action-trigger). */}
+          <div
+            className="shrink-0"
+            style={{ width: ACTION_TRIGGER_SIZE_PX, height: actionTriggerBoxPx(actionTriggerFontPx(textZoom), tokenizedText.leading) }}
+          />
         </div>
       );
     },
