@@ -1379,6 +1379,8 @@
     "sort": {
         "ai": "AI",
         "alphabetical": "알파벳순",
+        "by_title": "제목순",
+        "by_views": "조회수순",
         "most_viewed": "가장 많이 본",
         "newest": "최신",
         "title": "제목",

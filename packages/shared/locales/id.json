@@ -1379,6 +1379,8 @@
     "sort": {
         "ai": "AI",
         "alphabetical": "Abjad",
+        "by_title": "Urutkan berdasarkan Judul",
+        "by_views": "Urutkan berdasarkan Penayangan",
         "most_viewed": "Paling Banyak Dilihat",
         "newest": "Terbaru",
         "title": "Judul",

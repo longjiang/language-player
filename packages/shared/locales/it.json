@@ -1379,6 +1379,8 @@
     "sort": {
         "ai": "IA",
         "alphabetical": "Alfabetico",
+        "by_title": "Ordina per titolo",
+        "by_views": "Ordina per visualizzazioni",
         "most_viewed": "Più visti",
         "newest": "Più recente",
         "title": "Titolo",

@@ -1334,6 +1334,8 @@
     "sort": {
         "ai": "AI",
         "alphabetical": "按字母順序",
+        "by_title": "按標題排序",
+        "by_views": "按觀看次數排序",
         "most_viewed": "最多觀看",
         "newest": "最新",
         "title": "標題",
