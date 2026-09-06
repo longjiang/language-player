@@ -31,6 +31,7 @@ import {
   SPELL_TEST_TOTAL_MS,
   SPELL_TEST_FAST_MS,
   spellHintOf,
+  spellHintPlaceholder,
   spellBlankText,
   scriptVariants,
   bestScriptSimilarity,
@@ -1629,6 +1630,11 @@ export default function ReviewScreen() {
   const spellHint = effectiveMode === 'spell'
     ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
     : null;
+  /** Muted type-over placeholder for the FIRST spell character box — only the
+   *  orthographic (lemma) hint, never a reading hint (different script). */
+  const spellPlaceholder = effectiveMode === 'spell'
+    ? spellHintPlaceholder(currentCard.word, wordForm, entry, l2Code)
+    : null;
   /** Expected character count of the correct blanked word — drives the number of
    *  character boxes in the spell input (SPEC-066). Mirrors the context
    *  resolution in handleSpellSubmit (latest instance context). Computed inline
@@ -1916,6 +1922,7 @@ export default function ReviewScreen() {
                   expectedLength={spellExpectedLen}
                   autoFocus
                   label={t('review.spell_prompt')}
+                  firstCharPlaceholder={spellPlaceholder ?? undefined}
                 />
                 <View className="w-full items-center">
                   <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full" style={{ maxWidth: 384 }}>

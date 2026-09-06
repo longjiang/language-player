@@ -23,6 +23,9 @@ export interface SpellCharInputProps {
   autoFocus?: boolean;
   /** Accessible label for the invisible input. */
   label?: string;
+  /** Muted type-over placeholder shown in the FIRST character box only, while
+   *  it is empty. Passed the orthographic hint's first character. */
+  firstCharPlaceholder?: string;
 }
 
 export function SpellCharInput({
@@ -31,6 +34,7 @@ export function SpellCharInput({
   expectedLength,
   autoFocus = false,
   label,
+  firstCharPlaceholder,
 }: SpellCharInputProps) {
   const chars = useMemo(() => Array.from(value), [value]);
   const boxCount = Math.max(1, expectedLength, chars.length);
@@ -43,6 +47,7 @@ export function SpellCharInput({
         {Array.from({ length: boxCount }).map((_, i) => {
           const ch = chars[i] ?? '';
           const isActive = i === activeIndex;
+          const placeholder = i === 0 && !ch ? firstCharPlaceholder : null;
           return (
             <View
               key={i}
@@ -50,7 +55,9 @@ export function SpellCharInput({
                 isActive ? 'border-primary' : 'border-border'
               }`}
             >
-              {ch ? <Text className="text-lg font-medium text-foreground">{ch}</Text> : null}
+              {ch ? <Text className="text-lg font-medium text-foreground">{ch}</Text>
+                : placeholder ? <Text className="text-lg font-medium text-muted-foreground/50">{placeholder}</Text>
+                : null}
             </View>
           );
         })}
