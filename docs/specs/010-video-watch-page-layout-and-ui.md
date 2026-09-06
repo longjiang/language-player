@@ -74,7 +74,7 @@ The watch page renders one of two completely different layouts based on `playbac
 
 The watch page reads `playback.transcriptMode` from `useSettingsContext()` and renders one of two layouts. The custom LP control bar is reduced to avoid feature overlap with YouTube's native controls (play, pause, seek, volume, speed, fullscreen). The only LP-specific controls are five buttons, present in both modes:
 
-- **`←` `→`** — prev/next subtitle line
+- **`←` `→`** — prev/next subtitle line. `←` always seeks to the line before the **currently active** line (identified by the last start time ≤ the playhead) — it never replays the current line from the start. `→` always seeks to the next line. When already on the first line there is no previous line, so `←` falls back to a small rewind instead. The same behavior applies to the keyboard shortcuts (`←`/`→`), the subs-search playback modal, and local-media playback.
 - **`⏮` `⏭`** — prev/next video in queue
 - **`◧`** — toggles between transcript mode (full sidebar) and subtitles mode (immersive overlay band).
 

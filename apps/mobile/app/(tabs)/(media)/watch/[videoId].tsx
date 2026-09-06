@@ -326,14 +326,18 @@ export default function WatchScreen() {
   }, [currentTime]);
 
   const handlePreviousLine = useCallback(() => {
-    for (let i = subtitleStartTimes.length - 1; i >= 0; i--) {
-      if (subtitleStartTimes[i]! < currentTime - 0.5) {
-        playerRef.current?.seekTo(subtitleStartTimes[i]!);
-        return;
-      }
+    // Always seek to the previous line (the line before the currently active
+    // one) — never to the start of the current line. `activeLineIndex` is the
+    // currently active line; subtracting one jumps to the prior line. When
+    // already on the first line (or before it) there is no previous line, so
+    // fall back to a small rewind.
+    const prevIndex = activeLineIndex - 1;
+    if (prevIndex >= 0 && subtitleStartTimes[prevIndex] !== undefined) {
+      playerRef.current?.seekTo(subtitleStartTimes[prevIndex]!);
+    } else {
+      playerRef.current?.seekTo(Math.max(0, currentTime - 3));
     }
-    playerRef.current?.seekTo(Math.max(0, currentTime - 3));
-  }, [currentTime, subtitleStartTimes]);
+  }, [currentTime, subtitleStartTimes, activeLineIndex]);
 
   const handleNextLine = useCallback(() => {
     for (let i = 0; i < subtitleStartTimes.length; i++) {
@@ -460,7 +464,7 @@ export default function WatchScreen() {
                 onPreviousVideo={playPrevious}
                 onNextVideo={playNext}
                 onTogglePanel={handleTogglePanel}
-                hasPreviousLine={subtitleStartTimes.length > 0}
+                hasPreviousLine={activeLineIndex > 0}
                 hasNextLine={subtitleStartTimes.length > 0}
                 hasPreviousVideo={hasPrevious}
                 hasNextVideo={hasNext}

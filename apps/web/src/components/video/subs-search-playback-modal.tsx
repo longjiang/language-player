@@ -13,6 +13,7 @@ import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import { VideoSidebarPanel, type SidebarTabKey } from '@/components/video/video-sidebar-panel';
 import { X, FileText, Info, Eye, Clock, Calendar, Play } from 'lucide-react';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
+import { findActiveLineIndex } from '@langplayer/shared';
 
 /** Compact number label (e.g. "12K") with a plain fallback. */
 function formatNumber(n: number | undefined, locale: string): string {
@@ -221,12 +222,11 @@ export function SubsSearchPlaybackModal({
   const goToPreviousLine = useCallback(() => {
     if (!currentVideo) return;
     const subs = currentVideo.subs_l2;
-    for (let i = subs.length - 1; i >= 0; i--) {
-      if (subs[i]!.starttime < currentTime - 0.3) {
-        playerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
+    // Always seek to the previous line (the line before the currently active
+    // one) — never to the start of the current line.
+    const prevIndex = findActiveLineIndex(subs.map((s) => s.starttime), currentTime) - 1;
+    const prev = prevIndex >= 0 ? subs[prevIndex] : null;
+    if (prev) playerRef.current?.seekTo(prev.starttime);
   }, [currentTime, currentVideo]);
 
   const goToNextLine = useCallback(() => {
@@ -242,7 +242,7 @@ export function SubsSearchPlaybackModal({
 
   const hasPreviousLine = useMemo(() => {
     if (!currentVideo) return false;
-    return currentVideo.subs_l2.some((l) => l.starttime < currentTime - 0.3);
+    return findActiveLineIndex(currentVideo.subs_l2.map((l) => l.starttime), currentTime) > 0;
   }, [currentVideo, currentTime]);
 
   const hasNextLine = useMemo(() => {
