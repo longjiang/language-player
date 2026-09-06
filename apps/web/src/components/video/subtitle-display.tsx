@@ -330,7 +330,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       startY: e.clientY,
       startTop: bandTopRef.current ?? bandRect.top - frameRect.top,
     };
-    bandElement.setPointerCapture(e.pointerId);
+    // NOTE: do NOT capture the pointer here. Capturing on pointerdown retargets
+    // the subsequent `click` to the band container, so a plain tap on a
+    // tokenized word never reaches the token's onClick and the dictionary popup
+    // won't open. Capture only once a real drag move (>3px) begins — see
+    // handleBandPointerMove.
   }, []);
 
   const handleBandPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -342,7 +346,14 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     if (!bandElement || !frameElement) return;
 
     const deltaY = e.clientY - drag.startY;
-    if (Math.abs(deltaY) > 3) drag.didDrag = true;
+    if (!drag.didDrag && Math.abs(deltaY) > 3) {
+      // A real drag has begun: commit and capture the pointer so tracking
+      // continues even if the pointer leaves the band mid-drag.
+      drag.didDrag = true;
+      bandElement.setPointerCapture(e.pointerId);
+    }
+    if (!drag.didDrag) return;
+
     const frameRect = frameElement.getBoundingClientRect();
     const bandHeight = bandElement.getBoundingClientRect().height;
     const maxTop = Math.max(0, frameRect.height - bandHeight);
