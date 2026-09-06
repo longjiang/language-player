@@ -411,7 +411,17 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         parts.push(VIDEO_AI_CONCISE_ITEMS_INSTRUCTION);
       }
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
-      else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
+      else if (onTimestampPress) {
+        parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
+        // Video non-summary presets (difficult expressions / grammar points)
+        // list discrete L2 items — wrap them in backticks so they render as
+        // interactive tokenized text. Summary-shaped presets stay as prose (a
+        // summary is not a set of clickable spans).
+        if (preset.summaryInstruction === false) {
+          const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+          if (ticksPrompt) parts.push(ticksPrompt);
+        }
+      }
       else {
         const ticksPrompt = t('prompt.explain_ticks', { l2Name });
         if (ticksPrompt) parts.push(ticksPrompt);

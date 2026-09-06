@@ -460,12 +460,13 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       ...(contentKey ? { text } : {}),
     });
     // Content-based presets (reader summaries / text analyses) are prose in
-    // the target language, not interactive L2 spans — skip the backtick
-    // formatting instruction. Summary-shaped presets append the summary
-    // instruction; the quote-chip instruction is appended only when the chat
-    // renders quote chips (reader surfaces). A non-quoting content preset
-    // (tokenized-text analyses) appends the backtick instruction instead so
-    // L2 terms still render tokenized.
+    // the target language, not interactive L2 spans — the summary-shaped ones
+    // skip the backtick formatting instruction. Summary-shaped presets append
+    // the summary instruction; the quote-chip instruction is appended only when
+    // the chat renders quote chips (reader surfaces). A non-quoting content
+    // preset (tokenized-text analyses, or the video's difficult-expressions /
+    // grammar-points lists) appends the backtick instruction instead so L2
+    // terms still render tokenized.
     if (contentKey) {
       const parts = [body];
       // Robust content injection: the preloaded content (subtitle transcript /
@@ -489,7 +490,17 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         parts.push(VIDEO_AI_CONCISE_ITEMS_INSTRUCTION);
       }
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
-      else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
+      else if (onTimestampPress) {
+        parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
+        // Video non-summary presets (difficult expressions / grammar points)
+        // list discrete L2 items — wrap them in backticks so they render as
+        // interactive tokenized text. Summary-shaped presets stay as prose (a
+        // summary is not a set of clickable spans).
+        if (preset.summaryInstruction === false) {
+          const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+          if (ticksPrompt) parts.push(ticksPrompt);
+        }
+      }
       else {
         const ticksPrompt = t('prompt.explain_ticks', { l2Name });
         if (ticksPrompt) parts.push(ticksPrompt);
