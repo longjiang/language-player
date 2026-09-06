@@ -176,6 +176,7 @@ export default function WatchScreen() {
     (async () => {
       // Try to restore a persisted queue from a prior session (page refresh).
       const restored = await restoreQueueIfCurrent(video.youtube_id);
+      log('[queue] restore', { videoId: video.youtube_id, restored });
       if (cancelled) return;
       if (restored) {
         queueBuildRef.current = true;
@@ -186,6 +187,12 @@ export default function WatchScreen() {
       // matches it (TV-show episodes don't need the level).
       if (!video.tv_show && !progressLoaded) return;
       const result = await buildVideoQueue(video, l2Code, userLevel, user?.id);
+      log('[queue] build', {
+        videoId: video.youtube_id,
+        tvShow: !!video.tv_show,
+        queueType: result?.queueType ?? 'fallback',
+        level: userLevel ?? null,
+      });
       if (cancelled) return;
       queueBuildRef.current = true;
       if (result) {
