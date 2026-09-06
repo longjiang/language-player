@@ -1168,6 +1168,12 @@ export default function ReviewPage() {
   // sees the translated sentence with the bolded term even before the test
   // starts, per SPEC-066 spell mode).
   const showContextTranslation = showDefinition || definitionTestAnswered || reviewMode === 'spell';
+  // When the learner's L1 == L2 (zh/zh-Hans/zh-Hant are equivalent via
+  // baseCode), the context "translation" is the same language and — with the
+  // target bolded — would leak the blanked word in spell mode. So in spell mode
+  // we replace the sentence translation with a contextual rephrasing of the
+  // target word (server `rephrase_term`), so the target word never appears.
+  const sameLangRephrase = reviewMode === 'spell' && baseCode(l1.code) === l2Code;
 
   // ── Test progress bar (SPEC-066) ──
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
@@ -1428,7 +1434,12 @@ export default function ReviewPage() {
 
     const ctxText = currentCard?.word.context?.text;
     const savedTranslation = currentCard?.word.context?.translation;
-    if (!ctxText || savedTranslation) {
+    // When the learner's L1 == L2 (zh/zh-Hans/zh-Hant are equivalent), the
+    // context "translation" is the same language and — with the target bolded —
+    // would leak the blanked word in spell mode. In that case we always fetch a
+    // contextual rephrasing of the target word (server `rephrase_term`) instead
+    // of a sentence translation, and we ignore any saved translation.
+    if (!ctxText || (savedTranslation && !sameLangRephrase)) {
       setContextTranslation(null);
       setContextTranslating(false);
       return;
@@ -1445,10 +1456,18 @@ export default function ReviewPage() {
         // Send the original text plus the target form — the server wraps the
         // term in **bold** with its own tokenizer (the same one behind the
         // sentence highlight) and preserves the markers in the translation.
+        // For same-language spell rephrasing, `rephrase_term: true` tells the
+        // server to rephrase the term's meaning without repeating it.
         const res = await fetch(`${PYTHON_API_URL}/translate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: ctxText, form: targetForm, l1: baseCode(l1.code), l2: l2Code }),
+          body: JSON.stringify({
+            text: ctxText,
+            form: targetForm,
+            l1: baseCode(l1.code),
+            l2: l2Code,
+            ...(sameLangRephrase ? { rephrase_term: true } : {}),
+          }),
         });
         if (cancelled) return;
         if (!res.ok) return;
@@ -1463,7 +1482,7 @@ export default function ReviewPage() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showContextTranslation, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code]);
+  }, [showContextTranslation, sameLangRephrase, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code]);
 
   // ── Render states ──
 
@@ -1669,33 +1688,53 @@ export default function ReviewPage() {
             <div className="text-xs text-muted-foreground/70 mt-1">
               <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
-            {showContextTranslation && !wordCtx.translation && !contextTranslation && contextTranslating && (
-              <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
-            )}
-            {showContextTranslation && (wordCtx.translation || contextTranslation) && (
-              wordCtx.translation ? (
-                <p
-                  className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
-                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
-                >
-                  {wordCtx.translation}
-                </p>
-              ) : (
-                <div
-                  className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
-                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
-                >
-                  <ReactMarkdown
-                    components={{
-                      p: ({ children }) => <span>{children}</span>,
-                      strong: ({ children }) => (
-                        <strong className="font-semibold text-primary">{children}</strong>
-                      ),
-                    }}
+            {showContextTranslation && (
+              sameLangRephrase ? (
+                contextTranslating && !contextTranslation ? (
+                  <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
+                ) : contextTranslation ? (
+                  // Same-language spell mode: a contextual rephrasing of the
+                  // target word (server ensures the word itself never appears).
+                  // Plain text — do not markdown-render or bold anything.
+                  <div
+                    className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
+                    style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
                   >
-                    {contextTranslation ?? ''}
-                  </ReactMarkdown>
-                </div>
+                    {contextTranslation}
+                  </div>
+                ) : null
+              ) : (
+                <>
+                  {!wordCtx.translation && !contextTranslation && contextTranslating && (
+                    <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
+                  )}
+                  {(wordCtx.translation || contextTranslation) && (
+                    wordCtx.translation ? (
+                      <p
+                        className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
+                        style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
+                      >
+                        {wordCtx.translation}
+                      </p>
+                    ) : (
+                      <div
+                        className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
+                        style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
+                      >
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <span>{children}</span>,
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-primary">{children}</strong>
+                            ),
+                          }}
+                        >
+                          {contextTranslation ?? ''}
+                        </ReactMarkdown>
+                      </div>
+                    )
+                  )}
+                </>
               )
             )}
           </div>

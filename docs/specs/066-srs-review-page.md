@@ -518,6 +518,21 @@ today" message.
   color inside the sentence; saved translations render as plain text (web
   parity). The manual prepend/echo-strip behavior was removed (2026-08-11).
 
+**Same-language pairs (L1 == L2, 2026-09-xx).** When the learner's L1 and L2 are
+the same language — `baseCode(l1.code) === baseCode(l2.code)`, so `zh` /
+`zh-Hans` / `zh-Hant` are equivalent — a sentence "translation" is the same
+language, and with the target term bolded it would leak the blanked word in
+spell mode. In **spell mode** the context-translation slot therefore shows a
+**contextual rephrasing of the target word** instead of a sentence translation:
+the client calls `POST /translate` with `rephrase_term: true` (plus `text`,
+`form`, `l1`, `l2`), and the server (`chatgpt_translate_text`,
+`rephrase_term`) prompts the model to explain what the term *means* in this
+sentence, in the same language, **without repeating the term**. Any saved
+sentence translation is ignored in this case. The rephrasing renders as **plain
+text** (no markdown, no bold) on both platforms. Other modes (recall / choose)
+are unaffected — the word is already visible there, so the bolded sentence
+translation is not a leak.
+
 ### Rating
 
 - Four buttons: Again (red), Hard (orange), Good (green), Easy (blue), each
@@ -702,7 +717,10 @@ choose mode.
   target term rendered as a **blank** (the highlighted term's text is hidden,
   replaced by a width-matched blank), plus the context translation with the
   target term bolded (identical to the other modes). This is the only review
-  mode where the translation is shown *before* the card back is revealed.
+  mode where the translation is shown *before* the card back is revealed. When
+  L1 == L2 the target term is blanked *and* the context-translation slot shows a
+  contextual rephrasing of the target word (see [Context
+  translation](#context-translation)) so the blanked word never appears there.
 - **Start Test gate** — a "Start Test" button (Space/Enter also works) begins
   the session. Until it is pressed the input is not shown, so the learner can
   read the sentence and reflect first (matching the choose-mode gate).
@@ -1042,6 +1060,16 @@ types count while unexpired — there is no `status` filter.
   character-count field** — one box per character of the correct blanked word —
   built as a single real text field whose value spans across the boxes, so IME
   composition works normally.
+- ✅ **Spell hint gated on phonetic ruby + same-language rephrasing** —
+  implemented (2026-09-xx): `spellHintOf` only surfaces the reading hint for
+  languages that support phonetic ruby (`isPhoneticsEligible`); phonetics-
+  suppressed languages (Latin scripts, Burmese) use the orthography (lemma) hint
+  Only for the shared-utils change. When L1 == L2 (base subtag) in spell mode,
+  the context-translation slot shows a contextual rephrasing of the target word
+  instead of a same-language sentence translation — the client sends
+  `rephrase_term: true` to `POST /translate` and the server
+  (`chatgpt_translate_text`, `rephrase_term`) rephrases the term's meaning
+  without repeating it (backend `rephrase_term`, both review pages).
 
 ## Known Issues & Resolutions (2026-08-13)
 
