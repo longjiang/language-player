@@ -6,6 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
+import { log } from '@/lib/logger';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from '@/components/video/youtube-player';
 import { VideoMeta } from '@/components/video/video-meta';
 import { VideoControlBar } from '@/components/video/video-control-bar';
@@ -159,6 +160,12 @@ export default function WatchPage() {
         const data = await res.json();
         const v = data.video ?? data;
         setVideo(v);
+        // Aspect-ratio trace: log the native aspect ratio returned by the
+        // server so the contain-fit can be confirmed end-to-end.
+        log('[aspectRatio] web fetch', {
+          videoId,
+          aspect_ratio: typeof v?.aspect_ratio === 'number' ? v.aspect_ratio : null,
+        });
         // Update document title client-side (generateMetadata is static for perf)
         if (v?.title) {
           document.title = v.title;

@@ -15,7 +15,6 @@ import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { clampTranslationSize } from '@/lib/reader-text-size';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { isRTL } from '@/lib/language-data';
-import { log } from '@/lib/logger';
 import type { SentenceMap } from '@langplayer/utils';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
@@ -209,24 +208,6 @@ export function TextActionMenu({
   }, [sideBySideBreakpoint]);
 
   const useAlignedTranslation = !!aligned && !translationBelow && isSideBySide;
-
-  // ── DEV diagnostics ──
-  // Reports whether a translation column actually renders, so a reported
-  // "blank column when translation is off" can be confirmed from logs.
-  const diagnosticKeyRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const key = `${text.slice(0, 12)}:${showTranslation ? 1 : 0}:${hasTranslation ? 1 : 0}:${loading ? 1 : 0}:${isSideBySide ? 1 : 0}`;
-    if (diagnosticKeyRef.current === key) return;
-    diagnosticKeyRef.current = key;
-    const raf = requestAnimationFrame(() => {
-      const row = rowRef.current;
-      const wrapper = wrapperRef.current;
-      const l2 = l2Ref.current;
-      log(`[LP Web] TextActionMenu diag text="${text.slice(0, 16)}" showTranslation=${showTranslation} hasTranslation=${hasTranslation} renderColumn=${renderColumn} loading=${loading} aligned=${!!aligned} trLen=${typeof translation === 'string' ? translation.length : 'n/a'} sideBySide=${isSideBySide} l2Grow=${l2Grow} trGrow=${trGrow} | widths row=${row?.clientWidth ?? 'n/a'} wrapper=${wrapper?.clientWidth ?? 'n/a'} l2=${l2?.clientWidth ?? 'n/a'}`);
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [text, showTranslation, hasTranslation, renderColumn, loading, isSideBySide, aligned, translation, l2Grow, trGrow]);
 
   const {
     activeAction,
