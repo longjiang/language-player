@@ -8,6 +8,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+import { findTextMatches } from '@langplayer/utils';
 import { EpubBook, normalizeLanguageCode } from '@/lib/epub-book';
 import type { BookLocation, TocMarker, TocNode } from '@/lib/epub-book-types';
 import {
@@ -430,8 +431,7 @@ export function useEpub(): UseEpubReturn {
     const b = bookRef.current;
     const id = currentBookIdRef.current;
     if (!b || !id) return [];
-    const q = query.replace(/\s+/g, ' ').trim().toLowerCase();
-    if (!q) return [];
+    if (!query.trim()) return [];
 
     await ensureIndex(b, id);
     const records = indexRef.current ?? [];
@@ -442,29 +442,28 @@ export function useEpub(): UseEpubReturn {
     for (let i = 0; i < records.length && results.length < MAX_RESULTS; i++) {
       const rec = records[i]!;
       if (!rec.text) continue;
-      const lower = rec.text.toLowerCase();
-      let from = 0;
-      while (results.length < MAX_RESULTS) {
-        const idx = lower.indexOf(q, from);
-        if (idx === -1) break;
-        const blockIndex = blockIndexForOffset(rec.starts, idx);
+      // Invisible-char- / whitespace-robust matching (U+200B between CJK
+      // chars etc.). Matches come back in `rec.text` original coordinates.
+      const matches = findTextMatches(rec.text, query, MAX_RESULTS - results.length);
+      for (const m of matches) {
+        const matchLen = m.end - m.start;
+        const blockIndex = blockIndexForOffset(rec.starts, m.start);
         const blockStart = rec.starts[blockIndex] ?? 0;
         const location: BookLocation = {
           spineIndex: rec.spineIndex,
           blockIndex,
-          offset: idx - blockStart,
+          offset: m.start - blockStart,
         };
         const label = markerForLocation(markersList, location)?.node.label ?? '';
-        const { snippet, matchStart } = buildSnippet(rec.text, idx, q.length);
+        const { snippet, matchStart } = buildSnippet(rec.text, m.start, matchLen);
         results.push({
           location,
           chapterLabel: label,
           snippet,
           snippetMatchStart: matchStart,
-          snippetMatchLen: q.length,
-          match: { start: idx - blockStart, end: idx - blockStart + q.length },
+          snippetMatchLen: matchLen,
+          match: { start: m.start - blockStart, end: m.end - blockStart },
         });
-        from = idx + q.length;
       }
     }
     return results;
