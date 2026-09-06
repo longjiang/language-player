@@ -205,6 +205,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const [usedFollowUps, setUsedFollowUps] = useState<Set<string>>(new Set());
   const [freeFormText, setFreeFormText] = useState('');
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  /** True once the persisted transcript for the current `storageKey` has been
+   *  loaded (or determined to be empty). The save effect skips persisting
+   *  until this is set, so the initial empty `messages` array can never
+   *  overwrite a stored transcript before the async restore settles (which
+   *  would race the `AsyncStorage` read and wipe the session). */
+  const [restoreComplete, setRestoreComplete] = useState(false);
   const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -215,8 +221,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   useEffect(() => {
     if (!storageKey) {
       askAiLogger.log('session restore: no storageKey — transcript is ephemeral');
+      setRestoreComplete(false);
       return;
     }
+    // Re-arm the save gate for this storage key: the transcript must be fully
+    // loaded before we allow any write (see `restoreComplete`).
+    setRestoreComplete(false);
     let cancelled = false;
     askAiLogger.log('session restore: storageKey present, restoring messages', {
       storageKey,
@@ -240,10 +250,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       setStreamingId(null);
       setUsedFollowUps(new Set());
       reset();
+      setRestoreComplete(true);
       askAiLogger.log('session restore: restored messages into state', {
         storageKey,
         restoredCount: restored.length,
         restoredRoles: restored.map((m) => m.role),
+        restoreComplete: true,
       });
     })();
     return () => {
@@ -253,6 +265,19 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
 
   useEffect(() => {
     if (!storageKey) return;
+    // GATE: never persist the initial empty `messages` over a stored
+    // transcript. `restoreComplete` is false until the async restore has
+    // loaded the current storageKey, so the mount-time save (messages = [])
+    // is skipped instead of writing `[]` to storage and racing the restore
+    // read.
+    if (!restoreComplete) {
+      askAiLogger.log('session save: skipped (restore not complete)', {
+        storageKey,
+        restoreComplete,
+        inMemoryCount: messages.length,
+      });
+      return;
+    }
     // Persist only role/text/label — NOT `prompt`, which embeds the full
     // text/book context for content-carrying turns and would blow the storage
     // quota on a large book, silently failing to save. Regenerate is hidden
@@ -262,11 +287,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       .map((m) => ({ role: m.role, text: m.text, label: m.label }));
     askAiLogger.log('session save: effect fired', {
       storageKey,
+      restoreComplete,
       inMemoryCount: messages.length,
       persistedCount: persisted.length,
     });
     void savePersistedMessages(storageKey, persisted);
-  }, [messages, storageKey]);
+  }, [messages, storageKey, restoreComplete]);
 
   /** Clear the persisted transcript (and drop the stored copy). */
   const handleClear = useCallback(() => {
@@ -274,6 +300,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     setStreamingId(null);
     setUsedFollowUps(new Set());
     setFreeFormText('');
+    setRestoreComplete(true);
     askAiLogger.log('session clear: user cleared the chat', { storageKey });
     if (storageKey) {
       askAiLogger.log('session clear: clearing persisted messages', { storageKey });
