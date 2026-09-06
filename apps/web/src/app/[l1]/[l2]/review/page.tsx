@@ -66,6 +66,7 @@ import { TextActionMenu } from '@/components/text-action-menu';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
+import { SpellCharInput } from '@/components/review/spell-char-input';
 import { useT } from '@/hooks/use-t';
 import { log } from '@/lib/logger';
 import { toast } from 'sonner';
@@ -1571,6 +1572,20 @@ export default function ReviewPage() {
   const spellHint = reviewMode === 'spell'
     ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
     : null;
+  /** Expected character count of the correct blanked word — drives the number of
+   *  character boxes in the spell input (SPEC-066). Derived with the same
+   *  `spellBlankText` logic used to grade the answer, so the box count matches
+   *  the exact text the learner is asked to type. Computed inline (not a hook)
+   *  because it sits after the `!currentCard` early-return guard. */
+  const spellExpectedLen = reviewMode === 'spell' && currentCard
+    ? Array.from(spellBlankText(
+        currentCard.word.context?.text ?? '',
+        currentCard.word,
+        wordForm,
+        entry,
+        l2Code,
+      )).length
+    : 0;
   // Keep later tests hidden until the preceding test has been answered; the
   // current (first unanswered) slot renders its own status below.
   const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
@@ -1833,35 +1848,17 @@ export default function ReviewPage() {
           ) : (
             <div className="mt-4 w-full space-y-3 text-left">
               <label htmlFor="spell-input" className="text-sm font-medium text-foreground">{t('review.spell_prompt')}</label>
-              <div className="flex gap-2">
-                <input
-                  id="spell-input"
-                  type="text"
-                  value={spellText}
-                  onChange={(e) => setSpellText(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Submit on Enter, but never while an IME is confirming its
-                    // candidate — browsers mark the commit keydown as composing
-                    // (`isComposing` true, or the legacy `keyCode === 229`), so
-                    // Japanese/Chinese input's "enter to confirm" won't submit.
-                    if (
-                      e.key === 'Enter' &&
-                      !e.nativeEvent.isComposing &&
-                      e.keyCode !== 229 &&
-                      spellText.trim()
-                    ) {
-                      void handleSpellSubmit();
-                    }
-                  }}
-                  autoComplete="off"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  autoFocus
-                  className="flex-1 rounded-lg border border-border bg-background px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  placeholder={t('review.spell_prompt')}
-                />
-                <Button onClick={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="shrink-0">
+              <SpellCharInput
+                value={spellText}
+                onChange={setSpellText}
+                onSubmit={() => void handleSpellSubmit()}
+                expectedLength={spellExpectedLen}
+                autoFocus
+                id="spell-input"
+                label={t('review.spell_prompt')}
+              />
+              <div className="flex justify-center">
+                <Button onClick={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full">
                   {t('review.submit')}
                 </Button>
               </div>
