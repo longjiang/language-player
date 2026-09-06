@@ -6,8 +6,18 @@ import { useLanguage } from '@/providers/language-provider';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useTextActions } from '@/hooks/use-text-actions';
-import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
-import { TokenizedText } from '@/components/tokenized-text';
+import { TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
+import { AiExplanation } from '@/components/ai-explanation';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  TEXT_ACTION_ASK_AI_PRESETS,
+  TEXT_ACTION_ASK_AI_INITIAL_PRESET,
+} from '@langplayer/utils';
 import { AlignedTranslation } from '@/components/reader/aligned-translation';
 import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
 import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
@@ -125,6 +135,8 @@ export function TextActionMenu({
   const { display, tokenizedText } = useSettingsContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSideBySide, setIsSideBySide] = useState(false);
+  /** "Ask AI" (the shared AiExplanation chat) open for this text block. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
   // The L2 content wrapper — the aligned translation measures its line grid.
   const l2Ref = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -215,13 +227,8 @@ export function TextActionMenu({
     resetTranslate,
     handleCopy,
     handleSpeak,
-    handleExplain,
     handleTranslate,
     isSpeaking,
-    explainText,
-    explainError,
-    explainLoading,
-    resetExplain,
     translateText,
     translateError,
     textZoomFactor,
@@ -230,7 +237,7 @@ export function TextActionMenu({
   const menuItems: { kind: string; icon: typeof Copy; label: string; onClick: () => void; loading?: boolean }[] = [
     { kind: 'copy', icon: Copy, label: t('action.copy'), onClick: handleCopy },
     { kind: 'speak', icon: isSpeaking ? Square : Volume2, label: isSpeaking ? t('action.stop') : t('action.speak'), onClick: handleSpeak },
-    { kind: 'explain', icon: Sparkles, label: t('action.let_ai_explain'), onClick: handleExplain, loading: activeAction === 'explain' && explainLoading },
+    { kind: 'explain', icon: Sparkles, label: t('action.let_ai_explain'), onClick: () => setAskAiOpen(true) },
     { kind: 'translate', icon: Languages, label: t('action.translation'), onClick: handleTranslate, loading: activeAction === 'translate' && !translateText && !translateError },
   ];
 
@@ -338,25 +345,34 @@ export function TextActionMenu({
         </PopoverContent>
       </Popover>
 
-      {/* Explain modal */}
-      {activeAction === 'explain' && (explainText || explainError || explainLoading) && (
-        <ExplainPanel
-          l2Code={l2Code}
-          explainText={explainText}
-          explainError={explainError}
-          explainLoading={explainLoading}
-          onClose={() => { close(); resetExplain(); }}
-        >
-          {/* Original text — tokenized after the stream ends */}
-          <div className="rounded-lg border border-border bg-muted/30 p-3">
-            {explainLoading ? (
-              <span className="text-muted-foreground/80">{text}</span>
-            ) : (
-              <TokenizedText text={text} l2Code={l2Code} />
-            )}
+      {/* "Ask AI" — the shared AiExplanation chat (the "Let DeepSeek Explain"
+          component used everywhere else), auto-streaming a concise
+          explanation and preloading the summarize / difficult expressions /
+          grammar points presets. */}
+      <Dialog open={askAiOpen} onOpenChange={setAskAiOpen}>
+        <DialogContent className="flex h-[min(70vh,560px)] flex-col sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('action.let_ai_explain')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <AiExplanation
+              word={text}
+              contextText={undefined}
+              contextForm={undefined}
+              entryFound={true}
+              autoLoad
+              followUpPresets={TEXT_ACTION_ASK_AI_PRESETS}
+              initialPreset={TEXT_ACTION_ASK_AI_INITIAL_PRESET}
+              readerContent={{
+                text,
+                page: text,
+                chapter: null,
+                bookUpToChapter: null,
+              }}
+            />
           </div>
-        </ExplainPanel>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Translate result */}
       {activeAction === 'translate' && (translateText || translateError) && (
