@@ -715,10 +715,33 @@ choose mode.
   otherwise **the first character of the lemma** — but only when the lemma is
   more than one character long (a single-char lemma's first char IS the whole
   word and would give the answer away). Shared helper: `spellHintOf`.
-- **Grading** — on submit, `stringSimilarity` compares the submission to the
-  correct surface form (normalized Levenshtein ratio) and maps it to a base
+  **Enter does not submit** — the input has the Enter-to-submit handler
+  removed (web) and `onSubmitEditing`/blur-on-submit disabled (mobile), so an
+  IME's "enter to confirm" never fires an answer early; only the **Submit**
+  button submits.
+- **Correct answer derivation (2026-09-06)** — the correct answer is the exact
+  text blanked in the context sentence, derived with the **same forms the
+  context highlight matches** (`spellBlankText` in
+  `packages/utils/src/srs-test-mode.ts`): among the word's matchable forms
+  (saved forms, context/instance surface forms, head, the resolved entry's
+  head/alternate/kana/han_script variants) the **longest form that actually
+  appears in the context** wins — so `たじろかせる` is the answer, never the
+  reduced record form `たじろか`. For Japanese the context is folded to
+  hiragana to find the form but the returned text is the exact substring as it
+  appears in the sentence.
+- **Script-tolerant matching (2026-09-06, option C)** — the comparison is
+  script-forgiving, so a learner is not penalized for typing the other script:
+  - **Japanese** folds hiragana ⇄ katakana (`scriptVariants` / `kanaVariants`,
+    synchronous Unicode math in the shared utils);
+  - **Chinese (zh/yue)** compares simplified & traditional variants, built by
+    the app via the same lazy OpenCC conversion the render layer uses
+    (`toTraditional`/`toSimplified`, ADR-0019), so the matcher agrees with what
+    is shown in the context sentence. `scoreSpellResult` takes the variant
+    arrays and takes the **best `stringSimilarity` across every variant pair**
+    (`bestScriptSimilarity`).
+- **Grading** — on submit, the best script-folded similarity maps to a base
   score of 1–3:
-  - **≥ 0.9** → 3 (essentially exact),
+  - **≥ 0.9** → 3 (essentially exact, any script),
   - **≥ 0.5** → 2 (a few character edits),
   - else → 1 (wrong).
 - **Timer adjustment** — the countdown always adjusts the base score, using the
@@ -729,7 +752,10 @@ choose mode.
   same button mapping as choose mode. Shared helper: `scoreSpellResult`
   (`packages/utils/src/srs-test-mode.ts`).
 - **Reveal** — submitting reveals the card back (the dictionary entry) and the
-  rating buttons, and shows a Correct/Incorrect line plus the correct answer.
+  rating buttons. When the answer is **incorrect** it shows both the learner's
+  typed answer (`review.spell_your_answer`) and the correct answer
+  (`review.spell_correct_answer`); when correct it shows a single
+  Correct line.
 
 ### Interaction & input
 
@@ -968,6 +994,17 @@ types count while unexpired — there is no `status` filter.
   `packages/utils/src/srs-test-mode.ts`. The context blanking uses a new
   `blankHighlighted` prop on both `TokenizedText` implementations (web
   `token-span.tsx`, mobile `TokenizedText.tsx`).
+- ✅ **Spell correct-answer derivation + script tolerance** — implemented
+  (2026-09-06, both review pages + shared utils): the correct answer is the
+  exact text blanked in the context sentence via `spellBlankText` (longest
+  highlight form that appears in the context, so `たじろかせる` never `たじろか`),
+  and grading is script-tolerant — Japanese folds hiragana ⇄ katakana, Chinese
+  compares simplified & traditional variants built with the app's lazy OpenCC
+  (`scoreSpellResult`/`bestScriptSimilarity` over variant arrays).
+- ✅ **Spell input & feedback polish** — implemented (2026-09-06, both review
+  pages): Enter no longer submits (IME "enter to confirm" doesn't fire an early
+  answer), and an incorrect answer shows both the learner's typed answer and
+  the correct answer.
 
 ## Known Issues & Resolutions (2026-08-13)
 
