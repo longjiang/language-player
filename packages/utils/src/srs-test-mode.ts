@@ -346,17 +346,20 @@ export function bestScriptSimilarity(
 }
 
 /**
- * Grade a spell-mode answer with the SPEC-066 spell rules:
+ * Grade a spell-mode answer with the SPEC-066 spell rules (2026-09-06 tighten):
  *
  * - `answerVariants` / `correctVariants` are the script-folded alternatives for
  *   the user's submission and the blanked word (see `scriptVariants`); the best
  *   `stringSimilarity` across all pairs sets the base score;
- * - the ratio maps to a base score of 1–3 (≥0.9 → 3, ≥0.5 → 2, else → 1);
- * - the countdown timer always adjusts it: slower than 10 s deducts a point,
- *   faster than 5 s adds one (the same per-test thresholds as
- *   `scoreTestResult`);
- * - clamp 0–3 and map points → again(0) / hard(1) / good(2) / easy(3) — the
- *   same button mapping as choose mode.
+ * - base points map similarity to 0–2, then the countdown only moves a
+ *   *correct* answer (matching choose mode, which only time-adjusts a perfect
+ *   score) so the fast bonus can never rescue a wrong or typo'd answer:
+ *   - ≥ 0.9 → 2 (correct — essentially exact, script-folded); fast (<5 s) → 3
+ *     (easy), slow (>10 s) → 1 (hard), else → 2 (good);
+ *   - 0.7–0.9 → 1 (close — a small typo), regardless of time → hard;
+ *   - < 0.7 → 0 (wrong), regardless of time → again;
+ * - map points → again(0) / hard(1) / good(2) / easy(3) — the same button
+ *   mapping as choose mode.
  */
 export function scoreSpellResult(
   answerVariants: string[],
@@ -364,10 +367,11 @@ export function scoreSpellResult(
   totalMs: number,
 ): 'again' | 'hard' | 'good' | 'easy' {
   const best = bestScriptSimilarity(answerVariants, correctVariants);
-  let points = best >= 0.9 ? 3 : best >= 0.5 ? 2 : 1;
-  if (totalMs > 10_000) points -= 1;
-  else if (totalMs < 5_000) points += 1;
-  points = Math.max(0, Math.min(3, points));
+  let points = best >= 0.9 ? 2 : best >= 0.7 ? 1 : 0;
+  if (points === 2) {
+    if (totalMs < 5_000) points = 3;
+    else if (totalMs > 10_000) points = 1;
+  }
   return (['again', 'hard', 'good', 'easy'] as const)[points]!;
 }
 

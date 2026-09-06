@@ -388,48 +388,50 @@ describe('stringSimilarity', () => {
 });
 
 describe('scoreSpellResult', () => {
-  it('exact answer (base 3), normal speed → easy (3)', () => {
-    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 7_000)).toBe('easy');
+  it('exact answer (base 2), normal speed → good (2)', () => {
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 7_000)).toBe('good');
   });
 
   it('exact answer, fast (<5s) → easy (3)', () => {
     expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 3_000)).toBe('easy');
   });
 
-  it('exact answer, slow (>10s) → good (2)', () => {
-    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 12_000)).toBe('good');
+  it('exact answer, slow (>10s) → hard (1)', () => {
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 12_000)).toBe('hard');
   });
 
-  it('very wrong answer, slow → again (0)', () => {
+  it('very wrong answer is again regardless of time', () => {
     expect(scoreSpellResult(['wrench'], ['Apple tree'], 12_000)).toBe('again');
+    expect(scoreSpellResult(['wrench'], ['Apple tree'], 3_000)).toBe('again');
   });
 
-  it('very wrong answer, fast → good (1 + 1 = 2)', () => {
-    expect(scoreSpellResult(['wrench'], ['Apple tree'], 3_000)).toBe('good');
+  it('a fast wrong answer is never rescued (はばり vs はまぐり)', () => {
+    // sim ≈ 0.5 → wrong → again, even typed very fast.
+    expect(scoreSpellResult(['はばり'], ['はまぐり'], 1_000)).toBe('again');
   });
 
-  it('one-char-edit answer (base 2), normal → good (2)', () => {
-    // "Appel tree" vs "Apple tree" → similarity ≥ 0.5 → base 2.
-    expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 7_000)).toBe('good');
+  it('one-char-edit answer (base 1, close) → hard, time-independent', () => {
+    // "Appel tree" vs "Apple tree" → sim ≈ 0.8 → close → hard.
+    expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 7_000)).toBe('hard');
+    expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 3_000)).toBe('hard');
   });
 
-  it('script variants match (katakana vs hiragana) → easy', () => {
+  it('script variants match (katakana vs hiragana) → correct', () => {
     // たじろかせる (hiragana) vs タジロカセル (katakana) share a variant.
     expect(scriptVariants('たじろかせる', 'ja')).toContain('タジロカセル');
     expect(scoreSpellResult(
       scriptVariants('たじろかせる', 'ja'),
       scriptVariants('タジロカセル', 'ja'),
       7_000,
-    )).toBe('easy');
+    )).toBe('good');
   });
 
   it('script variants match (simplified vs traditional Chinese)', () => {
-    // CEDICT variant sets supplied by the app; the comparator is indifferent.
     expect(scoreSpellResult(
       ['這裡', '这里'],
       ['这里', '這裏'],
       7_000,
-    )).toBe('easy');
+    )).toBe('good');
   });
 });
 
