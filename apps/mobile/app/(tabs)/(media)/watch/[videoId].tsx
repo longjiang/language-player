@@ -72,7 +72,7 @@ export default function WatchScreen() {
   // content (SPEC-048 Tier 9). The param wins over the persisted pair.
   const l2Code = requestedL2 ?? l2Lang.code;
   const t = useT();
-  const { playNext, playPrevious, hasNext, hasPrevious, ensureQueue } = useVideoPlayer();
+  const { playNext, playPrevious, hasNext, hasPrevious, ensureQueue, restoreQueueIfCurrent } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
   const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -143,11 +143,21 @@ export default function WatchScreen() {
   // Watch history recording
   useWatchHistoryRecorder(video?.id, currentTime);
 
-  // Seed the queue for direct/deep-linked videos so next/prev and the queue
-  // tab stay defined even when the user didn't navigate through a list.
+  // Restore a persisted watch queue (page refresh / cold link) so prev/next
+  // and the queue tab survive a reload. When no persisted queue matches, fall
+  // back to a single-video queue (`ensureQueue`); build-from-video (tv-show
+  // episodes / recommendations) is layered on afterward.
+  const queueRestoredRef = useRef(false);
   useEffect(() => {
-    if (video) ensureQueue(video);
-  }, [video, ensureQueue]);
+    if (!video?.youtube_id) return;
+    let cancelled = false;
+    restoreQueueIfCurrent(video.youtube_id).then((restored) => {
+      if (cancelled) return;
+      queueRestoredRef.current = restored;
+      if (!restored) ensureQueue(video);
+    });
+    return () => { cancelled = true; };
+  }, [video, restoreQueueIfCurrent, ensureQueue]);
 
   const currentTimeRef = useRef(currentTime);
   currentTimeRef.current = currentTime;

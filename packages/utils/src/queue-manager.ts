@@ -52,6 +52,31 @@ export class QueueManager {
     }
   }
 
+  /** Restore a previously persisted queue snapshot (e.g. after a page
+   *  refresh / cold link). Replays the queue, type, and metadata but leaves
+   *  the "current" position to be positioned by `getSnapshot(youtubeId)` on
+   *  the caller's side — the queue order already encodes it.
+   *  A malformed/empty snapshot is a no-op. */
+  restore(state: Partial<QueueState> | null | undefined): void {
+    if (!state || !Array.isArray(state.queue)) return;
+    this._queue = state.queue;
+    this._queueType =
+      state.queueType === 'tvShow' || state.queueType === 'search'
+        ? state.queueType
+        : 'recommended';
+
+    if (this._queueType === 'tvShow') {
+      this._tvShow = state.tvShow ?? undefined;
+      this._searchTerm = undefined;
+    } else if (this._queueType === 'search') {
+      this._searchTerm = state.searchTerm ?? undefined;
+      this._tvShow = undefined;
+    } else {
+      this._tvShow = undefined;
+      this._searchTerm = undefined;
+    }
+  }
+
   /** Replace current video (e.g., after async enrichment) */
   updateCurrentVideo(video: YouTubeVideo): void {
     const idx = this.findIndex(video.youtube_id);
