@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator, FlatList, PanResponder, useWindowDimensions } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, PanResponder, ScrollView, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,7 +15,8 @@ import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
 import { VideoControlBar } from '@/components/video/VideoControlBar';
-import { TranscriptQueuePanel } from '@/components/video/TranscriptQueuePanel';
+import { TranscriptQueuePanel, type TranscriptQueueTab } from '@/components/video/TranscriptQueuePanel';
+import { VideoAskAiContent } from '@/components/video/VideoAskAiContent';
 import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
 import { VideoQueueList } from '@/components/video/VideoQueueList';
 import { VideoMeta } from '@/components/video/VideoMeta';
@@ -92,6 +93,9 @@ export default function WatchScreen() {
   const [subtitleLines, setSubtitleLines] = useState<SubtitleSyncedLine[]>([]);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
+  /** Active transcript/queue/info/ai panel tab (controlled so AI timestamp
+   *  clicks can switch back to the transcript). */
+  const [panelTab, setPanelTab] = useState<TranscriptQueueTab>('transcript');
   const [bandTop, setBandTop] = useState<number | null>(null);
   const bandFrameHeightRef = useRef(0);
   const bandHeightRef = useRef(0);
@@ -550,6 +554,8 @@ export default function WatchScreen() {
 
   const transcriptPanel = (
     <TranscriptQueuePanel
+      activeTab={panelTab}
+      onTabChange={setPanelTab}
       transcript={
         <SubtitleDisplay
           lines={subtitleLines}
@@ -561,6 +567,16 @@ export default function WatchScreen() {
         />
       }
       queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+      askAi={
+        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+          <VideoAskAiContent
+            videoTitle={v.title ?? ''}
+            subtitleLines={subtitleLines.map((l) => ({ starttime: l.starttime, l2Line: l.l2Line }))}
+            onSeek={(time) => { handleSeekToLine(time); setPanelTab('transcript'); }}
+            storageKey={`lp-ask-ai:video:${videoId}`}
+          />
+        </ScrollView>
+      }
       info={isWide ? undefined : videoInfo}
     />
   );

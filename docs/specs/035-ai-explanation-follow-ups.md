@@ -40,6 +40,16 @@ and `presetKey()` (for used-once-per-transcript tracking). The dictionary popup
 and detail tab pass `DEFAULT_AI_FOLLOW_UPS` to keep their historical buttons;
 a future AI-chat surface can pass a different set or `[]`.
 
+**Reader / video additions.** `AiExplanation` also accepts a `storageKey` — when
+set, the chat transcript persists per entity (readers: per note / web page /
+book; video: per video) and is restored on mount, plus a **Clear conversation**
+button (web `localStorage`, mobile `AsyncStorage`). A video "Ask AI" surface
+passes `onTimestampPress`; when set, `[MM:SS]` timestamps in replies render as
+tappable chips that call back with the time in seconds (the caller seeks), and
+`VIDEO_AI_TIMESTAMP_INSTRUCTION` is appended to prompts so the model cites the
+subtitle `[MM:SS]` tokens (web: MarkdownExplanation remark plugin; mobile:
+inline timestamp renderer).
+
 ### Tokenized-text action menu presets (`TEXT_ACTION_ASK_AI_PRESETS`)
 
 The tokenized-text ⋯ action menu's **Ask AI** (the same `AiExplanation` chat)

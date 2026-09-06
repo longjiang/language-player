@@ -233,6 +233,17 @@ The mode can be toggled via:
 > stacked (player → controls → sidebar) — never two-column, since it renders
 > inside the dictionary panel even on large screens.
 >
+> **Note (video "Ask AI" tab):** The watch-page sidebar also exposes an
+> **Ask AI** (`ai`) tab (mobile `TranscriptQueuePanel` parity) that opens the
+> shared `AiExplanation` chat (SPEC-035) preloaded with the full subtitle
+> transcript — each line prefixed by its `[MM:SS]` timestamp — as context, the
+> Summarize / Difficult expressions / Grammar points presets, and tappable
+> `[MM:SS]` timestamps in every reply. Tapping a timestamp calls `onSeek` (the
+> caller seeks the video) and switches the sidebar back to the transcript tab.
+> The transcript persists per video (`lp-ask-ai:video:<id>`, web localStorage /
+> mobile AsyncStorage). Prompt responses are instructed
+> (`VIDEO_AI_TIMESTAMP_INSTRUCTION`) to cite the subtitle `[MM:SS]` tokens.
+>
 > **Note (queue items):** The watch-page queue (`VideoQueueList`) renders the
 > tv-show header as a two-row block — the show title on its own row and
 > "(N episodes)" on a second row — with no Tv icon. TV-show queue rows show no

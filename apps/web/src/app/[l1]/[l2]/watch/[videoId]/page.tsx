@@ -12,7 +12,8 @@ import { VideoMeta } from '@/components/video/video-meta';
 import { VideoControlBar } from '@/components/video/video-control-bar';
 import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
-import { VideoSidebarPanel } from '@/components/video/video-sidebar-panel';
+import { VideoSidebarPanel, type SidebarTabKey } from '@/components/video/video-sidebar-panel';
+import { VideoAskAi } from '@/components/video/video-ask-ai';
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
 import {
@@ -20,7 +21,7 @@ import {
   extractSubtitleDuration,
   type SyncedLine,
 } from '@/lib/subtitle-csv';
-import { AlertCircle, Loader2, FileText, ListVideo, Info } from 'lucide-react';
+import { AlertCircle, Loader2, FileText, ListVideo, Info, Sparkles } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
@@ -89,6 +90,9 @@ export default function WatchPage() {
   isWideRef.current = isWide;
   const [translatingText, setTranslatingText] = useState<string | null>(null);
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
+  /** Active transcript/queue/info/ai sidebar tab (controlled so AI timestamp
+   *  clicks can switch back to the transcript). */
+  const [sidebarTab, setSidebarTab] = useState<SidebarTabKey>('subs');
 
   useWatchHistoryRecorder(video?.id, currentTime);
 
@@ -492,8 +496,11 @@ export default function WatchPage() {
           <div className={isWide ? 'min-h-0 overflow-hidden' : 'flex-1 min-h-0 px-4 pb-4'}>
             <VideoSidebarPanel
               contentRef={transcriptScrollRef}
+              activeTab={sidebarTab}
+              onTabChange={setSidebarTab}
               tabs={[
                 { key: 'subs', label: t('title.transcript'), icon: <FileText className="h-4 w-4" /> },
+                { key: 'ai', label: t('action.ask_ai'), icon: <Sparkles className="h-4 w-4" /> },
                 { key: 'queue', label: t('title.queue'), icon: <ListVideo className="h-4 w-4" /> },
                 ...(isWide ? [] : [{ key: 'info' as const, label: t('title.info'), icon: <Info className="h-4 w-4" /> }]),
               ]}
@@ -501,6 +508,16 @@ export default function WatchPage() {
               {(tab) => {
                 if (tab === 'subs') {
                   return <SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />;
+                }
+                if (tab === 'ai') {
+                  return (
+                    <VideoAskAi
+                      videoTitle={v.title ?? ''}
+                      subtitleLines={displaySubtitleLines.map((l) => ({ starttime: l.starttime, l2Line: l.l2Line }))}
+                      onSeek={(time) => { handleSeekToLine(time); setSidebarTab('subs'); }}
+                      storageKey={`lp-ask-ai:video:${videoId}`}
+                    />
+                  );
                 }
                 if (tab === 'queue') {
                   return <VideoQueueList currentYoutubeId={v.youtube_id} />;
