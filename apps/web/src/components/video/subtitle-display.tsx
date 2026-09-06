@@ -498,7 +498,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
         <div
           className={cn(
-            'order-1 flex-1 flex flex-col items-center justify-center cursor-pointer min-h-0',
+            'order-1 flex-1 flex flex-col justify-center cursor-pointer min-h-0',
             overlay ? 'px-0 py-1' : 'px-4 py-2',
           )}
           onClick={handleBandRowClick}
@@ -531,7 +531,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               </div>
             </TextActionMenu>
           ) : (
-            <p className={cn('text-sm', placeholderClass)}>...</p>
+            <p className={cn('text-sm text-center', placeholderClass)}>...</p>
           )}
         </div>
       </div>
