@@ -161,7 +161,7 @@ history, playlists, liked videos, and saved words.
 
 ## 9. Out of Scope / Deferred
 
-- Watch-page queue hydration from `?queueType=` (SPEC-071 §8.3, deferred)
+- Watch-page queue hydration from `?queueType=` — **implemented** (SPEC-071 §8.2)
 - Channel preferences sync beyond the existing `channel-preferences` API
 - Classic `/youtube/channels` and `/youtube/subscriptions` redirect behavior
   stays in place until these pages are live
