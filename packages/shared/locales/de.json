@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Transkriptionslimit erreicht. Bitte upgraden Sie auf Pro, um Zugang zu mehr Transkriptionen zu erhalten.",
         "purchase_confirmation": "Drücken Sie auf „Kaufen“ und Sie werden aufgefordert, Ihren In-App-Kauf im Apple App Store zu bestätigen.",
         "quiz_mode_desc": "Verstecke gespeicherte Wörter als Lücken, um dein Gedächtnis zu testen. Tippe auf eine Lücke, um das Wort anzuzeigen.",
+        "reader_context_too_large": "Dieser Text ist sehr lang (über 1.000.000 Zeichen). KI-Antworten können länger dauern und weniger genau sein.",
         "reader_empty_state": "Erstelle eine Notiz, füge Text ein und tippe dann auf ein Wort, um die Bedeutung zu sehen.",
         "ready_to_start": "Bereit, mit dem Lernen zu beginnen?",
         "receipt_validation_failed": "Quittungsvalidierung fehlgeschlagen. Bitte kontaktieren Sie den Support.",

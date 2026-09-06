@@ -143,18 +143,27 @@ tap a preset button **or** send a free-form message to get an answer (the
 `demandMode` prop; readers only):
 
 - **Notes / web / image readers** — presets: *Summarize this text* (the whole
-  loaded text) and *Summarize this page* (the current visible page).
+  loaded text) and *Summarize this page* (the current visible page). The
+  whole loaded text is also **preloaded as context** whenever a free-form
+  follow-up question is asked, so answers are grounded in the entire text,
+  not just the prior turns.
 - **EPUB reader** — presets: *Summarize this page*, *Summarize this chapter*
   (the current chapter), and *Summarize book up to this chapter* (chapters
-  1…current, concatenated).
+  1…current, concatenated). The **entire book** is **preloaded as context**
+  for free-form follow-up questions (`ReaderAiContent.text`), while the
+  page / chapter / *book up to this chapter* presets stay scoped to their own
+  ranges.
 - Every preset injects a named block of the reader's `ReaderAiContent`
   (`text` / `page` / `chapter` / `bookUpToChapter`) into the shared
   `prompt.summarize` template. Content-carrying presets also append the
   summary-shape instruction (`READER_AI_SUMMARY_INSTRUCTION`: a concise
   overview of the arc, the key events, and the main characters — never a
-  retelling) and the quote instruction (`READER_AI_QUOTE_INSTRUCTION`). The
-  injected content is truncated to `READER_ASK_AI_CONTENT_MAX` (12 000 chars)
-  so very long books/chapters stay within budget.
+  retelling) and, when the surface renders quote chips, the quote instruction
+  (`READER_AI_QUOTE_INSTRUCTION`). The **12 000-char cap
+  (`READER_ASK_AI_CONTENT_MAX`) was removed** — the full text / book is
+  preloaded as context rather than truncated. When the preloaded context
+  exceeds `READER_AI_CONTEXT_WARN_MAX` (1 000 000 chars), the chat shows a
+  warning banner that long texts may yield slower / less precise answers.
 - **Quote chips.** The model is asked to quote only a FEW short exact passages
   (`[[exact L2 passage||L1 translation]]` — never the whole text, and never a
   trailing dump of every passage), each on its OWN line as a standalone
@@ -182,8 +191,8 @@ tap a preset button **or** send a free-form message to get an answer (the
 wire the chat. Quote chips are enabled by passing `quoteChips` + `onQuotePress`
 to `AiExplanation`. Preset config lives in `@langplayer/utils`
 (`READER_ASK_AI_TEXT_PRESETS` / `READER_ASK_AI_EPUB_PRESETS` /
-`truncateReaderAiContent` / `splitAiQuotes` / `normalizeQuoteBlocks` /
-`cleanAiQuote` /
+`truncateReaderAiContent` / `READER_AI_CONTEXT_WARN_MAX` / `splitAiQuotes` /
+`normalizeQuoteBlocks` / `cleanAiQuote` /
 `READER_AI_SUMMARY_INSTRUCTION` / `READER_AI_QUOTE_INSTRUCTION`).
 
 ### 8. Search, table of contents, and place

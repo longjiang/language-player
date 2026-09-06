@@ -22,7 +22,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AiExplanation } from '@/components/ai-explanation';
 import {
   READER_ASK_AI_EPUB_PRESETS,
-  truncateReaderAiContent,
   type ReaderAiContent,
 } from '@langplayer/utils';
 import { Button } from '@/components/ui/button';
@@ -123,9 +122,13 @@ export default function EpubPage() {
   /** Current chapter text + book-so-far text, fetched when the Ask AI opens. */
   const [epubChapterText, setEpubChapterText] = useState('');
   const [epubBookUpToText, setEpubBookUpToText] = useState('');
+  /** Entire book text (all spine items), preloaded as the Ask-AI follow-up
+   *  context when it opens. */
+  const [epubFullBookText, setEpubFullBookText] = useState('');
 
-  // When the Ask AI chat opens, fetch the current chapter and book-so-far text
-  // so the reader can scope "summarize this chapter" / "book up to this chapter".
+  // When the Ask AI chat opens, fetch the current chapter, book-so-far text,
+  // and the full book so the reader can scope "summarize this chapter" /
+  // "book up to this chapter" AND preload the entire book as follow-up context.
   useEffect(() => {
     if (!askAiOpen || !epub.book || !location) return;
     let cancelled = false;
@@ -134,14 +137,17 @@ export default function EpubPage() {
         const chapter = await epub.book!.spineTextData(location.spineIndex);
         if (cancelled) return;
         let bookUpTo = '';
-        for (let i = 0; i <= location.spineIndex; i++) {
+        let fullBook = '';
+        for (let i = 0; i < epub.book!.spine.length; i++) {
           const c = await epub.book!.spineTextData(i);
           if (cancelled) return;
-          bookUpTo += c.text;
+          fullBook += c.text;
+          if (i <= location.spineIndex) bookUpTo += c.text;
         }
         if (cancelled) return;
         setEpubChapterText(chapter.text);
         setEpubBookUpToText(bookUpTo);
+        setEpubFullBookText(fullBook);
       } catch {
         /* spine text unavailable — leave the summary buttons empty */
       }
@@ -763,10 +769,10 @@ export default function EpubPage() {
               onQuotePress={openSearchFor}
               readerContent={
                 {
-                  text: '',
-                  page: truncateReaderAiContent(currentPageText),
-                  chapter: truncateReaderAiContent(epubChapterText),
-                  bookUpToChapter: truncateReaderAiContent(epubBookUpToText),
+                  text: epubFullBookText,
+                  page: currentPageText,
+                  chapter: epubChapterText,
+                  bookUpToChapter: epubBookUpToText,
                 } satisfies ReaderAiContent
               }
             />

@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Limite di trascrizioni raggiunto. Passa a Pro per accedere a più trascrizioni.",
         "purchase_confirmation": "Premi Acquisto e ti verrà chiesto di confermare l'acquisto in-app dall'Apple App Store.",
         "quiz_mode_desc": "Nascondi le parole salvate come spazi vuoti per testare la tua memoria. Tocca uno spazio vuoto per rivelare la parola.",
+        "reader_context_too_large": "Questo testo è molto lungo (oltre 1.000.000 di caratteri). Le risposte dell'IA potrebbero richiedere più tempo ed essere meno precise.",
         "reader_empty_state": "Crea una nota, incolla del testo e tocca qualsiasi parola per vedere il suo significato.",
         "ready_to_start": "Pronto per iniziare a imparare?",
         "receipt_validation_failed": "La validazione della ricevuta è fallita. Contatta il supporto.",

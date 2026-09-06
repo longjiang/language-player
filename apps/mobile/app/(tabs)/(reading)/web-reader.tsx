@@ -17,7 +17,7 @@ import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { fetchReaderPage } from '@langplayer/shared';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
-import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
+import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { VisitedSitesSidebar } from '@/components/reader/VisitedSitesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
@@ -363,8 +363,8 @@ export default function WebReaderScreen() {
         presets={READER_ASK_AI_TEXT_PRESETS}
         content={
           {
-            text: truncateReaderAiContent(text),
-            page: truncateReaderAiContent(currentPageText),
+            text,
+            page: currentPageText,
             chapter: null,
             bookUpToChapter: null,
           } satisfies ReaderAiContent

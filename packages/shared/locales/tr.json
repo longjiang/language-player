@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
         "purchase_confirmation": "Satın Al'a basın ve Apple App Store'dan uygulama içi satın alımınızı onaylamanız istenecek.",
         "quiz_mode_desc": "Kaydedilen kelimeleri boşluk olarak gizleyerek hatırlamanı test et. Kelimeyi göstermek için bir boşluğa dokun.",
+        "reader_context_too_large": "Bu metin çok uzun (1.000.000'den fazla karakter). Yapay zeka yanıtları daha uzun sürebilir ve daha az doğru olabilir.",
         "reader_empty_state": "Bir Not oluşturun, biraz metin yapıştırın ve anlamını görmek için herhangi bir kelimeye dokunun.",
         "ready_to_start": "Öğrenmeye başlamaya hazır mısınız?",
         "receipt_validation_failed": "Makbuz doğrulaması başarısız oldu. Lütfen destekle iletişime geçin.",

@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "대본 한도에 도달했습니다. 더 많은 대본에 접근하려면 프로로 업그레이드하세요.",
         "purchase_confirmation": "구매를 누르면 Apple App Store에서 인앱 구매를 확인하라는 메시지가 표시됩니다.",
         "quiz_mode_desc": "저장된 단어를 빈칸으로 숨겨 기억력을 테스트하세요. 빈칸을 탭하여 단어를 표시합니다.",
+        "reader_context_too_large": "이 텍스트는 매우 깁니다(1,000,000자 이상). AI 응답이 더 오래 걸리고 덜 정확할 수 있습니다.",
         "reader_empty_state": "노트를 만들고 텍스트를 붙여넣은 다음 아무 단어나 탭하면 뜻을 볼 수 있습니다.",
         "ready_to_start": "학습을 시작할 준비가 되셨나요?",
         "receipt_validation_failed": "영수증 확인에 실패했습니다. 지원팀에 문의해 주세요.",

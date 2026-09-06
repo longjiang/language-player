@@ -1028,6 +1028,7 @@
         "pro_transcript_limit_reached": "已达到文字记录限制。请升级到专业版以访问更多文字记录。",
         "purchase_confirmation": "点击购买，您将被要求确认来自Apple App Store的应用内购买。",
         "quiz_mode_desc": "将已保存的单词隐藏为空格以测试记忆。点击空格显示单词。",
+        "reader_context_too_large": "这段文本非常长（超过1,000,000个字符）。AI 回答可能更慢且不够准确。",
         "reader_empty_state": "新建一条笔记，粘贴文本，然后点击任意单词查看释义。",
         "ready_to_start": "准备好开始学习了吗？",
         "receipt_validation_failed": "收据验证失败。请联系支持。",

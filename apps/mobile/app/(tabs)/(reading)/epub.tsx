@@ -17,7 +17,7 @@ import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
-import { READER_ASK_AI_EPUB_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
+import { READER_ASK_AI_EPUB_PRESETS, type ReaderAiContent } from '@langplayer/utils';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
 import { PanelTopOpen, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react-native';
@@ -85,8 +85,30 @@ export default function EpubReaderScreen() {
   /** Reader "Ask AI" summary chat. */
   const [askAiOpen, setAskAiOpen] = useState(false);
   const [currentPageText, setCurrentPageText] = useState('');
-  const [epubChapterText, setEpubChapterText] = useState('');
-  const [epubBookUpToText, setEpubBookUpToText] = useState('');
+  /** Reader "Ask AI" content (SPEC-087 §7.1): the full book is preloaded as
+   *  follow-up context (`text`), while the page/chapter/book-up-to-chapter
+   *  presets stay scoped to their own ranges. Derived from the whole-book
+   *  block stream + TOC chapter boundaries at the current block. */
+  const epubAskAiContent = useMemo<ReaderAiContent>(() => {
+    const blocks = epub.blocks ?? [];
+    const textOf = (s: number, e: number) =>
+      blocks.slice(s, e).map((b: any) => b.text ?? '').join('\n\n');
+    const bi = location?.blockIndex ?? 0;
+    const bounds = (epub.chapterLabels ?? [])
+      .map((c) => c.blockIndex)
+      .filter((i) => i >= 0)
+      .sort((a, b) => a - b);
+    let s = 0;
+    for (const i of bounds) if (i <= bi) s = i;
+    let e = blocks.length;
+    for (const i of bounds) if (i > bi) { e = i; break; }
+    return {
+      text: textOf(0, blocks.length),
+      page: currentPageText,
+      chapter: textOf(s, e),
+      bookUpToChapter: textOf(0, e),
+    };
+  }, [epub.blocks, epub.chapterLabels, location?.blockIndex, currentPageText]);
   /** Pre-fill the search (quote chips) — `searchNonce` re-applies the query. */
   const [searchQuery, setSearchQuery] = useState('');
   const [searchNonce, setSearchNonce] = useState(0);
@@ -763,16 +785,7 @@ export default function EpubReaderScreen() {
         onClose={() => setAskAiOpen(false)}
         title={nearestMarker?.label || epub.fileName || t('title.epub_reader')}
         presets={READER_ASK_AI_EPUB_PRESETS}
-        content={
-          {
-            text: '',
-            page: truncateReaderAiContent(currentPageText),
-            chapter: truncateReaderAiContent(currentPageText),
-            bookUpToChapter: truncateReaderAiContent(
-              epub.blocks?.map((b) => ((b as any).text ?? '')).join('\n') ?? '',
-            ),
-          } satisfies ReaderAiContent
-        }
+        content={epubAskAiContent}
         onQuotePress={openSearchFor}
       />
     </View>
