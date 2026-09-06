@@ -48,7 +48,8 @@ passes `onTimestampPress`; when set, `[MM:SS]` timestamps in replies render as
 tappable chips that call back with the time in seconds (the caller seeks), and
 `VIDEO_AI_TIMESTAMP_INSTRUCTION` is appended to prompts so the model cites the
 subtitle `[MM:SS]` tokens (web: MarkdownExplanation remark plugin; mobile:
-inline timestamp renderer).
+inline timestamp renderer). Timestamps render as chips **anywhere** in the reply —
+including inside markdown headings and bold text, not just body paragraphs.
 
 ### Tokenized-text action menu presets (`TEXT_ACTION_ASK_AI_PRESETS`)
 
