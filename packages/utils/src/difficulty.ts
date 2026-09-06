@@ -1,36 +1,22 @@
 /**
  * Difficulty / Level calculations shared across platforms.
  *
- * These formulas are derived from the classic Nuxt app's logic and
- * the MAX_DIFFICULTY_BY_LEVEL data.
+ * Note: the per-language difficulty thresholds (Video difficulty → 1–7 level)
+ * live ONLY on the server: `DIFFICULTY_PROFILE` in
+ * `zerotohero-python-server/utils_language.py`, served via
+ * GET /difficulty-profiles and consumed by
+ * `getLevelFromDifficulty()` in `@langplayer/shared`.
+ * See `docs/arch/032-youtube-video-difficulty.md`.
+ *
+ * This module previously carried a hardcoded `MAX_DIFFICULTY` fallback map
+ * (with a comment claiming it was derived from Classic's
+ * MAX_DIFFICULTY_BY_LEVEL). The values for en/ja/ko/zh were hand-tuned round
+ * numbers that did NOT match Classic or the server profile, the map was only
+ * used by `clampDifficulty`, and nothing in any app imported either — the
+ * fallback was dead code and a second source of truth, so it was removed.
+ * When the `/difficulty-profiles` fetch fails, level badges are simply
+ * omitted (no fallback level).
  */
-
-/** Maximum difficulty thresholds per CEFR level per language. */
-const MAX_DIFFICULTY: Record<string, number[]> = {
-  ar: [0.00168681, 0.00279967, 0.00453687, 0.00779097, 0.0138839, 0.023465, 0.183862],
-  de: [0.00234459, 0.0032763, 0.00433635, 0.00539367, 0.00649187, 0.00805098, 0.0580363],
-  en: [0.00334957, 0.00425345, 0.00488847, 0.00558807, 0.00644014, 0.0077838, 0.0578485],
-  es: [0.00287356, 0.0032967, 0.00396694, 0.00467804, 0.00568506, 0.00737864, 0.0667576],
-  fr: [0.00329562, 0.00371517, 0.00427184, 0.00491248, 0.00580396, 0.00712503, 0.045214],
-  it: [0.0021097, 0.0029304, 0.0037594, 0.00480994, 0.00624059, 0.00815024, 0.0523786],
-  ja: [0.0015, 0.0025, 0.004, 0.006, 0.009, 0.013, 0.08],
-  ko: [0.0015, 0.0025, 0.004, 0.006, 0.009, 0.013, 0.08],
-  pt: [0.00276153, 0.00334096, 0.00394281, 0.00466106, 0.00557831, 0.0069948, 0.0545557],
-  ru: [0.00226176, 0.00393957, 0.00533333, 0.0070193, 0.00893468, 0.0116931, 0.0589474],
-  zh: [0.001, 0.002, 0.004, 0.007, 0.012, 0.02, 0.12],
-};
-
-const DEFAULT_MAX_DIFFICULTY = [0.002, 0.0035, 0.005, 0.007, 0.01, 0.015, 0.08];
-
-/**
- * Clamp a difficulty score to the valid range for a given language and level.
- * Level is 1-indexed (1–7).
- */
-export function clampDifficulty(difficulty: number, lang: string, level: number): number {
-  const thresholds = MAX_DIFFICULTY[lang] ?? DEFAULT_MAX_DIFFICULTY;
-  const max = thresholds[Math.min(level, thresholds.length) - 1] ?? thresholds[thresholds.length - 1]!;
-  return Math.min(difficulty, max);
-}
 
 /** Approximate CEFR level from hours watched. */
 export function levelFromHours(hours: number): number {
