@@ -13,7 +13,7 @@ import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log, logwarn } from '@/lib/logger';
+import { log, logwarn, askAiLogger } from '@/lib/logger';
 import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, READER_AI_CONTEXT_WARN_MAX, VIDEO_AI_TIMESTAMP_INSTRUCTION, parseTimestampToken, formatTimestamp, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
@@ -131,31 +131,65 @@ interface PersistedAiMessage {
 async function loadPersistedMessages(storageKey: string): Promise<PersistedAiMessage[]> {
   try {
     const raw = await AsyncStorage.getItem(storageKey);
-    if (!raw) return [];
+    if (!raw) {
+      askAiLogger.log('session restore: AsyncStorage read — no stored value (empty)', { storageKey });
+      return [];
+    }
+    askAiLogger.log('session restore: AsyncStorage read', {
+      storageKey,
+      rawLength: raw.length,
+      rawPreview: raw.slice(0, 160),
+    });
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
+    if (!Array.isArray(parsed)) {
+      askAiLogger.logwarn('session restore: stored value is not an array', { storageKey, typeof: typeof parsed });
+      return [];
+    }
+    const filtered = parsed.filter(
       (m): m is PersistedAiMessage =>
         !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string',
     );
-  } catch {
+    askAiLogger.log('session restore: parsed stored array', {
+      storageKey,
+      total: parsed.length,
+      valid: filtered.length,
+    });
+    return filtered;
+  } catch (err) {
+    askAiLogger.logwarn('session restore: read/parse failed', { storageKey, err: String(err) });
     return [];
   }
 }
 
 async function savePersistedMessages(storageKey: string, messages: PersistedAiMessage[]): Promise<void> {
   try {
-    await AsyncStorage.setItem(storageKey, JSON.stringify(messages));
-  } catch {
+    let serialized: string;
+    try {
+      serialized = JSON.stringify(messages);
+    } catch (err) {
+      askAiLogger.logwarn('session save: JSON.stringify failed', { storageKey, err: String(err) });
+      return;
+    }
+    askAiLogger.log('session save: writing to AsyncStorage', {
+      storageKey,
+      count: messages.length,
+      bytes: serialized.length,
+      preview: serialized.slice(0, 120),
+    });
+    await AsyncStorage.setItem(storageKey, serialized);
+    askAiLogger.log('session save: AsyncStorage write ok', { storageKey, count: messages.length });
+  } catch (err) {
     /* persistence is best-effort */
+    askAiLogger.logwarn('session save: AsyncStorage write failed', { storageKey, err: String(err) });
   }
 }
 
 async function clearPersistedMessages(storageKey: string): Promise<void> {
   try {
+    askAiLogger.log('session clear: AsyncStorage removeItem', { storageKey });
     await AsyncStorage.removeItem(storageKey);
-  } catch {
-    /* ignore */
+  } catch (err) {
+    askAiLogger.logwarn('session clear: removeItem failed', { storageKey, err: String(err) });
   }
 }
 
@@ -179,11 +213,21 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   // transcript is persisted so the chat survives navigation. Restored on
   // mount / storage-key change; saved on every message change.
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey) {
+      askAiLogger.log('session restore: no storageKey — transcript is ephemeral');
+      return;
+    }
     let cancelled = false;
+    askAiLogger.log('session restore: storageKey present, restoring messages', {
+      storageKey,
+      currentMessages: messages.length,
+    });
     (async () => {
       const saved = await loadPersistedMessages(storageKey);
-      if (cancelled) return;
+      if (cancelled) {
+        askAiLogger.log('session restore: cancelled after async read', { storageKey });
+        return;
+      }
       const restored: ChatMessage[] = saved.map((m, i) => ({
         id: i,
         role: m.role,
@@ -196,6 +240,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       setStreamingId(null);
       setUsedFollowUps(new Set());
       reset();
+      askAiLogger.log('session restore: restored messages into state', {
+        storageKey,
+        restoredCount: restored.length,
+        restoredRoles: restored.map((m) => m.role),
+      });
     })();
     return () => {
       cancelled = true;
@@ -211,6 +260,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     const persisted = messages
       .filter((m) => (m.role === 'user' ? !!(m.text || m.label) : !!m.text))
       .map((m) => ({ role: m.role, text: m.text, label: m.label }));
+    askAiLogger.log('session save: effect fired', {
+      storageKey,
+      inMemoryCount: messages.length,
+      persistedCount: persisted.length,
+    });
     void savePersistedMessages(storageKey, persisted);
   }, [messages, storageKey]);
 
@@ -220,7 +274,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     setStreamingId(null);
     setUsedFollowUps(new Set());
     setFreeFormText('');
-    if (storageKey) void clearPersistedMessages(storageKey);
+    askAiLogger.log('session clear: user cleared the chat', { storageKey });
+    if (storageKey) {
+      askAiLogger.log('session clear: clearing persisted messages', { storageKey });
+      void clearPersistedMessages(storageKey);
+    }
     reset();
   }, [storageKey, reset]);
 
