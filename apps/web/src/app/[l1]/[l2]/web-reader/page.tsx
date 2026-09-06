@@ -413,6 +413,7 @@ export default function WebReaderPage() {
           onFillSample={() => {}}
           initialLocation={initialLocation}
           onLocationChange={handleReaderLocationChange}
+          askAiStorageKey={url ? `lp-ask-ai:web:${url}` : undefined}
           onLemmatize={handleLemmatize}
           onPageTranslate={handlePageTranslate}
         />

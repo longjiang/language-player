@@ -511,6 +511,7 @@ export default function ReaderPage() {
         onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
         initialLocation={initialLocation}
         onLocationChange={handleReaderLocationChange}
+        askAiStorageKey={currentNoteId != null ? `lp-ask-ai:note:${currentNoteId}` : undefined}
         onLemmatize={handleLemmatize}
         onPageTranslate={handlePageTranslate}
       />

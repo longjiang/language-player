@@ -764,6 +764,7 @@ export default function EpubPage() {
               contextForm={undefined}
               entryFound={true}
               demandMode
+              storageKey={epub.openBookId ? `lp-ask-ai:epub:${epub.openBookId}` : undefined}
               followUpPresets={READER_ASK_AI_EPUB_PRESETS}
               quoteChips
               onQuotePress={openSearchFor}

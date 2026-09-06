@@ -476,6 +476,7 @@ export default function ImageReaderPage() {
                   onPageTranslate={handlePageTranslate}
                   onLemmatize={handleLemmatize}
                   hideModeTabs
+                  askAiStorageKey={currentId ? `lp-ask-ai:image:${currentId}` : undefined}
                 />
               )
             ) : null}

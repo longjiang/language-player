@@ -534,6 +534,7 @@ export default function ReaderScreen() {
         onClose={() => setAskAiOpen(false)}
         title={notes.currentNote?.title || t('title.notes_reader')}
         presets={READER_ASK_AI_TEXT_PRESETS}
+        storageKey={notes.currentNoteId != null ? `lp-ask-ai:note:${notes.currentNoteId}` : undefined}
         content={
           {
             text,
