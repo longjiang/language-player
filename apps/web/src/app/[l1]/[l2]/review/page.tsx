@@ -1473,7 +1473,16 @@ export default function ReviewPage() {
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled) {
-          setContextTranslation(data?.translated_text ?? data?.translation ?? data?.text ?? null);
+          const translated = data?.translated_text ?? data?.translation ?? data?.text ?? null;
+          setContextTranslation(translated);
+          if (translated) {
+            log('[srs] context-translation-loaded', {
+              wordId: currentCard?.word.id,
+              head: wordForm,
+              source: sameLangRephrase ? 'rephrase-api' : 'api',
+              length: translated.length,
+            });
+          }
         }
       } catch { /* network error — silently ignore */ }
       finally {
