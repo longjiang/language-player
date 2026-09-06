@@ -164,4 +164,24 @@ describe('srs-pending-queue (ADR-0040)', () => {
     expect(loadPendingSrsOps()).toEqual([]);
     savePendingSrsOps([]);
   });
+
+  it('sends ALL deletes in one bulk request when the endpoint is available', async () => {
+    const batchCalls: Array<Array<{ l2: string; wordId: string; updatedAt?: number }>> = [];
+    const perOpDeletes: string[] = [];
+    const api: SrsRowApi = {
+      putSrsCard: async () => ({}),
+      deleteSrsCard: async (_l2, wordId) => { perOpDeletes.push(wordId); },
+      deleteSrsCardsBatch: async (items) => { batchCalls.push(items); },
+    };
+    const ids = Array.from({ length: 30 }, (_, i) => `d${i}`);
+    savePendingSrsOps(ids.map((id, i) => mkOp('delete', id, i + 1)));
+    await flushAllPendingSrsOps(api);
+
+    // A 30-orphan backlog drains in ONE request, not 30 per-card DELETEs.
+    expect(batchCalls).toHaveLength(1);
+    expect(batchCalls[0]!.map((o) => o.wordId).sort()).toEqual(ids.sort());
+    expect(perOpDeletes).toEqual([]);
+    expect(loadPendingSrsOps()).toEqual([]);
+    savePendingSrsOps([]);
+  });
 });
