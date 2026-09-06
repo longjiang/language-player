@@ -82,3 +82,36 @@ export async function toSimplified(text: string): Promise<string> {
   const converter = await loadT2cn();
   return converter(text);
 }
+
+/** Count how many character positions differ between two strings. */
+function countCharDifferences(a: string, b: string): number {
+  const n = Math.min(a.length, b.length);
+  let diff = Math.abs(a.length - b.length);
+  for (let i = 0; i < n; i++) if (a[i] !== b[i]) diff++;
+  return diff;
+}
+
+/**
+ * Detect the dominant Chinese script of a text by running it through BOTH
+ * OpenCC directions and comparing how many characters each changes.
+ *
+ * When the text is already simplified, `cn→t` changes many characters while
+ * `t→cn` changes few — and the reverse holds for traditional text. This is
+ * what lets us skip conversion when the source already matches the user's
+ * preference (ADR-0019). Ambiguous characters that OpenCC over-simplifies —
+ * notably 乾 → 干 (the "dry/gān" reading), seen in an already-simplified
+ * name like 孙乾 — change under BOTH directions, so they cancel out of the
+ * ratio instead of dominating. Ties resolve to `simplified`, so
+ * already-simplified text (the common mainland case) is never re-simplified;
+ * OpenCC's script-level `t→cn` is NOT idempotent on such text.
+ *
+ * Mirrors apps/web/src/lib/chinese-script.ts.
+ */
+export async function detectChineseScript(text: string): Promise<'simplified' | 'traditional'> {
+  const [cn2t, t2cn] = await Promise.all([loadCn2t(), loadT2cn()]);
+  const asTraditional = cn2t(text);
+  const asSimplified = t2cn(text);
+  const toTraditionalChanges = countCharDifferences(text, asTraditional);
+  const toSimplifiedChanges = countCharDifferences(text, asSimplified);
+  return toSimplifiedChanges > toTraditionalChanges ? 'traditional' : 'simplified';
+}

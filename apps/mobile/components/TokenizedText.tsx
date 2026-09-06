@@ -59,7 +59,7 @@ import {
 } from '@/lib/dictionary-cache';
 import { useEffectiveHighlightTerms, useHighlightKanaForms, useSavedPhraseCandidates } from '@/hooks/use-highlight-forms';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
-import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
+import { getConverter, getSimplifiedConverter, detectChineseScript } from '@/lib/chinese-script';
 import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
 // (glyphFontFamily from '@/lib/glyph-font' no longer used — the base uses the
 // system font and the L2 language tag drives the correct CJK fallback.)
@@ -335,15 +335,31 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     let cancelled = false;
     (async () => {
       try {
-        // ADR-0019: convert whenever the user's script preference differs
-        // from the token's script. cn→twp when traditional is preferred;
-        // twp→cn when simplified is preferred (idempotent on matching text).
+        // Detect the source script so we SKIP conversion when the source
+        // already matches the user's preference. OpenCC's script-level t→cn
+        // is NOT idempotent on already-simplified text — it over-simplifies
+        // the ambiguous 乾 → 干 (the "dry/gān" reading), corrupting an
+        // already-simplified name like 孙乾. Detecting the dominant source
+        // script (ties resolve to simplified) avoids re-simplifying it.
+        // ADR-0019.
+        const detected = await detectChineseScript(text);
+        if (cancelled) return;
+        const preferred = useTraditional ? 'traditional' : 'simplified';
+        if (detected === preferred) {
+          // Source already matches preference — keep the original token text
+          // (empty map → lookup falls back to the original), so ambiguous
+          // characters like 乾 are not needlessly re-simplified.
+          setConvertedTexts(new Map());
+          return;
+        }
+        // Otherwise convert toward the preferred script. cn→t when traditional
+        // is preferred; t→cn when simplified is preferred.
         const converter = useTraditional ? await getConverter() : await getSimplifiedConverter();
         if (cancelled) return;
         const uniqueTexts = [...new Set(tokens.map(t => t.text))];
         const mapping = new Map<string, string>();
-        for (const text of uniqueTexts) {
-          mapping.set(text, converter(text));
+        for (const tokenText of uniqueTexts) {
+          mapping.set(tokenText, converter(tokenText));
         }
         if (!cancelled) setConvertedTexts(mapping);
       } catch {
@@ -352,7 +368,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       }
     })();
     return () => { cancelled = true; };
-  }, [tokens, useTraditional, isChinese, l2Code]);
+  }, [tokens, useTraditional, isChinese, l2Code, text]);
 
   const byeonggiEnabled = byeonggiOverride ?? (l2Settings.display.byeonggi !== false);
 
