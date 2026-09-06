@@ -138,6 +138,12 @@ export interface TokenSpanProps {
    *  card is revealed. Defaults to true — highlighting alone does not hide a
    *  saved word's gloss. */
   quickGlossOnHighlight?: boolean;
+  /** When true, skip Chinese script conversion for this token and render the
+   *  source text as-is. Set by TokenizedText when the L2 source's dominant
+   *  script already matches the user's preference (ADR-0019), so OpenCC's
+   *  t→cn can't re-simplify the ambiguous 乾 → 干 in already-simplified text.
+   *  Defaults to false (convert, the pre-detection behaviour). */
+  skipScriptConversion?: boolean;
 }
 
 /**
@@ -169,6 +175,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   format,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
+  skipScriptConversion = false,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
@@ -270,11 +277,18 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const isHanToken = /[\u4E00-\u9FFF]/.test(token.text);
   useEffect(() => {
     // ADR-0019: convert whenever the user's script preference differs from
-    // the token's script. cn→twp when traditional is preferred; twp→cn
-    // when simplified is preferred (idempotent on already-matching text).
-    // Only applies to Chinese L2s — Japanese kanji / Korean hanja must never
-    // be converted (mobile parity).
-    if (!isChinese || !isHanToken) { setDisplayText(token.text); return; }
+    // the token's script. cn→t when traditional is preferred; t→cn
+    // when simplified is preferred. Only applies to Chinese L2s — Japanese
+    // kanji / Korean hanja must never be converted (mobile parity).
+    //
+    // `skipScriptConversion` is set by TokenizedText when the L2 source's
+    // dominant script already matches the user's preference, so we don't run
+    // the conversion needlessly — OpenCC's t→cn is NOT idempotent and would
+    // re-simplify the ambiguous 乾 → 干 (e.g. the name 孙乾).
+    if (!isChinese || !isHanToken || skipScriptConversion) {
+      setDisplayText(token.text);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { toTraditional, toSimplified } = await import('@/lib/chinese-script');
@@ -283,7 +297,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       if (!cancelled) setDisplayText(result);
     })();
     return () => { cancelled = true; };
-  }, [token.text, useTraditional, isChinese, isHanToken, l2Code]);
+  }, [token.text, useTraditional, isChinese, isHanToken, l2Code, skipScriptConversion]);
 
   // ── First gloss segment — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {

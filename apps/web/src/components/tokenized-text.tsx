@@ -279,6 +279,44 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
 
+  // ── ADR-0019: detect the source script to avoid re-simplifying
+  // already-simplified Chinese. OpenCC's script-level t→cn is not idempotent:
+  // it over-simplifies the ambiguous 乾 → 干 (the "dry/gān" reading),
+  // corrupting an already-simplified name like 孙乾. When the source's
+  // dominant script already matches the user's preference, tell each
+  // TokenSpan to skip its per-token conversion entirely.
+  const isChineseL2 = baseCode(l2Code) === 'zh';
+  const scriptL2Settings = getL2(l2Code);
+  const useScriptTraditional = isChineseL2 && scriptL2Settings.display.traditional;
+  // Start by skipping (render the source as-is) so the common already-matched
+  // case never shows a corrupt flash; flip to convert only once detection
+  // confirms the source genuinely differs from the user's preference. Mirrors
+  // the mobile TokenizedText, which also starts with an empty conversion map.
+  // ADR-0019.
+  const [skipScriptConversion, setSkipScriptConversion] = useState(true);
+  useEffect(() => {
+    // Non-Chinese L2s never convert in TokenSpan, so skip detection there.
+    if (!isChineseL2) {
+      setSkipScriptConversion(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { detectChineseScript } = await import('@/lib/chinese-script');
+        const detected = await detectChineseScript(text);
+        if (cancelled) return;
+        const preferred = useScriptTraditional ? 'traditional' : 'simplified';
+        setSkipScriptConversion(detected === preferred);
+      } catch {
+        // Detection failed (e.g. OpenCC not loaded) — keep the prior default
+        // (convert, the pre-detection behaviour).
+        if (!cancelled) setSkipScriptConversion(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [text, useScriptTraditional, isChineseL2]);
+
   // Saved phrase candidates — every saved form (head + inflections) that could
   // span multiple tokens. The merge below collapses exact token-boundary
   // matches into one atomic token so multi-token phrases highlight as saved.
@@ -916,6 +954,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               karaokeDimOpacity={karaokeDimOpacity}
               phoneticsOnHighlight={phoneticsOnHighlight}
               quickGlossOnHighlight={quickGlossOnHighlight}
+              skipScriptConversion={skipScriptConversion}
               flat={flat}
               format={flat && fmt !== 'image' ? fmt : null}
             />
