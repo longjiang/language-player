@@ -75,7 +75,10 @@ points) are further constrained by `VIDEO_AI_CONCISE_ITEMS_INSTRUCTION`: they
 return at most 20 of the most difficult items (not one per line), open directly
 with the first item (no summary/intro), and format each item as the expression /
 structure itself as the heading → a brief explanation → one example line (with
-its `[MM:SS]` timestamp, per `VIDEO_AI_TIMESTAMP_INSTRUCTION`).
+its `[MM:SS]` timestamp, per `VIDEO_AI_TIMESTAMP_INSTRUCTION`). Because these
+lists are discrete L2 spans, they also append the backtick instruction
+(`prompt.explain_ticks`) so each expression / grammar structure renders as
+interactive tokenized text (summary-shaped presets stay as untokenized prose).
 
 ### Multi-turn endpoint
 
