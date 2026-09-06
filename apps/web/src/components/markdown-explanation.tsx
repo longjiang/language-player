@@ -59,8 +59,14 @@ function remarkReaderQuote(config?: { quoteChips?: boolean; timestampChips?: boo
     // sharing one between `.test()` and `matchAll` silently skips matches.
     const anyRe = /(\[\[[\s\S]+?\|\|[\s\S]+?\]\])|(\[(?:(\d+):)?(\d{1,2}):(\d{2})\])/g;
     const makeChip = (m: RegExpMatchArray): any | null => {
-      const original = cleanAiQuote(m[1] ?? '');
-      const translation = cleanAiQuote(m[2] ?? '');
+      // anyRe's group 1 is the FULL `[[original||translation]]` marker (unlike
+      // the old quote-only regex, which had the two parts as separate groups),
+      // so split it here: strip the [[ ]] and split on ||.
+      const marker = m[1] ?? '';
+      const body = marker.length >= 4 ? marker.slice(2, -2) : marker;
+      const sep = body.indexOf('||');
+      const original = cleanAiQuote(sep >= 0 ? body.slice(0, sep) : body);
+      const translation = cleanAiQuote(sep >= 0 ? body.slice(sep + 2) : '');
       if (!original) return null;
       return {
         type: 'quoteChip',

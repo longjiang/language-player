@@ -204,9 +204,13 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
 
   useEffect(() => {
     if (!storageKey) return;
+    // Persist only role/text/label — NOT `prompt`, which embeds the full
+    // text/book context for content-carrying turns and would blow the storage
+    // quota on a large book, silently failing to save. Regenerate is hidden
+    // for restored turns (they have no prompt).
     const persisted = messages
       .filter((m) => (m.role === 'user' ? !!(m.text || m.label) : !!m.text))
-      .map((m) => ({ role: m.role, text: m.text, label: m.label, prompt: m.prompt }));
+      .map((m) => ({ role: m.role, text: m.text, label: m.label }));
     void savePersistedMessages(storageKey, persisted);
   }, [messages, storageKey]);
 
@@ -834,7 +838,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                   )}
                 </View>
                 <View className="mt-1 flex-row items-center gap-1 pl-1">
-                  {(message.examples?.length ?? 0) === 0 && (
+                  {(message.examples?.length ?? 0) === 0 && message.prompt && (
                     <Button
                       onPress={() => handleRegenerate(message.id)}
                       disabled={loading}

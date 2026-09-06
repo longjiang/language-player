@@ -4,6 +4,9 @@ import {
   splitAiQuotes,
   cleanAiQuote,
   READER_AI_QUOTE_INSTRUCTION,
+  formatTimestamp,
+  parseTimestampToken,
+  formatSubtitleContext,
 } from './ai-quotes';
 
 describe('normalizeQuoteBlocks', () => {
@@ -87,5 +90,37 @@ describe('splitAiQuotes', () => {
 describe('cleanAiQuote', () => {
   it('trims surrounding quote characters', () => {
     expect(cleanAiQuote(' “引文” ')).toBe('引文');
+  });
+});
+
+describe('formatTimestamp', () => {
+  it('formats seconds as MM:SS', () => {
+    expect(formatTimestamp(5)).toBe('00:05');
+    expect(formatTimestamp(65)).toBe('01:05');
+  });
+  it('formats ≥1 hour as H:MM:SS', () => {
+    expect(formatTimestamp(3700)).toBe('1:01:40');
+  });
+});
+
+describe('parseTimestampToken', () => {
+  it('parses [MM:SS] and [H:MM:SS] tokens into seconds', () => {
+    expect(parseTimestampToken('[00:05]')).toBe(5);
+    expect(parseTimestampToken('[1:23]')).toBe(83);
+    expect(parseTimestampToken('[1:02:03]')).toBe(3723);
+  });
+  it('returns null for non-timestamp tokens', () => {
+    expect(parseTimestampToken('[foo]')).toBeNull();
+    expect(parseTimestampToken('no timestamp')).toBeNull();
+  });
+});
+
+describe('formatSubtitleContext', () => {
+  it('prefixes each line with its [MM:SS] timestamp', () => {
+    const out = formatSubtitleContext([
+      { starttime: 5, text: 'hi' },
+      { starttime: 65, text: 'bye' },
+    ]);
+    expect(out).toBe('[00:05] hi\n[01:05] bye');
   });
 });

@@ -285,9 +285,13 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   useEffect(() => {
     if (!storageKey) return;
+    // Persist only role/text/label — NOT `prompt`, which embeds the full
+    // text/book context for content-carrying turns and would blow past the
+    // localStorage quota on a large book, silently failing to save. Regenerate
+    // is hidden for restored turns (they have no prompt).
     const persisted = messages
       .filter((m) => (m.role === 'user' ? !!(m.text || m.label) : !!m.text))
-      .map((m) => ({ role: m.role, text: m.text, label: m.label, prompt: m.prompt }));
+      .map((m) => ({ role: m.role, text: m.text, label: m.label }));
     savePersistedMessages(storageKey, persisted);
   }, [messages, storageKey]);
 
@@ -721,6 +725,10 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   useEffect(() => {
     if (prevWordRef.current === word) return;
     prevWordRef.current = word;
+    // A persisted session (storageKey) is keyed by the entity, not the
+    // word/title — a mid-load title change (e.g. an epub file name resolving
+    // after the book loads) must not wipe the restored transcript.
+    if (storageKey) return;
     initialStreamStartedRef.current = false;
     loggedEmptyBubbleRef.current = new Set();
     emptyAssistantIdRef.current = null;
@@ -728,7 +736,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     setStreamingId(null);
     setUsedFollowUps(new Set());
     reset();
-  }, [word, reset]);
+  }, [word, reset, storageKey]);
 
   // Mirror the streaming hook's text into the assistant message being streamed
   useEffect(() => {
@@ -944,7 +952,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                   </div>
                   {message.text || (loading && message.id === streamingId) || examplesLoading || isExamplesMessage ? (
                     <div className="mt-1 flex items-center gap-1 pl-1">
-                      {!isExamplesMessage && (
+                      {!isExamplesMessage && message.prompt && (
                         <button
                           type="button"
                           className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
