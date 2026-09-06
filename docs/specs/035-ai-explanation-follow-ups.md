@@ -62,6 +62,14 @@ the block on open (`prompt.explain_selected_text`), replacing the previous
 one-shot `buildExplainBlockPrompt` panel. A `summaryInstruction?: boolean` field
 on the prompt preset controls whether the summary instruction is appended.
 
+**Video watch-page tab is the exception.** The video "Ask AI" tab (`VideoAskAi`
+web / `VideoAskAiContent` mobile) reuses the same `TEXT_ACTION_ASK_AI_PRESETS`
+but opens in **`demandMode`** — it does NOT auto-stream the initial
+preset (no `TEXT_ACTION_ASK_AI_INITIAL_PRESET`), so it never shows a pre-loaded
+"please provide the subtitles" reply. The full subtitle transcript is preloaded
+as context (via `contentKey: 'text'` and `readerContent.text`) and the model
+responds only when the user taps a preset button or sends a free-form message.
+
 ### Multi-turn endpoint
 
 `POST /chatgpt/stream` now accepts `{ prompt, messages }` in addition to the
