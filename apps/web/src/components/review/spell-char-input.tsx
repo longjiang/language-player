@@ -29,6 +29,9 @@ export interface SpellCharInputProps {
   label?: string;
   /** Optional id forwarded to the hidden input (for a `<label htmlFor>`). */
   id?: string;
+  /** Muted type-over placeholder shown in the FIRST character box only, while
+   *  it is empty. Passed the orthographic hint's first character. */
+  firstCharPlaceholder?: string;
 }
 
 export function SpellCharInput({
@@ -40,6 +43,7 @@ export function SpellCharInput({
   disabled = false,
   label,
   id,
+  firstCharPlaceholder,
 }: SpellCharInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [caret, setCaret] = useState(0);
@@ -61,6 +65,7 @@ export function SpellCharInput({
         {Array.from({ length: boxCount }).map((_, i) => {
           const ch = chars[i] ?? '';
           const isActive = i === activeIndex && !disabled;
+          const placeholder = i === 0 && !ch ? firstCharPlaceholder : null;
           return (
             <div
               key={i}
@@ -68,7 +73,7 @@ export function SpellCharInput({
                 isActive ? 'border-primary ring-2 ring-primary/30' : 'border-border'
               }`}
             >
-              <span className={ch ? 'text-foreground' : ''}>{ch}</span>
+              <span className={ch ? 'text-foreground' : placeholder ? 'text-muted-foreground/50' : ''}>{ch || placeholder}</span>
             </div>
           );
         })}

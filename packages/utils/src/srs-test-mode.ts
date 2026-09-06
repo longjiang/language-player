@@ -450,6 +450,39 @@ export function spellHintOf(
 }
 
 /**
+ * The muted type-over placeholder for the FIRST spell character box.
+ *
+ * Unlike `spellHintOf` — which may return a pronunciation (reading) hint for
+ * phonetic-ruby languages — this returns the orthographic first character of
+ * the lemma ONLY, i.e. the script the learner actually types over. For a
+ * phonetic-ruby language a reading hint (e.g. kana `お` for a kanji surface)
+ * is a different script from what is typed, so it is never used as a
+ * placeholder; it stays hint-only. For languages whose native script is already
+ * phonetic (Latin-script, Burmese) — or any language with no reading — the
+ * lemma's first character is shown so the learner types over it. Mirrors
+ * `spellHintOf`'s orthography branch (`lemma.length > 1`).
+ */
+export function spellHintPlaceholder(
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: {
+    head?: string | null;
+    pronunciation?: string;
+    alternate?: string | null;
+    phonetic_detail?: { kana?: string; pinyin?: string; romanization?: string; ipa?: string } | null;
+  } | null | undefined,
+  l2Code: string,
+): string | null {
+  if (isPhoneticsEligible(l2Code)) {
+    const reading = pronunciationReadingOf(entry, l2Code);
+    if (reading) return null; // reading hint — not a type-over placeholder
+  }
+  const lemma = pronunciationTargetOf(word, fallback, entry);
+  if (lemma.length > 1) return lemma[0]!;
+  return null;
+}
+
+/**
  * The ground-truth reading of a word for a pronunciation question.
  *
  * For EDICT (Japanese) the `pronunciation` field is ROMAJI (e.g. "soru"), not

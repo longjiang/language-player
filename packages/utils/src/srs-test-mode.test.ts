@@ -17,6 +17,7 @@ import {
   scriptVariants,
   spellBlankText,
   spellHintOf,
+  spellHintPlaceholder,
   stringSimilarity,
   surfaceFormOf,
   validateSrsDefinitionChoices,
@@ -550,5 +551,60 @@ describe('spellHintOf', () => {
       'th',
     );
     expect(hint).toBe('s');
+  });
+});
+
+describe('spellHintPlaceholder', () => {
+  const word = { forms: ['然るべき'], head: '然るべき', context: { form: '然るべき' } };
+
+  it('returns null for a pronunciation (reading) hint — different script', () => {
+    // ja has a kana reading; the placeholder is only for the orthographic hint.
+    expect(spellHintPlaceholder(
+      word,
+      '然るべき',
+      { head: '然るべき', alternate: 'しかるべき', pronunciation: 'shikarubeki' },
+      'ja',
+    )).toBeNull();
+  });
+
+  it('returns the lemma first char when there is no reading', () => {
+    expect(spellHintPlaceholder(
+      word,
+      '然るべき',
+      { head: '然るべき', pronunciation: '' },
+      'ja',
+    )).toBe('然');
+  });
+
+  it('returns the orthography first char for a phonetics-suppressed language', () => {
+    expect(spellHintPlaceholder(
+      { forms: ['apple'], head: 'apple', context: { form: 'apple' } },
+      'apple',
+      { head: 'apple', pronunciation: 'ˈæpəl' },
+      'en',
+    )).toBe('a');
+  });
+
+  it('returns null for a single-character lemma (no hint)', () => {
+    expect(spellHintPlaceholder(
+      { forms: ['猫'], head: '猫', context: { form: '猫' } },
+      '猫',
+      { head: '猫', pronunciation: '' },
+      'ja',
+    )).toBeNull();
+  });
+
+  it('returns null when there is no entry and the fallback lemma is one char', () => {
+    expect(spellHintPlaceholder(undefined, 'a', undefined, 'en')).toBeNull();
+  });
+
+  it('still returns null for a reading hint on a phonetics-eligible non-CJK language', () => {
+    // 'th' reading hint is romanized Latin; the typed surface is Thai script.
+    expect(spellHintPlaceholder(
+      { forms: ['สวัสดี'], head: 'สวัสดี', context: { form: 'สวัสดี' } },
+      'สวัสดี',
+      { head: 'สวัสดี', pronunciation: 'sà-wàt-dii' },
+      'th',
+    )).toBeNull();
   });
 });
