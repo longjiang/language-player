@@ -184,4 +184,27 @@ describe('srs-pending-queue (ADR-0040)', () => {
     expect(loadPendingSrsOps()).toEqual([]);
     savePendingSrsOps([]);
   });
+
+  it('falls back to per-op deletes and still flushes upserts when the batch endpoint is missing', async () => {
+    const perOpDeletes: string[] = [];
+    const upserts: string[] = [];
+    let batchCalled = false;
+    const api: SrsRowApi = {
+      putSrsCard: async (_l2, wordId) => { upserts.push(wordId); },
+      deleteSrsCard: async (_l2, wordId) => { perOpDeletes.push(wordId); },
+      deleteSrsCardsBatch: async () => {
+        batchCalled = true;
+        throw { response: { status: 404 } }; // endpoint not yet deployed
+      },
+    };
+    savePendingSrsOps([mkOp('delete', 'd1', 1), mkOp('upsert', 'u1', 2, 1)]);
+    await flushAllPendingSrsOps(api);
+
+    // The batch was attempted, then fell back to per-op — and upserts still flow.
+    expect(batchCalled).toBe(true);
+    expect(perOpDeletes).toEqual(['d1']);
+    expect(upserts).toEqual(['u1']);
+    expect(loadPendingSrsOps()).toEqual([]);
+    savePendingSrsOps([]);
+  });
 });
