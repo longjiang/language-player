@@ -1401,7 +1401,7 @@ The next time you see the word depends on your rating. Words you know well appea
 
 ## Review Modes
 
-Switch how you're tested with the toggle at the top of the Review screen.
+Switch how you're tested with the mode menu at the top of the Review screen (a dropdown on web, a native menu on mobile).
 
 - **Recall mode** — Recall the meaning from context. Flip the card to check the definition, then rate yourself.
 - **Choose mode** — Answer a multiple-choice question (the meaning, and for some languages the reading) before you can rate the card. It works like a small quiz.

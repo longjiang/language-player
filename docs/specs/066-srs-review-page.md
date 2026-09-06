@@ -985,10 +985,13 @@ types count while unexpired — there is no `status` filter.
   (persisted per platform), the next two cards' tests are prefetched in test
   mode, and stale prefetches are cancelled.
 - ✅ **test → choose rename** — implemented (2026-09-06, both review pages +
-  i18n): the SRS "test mode" is renamed to **choose mode**; the mode toggle is
+  i18n): the SRS "test mode" is renamed to **choose mode**; the mode selector is
   now Recall / Choose / Spell, and the previously stored `'test'` value is
   migrated to `'choose'` on read. The old `review.test_mode` label is replaced
-  by `review.choose_mode`.
+  by `review.choose_mode`. The selector is a **dropdown on web** (shadcn
+  `Select`) and a **native menu on mobile** (`@react-native-menu/menu`), each
+  option carrying an icon (web: lucide `Brain` / `ListChecks` / `Keyboard`;
+  mobile: iOS SF Symbols on the menu items + a lucide icon on the trigger).
 - ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
   utils): blank the term in the context sentence, show the bolded translation,
   then Start Test shows a countdown bar, a text input + submit, and a muted
