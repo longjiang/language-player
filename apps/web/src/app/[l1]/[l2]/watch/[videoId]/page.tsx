@@ -219,6 +219,7 @@ export default function WatchPage() {
     (async () => {
       // Try to restore a persisted queue from a prior session (page refresh).
       const restored = await restoreQueueIfCurrent(video.youtube_id);
+      log('[queue] restore', { videoId: video.youtube_id, restored });
       if (cancelled) return;
       if (restored) {
         queueBuildRef.current = true;
@@ -226,6 +227,12 @@ export default function WatchPage() {
       }
       // No persisted queue, no grid queue → build from the video.
       const result = await buildVideoQueue(video, baseCode(l2.code), userLevel);
+      log('[queue] build', {
+        videoId: video.youtube_id,
+        tvShow: !!video.tv_show,
+        queueType: result?.queueType ?? 'fallback',
+        level: userLevel ?? null,
+      });
       if (cancelled) return;
       queueBuildRef.current = true;
       if (result) {
