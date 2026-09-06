@@ -47,8 +47,11 @@ An audit (2026-08-17) found five defects:
 5. **`removeCardFromStorage` bypasses the `useSrs` store.** Unsave buttons
    call it directly (no hook), so a mounted hook's in-memory store kept the
    card; the next store change — including a hydration merge landing after
-   the unsave — persisted the ghost card back into localStorage. Healed only
-   by `pruneOrphans` on the next review-page visit.
+   the unsave — persisted the ghost card back into localStorage. Healed by
+   orphan reconciliation on the next review-page visit — server-side
+   `POST /srs/cards/reconcile` for credentialed users (the server owns both
+   `user_srs_cards` and `user_saved_words` so it only deletes true orphans),
+   with a hardened local prune as the anonymous/offline fallback.
 
 ## Decision
 
@@ -126,8 +129,9 @@ Fix the web outbox and the two server gaps behind it:
 - `apps/web/src/hooks/use-srs.ts` — hook consumes the outbox; listens for
   `lp:srs-card-removed`
 - `packages/api-client/src/user-data-columns.ts` — `deleteSrsCard` carries
-  `updatedAt`
+  `updatedAt`; `reconcileSrsCards` for the server-side orphan reconcile
 - `zerotohero-python-server/routes/user_data_columns.py` —
-  void-write timestamp override; delete guard wiring
+  void-write timestamp override; delete guard wiring;
+  `POST /srs/cards/reconcile` (server-side orphan reconcile)
 - `zerotohero-python-server/utils_user_data.py` — `delete_srs_card` stale
-  guard
+  guard; `find_srs_orphans` bulk orphan selection

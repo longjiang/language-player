@@ -416,9 +416,16 @@ today" message.
 
 - The page is per L2 language pair.
 - On load it hydrates saved words + SRS cards, auto-creates missing new cards
-  up to today's remaining new-card budget, and prunes cards for words that are
-  no longer saved. Pruning only runs after the cloud saved-words hydration
-  completes — an empty-but-loading list must never be treated as "no saved
+  up to today's remaining new-card budget, and reconciles cards for words that
+  are no longer saved. For credentialed users reconciliation happens **on the
+  server** (`POST /srs/cards/reconcile`): the server owns both `user_srs_cards`
+  and `user_saved_words`, so it compares a given l2's cards against its saved
+  words and deletes only true orphans, returning the `deletedWordIds` so the
+  client drops them from local state. Words with a pending (unsynced) saved-word
+  PUT are passed as `protectedWordIds` and are never deleted. The client-side
+  prune is kept only as a hardened anonymous/offline fallback (see
+  [Orphan reconciliation](#orphan-reconciliation)) and never purges an entire
+  deck, because an empty-but-loading list must never be treated as "no saved
   words" (this previously wiped the whole deck when the page opened before
   hydration finished).
 - Cards are served oldest-due-first, with a small reveal delay so the previous
@@ -905,6 +912,38 @@ event so the cap is restored. Trial users are Pro-equivalent while active
 detection mirrors `/user-subscription`: lifetime is unconditional, and other
 types count while unexpired — there is no `status` filter.
 
+### Orphan reconciliation
+
+Cards are only meaningful for words that are still saved, but unsaving a word
+through any path (bookmark toggle, saved list, dictionary popup) can leave its
+SRS card lingering and later "come back" as a stale "new" card. Historically the
+review pages pruned orphans **client-side** (`pruneOrphans`): delete every card
+whose id is absent from a client-local snapshot of saved words. When that
+snapshot was partial — incomplete/empty hydration, id or l2 drift, a save still
+pending from another device — it could delete cards for **genuinely saved**
+words. The safest case, an empty-but-loading list, previously wiped the whole
+deck on open.
+
+Since 2026-09-06 reconciliation is server-authoritative for credentialed users:
+
+- **`POST /srs/cards/reconcile`** — body `{ l2, protectedWordIds? }`. The server
+  bulk-compares `user_srs_cards` for `(user, l2)` against `user_saved_words` for
+  the same `(user, l2)` and deletes every card whose word has no saved-word row,
+  honoring `protectedWordIds` (words with a pending unsynced saved-word PUT, e.g.
+  saved offline on mobile). It returns `{ deleted, dropped, skipped,
+  deletedWordIds }` so the client drops the reconciled cards from local state —
+  the client must **not** enqueue its own `DELETE /srs/cards` for them (they're
+  already gone server-side).
+- **Client flow** — the review pages wait for both saved-word and server SRS
+  hydration, then call `reconcileOrphans(l2, protectedWordIds)`. On failure
+  (offline, endpoint not yet deployed) they fall back to a hardened local prune
+  that never deletes a whole deck (`allowWholeDeckPurge: false`), so a partial
+  view can never take out a real deck. Anonymous users (local-only data) use the
+  same hardened prune.
+
+The local prune remains as a safety net but is no longer the arbiter of what is
+orphaned.
+
 ## Web ↔ Mobile Disparities
 
 | # | Area | Web | Mobile | Impact / intended |
@@ -912,7 +951,7 @@ types count while unexpired — there is no `status` filter.
 | 1 | Context instances | Renders only `word.context` (single context) | Rendered **all** `instances[]`; fixed (2026-08-13) to render only the latest context | Both now render a single context; multi-instance remains a future feature ([ADR-0006](../adr/0006-consolidated-lexical-data-types.md)) |
 | 2 | No-context fallback | No visible word front (only SRS info + Show Definition) | Shows the headword centered as the card front | **Mobile is correct** — web should show the headword when a word has no context |
 | 3 | Daily new limit source | Reads `SettingsContext.review.dailyNewLimit` (`settings_v2` / `GET /user-settings`) | Reads `SettingsContext.review.dailyNewLimit` (`settings_v2` / `GET /user-settings`) | **Resolved** — both apps read `settings_v2` since ADR-0037 (2026-08-13); the legacy SRS settings row is removed |
-| 4 | Orphan pruning | `pruneOrphans()` removes cards for unsaved words on page load | `pruneOrphans()` removes cards for unsaved words on page load | **Resolved** — both apps implement `pruneOrphans`; mobile added it 2026-08-11 (`235c162e`) |
+| 4 | Orphan reconciliation | Server-side `reconcileOrphans()` via `POST /srs/cards/reconcile`; hardened local prune only for anonymous/offline | Same | **Resolved** — both apps reconcile on the server (2026-09-06); the fragile client-side `pruneOrphans` is a hardened anonymous/offline fallback that never purges a whole deck |
 | 5 | Keyboard shortcuts | 1–4, Space/Enter, `u`, Ctrl/Cmd+Z | None | Platform difference; mobile is touch-only |
 | 6 | L1-translated definitions | Fetches L1-translated entry on reveal for non-English L1 | Uses cached/offline entries as-is | **Web is correct** — mobile should port the L1-translated entry lookup |
 | 7 | Offline | Online-only: localStorage + row API + network fetches | Offline-first: SecureStore, SQLite dictionary, sync outbox | Intended per platform (SPEC-053) |
@@ -991,7 +1030,9 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Reversible daily-limit changes** — implemented (2026-08-21):
   changing `dailyNewLimit` no longer deletes blue cards outside the active
   window. Both review pages soft-deactivate those cards during selection;
-  orphan pruning still deletes cards whose saved words were actually removed.
+  orphan reconciliation still deletes cards whose saved words were actually
+  removed (now server-side for credentialed users, hardened local prune for
+  anonymous/offline — see [Orphan reconciliation](#orphan-reconciliation)).
 - ✅ **Server-side tombstone guard** — implemented (2026-08-13): stale
   saved-word / SRS-card upserts are rejected against `user_sync_log` deletes,
   and direct web writes carry client timestamps for LWW.
