@@ -988,7 +988,7 @@ At Zero to Hero we consider privacy to be a very important matter and as such we
 
 **Information collected automatically:**
 
-* Usage data: pages and features you visit, including Explore Media, Music & Entertainment, Live TV, TV Shows, Search, Dictionary, Saved Words, Review, Reader, Web Reader, EPUB Reader, Local Media, Watch History, Playlists and Liked Videos; videos you watch; interactions; and timestamps.
+* Usage data: pages and features you visit, including Explore Media, Music & Entertainment, Live TV, TV Shows, Search, Dictionary, Saved Words, Review, Reader, Web Reader, EBook Reader, Local Media, Watch History, Playlists and Liked Videos; videos you watch; interactions; and timestamps.
 * Device and network information: IP address, browser type, operating system, device type and approximate location derived from your IP address.
 
 **Browser extension data:**
@@ -1074,7 +1074,7 @@ We reserve the right to modify this privacy policy at any time, so please review
 
 If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).
 ` },
-  { path: 'reading/epub', title: 'EPUB Reader', category: 'reading', content: `# EPUB Reader
+  { path: 'reading/epub', title: 'EBook Reader', category: 'reading', content: `# EBook Reader
 
 Read EPUB e-books with interactive word lookup, per-block translation, and progress that persists across sessions.
 
@@ -1082,7 +1082,7 @@ Read EPUB e-books with interactive word lookup, per-block translation, and progr
 
 ### Upload an EPUB
 
-1. Navigate to **Reading → EPUB Reader** in the menu
+1. Navigate to **Reading → EBook Reader** in the menu
 2. **Drag & drop** an \`.epub\` file onto the upload zone, or click **Browse** to select one from your device
 3. The cover image appears — tap it to start reading
 
@@ -1191,7 +1191,7 @@ Your note is saved as you type. There's no save button — changes are saved to 
 ## See Also
 
 - [Web Reader](/docs/reading/web-reader) — Read web articles by URL without saving notes
-- [EPUB Reader](/docs/reading/epub) — Read EPUB books with chapter navigation
+- [EBook Reader](/docs/reading/epub) — Read EPUB books with chapter navigation
 - [Popup Dictionary](/docs/vocab/popup-dictionary) — How clicking words works
 - [Dictionary](/docs/vocab/dictionary) — Full dictionary features
 
@@ -1395,9 +1395,17 @@ Review your saved vocabulary with spaced repetition flashcards.
 
 Each saved word becomes a flashcard. The front shows the sentence where you saved the word — the word itself is highlighted so you can spot it instantly. Your job is to recall the meaning from context.
 
-Tap the card (or press Space) to reveal the back. You'll see the full dictionary entry with definitions, examples, inflections, and an AI explanation. Compare what you recalled with the actual definition, then rate yourself.
+Press **Show Definition** (or press **Space** / **Enter**) to reveal the back. You'll see the full dictionary entry with definitions, examples, inflections, and an AI explanation. Compare what you recalled with the actual definition, then rate yourself.
 
 The next time you see the word depends on your rating. Words you know well appear less often. Words you struggle with come back sooner. This is called spaced repetition — it's the same technique used by Anki.
+
+## Review Modes
+
+Switch how you're tested with the toggle at the top of the Review screen.
+
+- **Recall mode** — Recall the meaning from context. Flip the card to check the definition, then rate yourself.
+- **Choose mode** — Answer a multiple-choice question (the meaning, and for some languages the reading) before you can rate the card. It works like a small quiz.
+- **Spell mode** — The word is blanked out in the sentence. Type the exact word that's missing, then rate how well you knew it. The translation is shown to help you.
 
 ## Rating a Card
 
@@ -1410,7 +1418,7 @@ After revealing the back, rate how well you remembered:
 | Good | 3 | You recalled correctly |
 | Easy | 4 | You recalled instantly |
 
-You can also tap the **left half** of the card for Again, or the **right half** for Good. A colored toast confirms your choice.
+A colored toast confirms your choice.
 
 ## Card Counts
 
@@ -1426,7 +1434,7 @@ The daily limit for new cards is 20 by default. You can change it in [Settings](
 
 Every card shows the sentence where you saved the word. The exact word form is highlighted. Below it you'll see where the word came from (the video title or text name, plus the date).
 
-If you have "Show Translation" enabled in Settings, the card shows the English translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
+The card always shows the translation of the sentence — you don't need to turn on a setting. The word is highlighted in the translation so you can match it to the sentence. If no saved translation exists, it fetches one automatically.
 
 The context sentence has a hover menu (the three dots) for copying the text, speaking it aloud, getting an AI explanation, or translating it on the spot.
 
@@ -2908,19 +2916,27 @@ _كيف أسحب موافقتي؟_
 - **النافذة المنبثقة تعمل على أي كلمة** — حتى الأفعال المصرفة، الأسماء المنصرفة، والكلمات التي بها أخطاء إملائية. يقوم المحلل الصرفي بإيجاد الصيغة القاموسية تلقائيًا.` },
     { path: 'vocab/review', title: 'مراجعة', category: 'vocab', content: `# مراجعة
 
-مراجعة مفرداتك المحفوظة باستخدام بطاقات التكرار المتباعد.
+مراجعة مفرداتك المحفوظة مع بطاقات تعليمية بتكرار متباعد.
 
 ## كيف يعمل
 
-تصبح كل كلمة محفوظة بطاقة تعليمية. يظهر الوجه الأمامي الجملة التي حفظت فيها الكلمة — والكلمة نفسها مظللة لتتمكن من رؤيتها فورًا. مهمتك هي تذكر المعنى من السياق.
+كل كلمة محفوظة تصبح بطاقة تعليمية. يظهر الوجه الأمامي الجملة التي حفظت منها الكلمة — والكلمة نفسها مميزة بلون مختلف لتتمكن من spotting فورًا. مهمتك هي تذكر المعنى من السياق.
 
-انقر على البطاقة (أو اضغط على مفتاح المسافة) لإظهار الوجه الخلفي. ستظهر لك الإدخال الكامل للقاموس مع التعريفات والأمثلة والتصريفات وشرح الذكاء الاصطناعي. قارن ما تذكرته مع التعريف الفعلي، ثم قيِّم نفسك.
+اضغط **إظهار التعريف** (أو اضغط **مسافة** / ** Enter**) لكشف الوجه الخلفي. سترى إدخال القاموس الكامل مع التعريفات والأمثلة والتصريفات وشرح الذكاء الاصطناعي. قارن ما تذكرته مع التعريف الفعلي، ثم قيّم نفسك.
 
-تعتمد المرة التالية التي ترى فيها الكلمة على تقييمك. الكلمات التي تعرفها جيدًا تظهر بشكل أقل. الكلمات التي تواجه صعوبة فيها تعود بشكل أسرع. هذا ما يسمى بالتكرار المتباعد — وهي نفس التقنية التي يستخدمها Anki.
+المرة التالية التي ترى فيها الكلمة تعتمد على تقييمك. الكلمات التي تعرفها جيدًا تظهر أقل. الكلمات التي تواجه صعوبة معها تعود أسرع. هذا ما يسمى التكرار المتباعد — إنها نفس التقنية المستخدمة في Anki.
 
-## تقييم البطاقة
+## أوضاع المراجعة
 
-بعد إظهار الوجه الخلفي، قيِّم مدى تذكرك:
+بدّل طريقة اختبارك باستخدام المفتاح أعلى شاشة المراجعة.
+
+- **وضع الاستدعاء** — تذكر المعنى من السياق. اقلب البطاقة للتحقق من التعريف، ثم قيّم نفسك.
+- **وضع الاختيار** — أجب على سؤال اختيار من متعدد (المعنى، وبالنسبة لبعض اللغات القراءة) قبل أن تتمكن من تقييم البطاقة. يعمل مثل اختبار صغير.
+- **وضع الإملاء** — الكلمة محذوفة من الجملة. اكتب الكلمة الناقصة بالضبط، ثم قيّم مدى معرفتك بها. تظهر الترجمة لمساعدتك.
+
+## تقييم بطاقة
+
+بعد كشف الوجه الخلفي، قيّم مدى تذكرك:
 
 | الزر | المفتاح | متى تستخدم |
 |---|---|---|
@@ -2929,42 +2945,42 @@ _كيف أسحب موافقتي؟_
 | جيد | 3 | تذكرت بشكل صحيح |
 | سهل | 4 | تذكرت فورًا |
 
-يمكنك أيضًا النقر على **النصف الأيسر** من البطاقة لـ"مرة أخرى"، أو **النصف الأيمن** لـ"جيد". رسالة منبثقة ملونة تؤكد اختيارك.
+تأكيد ملون يظهر عند اختيارك.
 
-## أعداد البطاقات
+## عدد البطاقات
 
-يظهر أعلى الشاشة ثلاثة مؤشرات ملونة:
+أعلى الشاشة تظهر ثلاثة مؤشرات ملونة:
 
 - **أزرق** — بطاقات جديدة تراها لأول مرة اليوم
-- **أحمر** — بطاقات تعيد تعلمها بعد النسيان
+- **أحمر** — بطاقات تعيد تعلمها بعد نسيانها
 - **أخضر** — بطاقات تعود للمراجعة المجدولة
 
-الحد اليومي للبطاقات الجديدة هو 20 بطاقة افتراضيًا. يمكنك تغييره في [الإعدادات](/docs/general/settings).
+الحد اليومي للبطاقات الجديدة هو 20 افتراضيًا. يمكنك تغييره في [الإعدادات](/docs/general/settings).
 
 ## السياق والترجمة
 
-كل بطاقة تظهر الجملة التي حفظت فيها الكلمة. صيغة الكلمة الدقيقة مظللة. أسفلها ترى مصدر الكلمة (عنوان الفيديو أو اسم النص، بالإضافة إلى التاريخ).
+كل بطاقة تظهر الجملة التي حفظت منها الكلمة. صيغة الكلمة الدقيقة مميزة بلون مختلف. أسفلها سترى مصدر الكلمة (عنوان الفيديو أو النص، بالإضافة إلى التاريخ).
 
-إذا كان لديك "إظهار الترجمة" مفعّلاً في الإعدادات، تُظهر البطاقة ترجمة الإنكليزية للجملة عند إظهار الوجه الخلفي. إذا لم توجد ترجمة محفوظة، يتم جلبها تلقائيًا.
+البطاقة دائمًا تظهر ترجمة الجملة — لا تحتاج لتفعيل أي إعداد. الكلمة مميزة في الترجمة لتتمكن من مطابقتها مع الجملة. إذا لم توجد ترجمة محفوظة، يتم جلبها تلقائيًا.
 
-جملة السياق تحتوي على قائمة منسدلة (النقاط الثلاث) لنسخ النص، أو نطقه بصوت عالٍ، أو الحصول على شرح بالذكاء الاصطناعي، أو ترجمته فورًا.
+جملة السياق تحتوي على قائمة تمرير (النقاط الثلاث) لنسخ النص، أو نطقه بصوت عالٍ، أو الحصول على شرح من الذكاء الاصطناعي، أو ترجمته فورًا.
 
 ## إزالة كلمة
 
-لإزالة كلمة من مجموعة المراجعة، قم بإلغاء حفظها من إدخال القاموس الموجود على الوجه الخلفي للبطاقة. تنتقل البطاقة التالية إلى مكانها تلقائيًا.
+لإزالة كلمة من مجموعة المراجعة الخاصة بك، ألغِ حفظها من إدخال القاموس على الوجه الخلفي للبطاقة. البطاقة التالية تنتقل إلى مكانها تلقائيًا.
 
 ## اختصارات لوحة المفاتيح
 
-- **مفتاح المسافة** أو **Enter** — إظهار الوجه الخلفي، أو تقييم "جيد" (عند إظهار الوجه الخلفي)
-- **1–4** — تقييم مرة أخرى، صعب، جيد، سهل (عند إظهار الوجه الخلفي)
+- **مسافة** أو **Enter** — كشف الوجه الخلفي، أو تقييم "جيد" (عند ظهور الوجه الخلفي)
+- **1–4** — تقييم "مرة أخرى" أو "صعب" أو "جيد" أو "سهل" (عند ظهور الوجه الخلفي)
 
 ## نصائح
 
-- مراجعة يوميًا. حتى 5 دقائق تُحدث فرقًا.
+- مراجعة يوميًا. حتى 5 دقائق تصنع فرقًا.
 - كن صارمًا مع "مرة أخرى". إذا لم تستطع التذكر في الحياة الواقعية، فهذا يعتبر فشلًا.
-- استخدم جملة السياق. رؤية الكلمة في جملتها الأصلية أكثر فعالية من الحفظ المنعزل.
-- انقر على النقاط الثلاث في جملة السياق لترجمة أو شرح السطر بالكامل قبل التقييم.
-- اضبط حد البطاقات الجديدة اليومي في الإعدادات إذا كان 20 كثيرًا أو قليلًا جدًا.` },
+- استخدم جملة السياق. رؤية الكلمة في جملتها الأصلية أكثر فعالية من الحفظ المنفرد.
+- اضغط على النقاط الثلاث في جملة السياق لترجمة أو شرح السطر الكامل قبل التقييم.
+- اضبط حد البطاقات الجديد اليومي في الإعدادات إذا كان 20 كثيرًا أو قليلًا جدًا.` },
     { path: 'vocab/saved-words', title: 'الكلمات المحفوظة', category: 'vocab', content: `# الكلمات المحفوظة
 
 مجموعة مفرداتك الشخصية. كل كلمة تضع إشارة مرجعية عليها من الترجمة، أو القاموس، أو النافذة المنبثقة تظهر هنا.
@@ -4414,15 +4430,23 @@ Wenn du ein Wort in deinem Wortschatz gespeichert hast, aber keiner der Wörterb
 - **Das Popup funktioniert bei jedem Wort** – sogar bei konjugierten Verben, deklinierten Nomen und Wörtern mit Tippfehlern. Der Lemmatisierer findet automatisch die Wörterbuchform.` },
     { path: 'vocab/review', title: 'Wiederholung', category: 'vocab', content: `# Wiederholung
 
-Wiederholung deinen gespeicherten Wortschatz mit Karteikarten zum verteilten Wiederholen.
+Wiederholung deinen gespeicherten Wortschatz mit Karteikarten im Karteikasten-System.
 
 ## So funktioniert es
 
-Jedes gespeicherte Wort wird zu einer Karteikarte. Die Vorderseite zeigt den Satz, in dem du das Wort gespeichert hast – das Wort selbst ist hervorgehoben, damit du es sofort erkennst. Deine Aufgabe ist es, die Bedeutung aus dem Kontext zu erschließen.
+Jedes gespeicherte Wort wird zu einer Karteikarte. Die Vorderseite zeigt den Satz, in dem du das Wort gespeichert hast – das Wort selbst ist hervorgehoben, damit du es sofort erkennst. Deine Aufgabe ist es, die Bedeutung aus dem Kontext abzurufen.
 
-Tippe auf die Karte (oder drücke die Leertaste), um die Rückseite aufzudecken. Du siehst den vollständigen Wörterbucheintrag mit Definitionen, Beispielen, Flexionen und einer KI-Erklärung. Vergleiche, woran du dich erinnert hast, mit der tatsächlichen Definition und bewerte dich dann selbst.
+Drücke **Definition anzeigen** (oder drücke **Leertaste** / **Enter**), um die Rückseite aufzudecken. Du siehst den vollständigen Wörterbucheintrag mit Definitionen, Beispielen, Flexionen und einer KI-Erklärung. Vergleiche das, was du abgerufen hast, mit der tatsächlichen Definition und bewerte dich dann selbst.
 
-Wann du das Wort das nächste Mal siehst, hängt von deiner Bewertung ab. Wörter, die du gut kennst, erscheinen seltener. Wörter, mit denen du Schwierigkeiten hast, kommen schneller wieder. Das nennt man verteiltes Wiederholen – dieselbe Technik, die auch Anki verwendet.
+Das nächste Mal, wenn du das Wort siehst, hängt von deiner Bewertung ab. Wörter, die du gut kennst, erscheinen seltener. Wörter, mit denen du Schwierigkeiten hast, kommen schneller wieder. Dies nennt man verteiltes Wiederholen – es ist dieselbe Technik, die auch Anki verwendet.
+
+## Wiederholungsmodi
+
+Wechsle die Art der Abfrage mit dem Umschalter oben auf dem Bildschirm „Wiederholen".
+
+- **Abrufmodus** – Rufe die Bedeutung aus dem Kontext ab. Drehe die Karte um, um die Definition zu überprüfen, und bewerte dich dann selbst.
+- **Auswahlmodus** – Beantworte eine Multiple-Choice-Frage (die Bedeutung und bei manchen Sprachen auch die Lesung), bevor du die Karte bewerten kannst. Es funktioniert wie ein kleines Quiz.
+- **Schreibmodus** – Das Wort ist im Satz ausgeblendet. Tippe das fehlende Wort genau ein und bewerte dann, wie gut du es wusstest. Die Übersetzung wird zur Hilfe angezeigt.
 
 ## Eine Karte bewerten
 
@@ -4430,47 +4454,47 @@ Nachdem du die Rückseite aufgedeckt hast, bewerte, wie gut du dich erinnert has
 
 | Schaltfläche | Taste | Wann verwenden |
 |---|---|---|
-| Erneut | 1 | Du hast es ganz vergessen |
+| Erneut | 1 | Du hast es vollständig vergessen |
 | Schwer | 2 | Du hast dich mit Mühe erinnert |
 | Gut | 3 | Du hast dich richtig erinnert |
 | Leicht | 4 | Du hast dich sofort erinnert |
 
-Du kannst auch auf die **linke Hälfte** der Karte tippen für „Erneut" oder auf die **rechte Hälfte** für „Gut". Ein farbiger Toast bestätigt deine Wahl.
+Ein farbiger Hinweis bestätigt deine Wahl.
 
-## Kartenanzahlen
+## Kartenanzahl
 
 Oben auf dem Bildschirm werden drei farbige Indikatoren angezeigt:
 
 - **Blau** – Neue Karten, die du heute zum ersten Mal siehst
 - **Rot** – Karten, die du nach dem Vergessen neu lernst
-- **Grün** – Karten, die zur planmäßigen Wiederholung zurückkommen
+- **Grün** – Karten, die für eine geplante Wiederholung zurückkommen
 
-Das tägliche Limit für neue Karten beträgt standardmäßig 20. Du kannst es in [Einstellungen](/docs/general/settings) ändern.
+Die Tagesgrenze für neue Karten beträgt standardmäßig 20. Du kannst sie in [Einstellungen](/docs/general/settings) ändern.
 
 ## Kontext & Übersetzung
 
-Jede Karte zeigt den Satz, in dem du das Wort gespeichert hast. Die genaue Wortform ist hervorgehoben. Darunter siehst du, woher das Wort stammt (der Videotitel oder Textname sowie das Datum).
+Jede Karte zeigt den Satz, in dem du das Wort gespeichert hast. Die genaue Wortform ist hervorgehoben. Darunter siehst du, woher das Wort stammt (den Videotitel oder Textnamen sowie das Datum).
 
-Wenn „Übersetzung anzeigen" in Einstellungen aktiviert ist, zeigt die Karte die Englisch-Übersetzung des Satzes, wenn du die Rückseite aufdeckst. Wenn keine gespeicherte Übersetzung vorhanden ist, wird automatisch eine abgerufen.
+Die Karte zeigt immer die Übersetzung des Satzes – du musst dafür keine Einstellung aktivieren. Das Wort ist in der Übersetzung hervorgehoben, damit du es dem Satz zuordnen kannst. Falls keine gespeicherte Übersetzung vorhanden ist, wird automatisch eine abgerufen.
 
-Der Kontextsatz hat ein Hover-Menü (die drei Punkte) zum Kopieren des Textes, Vorlesen, Abrufen einer KI-Erklärung oder Übersetzen an Ort und Stelle.
+Der Kontextsatz hat ein Hover-Menü (die drei Punkte) zum Kopieren des Textes, Vorlesen, Erhalten einer KI-Erklärung oder sofortigen Übersetzen.
 
 ## Ein Wort entfernen
 
-Um ein Wort aus deinem Wiederholungsstapel zu entfernen, entferne die Speicherung aus dem Wörterbucheintrag auf der Rückseite der Karte. Die nächste Karte rückt automatisch nach.
+Um ein Wort aus deinem Wiederholungsdeck zu entfernen, speichere es über den Wörterbucheintrag auf der Rückseite der Karte wieder ab (entferne die Speicherung). Die nächste Karte rückt automatisch nach.
 
 ## Tastaturkürzel
 
-- **Leertaste** oder **Eingabetaste** – Rückseite aufdecken oder mit „Gut" bewerten (wenn die Rückseite angezeigt wird)
-- **1–4** – Mit „Erneut", „Schwer", „Gut", „Leicht" bewerten (wenn die Rückseite angezeigt wird)
+- **Leertaste** oder **Enter** – Rückseite aufdecken oder „Gut" bewerten (wenn die Rückseite angezeigt wird)
+- **1–4** – „Erneut", „Schwer", „Gut", „Leicht" bewerten (wenn die Rückseite angezeigt wird)
 
 ## Tipps
 
 - Wiederholung täglich. Schon 5 Minuten machen einen Unterschied.
-- Sei streng mit „Erneut". Wenn du dich im echten Leben nicht erinnern konntest, zählt es als Fehlschlag.
+- Sei streng mit „Erneut". Wenn du dich im echten Leben nicht erinnern könntest, gilt es als Fehlversuch.
 - Nutze den Kontextsatz. Das Wort in seinem ursprünglichen Satz zu sehen, ist effektiver als isoliertes Auswendiglernen.
-- Tippe auf die drei Punkte beim Kontextsatz, um die gesamte Zeile zu übersetzen oder erklären zu lassen, bevor du bewertest.
-- Passe dein tägliches Limit für neue Karten in Einstellungen an, wenn 20 zu viel oder zu wenig sind.` },
+- Tippe auf die drei Punkte am Kontextsatz, um die gesamte Zeile zu übersetzen oder zu erklären, bevor du bewertest.
+- Passe deine tägliche Grenze für neue Karten in Einstellungen an, wenn 20 zu viele oder zu wenige sind.` },
     { path: 'vocab/saved-words', title: 'Gespeicherte Wörter', category: 'vocab', content: `# Gespeicherte Wörter
 
 Ihre persönliche Vokabelsammlung. Jedes Wort, das Sie aus Untertiteln, dem Wörterbuch oder dem Popup markieren, landet hier.
@@ -6041,9 +6065,17 @@ Review your saved vocabulary with spaced repetition flashcards.
 
 Each saved word becomes a flashcard. The front shows the sentence where you saved the word — the word itself is highlighted so you can spot it instantly. Your job is to recall the meaning from context.
 
-Tap the card (or press Space) to reveal the back. You'll see the full dictionary entry with definitions, examples, inflections, and an AI explanation. Compare what you recalled with the actual definition, then rate yourself.
+Press **Show Definition** (or press **Space** / **Enter**) to reveal the back. You'll see the full dictionary entry with definitions, examples, inflections, and an AI explanation. Compare what you recalled with the actual definition, then rate yourself.
 
 The next time you see the word depends on your rating. Words you know well appear less often. Words you struggle with come back sooner. This is called spaced repetition — it's the same technique used by Anki.
+
+## Review Modes
+
+Switch how you're tested with the toggle at the top of the Review screen.
+
+- **Recall mode** — Recall the meaning from context. Flip the card to check the definition, then rate yourself.
+- **Choose mode** — Answer a multiple-choice question (the meaning, and for some languages the reading) before you can rate the card. It works like a small quiz.
+- **Spell mode** — The word is blanked out in the sentence. Type the exact word that's missing, then rate how well you knew it. The translation is shown to help you.
 
 ## Rating a Card
 
@@ -6056,7 +6088,7 @@ After revealing the back, rate how well you remembered:
 | Good | 3 | You recalled correctly |
 | Easy | 4 | You recalled instantly |
 
-You can also tap the **left half** of the card for Again, or the **right half** for Good. A colored toast confirms your choice.
+A colored toast confirms your choice.
 
 ## Card Counts
 
@@ -6072,7 +6104,7 @@ The daily limit for new cards is 20 by default. You can change it in [Settings](
 
 Every card shows the sentence where you saved the word. The exact word form is highlighted. Below it you'll see where the word came from (the video title or text name, plus the date).
 
-If you have "Show Translation" enabled in Settings, the card shows the English translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
+The card always shows the translation of the sentence — you don't need to turn on a setting. The word is highlighted in the translation so you can match it to the sentence. If no saved translation exists, it fetches one automatically.
 
 The context sentence has a hover menu (the three dots) for copying the text, speaking it aloud, getting an AI explanation, or translating it on the spot.
 
@@ -7548,58 +7580,66 @@ Repaso tu vocabulario guardado con tarjetas de repetición espaciada.
 
 ## Cómo funciona
 
-Cada palabra guardada se convierte en una tarjeta. El frente muestra la oración donde guardaste la palabra — la palabra en sí está resaltada para que la identifiques al instante. Tu tarea es recordar el significado a partir del contexto.
+Cada palabra guardada se convierte en una tarjeta. El anverso muestra la oración donde guardaste la palabra; la palabra en sí está resaltada para que la encuentres al instante. Tu trabajo es recordar el significado a partir del contexto.
 
-Toca la tarjeta (o presiona Espacio) para revelar el reverso. Verás la entrada completa del diccionario con definiciones, ejemplos, flexiones y una explicación de IA. Compara lo que recordaste con la definición real, luego evalúate.
+Presiona **Mostrar definición** (o presiona **Espacio** / **Enter**) para revelar el reverso. Verás la entrada completa del diccionario con definiciones, ejemplos, inflexiones y una explicación de IA. Compara lo que recordaste con la definición real y luego califícate.
 
-La próxima vez que veas la palabra depende de tu evaluación. Las palabras que conoces bien aparecen con menos frecuencia. Las que te cuestan vuelven antes. Esto se llama repetición espaciada — es la misma técnica que usa Anki.
+La próxima vez que veas la palabra depende de tu calificación. Las palabras que conoces bien aparecen con menos frecuencia. Las palabras que te cuestan vuelven antes. Esto se llama repetición espaciada: es la misma técnica que usa Anki.
 
-## Evaluar una tarjeta
+## Modos de repaso
 
-Después de revelar el reverso, evalúa qué tan bien recordaste:
+Cambia cómo se te evalúa con el interruptor en la parte superior de la pantalla de Repaso.
+
+- **Modo de recuerdo** — Recuerda el significado a partir del contexto. Voltea la tarjeta para verificar la definición y luego califícate.
+- **Modo de opción** — Responde una pregunta de opción múltiple (el significado y, para algunos idiomas, la lectura) antes de poder calificar la tarjeta. Funciona como un pequeño cuestionario.
+- **Modo de ortografía** — La palabra está oculta en la oración. Escribe la palabra exacta que falta y luego califica qué tan bien la sabías. La traducción se muestra para ayudarte.
+
+## Calificar una tarjeta
+
+Después de revelar el reverso, califica qué tan bien recordaste:
 
 | Botón | Tecla | Cuándo usarlo |
 |---|---|---|
-| Otra vez | 1 | Lo olvidaste por completo |
-| Difícil | 2 | Lo recordaste con dificultad |
-| Bien | 3 | Lo recordaste correctamente |
-| Fácil | 4 | Lo recordaste al instante |
+| Again | 1 | Lo olvidaste por completo |
+| Hard | 2 | Lo recordaste con dificultad |
+| Good | 3 | Lo recordaste correctamente |
+| Easy | 4 | Lo recordaste al instante |
 
-También puedes tocar la **mitad izquierda** de la tarjeta para Otra vez, o la **mitad derecha** para Bien. Un mensaje de color confirma tu elección.
+Una notificación de color confirma tu elección.
 
 ## Conteo de tarjetas
 
-La parte superior de la pantalla muestra tres indicadores de colores:
+La parte superior de la pantalla muestra tres indicadores de color:
 
 - **Azul** — Tarjetas nuevas que ves por primera vez hoy
-- **Rojo** — Tarjetas que estás reaprendiendo después de olvidar
-- **Verde** — Tarjetas que vuelven para una revisión programada
+- **Rojo** — Tarjetas que estás reaprendiendo después de olvidarlas
+- **Verde** — Tarjetas que vuelven para un repaso programado
 
 El límite diario de tarjetas nuevas es 20 por defecto. Puedes cambiarlo en [Configuración](/docs/general/settings).
 
 ## Contexto y traducción
 
-Cada tarjeta muestra la oración donde guardaste la palabra. La forma exacta de la palabra está resaltada. Debajo verás de dónde viene la palabra (el título del video o nombre del texto, más la fecha).
+Cada tarjeta muestra la oración donde guardaste la palabra. La forma exacta de la palabra está resaltada. Debajo verás de dónde proviene la palabra (el título del video o el nombre del texto, más la fecha).
 
-Si tienes "Mostrar traducción" activado en Configuración, la tarjeta muestra la traducción al Inglés de la oración cuando revelas el reverso. Si no existe una traducción guardada, se obtiene una automáticamente.
+La tarjeta siempre muestra la traducción de la oración: no necesitas activar ningún ajuste. La palabra está resaltada en la traducción para que puedas relacionarla con la oración. Si no existe una traducción guardada, se obtiene una automáticamente.
 
-La oración de contexto tiene un menú flotante (los tres puntos) para copiar el texto, decirlo en voz alta, obtener una explicación de IA o traducirlo en el momento.
+La oración de contexto tiene un menú flotante (los tres puntos) para copiar el texto, leerlo en voz alta, obtener una explicación de IA o traducirlo al momento.
 
 ## Eliminar una palabra
 
-Para eliminar una palabra de tu mazo de revisión, desguárdala desde la entrada del diccionario en el reverso de la tarjeta. La siguiente tarjeta se desliza automáticamente.
+Para eliminar una palabra de tu mazo de repaso, desguárdala desde la entrada del diccionario en el reverso de la tarjeta. La siguiente tarjeta se desliza automáticamente.
 
 ## Atajos de teclado
 
-- **Espacio** o **Enter** — Revelar el reverso, o evaluar Bien (cuando se muestra el reverso)
-- **1–4** — Evaluar Otra vez, Difícil, Bien, Fácil (cuando se muestra el reverso)
+- **Espacio** o **Enter** — Revela el reverso, o califica como Good (cuando el reverso está visible)
+- **1–4** — Califica como Again, Hard, Good, Easy (cuando el reverso está visible)
 
 ## Consejos
 
 - Repaso a diario. Incluso 5 minutos marcan la diferencia.
-- Sé estricto con Otra vez. Si no pudiste recordarlo en la vida real, cuenta como fallo.
-- Usa la oración de contexto. Ver la palabra en su oración original es más efectivo que memorizarla de forma aislada.
-- Toca los tres puntos en la oración de contexto para traducir o explicar la línea completa antes de evaluar.
+- Sé estricto con Again. Si no pudiste recordarlo en la vida real, cuenta como un fallo.
+- Usa la oración de contexto. Ver la palabra en su oración original es más efectivo que memorizar de forma aislada.
+- Toca los tres puntos en la oración de contexto para traducir o explicar la línea completa antes de calificar.
 - Ajusta tu límite diario de tarjetas nuevas en Configuración si 20 te parece demasiado o muy poco.` },
     { path: 'vocab/saved-words', title: 'Palabras guardadas', category: 'vocab', content: `# Palabras Guardadas
 
@@ -9050,63 +9090,71 @@ Si vous avez un mot enregistré dans votre vocabulaire mais qu'aucune entrée du
 - **La fenêtre contextuelle fonctionne sur n'importe quel mot** — même les verbes conjugués, les noms déclinés et les mots avec des fautes de frappe. Le lemmatiseur trouve automatiquement la forme du dictionnaire.` },
     { path: 'vocab/review', title: 'Révision', category: 'vocab', content: `# Révision
 
-Révision votre vocabulaire enregistré avec des flashcards à répétition espacée.
+Révision votre vocabulaire sauvegardé avec des flashcards à répétition espacée.
 
-## Comment ça fonctionne
+## Comment ça marche
 
-Chaque mot enregistré devient une flashcard. Le recto montre la phrase dans laquelle vous avez enregistré le mot — le mot lui-même est surligné pour que vous puissiez le repérer instantanément. Votre tâche consiste à retrouver le sens à partir du contexte.
+Chaque mot sauvegardé devient une flashcard. Le recto montre la phrase où vous avez sauvegardé le mot — le mot lui-même est surligné pour que vous puissiez le repérer instantanément. Votre tâche est de vous souvenir de la signification à partir du contexte.
 
-Tapez sur la carte (ou appuyez sur Espace) pour révéler le verso. Vous verrez l'entrée complète du dictionnaire avec les définitions, les exemples, les flexions et une explication par IA. Comparez ce que vous avez retrouvé avec la définition réelle, puis évaluez-vous.
+Appuyez sur **Voir la définition** (ou appuyez sur **Espace** / **Entrée**) pour révéler le verso. Vous verrez l'entrée complète du dictionnaire avec les définitions, les exemples, les flexions et une explication IA. Comparez ce dont vous vous êtes souvenu avec la définition réelle, puis évaluez-vous.
 
-La prochaine fois que vous verrez le mot dépend de votre évaluation. Les mots que vous connaissez bien apparaissent moins souvent. Les mots qui vous posent problème reviennent plus tôt. C'est ce qu'on appelle la répétition espacée — c'est la même technique utilisée par Anki.
+La prochaine fois que vous verrez le mot dépend de votre évaluation. Les mots que vous connaissez bien apparaissent moins souvent. Les mots avec lesquels vous avez du mal reviennent plus tôt. Cela s'appelle la répétition espacée — c'est la même technique utilisée par Anki.
+
+## Modes de révision
+
+Changez la façon dont vous êtes testé avec le bouton en haut de l'écran de révision.
+
+- **Mode rappel** — Rappelez-vous le sens à partir du contexte. Retournez la carte pour vérifier la définition, puis évaluez-vous.
+- **Mode choix** — Répondez à une question à choix multiples (le sens, et pour certaines langues la lecture) avant de pouvoir évaluer la carte. Cela fonctionne comme un petit quiz.
+- **Mode orthographe** — Le mot est masqué dans la phrase. Tapez le mot exact qui manque, puis évaluez à quel point vous le connaissiez. La traduction est affichée pour vous aider.
 
 ## Évaluer une carte
 
-Après avoir révélé le verso, évaluez votre niveau de mémorisation :
+Après avoir révélé le verso, évaluez à quel point vous vous êtes souvenu :
 
 | Bouton | Touche | Quand l'utiliser |
 |---|---|---|
-| Again | 1 | Vous avez totalement oublié |
-| Hard | 2 | Vous vous êtes souvenu avec difficulté |
-| Good | 3 | Vous vous êtes souvenu correctement |
-| Easy | 4 | Vous vous êtes souvenu immédiatement |
+| Encore | 1 | Vous avez complètement oublié |
+| Difficile | 2 | Vous vous êtes souvenu avec difficulté |
+| Bien | 3 | Vous vous êtes souvenu correctement |
+| Facile | 4 | Vous vous êtes souvenu instantanément |
 
-Vous pouvez aussi taper la **moitié gauche** de la carte pour Again, ou la **moitié droite** pour Good. Un toast coloré confirme votre choix.
+Un message coloré confirme votre choix.
 
 ## Compteurs de cartes
 
-Le haut de l'écran affiche trois indicateurs colorés :
+En haut de l'écran, trois indicateurs colorés s'affichent :
 
 - **Bleu** — Nouvelles cartes que vous voyez pour la première fois aujourd'hui
-- **Rouge** — Cartes que vous réapprenez après les avoir oubliées
+- **Rouge** — Cartes que vous réapprenez après avoir oublié
 - **Vert** — Cartes qui reviennent pour une révision programmée
 
 La limite quotidienne de nouvelles cartes est de 20 par défaut. Vous pouvez la modifier dans [Paramètres](/docs/general/settings).
 
 ## Contexte et traduction
 
-Chaque carte affiche la phrase où vous avez enregistré le mot. La forme exacte du mot est surlignée. En dessous, vous verrez d'où vient le mot (le titre de la vidéo ou le nom du texte, ainsi que la date).
+Chaque carte montre la phrase où vous avez sauvegardé le mot. La forme exacte du mot est surlignée. En dessous, vous verrez d'où vient le mot (le titre de la vidéo ou le nom du texte, plus la date).
 
-Si "Afficher la traduction" est activé dans Paramètres, la carte affiche la traduction en Anglais de la phrase lorsque vous révélez le verso. Si aucune traduction enregistrée n'existe, elle en récupère une automatiquement.
+La carte affiche toujours la traduction de la phrase — vous n'avez pas besoin d'activer un paramètre. Le mot est surligné dans la traduction pour que vous puissiez le faire correspondre à la phrase. Si aucune traduction sauvegardée n'existe, elle en récupère une automatiquement.
 
-La phrase de contexte dispose d'un menu contextuel (les trois points) pour copier le texte, le prononcer à haute voix, obtenir une explication par IA ou le traduire sur place.
+La phrase de contexte a un menu au survol (les trois points) pour copier le texte, le prononcer à voix haute, obtenir une explication IA ou le traduire sur place.
 
 ## Supprimer un mot
 
-Pour supprimer un mot de votre jeu de révision, désenregistrez-le depuis l'entrée du dictionnaire au verso de la carte. La carte suivante se met automatiquement en place.
+Pour supprimer un mot de votre jeu de révision, désenregistrez-le depuis l'entrée du dictionnaire au verso de la carte. La carte suivante glisse automatiquement en place.
 
 ## Raccourcis clavier
 
-- **Espace** ou **Entrée** — Révéler le verso, ou évaluer Good (quand le verso est affiché)
-- **1–4** — Évaluer Again, Hard, Good, Easy (quand le verso est affiché)
+- **Espace** ou **Entrée** — Révéler le verso, ou évaluer Bien (lorsque le verso est affiché)
+- **1–4** — Évaluer Encore, Difficile, Bien, Facile (lorsque le verso est affiché)
 
 ## Conseils
 
-- Révision quotidiennement. Même 5 minutes font la différence.
-- Soyez strict avec Again. Si vous ne pouviez pas vous en souvenir dans la vie réelle, c'est un échec.
-- Utilisez la phrase de contexte. Voir le mot dans sa phrase d'origine est plus efficace que de le mémoriser isolément.
-- Tapez sur les trois points de la phrase de contexte pour traduire ou expliquer la ligne entière avant d'évaluer.
-- Ajustez votre limite quotidienne de nouvelles cartes dans Paramètres si 20 vous semble trop ou pas assez.` },
+- Révision quotidiennement. Même 5 minutes font une différence.
+- Soyez strict avec Encore. Si vous ne pouviez pas vous en souvenir dans la vie réelle, cela compte comme un échec.
+- Utilisez la phrase de contexte. Voir le mot dans sa phrase d'origine est plus efficace que de mémoriser isolément.
+- Appuyez sur les trois points de la phrase de contexte pour traduire ou expliquer la ligne entière avant d'évaluer.
+- Ajustez votre limite quotidienne de nouvelles cartes dans Paramètres si 20 semble trop ou pas assez.` },
     { path: 'vocab/saved-words', title: 'Mots sauvegardés', category: 'vocab', content: `# Mots sauvegardés
 
 Votre collection personnelle de vocabulaire. Chaque mot que vous mettez en signet dans les sous-titres, le dictionnaire ou la fenêtre contextuelle se retrouve ici.
@@ -10556,62 +10604,70 @@ Jika Anda memiliki kata yang tersimpan di kosakata tetapi tidak ada entri kamus 
 - **Popup berfungsi untuk kata apa pun** — bahkan kata kerja terkonjugasi, kata benda yang diubah bentuknya, dan kata dengan kesalahan ketik. Lemmatizer akan menemukan bentuk kamus secara otomatis.` },
     { path: 'vocab/review', title: 'Tinjauan', category: 'vocab', content: `# Tinjauan
 
-Tinjauan kosakata yang telah Anda simpan dengan kartu flash pengulangan berjarak.
+Tinjauan kosakata yang Anda simpan dengan kartu kilas pengulangan berjarak.
 
 ## Cara Kerjanya
 
-Setiap kata yang disimpan menjadi kartu flash. Bagian depan menampilkan kalimat tempat Anda menyimpan kata tersebut — kata itu sendiri disorot agar Anda dapat langsung menemukannya. Tugas Anda adalah mengingat artinya dari konteks.
+Setiap kata yang disimpan menjadi kartu kilas. Bagian depan menampilkan kalimat tempat Anda menyimpan kata tersebut — kata itu sendiri disorot agar Anda bisa langsung menemukannya. Tugas Anda adalah mengingat maknanya dari konteks.
 
-Ketuk kartu (atau tekan Spasi) untuk melihat bagian belakang. Anda akan melihat entri kamus lengkap dengan definisi, contoh, infleksi, dan penjelasan AI. Bandingkan apa yang Anda ingat dengan definisi sebenarnya, lalu beri nilai diri Anda.
+Tekan **Lihat Definisi** (atau tekan **Spasi** / **Enter**) untuk membuka bagian belakang. Anda akan melihat entri kamus lengkap dengan definisi, contoh, infleksi, dan penjelasan AI. Bandingkan yang Anda ingat dengan definisi sebenarnya, lalu nilai diri Anda.
 
-Kapan Anda akan melihat kata tersebut lagi tergantung pada nilai Anda. Kata yang Anda kuasai akan lebih jarang muncul. Kata yang sulit akan kembali lebih cepat. Ini disebut pengulangan berjarak — teknik yang sama digunakan oleh Anki.
+Kapan Anda melihat kata itu lagi bergantung pada penilaian Anda. Kata yang sudah Anda kuasai akan jarang muncul. Kata yang sulit akan kembali lebih cepat. Ini disebut pengulangan berjarak — teknik yang sama digunakan oleh Anki.
 
-## Memberi Nilai pada Kartu
+## Mode Review
 
-Setelah membuka bagian belakang, nilai seberapa baik Anda mengingat:
+Ganti cara Anda diuji dengan tombol di bagian atas layar Review.
 
-| Tombol | Tombol Keyboard | Kapan digunakan |
+- **Mode mengingat** — Ingat makna dari konteks. Balik kartu untuk memeriksa definisi, lalu nilai diri Anda.
+- **Mode pilihan** — Jawab pertanyaan pilihan ganda (makna, dan untuk beberapa bahasa juga pelafalannya) sebelum Anda dapat menilai kartu. Ini seperti kuis kecil.
+- **Mode ejaan** — Kata tersebut dikosongkan dalam kalimat. Ketik kata yang tepat yang hilang, lalu nilai seberapa baik Anda mengetahuinya. Terjemahan ditampilkan untuk membantu Anda.
+
+## Menilai Kartu
+
+Setelah membuka bagian belakang, nilai seberapa baik Anda mengingatnya:
+
+| Tombol | Tombol Keyboard | Kapan Digunakan |
 |---|---|---|
-| Again | 1 | Anda benar-benar lupa |
-| Hard | 2 | Anda mengingat dengan susah payah |
-| Good | 3 | Anda mengingat dengan benar |
-| Easy | 4 | Anda langsung ingat |
+| Again | 1 | Anda lupa sepenuhnya |
+| Hard | 2 | Anda mengingatnya dengan susah payah |
+| Good | 3 | Anda mengingatnya dengan benar |
+| Easy | 4 | Anda mengingatnya secara instan |
 
-Anda juga dapat mengetuk **setengah kiri** kartu untuk Again, atau **setengah kanan** untuk Good. Pemberitahuan berwarna akan mengonfirmasi pilihan Anda.
+Notifikasi berwarna akan mengonfirmasi pilihan Anda.
 
 ## Jumlah Kartu
 
-Di bagian atas layar terdapat tiga indikator berwarna:
+Bagian atas layar menampilkan tiga indikator berwarna:
 
-- **Biru** — Kartu baru yang Anda lihat untuk pertama kalinya hari ini
+- **Biru** — Kartu baru yang Anda lihat pertama kali hari ini
 - **Merah** — Kartu yang Anda pelajari ulang setelah lupa
-- **Hijau** — Kartu yang kembali untuk ulasan terjadwal
+- **Hijau** — Kartu yang kembali untuk review terjadwal
 
 Batas harian untuk kartu baru adalah 20 secara default. Anda dapat mengubahnya di [Pengaturan](/docs/general/settings).
 
 ## Konteks & Terjemahan
 
-Setiap kartu menampilkan kalimat tempat Anda menyimpan kata tersebut. Bentuk kata yang tepat disorot. Di bawahnya Anda akan melihat dari mana kata itu berasal (judul video atau nama teks, beserta tanggalnya).
+Setiap kartu menampilkan kalimat tempat Anda menyimpan kata. Bentuk kata yang tepat disorot. Di bawahnya, Anda akan melihat asal kata tersebut (judul video atau nama teks, beserta tanggalnya).
 
-Jika Anda mengaktifkan "Tampilkan terjemahan" di Pengaturan, kartu akan menampilkan terjemahan Inggris dari kalimat saat Anda membuka bagian belakang. Jika tidak ada terjemahan tersimpan, akan diambil secara otomatis.
+Kartu selalu menampilkan terjemahan kalimat — Anda tidak perlu menyalakan pengaturan apa pun. Kata tersebut disorot dalam terjemahan agar Anda bisa mencocokkannya dengan kalimat. Jika tidak ada terjemahan tersimpan, terjemahan akan diambil secara otomatis.
 
-Kalimat konteks memiliki menu hover (tiga titik) untuk menyalin teks, membacakan dengan suara, mendapatkan penjelasan AI, atau menerjemahkannya di tempat.
+Kalimat konteks memiliki menu hover (tiga titik) untuk menyalin teks, membacakannya dengan lantang, mendapatkan penjelasan AI, atau menerjemahkannya secara langsung.
 
 ## Menghapus Kata
 
-Untuk menghapus kata dari tumpukan ulasan Anda, batalkan penyimpanan dari entri kamus di bagian belakang kartu. Kartu berikutnya akan muncul secara otomatis.
+Untuk menghapus kata dari dek review Anda, batalkan penyimpanannya dari entri kamus di bagian belakang kartu. Kartu berikutnya akan meluncur ke tempatnya secara otomatis.
 
 ## Pintasan Keyboard
 
-- **Spasi** atau **Enter** — Membuka bagian belakang, atau memberi nilai Good (saat bagian belakang ditampilkan)
-- **1–4** — Memberi nilai Again, Hard, Good, Easy (saat bagian belakang ditampilkan)
+- **Spasi** atau **Enter** — Buka bagian belakang, atau nilai Good (saat bagian belakang ditampilkan)
+- **1–4** — Nilai Again, Hard, Good, Easy (saat bagian belakang ditampilkan)
 
 ## Tips
 
-- Tinjauan setiap hari. Bahkan 5 menit sudah membuat perbedaan.
-- Bersikap ketat dengan Again. Jika Anda tidak dapat mengingatnya di kehidupan nyata, itu dianggap gagal.
+- Tinjauan setiap hari. Bahkan 5 menit saja sudah membuat perbedaan.
+- Bersikaplah tegas dengan Again. Jika Anda tidak bisa mengingatnya dalam kehidupan nyata, itu dianggap gagal.
 - Gunakan kalimat konteks. Melihat kata dalam kalimat aslinya lebih efektif daripada menghafal secara terpisah.
-- Ketuk tiga titik pada kalimat konteks untuk menerjemahkan atau menjelaskan seluruh baris sebelum memberi nilai.
+- Ketuk tiga titik pada kalimat konteks untuk menerjemahkan atau menjelaskan kalimat lengkap sebelum menilai.
 - Sesuaikan batas kartu baru harian Anda di Pengaturan jika 20 terasa terlalu banyak atau terlalu sedikit.` },
     { path: 'vocab/saved-words', title: 'Kata yang Disimpan', category: 'vocab', content: `# Kata yang Disimpan
 
@@ -12066,24 +12122,32 @@ Ripasso il tuo vocabolario salvato con flashcard a ripetizione dilazionata.
 
 ## Come Funziona
 
-Ogni parola salvata diventa una flashcard. Il fronte mostra la frase in cui hai salvato la parola — la parola stessa è evidenziata in modo che tu possa individuarla all'istante. Il tuo compito è ricordare il significato dal contesto.
+Ogni parola salvata diventa una flashcard. Il fronte mostra la frase in cui hai salvato la parola — la parola stessa è evidenziata così la individui all'istante. Il tuo compito è ricordare il significato dal contesto.
 
-Tocca la carta (o premi Spazio) per vedere il retro. Vedrai la voce completa del dizionario con definizioni, esempi, flessioni e una spiegazione dell'IA. Confronta ciò che hai ricordato con la definizione reale, poi valutati.
+Premi **Mostra Definizione** (o premi **Spazio** / **Invio**) per rivelare il retro. Vedrai la voce completa del dizionario con definizioni, esempi, flessioni e una spiegazione AI. Confronta ciò che hai ricordato con la definizione reale, poi valutati.
 
-La prossima volta che vedrai la parola dipende dalla tua valutazione. Le parole che conosci bene appaiono meno spesso. Le parole con cui fai fatica tornano prima. Questo si chiama ripetizione dilazionata — è la stessa tecnica usata da Anki.
+La prossima volta che vedrai la parola dipende dalla tua valutazione. Le parole che conosci bene appaiono meno spesso. Quelle con cui hai difficoltà tornano prima. Questo si chiama ripetizione dilazionata — è la stessa tecnica usata da Anki.
+
+## Modalità di Ripasso
+
+Cambia il modo in cui vieni testato con l'interruttore in cima alla schermata di Ripasso.
+
+- **Modalità richiamo** — Ricorda il significato dal contesto. Gira la carta per controllare la definizione, poi valutati.
+- **Modalità scelta** — Rispondi a una domanda a scelta multipla (il significato e, per alcune lingue, la lettura) prima di poter valutare la carta. Funziona come un piccolo quiz.
+- **Modalità ortografia** — La parola è nascosta nella frase. Digita la parola esatta mancante, poi valuta quanto bene la conoscevi. La traduzione viene mostrata per aiutarti.
 
 ## Valutare una Carta
 
-Dopo aver visto il retro, valuta quanto bene hai ricordato:
+Dopo aver rivelato il retro, valuta quanto bene hai ricordato:
 
 | Pulsante | Tasto | Quando usarlo |
 |---|---|---|
-| Ancora | 1 | Hai dimenticato completamente |
-| Difficile | 2 | Hai ricordato con difficoltà |
-| Buono | 3 | Hai ricordato correttamente |
-| Facile | 4 | Hai ricordato all'istante |
+| Again | 1 | Hai dimenticato del tutto |
+| Hard | 2 | Hai ricordato con difficoltà |
+| Good | 3 | Hai ricordato correttamente |
+| Easy | 4 | Hai ricordato all'istante |
 
-Puoi anche toccare la **metà sinistra** della carta per Ancora, o la **metà destra** per Buono. Un toast colorato conferma la tua scelta.
+Un toast colorato conferma la tua scelta.
 
 ## Conteggio Carte
 
@@ -12093,32 +12157,32 @@ La parte superiore dello schermo mostra tre indicatori colorati:
 - **Rosso** — Carte che stai riapprendendo dopo aver dimenticato
 - **Verde** — Carte che tornano per una revisione programmata
 
-Il limite giornaliero per le nuove carte è 20 per impostazione predefinita. Puoi cambiarlo in [Impostazioni](/docs/general/settings).
+Il limite giornaliero per le nuove carte è 20 per impostazione predefinita. Puoi modificarlo in [Impostazioni](/docs/general/settings).
 
 ## Contesto e Traduzione
 
 Ogni carta mostra la frase in cui hai salvato la parola. La forma esatta della parola è evidenziata. Sotto vedrai da dove proviene la parola (il titolo del video o il nome del testo, più la data).
 
-Se hai "Mostra traduzione" abilitato in Impostazioni, la carta mostra la traduzione in Inglese della frase quando riveli il retro. Se non esiste una traduzione salvata, ne recupera una automaticamente.
+La carta mostra sempre la traduzione della frase — non devi attivare alcuna impostazione. La parola è evidenziata nella traduzione così puoi abbinarla alla frase. Se non esiste una traduzione salvata, ne recupera una automaticamente.
 
-La frase di contesto ha un menu a comparsa (i tre puntini) per copiare il testo, pronunciarlo ad alta voce, ottenere una spiegazione dell'IA o tradurlo al momento.
+La frase di contesto ha un menu a comparsa (i tre puntini) per copiare il testo, ascoltarlo ad alta voce, ottenere una spiegazione AI o tradurlo al momento.
 
 ## Rimuovere una Parola
 
-Per rimuovere una parola dal tuo mazzo di revisione, desalvala dalla voce del dizionario sul retro della carta. La carta successiva scivola automaticamente al suo posto.
+Per rimuovere una parola dal tuo mazzo di ripasso, rimuovila dal salvataggio dalla voce del dizionario sul retro della carta. La carta successiva scivola al suo posto automaticamente.
 
 ## Scorciatoie da Tastiera
 
-- **Spazio** o **Invio** — Rivela il retro, o valuta Buono (quando il retro è mostrato)
-- **1–4** — Valuta Ancora, Difficile, Buono, Facile (quando il retro è mostrato)
+- **Spazio** o **Invio** — Rivela il retro, oppure valuta Good (quando il retro è mostrato)
+- **1–4** — Valuta Again, Hard, Good, Easy (quando il retro è mostrato)
 
-## Consigli
+## Suggerimenti
 
 - Ripasso ogni giorno. Anche 5 minuti fanno la differenza.
-- Sii severo con Ancora. Se non fossi riuscito a ricordarlo nella vita reale, conta come fallimento.
-- Usa la frase di contesto. Vedere la parola nella sua frase originale è più efficace che memorizzarla isolatamente.
+- Sii severo con Again. Se non riuscivi a ricordarlo nella vita reale, conta come un fallimento.
+- Usa la frase di contesto. Vedere la parola nella sua frase originale è più efficace che memorizzarla da sola.
 - Tocca i tre puntini sulla frase di contesto per tradurre o spiegare l'intera riga prima di valutare.
-- Regola il limite giornaliero di nuove carte in Impostazioni se 20 ti sembrano troppi o troppo pochi.` },
+- Regola il limite giornaliero di nuove carte in Impostazioni se 20 ti sembrano troppe o troppo poche.` },
     { path: 'vocab/saved-words', title: 'Parole salvate', category: 'vocab', content: `# Parole salvate
 
 La tua raccolta di vocabolario personale. Ogni parola che segni dai sottotitoli, dal dizionario o dal popup finisce qui.
@@ -13568,63 +13632,71 @@ Language Playerは、オープンデータから厳選・バージョン管理�
 - **ポップアップはあらゆる単語に対応** — 活用された動詞、曲用された名詞、タイプミスがある単語でも問題ありません。レマタイザーが自動的に辞書形を見つけ出します。` },
     { path: 'vocab/review', title: '復習', category: 'vocab', content: `# 復習
 
-間隔反復フラッシュカードで、復習の保存済み語彙を学習しましょう。
+復習保存した単語を間隔反復フラッシュカードで学習しましょう。
 
 ## 仕組み
 
-保存した単語が1枚ずつフラッシュカードになります。表面には単語を保存した文が表示され、単語自体がハイライトされているので瞬時に見つけられます。あなたの役割は文脈から意味を思い出すことです。
+保存した各単語がフラッシュカードになります。表面には単語を保存したときの文が表示され、単語自体がハイライトされているのですぐに見つけられます。文脈から意味を思い出すのがあなたの役割です。
 
-カードをタップ（またはスペースキーを押す）と裏面が表示されます。定義、例文、活用形、AIによる説明を含む完全な辞書エントリが表示されます。思い出した内容と実際の定義を比較し、自分を評価してください。
+**定義を表示**（または**スペース** / **Enter**キー）を押すと、裏面が表示されます。定義、例文、活用形、AIによる解説を含む完全な辞書エントリが表示されます。思い出した内容と実際の定義を比較し、自分を評価してください。
 
-次にその単語が表示されるタイミングはあなたの評価に依存します。よく覚えている単語は頻度が下がり、苦手な単語はより早く再登場します。これを間隔反復と呼び、Ankiと同じ手法です。
+次にその単語が表示されるタイミングは、あなたの評価によって決まります。よく知っている単語は表示頻度が低くなり、苦手な単語はより早く再表示されます。これが間隔反復と呼ばれる手法で、Ankiでも使われているのと同じ技法です。
+
+## 復習モード
+
+レビュー画面の上部にある切り替えボタンで、テスト方法を変更できます。
+
+- **想起モード** — 文脈から意味を思い出します。カードをめくって定義を確認し、自分を評価します。
+- **選択モード** — カードを評価する前に、選択式の問題（意味、言語によっては読み方）に答えます。小さなクイズのように機能します。
+- **綴りモード** — 文中の単語が空欄になっています。欠けている単語を正確に入力し、どのくらい知っていたかを評価します。翻訳がヒントとして表示されます。
 
 ## カードの評価
 
-裏面を表示した後、覚え具合を評価します：
+裏面を表示した後、思い出せた程度に応じて評価します：
 
-| ボタン | キー | 使用タイミング |
+| ボタン | キー | 使用場面 |
 |---|---|---|
-| もう一度 | 1 | 完全に忘れていた |
-| 難しい | 2 | 苦労して思い出した |
-| 良い | 3 | 正しく思い出せた |
-| 簡単 | 4 | 即座に思い出せた |
+| Again | 1 | 完全に忘れていた |
+| Hard | 2 | 苦労して思い出せた |
+| Good | 3 | 正しく思い出せた |
+| Easy | 4 | 即座に思い出せた |
 
-カードの**左半分**をタップすると「もう一度」、**右半分**をタップすると「良い」を選択することもできます。色付きのトーストで選択が確認できます。
+色付きのトースト通知で選択が確認されます。
 
 ## カード数
 
-画面上部に3つの色付きインジケーターが表示されます：
+画面の上部には3つの色付きインジケーターが表示されます：
 
 - **青** — 今日初めて見る新しいカード
-- **赤** — 忘れた後に再学習中のカード
-- **緑** — 予定された復習のために戻ってきたカード
+- **赤** — 忘れた後に再学習しているカード
+- **緑** — 予定された復習で再登場するカード
 
-デフォルトの新規カードの1日あたりの上限は20枚です。[設定](/docs/general/settings)で変更できます。
+新しいカードの1日の上限はデフォルトで20枚です。[設定](/docs/general/settings)で変更できます。
 
 ## 文脈と翻訳
 
-すべてのカードには単語を保存した文が表示されます。正確な単語の形がハイライトされています。その下に、単語の出典（動画のタイトルやテキスト名、日付）が表示されます。
+すべてのカードには、単語を保存したときの文が表示されます。正確な語形がハイライトされています。その下に、単語の出典（動画のタイトルまたはテキスト名、日付）が表示されます。
 
-設定で「翻訳を表示」が有効になっている場合、カードの裏面を表示すると文の英語翻訳が表示されます。保存された翻訳がない場合は、自動的に取得されます。
+カードには常に文の翻訳が表示されるため、設定をオンにする必要はありません。翻訳内でも単語がハイライトされ、文との対応が把握できます。保存された翻訳がない場合は、自動的に取得されます。
 
-文脈文にはホバーメニュー（三点リーダー）があり、テキストのコピー、音声読み上げ、AIによる説明、その場での翻訳が可能です。
+文脈の文にはホバーメニュー（三点リーダー）があり、テキストのコピー、音声読み上げ、AIによる解説、その場での翻訳が行えます。
 
 ## 単語の削除
 
-復習デッキから単語を削除するには、カードの裏面にある辞書エントリから保存を解除します。次のカードが自動的に表示されます。
+復習デッキから単語を削除するには、カードの裏面にある辞書エントリから保存を解除します。次のカードが自動的にスライドインします。
 
 ## キーボードショートカット
 
-- **スペース** または **Enter** — 裏面を表示、または「良い」を評価（裏面表示時）
-- **1–4** — 「もう一度」「難しい」「良い」「簡単」を評価（裏面表示時）
+- **スペース**または**Enter** — 裏面を表示、またはGoodで評価（裏面表示時）
+- **1〜4** — Again、Hard、Good、Easyで評価（裏面表示時）
 
 ## ヒント
 
-- 復習毎日。たった5分でも効果があります。
-- 「もう一度」は厳しく判断してください。現実の生活で思い出せなかったなら、それは失敗です。
-- 文脈文を活用してください。単語を元の文で見ることは、単独で暗記するよりも効果的です。
-- 評価する前に、文脈文の三点リーダーをタップして全文の翻訳や説明を確認しましょう。
-- 20枚が多すぎる、または少なすぎると感じる場合は、設定で1日あたりの新規カード上限を調整してください。` },
+- 復習毎日続けましょう。5分だけでも効果があります。
+- Againは厳しく使いましょう。実際の生活で思い出せなかったなら、それは失敗としてカウントされます。
+- 文脈の文を活用しましょう。単語を元の文で見ることは、単独で暗記するよりも効果的です。
+- 文脈の文の三点リーダーをタップして、評価前に全文を翻訳または説明してもらいましょう。
+- 20枚が多すぎる、または少なすぎると感じる場合は、設定で1日の新しいカードの上限を調整してください。` },
     { path: 'vocab/saved-words', title: '保存済み単語', category: 'vocab', content: `# 保存済み単語
 
 あなただけのボキャブラリーコレクション。字幕、辞書、ポップアップからブックマークしたすべての単語がここに集まります。
@@ -15074,63 +15146,71 @@ Language Player는 오픈 데이터를 기반으로 선별되고 버전 관리�
 - **팝업은 모든 단어에서 작동** — 활용된 동사, 격변화된 명사, 오타가 있는 단어까지도 가능합니다. 표제어 추출기가 자동으로 사전 형태를 찾아냅니다.` },
     { path: 'vocab/review', title: '복습', category: 'vocab', content: `# 복습
 
-복습 간격 반복 플래시카드로 저장된 어휘를 학습하세요.
+복습 간격 반복 플래시카드로 저장된 어휘를 복습하세요.
 
 ## 작동 방식
 
-저장된 각 단어가 플래시카드가 됩니다. 앞면에는 단어를 저장한 문장이 표시되며, 단어 자체가 강조 표시되어 즉시 찾을 수 있습니다. 여러분의 임무는 문맥에서 의미를 떠올리는 것입니다.
+저장된 각 단어는 플래시카드가 됩니다. 앞면에는 단어를 저장한 문장이 표시되며, 단어 자체가 강조 표시되어 즉시 찾아볼 수 있습니다. 여러분의 임무는 문맥에서 의미를 떠올리는 것입니다.
 
-카드를 탭하거나(스페이스바 누르기) 뒷면을 확인하세요. 정의, 예문, 활용형, AI 설명이 포함된 전체 사전 항목이 표시됩니다. 떠올린 내용과 실제 정의를 비교한 후 스스로 평가하세요.
+**정의 보기**를 누르거나(**Space** 또는 **Enter** 키를 눌러) 뒷면을 확인하세요. 정의, 예문, 굴절형, AI 설명이 포함된 전체 사전 항목이 표시됩니다. 떠올린 내용을 실제 정의와 비교한 후 스스로 평가하세요.
 
-다음에 단어가 나타나는 시점은 평가에 따라 달라집니다. 잘 아는 단어는 덜 자주 나타나고, 어려워하는 단어는 더 빨리 다시 나옵니다. 이것을 간격 반복이라고 하며, Anki에서 사용하는 동일한 기법입니다.
+다음에 단어를 보게 되는 시점은 평가에 따라 달라집니다. 잘 아는 단어는 덜 자주 나타나고, 어려워하는 단어는 더 빨리 다시 나타납니다. 이것을 간격 반복이라고 하며, Anki에서 사용하는 것과 동일한 기법입니다.
+
+## 복습 모드
+
+복습 화면 상단의 토글을 사용하여 테스트 방식을 전환하세요.
+
+- **회상 모드** — 문맥에서 의미를 떠올립니다. 카드를 뒤집어 정의를 확인한 후 스스로 평가하세요.
+- **선택 모드** — 카드를 평가하기 전에 객관식 문제(의미, 일부 언어의 경우 읽기)에 답합니다. 작은 퀴즈처럼 작동합니다.
+- **철자 모드** — 문장에서 단어가 빈칸으로 가려집니다. 빠진 정확한 단어를 입력한 후 얼마나 잘 알고 있었는지 평가하세요. 번역이 도움을 주기 위해 표시됩니다.
 
 ## 카드 평가하기
 
 뒷면을 확인한 후, 얼마나 잘 기억했는지 평가하세요:
 
-| 버튼 | 키 | 사용 시점 |
+| 버튼 | 키 | 사용 시기 |
 |---|---|---|
 | Again | 1 | 완전히 잊어버린 경우 |
-| Hard | 2 | 어렵게 기억해낸 경우 |
-| Good | 3 | 정확하게 기억해낸 경우 |
-| Easy | 4 | 즉시 기억해낸 경우 |
+| Hard | 2 | 어렵게 떠올린 경우 |
+| Good | 3 | 정확히 떠올린 경우 |
+| Easy | 4 | 즉시 떠올린 경우 |
 
-카드의 **왼쪽 절반**을 탭하면 Again, **오른쪽 절반**을 탭하면 Good으로 평가할 수도 있습니다. 색상이 있는 토스트 메시지가 선택을 확인해줍니다.
+선택 결과는 색상이 있는 토스트 메시지로 확인됩니다.
 
-## 카드 개수
+## 카드 수
 
-화면 상단에 세 가지 색상 표시기가 있습니다:
+화면 상단에는 세 가지 색상의 표시기가 있습니다:
 
 - **파란색** — 오늘 처음 보는 새 카드
-- **빨간색** — 잊어버려서 다시 학습 중인 카드
-- **초록색** — 예정된 복습을 위해 다시 나타나는 카드
+- **빨간색** — 잊어버린 후 다시 학습 중인 카드
+- **초록색** — 예정된 복습으로 돌아오는 카드
 
 새 카드의 일일 한도는 기본적으로 20개입니다. [설정](/docs/general/settings)에서 변경할 수 있습니다.
 
 ## 문맥 및 번역
 
-모든 카드에는 단어를 저장한 문장이 표시됩니다. 정확한 단어 형태가 강조 표시됩니다. 그 아래에는 단어가 출처(비디오 제목 또는 텍스트 이름과 날짜)가 표시됩니다.
+모든 카드에는 단어를 저장한 문장이 표시됩니다. 정확한 단어 형태가 강조 표시됩니다. 그 아래에는 단어가 출처(비디오 제목 또는 텍스트 이름, 날짜 포함)가 표시됩니다.
 
-설정에서 "번역 보기"을 활성화한 경우, 카드 뒷면을 확인할 때 문장의 영어 번역이 표시됩니다. 저장된 번역이 없으면 자동으로 가져옵니다.
+카드에는 항상 문장의 번역이 표시됩니다 — 별도로 설정을 켤 필요가 없습니다. 번역에서도 단어가 강조 표시되어 문장과 매칭할 수 있습니다. 저장된 번역이 없으면 자동으로 가져옵니다.
 
-문맥 문장에는 텍스트 복사, 소리내어 읽기, AI 설명 얻기, 즉시 번역하기 위한 호버 메뉴(세 개의 점)가 있습니다.
+문맥 문장에는 텍스트 복사, 소리내어 읽기, AI 설명 얻기, 즉석 번역을 위한 호버 메뉴(점 세 개)가 있습니다.
 
 ## 단어 제거하기
 
-복습 덱에서 단어를 제거하려면 카드 뒷면의 사전 항목에서 저장을 해제하세요. 다음 카드가 자동으로 나타납니다.
+복습 덱에서 단어를 제거하려면 카드 뒷면의 사전 항목에서 저장을 해제하세요. 다음 카드가 자동으로 슬라이드되어 나타납니다.
 
 ## 키보드 단축키
 
-- **스페이스바** 또는 **Enter** — 뒷면 확인, 또는 Good 평가(뒷면이 표시된 경우)
+- **Space** 또는 **Enter** — 뒷면 표시, 또는 Good 평가(뒷면이 표시된 경우)
 - **1–4** — Again, Hard, Good, Easy 평가(뒷면이 표시된 경우)
 
 ## 팁
 
-- 복습 매일. 5분만 해도 차이가 있습니다.
-- Again 평가는 엄격하게 사용하세요. 실제 상황에서 기억하지 못했다면 실패로 간주합니다.
+- 복습 매일 하세요. 5분만 해도 차이가 있습니다.
+- Again 평가에 엄격해지세요. 실제 생활에서 떠올릴 수 없었다면 실패로 간주합니다.
 - 문맥 문장을 활용하세요. 단어를 원래 문장에서 보는 것이 따로 외우는 것보다 더 효과적입니다.
-- 평가 전에 문맥 문장의 세 개의 점을 탭하여 전체 문장을 번역하거나 설명을 확인하세요.
-- 설정에서 20개가 너무 많거나 적다고 느껴지면 일일 새 카드 한도를 조정하세요.` },
+- 평가 전에 문맥 문장의 점 세 개를 눌러 전체 줄을 번역하거나 설명을 확인하세요.
+- 20개가 너무 많거나 적다고 느껴지면 설정에서 일일 새 카드 한도를 조정하세요.` },
     { path: 'vocab/saved-words', title: '저장된 단어들', category: 'vocab', content: `# 저장된 단어
 
 당신의 개인 어휘 모음입니다. 자막, 사전 또는 팝업에서 북마크한 모든 단어가 여기에 저장됩니다.
@@ -16580,63 +16660,71 @@ Als je een woord in je woordenschat hebt opgeslagen maar geen van de woordenboek
 - **De pop-up werkt op elk woord** — zelfs vervoegde werkwoorden, verbogen zelfstandige naamwoorden en woorden met typefouten. De lemmatizer vindt automatisch de woordenboekvorm.` },
     { path: 'vocab/review', title: 'Beoordeling', category: 'vocab', content: `# Beoordeling
 
-Beoordeling je opgeslagen woordenlijst met flashcards op basis van gespreide herhaling.
+Beoordeling uw opgeslagen woordenschat met flashcards voor gespreide herhaling.
 
-## Hoe het werkt
+## Hoe Het Werkt
 
-Elk opgeslagen woord wordt een flashcard. De voorkant toont de zin waarin je het woord hebt opgeslagen — het woord zelf is gemarkeerd zodat je het direct ziet. Jouw taak is om de betekenis uit de context te achterhalen.
+Elk opgeslagen woord wordt een flashcard. De voorkant toont de zin waarin u het woord heeft opgeslagen — het woord zelf is gemarkeerd zodat u het direct kunt zien. Uw taak is om de betekenis uit de context te herleiden.
 
-Tik op de kaart (of druk op Spatie) om de achterkant te onthullen. Je ziet het volledige woordenboekartikel met definities, voorbeelden, verbuigingen en een AI-uitleg. Vergelijk wat je hebt herinnerd met de daadwerkelijke definitie en beoordeel jezelf.
+Druk op **Toon Definitie** (of druk op **Spatie** / **Enter**) om de achterkant te onthullen. U ziet het volledige woordenboekitem met definities, voorbeelden, vervoegingen en een AI-uitleg. Vergelijk wat u zich herinnerde met de werkelijke definitie en beoordeel uzelf dan.
 
-De volgende keer dat je het woord ziet, hangt af van jouw beoordeling. Woorden die je goed kent, verschijnen minder vaak. Woorden waar je moeite mee hebt, komen sneller terug. Dit heet gespreide herhaling — dezelfde techniek die Anki gebruikt.
+Wanneer u het woord opnieuw ziet, hangt af van uw beoordeling. Woorden die u goed kent, verschijnen minder vaak. Woorden waarmee u moeite heeft, komen sneller terug. Dit wordt gespreide herhaling genoemd — het is dezelfde techniek die Anki gebruikt.
 
-## Een kaart beoordelen
+## Beoordelingsmodi
 
-Na het onthullen van de achterkant, beoordeel hoe goed je het hebt onthouden:
+Schakel met de schakelaar bovenaan het Beoordelingsscherm tussen de manieren waarop u getest wordt.
+
+- **Herinneringsmodus** — Herleid de betekenis uit de context. Draai de kaart om om de definitie te controleren en beoordeel uzelf dan.
+- **Keuzemodus** — Beantwoord een meerkeuzevraag (de betekenis en voor sommige talen de leesvorm) voordat u de kaart kunt beoordelen. Het werkt als een kleine quiz.
+- **Spellingsmodus** — Het woord is geblanket in de zin. Typ het exacte woord dat ontbreekt en beoordeel dan hoe goed u het wist. De vertaling wordt getoond om u te helpen.
+
+## Een Kaart Beoordelen
+
+Nadat u de achterkant heeft onthuld, beoordeelt u hoe goed u het zich herinnerde:
 
 | Knop | Toets | Wanneer gebruiken |
 |---|---|---|
-| Opnieuw | 1 | Je bent het volledig vergeten |
-| Moeilijk | 2 | Je herinnerde het met moeite |
-| Goed | 3 | Je herinnerde het correct |
-| Makkelijk | 4 | Je herinnerde het direct |
+| Opnieuw | 1 | U bent het volledig vergeten |
+| Moeilijk | 2 | U herinnerde het met moeite |
+| Goed | 3 | U herinnerde het correct |
+| Gemakkelijk | 4 | U herinnerde het direct |
 
-Je kunt ook tikken op de **linkerhelft** van de kaart voor Opnieuw, of de **rechterhelft** voor Goed. Een gekleurde melding bevestigt je keuze.
+Een gekleurde melding bevestigt uw keuze.
 
 ## Kaartaantallen
 
-Bovenin het scherm zie je drie gekleurde indicatoren:
+Bovenaan het scherm ziet u drie gekleurde indicatoren:
 
-- **Blauw** — Nieuwe kaarten die je vandaag voor het eerst ziet
-- **Rood** — Kaarten die je opnieuw leert na vergeten
+- **Blauw** — Nieuwe kaarten die u vandaag voor het eerst ziet
+- **Rood** — Kaarten die u opnieuw leert na vergeten
 - **Groen** — Kaarten die terugkomen voor een geplande herhaling
 
-De dagelijkse limiet voor nieuwe kaarten is standaard 20. Je kunt dit wijzigen in [Instellingen](/docs/general/settings).
+De dagelijkse limiet voor nieuwe kaarten is standaard 20. U kunt deze wijzigen in [Instellingen](/docs/general/settings).
 
-## Context & vertaling
+## Context & Vertaling
 
-Elke kaart toont de zin waarin je het woord hebt opgeslagen. De exacte woordvorm is gemarkeerd. Daaronder zie je waar het woord vandaan komt (de videotitel of tekstnaam, plus de datum).
+Elke kaart toont de zin waarin u het woord heeft opgeslagen. De exacte woordvorm is gemarkeerd. Daaronder ziet u waar het woord vandaan komt (de videotitel of tekstnaam, plus de datum).
 
-Als je "Toon vertaling" hebt ingeschakeld in Instellingen, toont de kaart de Engels-vertaling van de zin wanneer je de achterkant onthult. Als er geen opgeslagen vertaling bestaat, wordt er automatisch een opgehaald.
+De kaart toont altijd de vertaling van de zin — u hoeft geen instelling aan te zetten. Het woord is gemarkeerd in de vertaling zodat u het kunt koppelen aan de zin. Als er geen opgeslagen vertaling bestaat, wordt er automatisch een opgehaald.
 
-De contextzin heeft een hover-menu (de drie puntjes) voor het kopiëren van de tekst, het uitspreken, het krijgen van een AI-uitleg of het direct vertalen.
+De contextzin heeft een zwevend menu (de drie puntjes) om de tekst te kopiëren, hardop voor te lezen, een AI-uitleg te krijgen of direct te vertalen.
 
-## Een woord verwijderen
+## Een Woord Verwijderen
 
-Om een woord uit je herhalingsoverzicht te verwijderen, deselecteer je het in het woordenboekartikel op de achterkant van de kaart. De volgende kaart schuift automatisch op zijn plaats.
+Om een woord uit uw herhalingsset te verwijderen, verwijdert u het uit het woordenboekitem op de achterkant van de kaart. De volgende kaart schuift automatisch naar binnen.
 
 ## Sneltoetsen
 
-- **Spatie** of **Enter** — Onthul de achterkant, of beoordeel met Goed (als de achterkant wordt getoond)
-- **1–4** — Beoordeel met Opnieuw, Moeilijk, Goed, Makkelijk (als de achterkant wordt getoond)
+- **Spatie** of **Enter** — Onthul de achterkant of beoordeel met Goed (wanneer de achterkant wordt getoond)
+- **1–4** — Beoordeel met Opnieuw, Moeilijk, Goed, Gemakkelijk (wanneer de achterkant wordt getoond)
 
 ## Tips
 
-- Beoordeling dagelijks. Zelfs 5 minuten maken verschil.
-- Wees streng met Opnieuw. Als je het in het echt niet had kunnen herinneren, telt het als een fout.
-- Gebruik de contextzin. Het zien van het woord in de originele zin is effectiever dan losstaand memoriseren.
-- Tik op de drie puntjes bij de contextzin om de volledige regel te vertalen of uit te leggen voordat je beoordeelt.
-- Pas je dagelijkse limiet voor nieuwe kaarten aan in Instellingen als 20 te veel of te weinig voelt.` },
+- Beoordeling dagelijks. Zelfs 5 minuten maakt een verschil.
+- Wees streng met Opnieuw. Als u het in het echt niet kon herinneren, telt het als een fout.
+- Gebruik de contextzin. Het woord in de oorspronkelijke zin zien is effectiever dan geïsoleerd memoriseren.
+- Tik op de drie puntjes van de contextzin om de volledige regel te vertalen of uit te leggen voordat u beoordeelt.
+- Pas uw dagelijkse limiet voor nieuwe kaarten aan in Instellingen als 20 te veel of te weinig voelt.` },
     { path: 'vocab/saved-words', title: 'Opgeslagen woorden', category: 'vocab', content: `# Opgeslagen Woorden
 
 Jouw persoonlijke woordenschatverzameling. Elk woord dat je bladwijzert uit ondertiteling, het woordenboek of de pop-up komt hier terecht.
@@ -18086,62 +18174,70 @@ Jeśli masz słowo zapisane w swoim słownictwie, ale żaden z wpisów słowniko
 - **Wyskakujące okienko działa na każdym słowie** — nawet na odmienionych czasownikach, rzeczownikach w przypadkach i słowach z literówkami. Lematyzator automatycznie znajduje formę słownikową.` },
     { path: 'vocab/review', title: 'Powtórka', category: 'vocab', content: `# Powtórka
 
-Powtórka zapisane słownictwo za pomocą fiszek opartych na powtórkach interwałowych.
+Powtórka swoje zapamiętane słownictwo za pomocą fiszek z powtórkami rozłożonymi w czasie.
 
 ## Jak to działa
 
-Każde zapisane słowo staje się fiszką. Na przodzie widnieje zdanie, w którym zapisałeś słowo – samo słowo jest podświetlone, abyś mógł je natychmiast zauważyć. Twoim zadaniem jest przypomnienie sobie znaczenia z kontekstu.
+Każde zapisane słowo staje się fiszką. Przód pokazuje zdanie, w którym zapisałeś słowo — samo słowo jest wyróżnione, abyś mógł je natychmiast zauważyć. Twoim zadaniem jest przypomnienie sobie znaczenia z kontekstu.
 
-Dotknij fiszki (lub naciśnij Spację), aby odsłonić tył. Zobaczysz pełny wpis słownikowy z definicjami, przykładami, odmianami i wyjaśnieniem AI. Porównaj to, co zapamiętałeś, z rzeczywistą definicją, a następnie oceń się.
+Naciśnij **Pokaż definicję** (lub naciśnij **Spację** / **Enter**), aby odkryć tył. Zobaczysz pełny wpis słownikowy z definicjami, przykładami, odmianami i wyjaśnieniem AI. Porównaj to, co zapamiętałeś, z faktyczną definicją, a następnie oceń siebie.
 
-Następny raz, gdy zobaczysz słowo, zależy od twojej oceny. Słowa, które dobrze znasz, pojawiają się rzadziej. Słowa, z którymi masz trudności, wracają szybciej. Nazywa się to powtórkami interwałowymi – to ta sama technika, której używa Anki.
+Następny raz, gdy zobaczysz słowo, zależy od twojej oceny. Słowa, które dobrze znasz, pojawiają się rzadziej. Słowa, z którymi masz trudności, wracają szybciej. Nazywa się to powtórkami rozłożonymi w czasie — to ta sama technika, której używa Anki.
+
+## Tryby powtórek
+
+Przełącz sposób testowania za pomocą przełącznika u góry ekranu powtórek.
+
+- **Tryb przypominania** — Przypomnij sobie znaczenie z kontekstu. Odwróć fiszkę, aby sprawdzić definicję, a następnie oceń siebie.
+- **Tryb wyboru** — Odpowiedz na pytanie wielokrotnego wyboru (znaczenie, a w przypadku niektórych języków także czytanie), zanim będziesz mógł ocenić fiszkę. Działa to jak mały quiz.
+- **Tryb pisowni** — Słowo jest ukryte w zdaniu. Wpisz dokładnie brakujące słowo, a następnie oceń, jak dobrze je znałeś. Tłumaczenie jest wyświetlane, aby ci pomóc.
 
 ## Ocena fiszki
 
-Po odsłonięciu tyłu oceń, jak dobrze zapamiętałeś:
+Po odkryciu tyłu oceń, jak dobrze zapamiętałeś:
 
-| Przycisk | Klawisz | Kiedy użyć |
+| Przycisk | Klawisz | Kiedy używać |
 |---|---|---|
-| Ponownie | 1 | Zupełnie zapomniałeś |
-| Trudne | 2 | Zapamiętałeś z trudem |
-| Dobre | 3 | Zapamiętałeś poprawnie |
-| Łatwe | 4 | Zapamiętałeś natychmiast |
+| Again | 1 | Całkowicie zapomniałeś |
+| Hard | 2 | Przypomniałeś sobie z trudnością |
+| Good | 3 | Przypomniałeś sobie poprawnie |
+| Easy | 4 | Przypomniałeś sobie natychmiast |
 
-Możesz też dotknąć **lewej połowy** fiszki, aby wybrać Ponownie, lub **prawej połowy**, aby wybrać Dobre. Kolorowy toast potwierdza twój wybór.
+Kolorowy komunikat potwierdza twój wybór.
 
-## Liczniki fiszek
+## Liczba fiszek
 
-Na górze ekranu widoczne są trzy kolorowe wskaźniki:
+Góra ekranu pokazuje trzy kolorowe wskaźniki:
 
-- **Niebieski** – Nowe fiszki, które widzisz po raz pierwszy dzisiaj
-- **Czerwony** – Fiszki, których się uczysz ponownie po zapomnieniu
-- **Zielony** – Fiszki wracające do zaplanowanego przeglądu
+- **Niebieski** — Nowe fiszki, które widzisz dziś po raz pierwszy
+- **Czerwony** — Fiszki, których uczysz się ponownie po zapomnieniu
+- **Zielony** — Fiszki wracające do zaplanowanej powtórki
 
 Dzienny limit nowych fiszek wynosi domyślnie 20. Możesz go zmienić w [Ustawienia](/docs/general/settings).
 
 ## Kontekst i tłumaczenie
 
-Każda fiszka pokazuje zdanie, w którym zapisałeś słowo. Dokładna forma słowa jest podświetlona. Poniżej zobaczysz, skąd pochodzi słowo (tytuł filmu lub nazwa tekstu, plus data).
+Każda fiszka pokazuje zdanie, w którym zapisałeś słowo. Dokładna forma słowa jest wyróżniona. Poniżej zobaczysz, skąd pochodzi słowo (tytuł wideo lub nazwa tekstu, a także data).
 
-Jeśli masz włączoną opcję "Pokaż tłumaczenie" w Ustawienia, fiszka po odsłonięciu tyłu pokazuje Angielski tłumaczenie zdania. Jeśli nie istnieje zapisane tłumaczenie, pobiera je automatycznie.
+Fiszka zawsze pokazuje tłumaczenie zdania — nie musisz włączać żadnego ustawienia. Słowo jest wyróżnione w tłumaczeniu, abyś mógł je dopasować do zdania. Jeśli nie istnieje zapisane tłumaczenie, jest ono pobierane automatycznie.
 
-Zdanie kontekstowe ma menu po najechaniu (trzy kropki) umożliwiające skopiowanie tekstu, odczytanie go na głos, uzyskanie wyjaśnienia AI lub przetłumaczenie na miejscu.
+Zdanie kontekstowe ma menu po najechaniu (trzy kropki) umożliwiające skopiowanie tekstu, odczytanie go na głos, uzyskanie wyjaśnienia AI lub natychmiastowe przetłumaczenie.
 
 ## Usuwanie słowa
 
-Aby usunąć słowo z talii do powtórek, usuń jego zapisanie z wpisu słownikowego na tyle fiszki. Następna fiszka automatycznie przesuwa się na swoje miejsce.
+Aby usunąć słowo z talii powtórek, odznacz je we wpisie słownikowym na tyle fiszki. Następna fiszka automatycznie przesuwa się na swoje miejsce.
 
 ## Skróty klawiszowe
 
-- **Spacja** lub **Enter** – Odsłoń tył lub oceń jako Dobre (gdy tył jest widoczny)
-- **1–4** – Oceń jako Ponownie, Trudne, Dobre, Łatwe (gdy tył jest widoczny)
+- **Spacja** lub **Enter** — Odkryj tył lub oceń jako Good (gdy tył jest widoczny)
+- **1–4** — Oceń jako Again, Hard, Good, Easy (gdy tył jest widoczny)
 
 ## Wskazówki
 
 - Powtórka codziennie. Nawet 5 minut robi różnicę.
-- Bądź surowy z opcją Ponownie. Jeśli nie potrafiłbyś przypomnieć sobie słowa w prawdziwym życiu, liczy się to jako porażka.
+- Bądź surowy z opcją Again. Jeśli nie potrafiłbyś tego przypomnieć sobie w prawdziwym życiu, liczy się to jako porażka.
 - Korzystaj ze zdania kontekstowego. Widzenie słowa w oryginalnym zdaniu jest skuteczniejsze niż zapamiętywanie w izolacji.
-- Dotknij trzy kropki na zdaniu kontekstowym, aby przetłumaczyć lub wyjaśnić całe zdanie przed oceną.
+- Kliknij trzy kropki na zdaniu kontekstowym, aby przetłumaczyć lub wyjaśnić całą linijkę przed oceną.
 - Dostosuj dzienny limit nowych fiszek w Ustawienia, jeśli 20 to za dużo lub za mało.` },
     { path: 'vocab/saved-words', title: 'Zapisane słowa', category: 'vocab', content: `# Zapisane słowa
 
@@ -19596,59 +19692,67 @@ Revisão seu vocabulário salvo com flashcards de repetição espaçada.
 
 ## Como Funciona
 
-Cada palavra salva se torna um flashcard. A frente mostra a frase onde você salvou a palavra — a própria palavra é destacada para que você a encontre instantaneamente. Sua tarefa é lembrar o significado pelo contexto.
+Cada palavra salva se torna um flashcard. A frente mostra a frase onde você salvou a palavra — a própria palavra fica destacada para você identificá-la instantaneamente. Sua tarefa é lembrar o significado a partir do contexto.
 
-Toque no cartão (ou pressione Espaço) para revelar o verso. Você verá a entrada completa do dicionário com definições, exemplos, flexões e uma explicação de IA. Compare o que você lembrou com a definição real e então avalie a si mesmo.
+Pressione **Mostrar Definição** (ou pressione **Espaço** / **Enter**) para revelar o verso. Você verá o verbete completo do dicionário com definições, exemplos, flexões e uma explicação de IA. Compare o que você lembrou com a definição real e, em seguida, avalie-se.
 
-A próxima vez que você vir a palavra depende da sua avaliação. Palavras que você conhece bem aparecem com menos frequência. Palavras com as quais você tem dificuldade voltam mais cedo. Isso se chama repetição espaçada — é a mesma técnica usada pelo Anki.
+A próxima vez que você vir a palavra depende da sua avaliação. Palavras que você conhece bem aparecem com menos frequência. Palavras com as quais você tem dificuldade voltam mais cedo. Isso é chamado de repetição espaçada — é a mesma técnica usada pelo Anki.
+
+## Modos de Revisão
+
+Alterne a forma como você é testado usando o seletor no topo da tela de Revisão.
+
+- **Modo de recordação** — Lembre o significado a partir do contexto. Vire o cartão para conferir a definição e, em seguida, avalie-se.
+- **Modo de escolha** — Responda a uma pergunta de múltipla escolha (o significado e, para alguns idiomas, a leitura) antes de poder avaliar o cartão. Funciona como um pequeno quiz.
+- **Modo de escrita** — A palavra fica oculta na frase. Digite a palavra exata que está faltando e, em seguida, avalie o quanto você a conhecia. A tradução é exibida para ajudar você.
 
 ## Avaliando um Cartão
 
-Após revelar o verso, avalie o quão bem você lembrou:
+Depois de revelar o verso, avalie o quanto você lembrou:
 
 | Botão | Tecla | Quando usar |
 |---|---|---|
-| Again | 1 | Você esqueceu completamente |
-| Hard | 2 | Você lembrou com dificuldade |
-| Good | 3 | Você lembrou corretamente |
-| Easy | 4 | Você lembrou instantaneamente |
+| Repetir | 1 | Você esqueceu completamente |
+| Difícil | 2 | Você lembrou com dificuldade |
+| Bom | 3 | Você lembrou corretamente |
+| Fácil | 4 | Você lembrou instantaneamente |
 
-Você também pode tocar na **metade esquerda** do cartão para Again, ou na **metade direita** para Good. Uma notificação colorida confirma sua escolha.
+Uma notificação colorida confirma sua escolha.
 
-## Contagens de Cartões
+## Contagem de Cartões
 
 O topo da tela mostra três indicadores coloridos:
 
-- **Azul** — Novos cartões que você está vendo pela primeira vez hoje
-- **Vermelho** — Cartões que você está reaprendendo após esquecer
-- **Verde** — Cartões que retornam para revisão programada
+- **Azul** — Cartões novos que você está vendo pela primeira vez hoje
+- **Vermelho** — Cartões que você está reaprendendo depois de esquecer
+- **Verde** — Cartões que voltam para uma revisão agendada
 
-O limite diário para novos cartões é 20 por padrão. Você pode alterá-lo em [Configurações](/docs/general/settings).
+O limite diário de cartões novos é 20 por padrão. Você pode alterá-lo em [Configurações](/docs/general/settings).
 
 ## Contexto e Tradução
 
-Cada cartão mostra a frase onde você salvou a palavra. A forma exata da palavra é destacada. Abaixo dela você verá de onde a palavra veio (o título do vídeo ou nome do texto, mais a data).
+Cada cartão mostra a frase onde você salvou a palavra. A forma exata da palavra fica destacada. Abaixo dela, você verá de onde a palavra veio (o título do vídeo ou nome do texto, além da data).
 
-Se você tiver "Mostrar tradução" ativado em Configurações, o cartão mostra a tradução Inglês da frase ao revelar o verso. Se não houver tradução salva, uma é buscada automaticamente.
+O cartão sempre mostra a tradução da frase — você não precisa ativar nenhuma configuração. A palavra fica destacada na tradução para que você possa relacioná-la à frase. Se não houver tradução salva, uma será buscada automaticamente.
 
-A frase de contexto tem um menu flutuante (os três pontos) para copiar o texto, falá-lo em voz alta, obter uma explicação de IA ou traduzi-lo na hora.
+A frase de contexto tem um menu suspenso (os três pontos) para copiar o texto, lê-lo em voz alta, obter uma explicação de IA ou traduzi-lo na hora.
 
 ## Removendo uma Palavra
 
-Para remover uma palavra do seu baralho de revisão, remova o salvamento da entrada do dicionário no verso do cartão. O próximo cartão desliza automaticamente para o lugar.
+Para remover uma palavra do seu baralho de revisão, remova o salvamento dela no verbete do dicionário no verso do cartão. O próximo cartão desliza para o lugar automaticamente.
 
 ## Atalhos de Teclado
 
-- **Espaço** ou **Enter** — Revela o verso, ou avalia como Good (quando o verso está mostrado)
-- **1–4** — Avalia Again, Hard, Good, Easy (quando o verso está mostrado)
+- **Espaço** ou **Enter** — Revelar o verso, ou avaliar como Bom (quando o verso está visível)
+- **1–4** — Avaliar como Repetir, Difícil, Bom, Fácil (quando o verso está visível)
 
 ## Dicas
 
 - Revisão diariamente. Mesmo 5 minutos fazem diferença.
-- Seja rigoroso com Again. Se você não conseguiu lembrar na vida real, conta como falha.
-- Use a frase de contexto. Ver a palavra em sua frase original é mais eficaz do que memorizar isoladamente.
-- Toque nos três pontos na frase de contexto para traduzir ou explicar a linha completa antes de avaliar.
-- Ajuste seu limite diário de novos cartões em Configurações se 20 parecer muito ou pouco.` },
+- Seja rigoroso com Repetir. Se você não conseguisse lembrar na vida real, conta como falha.
+- Use a frase de contexto. Ver a palavra na frase original é mais eficaz do que memorizar isoladamente.
+- Toque nos três pontos da frase de contexto para traduzir ou explicar a linha completa antes de avaliar.
+- Ajuste seu limite diário de cartões novos em Configurações se 20 parecer demais ou de menos.` },
     { path: 'vocab/saved-words', title: 'Palavras Salvas', category: 'vocab', content: `# Palavras Salvas
 
 Sua coleção de vocabulário pessoal. Toda palavra que você marcar de legendas, do dicionário ou do pop-up vai parar aqui.
@@ -21098,63 +21202,71 @@ Language Player использует курируемые, версиониро�
 - **Всплывающее окно работает с любым словом** — даже со спрягаемыми глаголами, склоняемыми существительными и словами с опечатками. Лемматизатор автоматически находит словарную форму.` },
     { path: 'vocab/review', title: 'Повторение', category: 'vocab', content: `# Повторение
 
-Повторение выученный словарный запас с помощью карточек для интервального повторения.
+Повторение сохранённые слова с карточками для интервального повторения.
 
 ## Как это работает
 
-Каждое сохранённое слово становится карточкой. На лицевой стороне отображается предложение, в котором вы сохранили слово, — само слово выделено, чтобы вы сразу его заметили. Ваша задача — вспомнить значение из контекста.
+Каждое сохранённое слово становится карточкой. На лицевой стороне показано предложение, в котором вы сохранили слово, — само слово выделено, чтобы вы могли мгновенно его заметить. Ваша задача — вспомнить значение из контекста.
 
-Нажмите на карточку (или клавишу Space), чтобы увидеть обратную сторону. Вы увидите полную словарную статью с определениями, примерами, словоизменениями и объяснением от ИИ. Сравните то, что вспомнили, с реальным определением, а затем оцените себя.
+Нажмите **Показать определение** (или нажмите **Пробел** / **Enter**), чтобы увидеть обратную сторону. Вы увидите полную словарную статью с определениями, примерами, словоформами и объяснением от ИИ. Сравните то, что вы вспомнили, с реальным определением, а затем оцените себя.
 
-Когда вы снова увидите слово, зависит от вашей оценки. Хорошо знакомые слова будут появляться реже. Слова, вызывающие трудности, вернутся быстрее. Это называется интервальным повторением — та же техника, что используется в Anki.
+Следующий раз, когда вы увидите слово, зависит от вашей оценки. Слова, которые вы хорошо знаете, появляются реже. Слова, с которыми вы испытываете трудности, возвращаются быстрее. Это называется интервальным повторением — та же техника, что используется в Anki.
+
+## Режимы повторения
+
+Переключайте способ проверки с помощью переключателя в верхней части экрана повторения.
+
+- **Режим вспоминания** — Вспомните значение из контекста. Переверните карточку, чтобы проверить определение, а затем оцените себя.
+- **Режим выбора** — Ответьте на вопрос с несколькими вариантами ответа (значение, а для некоторых языков и чтение), прежде чем сможете оценить карточку. Это работает как небольшой тест.
+- **Режим правописания** — Слово скрыто в предложении. Введите точное пропущенное слово, а затем оцените, насколько хорошо вы его знали. Для помощи показывается перевод.
 
 ## Оценка карточки
 
-После переворота карточки оцените, насколько хорошо вы запомнили:
+После открытия обратной стороны оцените, насколько хорошо вы вспомнили:
 
 | Кнопка | Клавиша | Когда использовать |
 |---|---|---|
-| Again | 1 | Вы полностью забыли |
-| Hard | 2 | Вспомнили с трудом |
-| Good | 3 | Вспомнили правильно |
-| Easy | 4 | Вспомнили сразу |
+| Заново | 1 | Вы полностью забыли |
+| Сложно | 2 | Вы вспомнили с трудом |
+| Хорошо | 3 | Вы вспомнили правильно |
+| Легко | 4 | Вы вспомнили мгновенно |
 
-Вы также можете нажать на **левую половину** карточки для Again или на **правую половину** для Good. Цветное уведомление подтвердит ваш выбор.
+Цветное уведомление подтверждает ваш выбор.
 
 ## Счётчики карточек
 
 В верхней части экрана отображаются три цветных индикатора:
 
 - **Синий** — Новые карточки, которые вы видите впервые сегодня
-- **Красный** — Карточки для повторного изучения после забывания
-- **Зелёный** — Карточки для планового повторения
+- **Красный** — Карточки, которые вы повторяете после забывания
+- **Зелёный** — Карточки, запланированные для повторения
 
-Ежедневный лимит новых карточек по умолчанию — 20. Вы можете изменить его в [Настройки](/docs/general/settings).
+Дневной лимит новых карточек по умолчанию — 20. Вы можете изменить его в [Настройки](/docs/general/settings).
 
 ## Контекст и перевод
 
-Каждая карточка показывает предложение, в котором вы сохранили слово. Точная форма слова выделена. Ниже указано, откуда взялось слово (название видео или текста, а также дата).
+Каждая карточка показывает предложение, в котором вы сохранили слово. Точная форма слова выделена. Ниже вы увидите, откуда взялось слово (название видео или текста, а также дата).
 
-Если в Настройки включена опция «Показать перевод», при перевороте карточки отображается перевод предложения на Английский. Если сохранённый перевод отсутствует, он загружается автоматически.
+Карточка всегда показывает перевод предложения — вам не нужно включать эту настройку. Слово выделено в переводе, чтобы вы могли сопоставить его с предложением. Если сохранённого перевода нет, он подтягивается автоматически.
 
 У контекстного предложения есть выпадающее меню (три точки) для копирования текста, озвучивания, получения объяснения от ИИ или мгновенного перевода.
 
 ## Удаление слова
 
-Чтобы удалить слово из колоды для повторения, отмените его сохранение в словарной статье на обратной стороне карточки. Следующая карточка автоматически подставится на её место.
+Чтобы удалить слово из вашей колоды повторения, отмените его сохранение в словарной статье на обратной стороне карточки. Следующая карточка автоматически выдвинется на место.
 
 ## Горячие клавиши
 
-- **Space** или **Enter** — Перевернуть карточку или оценить как Good (когда показана обратная сторона)
-- **1–4** — Оценить как Again, Hard, Good, Easy (когда показана обратная сторона)
+- **Пробел** или **Enter** — Открыть обратную сторону или поставить оценку «Хорошо» (когда обратная сторона показана)
+- **1–4** — Поставить оценку «Заново», «Сложно», «Хорошо», «Легко» (когда обратная сторона показана)
 
 ## Советы
 
 - Повторение ежедневно. Даже 5 минут имеют значение.
-- Будьте строги с Again. Если вы не смогли вспомнить в реальной жизни, это считается неудачей.
-- Используйте контекстное предложение. Запоминание слова в его оригинальном контексте эффективнее, чем заучивание в отрыве.
-- Нажмите на три точки у контекстного предложения, чтобы перевести или объяснить всю фразу перед оценкой.
-- Настройте ежедневный лимит новых карточек в Настройки, если 20 кажется слишком много или слишком мало.` },
+- Будьте строги с оценкой «Заново». Если вы не смогли вспомнить слово в реальной жизни, это считается провалом.
+- Используйте контекстное предложение. Видеть слово в его оригинальном предложении эффективнее, чем заучивать изолированно.
+- Нажмите на три точки на контекстном предложении, чтобы перевести или объяснить всю строку перед оценкой.
+- Отрегулируйте дневной лимит новых карточек в Настройки, если 20 — это слишком много или слишком мало.` },
     { path: 'vocab/saved-words', title: 'Сохраненные слова', category: 'vocab', content: `# Сохранённые слова
 
 Ваша личная коллекция слов. Каждое слово, которое вы добавляете в закладки из субтитров, словаря или всплывающего окна, попадает сюда.
@@ -22604,63 +22716,71 @@ Language Player ใช้พจนานุกรมที่คัดสรร�
 - **ป็อปอัปใช้ได้กับทุกคำ** — แม้แต่กริยาที่ผันแล้ว คำนามที่เปลี่ยนรูป และคำที่พิมพ์ผิด ระบบตัดคำจะค้นหารูปแบบพจนานุกรมโดยอัตโนมัติ` },
     { path: 'vocab/review', title: 'ทบทวน', category: 'vocab', content: `# ทบทวน
 
-ทบทวน คำศัพท์ที่คุณบันทึกไว้ด้วยแฟลชการ์ดแบบเว้นระยะ
+ทบทวน คำศัพท์ที่คุณบันทึกไว้ด้วยการ์ดช่วยจำแบบเว้นระยะ
 
 ## วิธีการทำงาน
 
-ทุกคำที่บันทึกไว้จะกลายเป็นแฟลชการ์ด ด้านหน้าแสดงประโยคที่คุณบันทึกคำนั้นไว้ — ตัวคำจะถูกเน้นให้คุณเห็นได้ทันที หน้าที่ของคุณคือการนึกความหมายจากบริบท
+คำศัพท์ทุกคำที่บันทึกไว้จะกลายเป็นการ์ดหนึ่งใบ ด้านหน้าจะแสดงประโยคที่คุณบันทึกคำศัพท์นั้นไว้ — ตัวคำศัพท์จะถูกไฮไลต์เพื่อให้คุณเห็นได้ทันที หน้าที่ของคุณคือจำความหมายจากบริบท
 
-แตะการ์ด (หรือกด Space) เพื่อเปิดด้านหลัง คุณจะเห็นรายการพจนานุกรมแบบเต็มพร้อมคำนิยาม ตัวอย่าง การผันคำ และคำอธิบายจาก AI เปรียบเทียบสิ่งที่คุณนึกได้กับคำนิยามจริง จากนั้นให้ประเมินตนเอง
+กด **แสดงคำแปล** (หรือกด **Space** / **Enter**) เพื่อเปิดด้านหลัง คุณจะเห็นรายการพจนานุกรมฉบับเต็มพร้อมคำนิยาม ตัวอย่างประโยค การผันคำ และคำอธิบายจาก AI เปรียบเทียบสิ่งที่คุณจำได้กับคำนิยามจริง แล้วให้คะแนนตัวเอง
 
-ครั้งต่อไปที่คุณเห็นคำศัพท์นั้นขึ้นอยู่กับการประเมินของคุณ คำที่คุณรู้ดีจะปรากฏน้อยลง คำที่คุณยังจำไม่ได้จะกลับมาเร็วขึ้น วิธีนี้เรียกว่าการเว้นระยะ — เป็นเทคนิคเดียวกับที่ Anki ใช้
+ครั้งถัดไปที่คุณจะเห็นคำศัพท์นั้นขึ้นอยู่กับคะแนนที่คุณให้ คำที่คุณรู้ดีจะปรากฏน้อยลง คำที่คุณยังจำไม่ได้จะกลับมาถี่ขึ้น วิธีนี้เรียกว่าการทบทวนแบบเว้นระยะ (spaced repetition) — เป็นเทคนิคเดียวกับที่ Anki ใช้
+
+## โหมดทบทวน
+
+สลับรูปแบบการทดสอบได้ด้วยปุ่มสลับที่ด้านบนของหน้าจอทบทวน
+
+- **โหมดทบทวนความจำ** — ทบทวนความหมายจากบริบท พลิกการ์ดเพื่อตรวจคำนิยาม แล้วให้คะแนนตัวเอง
+- **โหมดเลือก** — ตอบคำถามแบบเลือกตอบ (ความหมาย และสำหรับบางภาษา รวมถึงการอ่านออกเสียง) ก่อนที่จะให้คะแนนการ์ดได้ ทำงานเหมือนแบบทดสอบสั้นๆ
+- **โหมดสะกดคำ** — คำศัพท์จะถูกเว้นว่างไว้ในประโยค พิมพ์คำที่หายไปให้ถูกต้อง แล้วให้คะแนนว่าคุณรู้จักคำนั้นดีแค่ไหน มีคำแปลประโยคแสดงเพื่อช่วยเหลือคุณ
 
 ## การให้คะแนนการ์ด
 
-หลังจากเปิดด้านหลัง ให้ให้คะแนนว่าคุณจำได้ดีแค่ไหน:
+หลังจากเปิดด้านหลังแล้ว ให้ให้คะแนนว่าคุณจำได้ดีแค่ไหน:
 
-| ปุ่ม | คีย์ | เมื่อใดควรใช้ |
+| ปุ่ม | ปุ่มลัด | เมื่อใดที่ควรใช้ |
 |---|---|---|
-| Again | 1 | คุณลืมโดยสิ้นเชิง |
-| Hard | 2 | คุณจำได้ด้วยความยากลำบาก |
-| Good | 3 | คุณจำได้ถูกต้อง |
-| Easy | 4 | คุณจำได้ทันที |
+| ลืมแล้ว | 1 | คุณลืมไปหมดแล้ว |
+| ยาก | 2 | คุณจำได้ด้วยความยากลำบาก |
+| ดี | 3 | คุณจำได้ถูกต้อง |
+| ง่าย | 4 | คุณจำได้ทันที |
 
-คุณยังสามารถแตะ **ครึ่งซ้าย** ของการ์ดเพื่อเลือก Again หรือ **ครึ่งขวา** เพื่อเลือก Good ข้อความแจ้งเตือนสีจะยืนยันตัวเลือกของคุณ
+การแจ้งเตือนแบบมีสีจะยืนยันตัวเลือกของคุณ
 
 ## จำนวนการ์ด
 
-ที่ด้านบนของหน้าจอจะแสดงตัวบ่งชี้สามสี:
+ด้านบนของหน้าจอแสดงตัวบ่งชี้สามสี:
 
 - **สีน้ำเงิน** — การ์ดใหม่ที่คุณเห็นเป็นครั้งแรกในวันนี้
 - **สีแดง** — การ์ดที่คุณกำลังเรียนรู้ใหม่หลังจากลืม
-- **สีเขียว** — การ์ดที่กลับมาตามกำหนดทบทวน
+- **สีเขียว** — การ์ดที่ถึงกำหนดทบทวนตามกำหนดการ
 
 ขีดจำกัดรายวันสำหรับการ์ดใหม่คือ 20 ใบโดยค่าเริ่มต้น คุณสามารถเปลี่ยนได้ใน [การตั้งค่า](/docs/general/settings)
 
-## บริบทและการแปล
+## บริบทและคำแปล
 
-ทุกการ์ดจะแสดงประโยคที่คุณบันทึกคำนั้นไว้ คำในรูปแบบที่แน่นอนจะถูกเน้น ด้านล่างคุณจะเห็นที่มาของคำ (ชื่อวิดีโอหรือชื่อข้อความ พร้อมวันที่)
+การ์ดทุกใบจะแสดงประโยคที่คุณบันทึกคำศัพท์ไว้ คำศัพท์ในรูปแบบที่ปรากฏจริงจะถูกไฮไลต์ ด้านล่างคุณจะเห็นที่มาของคำศัพท์ (ชื่อวิดีโอหรือชื่อข้อความ พร้อมวันที่)
 
-หากคุณเปิดใช้ "แสดงคำแปล" ใน การตั้งค่า การ์ดจะแสดงคำแปล อังกฤษ ของประโยคเมื่อคุณเปิดด้านหลัง หากไม่มีคำแปลที่บันทึกไว้ ระบบจะดึงคำแปลมาโดยอัตโนมัติ
+การ์ดจะแสดงคำแปลของประโยคเสมอ — คุณไม่จำเป็นต้องเปิดการตั้งค่าใดๆ คำศัพท์จะถูกไฮไลต์ในคำแปลเพื่อให้คุณเทียบเคียงกับประโยคได้ หากไม่มีคำแปลที่บันทึกไว้ ระบบจะดึงคำแปลมาให้อัตโนมัติ
 
-ประโยคบริบทมีเมนูเมื่อวางเมาส์ (จุดสามจุด) สำหรับคัดลอกข้อความ อ่านออกเสียง ขอคำอธิบายจาก AI หรือแปลทันที
+ประโยคบริบทมีเมนูเมื่อวางเมาส์ (จุดสามจุด) สำหรับคัดลอกข้อความ พูดออกเสียง ขอคำอธิบายจาก AI หรือแปลทันที
 
-## การลบคำ
+## การลบคำศัพท์
 
-หากต้องการลบคำออกจากชุดทบทวน ให้ยกเลิกการบันทึกจากรายการพจนานุกรมที่ด้านหลังของการ์ด การ์ดใบถัดไปจะเลื่อนเข้ามาแทนที่โดยอัตโนมัติ
+หากต้องการลบคำศัพท์ออกจากสำรับทบทวนของคุณ ให้ยกเลิกการบันทึกจากรายการพจนานุกรมที่ด้านหลังการ์ด การ์ดใบถัดไปจะเลื่อนเข้ามาแทนที่โดยอัตโนมัติ
 
-## ปุ่มลัดคีย์บอร์ด
+## ปุ่มลัดแป้นพิมพ์
 
-- **Space** หรือ **Enter** — เปิดด้านหลัง หรือให้คะแนน Good (เมื่อแสดงด้านหลังแล้ว)
-- **1–4** — ให้คะแนน Again, Hard, Good, Easy (เมื่อแสดงด้านหลังแล้ว)
+- **Space** หรือ **Enter** — เปิดด้านหลัง หรือให้คะแนน "ดี" (เมื่อแสดงด้านหลังแล้ว)
+- **1–4** — ให้คะแนน ลืมแล้ว, ยาก, ดี, ง่าย (เมื่อแสดงด้านหลังแล้ว)
 
 ## เคล็ดลับ
 
-- ทบทวน ทุกวัน แม้เพียง 5 นาทีก็สร้างความแตกต่าง
-- จงเคร่งครัดกับ Again หากคุณไม่สามารถนึกได้ในชีวิตจริง นั่นถือว่าล้มเหลว
-- ใช้ประโยคบริบท การเห็นคำในประโยคต้นฉบับมีประสิทธิภาพมากกว่าการท่องจำแบบแยกเดี่ยว
-- แตะจุดสามจุดบนประโยคบริบทเพื่อแปลหรืออธิบายทั้งบรรทัดก่อนให้คะแนน
-- ปรับขีดจำกัดการ์ดใหม่รายวันใน การตั้งค่า หาก 20 ใบมากหรือน้อยเกินไป` },
+- ทบทวน ทุกวัน แม้เพียง 5 นาทีก็สร้างความแตกต่างได้
+- จงเข้มงวดกับตัวเลือก "ลืมแล้ว" หากคุณจำไม่ได้ในชีวิตจริง ถือว่าล้มเหลว
+- ใช้ประโยคบริบท การเห็นคำศัพท์ในประโยคต้นฉบับมีประสิทธิภาพมากกว่าการท่องจำแบบเดี่ยวๆ
+- แตะจุดสามจุดบนประโยคบริบทเพื่อแปลหรืออธิบายทั้งประโยคก่อนให้คะแนน
+- ปรับขีดจำกัดการ์ดใหม่รายวันใน การตั้งค่า หาก 20 ใบมากไปหรือน้อยไป` },
     { path: 'vocab/saved-words', title: 'คำที่บันทึกไว้', category: 'vocab', content: `# คำที่บันทึกไว้
 
 คลังคำศัพท์ส่วนตัวของคุณ ทุกคำที่คุณคั่นหน้าจากซับไตเติ้ล พจนานุกรม หรือป๊อปอัป จะมาอยู่ที่นี่
@@ -24110,63 +24230,71 @@ Kelime listenizde kayıtlı bir kelimeniz varsa ancak açılır pencerenin sözl
 - **Açılır pencere her kelimede çalışır** — çekimli fiiller, isim durum ekleri ve yazım hatalı kelimeler dahil. Lemmatizer sözlük formunu otomatik olarak bulur.` },
     { path: 'vocab/review', title: 'Gözden Geçir', category: 'vocab', content: `# Gözden Geçir
 
-Gözden Geçir kaydettiğiniz kelimeleri aralıklı tekrar kartlarıyla çalışın.
+Gözden Geçir kaydettiğiniz kelimeleri aralıklı tekrar flash kartlarıyla.
 
 ## Nasıl Çalışır
 
-Kaydedilen her kelime bir flashcard'a dönüşür. Ön yüzde kelimeyi kaydettiğiniz cümle gösterilir — kelimenin kendisi, hemen fark etmeniz için vurgulanır. Göreviniz anlamı bağlamdan hatırlamaktır.
+Kaydedilen her kelime bir flash karta dönüşür. Ön yüz, kelimeyi kaydettiğiniz cümleyi gösterir — kelimenin kendisi vurgulanır, böylece onu anında fark edersiniz. Göreviniz, anlamı bağlamdan hatırlamaktır.
 
-Karta dokunun (veya Boşluk tuşuna basın) arka yüzü görmek için. Tanımlar, örnekler, çekimler ve bir AI açıklaması içeren tam sözlük girdisini görürsünüz. Hatırladıklarınızı gerçek tanımla karşılaştırın, ardından kendinizi değerlendirin.
+**Tanımı Göster** düğmesine basın (veya **Boşluk** / **Enter** tuşuna basın) arka yüzü açmak için. Tanımlar, örnekler, çekimler ve bir yapay zeka açıklaması içeren tam sözlük girişini görürsünüz. Hatırladığınızı gerçek tanımla karşılaştırın, ardından kendinizi değerlendirin.
 
-Kelimeyi bir dahaki görüşünüz değerlendirmenize bağlıdır. İyi bildiğiniz kelimeler daha az görünür. Zorlandığınız kelimeler daha erken geri gelir. Buna aralıklı tekrar denir — Anki'nin kullandığı teknikle aynıdır.
+Kelimeyi bir sonraki görüşünüz, verdiğiniz puana bağlıdır. İyi bildiğiniz kelimeler daha az sıklıkta görünür. Zorlandığınız kelimeler daha çabuk geri gelir. Buna aralıklı tekrar denir — Anki'nin kullandığı tekniğin aynısıdır.
+
+## Tekrar Modları
+
+Review ekranının üst kısmındaki geçiş ile nasıl test edileceğinizi değiştirin.
+
+- **Hatırlama modu** — Bağlamdan anlamı hatırlayın. Tanımı kontrol etmek için kartı çevirin, ardından kendinizi değerlendirin.
+- **Seçim modu** — Kartı değerlendirmeden önce çoktan seçmeli bir soruyu (anlam ve bazı dillerde okunuş) yanıtlayın. Küçük bir sınav gibi çalışır.
+- **Yazım modu** — Kelime cümlede boş bırakılır. Eksik olan kelimeyi tam olarak yazın, ardından ne kadar iyi bildiğinizi değerlendirin. Çeviri size yardımcı olması için gösterilir.
 
 ## Bir Kartı Değerlendirme
 
-Arka yüzü açtıktan sonra, ne kadar iyi hatırladığınızı değerlendirin:
+Arka yüzü açtıktan sonra ne kadar iyi hatırladığınızı değerlendirin:
 
 | Düğme | Tuş | Ne zaman kullanılır |
 |---|---|---|
 | Tekrar | 1 | Tamamen unuttunuz |
-| Zor | 2 | Zorlukla hatırladınız |
+| Zor | 2 | Zorlanarak hatırladınız |
 | İyi | 3 | Doğru hatırladınız |
 | Kolay | 4 | Anında hatırladınız |
 
-Kartın **sol yarısına** dokunarak Tekrar'ı veya **sağ yarısına** dokunarak İyi'yi de seçebilirsiniz. Renkli bir bildirim seçiminizi onaylar.
+Renkli bir bildirim seçiminizi onaylar.
 
 ## Kart Sayıları
 
-Ekranın üst kısmı üç renkli gösterge içerir:
+Ekranın üst kısmı üç renkli gösterge gösterir:
 
 - **Mavi** — Bugün ilk kez gördüğünüz yeni kartlar
 - **Kırmızı** — Unuttuktan sonra yeniden öğrendiğiniz kartlar
-- **Yeşil** — Planlanmış bir tekrar için geri gelen kartlar
+- **Yeşil** — Planlanmış tekrar için geri gelen kartlar
 
-Yeni kartlarda günlük sınır varsayılan olarak 20'dir. Bunu [Ayarlar](/docs/general/settings) bölümünde değiştirebilirsiniz.
+Yeni kartlar için günlük limit varsayılan olarak 20'dir. Bunu [Ayarlar](/docs/general/settings) içinde değiştirebilirsiniz.
 
 ## Bağlam ve Çeviri
 
-Her kart, kelimeyi kaydettiğiniz cümleyi gösterir. Tam kelime biçimi vurgulanır. Altında kelimenin nereden geldiğini (video başlığı veya metin adı, artı tarih) görürsünüz.
+Her kart, kelimeyi kaydettiğiniz cümleyi gösterir. Kelimenin tam biçimi vurgulanır. Altında kelimenin nereden geldiğini görürsünüz (video başlığı veya metin adı, ayrıca tarih).
 
-Ayarlar içinde "Çeviriyi Göster" etkinse, kart arka yüzü açtığınızda cümlenin İngilizce çevirisini gösterir. Kaydedilmiş bir çeviri yoksa, otomatik olarak bir tane alır.
+Kart her zaman cümlenin çevirisini gösterir — bir ayarı açmanıza gerek yoktur. Kelime, çeviride cümleyle eşleştirebilmeniz için vurgulanır. Kaydedilmiş bir çeviri yoksa, otomatik olarak bir tane getirilir.
 
-Bağlam cümlesinde, metni kopyalamak, sesli okutmak, AI açıklaması almak veya anında çevirmek için bir fareyle üzerine gelme menüsü (üç nokta) bulunur.
+Bağlam cümlesinde, metni kopyalamak, sesli okumak, yapay zeka açıklaması almak veya anında çevirmek için bir üzerine gelme menüsü (üç nokta) vardır.
 
 ## Bir Kelimeyi Kaldırma
 
-Bir kelimeyi tekrar destenizden çıkarmak için, kartın arkasındaki sözlük girdisinden kaydını silin. Sonraki kart otomatik olarak yerine geçer.
+Bir kelimeyi tekrar destenizden kaldırmak için, kartın arkasındaki sözlük girişinden kaydını silin. Sonraki kart otomatik olarak yerine geçer.
 
 ## Klavye Kısayolları
 
-- **Boşluk** veya **Enter** — Arka yüzü açar veya İyi olarak değerlendirir (arka yüz gösteriliyorken)
-- **1–4** — Tekrar, Zor, İyi, Kolay olarak değerlendirir (arka yüz gösteriliyorken)
+- **Boşluk** veya **Enter** — Arka yüzü açın veya İyi olarak değerlendirin (arka yüz gösterildiğinde)
+- **1–4** — Tekrar, Zor, İyi, Kolay olarak değerlendirin (arka yüz gösterildiğinde)
 
 ## İpuçları
 
-- Gözden Geçir günlük. 5 dakika bile fark yaratır.
+- Gözden Geçir her gün. 5 dakika bile fark yaratır.
 - Tekrar konusunda katı olun. Gerçek hayatta hatırlayamadıysanız, bu bir başarısızlık sayılır.
-- Bağlam cümlesini kullanın. Kelimeyi orijinal cümlesinde görmek, izole şekilde ezberlemekten daha etkilidir.
-- Değerlendirmeden önce bağlam cümlesindeki üç noktaya dokunarak satırın tamamını çevirin veya açıklayın.
-- Ayarlar içinde günlük yeni kart sınırınızı ayarlayın, eğer 20 çok fazla veya çok az geliyorsa.` },
+- Bağlam cümlesini kullanın. Kelimeyi orijinal cümlesinde görmek, tek başına ezberlemekten daha etkilidir.
+- Değerlendirmeden önce tüm satırı çevirmek veya açıklamak için bağlam cümlesindeki üç noktaya dokunun.
+- 20 çok fazla veya çok az geliyorsa, günlük yeni kart limitinizi Ayarlar içinde ayarlayın.` },
     { path: 'vocab/saved-words', title: 'Kaydedilen Kelimeler', category: 'vocab', content: `# Kaydedilen Kelimeler
 
 Kişisel kelime koleksiyonunuz. Alt yazılardan, sözlükten veya açılır pencereden kaydettiğiniz her kelime burada birikir.
@@ -25616,63 +25744,71 @@ Nếu bạn có một từ đã lưu trong từ vựng nhưng không có mục t
 - **Cửa sổ bật lên hoạt động trên mọi từ** — ngay cả động từ đã chia, danh từ biến cách và từ có lỗi chính tả. Công cụ lemmatization tự động tìm dạng từ điển.` },
     { path: 'vocab/review', title: 'Ôn tập', category: 'vocab', content: `# Ôn tập
 
-Ôn tập từ vựng đã lưu của bạn bằng thẻ ghi nhớ lặp lại ngắt quãng.
+Ôn tập từ vựng đã lưu của bạn với thẻ ghi nhớ lặp lại ngắt quãng.
 
-## Cách hoạt động
+## Cách Hoạt Động
 
-Mỗi từ đã lưu trở thành một thẻ ghi nhớ. Mặt trước hiển thị câu chứa từ bạn đã lưu — bản thân từ đó được tô sáng để bạn có thể nhận ra ngay. Nhiệm vụ của bạn là nhớ lại nghĩa từ ngữ cảnh.
+Mỗi từ đã lưu sẽ trở thành một thẻ ghi nhớ. Mặt trước hiển thị câu chứa từ bạn đã lưu — bản thân từ đó được tô sáng để bạn có thể nhận ra ngay lập tức. Nhiệm vụ của bạn là nhớ lại nghĩa từ ngữ cảnh.
 
-Chạm vào thẻ (hoặc nhấn Phím cách) để lật mặt sau. Bạn sẽ thấy toàn bộ mục từ điển với định nghĩa, ví dụ, biến thể và giải thích AI. So sánh những gì bạn nhớ với định nghĩa thực tế, sau đó tự đánh giá.
+Nhấn **Xem Định Nghĩa** (hoặc nhấn **Space** / **Enter**) để lật mặt sau. Bạn sẽ thấy mục từ điển đầy đủ với định nghĩa, ví dụ, biến thể từ, và giải thích bằng AI. So sánh những gì bạn nhớ với định nghĩa thực tế, sau đó tự đánh giá bản thân.
 
-Lần tiếp theo bạn thấy từ đó phụ thuộc vào đánh giá của bạn. Những từ bạn nhớ rõ sẽ xuất hiện ít thường xuyên hơn. Những từ bạn gặp khó khăn sẽ quay lại sớm hơn. Đây gọi là lặp lại ngắt quãng — kỹ thuật tương tự được Anki sử dụng.
+Lần tiếp theo bạn gặp từ đó phụ thuộc vào đánh giá của bạn. Những từ bạn biết rõ sẽ xuất hiện ít thường xuyên hơn. Những từ bạn gặp khó khăn sẽ quay lại sớm hơn. Đây được gọi là lặp lại ngắt quãng — đây là kỹ thuật tương tự được Anki sử dụng.
 
-## Đánh giá thẻ
+## Chế Độ Ôn Tập
+
+Chuyển đổi cách bạn được kiểm tra bằng công tắc ở đầu màn hình Ôn Tập.
+
+- **Chế độ nhớ lại** — Nhớ lại nghĩa từ ngữ cảnh. Lật thẻ để kiểm tra định nghĩa, sau đó tự đánh giá.
+- **Chế độ chọn** — Trả lời câu hỏi trắc nghiệm (nghĩa của từ, và đối với một số ngôn ngữ là cách đọc) trước khi bạn có thể đánh giá thẻ. Nó hoạt động như một bài kiểm tra nhỏ.
+- **Chế độ đánh vần** — Từ bị che đi trong câu. Gõ chính xác từ còn thiếu, sau đó đánh giá mức độ bạn biết từ đó. Bản dịch được hiển thị để giúp bạn.
+
+## Đánh Giá Thẻ
 
 Sau khi lật mặt sau, hãy đánh giá mức độ bạn nhớ:
 
-| Nút | Phím | Khi nào dùng |
+| Nút | Phím | Khi nào sử dụng |
 |---|---|---|
-| Lại | 1 | Bạn hoàn toàn quên |
-| Khó | 2 | Bạn nhớ một cách khó khăn |
+| Lại lần nữa | 1 | Bạn hoàn toàn quên |
+| Khó | 2 | Bạn nhớ ra một cách khó khăn |
 | Tốt | 3 | Bạn nhớ chính xác |
 | Dễ | 4 | Bạn nhớ ngay lập tức |
 
-Bạn cũng có thể chạm vào **nửa trái** thẻ để chọn Lại, hoặc **nửa phải** để chọn Tốt. Một thông báo màu sẽ xác nhận lựa chọn của bạn.
+Một thông báo màu xác nhận lựa chọn của bạn.
 
-## Số lượng thẻ
+## Số Lượng Thẻ
 
 Đầu màn hình hiển thị ba chỉ báo màu:
 
-- **Xanh dương** — Thẻ mới bạn xem lần đầu trong ngày
+- **Xanh dương** — Thẻ mới bạn xem lần đầu tiên hôm nay
 - **Đỏ** — Thẻ bạn đang học lại sau khi quên
-- **Xanh lá** — Thẻ quay lại để ôn tập theo lịch
+- **Xanh lá** — Thẻ quay lại để ôn tập theo lịch trình
 
-Giới hạn thẻ mới hàng ngày mặc định là 20. Bạn có thể thay đổi trong [Cài đặt](/docs/general/settings).
+Giới hạn hàng ngày cho thẻ mới là 20 theo mặc định. Bạn có thể thay đổi trong [Cài đặt](/docs/general/settings).
 
-## Ngữ cảnh & Dịch thuật
+## Ngữ Cảnh & Bản Dịch
 
-Mỗi thẻ hiển thị câu chứa từ bạn đã lưu. Dạng từ chính xác được tô sáng. Bên dưới, bạn thấy nguồn gốc của từ (tiêu đề video hoặc tên văn bản, kèm ngày tháng).
+Mỗi thẻ hiển thị câu chứa từ bạn đã lưu. Dạng từ chính xác được tô sáng. Bên dưới, bạn sẽ thấy nơi từ đó đến (tiêu đề video hoặc tên văn bản, cùng ngày tháng).
 
-Nếu bạn đã bật "Hiển thị bản dịch" trong Cài đặt, thẻ sẽ hiển thị bản dịch Tiếng Anh của câu khi bạn lật mặt sau. Nếu không có bản dịch đã lưu, hệ thống sẽ tự động lấy một bản dịch.
+Thẻ luôn hiển thị bản dịch của câu — bạn không cần bật cài đặt nào. Từ được tô sáng trong bản dịch để bạn có thể đối chiếu với câu gốc. Nếu không có bản dịch đã lưu, hệ thống sẽ tự động lấy một bản dịch.
 
-Câu ngữ cảnh có menu thả xuống (ba dấu chấm) để sao chép văn bản, đọc to, nhận giải thích AI hoặc dịch ngay tại chỗ.
+Câu ngữ cảnh có menu di chuột (ba dấu chấm) để sao chép văn bản, đọc to, nhận giải thích bằng AI, hoặc dịch ngay tại chỗ.
 
-## Xóa một từ
+## Xóa Một Từ
 
-Để xóa một từ khỏi bộ thẻ ôn tập của bạn, hãy bỏ lưu từ đó từ mục từ điển ở mặt sau thẻ. Thẻ tiếp theo sẽ tự động trượt vào vị trí.
+Để xóa một từ khỏi bộ thẻ ôn tập của bạn, hãy bỏ lưu từ đó từ mục từ điển ở mặt sau của thẻ. Thẻ tiếp theo sẽ tự động trượt vào vị trí.
 
-## Phím tắt
+## Phím Tắt
 
-- **Phím cách** hoặc **Enter** — Lật mặt sau, hoặc đánh giá Tốt (khi mặt sau đã hiện)
-- **1–4** — Đánh giá Lại, Khó, Tốt, Dễ (khi mặt sau đã hiện)
+- **Space** hoặc **Enter** — Lật mặt sau, hoặc đánh giá Tốt (khi mặt sau đã hiển thị)
+- **1–4** — Đánh giá Lại lần nữa, Khó, Tốt, Dễ (khi mặt sau đã hiển thị)
 
 ## Mẹo
 
-- Ôn tập hàng ngày. Dù chỉ 5 phút cũng tạo nên khác biệt.
-- Hãy nghiêm khắc với Lại. Nếu bạn không thể nhớ trong thực tế, đó là một lần thất bại.
-- Sử dụng câu ngữ cảnh. Nhìn thấy từ trong câu gốc hiệu quả hơn học thuộc lòng đơn lẻ.
-- Chạm vào ba dấu chấm trên câu ngữ cảnh để dịch hoặc giải thích toàn bộ dòng trước khi đánh giá.
-- Điều chỉnh giới hạn thẻ mới hàng ngày trong Cài đặt nếu 20 quá nhiều hoặc quá ít.` },
+- Ôn tập mỗi ngày. Ngay cả 5 phút cũng tạo nên khác biệt.
+- Hãy nghiêm khắc với nút Lại lần nữa. Nếu bạn không thể nhớ ra trong thực tế, điều đó được tính là thất bại.
+- Sử dụng câu ngữ cảnh. Nhìn thấy từ trong câu gốc của nó hiệu quả hơn việc ghi nhớ riêng lẻ.
+- Nhấn vào ba dấu chấm trên câu ngữ cảnh để dịch hoặc giải thích toàn bộ dòng trước khi đánh giá.
+- Điều chỉnh giới hạn thẻ mới hàng ngày trong Cài đặt nếu 20 cảm thấy quá nhiều hoặc quá ít.` },
     { path: 'vocab/saved-words', title: 'Từ đã lưu', category: 'vocab', content: `# Từ Đã Lưu
 
 Bộ sưu tập từ vựng cá nhân của bạn. Mọi từ bạn đánh dấu từ phụ đề, từ điển hoặc cửa sổ bật lên đều được lưu tại đây.
@@ -27122,63 +27258,71 @@ Language Player使用经过整理和版本管理的词典，数据来源于开�
 - **弹出窗口适用于任何单词**——即使是变位动词、变格名词和拼写错误的单词。词形还原器会自动找到词典形式。` },
     { path: 'vocab/review', title: '复习', category: 'vocab', content: `# 复习
 
-通过间隔重复记忆卡复习您保存的词汇。
+复习您保存的词汇，通过间隔重复闪卡进行复习。
 
 ## 工作原理
 
-每个保存的单词都会变成一张记忆卡。卡片正面显示您保存该单词时的原句——单词本身会被高亮标注，方便您快速定位。您的任务是根据上下文回忆单词含义。
+每个保存的单词都会成为一张闪卡。正面显示您保存该单词时的句子——单词本身会被高亮，方便您一眼找到。您的任务是根据上下文回忆词义。
 
-轻点卡片（或按空格键）即可查看背面。您将看到完整的词典条目，包含释义、例句、词形变化和AI解释。将您的回忆结果与实际释义对比，然后进行自我评分。
+按**显示释义**（或按**空格键**/**回车键**）翻到背面。您会看到完整的词典条目，包括释义、例句、词形变化和AI解释。将您回忆的内容与实际释义进行比较，然后给自己评分。
 
-下次看到该单词的时间取决于您的评分。掌握良好的单词出现频率较低，而掌握较差的单词会更快复现。这就是间隔重复法——与Anki使用的技术相同。
+下次看到该单词的时间取决于您的评分。您熟练掌握的单词出现频率较低。您觉得困难的单词会更快再次出现。这就是所谓的间隔重复——与Anki使用的技术相同。
 
-## 评价卡片
+## 复习模式
 
-查看卡片背面后，请根据记忆程度评分：
+使用复习屏幕顶部的切换按钮来改变测试方式。
 
-| 按钮 | 按键 | 适用场景 |
+- **回忆模式** — 根据上下文回忆词义。翻转卡片查看释义，然后给自己评分。
+- **选择题模式** — 回答一个多项选择题（词义，某些语言还包括读音），之后才能评分。这就像一个小测验。
+- **拼写模式** — 单词在句子中被遮挡。输入缺失的确切单词，然后评价您对它的掌握程度。会显示翻译来帮助您。
+
+## 卡片评分
+
+翻到背面后，评价您的记忆程度：
+
+| 按钮 | 按键 | 使用时机 |
 |---|---|---|
-| 再次 | 1 | 完全忘记 |
-| 困难 | 2 | 回忆时有困难 |
+| 重来 | 1 | 完全忘记 |
+| 困难 | 2 | 费力回忆起来 |
 | 良好 | 3 | 正确回忆 |
-| 容易 | 4 | 瞬间回忆 |
+| 简单 | 4 | 立即回忆 |
 
-您也可以轻点卡片**左半部分**选择"再次"，或轻点**右半部分**选择"良好"。彩色提示条会确认您的选择。
+彩色提示条会确认您的选择。
 
-## 卡片计数
+## 卡片数量
 
 屏幕顶部显示三个彩色指示器：
 
-- **蓝色** — 今日首次学习的新卡片
-- **红色** — 遗忘后重新学习的卡片
-- **绿色** — 按计划复习的卡片
+- **蓝色** — 今天首次看到的新卡片
+- **红色** — 遗忘后正在重新学习的卡片
+- **绿色** — 按计划回来复习的卡片
 
-默认每日新卡片上限为20张。您可以在[设置](/docs/general/settings)中修改此设置。
+新卡的每日上限默认是20张。您可以在[设置](/docs/general/settings)中进行更改。
 
-## 语境与翻译
+## 上下文与翻译
 
-每张卡片都显示您保存单词时的原句。具体单词形式会被高亮标注。下方会显示单词来源（视频标题或文本名称及日期）。
+每张卡片都显示您保存单词时的句子。确切的单词形式会被高亮。下方会显示单词的来源（视频标题或文本名称，以及日期）。
 
-如果您在设置中启用了"显示翻译"，查看卡片背面时会显示句子的英语翻译。若未保存翻译，系统会自动获取。
+卡片始终显示句子的翻译——您无需开启任何设置。翻译中也会高亮该单词，方便您与句子对应。如果没有保存的翻译，系统会自动获取。
 
-语境句子带有悬停菜单（三点图标），可用于复制文本、朗读、获取AI解释或即时翻译。
+上下文句子有一个悬停菜单（三个点），用于复制文本、朗读、获取AI解释或即时翻译。
 
 ## 移除单词
 
-如需从复习库中移除单词，请在卡片背面的词典条目中取消保存。下一张卡片会自动滑入。
+要从复习卡组中移除单词，请在卡片背面的词典条目中取消保存该单词。下一张卡片会自动滑入到位。
 
 ## 键盘快捷键
 
-- **空格键**或**回车键** — 显示卡片背面（或显示背面时选择"良好"）
-- **1-4键** — 显示背面时分别选择"再次""困难""良好""容易"
+- **空格键**或**回车键** — 翻到背面，或评分“良好”（当背面已显示时）
+- **1–4** — 评分“重来”“困难”“良好”“简单”（当背面已显示时）
 
-## 提示
+## 小贴士
 
-- 复习每天坚持。即使5分钟也会带来改变。
-- 对"再次"选项保持严格。如果实际生活中无法回忆，就应视为失败。
-- 善用语境句子。在原始句子中记忆单词比孤立背诵更有效。
-- 点击语境句子上的三点图标，可在评分前翻译或解释整句话。
-- 如果每日20张新卡片太多或太少，可在设置中调整限制。` },
+- 复习每天进行。即使5分钟也会有成效。
+- 对“重来”要严格。如果现实中无法回忆起来，那就算失败。
+- 善用上下文句子。在原句中看到单词比孤立记忆更有效。
+- 评分前可点击上下文句子的三个点来翻译或解释整行内容。
+- 如果每天20张感觉太多或太少，可在设置中调整每日新卡上限。` },
     { path: 'vocab/saved-words', title: '已保存的单词', category: 'vocab', content: `# 已保存的单词
 
 您的个人词汇收藏。您从字幕、词典或弹出窗口中收藏的每个单词都会保存在这里。
@@ -28628,63 +28772,71 @@ Language Player 採用精心策劃、具版本控制的字典，資料來自開�
 - **彈窗適用於任何單詞**——包括變化後的動詞、變格的名詞，甚至拼寫錯誤的單詞。詞形還原工具會自動找到字典中的基本形式。` },
     { path: 'vocab/review', title: '複習', category: 'vocab', content: `# 複習
 
-使用間隔重複閃卡來複習您儲存的詞彙。
+複習你保存的詞彙，搭配間隔重複閃卡。
 
 ## 運作方式
 
-每個儲存的單字都會變成一張閃卡。卡片正面顯示您儲存該單字時的句子——該單字本身會以高亮顯示，方便您一眼找到。您的任務是從上下文回憶出字義。
+每個保存的單字都會變成一張閃卡。卡片正面顯示你保存單字時的句子——該單字本身會特別標示，讓你能一眼認出。你的任務是從上下文回憶出單字的意思。
 
-點擊卡片（或按空白鍵）即可翻到背面。您會看到完整的字典條目，包含定義、例句、詞形變化和AI解釋。將您回憶的內容與實際定義進行比對，然後為自己評分。
+按下**顯示定義**（或按**空白鍵**／**Enter**）以揭曉卡片背面。你會看到完整的字典條目，包含定義、例句、詞形變化和AI解釋。將你回憶的內容與實際定義相比較，然後為自己評分。
 
-您下一次看到這個單字的時間取決於您的評分。您熟悉的單字出現頻率較低。您感到困難的單字會更快再次出現。這就是所謂的間隔重複——與Anki使用的技術相同。
+下次看到該單字的時間取決於你的評分。你熟悉的單字會比較少出現，難以掌握的單字則會更快回來。這稱為間隔重複——與Anki使用的技術相同。
+
+## 複習模式
+
+使用複習畫面上方的切換鈕來變更測驗方式。
+
+- **回憶模式** — 從上下文回憶意思。翻卡查看定義，然後為自己評分。
+- **選擇題模式** — 回答多選題（意思，以及某些語言的讀音），才能為卡片評分。就像一個小測驗。
+- **拼寫模式** — 單字在句子中被隱藏。輸入缺少的正確單字，然後評分你掌握的程度。會顯示翻譯作為輔助。
 
 ## 為卡片評分
 
-翻到背面後，請根據您的記憶情況評分：
+揭曉背面後，評分你記得的程度：
 
 | 按鈕 | 按鍵 | 使用時機 |
 |---|---|---|
-| 再次 | 1 | 完全忘記 |
-| 困難 | 2 | 勉強回憶起來 |
-| 良好 | 3 | 正確回憶 |
-| 簡單 | 4 | 立刻回憶出來 |
+| 再來一次 | 1 | 完全忘記 |
+| 困難 | 2 | 費力才想起來 |
+| 良好 | 3 | 正確記得 |
+| 簡單 | 4 | 立即想起 |
 
-您也可以點擊卡片的**左半邊**選擇「再次」，或點擊**右半邊**選擇「良好」。彩色提示訊息會確認您的選擇。
+彩色提示訊息會確認你的選擇。
 
 ## 卡片數量
 
-螢幕頂端顯示三個彩色指示器：
+畫面頂部顯示三個顏色指示器：
 
-- **藍色** — 今天第一次看到的新卡片
+- **藍色** — 今天初次看到的新卡片
 - **紅色** — 忘記後正在重新學習的卡片
-- **綠色** — 按計劃回來複習的卡片
+- **綠色** — 排定複習時間回來的卡片
 
-每日新卡片的上限預設為20張。您可以在[設定](/docs/general/settings)中更改此設定。
+新卡片的每日上限預設為20張。你可以在[設定](/docs/general/settings)中變更。
 
 ## 上下文與翻譯
 
-每張卡片都顯示您儲存該單字時的句子。確切的單字形式會以高亮顯示。句子下方會顯示該單字的來源（影片標題或文字名稱，以及日期）。
+每張卡片都顯示你保存單字時的句子。確切的單字形式會以高亮標示。在下方你會看到該單字的來源（影片標題或文字名稱，加上日期）。
 
-如果您在設定中啟用了「顯示翻譯」功能，翻到卡片背面時會顯示句子的英語翻譯。如果沒有儲存的翻譯，系統會自動擷取一個。
+卡片一定會顯示句子的翻譯——你不需要開啟任何設定。翻譯中會高亮該單字，方便你對照句子。如果沒有保存的翻譯，系統會自動擷取一個。
 
-上下文句子有一個懸浮選單（三個點），可用於複製文字、朗讀、獲取AI解釋或即時翻譯。
+上下文句子有一個懸停選單（三個點），可用於複製文字、朗讀、取得AI解釋，或即時翻譯。
 
 ## 移除單字
 
-若要從複習牌組中移除一個單字，請在卡片背面的字典條目中取消儲存該單字。下一張卡片會自動滑入定位。
+若要從複習牌組中移除單字，請在卡片背面的字典條目中取消保存該單字。下一張卡片會自動滑入到位。
 
 ## 鍵盤快捷鍵
 
-- **空白鍵**或**Enter** — 翻到背面，或在背面顯示時評為「良好」
-- **1–4** — 在背面顯示時評為「再次」、「困難」、「良好」、「簡單」
+- **空白鍵**或**Enter** — 顯示背面，或評為良好（已顯示背面時）
+- **1–4** — 評為再來一次、困難、良好、簡單（已顯示背面時）
 
-## 小提示
+## 小祕訣
 
-- 複習每天進行。即使只有5分鐘也會產生影響。
-- 對「再次」的評分要嚴格。如果在現實生活中想不起來，那就算失敗。
-- 善用上下文句子。在原始句子中看到單字比孤立記憶更有效。
-- 在評分前，點擊上下文句子上的三個點來翻譯或解釋整行內容。
-- 如果20張覺得太多或太少，請在設定中調整每日新卡片上限。` },
+- 複習每日進行。即使只有5分鐘也會有差別。
+- 對於「再來一次」要嚴格。如果在現實生活中想不起來，那就算失敗。
+- 善用上下文句子。在原始句子中看到單字，比孤立地背誦更有效。
+- 點擊上下文句子的三個點，可以在評分前翻譯或解釋整行內容。
+- 如果20張覺得太多或太少，可以在設定中調整每日新卡片上限。` },
     { path: 'vocab/saved-words', title: '已儲存的詞彙', category: 'vocab', content: `# 已儲存的單字
 
 您的個人詞彙收藏。從字幕、字典或彈出視窗中書籤的每個單字都會集中在這裡。
