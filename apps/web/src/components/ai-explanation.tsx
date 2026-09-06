@@ -106,8 +106,9 @@ interface AiExplanationProps {
   quoteChips?: boolean;
   /** Reader "Ask AI": fired when a quote chip is tapped (opens reader search). */
   onQuotePress?: (original: string) => void;
-  /** Reader "Ask AI": open the chat but do NOT auto-stream. The user must tap a
-   *  preset button or send a message to get a response (readers only). */
+  /** Reader / video "Ask AI": open the chat but do NOT auto-stream. The user
+   *  must tap a preset button or send a message to get a response (readers and
+   *  the video watch-page tab: no pre-loaded default reply). */
   demandMode?: boolean;
   /** Persist the chat transcript under this localStorage key, restoring it on
    *  mount (e.g. per note, per web page, per book, per video). When omitted the

@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { AiExplanation } from '@/components/ai-explanation';
 import {
   TEXT_ACTION_ASK_AI_PRESETS,
-  TEXT_ACTION_ASK_AI_INITIAL_PRESET,
   formatSubtitleContext,
 } from '@langplayer/utils';
 
@@ -24,6 +23,12 @@ interface VideoAskAiProps {
  * subtitle transcript (timestamp-prefixed) as context, the
  * Summarize / Difficult expressions / Grammar points presets, and tappable
  * `[MM:SS]` timestamps that seek the video. The transcript persists per video.
+ *
+ * The chat opens in `demandMode` (no initial auto-streamed reply): the model
+ * responds only when the user taps a preset button or sends a message, so the
+ * video tab never shows a confusing pre-loaded "please provide the subtitles"
+ * response. The subtitle transcript is preloaded as context for both the
+ * preset prompts (`contentKey: 'text'`) and free-form questions.
  */
 export function VideoAskAi({ videoTitle, subtitleLines, onSeek, storageKey }: VideoAskAiProps) {
   const context = useMemo(
@@ -40,11 +45,10 @@ export function VideoAskAi({ videoTitle, subtitleLines, onSeek, storageKey }: Vi
       contextText={undefined}
       contextForm={undefined}
       entryFound={true}
-      autoLoad
+      demandMode
       storageKey={storageKey}
       onTimestampPress={onSeek}
       followUpPresets={TEXT_ACTION_ASK_AI_PRESETS}
-      initialPreset={TEXT_ACTION_ASK_AI_INITIAL_PRESET}
       readerContent={{
         text: context,
         page: '',
