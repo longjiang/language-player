@@ -77,6 +77,33 @@ export const deleteSrsCardsBatch = (items: SrsCardDeleteItem[]) =>
     { deletes: items },
   );
 
+export interface SrsReconcileResponse {
+  success: boolean;
+  deleted: number;
+  dropped: number;
+  skipped: number;
+  /** wordIds of cards the server deleted for unsaved words — the client must
+   *  drop these from its local store (they are already gone server-side, so it
+   *  must NOT enqueue its own DELETE /srs/cards). */
+  deletedWordIds: string[];
+}
+
+/**
+ * Authoritative server-side orphan reconciliation. The server owns both
+ * `user_srs_cards` and `user_saved_words`, so it compares all cards of a given
+ * l2 against all saved words of the same l2 and deletes orphans. This replaces
+ * the fragile client-side prune, which deleted cards whenever a client-local
+ * saved-word snapshot was partial and could take out genuinely saved words.
+ *
+ * `protectedWordIds` are words with a pending (unsynced) local saved-word put
+ * (offline-first mobile); the server never deletes their cards.
+ */
+export const reconcileSrsCards = (l2: string, protectedWordIds: string[] = []) =>
+  apiClient.post<SrsReconcileResponse>(
+    '/srs/cards/reconcile',
+    { l2, protectedWordIds },
+  );
+
 export const getUserSettings = () =>
   apiClient.get<UserSettingsResponse>('/user-settings');
 
