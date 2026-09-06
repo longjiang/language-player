@@ -309,8 +309,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         const preferred = useScriptTraditional ? 'traditional' : 'simplified';
         setSkipScriptConversion(detected === preferred);
       } catch {
-        // Detection failed (e.g. OpenCC not loaded) — keep the prior default
-        // (convert, the pre-detection behaviour).
+        // Detection failed (e.g. OpenCC not loaded) — fall back to converting
+        // (the pre-detection behaviour) rather than silently keeping the source.
         if (!cancelled) setSkipScriptConversion(false);
       }
     })();

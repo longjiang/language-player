@@ -416,9 +416,19 @@ for (const text of uniqueTexts) {
 
 **Bidirectional (2026-08-08):** conversion runs in both directions, per
 ADR-0019 — `cn→t` when the user prefers traditional, `t→cn` when the
-user prefers simplified. Both OpenCC converters are idempotent on
-already-matching text, so no script detection is needed; conversion is
-still applied only at the render layer, never to the lemmatizer input.
+user prefers simplified. Conversion is still applied only at the render
+layer, never to the lemmatizer input.
+
+**Script detection (2026-09, ADR-0019 correction):** the original claim
+that both OpenCC converters are idempotent on already-matching text (and
+therefore no script detection is needed) is **false** for ambiguous
+characters — `t→cn` over-simplifies 乾 → 干 (the "dry/gān" reading), so an
+already-simplified name 孙乾 renders 孙干. Each render path now detects the
+source script once per block via `detectChineseScript()` (both
+`chinese-script.ts` files) and skips conversion when the source already
+matches the user's preference (web: `skipScriptConversion` prop on
+`TokenSpan`; mobile: empty conversion map in `TokenizedText`). Conversion
+only runs when the source genuinely differs from the preference.
 
 **Presets (amended 2026-09-01):** the converters use the script-level
 presets `cn` ↔ `t` — NOT the TW/HK locale presets (`twp`/`tw`/`hk`).

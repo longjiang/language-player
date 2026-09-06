@@ -132,3 +132,30 @@ match the Classic app's `chinese-conv` behavior (滑鼠 stays 滑鼠,
 idempotent on already-traditional text" — was true for `cn→twp` but not
 for the reverse direction under the locale presets; the generic `t`
 presets restore it for both.
+
+## Correction: `t→cn` is NOT idempotent on ambiguous characters (2026-09-05)
+
+The "idempotent in both directions" claim is **false** for a small set of
+ambiguous characters that exist in BOTH scripts but carry different
+simplified/traditional readings. The notable case is 乾:
+
+- OpenCC `t→cn` maps 乾 → 干 (its "dry / gān" reading), so an
+  already-simplified **name** 孙乾 renders as 孙干. Verified in opencc-js
+  1.4.1: `t2cn('孙乾') === '孙干'`, `t2cn('乾') === '干'`; phrase entries
+  such as 乾隆 / 乾坤 stay intact, but a standalone 乾 or an unknown
+  compound (a personal name) is wrongly simplified.
+- Detecting this per-token is impossible: 乾 alone is ambiguous. The fix
+  detects the **source script at the whole-block level** using
+  `detectChineseScript()` in both `chinese-script.ts` files. It runs the
+  source through BOTH OpenCC directions and compares how many characters
+  each changes. Already-simplified text changes few under `t→cn` and many
+  under `cn→t` (and the reverse for traditional); ambiguous chars like 乾
+  change under both directions and cancel out of the ratio. Ties resolve
+  to `simplified`, so already-simplified mainland source is never
+  re-simplified.
+- When the detected source script already matches the user's preference,
+  the tokenized-text render path **skips conversion entirely** (web:
+  `tokenized-text.tsx` computes `skipScriptConversion` and passes it to
+  `TokenSpan`; mobile: `TokenizedText.tsx` leaves its conversion map empty
+  so the original token text is shown). Conversion only runs when the
+  source genuinely differs from the preference, in the preferred direction.
