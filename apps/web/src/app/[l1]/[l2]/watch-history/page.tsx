@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { useVideoPlayer } from '@/providers/video-player-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { Loader2, AlertCircle, Clock, Play } from 'lucide-react';
-import type { YouTubeVideo } from '@langplayer/shared';
 
 interface WatchHistoryItem {
   id: number;
@@ -67,7 +66,7 @@ function formatProgress(lastPos: number | undefined, duration: number | string |
 export default function WatchHistoryPage() {
   const { data: session, status: sessionStatus } = useSession();
   const { l1, l2 } = useLanguage();
-  const { playVideo } = useVideoPlayer();
+  const router = useRouter();
   const t = useT();
   const userId = session?.user?.id;
   const token = (session?.user as any)?.accessToken as string | undefined;
@@ -117,17 +116,12 @@ export default function WatchHistoryPage() {
     return () => { cancelled = true; };
   }, [userId, token, l2.code, sessionStatus]);
 
-  const handlePlay = (item: WatchHistoryItem, idx: number) => {
-    const queue: YouTubeVideo[] = items.map((i) => ({
-      youtube_id: i.youtube_id,
-      title: i.title,
-      id: String(i.id),
-      duration: i.duration,
-    }));
-    const video = queue[idx];
-    if (video) {
-      playVideo(video, queue, 'recommended');
-    }
+  // Opening a video from watch history must NOT load the whole history into
+  // the queue (that's the load-grid-into-queue rule, which doesn't apply here).
+  // The watch page builds the queue from the video itself: the show's episodes
+  // if it's a TV show, otherwise level-matched recommendations.
+  const handlePlay = (item: WatchHistoryItem) => {
+    router.push(`/${l1.code}/${l2.code}/watch/${item.youtube_id}`);
   };
 
   return (
@@ -166,7 +160,7 @@ export default function WatchHistoryPage() {
             return (
               <button
                 key={`${item.id}-${idx}`}
-                onClick={() => handlePlay(item, idx)}
+                onClick={() => handlePlay(item)}
                 className="flex w-full items-center gap-4 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted/50 group"
               >
                 {/* Thumbnail */}
