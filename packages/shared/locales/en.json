@@ -1326,6 +1326,7 @@
         "hard": "Hard",
         "hard_hint": "Recalled with difficulty",
         "loading_test": "Loading…",
+        "mixed_mode": "Mixed mode",
         "no_definition_available": "This word is not found in our dictionary.",
         "recall_mode": "Recall mode",
         "shortcut_hint": "Press <space></space> to flip, <k1></k1>–<k2></k2> to rate, <enter></enter> to continue",

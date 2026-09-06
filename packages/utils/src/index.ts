@@ -134,8 +134,9 @@ export {
   SPELL_TEST_TOTAL_MS,
   SPELL_TEST_FAST_MS,
   spellHintOf,
+  resolveReviewMode,
 } from './srs-test-mode';
-export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo } from './srs-test-mode';
+export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode } from './srs-test-mode';
 export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
 export type {
   SrsTestCacheStorage,

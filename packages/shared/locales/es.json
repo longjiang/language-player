@@ -1326,6 +1326,7 @@
         "hard": "Difícil",
         "hard_hint": "Recordado con dificultad",
         "loading_test": "Cargando…",
+        "mixed_mode": "Modo mixto",
         "no_definition_available": "Esta palabra no se encuentra en nuestro diccionario.",
         "recall_mode": "Modo de recuerdo",
         "shortcut_hint": "Pulsa <space></space> para voltear, <k1></k1>–<k2></k2> para valorar, <enter></enter> para continuar",
