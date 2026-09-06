@@ -124,6 +124,9 @@ export {
   surfaceFormOf,
   lemmaFormOf,
   pronunciationTargetOf,
+  stringSimilarity,
+  scoreSpellResult,
+  spellHintOf,
 } from './srs-test-mode';
 export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo } from './srs-test-mode';
 export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';

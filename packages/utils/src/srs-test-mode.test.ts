@@ -9,7 +9,10 @@ import {
   needsPronunciationTest,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  scoreSpellResult,
   scoreTestResult,
+  spellHintOf,
+  stringSimilarity,
   surfaceFormOf,
   validateSrsDefinitionChoices,
   validateSrsPronunciationChoices,
@@ -357,5 +360,90 @@ describe('buildSrsQuestionPrompt (terse, language-specific)', () => {
       });
       expect(problem).toBeNull();
     });
+  });
+});
+
+describe('stringSimilarity', () => {
+  it('returns 1 for identical strings after normalization', () => {
+    expect(stringSimilarity('押し切られ', '押し切られ')).toBe(1);
+    expect(stringSimilarity('  Apple   tree ', 'apple tree')).toBe(1);
+  });
+
+  it('returns 0 when either side is empty (and they differ)', () => {
+    expect(stringSimilarity('', 'word')).toBe(0);
+  });
+
+  it('returns a high ratio for a light edit', () => {
+    expect(stringSimilarity('押し切られ', '押し切ら')).toBeGreaterThanOrEqual(0.7);
+  });
+
+  it('returns a lower ratio for a completely different string', () => {
+    expect(stringSimilarity('apple', 'wrench')).toBeLessThan(0.5);
+  });
+});
+
+describe('scoreSpellResult', () => {
+  it('exact answer (base 3), normal speed → easy (3)', () => {
+    expect(scoreSpellResult('Apple tree', 'Apple tree', 7_000)).toBe('easy');
+  });
+
+  it('exact answer, fast (<5s) → easy (3)', () => {
+    expect(scoreSpellResult('Apple tree', 'Apple tree', 3_000)).toBe('easy');
+  });
+
+  it('exact answer, slow (>10s) → good (2)', () => {
+    expect(scoreSpellResult('Apple tree', 'Apple tree', 12_000)).toBe('good');
+  });
+
+  it('very wrong answer, slow → again (0)', () => {
+    expect(scoreSpellResult('wrench', 'Apple tree', 12_000)).toBe('again');
+  });
+
+  it('very wrong answer, fast → good (1 + 1 = 2)', () => {
+    expect(scoreSpellResult('wrench', 'Apple tree', 3_000)).toBe('good');
+  });
+
+  it('one-char-edit answer (base 2), normal → good (2)', () => {
+    // "Appel tree" vs "Apple tree" → similarity ≥ 0.5 → base 2.
+    expect(scoreSpellResult('Appel tree', 'Apple tree', 7_000)).toBe('good');
+  });
+});
+
+describe('spellHintOf', () => {
+  const word = { forms: ['然るべき'], head: '然るべき', context: { form: '然るべき' } };
+
+  it('uses the first char of the reading when the entry has one', () => {
+    const hint = spellHintOf(
+      word,
+      '然るべき',
+      { head: '然るべき', alternate: 'しかるべき', pronunciation: 'shikarubeki' },
+      'ja',
+    );
+    // EDICT reading is the kana alternate, not the romaji pronunciation.
+    expect(hint).toBe('し');
+  });
+
+  it('falls back to the first char of the lemma when there is no reading', () => {
+    const hint = spellHintOf(
+      word,
+      '然るべき',
+      { head: '然るべき', pronunciation: '' },
+      'ja',
+    );
+    expect(hint).toBe('然');
+  });
+
+  it('returns null when the lemma is a single character (no hint)', () => {
+    const hint = spellHintOf(
+      { forms: ['猫'], head: '猫', context: { form: '猫' } },
+      '猫',
+      { head: '猫', pronunciation: '' },
+      'ja',
+    );
+    expect(hint).toBeNull();
+  });
+
+  it('returns null when there is no entry and the fallback lemma is one char', () => {
+    expect(spellHintOf(undefined, 'a', undefined, 'en')).toBeNull();
   });
 });

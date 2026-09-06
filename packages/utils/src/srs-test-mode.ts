@@ -187,6 +187,92 @@ export function normalizeTestChoice(choice: string): string {
   return choice.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 }
 
+// ── Spell mode ────────────────────────────────────────────────────────────
+//
+// Spell mode asks the learner to type the exact surface/inflected form that is
+// blanked in the context sentence. The base score is graded by string
+// similarity (not a binary right/wrong), then the countdown timer always adds
+// or deducts a point, then the result maps to the same four buttons as choose
+// mode.
+
+/**
+ * Normalized Levenshtein similarity in [0, 1] (1 = identical after
+ * trim/case/whitespace normalization). Used to grade spell-mode answers.
+ */
+export function stringSimilarity(a: string, b: string): number {
+  const norm = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
+  const x = norm(a);
+  const y = norm(b);
+  if (x === y) return 1;
+  if (x.length === 0 || y.length === 0) return 0;
+  const m = x.length;
+  const n = y.length;
+  let prev = new Array(n + 1).fill(0).map((_, j) => j);
+  for (let i = 1; i <= m; i += 1) {
+    const cur = new Array(n + 1).fill(0);
+    cur[0] = i;
+    for (let j = 1; j <= n; j += 1) {
+      const cost = x[i - 1] === y[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + cost);
+    }
+    prev = cur;
+  }
+  return Math.max(0, Math.min(1, 1 - (prev[n] ?? 0) / Math.max(m, n)));
+}
+
+/**
+ * Grade a spell-mode answer with the SPEC-066 spell rules:
+ *
+ * - the submission is compared to the correct surface form (the exact text
+ *   that was blanked in the context sentence) via `stringSimilarity`;
+ * - the ratio maps to a base score of 1–3 (≥0.9 → 3, ≥0.5 → 2, else → 1);
+ * - the countdown timer always adjusts it: slower than 10 s deducts a point,
+ *   faster than 5 s adds one (the same per-test thresholds as
+ *   `scoreTestResult`);
+ * - clamp 0–3 and map points → again(0) / hard(1) / good(2) / easy(3) — the
+ *   same button mapping as choose mode.
+ */
+export function scoreSpellResult(
+  submission: string,
+  correctAnswer: string,
+  totalMs: number,
+): 'again' | 'hard' | 'good' | 'easy' {
+  const sim = stringSimilarity(submission, correctAnswer);
+  let points = sim >= 0.9 ? 3 : sim >= 0.5 ? 2 : 1;
+  if (totalMs > 10_000) points -= 1;
+  else if (totalMs < 5_000) points += 1;
+  points = Math.max(0, Math.min(3, points));
+  return (['again', 'hard', 'good', 'easy'] as const)[points]!;
+}
+
+/**
+ * The muted first-character hint shown under the spell-mode input.
+ *
+ * - when the card's entry has a pronunciation (the L2 reading of the lemma),
+ *   the hint is that reading's first character;
+ * - otherwise it is the lemma's first character, but only when the lemma is
+ *   longer than one character (a single-character lemma's first char IS the
+ *   whole word and would give the answer away);
+ * - returns null when no hint applies (no reading, single-character lemma).
+ */
+export function spellHintOf(
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: {
+    head?: string | null;
+    pronunciation?: string;
+    alternate?: string | null;
+    phonetic_detail?: { kana?: string; pinyin?: string; romanization?: string; ipa?: string } | null;
+  } | null | undefined,
+  l2Code: string,
+): string | null {
+  const reading = pronunciationReadingOf(entry, l2Code);
+  if (reading) return reading[0]!;
+  const lemma = pronunciationTargetOf(word, fallback, entry);
+  if (lemma.length > 1) return lemma[0]!;
+  return null;
+}
+
 /**
  * The ground-truth reading of a word for a pronunciation question.
  *
