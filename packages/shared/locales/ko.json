@@ -140,6 +140,7 @@
         "search": "검색",
         "search_images": "이미지 검색",
         "see_all": "모두 보기",
+        "seek_to_timestamp": "이 타임스탬프로 이동",
         "select_files": "파일 선택",
         "send": "보내기",
         "send_reset_link": "재설정 링크 보내기",

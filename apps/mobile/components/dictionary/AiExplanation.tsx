@@ -14,7 +14,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, READER_AI_CONTEXT_WARN_MAX, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, READER_AI_CONTEXT_WARN_MAX, VIDEO_AI_TIMESTAMP_INSTRUCTION, parseTimestampToken, formatTimestamp, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -302,6 +302,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       const parts = [body];
       if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
+      else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
       else {
         const ticksPrompt = t('prompt.explain_ticks', { l2Name });
         if (ticksPrompt) parts.push(ticksPrompt);
@@ -310,7 +311,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     }
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
-  }, [t, word, contextText, contextForm, readerContent, quoteChips]);
+  }, [t, word, contextText, contextForm, readerContent, quoteChips, onTimestampPress]);
 
   // Reconstruct the prior conversation as {role, content} turns for the
   // multi-turn endpoint. Every streamed assistant message stores the exact
@@ -506,14 +507,19 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     // model grounds the answer in the whole surface, not just the prior turns.
     const contextText = readerContent?.text ?? '';
     const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
+    const tsInstr = onTimestampPress ? `\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}` : '';
     const prompt = contextText
-      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}`
-      : quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
+      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}${tsInstr}`
+      : quoteChips
+        ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}`
+        : onTimestampPress
+          ? `${text}\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}`
+          : text;
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
     appendMessage({ role: 'user', text, label: text, prompt });
     startStream(prompt, { messages: history });
-  }, [startStream, appendMessage, buildHistory, quoteChips, readerContent]);
+  }, [startStream, appendMessage, buildHistory, quoteChips, readerContent, onTimestampPress]);
 
   // Reader Ask-AI: chat messages interleave [[original||translation]] quote
   // markers with prose. `renderInlineQuotes` splits the raw text on those
@@ -564,6 +570,43 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       );
     },
     [onQuotePress, t],
+  );
+
+  /** Video "Ask AI": render `[MM:SS]` timestamps in a reply as inline tappable
+   *  chips (nested <Text> so they flow with the prose); tapping seeks. */
+  const renderTimestampedText = useCallback(
+    (raw: string) => {
+      if (onTimestampPress == null) return raw;
+      const re = /\[(?:(\d+):)?(\d{1,2}):(\d{2})\]/g;
+      const children: React.ReactNode[] = [];
+      let last = 0;
+      let key = 0;
+      let m: RegExpExecArray | null;
+      re.lastIndex = 0;
+      while ((m = re.exec(raw)) !== null) {
+        if (m.index > last) children.push(raw.slice(last, m.index));
+        const time = parseTimestampToken(m[0]);
+        if (time != null) {
+          children.push(
+            <Text
+              key={key++}
+              onPress={() => onTimestampPress(time)}
+              accessibilityRole="button"
+              accessibilityLabel={t('action.seek_to_timestamp')}
+              className="mx-0.5 rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-primary"
+            >
+              {formatTimestamp(time)}
+            </Text>,
+          );
+        } else {
+          children.push(m[0]);
+        }
+        last = m.index + m[0].length;
+      }
+      if (last < raw.length) children.push(raw.slice(last));
+      return <Text className="text-sm leading-relaxed text-foreground">{children}</Text>;
+    },
+    [onTimestampPress, t],
   );
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
@@ -747,6 +790,8 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                     <ActivityIndicator size="small" color={ICON_MUTED} />
                   ) : quoteChips && onQuotePress && message.text ? (
                     renderInlineQuotes(message.text)
+                  ) : onTimestampPress && message.text ? (
+                    renderTimestampedText(message.text)
                   ) : (
                     <MarkdownExplanation
                       text={message.text}

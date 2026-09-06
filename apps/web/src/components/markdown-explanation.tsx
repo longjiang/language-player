@@ -5,8 +5,9 @@ import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Quote, ChevronRight } from 'lucide-react';
-import { cleanAiQuote } from '@langplayer/utils';
+import { cleanAiQuote, parseTimestampToken, formatTimestamp } from '@langplayer/utils';
 import { TokenizedText } from '@/components/tokenized-text';
+import { useT } from '@/hooks/use-t';
 
 interface MarkdownExplanationProps {
   /** Markdown text to render (the AI explanation response). */
@@ -24,25 +25,39 @@ interface MarkdownExplanationProps {
   quoteChips?: {
     onQuotePress: (original: string) => void;
   };
+  /** Video "Ask AI": render `[MM:SS]` timestamp markers as tappable chips.
+   *  Each chip is a full-width BLOCK (own line); tapping it calls
+   *  `onTimestampPress` with the time in seconds (the caller seeks the
+   *  video). */
+  timestampChips?: {
+    onTimestampPress: (timeSeconds: number) => void;
+  };
 }
 
 /**
- * Turns `[[original||translation]]` quote markers in markdown text nodes into
- * custom `quoteChip` hast elements, so react-markdown renders them as chips at
- * their position (the reader "Ask AI" summary). In a PARAGRAPH's own text the
- * markers are hoisted to BLOCK level — the paragraph is split into prose
- * paragraphs and standalone `quoteChip` nodes, so a chip never renders inside
- * the sentence around it (the prompt asks the model to emit each marker on its
- * own line; this cleans up the ones it still places mid-sentence). Markers
- * inside inline formatting (bold/emphasis) convert in place. Non-matching text
- * is left untouched; markers that straddle formatting boundaries (e.g. a quote
- * containing its own markdown) are not converted and stay as raw text.
+ * Turns `[[original||translation]]` quote markers and `[MM:SS]` timestamp
+ * tokens in markdown text nodes into custom hast elements, so react-markdown
+ * renders them as chips at their position.
+ *
+ * - Quote chips (reader "Ask AI"): hoisted to BLOCK level — the paragraph is
+ *   split into prose paragraphs and standalone `quoteChip` nodes, so a chip
+ *   never renders inside the sentence around it.
+ * - Timestamp chips (video "Ask AI"): kept INLINE within the paragraph (e.g.
+ *   "the answer at [00:12]"), rendered as a tappable pill that calls
+ *   `onTimestampPress` with the time in seconds.
+ *
+ * Markers inside inline formatting (bold/emphasis) convert in place.
+ * Non-matching text is left untouched; markers that straddle formatting
+ * boundaries (e.g. a quote containing its own markdown) are not converted and
+ * stay as raw text.
  */
-function remarkReaderQuote() {
+function remarkReaderQuote(config?: { quoteChips?: boolean; timestampChips?: boolean }) {
+  const enableQuotes = !!config?.quoteChips;
+  const enableTimestamps = !!config?.timestampChips;
   return (tree: any) => {
     // Built fresh per plugin run: a /g regex is stateful (`lastIndex`), and
     // sharing one between `.test()` and `matchAll` silently skips matches.
-    const markerRe = /\[\[([\s\S]+?)\|\|([\s\S]+?)\]\]/g;
+    const anyRe = /(\[\[[\s\S]+?\|\|[\s\S]+?\]\])|(\[(?:(\d+):)?(\d{1,2}):(\d{2})\])/g;
     const makeChip = (m: RegExpMatchArray): any | null => {
       const original = cleanAiQuote(m[1] ?? '');
       const translation = cleanAiQuote(m[2] ?? '');
@@ -52,24 +67,41 @@ function remarkReaderQuote() {
         data: { hName: 'quoteChip', hProperties: { original, translation } },
       };
     };
-    /** Split a plain-text value into prose / block-chip pieces. */
+    const makeTimestampChip = (token: string): any | null => {
+      const time = parseTimestampToken(token);
+      if (time == null) return null;
+      return {
+        type: 'timestampChip',
+        data: { hName: 'timestampChip', hProperties: { time } },
+      };
+    };
+    /** Split a plain-text value into prose / chip pieces. quoteChips are block
+     *  (hoisted), timestampChips are inline (stay in the prose array). */
     const convertText = (value: string): any[] => {
-      const matches = [...value.matchAll(markerRe)];
+      const matches = [...value.matchAll(anyRe)];
       if (matches.length === 0) return [{ type: 'text', value }];
       const children: any[] = [];
       let last = 0;
       for (const m of matches) {
         const start = m.index ?? 0;
         if (start > last) children.push({ type: 'text', value: value.slice(last, start) });
-        const chip = makeChip(m);
-        if (chip) children.push(chip);
+        if (m[1] !== undefined && enableQuotes) {
+          const chip = makeChip(m);
+          if (chip) children.push(chip);
+        } else if (m[2] !== undefined && enableTimestamps) {
+          const chip = makeTimestampChip(m[0]);
+          if (chip) children.push(chip);
+        } else {
+          // Marker type disabled — keep the raw token as text.
+          children.push({ type: 'text', value: m[0] });
+        }
         last = start + m[0].length;
       }
       if (last < value.length) children.push({ type: 'text', value: value.slice(last) });
       return children;
     };
     /** In-place conversion (the old inline behavior) for inline-formatting
-     *  subtrees — a chip inside bold still renders full-width. */
+     *  subtrees — a chip inside bold still renders. */
     const walkInline = (node: any): void => {
       if (!node || !Array.isArray(node.children)) return;
       for (let i = 0; i < node.children.length; i++) {
@@ -93,7 +125,10 @@ function remarkReaderQuote() {
     const paragraphHasMarker = (node: any): boolean =>
       Array.isArray(node.children) &&
       node.children.some(
-        (c: any) => c?.type === 'text' && /\[\[[\s\S]+?\|\|[\s\S]+?\]\]/.test(c.value ?? ''),
+        (c: any) =>
+          c?.type === 'text' &&
+          (/\[\[[\s\S]+?\|\|[\s\S]+?\]\]/.test(c.value ?? '') ||
+            (enableTimestamps && /\[(?:(\d+):)?(\d{1,2}):(\d{2})\]/.test(c.value ?? ''))),
       );
 
     const process = (parent: any): void => {
@@ -102,8 +137,9 @@ function remarkReaderQuote() {
         const child = parent.children[i];
         if (!child) continue;
         if (child.type === 'paragraph' && paragraphHasMarker(child)) {
-          // Rebuild the paragraph as [prose paragraph, chip, prose paragraph,
-          // …] so each chip becomes a sibling BLOCK of the prose.
+          // Rebuild the paragraph as [prose paragraph, quote chip, prose
+          // paragraph, …] so each QUOTE chip becomes a sibling BLOCK of the
+          // prose, while TIMESTAMP chips stay inline within the prose.
           const expanded: any[] = [];
           let prose: any[] = [];
           const flushProse = () => {
@@ -115,9 +151,12 @@ function remarkReaderQuote() {
               for (const piece of convertText(inner.value ?? '')) {
                 if (piece.type === 'text') {
                   if (piece.value.trim()) prose.push(piece);
-                } else {
+                } else if (piece.type === 'quoteChip') {
                   flushProse();
                   expanded.push(piece);
+                } else {
+                  // timestampChip — keep inline within the prose paragraph.
+                  prose.push(piece);
                 }
               }
             } else {
@@ -148,7 +187,8 @@ function remarkReaderQuote() {
  *      gloss, byeonggi, interlinear definitions, phonetics, or quiz blanking;
  *      bold, no chip background.
  */
-export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChips }: MarkdownExplanationProps) {
+export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChips, timestampChips }: MarkdownExplanationProps) {
+  const t = useT();
   // Memoize the renderers so their identity is stable across re-renders. An
   // inline components object would be recreated on every render, and React
   // would treat the new code-renderer function as a different component type —
@@ -175,6 +215,22 @@ export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChip
               ) : null}
             </span>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          </button>
+        );
+      };
+    }
+    if (timestampChips) {
+      renderers.timestampChip = ({ time }: any) => {
+        const seconds = Number(time ?? 0);
+        if (!Number.isFinite(seconds)) return null;
+        return (
+          <button
+            type="button"
+            onClick={() => timestampChips.onTimestampPress(seconds)}
+            title={`${formatTimestamp(seconds)} — ${t('action.seek_to_timestamp')}`}
+            className="mx-0.5 inline-flex items-center rounded-md border border-primary/30 bg-primary/10 px-1.5 py-0.5 align-baseline font-mono text-[11px] leading-tight text-primary transition-colors hover:bg-primary/20"
+          >
+            {formatTimestamp(seconds)}
           </button>
         );
       };
@@ -213,7 +269,12 @@ export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChip
       );
     };
     return renderers as Components;
-  }, [streaming, l2Code, quoteChips]);
+  }, [streaming, l2Code, quoteChips, timestampChips, t]);
+
+  const remarkPlugins = useMemo(
+    () => [remarkGfm, () => remarkReaderQuote({ quoteChips: !!quoteChips, timestampChips: !!timestampChips })],
+    [quoteChips, timestampChips],
+  );
 
   return (
     // Enforce line-height 2 (leading-loose) on every block element the
@@ -221,7 +282,7 @@ export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChip
     // lists/pre set their own line-heights via the prose plugin).
     <div className="leading-loose [&_p]:leading-loose [&_li]:leading-loose [&_h1]:leading-loose [&_h2]:leading-loose [&_h3]:leading-loose [&_h4]:leading-loose [&_h5]:leading-loose [&_h6]:leading-loose [&_blockquote]:leading-loose [&_pre]:leading-loose [&_hr]:my-3">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkReaderQuote]}
+        remarkPlugins={remarkPlugins}
         components={components}
       >
         {text}

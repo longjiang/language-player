@@ -12,6 +12,7 @@ import {
   presetKey,
   READER_AI_QUOTE_INSTRUCTION,
   READER_AI_SUMMARY_INSTRUCTION,
+  VIDEO_AI_TIMESTAMP_INSTRUCTION,
   READER_AI_CONTEXT_WARN_MAX,
   type AiFollowUpPreset,
   type ReaderAiContent,
@@ -378,6 +379,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       const parts = [body];
       if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
+      else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
       else {
         const ticksPrompt = t('prompt.explain_ticks', { l2Name });
         if (ticksPrompt) parts.push(ticksPrompt);
@@ -386,7 +388,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
-  }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent, quoteChips]);
+  }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent, quoteChips, onTimestampPress]);
 
   const fetchExplanation = useCallback(() => {
     // Reader "Ask AI": stream the initial preset instead of the word explain.
@@ -617,9 +619,14 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // model grounds the answer in the whole surface, not just the prior turns.
     const contextText = readerContent?.text ?? '';
     const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
+    const tsInstr = onTimestampPress ? `\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}` : '';
     const prompt = contextText
-      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}`
-      : quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
+      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}${tsInstr}`
+      : quoteChips
+        ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}`
+        : onTimestampPress
+          ? `${text}\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}`
+          : text;
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
     appendMessage({ role: 'user', text, label: text, prompt });
@@ -627,7 +634,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     setStreamingId(aiId);
     log('AI explain free-form stream start', { word, chars: text.length, contextChars: contextText.length, history: history.length });
     stream(prompt, { messages: history });
-  }, [stream, word, appendMessage, buildHistory, quoteChips, readerContent]);
+  }, [stream, word, appendMessage, buildHistory, quoteChips, readerContent, onTimestampPress]);
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -894,6 +901,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                           l2Code={l2.code}
                           streaming={loading && message.id === streamingId}
                           quoteChips={quoteChipsConfig}
+                          timestampChips={onTimestampPress ? { onTimestampPress } : undefined}
                         />
                       </div>
                     ) : null}

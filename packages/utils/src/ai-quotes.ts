@@ -45,6 +45,52 @@ export const READER_AI_QUOTE_INSTRUCTION =
 export const READER_AI_SUMMARY_INSTRUCTION =
   'Give a CONCISE summary in the target language: a short overview that captures the arc, the key events, and the main characters. Do NOT reproduce or retell the full text — a faithful summary, not a copy. Support it with a few short, exact quotes.';
 
+/**
+ * Model-facing instruction appended to video "Ask AI" prompts so responses cite
+ * the subtitle timestamps they refer to. Kept in English like the other
+ * instructions (a prompt to the LLM). The transcript context is formatted as
+ * `[MM:SS] line` per subtitle; the model is asked to echo the `[MM:SS]` tokens.
+ */
+export const VIDEO_AI_TIMESTAMP_INSTRUCTION =
+  'The video transcript is provided with each line preceded by its timestamp in [MM:SS] format. When you refer to a specific part of the video, cite that timestamp inline in EXACTLY this [MM:SS] format (copy it from the transcript). Cite the timestamp of every subtitle line you discuss or quote. Do not invent timestamps that are not present in the transcript.';
+
+/** `[MM:SS]` / `[H:MM:SS]` timestamp token (as the model is asked to emit). */
+const TIMESTAMP_TOKEN_RE = /\[(?:(\d+):)?(\d{1,2}):(\d{2})\]/g;
+
+/** Format seconds as `MM:SS` (or `H:MM:SS` for ≥1 hour). */
+export function formatTimestamp(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+    : `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+/** Parse a `[MM:SS]` (or `[H:MM:SS]`) token into seconds; null if not a match. */
+export function parseTimestampToken(token: string): number | null {
+  const m = token.match(/^\[(?:(\d+):)?(\d{1,2}):(\d{2})\]$/);
+  if (!m) return null;
+  const m1 = parseInt(m[2] ?? '0', 10);
+  const s1 = parseInt(m[3] ?? '0', 10);
+  const h1 = m[1] ? parseInt(m[1], 10) : 0;
+  return h1 * 3600 + m1 * 60 + s1;
+}
+
+/**
+ * Build the transcript context string for the video "Ask AI": one subtitle per
+ * line, prefixed with its `[MM:SS]` timestamp so the model can cite the
+ * timestamps of the lines it references.
+ */
+export function formatSubtitleContext(
+  lines: { starttime: number; text: string }[],
+): string {
+  return lines
+    .map((l) => `[${formatTimestamp(l.starttime)}] ${l.text}`)
+    .join('\n');
+}
+
 /** Curly/straight/typographic quotation-mark characters (left & right). */
 const QUOTE_CHARS = new Set([`"`, `'`, `‘`, `’`, `“`, `”`, `„`, `‟`, `‹`, `›`, `«`, `»`]);
 

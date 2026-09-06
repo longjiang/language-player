@@ -217,6 +217,10 @@ export {
   cleanAiQuote,
   READER_AI_QUOTE_INSTRUCTION,
   READER_AI_SUMMARY_INSTRUCTION,
+  VIDEO_AI_TIMESTAMP_INSTRUCTION,
+  formatTimestamp,
+  parseTimestampToken,
+  formatSubtitleContext,
   filterReaderQuotes,
   textContainsQuote,
 } from './ai-quotes';

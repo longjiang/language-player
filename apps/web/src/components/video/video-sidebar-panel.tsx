@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { TabbedPanel } from '@/components/tabbed-panel';
 
 /** Tab keys shared by the watch page and subs search sidebars. */
-export type SidebarTabKey = 'subs' | 'queue' | 'info';
+export type SidebarTabKey = 'subs' | 'queue' | 'info' | 'ai';
 
 export interface SidebarTabDef {
   key: SidebarTabKey;

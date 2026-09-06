@@ -140,6 +140,7 @@
         "search": "検索",
         "search_images": "画像を検索",
         "see_all": "すべて表示",
+        "seek_to_timestamp": "このタイムスタンプへ移動",
         "select_files": "ファイルを選択",
         "send": "送信",
         "send_reset_link": "リセットリンクを送信",
