@@ -13,7 +13,7 @@ import {
 } from '@langplayer/shared';
 import { log, logwarn, syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
-import { getEntityCache } from '@/lib/sync-db';
+import { getEntityCache, listOutbox } from '@/lib/sync-db';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { setCachedEntryById } from '@/lib/dictionary-cache';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
@@ -89,6 +89,10 @@ interface SavedWordsContextValue {
   hasWord: (l2Code: string, wordId: string) => boolean;
   clearAll: (l2Code: string) => void;
   refreshEntry: (l2Code: string, wordId: string, l1Code: string) => Promise<void>;
+  /** wordIds with a pending (unsynced) saved-word PUT — passed to the SRS
+   *  reconciler as protectedWordIds so it never deletes cards for words that
+   *  were just saved offline but haven't reached the server yet. */
+  getPendingPutWordIds: (l2Code?: string) => Promise<string[]>;
 }
 
 const SavedWordsContext = createContext<SavedWordsContextValue | null>(null);
@@ -304,6 +308,27 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     }
   }, [queueRowOp, savedWords]);
 
+  /** wordIds with a pending (unsynced) saved-word PUT. Reads the durable outbox,
+   *  which holds only `pending`/`error` rows (never synced ones), so it is
+   *  exactly the set of words whose save hasn't reached the server yet. */
+  const getPendingPutWordIds = useCallback(async (l2Code?: string) => {
+    try {
+      const rows = await listOutbox();
+      return rows
+        .filter((r) => r.entity === 'saved_word' && r.op === 'upsert')
+        .map((r) => r.entity_id)
+        .filter((entityId) => {
+          const sep = entityId.indexOf('::');
+          if (sep < 0) return false;
+          return !l2Code || entityId.slice(0, sep) === l2Code;
+        })
+        .map((entityId) => entityId.slice(entityId.indexOf('::') + 2));
+    } catch (e) {
+      syncLogger.logwarn('[SavedWordsContext] getPendingPutWordIds failed:', e);
+      return [];
+    }
+  }, []);
+
   const refreshEntry = useCallback(async (l2Code: string, wordId: string, l1Code: string) => {
     const words = savedWords[l2Code] ?? [];
     const existing = words.find((w) => w.id === wordId);
@@ -473,7 +498,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
   }, [savedWords]);
 
   return (
-    <SavedWordsContext.Provider value={{ savedWords, loaded, cloudHydrated, saveWord, removeWord, hasWord, clearAll, refreshEntry }}>
+    <SavedWordsContext.Provider value={{ savedWords, loaded, cloudHydrated, saveWord, removeWord, hasWord, clearAll, refreshEntry, getPendingPutWordIds }}>
       {children}
     </SavedWordsContext.Provider>
   );
