@@ -523,9 +523,10 @@ today" message.
 - Four buttons: Again (red), Hard (orange), Good (green), Easy (blue), each
   with a hint.
 - **Buttons appear only after the card back is revealed** — never while the
-  front is showing. Recall mode reveals via Show Definition; test mode reveals
-  after the final question is answered. (Web gates on `showDefinition`; mobile
-  gates on the back being shown, parity added 2026-08-24.)
+  front is showing. Recall mode reveals via Show Definition; choose mode reveals
+  after the final question is answered; spell mode reveals after the answer is
+  submitted. (Web gates on `showDefinition`; mobile gates on the back being
+  shown, parity added 2026-08-24.)
 - After a rating: `ts-fsrs` updates the card's memory state, the card leaves
   the due queue, and a colored toast offers Undo for 3 seconds.
 - Undo restores the card's previous scheduling state (memory state and step),
@@ -534,22 +535,22 @@ today" message.
 - When all due cards are rated, show "No more cards to review" plus the next
   review time (current behavior).
 
-### Test mode
+### Choose mode
 
-Test mode asks one multiple-choice question per aspect — a **definition
-question** and, for deep-orthography L2s (`needsPronunciationTest`, e.g. ja
-with kanji), a **pronunciation question** — generated from the context
-sentence via `buildSrsQuestionPrompt` (shared `packages/utils/src/
-srs-test-mode.ts`). Questions render one at a time; answering the final
-question reveals the card back and the rating buttons.
+Choose mode (formerly **test mode**) asks one multiple-choice question per
+aspect — a **definition question** and, for deep-orthography L2s
+(`needsPronunciationTest`, e.g. ja with kanji), a **pronunciation question** —
+generated from the context sentence via `buildSrsQuestionPrompt` (shared
+`packages/utils/src/srs-test-mode.ts`). Questions render one at a time;
+answering the final question reveals the card back and the rating buttons.
 
-- **Start Test gate (2026-08-25)** — in test mode the card front shows the
-  context sentence plus a "Start Test" button; no test question is shown
+- **Start Test gate (2026-08-25)** — in choose mode the card front shows the
+  context sentence plus a "Start Test" button; no question is shown
   (and no questions are generated for the current card) until the user taps
   it, so they can read the context and reflect on the word's usage first.
   Pressing Space/Enter also starts the test.
   **Reveal is button/keyboard-only (2026-09-02):** tapping the card no longer
-  reveals the back (recall mode) or starts the test (test mode) — accidental
+  reveals the back (recall mode) or starts the test (choose mode) — accidental
   taps revealed the answer before the learner was ready. The explicit "Show
   Definition" / "Start Test" buttons and the Space/Enter shortcuts are the
   only reveal paths.
@@ -688,6 +689,47 @@ question reveals the card back and the rating buttons.
   only the kanji readings with real or plausible readings of the same kanji
   (e.g. `憑き物` = `つきもの` → `つきぶつ`, `つきもつ`, `つきもち`), and must
   never extend/truncate/reorder the correct reading.
+
+### Spell mode
+
+Spell mode asks the learner to **type the exact word that was blanked** in the
+context sentence — the surface/inflected form as it appears there (e.g.
+押し切られ, not the lemma 押し切る). It is graded by string similarity, then
+time-adjusted by the countdown, then mapped to the same four rating buttons as
+choose mode.
+
+- **Pre-test state** — the card front shows the context sentence with the
+  target term rendered as a **blank** (the highlighted term's text is hidden,
+  replaced by a width-matched blank), plus the context translation with the
+  target term bolded (identical to the other modes). This is the only review
+  mode where the translation is shown *before* the card back is revealed.
+- **Start Test gate** — a "Start Test" button (Space/Enter also works) begins
+  the session. Until it is pressed the input is not shown, so the learner can
+  read the sentence and reflect first (matching the choose-mode gate).
+- **Countdown progress** — after Start Test the same blue/green progress bar
+  from choose mode counts down a budget of **T = 10 s × totalTests** (spell
+  mode has exactly one test → T = 10 s), blue while more than 5 s remain.
+- **Input + hint** — a text input with a **Submit** button, plus a muted hint
+  underneath that shows **the first character of the pronunciation of the
+  lemma** when the entry has a pronunciation (`pronunciationReadingOf`), or
+  otherwise **the first character of the lemma** — but only when the lemma is
+  more than one character long (a single-char lemma's first char IS the whole
+  word and would give the answer away). Shared helper: `spellHintOf`.
+- **Grading** — on submit, `stringSimilarity` compares the submission to the
+  correct surface form (normalized Levenshtein ratio) and maps it to a base
+  score of 1–3:
+  - **≥ 0.9** → 3 (essentially exact),
+  - **≥ 0.5** → 2 (a few character edits),
+  - else → 1 (wrong).
+- **Timer adjustment** — the countdown always adjusts the base score, using the
+  same per-test thresholds as choose mode: **faster than 5 s adds +1**,
+  **slower than 10 s deducts −1**. (Unlike choose mode, which only time-adjusts
+  a perfect score, spell mode time-adjusts a graded base.) The result is
+  clamped to 0–3 and mapped **again(0) / hard(1) / good(2) / easy(3)** — the
+  same button mapping as choose mode. Shared helper: `scoreSpellResult`
+  (`packages/utils/src/srs-test-mode.ts`).
+- **Reveal** — submitting reveals the card back (the dictionary entry) and the
+  rating buttons, and shows a Correct/Incorrect line plus the correct answer.
 
 ### Interaction & input
 
@@ -875,12 +917,12 @@ types count while unexpired — there is no `status` filter.
   `951f6f1d` + the two review pages): obvious-wrong confounders are rejected
   and auto-retried, and mixed kana/kanji words keep their written-kana part
   constant across choices.
-- ✅ **Test-mode marking rules** — implemented (2026-08-25, shared
+- ✅ **Choose-mode marking rules** — implemented (2026-08-25, shared
   `scoreTestResult` + both review pages): each test 0/1, scaled so perfect = 2,
   time-adjusted via the 10 s/test slow and 5 s/test fast thresholds → again /
   hard / good / easy.
 - ✅ **Start Test gate + progress bar** — implemented (2026-08-25, both review
-  pages): the card front in test mode shows the context + a "Start Test"
+  pages): the card front in choose mode shows the context + a "Start Test"
   button; after Start Test a blue/green progress bar counts down T =
   10 s × totalTests (blue while more than 5 s × totalTests remain).
 - ✅ **Sequential one-test-at-a-time flow** — implemented (2026-08-25,
@@ -913,6 +955,19 @@ types count while unexpired — there is no `status` filter.
   (user > current > prefetch), the card-test cache is used throughout
   (persisted per platform), the next two cards' tests are prefetched in test
   mode, and stale prefetches are cancelled.
+- ✅ **test → choose rename** — implemented (2026-09-06, both review pages +
+  i18n): the SRS "test mode" is renamed to **choose mode**; the mode toggle is
+  now Recall / Choose / Spell, and the previously stored `'test'` value is
+  migrated to `'choose'` on read. The old `review.test_mode` label is replaced
+  by `review.choose_mode`.
+- ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
+  utils): blank the term in the context sentence, show the bolded translation,
+  then Start Test shows a countdown bar, a text input + submit, and a muted
+  first-char hint. Grading via `stringSimilarity`/`scoreSpellResult` (1–3 base,
+  time-adjusted, mapped to again/hard/good/easy) and `spellHintOf` in
+  `packages/utils/src/srs-test-mode.ts`. The context blanking uses a new
+  `blankHighlighted` prop on both `TokenizedText` implementations (web
+  `token-span.tsx`, mobile `TokenizedText.tsx`).
 
 ## Known Issues & Resolutions (2026-08-13)
 
