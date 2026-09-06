@@ -63,9 +63,11 @@ export function VideoMeta({ video }: VideoMetaProps) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${levelSubtleClass(level ?? 1)}`}>
-          {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short}
-        </span>
+        {level != null && (
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${levelSubtleClass(level)}`}>
+            {formatNumericLevel(level, primaryScale(l2.code)).short}
+          </span>
+        )}
         {video.locale && (
           <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
             {displayLanguageName(video.locale, l1.code)}
