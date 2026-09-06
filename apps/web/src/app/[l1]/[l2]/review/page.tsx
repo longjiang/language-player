@@ -74,7 +74,11 @@ import {
   CheckCircle2,
   BookOpen,
   RefreshCw,
+  Brain,
+  ListChecks,
+  Keyboard,
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -1549,15 +1553,34 @@ export default function ReviewPage() {
   // current (first unanswered) slot renders its own status below.
   const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
 
+  // Review-mode dropdown options (Recall / Choose / Spell) with icons.
+  const MODE_OPTIONS = [
+    { key: 'recall' as const, label: t('review.recall_mode'), Icon: Brain },
+    { key: 'choose' as const, label: t('review.choose_mode'), Icon: ListChecks },
+    { key: 'spell' as const, label: t('review.spell_mode'), Icon: Keyboard },
+  ];
+  const currentMode = MODE_OPTIONS.find((m) => m.key === reviewMode) ?? MODE_OPTIONS[1]!;
+  const CurrentModeIcon = currentMode.Icon;
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label={t('review.choose_mode')}>
-          <button type="button" onClick={() => { changeReviewMode('recall'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.recall_mode')}</button>
-          <button type="button" onClick={() => { changeReviewMode('choose'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'choose' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.choose_mode')}</button>
-          <button type="button" onClick={() => { changeReviewMode('spell'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'spell' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.spell_mode')}</button>
-        </div>
+        <Select value={reviewMode} onValueChange={(v) => changeReviewMode(v as 'recall' | 'choose' | 'spell')}>
+          <SelectTrigger className="w-[190px]">
+            <span className="flex items-center gap-2">
+              <CurrentModeIcon className="h-4 w-4" />
+              <SelectValue />
+            </span>
+          </SelectTrigger>
+          <SelectContent>
+            {MODE_OPTIONS.map((m) => (
+              <SelectItem key={m.key} value={m.key} textValue={m.label}>
+                <span className="flex items-center gap-2"><m.Icon className="h-4 w-4" />{m.label}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <span className="text-sm text-muted-foreground flex items-center gap-2 text-xs">
             {cardCounts.newCount > 0 && (
               <span className="inline-flex items-center gap-1">

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TextInput, Platform } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -46,7 +46,8 @@ import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { toTraditional, toSimplified } from '@/lib/chinese-script';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CheckCircle2, BookOpen, RefreshCw } from 'lucide-react-native';
+import { CheckCircle2, BookOpen, RefreshCw, Brain, ListChecks, Keyboard, ChevronDown } from 'lucide-react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -1606,15 +1607,39 @@ export default function ReviewScreen() {
   // current (first unanswered) slot renders its own status below.
   const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
 
+  // Review-mode native menu options (Recall / Choose / Spell) with icons.
+  const MODE_OPTIONS = [
+    { key: 'recall' as const, label: t('review.recall_mode'), Icon: Brain, sfSymbol: 'brain' },
+    { key: 'choose' as const, label: t('review.choose_mode'), Icon: ListChecks, sfSymbol: 'checklist' },
+    { key: 'spell' as const, label: t('review.spell_mode'), Icon: Keyboard, sfSymbol: 'keyboard' },
+  ];
+  const currentMode = MODE_OPTIONS.find((m) => m.key === reviewMode) ?? MODE_OPTIONS[1]!;
+  const CurrentModeIcon = currentMode.Icon;
+
   return (
     <PageContainer maxWidth="2xl">
       {/* Mode switch with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
-        <View className="flex-row rounded-lg border border-border p-1">
-          <Pressable onPress={() => { changeReviewMode('recall'); }} className={`rounded-md px-3 py-2 ${reviewMode === 'recall' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'recall' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.recall_mode')}</Text></Pressable>
-          <Pressable onPress={() => { changeReviewMode('choose'); }} className={`rounded-md px-3 py-2 ${reviewMode === 'choose' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'choose' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.choose_mode')}</Text></Pressable>
-          <Pressable onPress={() => { changeReviewMode('spell'); }} className={`rounded-md px-3 py-2 ${reviewMode === 'spell' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'spell' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.spell_mode')}</Text></Pressable>
-        </View>
+        <MenuView
+          onPressAction={({ nativeEvent }) => changeReviewMode(nativeEvent.event as 'recall' | 'choose' | 'spell')}
+          actions={MODE_OPTIONS.map((m) => ({
+            id: m.key,
+            title: m.label,
+            // iOS shows SF Symbols in the native menu; Android uses drawable
+            // resources (none here), so the icon is iOS-only — the trigger's
+            // lucide icon still reflects the current mode on both platforms.
+            ...(Platform.OS === 'ios' ? { image: m.sfSymbol } : {}),
+            state: reviewMode === m.key ? ('on' as const) : ('off' as const),
+          }))}
+        >
+          <Pressable className="flex-row items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2">
+            <View className="flex-row items-center gap-2">
+              <CurrentModeIcon size={16} color={ICON_PRIMARY} />
+              <Text className="text-sm text-foreground">{currentMode.label}</Text>
+            </View>
+            <ChevronDown size={16} color={ICON_MUTED} />
+          </Pressable>
+        </MenuView>
         {/* Anki-style colored dots */}
         <View className="flex-row items-center gap-3">
           {cardCounts.newCount > 0 && (
