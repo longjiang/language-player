@@ -768,6 +768,13 @@ choose mode.
   Hard, `3` Good, `4` Easy (`Space`/`Enter` also rate Good); `u` unsaves the
   current word; `Ctrl/Cmd+Z` undoes the last rating.
 - Shortcuts are ignored while typing in inputs.
+- **Ratings respect the enabled buttons (2026-09-06)** — after a test mode
+  (choose/spell) reveals the back, the test result sets `suggestedRating` and
+  only that button is enabled (the rest are greyed out). The shortcut keys
+  mirror this: `Space`/`Enter` rate the **suggested** result (not always Good),
+  and a number key that maps to a greyed-out button is ignored. In recall mode
+  (no `suggestedRating`) `1`–`4` all work and `Space`/`Enter` rate Good, as
+  before.
 
 **Mobile**
 
