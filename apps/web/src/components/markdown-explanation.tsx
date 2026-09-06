@@ -124,6 +124,43 @@ function remarkReaderQuote(config?: { quoteChips?: boolean; timestampChips?: boo
         }
       }
     };
+    // Timestamp-ONLY in-place conversion for blocks the paragraph branch never
+    // reaches (headings, blockquote, list items, table cells, and paragraphs
+    // whose [MM:SS] token sits inside inline formatting rather than a direct
+    // text child). Timestamp chips stay inline; quote markers are left alone so
+    // the paragraph branch's block-level quote hoisting is preserved.
+    const tsRe = /\[(?:(\d+):)?(\d{1,2}):(\d{2})\]/g;
+    const convertTimestampsOnly = (value: string): any[] => {
+      const matches = [...value.matchAll(tsRe)];
+      if (matches.length === 0) return [{ type: 'text', value }];
+      const children: any[] = [];
+      let last = 0;
+      for (const m of matches) {
+        const start = m.index ?? 0;
+        if (start > last) children.push({ type: 'text', value: value.slice(last, start) });
+        const chip = makeTimestampChip(m[0]);
+        children.push(chip ?? { type: 'text', value: m[0] });
+        last = start + m[0].length;
+      }
+      if (last < value.length) children.push({ type: 'text', value: value.slice(last) });
+      return children;
+    };
+    const walkTimestamps = (node: any): void => {
+      if (!node || !Array.isArray(node.children)) return;
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i];
+        if (!child) continue;
+        if (child.type === 'text') {
+          const replaced = convertTimestampsOnly(child.value ?? '');
+          if (replaced.length !== 1) {
+            node.children.splice(i, 1, ...replaced);
+            i += replaced.length - 1;
+          }
+        } else {
+          walkTimestamps(child);
+        }
+      }
+    };
     /** True when the paragraph has a marker in one of its DIRECT text nodes
      *  (markers only inside inline formatting don't need the split). Uses a
      *  fresh non-global regex — a /g regex's `lastIndex` would leak between
@@ -174,6 +211,15 @@ function remarkReaderQuote(config?: { quoteChips?: boolean; timestampChips?: boo
           parent.children.splice(i, 1, ...expanded);
           i += expanded.length - 1;
         } else {
+          // Non-paragraph blocks (headings, blockquotes, list items, table
+          // cells) and paragraphs whose marker lives only inside inline
+          // formatting are never handled by the paragraph branch above, so a
+          // [MM:SS] token in a heading stays raw text. Convert timestamps IN
+          // PLACE (they stay inline within the heading/bold) so they render as
+          // tappable chips; then recurse for any nested structure. Quote
+          // markers are untouched here — the paragraph branch still hoists
+          // them.
+          walkTimestamps(child);
           process(child);
         }
       }
