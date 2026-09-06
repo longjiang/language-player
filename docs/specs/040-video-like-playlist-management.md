@@ -52,7 +52,7 @@ duplicated on the profile page.
 - `providers/user-library-provider.tsx` — shared likes/playlists state and mutation API.
 - `components/video/add-to-playlist-dialog.tsx` — save a video into existing playlists and/or a new playlist.
 - `components/video/channel-actions-menu.tsx` (web) / `components/video/ChannelActionsMenu.tsx` (mobile) — video-card `⋮` menu with channel actions plus Add to Playlist.
-- `components/video/video-control-bar.tsx` / `subtitles-mode-band.tsx` — heart + bookmark actions.
+- `components/video/video-control-bar.tsx` / `subtitle-display.tsx` (band mode) — heart + bookmark actions.
 - `components/layout/user-menu.tsx` — account navigation links.
 
 ### API Endpoints
