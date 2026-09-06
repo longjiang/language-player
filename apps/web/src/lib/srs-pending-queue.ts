@@ -116,6 +116,25 @@ export function reducePendingSrsOps(queue: PendingSrsOp[]): PendingSrsOp[] {
   return [...latest.values()].sort((a, b) => a.updatedAt - b.updatedAt);
 }
 
+/** Delete ops per-card, stopping at the first hard failure (order preserved).
+ *  403s are dropped (a capped op is final and would block the rest forever). */
+async function flushDeletesPerOp(deleteOps: PendingSrsOp[], api: SrsRowApi): Promise<PendingSrsOp[]> {
+  const retry: PendingSrsOp[] = [];
+  for (const op of deleteOps) {
+    try {
+      await api.deleteSrsCard(op.l2, op.wordId, op.updatedAt);
+    } catch (err) {
+      const status =
+        (err as { response?: { status?: number } })?.response?.status
+        ?? (Number((err as { code?: string })?.code) || undefined);
+      if (status === 403) continue;
+      retry.push(op);
+      break;
+    }
+  }
+  return retry;
+}
+
 async function flushPendingSrsOps(
   queue: PendingSrsOp[],
   api: SrsRowApi,
@@ -129,7 +148,9 @@ async function flushPendingSrsOps(
   // A large stale orphan backlog (cards whose words were unsaved across many
   // sessions/languages) must not fire one DELETE per card — each with a CORS
   // preflight that freezes a slow dev server. Chunked into a few requests so
-  // a pathological backlog stays under the server's batch cap. ──
+  // a pathological backlog stays under the server's batch cap. If the batch
+  // endpoint is missing (e.g. not yet deployed) or fails, fall back to per-op
+  // deletes so the flush is never stuck and upserts still flow. ──
   if (deleteOps.length > 0) {
     if (api.deleteSrsCardsBatch) {
       for (let i = 0; i < deleteOps.length; i += MAX_BATCH_DELETE) {
@@ -142,39 +163,28 @@ async function flushPendingSrsOps(
           const status =
             (err as { response?: { status?: number } })?.response?.status
             ?? (Number((err as { code?: string })?.code) || undefined);
-          if (status !== 403) {
-            // Batch failed (network/5xx): keep EVERYTHING queued and stop this
-            // pass — a partial flush risks dropping ops.
-            remaining.push(...ops);
+          if (status === 403) continue; // bulk 403: drop the deletes, avoid a cap loop
+          // Batch endpoint unavailable/failed: fall back to per-op for this group.
+          const retry = await flushDeletesPerOp(group, api);
+          if (retry.length > 0) {
+            const idx = ops.indexOf(retry[0]!);
+            remaining.push(...ops.slice(idx));
             return remaining;
           }
-          // 403 on a bulk delete is unexpected; the deletes are dropped to
-          // avoid a cap loop, and the upserts are still attempted below.
         }
       }
     } else {
       // No bulk endpoint (older server): per-op delete, bounded by the batch
       // cap so a huge backlog can't fire an unbounded sequential stream.
-      for (const op of deleteOps.slice(0, MAX_FLUSH_BATCH)) {
-        try {
-          await api.deleteSrsCard(op.l2, op.wordId, op.updatedAt);
-        } catch (err) {
-          const status =
-            (err as { response?: { status?: number } })?.response?.status
-            ?? (Number((err as { code?: string })?.code) || undefined);
-          if (status === 403) continue;
-          // Failed: hold this delete + the tail (order semantics).
-          const idx = ops.indexOf(op);
-          remaining.push(...ops.slice(idx));
-          return remaining;
-        }
-      }
-      // Hold deletes beyond the per-op batch for the next pass/retry.
-      if (deleteOps.length > MAX_FLUSH_BATCH) {
-        const held = deleteOps.slice(MAX_FLUSH_BATCH);
-        const heldUpserts = upsertOps.filter((o) => !remaining.includes(o));
-        remaining.push(...held, ...heldUpserts);
+      const processed = deleteOps.slice(0, MAX_FLUSH_BATCH);
+      const retry = await flushDeletesPerOp(processed, api);
+      if (retry.length > 0) {
+        const idx = ops.indexOf(retry[0]!);
+        remaining.push(...ops.slice(idx));
         return remaining;
+      }
+      if (deleteOps.length > MAX_FLUSH_BATCH) {
+        remaining.push(...deleteOps.slice(MAX_FLUSH_BATCH));
       }
     }
   }
