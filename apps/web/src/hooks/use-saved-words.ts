@@ -325,6 +325,19 @@ export function useSavedWords() {
     }
   }, [persist, queueRowOp, savedWords]);
 
+  /**
+   * wordIds with a **pending (unsynced) saved-word PUT** for `l2Code` (or all
+   * languages when omitted). The SRS reconciler passes these as
+   * `protectedWordIds` so the server never deletes a card for a word that was
+   * just saved but hasn't reached the server yet (offline-first mobile). Once
+   * the put flushes, the word is no longer protected.
+   */
+  const getPendingPutWordIds = useCallback((l2Code?: string): string[] => {
+    return pendingOpsRef.current
+      .filter((op) => op.type === 'put' && (!l2Code || op.l2 === l2Code))
+      .map((op) => op.wordId);
+  }, []);
+
   return {
     savedWords,
     loaded,
@@ -334,6 +347,7 @@ export function useSavedWords() {
     hasSavedWord,
     getSavedWords,
     clearSavedWords,
+    getPendingPutWordIds,
   };
 }
 

@@ -71,7 +71,7 @@ import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { SpellCharInput } from '@/components/review/spell-char-input';
 import { useT } from '@/hooks/use-t';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -191,8 +191,8 @@ async function buildSpellVariants(text: string, l2Code: string): Promise<string[
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
-  const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
-  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord, getPendingPutWordIds } = useSavedWordsContext();
+  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans, reconcileOrphans } = useSrs();
   const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
   const srsCardMeta = useMemo(
     () => ({ timezone: deviceTimezone(), dayStartHour }),
@@ -390,20 +390,43 @@ export default function ReviewPage() {
     // empty local list at that point is a loading state, not a real "no saved
     // words" state, and pruning would delete the whole deck (SPEC-066).
     if (status === 'authenticated' && !cloudHydrated) return;
-    // Diagnostic: string format (never object-truncated) so a DELETE /srs/cards
-    // stream can be traced to a real "no saved words" purge vs orphan cleanup.
+    const savedWordIds = new Set(l2SavedWords.map((sw) => sw.id));
+
+    if (status === 'authenticated') {
+      // Authoritative path: reconcile ON THE SERVER (it owns both user_srs_cards
+      // and user_saved_words, so it compares a given l2's cards against its
+      // saved words and only deletes true orphans). Wait for the server SRS deck
+      // to merge first, so we reconcile the post-merge deck and never re-add a
+      // just-deleted orphan via the hydration merge. protectedWordIds are words
+      // with a pending (unsynced) saved-word PUT — the server skips them so an
+      // offline-first save is never flagged as an orphan.
+      if (!srsCloudHydrated) return;
+      const protectedIds = getPendingPutWordIds(l2Code);
+      log(
+        '[SRS] prune effect runs l2=%s status=%s srsLoaded=%s wordsLoaded=%s cloudHydrated=%s srsCloudHydrated=%s l2SavedWords=%d decision=%s protected=%d',
+        l2Code, status, srsLoaded, wordsLoaded, cloudHydrated, srsCloudHydrated,
+        l2SavedWords.length, 'server-reconcile', protectedIds.length,
+      );
+      void reconcileOrphans(l2Code, protectedIds).catch(() => {
+        // Reconcile endpoint unavailable/failed (offline, not yet deployed) →
+        // hardened local fallback. NEVER purge the whole deck: a possibly-partial
+        // saved-word view must not take out genuinely good cards.
+        logwarn('[SRS] reconcileOrphans failed for l2=%s — falling back to hardened local prune', l2Code);
+        pruneOrphans(l2Code, savedWordIds, { allowWholeDeckPurge: false });
+      });
+      return;
+    }
+
+    // Anonymous: local-only data, no server. Hardened fallback prune — never
+    // purge the whole deck (a partial local view is indistinguishable from a
+    // genuinely empty one, and the server reconcile isn't available to decide).
     log(
       '[SRS] prune effect runs l2=%s status=%s srsLoaded=%s wordsLoaded=%s cloudHydrated=%s l2SavedWords=%d decision=%s',
       l2Code, status, srsLoaded, wordsLoaded, cloudHydrated, l2SavedWords.length,
-      l2SavedWords.length === 0 ? 'PURGE-WHOLE-DECK' : 'prune-orphans',
+      l2SavedWords.length === 0 ? 'local-fallback-empty' : 'local-fallback',
     );
-    if (l2SavedWords.length === 0) {
-      // No saved words at all → purge the entire language deck.
-      pruneOrphans(l2Code, new Set<string>());
-      return;
-    }
-    pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
-  }, [srsLoaded, wordsLoaded, status, cloudHydrated, l2SavedWords, l2Code, pruneOrphans]);
+    pruneOrphans(l2Code, savedWordIds, { allowWholeDeckPurge: false });
+  }, [srsLoaded, wordsLoaded, status, cloudHydrated, srsCloudHydrated, l2SavedWords, l2Code, pruneOrphans, reconcileOrphans, getPendingPutWordIds]);
 
   // ── Compute due cards ──
   const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {

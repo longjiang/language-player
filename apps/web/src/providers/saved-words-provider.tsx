@@ -14,6 +14,10 @@ interface SavedWordsContextValue {
   hasSavedWord: (l2Code: string, wordId: string) => boolean;
   getSavedWords: (l2Code: string) => SavedLexicalItemRecord[];
   clearSavedWords: (l2Code: string) => void;
+  /** wordIds with a pending (unsynced) saved-word PUT — passed to the SRS
+   *  reconciler as protectedWordIds so it never deletes cards for words that
+   *  were just saved but haven't reached the server yet. */
+  getPendingPutWordIds: (l2Code?: string) => string[];
 }
 
 const SavedWordsContext = createContext<SavedWordsContextValue | undefined>(undefined);

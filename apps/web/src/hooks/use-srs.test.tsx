@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
   deleteSrsCard: vi.fn(async () => ({ success: true })),
   deleteSrsCardsBatch: vi.fn(async () => ({ success: true, deleted: 0, dropped: 0, skipped: 0 })),
   putSrsCard: vi.fn(async () => ({ success: true })),
+  reconcileSrsCards: vi.fn(async (_l2: string, protectedWordIds: string[] = []) =>
+    ({ success: true, deleted: 0, dropped: 0, skipped: 0, deletedWordIds: [] as string[] })),
   useUserDataColumns: vi.fn(() => ({
     getSrs: vi.fn(async () => ({ cards: {} })),
     putSrsCard: vi.fn(async () => ({ success: true })),
@@ -22,6 +24,7 @@ vi.mock('@langplayer/api-client', () => ({
   deleteSrsCard: mocks.deleteSrsCard,
   deleteSrsCardsBatch: mocks.deleteSrsCardsBatch,
   putSrsCard: mocks.putSrsCard,
+  reconcileSrsCards: mocks.reconcileSrsCards,
   useUserDataColumns: mocks.useUserDataColumns,
 }));
 vi.mock('@/lib/logger', () => ({ log: vi.fn(), logwarn: vi.fn() }));
@@ -35,6 +38,9 @@ describe('useSrs (SPEC-066)', () => {
     localStorage.clear();
     mocks.useSession.mockReturnValue({ data: null, status: 'unauthenticated' });
     mocks.putSrsCard.mockResolvedValue({ success: true });
+    mocks.reconcileSrsCards.mockResolvedValue({
+      success: true, deleted: 0, dropped: 0, skipped: 0, deletedWordIds: [],
+    });
     mocks.useUserDataColumns.mockReturnValue({
       getSrs: vi.fn(async () => ({ cards: {} })),
       putSrsCard: vi.fn(async () => ({ success: true })),
@@ -160,5 +166,46 @@ describe('useSrs (SPEC-066)', () => {
     await waitFor(() => expect(result.current.store.cards.ja?.['w1']).toBeUndefined());
     const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
     expect(persisted.cards?.ja?.['w1']).toBeUndefined();
+  });
+
+  it('drops server-reconciled orphan ids from local state without a redundant delete op', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      cards: { ja: { w1: fsrs.newCard(NOW), w2: fsrs.newCard(NOW) } },
+    }));
+    mocks.reconcileSrsCards.mockResolvedValue({
+      success: true, deleted: 1, dropped: 0, skipped: 0, deletedWordIds: ['w1'],
+    });
+
+    const { result } = renderHook(() => useSrs());
+    await waitFor(() => expect(result.current.loaded).toBe(true));
+
+    await act(async () => {
+      await result.current.reconcileOrphans('ja', ['pendingSave1']);
+    });
+
+    // protectedWordIds forwarded to the server; the reconciled id is dropped
+    // locally, and NO per-card DELETE is enqueued (it's gone server-side).
+    expect(mocks.reconcileSrsCards).toHaveBeenCalledWith('ja', ['pendingSave1']);
+    expect(result.current.store.cards.ja?.['w1']).toBeUndefined();
+    expect(result.current.store.cards.ja?.['w2']).toBeDefined();
+    expect(mocks.deleteSrsCard).not.toHaveBeenCalled();
+  });
+
+  it("pruneOrphans(allowWholeDeckPurge: false) never wipes a whole deck on a partial view", async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      cards: { ja: { w1: fsrs.newCard(NOW), w2: fsrs.newCard(NOW) } },
+    }));
+
+    const { result } = renderHook(() => useSrs());
+    await waitFor(() => expect(result.current.loaded).toBe(true));
+
+    act(() => {
+      result.current.pruneOrphans('ja', new Set<string>(), { allowWholeDeckPurge: false });
+    });
+
+    // An empty (possibly partial/pending) saved-word set must NOT be treated as
+    // "no saved words" and wipe the deck — that is the server reconcile's job.
+    expect(result.current.store.cards.ja?.['w1']).toBeDefined();
+    expect(result.current.store.cards.ja?.['w2']).toBeDefined();
   });
 });
