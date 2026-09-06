@@ -2,14 +2,14 @@ import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { VideoCard } from './VideoCard';
-import { Tv } from 'lucide-react-native';
-import { ICON_PRIMARY } from '@/lib/theme-colors';
+import { useT } from '@/hooks/use-t';
 
 interface VideoQueueListProps {
   currentYoutubeId: string;
 }
 
 export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
+  const t = useT();
   const { queueState } = useVideoPlayer();
   const { queue, queueType, tvShow } = queueState;
 
@@ -20,31 +20,24 @@ export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
     <ScrollView className="flex-1">
       {/* TV show header */}
       {queueType === 'tvShow' && tvShow && (
-        <View className="mb-2 flex-row items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-          <Tv size={16} color={ICON_PRIMARY} />
+        <View className="mb-2 rounded-lg bg-muted/50 px-3 py-2">
           <Text className="text-sm font-medium text-foreground">{tvShow.title}</Text>
           <Text className="text-xs text-muted-foreground">
-            ({queue.length} episodes)
+            ({queue.length} {t('title.episodes')})
           </Text>
         </View>
       )}
 
-      {queue.map((video, idx) => (
-        <View key={video.youtube_id} className="flex-row items-center gap-2 mb-1">
-          {queueType === 'tvShow' && (
-            <Text className="w-6 text-center text-xs font-medium text-muted-foreground">
-              {idx + 1}
-            </Text>
-          )}
-          <View className="flex-1 min-w-0">
-            <VideoCard
-              video={video}
-              videos={queue}
-              queueType={queueType}
-              layout="list"
-              isActive={video.youtube_id === currentYoutubeId}
-            />
-          </View>
+      {queue.map((video) => (
+        <View key={video.youtube_id} className="mb-1">
+          <VideoCard
+            video={video}
+            videos={queue}
+            queueType={queueType}
+            layout="list"
+            isActive={video.youtube_id === currentYoutubeId}
+            showActionsMenu={queueType !== 'tvShow'}
+          />
         </View>
       ))}
     </ScrollView>

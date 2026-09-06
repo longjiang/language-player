@@ -3,7 +3,7 @@
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { VideoCard } from './video-card';
 import { VideoQueuePanel } from './video-queue-panel';
-import { Tv } from 'lucide-react';
+import { useT } from '@/hooks/use-t';
 
 interface VideoQueueListProps {
   currentYoutubeId: string;
@@ -11,6 +11,7 @@ interface VideoQueueListProps {
 
 /** Watch page's queue tab — a thin adapter over the shared VideoQueuePanel. */
 export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
+  const t = useT();
   const { queueState } = useVideoPlayer();
   const { queue, queueType, tvShow } = queueState;
 
@@ -25,23 +26,16 @@ export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
       emptyText=""
       header={
         queueType === 'tvShow' && tvShow ? (
-          <div className="mb-2 flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-            <Tv className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">{tvShow.title}</span>
-            <span className="text-xs text-muted-foreground">
-              ({queue.length} episodes)
-            </span>
+          <div className="mb-2 rounded-lg bg-muted/50 px-3 py-2">
+            <p className="text-sm font-medium text-foreground">{tvShow.title}</p>
+            <p className="text-xs text-muted-foreground">
+              ({queue.length} {t('title.episodes')})
+            </p>
           </div>
         ) : undefined
       }
-      renderRow={(video, idx) => (
+      renderRow={(video) => (
         <div className="flex items-center gap-2">
-          {/* Episode number for TV shows */}
-          {queueType === 'tvShow' && (
-            <span className="w-6 flex-shrink-0 text-center text-xs font-medium text-muted-foreground">
-              {idx + 1}
-            </span>
-          )}
           <div className="flex-1 min-w-0">
             <VideoCard
               video={video}
@@ -49,6 +43,7 @@ export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
               queueType={queueType}
               layout="list"
               isActive={video.youtube_id === currentYoutubeId}
+              showActionsMenu={queueType !== 'tvShow'}
             />
           </div>
         </div>

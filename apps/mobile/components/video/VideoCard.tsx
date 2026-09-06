@@ -22,6 +22,8 @@ interface VideoCardProps {
   isActive?: boolean;
   /** Optional testID override. When set, this replaces the auto-generated video-card-{youtube_id}. */
   testID?: string;
+  /** Hide the "..." actions menu (e.g. clean tv-show queue rows). Default: true. */
+  showActionsMenu?: boolean;
 }
 
 function formatDuration(seconds: number | string | undefined): string {
@@ -55,7 +57,7 @@ function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
 }
 
-export function VideoCard({ video, layout = 'card', videos, queueType = 'recommended', isActive = false, testID: testIDOverride }: VideoCardProps) {
+export function VideoCard({ video, layout = 'card', videos, queueType = 'recommended', isActive = false, testID: testIDOverride, showActionsMenu = true }: VideoCardProps) {
   const t = useT();
   const { l2Lang } = useLanguage();
   const { playVideo } = useVideoPlayer();
@@ -100,7 +102,7 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
             {duration ? <Text className="text-xs text-muted-foreground">{duration}</Text> : null}
           </View>
         </View>
-        <ChannelActionsMenu channelId={video.channel_id} video={video} />
+        {showActionsMenu && <ChannelActionsMenu channelId={video.channel_id} video={video} />}
       </Pressable>
     );
   }
@@ -129,7 +131,7 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
           <Text className="flex-1 text-sm font-medium text-foreground" numberOfLines={2}>
             {video.title ?? ''}
           </Text>
-          <ChannelActionsMenu channelId={video.channel_id} video={video} />
+          {showActionsMenu && <ChannelActionsMenu channelId={video.channel_id} video={video} />}
         </View>
         <View className="mt-1.5 flex-row items-center gap-2">
           {views ? <Text className="text-xs text-muted-foreground">{t('label.views_count', { count: views })}</Text> : null}
