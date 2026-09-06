@@ -1027,6 +1027,7 @@
         "pro_transcript_limit_reached": "已經達到逐字稿的上限囉。請升級成專業版來看更多逐字稿。",
         "purchase_confirmation": "按下「購買」後，你會被要求確認從Apple App Store的內購喔。",
         "quiz_mode_desc": "將已儲存的單字隱藏為空格以測試記憶。點擊空格顯示單字。",
+        "reader_context_too_large": "這段文字非常長（超過1,000,000個字元）。AI 回答可能較慢且不夠準確。",
         "reader_empty_state": "新建一條筆記，貼上文本，然後點擊任意單詞查看釋義。",
         "ready_to_start": "準備好開始學習了嗎？",
         "receipt_validation_failed": "收據驗證失敗。請聯繫支援。",

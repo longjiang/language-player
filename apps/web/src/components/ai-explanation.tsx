@@ -12,6 +12,7 @@ import {
   presetKey,
   READER_AI_QUOTE_INSTRUCTION,
   READER_AI_SUMMARY_INSTRUCTION,
+  READER_AI_CONTEXT_WARN_MAX,
   type AiFollowUpPreset,
   type ReaderAiContent,
 } from '@langplayer/utils';
@@ -270,14 +271,26 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       contextForm: contextForm ?? '',
       ...(contentKey ? { text } : {}),
     });
-    // Content-based presets (reader summaries) are prose in L1, not interactive
-    // L2 text — skip the backtick-formatting instruction and instead ask the
-    // model for a concise overview supported by a few inline [[original||translation]]
-    // quote chips.
-    if (contentKey) return `${body}\n\n${READER_AI_SUMMARY_INSTRUCTION}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
+    // Content-based presets (reader summaries / text analyses) are prose in
+    // the target language, not interactive L2 spans — skip the backtick
+    // formatting instruction. Summary-shaped presets append the summary
+    // instruction; the quote-chip instruction is appended only when the chat
+    // renders quote chips (reader surfaces). A non-quoting content preset
+    // (tokenized-text analyses) appends the backtick instruction instead so
+    // L2 terms still render tokenized.
+    if (contentKey) {
+      const parts = [body];
+      if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
+      if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
+      else {
+        const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+        if (ticksPrompt) parts.push(ticksPrompt);
+      }
+      return parts.join('\n\n');
+    }
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
-  }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent]);
+  }, [t, l1.code, l2.code, word, contextText, contextForm, readerContent, quoteChips]);
 
   const fetchExplanation = useCallback(() => {
     // Reader "Ask AI": stream the initial preset instead of the word explain.
@@ -504,17 +517,21 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     if (!text) return;
     setFreeFormText('');
     const history = buildHistory();
-    // Reader Ask-AI: also carry the [[original||translation]] quote instruction
-    // so follow-up answers keep producing tappable quote chips.
-    const prompt = quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
+    // Reader "Ask AI": preload the full text/book as follow-up context so the
+    // model grounds the answer in the whole surface, not just the prior turns.
+    const contextText = readerContent?.text ?? '';
+    const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
+    const prompt = contextText
+      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}`
+      : quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
     appendMessage({ role: 'user', text, label: text, prompt });
     const aiId = appendMessage({ role: 'assistant', text: '', prompt });
     setStreamingId(aiId);
-    log('AI explain free-form stream start', { word, chars: text.length, history: history.length });
+    log('AI explain free-form stream start', { word, chars: text.length, contextChars: contextText.length, history: history.length });
     stream(prompt, { messages: history });
-  }, [stream, word, appendMessage, buildHistory, quoteChips]);
+  }, [stream, word, appendMessage, buildHistory, quoteChips, readerContent]);
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──
   const examplesMessage = useMemo(
@@ -707,6 +724,12 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   if (demandMode || messages.length > 0 || loading || error) {
     return (
       <div>
+        {readerContent && (readerContent.text?.length ?? 0) > READER_AI_CONTEXT_WARN_MAX && (
+          <div className="mb-2 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>{t('msg.reader_context_too_large')}</span>
+          </div>
+        )}
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3 w-3" />
           {t('label.ai_says')}

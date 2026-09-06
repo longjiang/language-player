@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Przejdź na wersję Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
         "purchase_confirmation": "Naciśnij Kup, a zostaniesz poproszony o potwierdzenie zakupu w aplikacji w Apple App Store.",
         "quiz_mode_desc": "Ukryj zapisane słowa jako puste miejsca, aby przetestować swoją pamięć. Dotknij pustego miejsca, aby odkryć słowo.",
+        "reader_context_too_large": "Ten tekst jest bardzo długi (ponad 1 000 000 znaków). Odpowiedzi AI mogą trwać dłużej i być mniej dokładne.",
         "reader_empty_state": "Utwórz notatkę, wklej tekst, a następnie dotknij dowolnego słowa, aby zobaczyć jego znaczenie.",
         "ready_to_start": "Gotowy, aby rozpocząć naukę?",
         "receipt_validation_failed": "Weryfikacja paragonu nie powiodła się. Skontaktuj się z pomocą techniczną.",

@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Đã đạt giới hạn bản ghi. Vui lòng nâng cấp lên Pro để truy cập thêm bản ghi.",
         "purchase_confirmation": "Nhấn Mua và bạn sẽ được yêu cầu xác nhận giao dịch mua trong ứng dụng từ Apple App Store.",
         "quiz_mode_desc": "Ẩn các từ đã lưu dưới dạng khoảng trống để kiểm tra trí nhớ của bạn. Chạm vào khoảng trống để hiển thị từ.",
+        "reader_context_too_large": "Văn bản này rất dài (hơn 1.000.000 ký tự). Câu trả lời của AI có thể mất nhiều thời gian hơn và kém chính xác hơn.",
         "reader_empty_state": "Tạo Ghi chú, dán văn bản vào, rồi chạm vào bất kỳ từ nào để xem nghĩa của nó.",
         "ready_to_start": "Sẵn sàng bắt đầu học chưa?",
         "receipt_validation_failed": "Xác thực biên lai thất bại. Vui lòng liên hệ hỗ trợ.",

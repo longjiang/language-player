@@ -14,7 +14,7 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
-import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
+import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
 import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -429,8 +429,8 @@ export default function ImageReaderScreen() {
         presets={READER_ASK_AI_TEXT_PRESETS}
         content={
           {
-            text: truncateReaderAiContent(current?.md ?? ''),
-            page: truncateReaderAiContent(currentPageText),
+            text: current?.md ?? '',
+            page: currentPageText,
             chapter: null,
             bookUpToChapter: null,
           } satisfies ReaderAiContent

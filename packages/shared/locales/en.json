@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
         "purchase_confirmation": "Press Purchase and you will be asked to confirm your in-app purchase from the Apple App Store.",
         "quiz_mode_desc": "Hide saved words as blanks to test your recall. Tap a blank to reveal the word.",
+        "reader_context_too_large": "This text is very long (over 1,000,000 characters). AI answers may take longer and be less accurate.",
         "reader_empty_state": "Create a Note, paste in some text, then tap on any word to see its meaning.",
         "ready_to_start": "Ready to start learning?",
         "receipt_validation_failed": "Receipt validation failed. Please contact support.",

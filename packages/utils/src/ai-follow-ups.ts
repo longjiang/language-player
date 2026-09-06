@@ -19,7 +19,17 @@
  */
 
 export type AiFollowUpPreset =
-  | { kind: 'prompt'; labelKey: string; promptKey: string; contentKey?: keyof ReaderAiContent }
+  | {
+      kind: 'prompt';
+      labelKey: string;
+      promptKey: string;
+      contentKey?: keyof ReaderAiContent;
+      /** When false, a content-carrying preset does NOT append the summary
+       *  instruction (`READER_AI_SUMMARY_INSTRUCTION`). Defaults to true. Used
+       *  by non-summary text analyses (e.g. "difficult expressions",
+       *  "grammar points") that would otherwise be mis-shaped as a summary. */
+      summaryInstruction?: boolean;
+    }
   | { kind: 'examples'; labelKey: string };
 
 /** The preset set historically shown in the dictionary popup and detail tab. */
@@ -81,13 +91,27 @@ export const READER_ASK_AI_INITIAL_PRESET: AiFollowUpPreset & { kind: 'prompt' }
   contentKey: 'page',
 };
 
-/** Cap on content sent to the model in one summary prompt (chars). */
+/** Cap on content sent to the model in one summary prompt (chars).
+ *  Deprecated: the historical 12 000-char cap was removed so the full text /
+ *  book is preloaded as context. Kept only for reference; do not apply it. */
 export const READER_ASK_AI_CONTENT_MAX = 12000;
 
-/** Truncate long reader content so a summary prompt stays within budget. */
+/**
+ * Warning threshold (chars) for the reader Ask-AI context. When the preloaded
+ * context (`ReaderAiContent.text`) exceeds this, the AiExplanation chat shows a
+ * warning banner that very long texts may produce slower / less precise answers.
+ */
+export const READER_AI_CONTEXT_WARN_MAX = 1_000_000;
+
+/**
+ * Normalize reader content for the Ask-AI chat.
+ *
+ * The historical 12 000-char cap (`READER_ASK_AI_CONTENT_MAX`) was removed so
+ * the full text / book is preloaded as follow-up context (SPEC-087 §7.1
+ * amended). This now returns the text unchanged; a warning banner is shown
+ * above the chat when the preloaded context exceeds
+ * `READER_AI_CONTEXT_WARN_MAX`.
+ */
 export function truncateReaderAiContent(text: string | null | undefined): string {
-  if (!text) return '';
-  return text.length > READER_ASK_AI_CONTENT_MAX
-    ? `${text.slice(0, READER_ASK_AI_CONTENT_MAX)}…`
-    : text;
+  return text ?? '';
 }

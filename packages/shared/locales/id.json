@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
         "purchase_confirmation": "Tekan Beli dan Anda akan diminta untuk mengonfirmasi pembelian dalam aplikasi dari Apple App Store.",
         "quiz_mode_desc": "Sembunyikan kata yang disimpan sebagai tempat kosong untuk menguji ingatan Anda. Ketuk tempat kosong untuk menampilkan kata.",
+        "reader_context_too_large": "Teks ini sangat panjang (lebih dari 1.000.000 karakter). Jawaban AI mungkin memakan waktu lebih lama dan kurang akurat.",
         "reader_empty_state": "Buat Catatan, tempel teks, lalu ketuk kata apa pun untuk melihat artinya.",
         "ready_to_start": "Siap untuk mulai belajar?",
         "receipt_validation_failed": "Validasi tanda terima gagal. Silakan hubungi dukungan.",

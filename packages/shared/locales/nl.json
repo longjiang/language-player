@@ -1047,6 +1047,7 @@
         "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro voor toegang tot meer transcripties.",
         "purchase_confirmation": "Druk op Aankoop en u wordt gevraagd uw aankoop in de app te bevestigen via de Apple App Store.",
         "quiz_mode_desc": "Verberg opgeslagen woorden als lege plekken om je geheugen te testen. Tik op een lege plek om het woord te onthullen.",
+        "reader_context_too_large": "Deze tekst is erg lang (meer dan 1.000.000 tekens). AI-antwoorden kunnen langer duren en minder nauwkeurig zijn.",
         "reader_empty_state": "Maak een notitie, plak er tekst in en tik op een woord om de betekenis te zien.",
         "ready_to_start": "Klaar om te beginnen met leren?",
         "receipt_validation_failed": "Betalingsbewijsvalidatie mislukt. Neem contact op met de ondersteuning.",

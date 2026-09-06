@@ -13,7 +13,7 @@ import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
-import { READER_ASK_AI_TEXT_PRESETS, truncateReaderAiContent, type ReaderAiContent } from '@langplayer/utils';
+import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
 import { NotesSidebar } from '@/components/reader/NotesSidebar';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
@@ -536,8 +536,8 @@ export default function ReaderScreen() {
         presets={READER_ASK_AI_TEXT_PRESETS}
         content={
           {
-            text: truncateReaderAiContent(text),
-            page: truncateReaderAiContent(currentPageText),
+            text,
+            page: currentPageText,
             chapter: null,
             bookUpToChapter: null,
           } satisfies ReaderAiContent

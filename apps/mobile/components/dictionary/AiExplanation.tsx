@@ -13,7 +13,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, READER_AI_CONTEXT_WARN_MAX, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -193,14 +193,26 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       contextForm: contextForm ?? '',
       ...(contentKey ? { text } : {}),
     });
-    // Content-based presets (reader summaries) are prose in L1, not interactive
-    // L2 text — skip the backtick-formatting instruction and instead ask the
-    // model for a concise overview supported by a few inline [[original||translation]]
-    // quote chips.
-    if (contentKey) return `${body}\n\n${READER_AI_SUMMARY_INSTRUCTION}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
+    // Content-based presets (reader summaries / text analyses) are prose in
+    // the target language, not interactive L2 spans — skip the backtick
+    // formatting instruction. Summary-shaped presets append the summary
+    // instruction; the quote-chip instruction is appended only when the chat
+    // renders quote chips (reader surfaces). A non-quoting content preset
+    // (tokenized-text analyses) appends the backtick instruction instead so
+    // L2 terms still render tokenized.
+    if (contentKey) {
+      const parts = [body];
+      if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
+      if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
+      else {
+        const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+        if (ticksPrompt) parts.push(ticksPrompt);
+      }
+      return parts.join('\n\n');
+    }
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return [body, ticksPrompt].filter(Boolean).join('\n\n');
-  }, [t, word, contextText, contextForm, readerContent]);
+  }, [t, word, contextText, contextForm, readerContent, quoteChips]);
 
   // Reconstruct the prior conversation as {role, content} turns for the
   // multi-turn endpoint. Every streamed assistant message stores the exact
@@ -392,14 +404,18 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     if (!text) return;
     setFreeFormText('');
     const history = buildHistory();
-    // Reader Ask-AI: also carry the [[original||translation]] quote instruction
-    // so follow-up answers keep producing tappable quote chips.
-    const prompt = quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
+    // Reader "Ask AI": preload the full text/book as follow-up context so the
+    // model grounds the answer in the whole surface, not just the prior turns.
+    const contextText = readerContent?.text ?? '';
+    const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
+    const prompt = contextText
+      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}`
+      : quoteChips ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}` : text;
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
     appendMessage({ role: 'user', text, label: text, prompt });
     startStream(prompt, { messages: history });
-  }, [startStream, appendMessage, buildHistory, quoteChips]);
+  }, [startStream, appendMessage, buildHistory, quoteChips, readerContent]);
 
   // Reader Ask-AI: chat messages interleave [[original||translation]] quote
   // markers with prose. `renderInlineQuotes` splits the raw text on those
@@ -590,6 +606,13 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   if (demandMode || messages.length > 0 || loading || error) {
     return (
       <View className="mt-4 mb-2">
+        {readerContent && (readerContent.text?.length ?? 0) > READER_AI_CONTEXT_WARN_MAX ? (
+          <View className="mb-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950">
+            <Text className="text-xs text-amber-700 dark:text-amber-300">
+              {t('msg.reader_context_too_large')}
+            </Text>
+          </View>
+        ) : null}
         <View className="mb-2 flex-row items-center gap-2">
           <Sparkles size={12} color={ICON_MUTED} />
           <Text className="text-xs text-muted-foreground">{t('label.ai_says')}</Text>

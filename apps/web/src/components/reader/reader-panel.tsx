@@ -30,7 +30,6 @@ import { ReaderSearchPanel, type ReaderSearchResult } from '@/components/reader/
 import { AiExplanation } from '@/components/ai-explanation';
 import {
   READER_ASK_AI_TEXT_PRESETS,
-  truncateReaderAiContent,
   type ReaderAiContent,
 } from '@langplayer/utils';
 import { type FormatRange, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
@@ -500,8 +499,8 @@ export function ReaderPanel({
               onQuotePress={openSearchFor}
               readerContent={
                 {
-                  text: truncateReaderAiContent(text),
-                  page: truncateReaderAiContent(currentPageText),
+                  text,
+                  page: currentPageText,
                   chapter: null,
                   bookUpToChapter: null,
                 } satisfies ReaderAiContent
