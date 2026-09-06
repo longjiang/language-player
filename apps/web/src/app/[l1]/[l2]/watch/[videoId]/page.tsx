@@ -56,7 +56,7 @@ export default function WatchPage() {
   const params = useParams<{ videoId: string }>();
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
+  const { playNext, playPrevious, hasNext, hasPrevious, restoreQueueIfCurrent } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
   const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
   const videoId = params.videoId;
@@ -187,6 +187,19 @@ export default function WatchPage() {
     };
     fetchVideo();
   }, [videoId, l1, l2, l2Code]);
+
+  // Restore a persisted watch queue (page refresh / cold link) so prev/next
+  // and the queue tab survive a reload. Runs once per videoId on mount; when
+  // no persisted queue matches, `queueRestoredRef` stays false and the effect
+  // below builds a queue from the video (tv-show episodes / recommendations).
+  const queueRestoredRef = useRef(false);
+  useEffect(() => {
+    let cancelled = false;
+    restoreQueueIfCurrent(videoId).then((restored) => {
+      if (!cancelled) queueRestoredRef.current = restored;
+    });
+    return () => { cancelled = true; };
+  }, [videoId, restoreQueueIfCurrent]);
 
   const handleTimeUpdate = useCallback((time: number) => { setCurrentTime(time); }, []);
   const handleDuration = useCallback((d: number) => { setDuration(d); }, []);
