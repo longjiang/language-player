@@ -6,9 +6,17 @@
 
 Each saved word becomes a flashcard. The front shows the sentence where you saved the word — the word itself is highlighted so you can spot it instantly. Your job is to recall the meaning from context.
 
-Tap the card (or press Space) to reveal the back. You'll see the full dictionary entry with definitions, examples, inflections, and an AI explanation. Compare what you recalled with the actual definition, then rate yourself.
+Press **Show Definition** (or press **Space** / **Enter**) to reveal the back. You'll see the full dictionary entry with definitions, examples, inflections, and an AI explanation. Compare what you recalled with the actual definition, then rate yourself.
 
 The next time you see the word depends on your rating. Words you know well appear less often. Words you struggle with come back sooner. This is called spaced repetition — it's the same technique used by Anki.
+
+## Review Modes
+
+Switch how you're tested with the toggle at the top of the Review screen.
+
+- **{$review.recall_mode}** — Recall the meaning from context. Flip the card to check the definition, then rate yourself.
+- **{$review.choose_mode}** — Answer a multiple-choice question (the meaning, and for some languages the reading) before you can rate the card. It works like a small quiz.
+- **{$review.spell_mode}** — The word is blanked out in the sentence. Type the exact word that's missing, then rate how well you knew it. The translation is shown to help you.
 
 ## Rating a Card
 
@@ -21,7 +29,7 @@ After revealing the back, rate how well you remembered:
 | Good | 3 | You recalled correctly |
 | Easy | 4 | You recalled instantly |
 
-You can also tap the **left half** of the card for Again, or the **right half** for Good. A colored toast confirms your choice.
+A colored toast confirms your choice.
 
 ## Card Counts
 
@@ -37,7 +45,7 @@ The daily limit for new cards is 20 by default. You can change it in [{$title.se
 
 Every card shows the sentence where you saved the word. The exact word form is highlighted. Below it you'll see where the word came from (the video title or text name, plus the date).
 
-If you have "{$label.show_translation}" enabled in {$title.settings}, the card shows the {$lang.en} translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
+The card always shows the translation of the sentence — you don't need to turn on a setting. The word is highlighted in the translation so you can match it to the sentence. If no saved translation exists, it fetches one automatically.
 
 The context sentence has a hover menu (the three dots) for copying the text, speaking it aloud, getting an AI explanation, or translating it on the spot.
 
