@@ -16,7 +16,8 @@ export interface AiQuote {
 
 /** A piece of an AI response after splitting it on `[[…||…]]` quote markers:
  *  either literal prose text or a single quote citation. Rendering walks these
- *  in order so quotes appear inline where the model placed them. */
+ *  in order so quotes appear at the position the model placed them — as
+ *  full-width block chips (see `normalizeQuoteBlocks`). */
 export type AiTextSegment =
   | { type: 'text'; value: string }
   | { type: 'quote'; original: string; translation: string };
@@ -26,12 +27,15 @@ export type AiTextSegment =
  * emit `[[original||translation]]` quote markers. This is a prompt to the LLM,
  * not UI chrome, so it is kept in English (not localized).
  *
- * The reader demands a CONCISE answer supported by a FEW short exact quotes
- * placed INLINE — never a reproduction of the whole text and never a trailing
- * dump of every passage (the model previously quoted the entire chapter).
+ * The reader demands a CONCISE answer supported by a FEW short exact quotes.
+ * Each quote must sit on its OWN line as a standalone block (never inside a
+ * sentence) so it can render as a full-width block chip; `normalizeQuoteBlocks`
+ * cleans up any the model still emits inline. Never a reproduction of the
+ * whole text and never a trailing dump of every passage (the model previously
+ * quoted the entire chapter).
  */
 export const READER_AI_QUOTE_INSTRUCTION =
-  'Answer concisely and do NOT reproduce the whole text. Quote a few SHORT exact passages from the text to support your answer (ideally 3–5, never the whole text). Place each quote INLINE at the exact point in your answer it supports — do NOT collect every quote at the end. Output each quoted passage in EXACTLY this format: [[exact L2 passage||L1 translation]]. Use ONLY the [[...||...]] format for quotes — never markdown blockquotes (>), quotation marks, or any other styling. Copy the L2 passage exactly from the text, and put its L1 translation after ||.';
+  'Answer concisely and do NOT reproduce the whole text. Quote a few SHORT exact passages from the text to support your answer (ideally 3–5, never the whole text). Put each quote on its OWN line as a standalone paragraph at the point it supports — never inside a sentence. Output each quoted passage in EXACTLY this format on that line: [[exact L2 passage||L1 translation]]. Use ONLY the [[...||...]] format for quotes — never markdown blockquotes (>), quotation marks, or any other styling. Copy the L2 passage exactly from the text, and put its L1 translation after ||.';
 
 /**
  * Summary-specific instruction appended for the reader's "Ask AI" summary
@@ -112,4 +116,36 @@ export function splitAiQuotes(text: string): AiTextSegment[] {
   }
   if (last < text.length) segments.push({ type: 'text', value: text.slice(last) });
   return segments;
+}
+
+/**
+ * Hoist every `[[original||translation]]` marker in an AI response onto its
+ * own line so each renders as a standalone full-width block chip rather than
+ * an inline span breaking the sentence around it.
+ *
+ * `READER_AI_QUOTE_INSTRUCTION` asks the model to emit each marker as its own
+ * paragraph, but models still slip markers into the middle of a sentence.
+ * Rewriting the text (instead of only restyling at render time) keeps the web
+ * markdown renderer and the mobile inline renderer in sync — and keeps the
+ * prose sentence clean: the marker is cut out and dropped at the end of the
+ * line, leaving the surrounding sentence readable.
+ */
+export function normalizeQuoteBlocks(text: string): string {
+  QUOTE_MARKER.lastIndex = 0;
+  let out = '';
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = QUOTE_MARKER.exec(text)) !== null) {
+    const start = m.index;
+    if (start > last) out += text.slice(last, start);
+    // Start the marker's line after the previous line's newline (never glue
+    // it onto a preceding line), and isolate it with hard newlines so each
+    // marker becomes its own block in both markdown and plain-text renders.
+    out += '\n\n';
+    out += m[0];
+    out += '\n\n';
+    last = start + m[0].length;
+  }
+  if (last < text.length) out += text.slice(last);
+  return out;
 }
