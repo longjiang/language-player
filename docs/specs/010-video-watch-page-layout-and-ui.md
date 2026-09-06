@@ -232,6 +232,15 @@ The mode can be toggled via:
 > sort). `transcript-queue-panel.tsx` was deleted. Subs search is always
 > stacked (player → controls → sidebar) — never two-column, since it renders
 > inside the dictionary panel even on large screens.
+>
+> **Note (queue items):** The watch-page queue (`VideoQueueList`) renders the
+> tv-show header as a two-row block — the show title on its own row and
+> "(N episodes)" on a second row — with no Tv icon. TV-show queue rows show no
+> episode number and hide the `⋮` actions menu (`showActionsMenu={false}`),
+> leaving just a clean row of thumbnail + level badge + title + metadata. The
+> level badge is shown only when the level resolves from `video.difficulty` +
+> the L2 difficulty profile; it is **not** shown when the level can't be
+> determined (no misleading fallback level).
 
 Two-row layout: controls on top, subtitle text below.
 

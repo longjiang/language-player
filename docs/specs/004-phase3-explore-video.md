@@ -226,7 +226,10 @@ starttime,line
 - **`VideoQueueList`** — Up Next sidebar showing full queue as a scrollable list
   - Current video highlighted with primary border
   - Click any item to jump to that position
+  - **TV-show queue** (`queueType === 'tvShow'`): the header shows the show title on its own row and "(N episodes)" on a second row (no Tv icon); each row renders without an episode number and without the `⋮` actions menu. Queue videos carry their `difficulty` field so the level badge reflects the actual level.
 - **`VideoCard` list variant** — `layout="list"` renders compact horizontal row (thumb + title + badges)
+  - Level badge is rendered only when the level can be resolved from `video.difficulty` + the L2 difficulty profile (`getLevelFromDifficulty`). There is **no fallback level**: when difficulty/profile is unavailable the badge is omitted (never a misleading "level 1").
+  - `showActionsMenu` prop (default `true`) hides the `⋮` actions menu (used by the clean tv-show queue rows).
 
 ### Part G: Subtitle Improvements
 
