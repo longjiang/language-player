@@ -429,20 +429,52 @@ are implemented on web and mobile:
 Classic's `/youtube/channels` and `/youtube/subscriptions` now internally
 redirect (308) to the new pages instead of going to v2 (§4.3).
 
-### 8.2 Watch queue URL hydration (deferred)
+### 8.2 Watch queue URL hydration (implemented)
 
-`p=recommended` maps to `?queueType=recommended`, but apps/web only *writes*
-that param — the watch page never reads it, and `QueueManager` is in-memory
-only. A cold link like
-`/en/ja/watch/-EVFAa8Efh4?queueType=recommended` plays the video without a
-prev/next queue. To fully preserve Classic's `p=` behavior, the watch page
-needs to hydrate the queue from `?queueType=` (fetching `/api/videos/recommend`
-for `recommended`) on load. **Status: deferred** — the redirect already emits
-the correct param; hydration will be handled in a separate change.
+`p=recommended` maps to `?queueType=recommended`. apps/web writes that param,
+and the watch page now **reads it and hydrates a real queue** — so a cold link
+like `/en/ja/watch/-EVFAa8Efh4?queueType=recommended` plays the video with a
+prev/next queue, matching Classic's `p=` behavior.
 
-Related small gap: search results currently start queues with
+Queue building on the watch page (see **Watch queue** in §8.2.1):
+
+- The queue is normally set by a grid page before navigation (`playVideo`
+  passes the grid's `videos`). Grid navigation is unchanged.
+- When a video is opened **without** a grid-set queue (cold link, page
+  refresh, or the watch-history page), the watch page builds the queue from
+  the video itself:
+  - **TV show episode** → fetch `/tv-shows/{tv_show}/episodes` and position
+    the current video in the episode list (`queueType='tvShow'`).
+  - **otherwise** → fetch `/api/videos/recommend` for the user's saved L2
+    level (`queueType='recommended'`).
+  - A single-video fallback keeps prev/next defined if the build fails.
+- The queue is **persisted** (web `localStorage`, mobile `SecureStore`) after
+  every queue change, and restored on the watch page when its current video
+  matches the URL — so a page refresh keeps the queue. This also supersedes
+  the earlier in-memory-only `QueueManager` limitation (SPEC-072 §9).
+
+Related small gap (still open): search results currently start queues with
 `queueType='recommended'` instead of `'search'`, and playlist playback uses
 `'recommended'` because `QueueType` has no playlist variant.
+
+#### 8.2.1 Watch queue — persistence + build-from-video (as-built)
+
+- **Persist on change**: after every `setVideoAndQueue` / `playVideo` /
+  `playNext` / `playPrevious` / `setQueue`, the queue snapshot is written to
+  storage (`lp-video-queue`). `QueueManager.restore()` replays a snapshot.
+- **Restore on mount**: the watch page calls `restoreQueueIfCurrent(videoId)`;
+  only a snapshot whose `currentVideo.youtube_id` matches the URL is restored
+  (a stale snapshot for a different video is ignored).
+- **Build from video**: if no persisted or grid-set queue matches the video,
+  the watch page builds one (`apps/web/src/lib/video-queue.ts`,
+  `apps/mobile/lib/video-queue.ts`): tv-show episodes followed by
+  recommendations. Recommendation level comes from the user's saved L2
+  progress (web `useProgressLevel`, mobile `useProgress`).
+- **Watch-history entry**: opening a video from `/watch-history` **does not**
+  load the whole history into the queue. The page just navigates to the watch
+  page, which builds the queue from the video (tv-show episodes or
+  recommendations), per the requirement that watch-history is an exception to
+  the "load videos in a grid into queue" rule.
 
 ### 8.3 Playlist & note sharing (future)
 
