@@ -467,6 +467,18 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // L2 terms still render tokenized.
     if (contentKey) {
       const parts = [body];
+      // Robust content injection: the preloaded content (subtitle transcript /
+      // reader text) must reach the model. The localized template embeds it via
+      // {text}, but a stale or truncated message source can drop {text} (the
+      // CSV→JSON pipeline used to truncate multi-line template values) — which
+      // made the video preset prompts reply "please provide the subtitles".
+      // Append the content explicitly when the template did not already
+      // substitute it, so the model is never asked to analyze text it was not
+      // given. `body.includes(text)` guards against a double-injection when the
+      // template DID embed {text}.
+      if (text && !body.includes(text)) {
+        parts.push(text);
+      }
       if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
       else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
