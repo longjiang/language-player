@@ -23,6 +23,8 @@ interface VideoCardProps {
   layout?: 'card' | 'list';
   /** Highlight as current/active video in list */
   isActive?: boolean;
+  /** Hide the "..." actions menu (e.g. clean tv-show queue rows). Default: true. */
+  showActionsMenu?: boolean;
 }
 
 function formatDuration(seconds: number | string | undefined): string {
@@ -50,7 +52,7 @@ function formatViews(views: number | undefined, locale: string): string {
   return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(views);
 }
 
-export function VideoCard({ video, videos, queueType, layout = 'card', isActive }: VideoCardProps) {
+export function VideoCard({ video, videos, queueType, layout = 'card', isActive, showActionsMenu = true }: VideoCardProps) {
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
   const t = useT();
@@ -86,11 +88,13 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           className="h-full w-full object-cover"
           loading="lazy"
         />
-        <span
-          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-primary-foreground ${levelBgClass(level ?? 1)}`}
-        >
-          {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short}
-        </span>
+        {level != null && (
+          <span
+            className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-primary-foreground ${levelBgClass(level)}`}
+          >
+            {formatNumericLevel(level, primaryScale(l2.code)).short}
+          </span>
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <p className={`truncate text-xs font-medium ${isActive ? 'text-primary' : ''}`}>
@@ -101,7 +105,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           {views && <span>{views}</span>}
         </div>
       </div>
-      <ChannelActionsMenu channelId={video.channel_id} video={video} />
+      {showActionsMenu && <ChannelActionsMenu channelId={video.channel_id} video={video} />}
     </div>
   ) : (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg">
@@ -124,11 +128,13 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           </span>
         )}
         {/* Level badge */}
-        <span
-          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-primary-foreground ${levelBgClass(level ?? 1)}`}
-        >
-          {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short ?? '?'}
-        </span>
+        {level != null && (
+          <span
+            className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-primary-foreground ${levelBgClass(level)}`}
+          >
+            {formatNumericLevel(level, primaryScale(l2.code)).short}
+          </span>
+        )}
       </div>
 
       {/* Info */}
@@ -137,7 +143,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           <h3 className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
             {video.title ?? t('label.untitled_video')}
           </h3>
-          <ChannelActionsMenu channelId={video.channel_id} video={video} />
+          {showActionsMenu && <ChannelActionsMenu channelId={video.channel_id} video={video} />}
         </div>
         <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
           {views && (
