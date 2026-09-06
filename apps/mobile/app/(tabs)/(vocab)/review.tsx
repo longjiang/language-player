@@ -29,7 +29,9 @@ import {
   scoreTestResult,
   scoreSpellResult,
   spellHintOf,
-  stringSimilarity,
+  spellBlankText,
+  scriptVariants,
+  bestScriptSimilarity,
   type SrsTestQuestion,
   type SrsTestDiagnostic,
   type SrsTestPriority,
@@ -41,6 +43,7 @@ import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { toTraditional, toSimplified } from '@/lib/chinese-script';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckCircle2, BookOpen, RefreshCw } from 'lucide-react-native';
@@ -197,6 +200,23 @@ function firstLookupForm(word: {
   return candidates.find((f) => typeof f === 'string' && !!f && f !== '?') ?? word.id;
 }
 
+/**
+ * Script-folded variants of a spell answer, for script-tolerant matching
+ * (SPEC-066 spell mode). Japanese folds hiragana ⇄ katakana in the shared
+ * utils; Chinese simplified/traditional is folded here via the same lazy
+ * OpenCC the render layer uses (ADR-0019), so the matcher agrees with what the
+ * learner sees in the context sentence.
+ */
+async function buildSpellVariants(text: string, l2Code: string): Promise<string[]> {
+  const base = baseCode(l2Code);
+  if (base === 'ja') return scriptVariants(text, l2Code);
+  if (base === 'zh' || base === 'yue') {
+    const [trad, simp] = await Promise.all([toTraditional(text), toSimplified(text)]);
+    return [...new Set([text, trad, simp])];
+  }
+  return [text];
+}
+
 export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
@@ -279,7 +299,7 @@ export default function ReviewScreen() {
   /** True once the spell-mode answer has been submitted (input hidden). */
   const [spellSubmitted, setSpellSubmitted] = useState(false);
   /** The graded result of a spell submission (shown as feedback below). */
-  const [spellResult, setSpellResult] = useState<{ correct: boolean; answer: string } | null>(null);
+  const [spellResult, setSpellResult] = useState<{ correct: boolean; answer: string; submitted: string } | null>(null);
   /** "Now" tick for the progress-bar countdown while a test session runs. */
   const [testNow, setTestNow] = useState(0);
   const [suggestedRating, setSuggestedRating] = useState<Rating | null>(null);
@@ -978,23 +998,44 @@ export default function ReviewScreen() {
    * form, time-adjust with the countdown (same bands as choose mode), then map
    * to the rating buttons via scoreSpellResult.
    */
-  const handleSpellSubmit = useCallback(() => {
+  const handleSpellSubmit = useCallback(async () => {
     const card = cards[currentIndex];
     if (!card || spellSubmitted) return;
-    const correctAnswer = surfaceFormOf(card.word, wordForm);
+    // The sentence that is blanked — the latest instance's context (the record
+    // context is typed loosely on mobile, so mirror the render's resolution).
+    const rawInstances = (card.word as any).instances as Array<{ form: string; context: SavedWordContext }> | undefined;
+    const lastContext = rawInstances && rawInstances.length
+      ? rawInstances[rawInstances.length - 1]?.context
+      : (card.word.context as SavedWordContext | undefined);
+    const contextText = lastContext?.text ?? '';
+    // The correct answer is the exact form blanked in the context sentence
+    // (derived with the same forms the highlight matches), not a reduced
+    // record form — e.g. たじろかせる, never たじろか.
+    const correctAnswer = spellBlankText(
+      contextText,
+      card.word,
+      wordForm,
+      l1Entry ?? fallbackEntry ?? currentEntry,
+      l2Code,
+    );
     const totalMs = testSessionStartRef.current > 0
       ? Math.max(0, Date.now() - testSessionStartRef.current)
       : 0;
-    const sim = stringSimilarity(spellText, correctAnswer);
-    const rating = scoreSpellResult(spellText, correctAnswer, totalMs);
+    // Script-tolerant matching: compare every variant pair and take the best.
+    const [answerVariants, correctVariants] = await Promise.all([
+      buildSpellVariants(spellText, l2Code),
+      buildSpellVariants(correctAnswer, l2Code),
+    ]);
+    const rating = scoreSpellResult(answerVariants, correctVariants, totalMs);
+    const correct = bestScriptSimilarity(answerVariants, correctVariants) >= 0.9;
     setSuggestedRating(rating);
     setSpellSubmitted(true);
-    setSpellResult({ correct: sim >= 0.9, answer: correctAnswer });
+    setSpellResult({ correct, answer: correctAnswer, submitted: spellText });
     testSessionStartRef.current = 0;
     setTestStartedAt(null);
     setShowTabs(true);
-    log('[srs-spell] answer submitted', { l2Code, word: wordForm, submitted: spellText, correct: correctAnswer, sim, totalMs, rating });
-  }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code]);
+    log('[srs-spell] answer submitted', { l2Code, word: wordForm, submitted: spellText, correct: correctAnswer, correctMatch: correct, totalMs, rating });
+  }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
 
   const handleReveal = useCallback(() => {
     if (reviewMode === 'choose') { void startTest(); return; }
@@ -1784,7 +1825,6 @@ export default function ReviewScreen() {
                   <TextInput
                     value={spellText}
                     onChangeText={setSpellText}
-                    onSubmitEditing={() => { if (spellText.trim()) handleSpellSubmit(); }}
                     autoComplete="off"
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -1792,6 +1832,7 @@ export default function ReviewScreen() {
                     className="flex-1 rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground"
                     placeholder={t('review.spell_prompt')}
                     returnKeyType="done"
+                    blurOnSubmit={false}
                   />
                   <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="shrink-0">
                     <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
@@ -1807,11 +1848,16 @@ export default function ReviewScreen() {
           ) : null}
 
           {reviewMode === 'spell' && spellSubmitted && spellResult && (
-            <View className="mt-2 w-full">
+            <View className="mt-2 w-full gap-1">
               <Text className={`text-sm font-semibold ${spellResult.correct ? 'text-green-600' : 'text-destructive'}`}>
                 {spellResult.correct ? t('review.answer_correct') : t('review.answer_incorrect')}
               </Text>
-              <Text className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</Text>
+              {!spellResult.correct && (
+                <>
+                  <Text className="text-sm text-muted-foreground">{t('review.spell_your_answer', { answer: spellResult.submitted })}</Text>
+                  <Text className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</Text>
+                </>
+              )}
             </View>
           )}
 
