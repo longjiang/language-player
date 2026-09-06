@@ -28,6 +28,8 @@ import {
   scoreTestAnswer,
   scoreTestResult,
   scoreSpellResult,
+  SPELL_TEST_TOTAL_MS,
+  SPELL_TEST_FAST_MS,
   spellHintOf,
   spellBlankText,
   scriptVariants,
@@ -653,12 +655,18 @@ export default function ReviewScreen() {
   // the bar jump erratically. Using the card's full test count keeps T stable
   // so the bar counts down evenly (SPEC-066: "the number of test slots for the
   // card, 1 or 2").
-  const testTotalTests = Math.max(
-    1,
-    getTestKinds(l2Code, surfaceFormOf(cards[currentIndex]?.word, wordForm)).length,
-  );
-  const testTotalMs = 10_000 * testTotalTests;
-  const testFastMs = 5_000 * testTotalTests;
+  const testTotalTests = reviewMode === 'spell'
+    ? 1
+    : Math.max(
+        1,
+        getTestKinds(l2Code, surfaceFormOf(cards[currentIndex]?.word, wordForm)).length,
+      );
+  // Spell mode has exactly one test and a doubled allowance (budget 20 s,
+  // fast < 10 s) because typing the blanked form (often via a CJK IME) is much
+  // slower than tapping a choice (SPEC-066).
+  const isSpellTest = reviewMode === 'spell';
+  const testTotalMs = (isSpellTest ? SPELL_TEST_TOTAL_MS : 10_000) * testTotalTests;
+  const testFastMs = (isSpellTest ? SPELL_TEST_FAST_MS : 5_000) * testTotalTests;
   const testElapsedMs = testSessionStartRef.current > 0
     ? Math.max(0, testNow - testSessionStartRef.current)
     : 0;
