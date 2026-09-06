@@ -1894,7 +1894,7 @@ export default function ReviewScreen() {
               </Button>
             ) : (
               <View className="mt-2 w-full gap-2">
-                <Text className="text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
+                <Text className="text-center text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
                 <SpellCharInput
                   value={spellText}
                   onChange={setSpellText}
@@ -1902,10 +1902,12 @@ export default function ReviewScreen() {
                   autoFocus
                   label={t('review.spell_prompt')}
                 />
-                <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full">
-                  <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
-                </Button>
-                {spellHint && <Text className="text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</Text>}
+                <View className="w-full items-center">
+                  <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full" style={{ maxWidth: 384 }}>
+                    <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
+                  </Button>
+                </View>
+                {spellHint && <Text className="text-center text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</Text>}
               </View>
             )
           ) : !showTabs && reviewMode === 'recall' ? (

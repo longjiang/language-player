@@ -1894,8 +1894,8 @@ export default function ReviewPage() {
               {t('review.start_test')}
             </Button>
           ) : (
-            <div className="mt-4 w-full space-y-3 text-left">
-              <label htmlFor="spell-input" className="text-sm font-medium text-foreground">{t('review.spell_prompt')}</label>
+            <div className="mt-4 w-full space-y-3 text-center">
+              <label htmlFor="spell-input" className="block text-sm font-medium text-foreground">{t('review.spell_prompt')}</label>
               <SpellCharInput
                 value={spellText}
                 onChange={setSpellText}
@@ -1906,7 +1906,7 @@ export default function ReviewPage() {
                 label={t('review.spell_prompt')}
               />
               <div className="flex justify-center">
-                <Button onClick={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full">
+                <Button onClick={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full max-w-sm">
                   {t('review.submit')}
                 </Button>
               </div>

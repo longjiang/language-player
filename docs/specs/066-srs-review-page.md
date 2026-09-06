@@ -731,7 +731,10 @@ choose mode.
   slower than tapping a choice), blue while more than **10 s** remain.
 - **Input + hint** — a segmented character-count input (the number of boxes =
   the correct answer's character count) with a **Submit** button, plus a muted
-  hint underneath. The hint is **the first character of the pronunciation of the
+  hint underneath. The prompt label, the character boxes, the Submit button, and
+  the hint are all **horizontally centered** (the Submit button width is clamped
+  to a max so it reads as a centered action rather than a full-width banner).
+  The hint is **the first character of the pronunciation of the
   lemma** (`pronunciationReadingOf`) — but only for languages that support
   phonetic ruby/annotation (`isPhoneticsEligible`; e.g. Japanese/Chinese/Korean,
   where the orthography doesn't reveal the reading). For languages whose native

@@ -57,7 +57,7 @@ export function SpellCharInput({
 
   return (
     <div className="relative w-full" onClick={() => inputRef.current?.focus()}>
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
         {Array.from({ length: boxCount }).map((_, i) => {
           const ch = chars[i] ?? '';
           const isActive = i === activeIndex && !disabled;
