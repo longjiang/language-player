@@ -744,6 +744,13 @@ choose mode.
   has no reading — but only when the lemma is
   more than one character long (a single-char lemma's first char IS the whole
   word and would give the answer away). Shared helper: `spellHintOf`.
+  When the hint is the **orthographic** (lemma-first-char) type — i.e. not a
+  pronunciation/reading hint — it is also shown as a **muted type-over
+  placeholder in the first character box** (`SpellCharInput`
+  `firstCharPlaceholder`), so the learner sees the first character and types
+  over it. A pronunciation/reading hint (e.g. kana `お` for a kanji surface) is
+  a different script from what is typed and is never used as a placeholder — it
+  stays hint-only. Shared helper: `spellHintPlaceholder`.
   The input is a **single real text field** whose characters span across the
   boxes (one character per box, left to right), so IME composition works
   normally — the native control owns the value and composition, and the boxes
@@ -1110,6 +1117,13 @@ types count while unexpired — there is no `status` filter.
   `rephrase_term: true` to `POST /translate` and the server
   (`chatgpt_translate_text`, `rephrase_term`) rephrases the term's meaning
   without repeating it (backend `rephrase_term`, both review pages).
+- ✅ **Spell orthographic placeholder in the first box** — implemented (both
+  review pages + shared utils): when the hint is the **orthographic**
+  (lemma-first-char) type, its character is shown as a muted type-over
+  placeholder in the first character box (`SpellCharInput`
+  `firstCharPlaceholder`) and is replaced once the learner types. A
+  pronunciation/reading hint (different script) is never used as a placeholder.
+  Shared helper: `spellHintPlaceholder` in `packages/utils/src/srs-test-mode.ts`.
 
 ## Known Issues & Resolutions (2026-08-13)
 
