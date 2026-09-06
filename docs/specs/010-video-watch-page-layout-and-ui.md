@@ -240,6 +240,11 @@ The mode can be toggled via:
 > Summarize / Difficult expressions / Grammar points presets, and tappable
 > `[MM:SS]` timestamps in every reply. Tapping a timestamp calls `onSeek` (the
 > caller seeks the video) and switches the sidebar back to the transcript tab.
+> **There is no auto-response:** the chat opens empty (`demandMode`) and the
+> model responds only when the user taps a preset button or sends a message — so
+> the tab never shows a pre-loaded "please provide the subtitles" reply. The
+> full subtitle transcript remains **preloaded as context** for preset prompts
+> (`contentKey: 'text'`) and free-form questions.
 > The transcript persists per video (`lp-ask-ai:video:<id>`, web localStorage /
 > mobile AsyncStorage). Prompt responses are instructed
 > (`VIDEO_AI_TIMESTAMP_INSTRUCTION`) to cite the subtitle `[MM:SS]` tokens.
