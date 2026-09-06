@@ -131,6 +131,10 @@ export interface TokenizedTextProps {
   /** Overrides the tokenized-text mode. AI explanations pass 'normal' so
    *  quiz blanking never appears. */
   mode?: 'normal' | 'quiz';
+  /** When true, highlighted tokens render as a blank instead of their text
+   *  (e.g. the SRS spell-mode context, "highlighted term as blank"). The blank
+   *  width matches the token's text length. Defaults to false. */
+  blankHighlighted?: boolean;
   /** When true, renders the L2 token text bold (AI explanation spans). */
   bold?: boolean;
   /** Extra multiplier on top of the user's zoom setting. Defaults to 1 (user
@@ -207,7 +211,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -783,7 +787,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
         const isWordToken = token.lemmas.length > 0;
         const isHighlightedToken = tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
         let displayText = tokenDisplayText;
-        if (quizMode && !revealedTokens.has(i)) {
+        if (quizMode && !revealedTokens.has(i) || (blankHighlighted && isHighlightedToken)) {
           displayText = '▯';
         } else if (
           replaceWithPhonetics && isWordToken && shouldShowPhonetics(token)
@@ -814,7 +818,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       !!leadingIndent,
     );
   }, [
-    selectionDictionary, displayTokens, convertedTexts, quizMode, revealedTokens,
+    selectionDictionary, displayTokens, convertedTexts, quizMode, blankHighlighted, revealedTokens,
     replaceWithPhonetics, shouldShowPhonetics, phoneticsOnHighlight,
     tokenMatchesOrContainsTerm, tokenHasTargetEntry, leadingIndent,
     highlightSaved, savedFormSet, quickGlossEnabled, l1Glosses, getTokenEntryData,
@@ -1385,7 +1389,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 ? token.pronunciation
                 : traditionalText;
               const isRevealed = revealedTokens.has(i);
-              const isBlanked = quizMode && !isRevealed;
+              const isBlanked = quizMode && !isRevealed || (blankHighlighted && isHighlighted);
               const firstLemma = token.lemmas[0]?.lemma;
               const { byeonggiText, firstDef, savedWordId } = getTokenEntryData(token);
               // L1 glosses are keyed by lookup text + saved entry id so two
@@ -1655,7 +1659,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 ? token.pronunciation
                 : tokenDisplayText;
               const isRevealed = revealedTokens.has(i);
-              const isBlanked = quizMode && !isRevealed;
+              const isBlanked = quizMode && !isRevealed || (blankHighlighted && isHighlighted);
               const firstLemma = token.lemmas[0]?.lemma;
               const { byeonggiText, firstDef, savedWordId } = getTokenEntryData(token);
               // L1 glosses are keyed by lookup text + saved entry id so two
