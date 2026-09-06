@@ -1051,23 +1051,39 @@ export default function ReviewPage() {
   }, [l2Code]);
 
   // ── Keyboard shortcuts (after reveal: rate with 1-4, Space/Enter = Good) ──
+  // Keys map to the four rating buttons, but respect the enabled state: in
+  // test modes (choose/spell) the test result sets `suggestedRating`, so only
+  // that button is enabled and only its key (plus Space/Enter) rates — a key
+  // that corresponds to a greyed-out button is ignored. Space/Enter rate the
+  // suggested result, not always Good.
   useEffect(() => {
     if (!showDefinition || rated) return;
+
+    const enabled = (q: Rating): boolean =>
+      !rated && (!suggestedRating || q === suggestedRating) &&
+      (isPro || reviewsDoneToday < FREE_SRS_DAILY_CAP);
 
     const handler = (e: KeyboardEvent) => {
       // Don't intercept when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       const key = e.key;
-      if (key === '1') handleRate('again');
-      else if (key === '2') handleRate('hard');
-      else if (key === '3' || key === ' ' || key === 'Enter') handleRate('good');
-      else if (key === '4') handleRate('easy');
+      let rating: Rating | null = null;
+      if (key === '1') rating = 'again';
+      else if (key === '2') rating = 'hard';
+      else if (key === '3') rating = 'good';
+      else if (key === '4') rating = 'easy';
+      else if (key === ' ' || key === 'Enter') rating = suggestedRating ?? 'good';
+
+      if (rating && enabled(rating)) {
+        log('[SRS Review] keyboard rate', { rating, suggestedRating, reviewsDoneToday, isPro });
+        handleRate(rating);
+      }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [showDefinition, rated, handleRate]);
+  }, [showDefinition, rated, suggestedRating, isPro, reviewsDoneToday, handleRate]);
 
   // ── Keyboard shortcuts (before reveal: Space/Enter to reveal) ──
   useEffect(() => {
