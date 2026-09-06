@@ -1,5 +1,5 @@
 /** Multiple-choice test scoring shared by web and mobile review screens. */
-import { languageNameFromCode } from './language';
+import { languageNameFromCode, isPhoneticsEligible } from './language';
 import { katakanaToHiragana } from './furigana';
 
 export type TestQuestionKind = 'definition' | 'pronunciation';
@@ -394,12 +394,18 @@ export function scoreSpellResult(
 /**
  * The muted first-character hint shown under the spell-mode input.
  *
- * - when the card's entry has a pronunciation (the L2 reading of the lemma),
- *   the hint is that reading's first character;
- * - otherwise it is the lemma's first character, but only when the lemma is
- *   longer than one character (a single-character lemma's first char IS the
- *   whole word and would give the answer away);
- * - returns null when no hint applies (no reading, single-character lemma).
+ * - the **pronunciation (reading)** hint — the reading's first character — is
+ *   only shown for languages that support phonetic ruby/annotation
+ *   (`isPhoneticsEligible`). For languages whose native script is Latin (or
+ *   Burmese), the orthography already reveals the pronunciation, so a reading
+ *   hint (often the first char of an IPA string) is noise; those use the
+ *   orthography hint instead.
+ * - otherwise (languages with no pronunciation-based hint, or any language
+ *   when no reading is available) it is the **lemma/orthography** first
+ *   character, but only when the lemma is longer than one character (a
+ *   single-character lemma's first char IS the whole word and would give the
+ *   answer away);
+ * - returns null when no hint applies (single-character lemma, no reading).
  */
 export function spellHintOf(
   word: SrsWordFormInfo | undefined,
@@ -412,8 +418,13 @@ export function spellHintOf(
   } | null | undefined,
   l2Code: string,
 ): string | null {
-  const reading = pronunciationReadingOf(entry, l2Code);
-  if (reading) return reading[0]!;
+  // Pronunciation-based hint is only meaningful when the language supports
+  // phonetic annotation (ruby/romanization). Latin-script languages and
+  // Burmese are phonetics-suppressed, so they stay on the orthography hint.
+  if (isPhoneticsEligible(l2Code)) {
+    const reading = pronunciationReadingOf(entry, l2Code);
+    if (reading) return reading[0]!;
+  }
   const lemma = pronunciationTargetOf(word, fallback, entry);
   if (lemma.length > 1) return lemma[0]!;
   return null;
