@@ -424,7 +424,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
         onPointerCancel={overlay ? handleBandPointerUp : undefined}
         onClickCapture={overlay ? handleBandClickCapture : undefined}
       >
-        <div className={cn('flex items-center justify-center gap-0.5 py-1', overlay ? 'px-0' : 'px-2')}>
+        <div className={cn('order-2 flex items-center justify-center gap-0.5 py-1', overlay ? 'px-0' : 'px-2')}>
           <Button
             variant="ghost" size="icon"
             className={cn('h-8 w-8', btnColorClass)}
@@ -440,6 +440,22 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             title={t('player.previous_subtitle_line')}
           >
             <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={handleBandNextLine} disabled={bandIsLastLine}
+            title={t('player.next_subtitle_line')}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={onNextVideo} disabled={!hasNextVideo}
+            title={t('player.next_video')}
+          >
+            <SkipForward className="h-4 w-4" />
           </Button>
           {onToggleLike && (
             <Button
@@ -478,27 +494,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           >
             <PanelRightOpen className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost" size="icon"
-            className={cn('h-8 w-8', btnColorClass)}
-            onClick={handleBandNextLine} disabled={bandIsLastLine}
-            title={t('player.next_subtitle_line')}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost" size="icon"
-            className={cn('h-8 w-8', btnColorClass)}
-            onClick={onNextVideo} disabled={!hasNextVideo}
-            title={t('player.next_video')}
-          >
-            <SkipForward className="h-4 w-4" />
-          </Button>
         </div>
 
         <div
           className={cn(
-            'flex-1 flex flex-col items-center justify-center cursor-pointer min-h-0',
+            'order-1 flex-1 flex flex-col items-center justify-center cursor-pointer min-h-0',
             overlay ? 'px-0 py-1' : 'px-4 py-2',
           )}
           onClick={handleBandRowClick}

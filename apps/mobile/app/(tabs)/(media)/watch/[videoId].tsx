@@ -436,6 +436,16 @@ export default function WatchScreen() {
               bandLayoutTopRef.current = e.nativeEvent.layout.y;
             }}
           >
+            <SubtitleDisplay
+              singleLine
+              overlay
+              lines={subtitleLines}
+              activeLineIndex={activeLineIndex}
+              currentTime={currentTime}
+              tokenCache={tokenCache}
+              tokenCacheLoaded={tokenCacheLoaded}
+              onSeekToLine={handleSeekToLine}
+            />
             <View className="flex-row justify-center pb-2 pt-1">
               <VideoControlBar
                 reduced
@@ -462,16 +472,6 @@ export default function WatchScreen() {
                 playlistDisabled={playlistDisabled}
               />
             </View>
-            <SubtitleDisplay
-              singleLine
-              overlay
-              lines={subtitleLines}
-              activeLineIndex={activeLineIndex}
-              currentTime={currentTime}
-              tokenCache={tokenCache}
-              tokenCacheLoaded={tokenCacheLoaded}
-              onSeekToLine={handleSeekToLine}
-            />
           </View>
         </View>
         <AddToPlaylistDialog
@@ -490,8 +490,17 @@ export default function WatchScreen() {
         <View onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}>
           {playerElement}
         </View>
-        {/* Web parity: controls + active line in one band below the player */}
+        {/* Web parity: active line + controls in one band below the player */}
         <View className="bg-card border-t border-border">
+          <SubtitleDisplay
+            singleLine
+            lines={subtitleLines}
+            activeLineIndex={activeLineIndex}
+            currentTime={currentTime}
+            tokenCache={tokenCache}
+            tokenCacheLoaded={tokenCacheLoaded}
+            onSeekToLine={handleSeekToLine}
+          />
           <View className="flex-row justify-end px-2 py-1">
             <VideoControlBar
               reduced
@@ -517,15 +526,6 @@ export default function WatchScreen() {
               playlistDisabled={playlistDisabled}
             />
           </View>
-          <SubtitleDisplay
-            singleLine
-            lines={subtitleLines}
-            activeLineIndex={activeLineIndex}
-            currentTime={currentTime}
-            tokenCache={tokenCache}
-            tokenCacheLoaded={tokenCacheLoaded}
-            onSeekToLine={handleSeekToLine}
-          />
         </View>
         <AddToPlaylistDialog
           open={playlistDialogOpen}
