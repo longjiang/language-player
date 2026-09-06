@@ -1008,8 +1008,9 @@ types count while unexpired — there is no `status` filter.
   mobile: iOS SF Symbols on the menu items + a lucide icon on the trigger).
 - ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
   utils): blank the term in the context sentence, show the bolded translation,
-  then Start Test shows a countdown bar, a text input + submit, and a muted
-  first-char hint. Grading via `stringSimilarity`/`scoreSpellResult`
+  then Start Test shows a countdown bar, a segmented character-count input +
+  submit, and a muted first-char hint. Grading via
+  `stringSimilarity`/`scoreSpellResult`
   (similarity → 0–2 base, countdown only moves a correct answer, mapped to
   again/hard/good/easy) and `spellHintOf` in
   `packages/utils/src/srs-test-mode.ts`. The context blanking uses a new

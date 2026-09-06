@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TextInput, Platform } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,6 +54,7 @@ import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { SpellCharInput } from '@/components/review/SpellCharInput';
 import { lemmatizeText } from '@/lib/tokenizer';
 import {
   enqueueLookupWords,
@@ -1601,6 +1602,20 @@ export default function ReviewScreen() {
   const spellHint = reviewMode === 'spell'
     ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
     : null;
+  /** Expected character count of the correct blanked word — drives the number of
+   *  character boxes in the spell input (SPEC-066). Mirrors the context
+   *  resolution in handleSpellSubmit (latest instance context). Computed inline
+   *  (not a hook) because it sits after the `!currentCard` early-return guard. */
+  const spellExpectedLen = reviewMode === 'spell' && currentCard
+    ? (() => {
+        const rawInstances = (currentCard.word as any).instances as Array<{ context: SavedWordContext }> | undefined;
+        const lastContext = rawInstances && rawInstances.length
+          ? rawInstances[rawInstances.length - 1]?.context
+          : (currentCard.word.context as SavedWordContext | undefined);
+        const contextText = lastContext?.text ?? '';
+        return Array.from(spellBlankText(contextText, currentCard.word, wordForm, entry, l2Code)).length;
+      })()
+    : 0;
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
   const instances = (savedWordInstances ?? (savedWord.context ? [{ timestamp: savedWord.date ?? 0, form: savedWord.forms?.[0] ?? '', context: savedWord.context as unknown as SavedWordContext }] : []))
@@ -1854,23 +1869,16 @@ export default function ReviewScreen() {
             ) : (
               <View className="mt-2 w-full gap-2">
                 <Text className="text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
-                <View className="flex-row gap-2">
-                  <TextInput
-                    value={spellText}
-                    onChangeText={setSpellText}
-                    autoComplete="off"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    autoFocus
-                    className="flex-1 rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground"
-                    placeholder={t('review.spell_prompt')}
-                    returnKeyType="done"
-                    blurOnSubmit={false}
-                  />
-                  <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="shrink-0">
-                    <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
-                  </Button>
-                </View>
+                <SpellCharInput
+                  value={spellText}
+                  onChange={setSpellText}
+                  expectedLength={spellExpectedLen}
+                  autoFocus
+                  label={t('review.spell_prompt')}
+                />
+                <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full">
+                  <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
+                </Button>
                 {spellHint && <Text className="text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</Text>}
               </View>
             )
