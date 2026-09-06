@@ -390,6 +390,13 @@ export default function ReviewPage() {
     // empty local list at that point is a loading state, not a real "no saved
     // words" state, and pruning would delete the whole deck (SPEC-066).
     if (status === 'authenticated' && !cloudHydrated) return;
+    // Diagnostic: string format (never object-truncated) so a DELETE /srs/cards
+    // stream can be traced to a real "no saved words" purge vs orphan cleanup.
+    log(
+      '[SRS] prune effect runs l2=%s status=%s srsLoaded=%s wordsLoaded=%s cloudHydrated=%s l2SavedWords=%d decision=%s',
+      l2Code, status, srsLoaded, wordsLoaded, cloudHydrated, l2SavedWords.length,
+      l2SavedWords.length === 0 ? 'PURGE-WHOLE-DECK' : 'prune-orphans',
+    );
     if (l2SavedWords.length === 0) {
       // No saved words at all → purge the entire language deck.
       pruneOrphans(l2Code, new Set<string>());
@@ -991,6 +998,7 @@ export default function ReviewPage() {
     const card = cards[currentIndex];
     if (!card) return;
     testRequestVersionRef.current += 1;
+    log('[SRS Review] handleRemove (u / remove button)', { l2: l2Code, wordId: card.word.id });
     removeSavedWord(l2Code, card.word.id);
     removeCard(l2Code, card.word.id);
     setShowDefinition(false);
