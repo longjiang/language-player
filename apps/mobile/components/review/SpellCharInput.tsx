@@ -39,7 +39,7 @@ export function SpellCharInput({
 
   return (
     <View className="relative w-full">
-      <View className="flex-row flex-wrap items-center gap-1.5">
+      <View className="flex-row flex-wrap items-center justify-center gap-1.5">
         {Array.from({ length: boxCount }).map((_, i) => {
           const ch = chars[i] ?? '';
           const isActive = i === activeIndex;
