@@ -643,6 +643,12 @@ export default function ReviewScreen() {
   const definitionTestAnswered = reviewMode === 'choose'
     && testSlots.some((slot, index) => slot.kind === 'definition' && Boolean(testAnswers[index]));
   const showContextTranslation = showTabs || definitionTestAnswered || reviewMode === 'spell';
+  // When the learner's L1 == L2 (zh/zh-Hans/zh-Hant are equivalent via
+  // baseCode), the context "translation" is the same language and — with the
+  // target bolded — would leak the blanked word in spell mode. So in spell mode
+  // we replace the sentence translation with a contextual rephrasing of the
+  // target word (server `rephrase_term`), so the target word never appears.
+  const sameLangRephrase = reviewMode === 'spell' && baseCode(l1Lang.code) === baseCode(l2Code);
 
   // ── Test progress bar (SPEC-066) ──
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
@@ -1306,7 +1312,11 @@ export default function ReviewScreen() {
     const card = cards[currentIndex];
     const ctxText = card?.word.context?.text;
     const savedTranslation = card?.word.context?.translation;
-    if (!ctxText || savedTranslation) {
+    // When the learner's L1 == L2, the context "translation" is the same
+    // language and — with the target bolded — would leak the blanked word in
+    // spell mode. In that case we always fetch a contextual rephrasing of the
+    // target word (server `rephrase_term`) and ignore any saved translation.
+    if (!ctxText || (savedTranslation && !sameLangRephrase)) {
       setContextTranslation(null);
       return;
     }
@@ -1328,6 +1338,9 @@ export default function ReviewScreen() {
               ?? card?.word.id,
             l1: baseCode(l1Lang.code),
             l2: l2Code,
+            // Same-language spell mode: rephrase the term's meaning without
+            // repeating it (so the blanked word never appears).
+            ...(sameLangRephrase ? { rephrase_term: true } : {}),
           }),
         });
         if (cancelled) return;
@@ -1340,7 +1353,7 @@ export default function ReviewScreen() {
             log('[srs] context-translation-loaded', {
               wordId: card.word.id,
               head: wordLabel(card.word),
-              source: 'api',
+              source: sameLangRephrase ? 'rephrase-api' : 'api',
               length: translated.length,
             });
           }
@@ -1349,7 +1362,7 @@ export default function ReviewScreen() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showContextTranslation, cards, currentIndex, l2Code, l1Lang.code]);
+  }, [showContextTranslation, sameLangRephrase, cards, currentIndex, l2Code, l1Lang.code]);
 
   // ── Per-card L1 dictionary lookup (non-English L1 users) ──
   // The batched lookup returns English-only definitions for speed; on reveal,
@@ -1726,16 +1739,29 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={displayInstance.context} date={displayInstance.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
               </View>
-              {showContextTranslation && (displayInstance.context.translation || contextTranslation) && (
-                <View className="mt-2 border-t border-border pt-2">
-                  {displayInstance.context.translation ? (
-                    <Text className="text-xs leading-relaxed text-muted-foreground">
-                      {displayInstance.context.translation}
-                    </Text>
-                  ) : (
-                    <ReviewTranslationMarkdown text={contextTranslation ?? ''} />
-                  )}
-                </View>
+              {showContextTranslation && (
+                sameLangRephrase ? (
+                  contextTranslation ? (
+                    // Same-language spell mode: a contextual rephrasing of the
+                    // target word (server ensures the word itself never
+                    // appears). Plain text — do not markdown-render or bold.
+                    <View className="mt-2 border-t border-border pt-2">
+                      <Text className="text-xs leading-relaxed text-muted-foreground">
+                        {contextTranslation}
+                      </Text>
+                    </View>
+                  ) : null
+                ) : (displayInstance.context.translation || contextTranslation) ? (
+                  <View className="mt-2 border-t border-border pt-2">
+                    {displayInstance.context.translation ? (
+                      <Text className="text-xs leading-relaxed text-muted-foreground">
+                        {displayInstance.context.translation}
+                      </Text>
+                    ) : (
+                      <ReviewTranslationMarkdown text={contextTranslation ?? ''} />
+                    )}
+                  </View>
+                ) : null
               )}
             </View>
           )}
