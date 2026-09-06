@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     () => ({ data: null, status: 'unauthenticated' }),
   ),
   deleteSrsCard: vi.fn(async () => ({ success: true })),
+  deleteSrsCardsBatch: vi.fn(async () => ({ success: true, deleted: 0, dropped: 0, skipped: 0 })),
   putSrsCard: vi.fn(async () => ({ success: true })),
   useUserDataColumns: vi.fn(() => ({
     getSrs: vi.fn(async () => ({ cards: {} })),
@@ -19,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('next-auth/react', () => ({ useSession: mocks.useSession }));
 vi.mock('@langplayer/api-client', () => ({
   deleteSrsCard: mocks.deleteSrsCard,
+  deleteSrsCardsBatch: mocks.deleteSrsCardsBatch,
   putSrsCard: mocks.putSrsCard,
   useUserDataColumns: mocks.useUserDataColumns,
 }));

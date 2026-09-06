@@ -60,6 +60,23 @@ export const deleteSrsCard = (l2: string, wordId: string, updatedAt?: number) =>
     + (typeof updatedAt === 'number' ? `?updatedAt=${updatedAt}` : ''),
   );
 
+export interface SrsCardDeleteItem {
+  l2: string;
+  wordId: string;
+  updatedAt?: number;
+}
+
+/** Bulk-delete SRS cards in ONE request. The review page's orphan cleanup can
+ *  accumulate hundreds of cards whose saved words were unsaved; per-card
+ *  DELETEs (each with a CORS preflight) freeze a slow dev server, so the
+ *  pending-queue drains them in a single round-trip. Each item honors the same
+ *  stale-delete guard as deleteSrsCard (ADR-0040). */
+export const deleteSrsCardsBatch = (items: SrsCardDeleteItem[]) =>
+  apiClient.post<{ success: boolean; deleted: number; dropped: number; skipped: number }>(
+    '/srs/cards/batch-delete',
+    { deletes: items },
+  );
+
 export const getUserSettings = () =>
   apiClient.get<UserSettingsResponse>('/user-settings');
 
@@ -79,6 +96,7 @@ export function useUserDataColumns() {
     getSrs,
     putSrsCard,
     deleteSrsCard,
+    deleteSrsCardsBatch,
     getUserSettings,
     putUserSettings,
   };

@@ -39,6 +39,8 @@ const MAX_FLUSH_PASSES = 10;
  *  freezing the review page on a slow dev server. Bounded batches drain the
  *  backlog incrementally via the 10s retry instead. */
 const MAX_FLUSH_BATCH = 25;
+/** Delete ops per bulk-delete request, kept under the server's batch cap. */
+const MAX_BATCH_DELETE = 500;
 
 export interface PendingSrsOp {
   type: 'upsert' | 'delete';
@@ -58,6 +60,10 @@ export interface SrsRowApi {
     meta?: SrsCardMeta,
   ) => Promise<unknown>;
   deleteSrsCard: (l2: string, wordId: string, updatedAt?: number) => Promise<unknown>;
+  /** Optional bulk delete — used to drain a large stale orphan backlog in ONE
+   *  request instead of N sequential DELETEs. When absent, per-op deletes are
+   *  used. */
+  deleteSrsCardsBatch?: (items: { l2: string; wordId: string; updatedAt?: number }[]) => Promise<unknown>;
 }
 
 let srsFlushInFlight: Promise<void> | null = null;
@@ -116,49 +122,93 @@ async function flushPendingSrsOps(
 ): Promise<PendingSrsOp[]> {
   const ops = reducePendingSrsOps(queue);
   const remaining: PendingSrsOp[] = [];
-  // Process at most MAX_FLUSH_BATCH ops this pass; anything beyond stays queued
-  // and is retried so a huge stale backlog can't fire an unbounded delete
-  // stream on one load.
-  const processed = Math.min(ops.length, MAX_FLUSH_BATCH);
-  for (let i = 0; i < processed; i++) {
-    const op = ops[i]!;
-    try {
-      if (op.type === 'upsert' && op.state) {
-        const hasMeta = !!op.timezone || typeof op.dayStartHour === 'number';
-        if (hasMeta) {
-          await api.putSrsCard(op.l2, op.wordId, op.state, {
-            timezone: op.timezone,
-            dayStartHour: op.dayStartHour,
-          });
-        } else {
-          await api.putSrsCard(op.l2, op.wordId, op.state);
+  const deleteOps = ops.filter((o) => o.type === 'delete');
+  const upsertOps = ops.filter((o) => o.type === 'upsert');
+
+  // ── Deletes: drain in a single batch request when the endpoint is available.
+  // A large stale orphan backlog (cards whose words were unsaved across many
+  // sessions/languages) must not fire one DELETE per card — each with a CORS
+  // preflight that freezes a slow dev server. Chunked into a few requests so
+  // a pathological backlog stays under the server's batch cap. ──
+  if (deleteOps.length > 0) {
+    if (api.deleteSrsCardsBatch) {
+      for (let i = 0; i < deleteOps.length; i += MAX_BATCH_DELETE) {
+        const group = deleteOps.slice(i, i + MAX_BATCH_DELETE);
+        try {
+          await api.deleteSrsCardsBatch(
+            group.map((o) => ({ l2: o.l2, wordId: o.wordId, updatedAt: o.updatedAt })),
+          );
+        } catch (err) {
+          const status =
+            (err as { response?: { status?: number } })?.response?.status
+            ?? (Number((err as { code?: string })?.code) || undefined);
+          if (status !== 403) {
+            // Batch failed (network/5xx): keep EVERYTHING queued and stop this
+            // pass — a partial flush risks dropping ops.
+            remaining.push(...ops);
+            return remaining;
+          }
+          // 403 on a bulk delete is unexpected; the deletes are dropped to
+          // avoid a cap loop, and the upserts are still attempted below.
         }
+      }
+    } else {
+      // No bulk endpoint (older server): per-op delete, bounded by the batch
+      // cap so a huge backlog can't fire an unbounded sequential stream.
+      for (const op of deleteOps.slice(0, MAX_FLUSH_BATCH)) {
+        try {
+          await api.deleteSrsCard(op.l2, op.wordId, op.updatedAt);
+        } catch (err) {
+          const status =
+            (err as { response?: { status?: number } })?.response?.status
+            ?? (Number((err as { code?: string })?.code) || undefined);
+          if (status === 403) continue;
+          // Failed: hold this delete + the tail (order semantics).
+          const idx = ops.indexOf(op);
+          remaining.push(...ops.slice(idx));
+          return remaining;
+        }
+      }
+      // Hold deletes beyond the per-op batch for the next pass/retry.
+      if (deleteOps.length > MAX_FLUSH_BATCH) {
+        const held = deleteOps.slice(MAX_FLUSH_BATCH);
+        const heldUpserts = upsertOps.filter((o) => !remaining.includes(o));
+        remaining.push(...held, ...heldUpserts);
+        return remaining;
+      }
+    }
+  }
+
+  // ── Upserts: per-op (they carry full state payloads). ──
+  for (let i = 0; i < upsertOps.length; i++) {
+    const op = upsertOps[i]!;
+    try {
+      const hasMeta = !!op.timezone || typeof op.dayStartHour === 'number';
+      if (hasMeta) {
+        await api.putSrsCard(op.l2, op.wordId, op.state!, {
+          timezone: op.timezone,
+          dayStartHour: op.dayStartHour,
+        });
       } else {
-        await api.deleteSrsCard(op.l2, op.wordId, op.updatedAt);
+        await api.putSrsCard(op.l2, op.wordId, op.state!);
       }
     } catch (err) {
-      // api-client normalizes errors to ApiError { code: '403', ... }; raw
-      // axios errors surface as err.response.status.
       const status =
         (err as { response?: { status?: number } })?.response?.status
         ?? (Number((err as { code?: string })?.code) || undefined);
       if (status === 403) {
         // Free-cap rejection: final for this op. Drop it (the rating stays
-        // local-only) and keep flushing the rest of the queue — retrying a
-        // capped op all day would block every other write behind it.
+        // local-only) and keep flushing the rest — retrying a capped op all
+        // day would block every other write behind it.
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('lp:srs-cap-reached'));
         }
         continue;
       }
-      remaining.push(...ops.slice(i));
+      // Failed: hold this upsert + the tail (order semantics).
+      remaining.push(...upsertOps.slice(i));
       break;
     }
-  }
-  // Hold ops beyond the batch that weren't already held by a failure, so they
-  // drain on a later pass/retry rather than being dropped.
-  if (remaining.length === 0 && ops.length > processed) {
-    remaining.push(...ops.slice(processed));
   }
   return remaining;
 }

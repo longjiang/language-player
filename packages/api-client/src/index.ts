@@ -11,6 +11,7 @@ export {
   getSrs,
   putSrsCard,
   deleteSrsCard,
+  deleteSrsCardsBatch,
   getUserSettings,
   putUserSettings,
   useUserDataColumns,
@@ -19,6 +20,7 @@ export type {
   ProgressResponse,
   SrsResponse,
   SrsCardMeta,
+  SrsCardDeleteItem,
   UserSettingsResponse,
 } from './user-data-columns';
 export { useNotes } from './notes';

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { deleteSrsCard, putSrsCard, useUserDataColumns } from '@langplayer/api-client';
+import { deleteSrsCard, deleteSrsCardsBatch, putSrsCard, useUserDataColumns } from '@langplayer/api-client';
 import type { SrsCardMeta } from '@langplayer/api-client';
 import {
   createSrsStore,
@@ -54,7 +54,7 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
     wordId,
     updatedAt: Date.now(),
   }));
-  void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
+  void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard, deleteSrsCardsBatch });
 }
 
 /**
@@ -103,7 +103,7 @@ export function useSrs() {
     let cancelled = false;
     (async () => {
       try {
-        await flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
+        await flushAllPendingSrsOps({ putSrsCard, deleteSrsCard, deleteSrsCardsBatch });
         const res = await getSrs();
         if (cancelled) return;
         const cloud = { cards: res.cards ?? {} };
@@ -224,7 +224,7 @@ export function useSrs() {
       ...(meta.timezone ? { timezone: meta.timezone } : {}),
       ...(typeof meta.dayStartHour === 'number' ? { dayStartHour: meta.dayStartHour } : {}),
     }));
-    void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
+    void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard, deleteSrsCardsBatch });
     },
     [],
   );
@@ -271,7 +271,7 @@ export function useSrs() {
         cards: { ...prev.cards, [l2Code]: prunedCards },
       };
     });
-    void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
+    void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard, deleteSrsCardsBatch });
   }, []);
 
   const getCard = useCallback((l2Code: string, wordId: string): SrsFields | undefined => {
