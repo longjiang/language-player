@@ -19,7 +19,7 @@ import {
 } from '@langplayer/utils';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
-import { log, logwarn } from '@/lib/logger';
+import { log, logwarn, askAiLogger } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
@@ -151,31 +151,65 @@ interface PersistedAiMessage {
 function loadPersistedMessages(storageKey: string): PersistedAiMessage[] {
   try {
     const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return [];
+    if (!raw) {
+      askAiLogger.log('session restore: localStorage read — no stored value (empty)', { storageKey });
+      return [];
+    }
+    askAiLogger.log('session restore: localStorage read', {
+      storageKey,
+      rawLength: raw.length,
+      rawPreview: raw.slice(0, 160),
+    });
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
+    if (!Array.isArray(parsed)) {
+      askAiLogger.logwarn('session restore: stored value is not an array', { storageKey, typeof: typeof parsed });
+      return [];
+    }
+    const filtered = parsed.filter(
       (m): m is PersistedAiMessage =>
         !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string',
     );
-  } catch {
+    askAiLogger.log('session restore: parsed stored array', {
+      storageKey,
+      total: parsed.length,
+      valid: filtered.length,
+    });
+    return filtered;
+  } catch (err) {
+    askAiLogger.logwarn('session restore: read/parse failed', { storageKey, err: String(err) });
     return [];
   }
 }
 
 function savePersistedMessages(storageKey: string, messages: PersistedAiMessage[]): void {
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify(messages));
-  } catch {
+    let serialized: string;
+    try {
+      serialized = JSON.stringify(messages);
+    } catch (err) {
+      askAiLogger.logwarn('session save: JSON.stringify failed', { storageKey, err: String(err) });
+      return;
+    }
+    askAiLogger.log('session save: writing to localStorage', {
+      storageKey,
+      count: messages.length,
+      bytes: serialized.length,
+      preview: serialized.slice(0, 120),
+    });
+    window.localStorage.setItem(storageKey, serialized);
+    askAiLogger.log('session save: localStorage write ok', { storageKey, count: messages.length });
+  } catch (err) {
     /* quota/unavailable — persistence is best-effort */
+    askAiLogger.logwarn('session save: localStorage write failed', { storageKey, err: String(err) });
   }
 }
 
 function clearPersistedMessages(storageKey: string): void {
   try {
+    askAiLogger.log('session clear: localStorage removeItem', { storageKey });
     window.localStorage.removeItem(storageKey);
-  } catch {
-    /* ignore */
+  } catch (err) {
+    askAiLogger.logwarn('session clear: removeItem failed', { storageKey, err: String(err) });
   }
 }
 
@@ -265,7 +299,14 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // transcript is persisted so the chat survives navigation. Restored on
   // mount / storage-key change; saved on every message change.
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey) {
+      askAiLogger.log('session restore: no storageKey — transcript is ephemeral');
+      return;
+    }
+    askAiLogger.log('session restore: storageKey present, restoring messages', {
+      storageKey,
+      currentMessages: messages.length,
+    });
     const saved = loadPersistedMessages(storageKey);
     const restored: ChatMessage[] = saved.map((m, i) => ({
       id: i,
@@ -281,6 +322,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     emptyAssistantIdRef.current = null;
     loggedEmptyBubbleRef.current = new Set();
     reset();
+    askAiLogger.log('session restore: restored messages into state', {
+      storageKey,
+      restoredCount: restored.length,
+      restoredRoles: restored.map((m) => m.role),
+    });
   }, [storageKey, reset]);
 
   useEffect(() => {
@@ -292,6 +338,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     const persisted = messages
       .filter((m) => (m.role === 'user' ? !!(m.text || m.label) : !!m.text))
       .map((m) => ({ role: m.role, text: m.text, label: m.label }));
+    askAiLogger.log('session save: effect fired', {
+      storageKey,
+      inMemoryCount: messages.length,
+      persistedCount: persisted.length,
+    });
     savePersistedMessages(storageKey, persisted);
   }, [messages, storageKey]);
 
@@ -304,7 +355,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     emptyAssistantIdRef.current = null;
     loggedEmptyBubbleRef.current = new Set();
     initialStreamStartedRef.current = false;
-    if (storageKey) clearPersistedMessages(storageKey);
+    askAiLogger.log('session clear: user cleared the chat', { storageKey });
+    if (storageKey) {
+      askAiLogger.log('session clear: clearing persisted messages', { storageKey });
+      clearPersistedMessages(storageKey);
+    }
     reset();
   }, [storageKey, reset]);
 
