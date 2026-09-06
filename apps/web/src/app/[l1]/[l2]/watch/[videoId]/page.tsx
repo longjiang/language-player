@@ -26,6 +26,8 @@ import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
+import { useProgressLevel } from '@/hooks/use-progress';
+import { buildVideoQueue } from '@/lib/video-queue';
 import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
 import { AddToPlaylistDialog } from '@/components/video/add-to-playlist-dialog';
 import { useUserLibraryContext } from '@/providers/user-library-provider';
@@ -56,7 +58,7 @@ export default function WatchPage() {
   const params = useParams<{ videoId: string }>();
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const { playNext, playPrevious, hasNext, hasPrevious, restoreQueueIfCurrent } = useVideoPlayer();
+  const { playNext, playPrevious, hasNext, hasPrevious, restoreQueueIfCurrent, setQueue, queueState } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
   const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
   const videoId = params.videoId;
@@ -71,6 +73,7 @@ export default function WatchPage() {
   const [startTime] = useState(() => getSavedPosition(videoId));
 
   const { cache: tokenCache, loaded: tokenCacheLoaded } = useVideoTokenCache(video?.id, baseCode(l2.code));
+  const userLevel = useProgressLevel(baseCode(l2.code));
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -188,18 +191,61 @@ export default function WatchPage() {
     fetchVideo();
   }, [videoId, l1, l2, l2Code]);
 
-  // Restore a persisted watch queue (page refresh / cold link) so prev/next
-  // and the queue tab survive a reload. Runs once per videoId on mount; when
-  // no persisted queue matches, `queueRestoredRef` stays false and the effect
-  // below builds a queue from the video (tv-show episodes / recommendations).
-  const queueRestoredRef = useRef(false);
+  // ── Watch queue: restore on refresh / build from the video ──
+  // The queue is normally set by the grid before navigation (playVideo). When
+  // a video is opened WITHOUT a grid-set queue — a cold link, a page refresh,
+  // or the watch-history page — the queue is built here:
+  //   - TV show episode → the show's episodes (positioned on the current video)
+  //   - otherwise       → level-matched recommendations (SPEC-071 §8.2)
+  const queueBuildRef = useRef(false);
+
+  // When the video changes (back/forward between two videos) reset the guard
+  // so the queue is rebuilt for the newly shown video. Grid navigation is
+  // unaffected: playVideo/playNext set the queue before the video loads, so
+  // the build effect short-circuits on the matching current video.
   useEffect(() => {
+    queueBuildRef.current = false;
+  }, [videoId]);
+
+  useEffect(() => {
+    if (!video || queueBuildRef.current) return;
+    // Grid-set (or already-built) queue already covers this video → keep it.
+    if (queueState.currentVideo?.youtube_id === video.youtube_id) {
+      queueBuildRef.current = true;
+      return;
+    }
+
     let cancelled = false;
-    restoreQueueIfCurrent(videoId).then((restored) => {
-      if (!cancelled) queueRestoredRef.current = restored;
-    });
+    (async () => {
+      // Try to restore a persisted queue from a prior session (page refresh).
+      const restored = await restoreQueueIfCurrent(video.youtube_id);
+      if (cancelled) return;
+      if (restored) {
+        queueBuildRef.current = true;
+        return;
+      }
+      // No persisted queue, no grid queue → build from the video.
+      const result = await buildVideoQueue(video, baseCode(l2.code), userLevel);
+      if (cancelled) return;
+      queueBuildRef.current = true;
+      if (result) {
+        setQueue(video, result.queue, result.queueType, result.metadata);
+      } else {
+        // Nothing to build from (fetch failed) → single-video queue so
+        // prev/next and the queue tab stay defined.
+        setQueue(video, [video], 'recommended');
+      }
+    })();
+
     return () => { cancelled = true; };
-  }, [videoId, restoreQueueIfCurrent]);
+  }, [
+    video,
+    queueState.currentVideo?.youtube_id,
+    userLevel,
+    setQueue,
+    restoreQueueIfCurrent,
+    l2.code,
+  ]);
 
   const handleTimeUpdate = useCallback((time: number) => { setCurrentTime(time); }, []);
   const handleDuration = useCallback((d: number) => { setDuration(d); }, []);

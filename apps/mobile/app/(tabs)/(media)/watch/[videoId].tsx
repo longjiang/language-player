@@ -3,10 +3,13 @@ import { View, Text, ActivityIndicator, FlatList, PanResponder, ScrollView, useW
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';
 import { e2e } from '@/lib/e2e';
 import { log } from '@/lib/logger';
+import { useProgress } from '@/hooks/use-progress';
+import { buildVideoQueue } from '@/lib/video-queue';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
@@ -72,9 +75,11 @@ export default function WatchScreen() {
   // content (SPEC-048 Tier 9). The param wins over the persisted pair.
   const l2Code = requestedL2 ?? l2Lang.code;
   const t = useT();
-  const { playNext, playPrevious, hasNext, hasPrevious, ensureQueue, restoreQueueIfCurrent } = useVideoPlayer();
+  const { playNext, playPrevious, hasNext, hasPrevious, ensureQueue, restoreQueueIfCurrent, setQueue, queueState } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
   const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
+  const { user } = useAuth();
+  const { level: userLevel, loaded: progressLoaded } = useProgress(l2Code);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const isWide = screenWidth / screenHeight > 1;
 
@@ -143,21 +148,67 @@ export default function WatchScreen() {
   // Watch history recording
   useWatchHistoryRecorder(video?.id, currentTime);
 
-  // Restore a persisted watch queue (page refresh / cold link) so prev/next
-  // and the queue tab survive a reload. When no persisted queue matches, fall
-  // back to a single-video queue (`ensureQueue`); build-from-video (tv-show
-  // episodes / recommendations) is layered on afterward.
-  const queueRestoredRef = useRef(false);
+  // ── Watch queue: restore on refresh / build from the video ──
+  // The queue is normally set by the grid before navigation (playVideo). When
+  // a video is opened WITHOUT a grid-set queue — a deep link, a page refresh,
+  // or the watch-history page — the queue is built here:
+  //   - TV show episode → the show's episodes (positioned on the current video)
+  //   - otherwise       → level-matched recommendations (SPEC-071 §8.2)
+  const queueBuildRef = useRef(false);
+
+  // When the video changes (back/forward between two videos) reset the guard
+  // so the queue is rebuilt for the newly shown video. Grid navigation is
+  // unaffected: playVideo/playNext set the queue before the video loads, so
+  // the build effect short-circuits on the matching current video.
   useEffect(() => {
-    if (!video?.youtube_id) return;
+    queueBuildRef.current = false;
+  }, [videoId]);
+
+  useEffect(() => {
+    if (!video?.youtube_id || queueBuildRef.current) return;
+    // Grid-set (or already-built) queue already covers this video → keep it.
+    if (queueState.currentVideo?.youtube_id === video.youtube_id) {
+      queueBuildRef.current = true;
+      return;
+    }
+
     let cancelled = false;
-    restoreQueueIfCurrent(video.youtube_id).then((restored) => {
+    (async () => {
+      // Try to restore a persisted queue from a prior session (page refresh).
+      const restored = await restoreQueueIfCurrent(video.youtube_id);
       if (cancelled) return;
-      queueRestoredRef.current = restored;
-      if (!restored) ensureQueue(video);
-    });
+      if (restored) {
+        queueBuildRef.current = true;
+        return;
+      }
+      // No persisted queue, no grid queue → build from the video. For
+      // recommendations wait until the user's level has loaded so the queue
+      // matches it (TV-show episodes don't need the level).
+      if (!video.tv_show && !progressLoaded) return;
+      const result = await buildVideoQueue(video, l2Code, userLevel, user?.id);
+      if (cancelled) return;
+      queueBuildRef.current = true;
+      if (result) {
+        setQueue(video, result.queue, result.queueType, result.metadata);
+      } else {
+        // Nothing to build from (fetch failed) → seed a single-video queue so
+        // prev/next and the queue tab stay defined.
+        ensureQueue(video);
+      }
+    })();
+
     return () => { cancelled = true; };
-  }, [video, restoreQueueIfCurrent, ensureQueue]);
+  }, [
+    video,
+    queueState.currentVideo?.youtube_id,
+    progressLoaded,
+    userLevel,
+    user?.id,
+    setQueue,
+    restoreQueueIfCurrent,
+    ensureQueue,
+    l2Code,
+  ]);
 
   const currentTimeRef = useRef(currentTime);
   currentTimeRef.current = currentTime;
