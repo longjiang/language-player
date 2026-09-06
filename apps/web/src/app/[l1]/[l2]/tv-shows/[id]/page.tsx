@@ -28,6 +28,7 @@ interface Episode {
   duration?: string | null;
   date?: string | null;
   level?: number | null;
+  difficulty?: number | null;
   tv_show?: number | null;
 }
 
@@ -81,6 +82,7 @@ export default function TvShowEpisodesPage() {
       id: String(ep.id),
       views: ep.views ?? undefined,
       duration: ep.duration ? parseDuration(ep.duration) : undefined,
+      difficulty: ep.difficulty ?? undefined,
       locale: show?.locale ?? undefined,
       tv_show: show?.title,
     }));

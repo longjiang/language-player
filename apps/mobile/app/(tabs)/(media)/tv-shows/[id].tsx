@@ -28,6 +28,7 @@ interface Episode {
   duration?: string | null;
   date?: string | null;
   level?: number | null;
+  difficulty?: number | null;
   tv_show?: number | null;
 }
 
@@ -106,6 +107,7 @@ export default function TvShowEpisodesScreen() {
       title: ep.title,
       id: String(ep.id),
       views: ep.views ?? undefined,
+      difficulty: ep.difficulty ?? undefined,
     }));
     const video = queue[idx];
     if (video) {
