@@ -140,10 +140,10 @@ The mode can be toggled via:
 │                                                          │
 │                                                          │
 │   ┌────────────────────────────────────────────────┐     │
-│   │  [⏮← →⏭◧]                                │     │  ← huddled control row
-│   │────────────────────────────────────────────────│     │
 │   │     今天天气很好，我们出去走走吧...            │     │  ← subtitle row
 │   │     The weather is nice, let's go out          │     │
+│   │────────────────────────────────────────────────│     │
+│   │  [⏮← →⏭ ♥ 🔖 ◧]                              │     │  ← huddled control row
 │   └────────────────────────────────────────────────┘     │
 │                                                          │
 └──────────────────────────────────────────────────────────┘
@@ -151,8 +151,8 @@ The mode can be toggled via:
 
 - Player container: `h-[calc(100vh-3.5rem)]` — full viewport minus header.
 - **Overlay band**: positioned above YouTube's native controls, centered horizontally, and sized to its controls/text content. Two rows:
-  - **Control row**: `[⏮ ← → ⏭ ◧]` as a huddled button group, left-aligned. Thin and compact.
-  - **Subtitle row**: L2 `TokenizedText` + L1 translation, centered.
+  - **Subtitle row**: L2 `TokenizedText` + L1 translation, centered. The text block (tokenized text + the ⋮ action-menu trigger) is at least as wide as the control row and may grow wider when the line is long.
+  - **Control row**: `[⏮ ← → ⏭ ♥ 🔖 ◧]` as a huddled button group, left-aligned. Thin and compact.
   - **Karaoke mode**: passes the active line's weighted progress to `TokenizedText`; both spoken and unspoken words use light, readable band colors.
   - **Positioning**: tap/click and hold an empty area of the band, then drag vertically to place it anywhere within the video frame.
   - No TTS button.
@@ -195,10 +195,10 @@ The mode can be toggled via:
 │          (aspect-video, 16:9)        │
 ├──────────────────────────────────────┤
 │  ┌──────────────────────────────┐    │
-│  │  [⏮← →⏭◧]                      │    │  ← huddled control row
-│  │──────────────────────────────│    │
 │  │   "今天天气..."              │    │  ← subtitle row
 │  │   The weather is nice        │    │     min-h-[5rem], centered
+│  │──────────────────────────────│    │
+│  │  [⏮← →⏭ ♥ 🔖 ◧]              │    │  ← huddled control row
 │  └──────────────────────────────┘    │
 │                                      │
 │  (remaining space — empty)           │
@@ -207,8 +207,8 @@ The mode can be toggled via:
 ```
 
 - **Not overlaid** when w:h ≤ 1 — fixed-height block below the player. Two rows:
-  - **Control row**: `[⏮ ← → ⏭ ◧]` as a huddled button group, left-aligned.
-  - **Subtitle row**: L2 text + L1 translation, centered.
+  - **Subtitle row**: L2 text + L1 translation, centered. The text block is at least as wide as the control row and may grow wider.
+  - **Control row**: `[⏮ ← → ⏭ ♥ 🔖 ◧]` as a huddled button group, left-aligned.
   - No TTS button.
 - No video info. Player uses YouTube's native mobile controls.
 
@@ -242,18 +242,26 @@ The mode can be toggled via:
 > the L2 difficulty profile; it is **not** shown when the level can't be
 > determined (no misleading fallback level).
 
-Two-row layout: controls on top, subtitle text below.
+Two-row layout: subtitle text (with translation) on top, controls below.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  [⏮← →⏭◧]                                          │  ← huddled control row
-│──────────────────────────────────────────────────────────│
 │        今天天气很好，我们出去走走吧...                    │  ← subtitle row
 │        The weather is nice, let's go out                 │
+│──────────────────────────────────────────────────────────│
+│  [⏮← →⏭ ♥ 🔖 ◧]                                  │  ← huddled control row
 └──────────────────────────────────────────────────────────┘
 ```
 
-**Control row** — `flex items-center px-3 py-1` with buttons grouped together:
+**Subtitle row** — `flex flex-col items-center px-4 py-2`:
+
+| Element | Notes |
+|---|---|
+| L2 text | `TokenizedText` — tap word for dictionary popup. The text block (tokenized text + the ⋮ action-menu trigger) spans at least the control row's width and may grow wider for long lines. |
+| L1 translation | Shown below L2 (when `display.translation` is enabled) |
+
+**Control row** — `flex items-center px-3 py-1` with buttons grouped together
+(same order as the reduced `VideoControlBar` used everywhere):
 
 | Element | Action | Icon |
 |---|---|---|
@@ -261,16 +269,11 @@ Two-row layout: controls on top, subtitle text below.
 | `←` | Previous subtitle line | `ChevronLeft` |
 | `→` | Next subtitle line | `ChevronRight` |
 | `⏭` | Next video in queue | `SkipForward` |
+| `♥` | Like / unlike video | `Heart` |
+| `🔖` | Add to playlist | `Bookmark` |
 | `◧` | Subtitles mode → transcript mode | `PanelRightOpen` |
 
-**Subtitle row** — `flex flex-col items-center px-4 py-2`:
-
-| Element | Notes |
-|---|---|
-| L2 text | `TokenizedText` — tap word for dictionary popup |
-| L1 translation | Shown below L2 (when `display.translation` is enabled) |
-
-**Rewind**: tapping any empty space in the subtitle row seeks to the start of the current line. `R` key has the same effect. No visual button.
+**Rewind**: tapping any empty space in the band seeks to the start of the current line. `R` key has the same effect. No visual button.
 
 > **Popup-dismissal guard:** the subtitle row's tap-to-rewind is suppressed
 > while a dictionary popup dialog is open and for a short window after it
