@@ -91,6 +91,19 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const availH = availableHeight && availableHeight > 0 ? availableHeight : null;
     const videoWidth = availH ? Math.min(playerWidth, availH * AR) : playerWidth;
     const videoHeight = videoWidth / AR;
+
+    // Aspect-ratio trace: log the contain-fit inputs and result so the
+    // server-to-layout flow can be confirmed end-to-end (enable verbose logging).
+    useEffect(() => {
+      log('[aspectRatio] mobile layout', {
+        aspectRatio,
+        availableHeight,
+        playerWidth,
+        AR,
+        videoWidth,
+        videoHeight,
+      });
+    }, [aspectRatio, availableHeight, playerWidth, AR, videoWidth, videoHeight]);
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pollInFlightRef = useRef(false);

@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';
 import { e2e } from '@/lib/e2e';
+import { log } from '@/lib/logger';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
@@ -215,6 +216,12 @@ export default function WatchScreen() {
         };
         setVideo(v);
         setDuration(v.duration ?? 0);
+        // Aspect-ratio trace: log the native aspect ratio returned by the
+        // server so the contain-fit can be confirmed end-to-end.
+        log('[aspectRatio] mobile fetch', {
+          videoId,
+          aspect_ratio: typeof v.aspect_ratio === 'number' ? v.aspect_ratio : null,
+        });
 
         // Parse subtitles
         let lines: { line: string; starttime: number }[] = [];

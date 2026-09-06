@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef, useId } from 'react';
 import { useT } from '@/hooks/use-t';
+import { log } from '@/lib/logger';
 
 interface YouTubePlayerProps {
   youtubeId: string;
@@ -171,6 +172,20 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     : 0;
   const containHeight = containWidth > 0 ? containWidth / AR : 0;
   const containReady = containWidth > 0 && containHeight > 0;
+
+  // Aspect-ratio trace: log the contain-fit inputs and result so the
+  // server-to-layout flow can be confirmed end-to-end (enable verbose logging).
+  useEffect(() => {
+    if (!containEnabled) return;
+    log('[aspectRatio] web layout', {
+      aspectRatio,
+      availableHeight,
+      wrapperWidth,
+      containWidth,
+      containHeight,
+      containReady,
+    });
+  }, [containEnabled, aspectRatio, availableHeight, wrapperWidth, containWidth, containHeight, containReady]);
 
   // Track the wrapper's rendered width so contain-fit stays correct through
   // window resize / orientation changes without remounting the iframe.
