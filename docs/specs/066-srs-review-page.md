@@ -713,9 +713,14 @@ choose mode.
   slower than tapping a choice), blue while more than **10 s** remain.
 - **Input + hint** — a segmented character-count input (the number of boxes =
   the correct answer's character count) with a **Submit** button, plus a muted
-  hint underneath that shows **the first character of the pronunciation of the
-  lemma** when the entry has a pronunciation (`pronunciationReadingOf`), or
-  otherwise **the first character of the lemma** — but only when the lemma is
+  hint underneath. The hint is **the first character of the pronunciation of the
+  lemma** (`pronunciationReadingOf`) — but only for languages that support
+  phonetic ruby/annotation (`isPhoneticsEligible`; e.g. Japanese/Chinese/Korean,
+  where the orthography doesn't reveal the reading). For languages whose native
+  script is already phonetic (Latin-script languages, Burmese), the reading hint
+  (often the first char of an IPA string) is noise, so the hint is instead
+  **the first character of the lemma** — as it is for any language whose entry
+  has no reading — but only when the lemma is
   more than one character long (a single-char lemma's first char IS the whole
   word and would give the answer away). Shared helper: `spellHintOf`.
   The input is a **single real text field** whose characters span across the

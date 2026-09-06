@@ -527,4 +527,28 @@ describe('spellHintOf', () => {
   it('returns null when there is no entry and the fallback lemma is one char', () => {
     expect(spellHintOf(undefined, 'a', undefined, 'en')).toBeNull();
   });
+
+  it('uses orthography (not the reading) for a Latin-script language', () => {
+    // 'en' is phonetics-suppressed (isPhoneticsEligible false) — the native
+    // script already reveals pronunciation, so the reading hint (the first char
+    // of the IPA "ˈæpəl" = "ˈ") would be noise. Use the orthography first char.
+    const hint = spellHintOf(
+      { forms: ['apple'], head: 'apple', context: { form: 'apple' } },
+      'apple',
+      { head: 'apple', pronunciation: 'ˈæpəl' },
+      'en',
+    );
+    expect(hint).toBe('a');
+  });
+
+  it('still uses the reading hint for a phonetics-eligible non-CJK language', () => {
+    // 'th' is phonetics-eligible; a reading (romanization) hint is meaningful.
+    const hint = spellHintOf(
+      { forms: ['สวัสดี'], head: 'สวัสดี', context: { form: 'สวัสดี' } },
+      'สวัสดี',
+      { head: 'สวัสดี', pronunciation: 'sà-wàt-dii' },
+      'th',
+    );
+    expect(hint).toBe('s');
+  });
 });
