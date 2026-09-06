@@ -81,7 +81,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { srsLogger } from '@/lib/logger';
 
-const { log } = srsLogger;
+const { log, logwarn } = srsLogger;
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -232,7 +232,7 @@ export default function ReviewScreen() {
   const { isSm } = useResponsive();
   const { isPro } = useSubscription();
 
-  const { savedWords, loaded: wordsLoaded, cloudHydrated: savedWordsCloudHydrated } = useSavedWords();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated: savedWordsCloudHydrated, getPendingPutWordIds } = useSavedWords();
   const {
     store,
     loaded: srsLoaded,
@@ -242,6 +242,7 @@ export default function ReviewScreen() {
     updateCard,
     removeCard,
     pruneOrphans,
+    reconcileOrphans,
   } = useSrs();
   const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, review, offlineMode } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
@@ -435,21 +436,51 @@ export default function ReviewScreen() {
     }
   }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, dayStartHour, updateCard]);
 
-  // ── Prune orphaned SRS cards ──
+  // ── Reconcile orphaned SRS cards ──
   // Cards only make sense for words that are still saved; unsaving through
-  // any path must not let a stale card resurrect later.
+  // any path must not let a stale card resurrect later. The client-local prune
+  // was fragile (it deleted any card absent from a partial saved-word snapshot,
+  // which could take out genuinely saved words), so credentialed users reconcile
+  // ON THE SERVER, which owns both user_srs_cards and user_saved_words.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
     // Never prune while the cloud saved-words hydration is still pending: an
     // empty local list at that point is a loading state, not a real "no saved
     // words" state, and pruning would delete the whole deck (SPEC-066).
     if (user && !savedWordsCloudHydrated) return;
-    if (l2SavedWords.length === 0) {
-      pruneOrphans(l2Code, new Set<string>());
+    const savedWordIds = new Set(l2SavedWords.map((sw) => sw.id));
+
+    if (user) {
+      // Authoritative path: reconcile on the server. Wait for the server SRS
+      // deck to merge first so we reconcile the post-merge deck. protectedWordIds
+      // are words with a pending (unsynced) saved-word PUT — the server never
+      // deletes their cards.
+      if (!srsCloudHydrated) return;
+      (async () => {
+        const protectedIds = await getPendingPutWordIds(l2Code);
+        log('[srs] prune effect runs l2=%s userSet=%s srsLoaded=%s wordsLoaded=%s savedWordsCloudHydrated=%s srsCloudHydrated=%s l2SavedWords=%d decision=%s protected=%d',
+          l2Code, !!user, srsLoaded, wordsLoaded, savedWordsCloudHydrated, srsCloudHydrated,
+          l2SavedWords.length, 'server-reconcile', protectedIds.length);
+        try {
+          await reconcileOrphans(l2Code, protectedIds);
+        } catch (err) {
+          // Reconcile unavailable/failed (offline, not yet deployed) → hardened
+          // local fallback. NEVER purge the whole deck on a partial view.
+          logwarn(`[srs] reconcileOrphans failed for ${l2Code} — falling back to hardened local prune`, err);
+          pruneOrphans(l2Code, savedWordIds, { allowWholeDeckPurge: false });
+        }
+      })();
       return;
     }
-    pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
-  }, [srsLoaded, wordsLoaded, user, savedWordsCloudHydrated, l2SavedWords, l2Code, pruneOrphans]);
+
+    // Anonymous: local-only data, no server. Hardened fallback prune — never
+    // purge the whole deck (a partial local view is indistinguishable from a
+    // genuinely empty one, and the server reconcile isn't available to decide).
+    log('[srs] prune effect runs l2=%s userSet=%s srsLoaded=%s wordsLoaded=%s savedWordsCloudHydrated=%s l2SavedWords=%d decision=%s',
+      l2Code, !!user, srsLoaded, wordsLoaded, savedWordsCloudHydrated, l2SavedWords.length,
+      l2SavedWords.length === 0 ? 'local-fallback-empty' : 'local-fallback');
+    pruneOrphans(l2Code, savedWordIds, { allowWholeDeckPurge: false });
+  }, [srsLoaded, wordsLoaded, user, savedWordsCloudHydrated, srsCloudHydrated, l2SavedWords, l2Code, pruneOrphans, reconcileOrphans, getPendingPutWordIds]);
 
   // ── Compute due cards ──
   const dueCards = useMemo(() => {
