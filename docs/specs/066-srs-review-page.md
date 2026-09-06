@@ -742,18 +742,18 @@ choose mode.
     is shown in the context sentence. `scoreSpellResult` takes the variant
     arrays and takes the **best `stringSimilarity` across every variant pair**
     (`bestScriptSimilarity`).
-- **Grading** — on submit, the best script-folded similarity maps to a base
-  score of 1–3:
-  - **≥ 0.9** → 3 (essentially exact, any script),
-  - **≥ 0.5** → 2 (a few character edits),
-  - else → 1 (wrong).
-- **Timer adjustment** — the countdown always adjusts the base score, using the
-  same per-test thresholds as choose mode: **faster than 5 s adds +1**,
-  **slower than 10 s deducts −1**. (Unlike choose mode, which only time-adjusts
-  a perfect score, spell mode time-adjusts a graded base.) The result is
-  clamped to 0–3 and mapped **again(0) / hard(1) / good(2) / easy(3)** — the
-  same button mapping as choose mode. Shared helper: `scoreSpellResult`
-  (`packages/utils/src/srs-test-mode.ts`).
+- **Grading (2026-09-06 tightened)** — on submit, the best script-folded
+  similarity maps to a base of 0–2, then the countdown only moves a *correct*
+  answer, so a wrong or typo'd answer can never be rescued by typing fast:
+  - **≥ 0.9** → 2 (correct — essentially exact, any script);
+  - **0.7–0.9** → 1 (close — a small typo), regardless of time → hard;
+  - **< 0.7** → 0 (wrong), regardless of time → again;
+  - for a **correct** answer (base 2) the countdown applies the choose-mode
+    bands: **faster than 5 s → easy (3)**, **slower than 10 s → hard (1)**,
+    otherwise **good (2)**;
+  - map points → **again(0) / hard(1) / good(2) / easy(3)** — the same button
+    mapping as choose mode. Shared helper: `scoreSpellResult`
+    (`packages/utils/src/srs-test-mode.ts`).
 - **Reveal** — submitting reveals the card back (the dictionary entry) and the
   rating buttons. When the answer is **incorrect** it shows both the learner's
   typed answer (`review.spell_your_answer`) and the correct answer
@@ -992,8 +992,9 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
   utils): blank the term in the context sentence, show the bolded translation,
   then Start Test shows a countdown bar, a text input + submit, and a muted
-  first-char hint. Grading via `stringSimilarity`/`scoreSpellResult` (1–3 base,
-  time-adjusted, mapped to again/hard/good/easy) and `spellHintOf` in
+  first-char hint. Grading via `stringSimilarity`/`scoreSpellResult`
+  (similarity → 0–2 base, countdown only moves a correct answer, mapped to
+  again/hard/good/easy) and `spellHintOf` in
   `packages/utils/src/srs-test-mode.ts`. The context blanking uses a new
   `blankHighlighted` prop on both `TokenizedText` implementations (web
   `token-span.tsx`, mobile `TokenizedText.tsx`).
