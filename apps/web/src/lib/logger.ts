@@ -46,3 +46,13 @@ export const notesImportLogger = createLogger('[LP Web]', 'notes-import');
  * NEXT_PUBLIC_LOG_LEVEL_SPEECH=3 or setLogLevel(3, 'speech').
  */
 export const speechLogger = createLogger('[LP Web]', 'speech');
+
+/**
+ * Per-aspect logger for the "Ask AI" chat session persistence (ARCH-027).
+ * Traces every step of the web `localStorage` restore / save / clear flow in
+ * `ai-explanation.tsx` — the storage key, the raw value read, the parsed and
+ * filtered message counts, and the exact ordering of the restore-vs-save
+ * effects. Enable with NEXT_PUBLIC_LOG_LEVEL_ASK_AI=3 or setLogLevel(3,
+ * 'ask-ai').
+ */
+export const askAiLogger = createLogger('[LP Web]', 'ask-ai');
