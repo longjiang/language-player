@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useLocalMedia } from '@/hooks/use-local-media';
 import type { SubtitleLine } from '@langplayer/shared';
+import { findActiveLineIndex } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_ON_PRIMARY, ICON_MUTED } from '@/lib/theme-colors';
 import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, FileAudio } from 'lucide-react-native';
@@ -84,13 +85,16 @@ export default function LocalMediaScreen() {
 
   const handlePrevLine = useCallback(() => {
     if (localMedia.subtitleLines.length === 0) { player.seekBy(-3); return; }
-    for (let i = localMedia.subtitleLines.length - 1; i >= 0; i--) {
-      if (localMedia.subtitleLines[i]!.starttime < currentTime - 0.5) {
-        player.seekBy(localMedia.subtitleLines[i]!.starttime - currentTime);
-        return;
-      }
+    // Always seek to the previous line (the line before the currently active
+    // one) — never to the start of the current line. When already on the first
+    // line (or before it) there is no previous line, so fall back to a rewind.
+    const prevIndex = findActiveLineIndex(localMedia.subtitleLines.map((l) => l.starttime), currentTime) - 1;
+    const prev = prevIndex >= 0 ? localMedia.subtitleLines[prevIndex] : null;
+    if (prev) {
+      player.seekBy(prev.starttime - currentTime);
+    } else {
+      player.seekBy(-3);
     }
-    player.seekBy(-3);
   }, [currentTime, localMedia.subtitleLines, player]);
 
   const handleNextLine = useCallback(() => {
