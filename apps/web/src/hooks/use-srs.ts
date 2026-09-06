@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { deleteSrsCard, deleteSrsCardsBatch, putSrsCard, useUserDataColumns } from '@langplayer/api-client';
+import { deleteSrsCard, deleteSrsCardsBatch, putSrsCard, reconcileSrsCards, useUserDataColumns } from '@langplayer/api-client';
 import type { SrsCardMeta } from '@langplayer/api-client';
 import {
   createSrsStore,
@@ -241,11 +241,28 @@ export function useSrs() {
     });
   }, []);
 
-  const pruneOrphans = useCallback((l2Code: string, savedWordIds: Set<string>) => {
+  /**
+   * Local orphan prune (the offline / anonymous fallback). Deleting every card
+   * whose id isn't in `savedWordIds` is only safe when that set is complete —
+   * an empty-but-loading or partial view must never wipe a real deck. The
+   * caller forces `allowWholeDeckPurge: false` for fallback paths so a partial
+   * view can't take out genuinely good cards; the authoritative server
+   * reconcile (`reconcileOrphans`) handles the genuinely-empty-deck case when
+   * online.
+   */
+  const pruneOrphans = useCallback((l2Code: string, savedWordIds: Set<string>, opts?: { allowWholeDeckPurge?: boolean }) => {
     setStore((prev) => {
       const langCards = prev.cards[l2Code] ?? {};
       const orphans = Object.keys(langCards).filter((id) => !savedWordIds.has(id));
       if (orphans.length === 0) return prev;
+      // Never purge the whole deck when the caller can't be sure the saved-word
+      // view is complete (partial hydration, reconcile unreachable). The server
+      // reconcile is authoritative for the genuinely-empty-deck case online.
+      if (opts?.allowWholeDeckPurge === false && orphans.length === Object.keys(langCards).length) {
+        logwarn('[SRS] pruneOrphans: l2=%s would purge the whole deck (%d cards); skipping (allowWholeDeckPurge=false)',
+          l2Code, orphans.length);
+        return prev;
+      }
       // Bound the per-run delete batch: a huge orphan backlog (cards whose words
       // were unsaved across many sessions) must not enqueue hundreds of
       // DELETE /srs/cards at once. Drain it in small batches per page load.
@@ -274,6 +291,35 @@ export function useSrs() {
     void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard, deleteSrsCardsBatch });
   }, []);
 
+  /**
+   * Authoritative server-side orphan reconciliation (replaces the fragile
+   * client-side prune). The server owns both `user_srs_cards` and
+   * `user_saved_words`, so it compares a given l2's cards against its saved
+   * words and deletes orphans. `protectedWordIds` are words with a pending
+   * (unsynced) local saved-word put — the server never deletes their cards.
+   *
+   * The server returns `deletedWordIds`; the client drops those cards from its
+   * local store and must NOT enqueue its own delete ops (they're already gone
+   * server-side — enqueuing would only emit redundant DELETEs).
+   */
+  const reconcileOrphans = useCallback(async (l2Code: string, protectedWordIds: string[] = []) => {
+    const res = await reconcileSrsCards(l2Code, protectedWordIds);
+    const deleted = res?.deletedWordIds ?? [];
+    if (deleted.length > 0) {
+      setStore((prev) => {
+        const langCards = prev.cards[l2Code] ?? {};
+        const nextLang = { ...langCards };
+        for (const id of deleted) delete nextLang[id];
+        return { cards: { ...prev.cards, [l2Code]: nextLang } };
+      });
+      log('[SRS] reconcileOrphans: l2=%s server reconciled %d orphaned card(s); dropped from local state',
+        l2Code, deleted.length);
+    } else {
+      log('[SRS] reconcileOrphans: l2=%s no orphaned cards on server', l2Code);
+    }
+    return deleted.length;
+  }, []);
+
   const getCard = useCallback((l2Code: string, wordId: string): SrsFields | undefined => {
     return store.cards[l2Code]?.[wordId];
   }, [store]);
@@ -286,6 +332,7 @@ export function useSrs() {
     updateCard,
     removeCard,
     pruneOrphans,
+    reconcileOrphans,
     getCard,
   };
 }
