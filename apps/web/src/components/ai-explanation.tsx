@@ -685,6 +685,16 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // appended — it reconstructs the prior conversation (assistant replies
     // with their prompts), not the turn we're about to start.
     const history = buildHistory();
+    askAiLogger.log('AI explain follow-up prompt', {
+      labelKey: preset.labelKey,
+      promptKey: preset.promptKey,
+      contentKey: preset.contentKey ?? null,
+      readerTextChars: (readerContent?.text ?? '').length,
+      promptChars: prompt.length,
+      history: history.length,
+      promptHasTimestamp: /\[\d{1,2}:\d{2}\]/.test(prompt),
+      promptPreview: prompt.slice(0, 400),
+    });
     appendMessage({
       role: 'user',
       text: '',
@@ -717,6 +727,14 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         : onTimestampPress
           ? `${text}\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}`
           : text;
+    askAiLogger.log('AI explain free-form prompt', {
+      questionChars: text.length,
+      readerTextChars: contextText.length,
+      promptChars: prompt.length,
+      history: history.length,
+      promptHasTimestamp: /\[\d{1,2}:\d{2}\]/.test(prompt),
+      promptPreview: prompt.slice(0, 400),
+    });
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
     appendMessage({ role: 'user', text, label: text, prompt });
