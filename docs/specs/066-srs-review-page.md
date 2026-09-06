@@ -715,10 +715,13 @@ choose mode.
   otherwise **the first character of the lemma** — but only when the lemma is
   more than one character long (a single-char lemma's first char IS the whole
   word and would give the answer away). Shared helper: `spellHintOf`.
-  **Enter does not submit** — the input has the Enter-to-submit handler
-  removed (web) and `onSubmitEditing`/blur-on-submit disabled (mobile), so an
-  IME's "enter to confirm" never fires an answer early; only the **Submit**
-  button submits.
+  **Enter-to-submit with IME safety (web):** the web input submits on Enter
+  only when the browser's `KeyboardEvent.isComposing` is false *and* the
+  legacy `keyCode === 229` IME indicator is absent, so an IME's "enter to
+  confirm" never fires an early answer. **Mobile** stays button-only (React
+  Native's `TextInput` does not expose `isComposing`, so Enter is left off to
+  avoid the same accidental submission). Only the **Submit** button is the
+  always-available submit path on both platforms.
 - **Correct answer derivation (2026-09-06)** — the correct answer is the exact
   text blanked in the context sentence, derived with the **same forms the
   context highlight matches** (`spellBlankText` in
@@ -1002,9 +1005,10 @@ types count while unexpired — there is no `status` filter.
   compares simplified & traditional variants built with the app's lazy OpenCC
   (`scoreSpellResult`/`bestScriptSimilarity` over variant arrays).
 - ✅ **Spell input & feedback polish** — implemented (2026-09-06, both review
-  pages): Enter no longer submits (IME "enter to confirm" doesn't fire an early
-  answer), and an incorrect answer shows both the learner's typed answer and
-  the correct answer.
+  pages): web Enter-to-submit is gated on the IME-composition flags
+  (`isComposing` / `keyCode === 229`) so IME "enter to confirm" never submits
+  (mobile is button-only — RN exposes no `isComposing`); an incorrect answer
+  shows both the learner's typed answer and the correct answer.
 
 ## Known Issues & Resolutions (2026-08-13)
 
