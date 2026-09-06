@@ -1334,6 +1334,7 @@
         "spell_hint": "Diawali dengan",
         "spell_mode": "Mode ejaan",
         "spell_prompt": "Ketik kata yang hilang",
+        "spell_your_answer": "Jawaban Anda: {answer}",
         "srs_new": "baru",
         "srs_review": "{count, plural, other {diulas # kali}}",
         "start_test": "Mulai tes",

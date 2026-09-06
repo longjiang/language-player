@@ -1334,6 +1334,7 @@
         "spell_hint": "Begint met",
         "spell_mode": "Spellingsmodus",
         "spell_prompt": "Typ het ontbrekende woord",
+        "spell_your_answer": "Jouw antwoord: {answer}",
         "srs_new": "nieuw",
         "srs_review": "{count, plural, one {1 keer herhaald} other {# keer herhaald}}",
         "start_test": "Test starten",

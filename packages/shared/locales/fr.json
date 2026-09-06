@@ -1334,6 +1334,7 @@
         "spell_hint": "Commence par",
         "spell_mode": "Mode orthographe",
         "spell_prompt": "Saisis le mot manquant",
+        "spell_your_answer": "Ta réponse : {answer}",
         "srs_new": "nouveau",
         "srs_review": "{count, plural, one {révisé # fois} other {révisé # fois}}",
         "start_test": "Commencer le test",

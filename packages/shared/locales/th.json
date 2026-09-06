@@ -1334,6 +1334,7 @@
         "spell_hint": "ขึ้นต้นด้วย",
         "spell_mode": "โหมดสะกดคำ",
         "spell_prompt": "พิมพ์คำที่หายไป",
+        "spell_your_answer": "คำตอบของคุณ: {answer}",
         "srs_new": "ใหม่",
         "srs_review": "{count, plural, other {ทบทวนแล้ว # ครั้ง}}",
         "start_test": "เริ่มการทดสอบ",

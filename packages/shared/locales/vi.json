@@ -1334,6 +1334,7 @@
         "spell_hint": "Bắt đầu bằng",
         "spell_mode": "Chế độ đánh vần",
         "spell_prompt": "Nhập từ còn thiếu",
+        "spell_your_answer": "Câu trả lời của bạn: {answer}",
         "srs_new": "mới",
         "srs_review": "{count, plural, other {đã ôn tập # lần}}",
         "start_test": "Bắt đầu kiểm tra",

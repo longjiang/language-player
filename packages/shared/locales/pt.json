@@ -1334,6 +1334,7 @@
         "spell_hint": "Começa por",
         "spell_mode": "Modo de escrita",
         "spell_prompt": "Escreva a palavra em falta",
+        "spell_your_answer": "A sua resposta: {answer}",
         "srs_new": "novo",
         "srs_review": "{count, plural, one {revisado 1 vez} other {revisado # vezes}}",
         "start_test": "Iniciar teste",
