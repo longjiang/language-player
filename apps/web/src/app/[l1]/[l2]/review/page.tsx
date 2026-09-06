@@ -1575,19 +1575,15 @@ export default function ReviewPage() {
     { key: 'choose' as const, label: t('review.choose_mode'), Icon: ListChecks },
     { key: 'spell' as const, label: t('review.spell_mode'), Icon: Keyboard },
   ];
-  const currentMode = MODE_OPTIONS.find((m) => m.key === reviewMode) ?? MODE_OPTIONS[1]!;
-  const CurrentModeIcon = currentMode.Icon;
-
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <Select value={reviewMode} onValueChange={(v) => changeReviewMode(v as 'recall' | 'choose' | 'spell')}>
           <SelectTrigger className="w-[190px]">
-            <span className="flex items-center gap-2">
-              <CurrentModeIcon className="h-4 w-4" />
-              <SelectValue />
-            </span>
+            {/* SelectValue mirrors the selected item's content (icon + label) so
+                the trigger shows the current mode's icon exactly once. */}
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {MODE_OPTIONS.map((m) => (
