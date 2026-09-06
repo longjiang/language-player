@@ -54,6 +54,19 @@ export const READER_AI_SUMMARY_INSTRUCTION =
 export const VIDEO_AI_TIMESTAMP_INSTRUCTION =
   'The video transcript is provided with each line preceded by its timestamp in [MM:SS] format. When you refer to a specific part of the video, cite that timestamp inline in EXACTLY this [MM:SS] format (copy it from the transcript). Cite the timestamp of every subtitle line you discuss or quote. Do not invent timestamps that are not present in the transcript.';
 
+/**
+ * Model-facing instruction appended to the video "Ask AI" non-summary presets
+ * ("Difficult expressions" / "Grammar points"). Kept in English like the other
+ * instructions (a prompt to the LLM).
+ *
+ * The transcript is a long per-line feed, and an unrestrained prompt makes the
+ * model explain EVERY line and open with a summary. This constrains it to a
+ * curated list: at most 20 of the most difficult items, no summary/intro, each
+ * item itself as the heading, a brief explanation, and one example line.
+ */
+export const VIDEO_AI_CONCISE_ITEMS_INSTRUCTION =
+  'Select only the MOST challenging items — at most 20 in total, never one for every line. Do NOT write a summary, introduction, or any opening text; begin directly with the first item. For each item, present the item itself as the heading (the tricky expression or grammar structure), give a brief explanation of its meaning and use, then give ONE example line from the transcript. Keep every item concise and skip easy or common items.';
+
 /** `[MM:SS]` / `[H:MM:SS]` timestamp token (as the model is asked to emit). */
 const TIMESTAMP_TOKEN_RE = /\[(?:(\d+):)?(\d{1,2}):(\d{2})\]/g;
 

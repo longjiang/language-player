@@ -14,7 +14,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn, askAiLogger } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, READER_AI_CONTEXT_WARN_MAX, VIDEO_AI_TIMESTAMP_INSTRUCTION, parseTimestampToken, formatTimestamp, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, READER_AI_CONTEXT_WARN_MAX, VIDEO_AI_TIMESTAMP_INSTRUCTION, VIDEO_AI_CONCISE_ITEMS_INSTRUCTION, parseTimestampToken, formatTimestamp, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
@@ -403,6 +403,13 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         parts.push(text);
       }
       if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
+      // Video non-summary presets (difficult expressions / grammar points):
+      // the transcript is a long per-line feed, so constrain the model to a
+      // curated list (≤20) with no summary intro, instead of explaining every
+      // line.
+      if (preset.summaryInstruction === false && onTimestampPress) {
+        parts.push(VIDEO_AI_CONCISE_ITEMS_INSTRUCTION);
+      }
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
       else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
       else {

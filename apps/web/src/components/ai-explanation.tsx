@@ -13,6 +13,7 @@ import {
   READER_AI_QUOTE_INSTRUCTION,
   READER_AI_SUMMARY_INSTRUCTION,
   VIDEO_AI_TIMESTAMP_INSTRUCTION,
+  VIDEO_AI_CONCISE_ITEMS_INSTRUCTION,
   READER_AI_CONTEXT_WARN_MAX,
   type AiFollowUpPreset,
   type ReaderAiContent,
@@ -480,6 +481,13 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         parts.push(text);
       }
       if (preset.summaryInstruction !== false) parts.push(READER_AI_SUMMARY_INSTRUCTION);
+      // Video non-summary presets (difficult expressions / grammar points):
+      // the transcript is a long per-line feed, so constrain the model to a
+      // curated list (≤20) with no summary intro, instead of explaining every
+      // line.
+      if (preset.summaryInstruction === false && onTimestampPress) {
+        parts.push(VIDEO_AI_CONCISE_ITEMS_INSTRUCTION);
+      }
       if (quoteChips) parts.push(READER_AI_QUOTE_INSTRUCTION);
       else if (onTimestampPress) parts.push(VIDEO_AI_TIMESTAMP_INSTRUCTION);
       else {
