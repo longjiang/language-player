@@ -93,6 +93,9 @@ values), then writes all three. Batch entry point:
 
 ## Level bucketing (difficulty → 1–7)
 
+Detailed threshold-generation algorithm and the `growth_factor` decision: see
+[033 – Difficulty → Level Bucketing](033-difficulty-level-bucketing.md).
+
 ### How the thresholds are generated
 
 The per-language threshold arrays are computed from the catalog itself,
