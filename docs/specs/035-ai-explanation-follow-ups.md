@@ -70,6 +70,12 @@ preset (no `TEXT_ACTION_ASK_AI_INITIAL_PRESET`), so it never shows a pre-loaded
 "please provide the subtitles" reply. The full subtitle transcript is preloaded
 as context (via `contentKey: 'text'` and `readerContent.text`) and the model
 responds only when the user taps a preset button or sends a free-form message.
+On the video tab the **non-summary** presets (Difficult expressions / Grammar
+points) are further constrained by `VIDEO_AI_CONCISE_ITEMS_INSTRUCTION`: they
+return at most 20 of the most difficult items (not one per line), open directly
+with the first item (no summary/intro), and format each item as the expression /
+structure itself as the heading → a brief explanation → one example line (with
+its `[MM:SS]` timestamp, per `VIDEO_AI_TIMESTAMP_INSTRUCTION`).
 
 ### Multi-turn endpoint
 
