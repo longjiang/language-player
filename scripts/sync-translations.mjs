@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { csvEscape, csvParseLine } from './lib/csv-utils.mjs';
+import { csvEscape, readCSV } from './lib/csv-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -112,16 +112,12 @@ function csvToJson(outDir) {
     locales = LOCALES; // fallback to known locales
   }
 
-  let csvText;
-  try {
-    csvText = readFileSync(CSV_PATH, 'utf-8');
-  } catch {
-    console.error(`✗ ${CSV_PATH} not found. Run json-to-csv first.`);
-    process.exit(1);
-  }
-
-  const lines = csvText.trim().replace(/\r/g, '').split('\n');
-  const header = csvParseLine(lines[0]);
+  // Parse the whole CSV with papaparse (NOT line-by-line on a `\n` split): a
+  // quoted field can contain real newlines (e.g. the prompt templates that
+  // embed `\n\n{text}`). Splitting on `\n` truncates those values and spawns
+  // garbage rows from the split-off fragments. readCSV handles the embedded
+  // newlines correctly.
+  const { header, rows } = readCSV(CSV_PATH, { readFileSync });
   const csvLocales = header.slice(1);
 
   // Map CSV column index → locale name
@@ -138,9 +134,8 @@ function csvToJson(outDir) {
   const data = {};
   for (const loc of locales) data[loc] = {};
 
-  for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
-    const row = csvParseLine(lines[lineIdx]);
-    if (!row[0]) continue;
+  for (const row of rows) {
+    if (!row || !row[0]) continue;
     const keyPath = row[0].trim();
     const parts = keyPath.split('.');
     const cat = parts[0];
