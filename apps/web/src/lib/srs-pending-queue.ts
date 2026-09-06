@@ -25,13 +25,20 @@
 
 import type { SrsFields } from '@langplayer/shared';
 import type { SrsCardMeta } from '@langplayer/api-client';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 
 const SRS_PENDING_OPS_KEY = 'zthSrsProgressPendingOps';
 const RETRY_DELAY_MS = 10_000;
 /** Upper bound on consecutive flush passes; a pathological burst falls back
  *  to the retry timer instead of hot-looping. */
 const MAX_FLUSH_PASSES = 10;
+/** Cap on how many pending ops one flush drains per pass. A large stale
+ *  orphan/delete backlog (cards whose words were unsaved across many
+ *  sessions/languages) would otherwise be flushed one-request-per-card,
+ *  firing hundreds of sequential DELETE /srs/cards on a single page load and
+ *  freezing the review page on a slow dev server. Bounded batches drain the
+ *  backlog incrementally via the 10s retry instead. */
+const MAX_FLUSH_BATCH = 25;
 
 export interface PendingSrsOp {
   type: 'upsert' | 'delete';
@@ -109,7 +116,11 @@ async function flushPendingSrsOps(
 ): Promise<PendingSrsOp[]> {
   const ops = reducePendingSrsOps(queue);
   const remaining: PendingSrsOp[] = [];
-  for (let i = 0; i < ops.length; i++) {
+  // Process at most MAX_FLUSH_BATCH ops this pass; anything beyond stays queued
+  // and is retried so a huge stale backlog can't fire an unbounded delete
+  // stream on one load.
+  const processed = Math.min(ops.length, MAX_FLUSH_BATCH);
+  for (let i = 0; i < processed; i++) {
     const op = ops[i]!;
     try {
       if (op.type === 'upsert' && op.state) {
@@ -144,6 +155,11 @@ async function flushPendingSrsOps(
       break;
     }
   }
+  // Hold ops beyond the batch that weren't already held by a failure, so they
+  // drain on a later pass/retry rather than being dropped.
+  if (remaining.length === 0 && ops.length > processed) {
+    remaining.push(...ops.slice(processed));
+  }
   return remaining;
 }
 
@@ -163,6 +179,11 @@ export async function flushAllPendingSrsOps(api: SrsRowApi): Promise<void> {
     for (let pass = 0; pass < MAX_FLUSH_PASSES; pass++) {
       const ops = loadPendingSrsOps();
       if (ops.length === 0) return;
+      const deletes = ops.filter((o) => o.type === 'delete').length;
+      const deleteWords = ops.filter((o) => o.type === 'delete').map((o) => o.wordId);
+      log('[SRS] pending flush pass=%d ops=%d deletes=%d words(first 12)=%s',
+        pass, ops.length, deletes,
+        deleteWords.slice(0, 12).join(',') + (deleteWords.length > 12 ? ` (+${deleteWords.length - 12} more)` : ''));
       const remaining = await flushPendingSrsOps(ops, api);
       // Re-read the queue: ops added while this flush was running were not in
       // the snapshot and must survive. The old implementation overwrote the

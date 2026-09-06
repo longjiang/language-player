@@ -138,4 +138,30 @@ describe('srs-pending-queue (ADR-0040)', () => {
     await flushAllPendingSrsOps(api);
     expect(deletes).toEqual([['ja', 'w1', 123]]);
   });
+
+  it('bounds a large delete backlog to a batch per flush and drains the rest on retry', async () => {
+    const sent: string[] = [];
+    const api: SrsRowApi = {
+      putSrsCard: async () => ({}),
+      deleteSrsCard: async (_l2, wordId) => {
+        sent.push(wordId);
+      },
+    };
+    // 30 deletes > MAX_FLUSH_BATCH (25): a stale orphan backlog must not be
+    // fired as one unbounded sequential stream on a single load.
+    const ops = Array.from({ length: 30 }, (_, i) => mkOp('delete', `d${i}`, i + 1));
+    savePendingSrsOps(ops);
+    await flushAllPendingSrsOps(api);
+
+    expect(sent).toHaveLength(25); // first batch only this pass
+    expect(sent[0]).toBe('d0');
+    expect(sent[24]).toBe('d24');
+    expect(loadPendingSrsOps()).toHaveLength(5); // the rest queued for retry
+
+    // The retry timer re-runs the flush, draining the next batch.
+    await flushAllPendingSrsOps(api);
+    expect(sent).toHaveLength(30);
+    expect(loadPendingSrsOps()).toEqual([]);
+    savePendingSrsOps([]);
+  });
 });

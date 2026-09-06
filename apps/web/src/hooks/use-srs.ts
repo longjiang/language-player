@@ -21,6 +21,8 @@ import {
 import { log, logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
+/** Bound the orphan-prune delete batch per run (see pruneOrphans). */
+const MAX_ORPHAN_PRUNE_PER_RUN = 25;
 
 /**
  * Remove a single SRS card from localStorage AND the server (row API).
@@ -244,11 +246,19 @@ export function useSrs() {
       const langCards = prev.cards[l2Code] ?? {};
       const orphans = Object.keys(langCards).filter((id) => !savedWordIds.has(id));
       if (orphans.length === 0) return prev;
+      // Bound the per-run delete batch: a huge orphan backlog (cards whose words
+      // were unsaved across many sessions) must not enqueue hundreds of
+      // DELETE /srs/cards at once. Drain it in small batches per page load.
+      const toPrune = orphans.slice(0, MAX_ORPHAN_PRUNE_PER_RUN);
+      if (orphans.length > toPrune.length) {
+        logwarn('[SRS] pruneOrphans: l2=%s found %d orphaned card(s); pruning %d this run (bounding the delete stream)',
+          l2Code, orphans.length, toPrune.length);
+      }
       const prunedCards = { ...langCards };
-      for (const id of orphans) delete prunedCards[id];
-      log('[SRS] pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, orphans.length);
+      for (const id of toPrune) delete prunedCards[id];
+      log('[SRS] pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, toPrune.length);
       let queue = loadPendingSrsOps();
-      for (const id of orphans) {
+      for (const id of toPrune) {
         queue = enqueuePendingSrsOp(queue, {
           type: 'delete',
           l2: l2Code,
