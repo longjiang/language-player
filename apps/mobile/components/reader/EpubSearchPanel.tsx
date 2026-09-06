@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SearchBar } from '@/components/ui/search-bar';
+import { findTextMatches } from '@langplayer/utils';
 import { Search } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -22,10 +23,16 @@ interface EpubSearchPanelProps {
 interface Match {
   blockIndex: number;
   text: string;
-  /** 0-based match offset within the block text. */
+  /** 0-based match offset within the ORIGINAL block text. */
   offset: number;
+  /** Exclusive match end within the ORIGINAL block text. */
+  end: number;
   /** ~60 chars around the match. */
   snippet: string;
+  /** Char offset of the match inside `snippet` (after any leading …). */
+  snippetMatchStart: number;
+  /** Length of the matched text inside `snippet`. */
+  snippetMatchLen: number;
 }
 
 /**
@@ -55,21 +62,22 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect, initialQ
   }, [chapterLabels]);
 
   const matches = useMemo<Match[]>(() => {
-    const q = query.trim().toLowerCase();
-    if (!q || !blocks) return [];
+    if (!blocks) return [];
     const out: Match[] = [];
     blocks.forEach((block, blockIndex) => {
       if (block.kind !== 'text') return;
       const tb = block as TextBlock;
       if (tb.type !== 'paragraph' && tb.type !== 'blockquote' && tb.type !== 'list-item') return;
-      const lower = tb.text.toLowerCase();
-      let idx = lower.indexOf(q);
-      while (idx !== -1 && out.length < 200) {
-        const start = Math.max(0, idx - 30);
-        const end = Math.min(tb.text.length, idx + query.length + 30);
+      // Invisible-char- / whitespace-robust matching (U+200B etc.); matches
+      // come back in the ORIGINAL block text coordinates.
+      const mt = findTextMatches(tb.text, query, 200 - out.length);
+      for (const m of mt) {
+        const start = Math.max(0, m.start - 30);
+        const end = Math.min(tb.text.length, m.end + 30);
         const snippet = (start > 0 ? '…' : '') + tb.text.slice(start, end) + (end < tb.text.length ? '…' : '');
-        out.push({ blockIndex, text: tb.text, offset: idx, snippet });
-        idx = lower.indexOf(q, idx + query.length);
+        const snippetMatchStart = m.start - start + (start > 0 ? 1 : 0);
+        const snippetMatchLen = m.end - m.start;
+        out.push({ blockIndex, text: tb.text, offset: m.start, end: m.end, snippet, snippetMatchStart, snippetMatchLen });
       }
     });
     return out;
@@ -107,12 +115,16 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect, initialQ
                   onPress={() => onSelect({
                     blockIndex: m.blockIndex,
                     start: m.offset,
-                    end: m.offset + query.trim().length,
+                    end: m.end,
                   })}
                   className="border-b border-border px-1 py-2.5 active:bg-muted"
                 >
                   <Text className="text-sm leading-relaxed text-foreground" numberOfLines={2}>
-                    <HighlightSnippet snippet={m.snippet} term={query.trim()} />
+                    <HighlightSnippet
+                      snippet={m.snippet}
+                      matchStart={m.snippetMatchStart}
+                      matchLen={m.snippetMatchLen}
+                    />
                   </Text>
                   {labelForBlock(m.blockIndex) ? (
                     <Text className="mt-0.5 text-xs font-medium text-primary/80" numberOfLines={1}>
@@ -139,15 +151,24 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect, initialQ
   );
 }
 
-/** Render the snippet with the search term highlighted in primary color. */
-function HighlightSnippet({ snippet, term }: { snippet: string; term: string }) {
-  const idx = snippet.toLowerCase().indexOf(term.toLowerCase());
-  if (idx === -1) return <Text>{snippet}</Text>;
+/** Render the snippet with the matched range highlighted in primary color. */
+function HighlightSnippet({
+  snippet,
+  matchStart,
+  matchLen,
+}: {
+  snippet: string;
+  matchStart: number;
+  matchLen: number;
+}) {
+  if (matchLen <= 0 || matchStart < 0 || matchStart + matchLen > snippet.length) {
+    return <Text>{snippet}</Text>;
+  }
   return (
     <Text>
-      {snippet.slice(0, idx)}
-      <Text className="font-bold text-primary">{snippet.slice(idx, idx + term.length)}</Text>
-      {snippet.slice(idx + term.length)}
+      {snippet.slice(0, matchStart)}
+      <Text className="font-bold text-primary">{snippet.slice(matchStart, matchStart + matchLen)}</Text>
+      {snippet.slice(matchStart + matchLen)}
     </Text>
   );
 }

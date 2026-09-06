@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useT } from '@/hooks/use-t';
+import { findTextMatches } from '@langplayer/utils';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { ReaderBlock } from '@/lib/parse-markdown';
 
@@ -40,32 +41,29 @@ function buildSnippet(
   return { snippet, matchStart };
 }
 
-/** Search the reader's text blocks (case-insensitive, whitespace-normalized). */
+/** Search the reader's text blocks (case-insensitive, invisible-char- and
+ *  whitespace-insensitive via @langplayer/utils/findTextMatches). */
 export function searchReaderBlocks(
   blocks: ReaderBlock[] | null,
   query: string,
 ): ReaderSearchResult[] {
-  const q = query.replace(/\s+/g, ' ').trim().toLowerCase();
-  if (!q || !blocks) return [];
+  if (!blocks) return [];
   const results: ReaderSearchResult[] = [];
   for (let i = 0; i < blocks.length && results.length < MAX_RESULTS; i++) {
     const b = blocks[i]!;
     if (b.kind !== 'text') continue;
     const text = b.text;
-    const lower = text.toLowerCase();
-    let from = 0;
-    while (results.length < MAX_RESULTS) {
-      const idx = lower.indexOf(q, from);
-      if (idx === -1) break;
-      const { snippet, matchStart } = buildSnippet(text, idx, q.length);
+    const matches = findTextMatches(text, query, MAX_RESULTS - results.length);
+    for (const m of matches) {
+      const matchLen = m.end - m.start;
+      const { snippet, matchStart } = buildSnippet(text, m.start, matchLen);
       results.push({
         blockIndex: i,
         snippet,
         snippetMatchStart: matchStart,
-        snippetMatchLen: q.length,
-        match: { start: idx, end: idx + q.length },
+        snippetMatchLen: matchLen,
+        match: { start: m.start, end: m.end },
       });
-      from = idx + q.length;
     }
   }
   return results;

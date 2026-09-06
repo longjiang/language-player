@@ -104,6 +104,8 @@ export {
   deviceTimezone,
 } from './day-boundary';
 export { tokenMatchesAnyTerm, tokenMatchesAnyForm, kanaFormsForEntries } from './highlight-match';
+export { findTextMatches } from './text-search';
+export type { TextMatch } from './text-search';
 export {
   scoreTestAnswer,
   testScoreToRating,
