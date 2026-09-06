@@ -138,6 +138,10 @@ export interface TokenSpanProps {
    *  card is revealed. Defaults to true — highlighting alone does not hide a
    *  saved word's gloss. */
   quickGlossOnHighlight?: boolean;
+  /** When true, a highlighted token renders as a blank instead of its text
+   *  (SRS spell-mode "highlighted term as blank"). Ignored when not
+   *  highlighted. Defaults to false. */
+  blankHighlighted?: boolean;
   /** When true, skip Chinese script conversion for this token and render the
    *  source text as-is. Set by TokenizedText when the L2 source's dominant
    *  script already matches the user's preference (ADR-0019), so OpenCC's
@@ -175,6 +179,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   format,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
+  blankHighlighted = false,
   skipScriptConversion = false,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
@@ -258,6 +263,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Quiz blanking state — computed early since byeonggiNode, wrapperClass, etc. depend on it ──
   const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
+  // Spell-mode blank: a highlighted token rendered as a blank (no tap-to-reveal;
+  // reveal is the explicit answer submit in the review page).
+  const isHighlightBlank = blankHighlighted && isHighlighted;
+  const blankWord = isQuizBlanking || isHighlightBlank;
 
   const base = l2Code.split('-')[0]!;
 
@@ -378,7 +387,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   }, [byeonggi, base, l2Code, token.lemmas, cacheVersion]);
 
   // ── Byeonggi node: small muted text, same size as furigana <rt>, no brackets ──
-  const byeonggiNode = (byeonggiText && !isQuizBlanking) ? (
+  const byeonggiNode = (byeonggiText && !blankWord) ? (
     <span className="text-[0.55em] text-muted-foreground/70 font-normal select-none">
       {byeonggiText}
     </span>
@@ -420,7 +429,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const hasKanji = isJapanese && /[一-龯]/.test(token.text);
 
   // ── Common class for the outer clickable wrapper ──
-  const karaokeDimmed = isKaraokeSpoken === false && !isSelected && !isHighlighted && !isQuizBlanking;
+  const karaokeDimmed = isKaraokeSpoken === false && !isSelected && !isHighlighted && !blankWord;
   const karaokeStyle = karaokeDimmed ? { opacity: karaokeDimOpacity } : undefined;
   const wrapperClass = `cursor-pointer rounded transition-opacity ${
     isSelected
@@ -433,7 +442,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   }`;
 
   // ── Saved-word background — only on the word itself, never on the gloss ──
-  const wordBgClass = (!isSelected && !isHighlighted && isSaved && !isQuizBlanking)
+  const wordBgClass = (!isSelected && !isHighlighted && isSaved && !blankWord)
     ? 'bg-yellow-200/25 rounded'
     : '';
 
@@ -443,6 +452,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       setQuizRevealed(true);
       return;
     }
+    // Spell-mode blank: keep it a blank (no popup, no reveal) so the answer
+    // can't be leaked by tapping the hidden word.
+    if (isHighlightBlank) return;
     onClick(rect, el);
   };
 
@@ -491,8 +503,8 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Word content (reused by both layout variants) ──
   let wordContent: React.ReactNode;
 
-  // ── Quiz blank: show placeholder instead of word ──
-  if (isQuizBlanking) {
+  // ── Quiz / spell blank: show placeholder instead of word ──
+  if (blankWord) {
     wordContent = flat ? (
       <span
         className={`${flatSegmentClasses} px-1 text-muted-foreground/40 select-none`}
@@ -514,7 +526,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       : <span className={wordBgClass}>{phoneticText}</span>;
   } else {
     // ── Ruby text ──
-    const hasPhonetics = !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text && (phoneticsOnHighlight || !isHighlighted);
+    const hasPhonetics = !blankWord && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text && (phoneticsOnHighlight || !isHighlighted);
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(displayText, token.pronunciation!, l2Code)
       : null;
@@ -585,14 +597,14 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const wordWithGloss = (
     <>
       {annotatedWord}
-      {quickGlossDef && !isQuizBlanking && (
+      {quickGlossDef && !blankWord && (
         <QuickGloss def={quickGlossDef} needsTrailingSpace={nextTokenIsSeparator !== true} lang={quickGlossLang} />
       )}
     </>
   );
 
   // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
-  if (interlinearDef && !isQuizBlanking) {
+  if (interlinearDef && !blankWord) {
     return (
       <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect(), e.currentTarget); }} className={wrapperClass} style={karaokeStyle} {...hoverHandlers}>
         <span className="inline-flex flex-col items-center">

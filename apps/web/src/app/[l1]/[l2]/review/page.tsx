@@ -24,6 +24,9 @@ import {
   pronunciationTargetOf,
   scoreTestAnswer,
   scoreTestResult,
+  scoreSpellResult,
+  spellHintOf,
+  stringSimilarity,
   type SrsTestQuestion,
   type SrsTestDiagnostic,
   type SrsTestPriority,
@@ -171,9 +174,12 @@ export default function ReviewPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
-  const [reviewMode, setReviewMode] = useState<'recall' | 'test'>(() => {
+  const [reviewMode, setReviewMode] = useState<'recall' | 'choose' | 'spell'>(() => {
     if (typeof window === 'undefined') return 'recall';
-    return window.localStorage.getItem('lp:srs-review-mode') === 'test' ? 'test' : 'recall';
+    const stored = window.localStorage.getItem('lp:srs-review-mode');
+    // Migrate the pre-rename 'test' value to 'choose'.
+    if (stored === 'test' || stored === 'choose') return 'choose';
+    return stored === 'spell' ? 'spell' : 'recall';
   });
   /** Generation session id — bumped whenever the current test is invalidated
    *  (mode switch, card change, rating, remove), so stale async results from
@@ -184,7 +190,7 @@ export default function ReviewPage() {
    *  question. */
   const testSessionStartRef = useRef(0);
 
-  const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
+  const changeReviewMode = useCallback((mode: 'recall' | 'choose' | 'spell') => {
     testRequestVersionRef.current += 1;
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
@@ -194,6 +200,9 @@ export default function ReviewPage() {
     testSessionStartRef.current = 0;
     setShowDefinition(false);
     setRegeneratingKind(null);
+    setSpellText('');
+    setSpellSubmitted(false);
+    setSpellResult(null);
   }, []);
   const [testSlots, setTestSlots] = useState<TestSlot[]>([]);
   const [testAnswers, setTestAnswers] = useState<TestAnswer[]>([]);
@@ -203,6 +212,12 @@ export default function ReviewPage() {
   const [testSelectedAnswer, setTestSelectedAnswer] = useState<string | null>(null);
   const [testAnswerCorrect, setTestAnswerCorrect] = useState<boolean | null>(null);
   const [testScores, setTestScores] = useState<number[]>([]);
+  /** Spell-mode text input value (the learner's typed answer). */
+  const [spellText, setSpellText] = useState('');
+  /** True once the spell-mode answer has been submitted (input hidden). */
+  const [spellSubmitted, setSpellSubmitted] = useState(false);
+  /** The graded result of a spell submission (shown as feedback below). */
+  const [spellResult, setSpellResult] = useState<{ correct: boolean; answer: string } | null>(null);
   /** Which test question kind is currently being regenerated (spinner state). */
   const [regeneratingKind, setRegeneratingKind] = useState<TestQuestionKind | null>(null);
   /** "Now" tick for the progress-bar countdown while a test session runs. */
@@ -462,6 +477,9 @@ export default function ReviewPage() {
     setTestScores([]);
     setSuggestedRating(null);
     setRegeneratingKind(null);
+    setSpellText('');
+    setSpellSubmitted(false);
+    setSpellResult(null);
 
     const card = cards[currentIndex];
     if (!card) {
@@ -697,7 +715,7 @@ export default function ReviewPage() {
   // through the manager's single queue (one LLM call at a time) at prefetch
   // priority, which sits behind user regeneration and current-card work.
   useEffect(() => {
-    if (reviewMode !== 'test' || rated) return;
+    if (reviewMode !== 'choose' || rated) return;
     const manager = getSrsTestManager();
     void manager.ready();
     const wantedKeys: string[] = [];
@@ -804,10 +822,57 @@ export default function ReviewPage() {
     setTestStartedAt(null);
   }, [cards, currentIndex, testSlots, testAnswers, testQuestionIndex, wordForm, l2Code, loadSlot]);
 
-  const handleReveal = useCallback(() => {
-    if (reviewMode === 'test') { void startTest(); return; }
+  /**
+   * Start the current card's spell test. Unlike choose mode there is no LLM
+   * generation and no question slot — the timer starts immediately so the
+   * progress bar counts down while the learner types the blanked word.
+   */
+  const startSpell = useCallback(() => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    testRequestVersionRef.current += 1;
+    setShowDefinition(false);
+    setSpellText('');
+    setSpellSubmitted(false);
+    setSpellResult(null);
+    setTestAnswers([]);
+    setTestQuestionIndex(0);
+    setSuggestedRating(null);
+    setRegeneratingKind(null);
+    const now = Date.now();
+    testSessionStartRef.current = now;
+    setTestStartedAt(now);
+    log('[SRS Spell] session started', { l2Code, word: wordForm, correct: surfaceFormOf(card.word, wordForm) });
+  }, [cards, currentIndex, wordForm, l2Code]);
+
+  /**
+   * Submit the spell-mode answer. Grade by similarity with the blanked surface
+   * form, time-adjust with the countdown (same bands as choose mode), then map
+   * to the rating buttons via scoreSpellResult.
+   */
+  const handleSpellSubmit = useCallback(() => {
+    const card = cards[currentIndex];
+    if (!card || spellSubmitted) return;
+    const correctAnswer = surfaceFormOf(card.word, wordForm);
+    const totalMs = testSessionStartRef.current > 0
+      ? Math.max(0, Date.now() - testSessionStartRef.current)
+      : 0;
+    const sim = stringSimilarity(spellText, correctAnswer);
+    const rating = scoreSpellResult(spellText, correctAnswer, totalMs);
+    setSuggestedRating(rating);
+    setSpellSubmitted(true);
+    setSpellResult({ correct: sim >= 0.9, answer: correctAnswer });
+    testSessionStartRef.current = 0;
+    setTestStartedAt(null);
     setShowDefinition(true);
-  }, [reviewMode, startTest]);
+    log('[SRS Spell] answer submitted', { l2Code, word: wordForm, submitted: spellText, correct: correctAnswer, sim, totalMs, rating });
+  }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code]);
+
+  const handleReveal = useCallback(() => {
+    if (reviewMode === 'choose') { void startTest(); return; }
+    if (reviewMode === 'spell') { void startSpell(); return; }
+    setShowDefinition(true);
+  }, [reviewMode, startTest, startSpell]);
 
   const handleTestAnswer = useCallback((answer: string) => {
     log('[SRS Test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), answerCount: testAnswers.length, questionCount: testSlots.length });
@@ -885,6 +950,9 @@ export default function ReviewPage() {
     setTestScores([]);
     setSuggestedRating(null);
     setRegeneratingKind(null);
+    setSpellText('');
+    setSpellSubmitted(false);
+    setSpellResult(null);
     setRated(false);
     // Don't increment currentIndex — the removed card drops from the array,
     // so the next card shifts into the current slot.
@@ -922,6 +990,9 @@ export default function ReviewPage() {
         setTestScores([]);
         setSuggestedRating(null);
         setRegeneratingKind(null);
+        setSpellText('');
+        setSpellSubmitted(false);
+        setSpellResult(null);
       }
     }
   }, [cards, currentIndex, showDefinition, rated]);
@@ -1034,9 +1105,12 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
-  const definitionTestAnswered = reviewMode === 'test'
+  const definitionTestAnswered = reviewMode === 'choose'
     && testSlots.some((slot, index) => slot.kind === 'definition' && Boolean(testAnswers[index]));
-  const showContextTranslation = showDefinition || definitionTestAnswered;
+  // Spell mode keeps the context translation visible throughout (the learner
+  // sees the translated sentence with the bolded term even before the test
+  // starts, per SPEC-066 spell mode).
+  const showContextTranslation = showDefinition || definitionTestAnswered || reviewMode === 'spell';
 
   // ── Test progress bar (SPEC-066) ──
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
@@ -1430,6 +1504,10 @@ export default function ReviewPage() {
   const entry = l1Entry ?? fallbackEntry ?? currentCard.entry;
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
+  /** Muted first-character hint for the spell-mode input (reading or lemma). */
+  const spellHint = reviewMode === 'spell'
+    ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
+    : null;
   // Keep later tests hidden until the preceding test has been answered; the
   // current (first unanswered) slot renders its own status below.
   const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
@@ -1438,9 +1516,10 @@ export default function ReviewPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label={t('review.test_mode')}>
+        <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label={t('review.choose_mode')}>
           <button type="button" onClick={() => { changeReviewMode('recall'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.recall_mode')}</button>
-          <button type="button" onClick={() => { changeReviewMode('test'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'test' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.test_mode')}</button>
+          <button type="button" onClick={() => { changeReviewMode('choose'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'choose' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.choose_mode')}</button>
+          <button type="button" onClick={() => { changeReviewMode('spell'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'spell' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.spell_mode')}</button>
         </div>
         <span className="text-sm text-muted-foreground flex items-center gap-2 text-xs">
             {cardCounts.newCount > 0 && (
@@ -1487,6 +1566,7 @@ export default function ReviewPage() {
                 highlightEntryIds={targetHighlightEntryIds}
                 phoneticsOnHighlight={showDefinition}
                 quickGlossOnHighlight={showDefinition}
+                blankHighlighted={reviewMode === 'spell' && !spellSubmitted}
                 context={{
                   youtube_id: wordCtx.youtube_id,
                   videoTitle: wordCtx.videoTitle,
@@ -1547,7 +1627,8 @@ export default function ReviewPage() {
         {/* Test progress bar: counts down T = 10 s × totalTests once the
             session starts. Blue while more than 5 s × totalTests remain,
             green otherwise (SPEC-066). */}
-        {reviewMode === 'test' && testStartedAt !== null && !rated && (
+        {((reviewMode === 'choose' && testStartedAt !== null && !rated)
+          || (reviewMode === 'spell' && testStartedAt !== null && !rated && !spellSubmitted)) && (
           <div className="mt-4 w-full">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div
@@ -1562,7 +1643,7 @@ export default function ReviewPage() {
             the next. Questions are generated one at a time through the shared
             manager — a failing test shows its own error + retry + diagnostic
             and never blocks the other test's loading. */}
-        {reviewMode === 'test' && testSlots.length > 0 ? (
+        {reviewMode === 'choose' && testSlots.length > 0 ? (
           <div className="mt-4 w-full space-y-6 text-left">
             {visibleTestSlots.map((slot, slotIndex) => {
               const result = testAnswers[slotIndex];
@@ -1662,15 +1743,54 @@ export default function ReviewPage() {
               );
             })}
           </div>
-        ) : reviewMode === 'test' ? (
+        ) : reviewMode === 'choose' ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
             {t('review.start_test')}
           </Button>
+        ) : reviewMode === 'spell' && !showDefinition && !spellSubmitted ? (
+          testStartedAt === null ? (
+            <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
+              {t('review.start_test')}
+            </Button>
+          ) : (
+            <div className="mt-4 w-full space-y-3 text-left">
+              <label htmlFor="spell-input" className="text-sm font-medium text-foreground">{t('review.spell_prompt')}</label>
+              <div className="flex gap-2">
+                <input
+                  id="spell-input"
+                  type="text"
+                  value={spellText}
+                  onChange={(e) => setSpellText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && spellText.trim()) handleSpellSubmit(); }}
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoFocus
+                  className="flex-1 rounded-lg border border-border bg-background px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  placeholder={t('review.spell_prompt')}
+                />
+                <Button onClick={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="shrink-0">
+                  {t('review.submit')}
+                </Button>
+              </div>
+              {spellHint && <p className="text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</p>}
+            </div>
+          )
         ) : !showDefinition && reviewMode === 'recall' ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
             {t('review.show_definition')}
           </Button>
         ) : null}
+
+        {reviewMode === 'spell' && spellSubmitted && spellResult && (
+          <div className="mt-4 w-full text-left">
+            <p className={`text-sm font-semibold ${spellResult.correct ? 'text-green-600' : 'text-destructive'}`}>
+              {spellResult.correct ? t('review.answer_correct') : t('review.answer_incorrect')}
+            </p>
+            <p className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</p>
+          </div>
+        )}
 
         {showDefinition && (
           <div className="mt-4 w-full text-left space-y-3">
