@@ -56,12 +56,14 @@ action.delete_account_permanently,Permanently Delete Account,永久删除账户,
 action.delete_all,Delete All,删除全部,刪除全部,حذف الكل,Alle löschen,Eliminar todo,Tout supprimer,Hapus Semua,Elimina tutto,すべて削除,모두 삭제,Alles verwijderen,Usuń wszystko,Excluir Tudo,Удалить всё,ลบทั้งหมด,Tümünü Sil,Xóa tất cả
 action.delete_playlist,Delete Playlist,删除播放列表,刪除播放清單,حذف قائمة التشغيل,Wiedergabeliste löschen,Eliminar lista de reproducción,Supprimer la liste de lecture,Hapus daftar putar,Elimina playlist,プレイリストを削除,재생 목록 삭제,Afspeellijst verwijderen,Usuń listę odtwarzania,Excluir lista de reprodução,Удалить плейлист,ลบเพลย์ลิสต์,Çalma listesini sil,Xóa danh sách phát
 action.didnt_know,Didn't know,,,لم أكن أعرف,Wusste nicht,No sabía,Je ne savais pas,Tidak tahu,Non lo sapevo,知らなかった,몰랐어요,Wist niet,Nie wiedziałem,Não sabia,Не знал(а),ไม่รู้,Bilmiyordum,Không biết
+action.difficult_expressions,Difficult expressions,难词短语,難詞短語,التعبيرات الصعبة,Schwierige Ausdrücke,Expresiones difíciles,Expressions difficiles,Ungkapan sulit,Espressioni difficili,難しい表現,어려운 표현,Moeilijke uitdrukkingen,Trudne wyrażenia,Expressões difíceis,Трудные выражения,สำนวนยาก,Zor ifadeler,Cụm từ khó
 action.download,Download,下载,下載,تنزيل,Herunterladen,Descargar,Télécharger,Unduh,Scarica,ダウンロード,다운로드,Downloaden,Pobierz,Transferir,Скачать,ดาวน์โหลด,İndir,Tải xuống
 action.edit,Edit,编辑,編輯,تعديل,Bearbeiten,Editar,Modifier,Edit,Modifica,編集,편집,Bewerken,Edytuj,Editar,Редактировать,แก้ไข,Düzenle,Chỉnh sửa
 action.email_support,Email Support,邮件支持,電子郵件支持,دعم البريد الإلكتروني,E-Mail-Support,Soporte por Correo Electrónico,Support par E-mail,Dukungan Email,Supporto via Email,メールサポート,이메일 지원,E-mailondersteuning,Wsparcie E-mail,Suporte por E-mail,Поддержка по электронной почте,อีเมลสนับสนุน,E-posta Desteği,Hỗ trợ qua Email
 action.etymology,Etymology,词源,詞源,أصل الكلمة,Etymologie,Etimología,Étymologie,Etimologi,Etimologia,語源,어원,Etymologie,Etymologia,Etimologia,Этимология,นิรุกติศาสตร์,Etimoloji,Từ nguyên
 action.expand_all,Expand All,全部展开,全部展開,توسيع الكل,Alle erweitern,Expandir todo,Tout développer,Perluas semua,Espandi tutto,すべて展開,모두 펼치기,Alles uitklappen,Rozwiń wszystkie,Expandir tudo,Развернуть все,ขยายทั้งหมด,Tümünü Genişlet,Mở rộng tất cả
 action.expand_sidebar,Expand sidebar,展开侧栏,展開側欄,توسيع الشريط الجانبي,Seitenleiste einblenden,Mostrar barra lateral,Afficher la barre latérale,Perluas bilah sisi,Espandi barra laterale,サイドバーを開く,사이드바 펼치기,Zijbalk uitklappen,Rozwiń panel boczny,Expandir barra lateral,Развернуть боковую панель,ขยายแถบข้าง,Kenar çubuğunu genişlet,Mở rộng thanh bên
+action.explain,Explain,解释,解釋,اشرح,Erklären,Explicar,Expliquer,Jelaskan,Spiega,説明,설명,Uitleggen,Wyjaśnij,Explicar,Объяснить,อธิบาย,Açıkla,Giải thích
 action.explore_videos,Explore Videos,浏览视频,探索影片,استكشاف الفيديوهات,Videos erkunden,Explorar videos,Explorer les vidéos,Jelajahi Video,Esplora video,動画を探索,영상 탐색,Video's verkennen,Przeglądaj filmy,Explorar Vídeos,Изучать видео,สำรวจวิดีโอ,Videoları Keşfet,Khám phá video
 action.export,Export,导出,匯出,تصدير,Exportieren,Exportar,Exporter,Ekspor,Esporta,エクスポート,내보내기,Exporteren,Eksportuj,Exportar,Экспорт,ส่งออก,Dışa Aktar,Xuất
 action.fill_with_sample,Fill with sample,填入示例,填入範例,املأ بمثال,Mit Beispiel füllen,Rellenar con muestra,Remplir avec un échantillon,Isi dengan contoh,Compila con esempio,サンプルで埋める,샘플로 채우기,Vullen met voorbeeld,Wypełnij próbką,Preencher com amostra,Заполнить примером,เติมด้วยตัวอย่าง,Örnekle Doldur,Điền mẫu
@@ -70,6 +72,7 @@ action.go_home,Go home,返回首页,返回首頁,العودة إلى الصفح�
 action.go_pro,Go Pro,升级专业版,升級專業版,النسخة الاحترافية,Pro werden,Hazte Pro,Passer Pro,Jadi Pro,Diventa Pro,プロにアップグレード,프로로 업그레이드,Word Pro,Przejdź na Pro,Torne-se Pro,Перейти на Pro,อัปเกรดเป็น Pro,Pro'ya Geç,Nâng cấp Pro
 action.go_to_language_selection,Go to language selection,前往语言选择,前往語言選擇,الذهاب إلى اختيار اللغة,Zur Sprachauswahl,Ir a selección de idioma,Aller à la sélection de langue,Pergi ke pemilihan bahasa,Vai alla selezione della lingua,言語選択へ,언어 선택으로 이동,Ga naar taalkeuze,Przejdź do wyboru języka,Ir para seleção de idioma,Перейти к выбору языка,ไปที่การเลือกภาษา,Dil seçimine git,Đi đến chọn ngôn ngữ
 action.go_to_page,Go to page,跳转到页面,跳轉到頁面,الذهاب إلى الصفحة,Gehe zu Seite,Ir a la página,Aller à la page,Pergi ke halaman,Vai alla pagina,ページに移動,페이지로 이동,Ga naar pagina,Przejdź do strony,Ir para a página,Перейти на страницу,ไปที่หน้า,Sayfaya git,Đi tới trang
+action.grammar_points,Grammar points,语法要点,語法要點,النقاط النحوية,Grammatikpunkte,Puntos de gramática,Points de grammaire,Poin tata bahasa,Punti grammaticali,文法ポイント,문법 포인트,Grammaticapunten,Punkty gramatyczne,Pontos de gramática,Грамматические моменты,จุดไวยากรณ์,Dil bilgisi noktaları,Điểm ngữ pháp
 action.grant_admin,Grant Admin,授予管理员,授予管理員,منح صلاحية المسؤول,Admin-Rechte gewähren,Conceder administrador,Accorder les droits admin,Berikan admin,Concedi amministratore,管理者権限を付与,관리자 권한 부여,Beheerdersrechten geven,Przyznaj uprawnienia administratora,Conceder administrador,Назначить администратором,ให้สิทธิ์ผู้ดูแลระบบ,Yönetici ver,Cấp quyền quản trị
 action.grant_subscription,Grant Subscription,授予订阅,授予訂閱,منح اشتراك,Abonnement gewähren,Conceder suscripción,Accorder un abonnement,Berikan langganan,Concedi abbonamento,サブスクリプションを付与,구독 부여,Abonnement toekennen,Przyznaj subskrypcję,Conceder assinatura,Выдать подписку,ให้การสมัครสมาชิก,Abonelik ver,Cấp đăng ký
 action.hide_sidebar,Hide sidebar,隐藏侧栏,隱藏側欄,إخفاء الشريط الجانبي,Seitenleiste ausblenden,Ocultar barra lateral,Masquer la barre latérale,Sembunyikan bilah sisi,Nascondi barra laterale,サイドバーを隠す,사이드바 숨기기,Zijbalk verbergen,Ukryj pasek boczny,Ocultar barra lateral,Скрыть боковую панель,ซ่อนแถบด้านข้าง,Kenar çubuğunu gizle,Ẩn thanh bên
@@ -152,6 +155,7 @@ action.start_watching,Start Watching,开始观看,開始觀看,بدء المشا
 action.start_writing,Start Writing,开始写作,開始寫作,ابدأ الكتابة,Schreiben beginnen,Empezar a escribir,Commencer à écrire,Mulai menulis,Inizia a scrivere,書き始める,쓰기 시작,Begin met schrijven,Zacznij pisać,Começar a escrever,Начать писать,เริ่มเขียน,Yazmaya başla,Bắt đầu viết
 action.stop,Stop,停止,停止,إيقاف,Stopp,Detener,Arrêter,Berhenti,Ferma,停止,중지,Stoppen,Zatrzymaj,Parar,Стоп,หยุด,Durdur,Dừng
 action.subscribe,Subscribe,订阅,訂閱,اشتراك,Abonnieren,Suscribirse,S'abonner,Berlangganan,Abbònati,購読する,구독,Abonneren,Subskrybuj,Subscrever,Подписаться,สมัครสมาชิก,Abone Ol,Đăng ký
+action.summarize,Summarize,总结,總結,لخّص,Zusammenfassen,Resumir,Résumer,Ringkas,Riassumi,要約,요약,Samenvatten,Podsumuj,Resumir,Кратко,สรุป,Özetle,Tóm tắt
 action.summarize_book_up_to_chapter,Summarize book up to this chapter,总结本书截至目前章节,總結本書截至本章,لخّص الكتاب حتى هذا الفصل,Buch bis zu diesem Kapitel zusammenfassen,Resumir el libro hasta este capítulo,Résumer le livre jusqu'à ce chapitre,Ringkas buku sampai bab ini,Riepiloga il libro fino a questo capitolo,この章まで本を要約,이 장까지 책 요약하기,Vat het boek samen tot dit hoofdstuk,Podsumuj książkę do tego rozdziału,Resumir o livro até este capítulo,Резюмировать книгу до этой главы,สรุปหนังสือจนถึงบทนี้,Kitabı bu bölüme kadar özetle,Tóm tắt cuốn sách đến chương này
 action.summarize_this_chapter,Summarize this chapter,总结本章,總結本章,لخّص هذا الفصل,Dieses Kapitel zusammenfassen,Resumir este capítulo,Résumer ce chapitre,Ringkas bab ini,Riepiloga questo capitolo,この章を要約,이 장 요약하기,Vat dit hoofdstuk samen,Podsumuj ten rozdział,Resumir este capítulo,Резюмировать эту главу,สรุปบทนี้,Bu bölümü özetle,Tóm tắt chương này
 action.summarize_this_page,Summarize this page,总结本页,總結本頁,لخّص هذه الصفحة,Diese Seite zusammenfassen,Resumir esta página,Résumer cette page,Ringkas halaman ini,Riepiloga questa pagina,このページを要約,이 페이지 요약하기,Vat deze pagina samen,Podsumuj tę stronę,Resumir esta página,Резюмировать эту страницу,สรุปหน้านี้,Bu sayfayı özetle,Tóm tắt trang này
@@ -1219,6 +1223,79 @@ prompt.explain_block_item1,Its overall meaning in {l1Name},其在{l1Name}中的�
 prompt.explain_block_item2,A phrase-by-phrase breakdown explaining how the text is constructed,逐句分析文本的构成方式,逐句分析文本的構成方式,تحليل عبارة بعبارة يشرح كيفية تركيب النص,"Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist",Un desglose frase por frase que explica cómo está construido el texto,Une analyse phrase par phrase expliquant comment le texte est construit,Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun,Un'analisi frase per frase che spiega come è costruito il testo,テキストがどのように構成されているかを説明するフレーズごとの分析,텍스트가 어떻게 구성되었는지 설명하는 구문별 분석,Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd,"Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany",Uma análise frase por frase explicando como o texto é construído,"Пофразовый разбор, объясняющий, как построен текст",การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร,Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm,Phân tích từng cụm từ giải thích cách văn bản được xây dựng
 prompt.explain_context_label,Context,上下文,上下文,السياق,Kon text,Contexto,Con texte,Konteks,Contesto,文脈,문맥,Context,Kontekst,Contexto,Контекст,บริบท,Bağlam,Ngữ cảnh
 prompt.explain_morphology,"Give its pronunciation. If it is an inflected or conjugated form, state its dictionary form and explain the inflection. If it is not inflected, do not mention inflection or lemma.",给出其发音。如果是屈折或变位形式，给出其原形并说明屈折变化。如果不是屈折形式，则不要提及屈折或词元。,給出其發音。如果是屈折或變位形式，給出其原形並說明屈折變化。如果不是屈折形式，則不要提及屈折或詞元。,اذكر نطقها وصرفها (أو أصلها اللغوي إن أمكن). إذا كانت مصرفة، فاذكر الليما والتصريف؛ وإلا فلا تذكر التصريف أو الليما.,"Gib die Aussprache und Morphologie (oder Etymologie, falls zutreffend) an. Wenn flektiert, gib das Lemma und die Flexion an; andernfalls erwähne Flexion oder Lemma nicht.","Da su pronunciación y morfología (o etimología si corresponde). Si está flexionada, da su lema y flexión; de lo contrario, no menciones flexión ni lema.","Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme.","Berikan pengucapan dan morfologinya (atau etimologi jika sesuai). Jika berinfleksi, berikan lemma dan infleksinya; jika tidak, jangan sebutkan infleksi atau lemma.","Fornisci la pronuncia e la morfologia (o l'etimologia se appropriato). Se flessa, fornisci il lemma e la flessione; altrimenti non menzionare flessione o lemma.",発音と形態（または適切であれば語源）を示してください。活用形の場合は、見出し語（レンマ）と活用形を示し、そうでない場合は活用や見出し語に言及しないでください。,"발음과 형태(또는 적절한 경우 어원)를 제시하세요. 굴절된 형태라면 기본형(레마)과 굴절형을 제시하고, 그렇지 않으면 굴절이나 기본형을 언급하지 마세요.","Geef de uitspraak en morfologie (of etymologie indien van toepassing). Als verbogen, geef het lemma en de verbuiging; anders, vermeld geen verbuiging of lemma.","Podaj wymowę i morfologię (lub etymologię, jeśli to stosowne). Jeśli odmienione, podaj lemat i odmianę; w przeciwnym razie nie wspominaj o odmianie ani lemacie.","Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema.","Укажи произношение и морфологию (или этимологию, если уместно). Если слово изменяется, укажи лемму и форму словоизменения; иначе не упоминай словоизменение или лемму.",ระบุการออกเสียงและวิทยาหน่วยคำ (หรือศัพทมูลวิทยาหากเหมาะสม) หากผันรูป ให้ระบุคำตั้ง (lemma) และการผันรูป มิฉะนั้นอย่ากล่าวถึงการผันรูปหรือคำตั้ง,"Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme.","Cho biết cách phát âm và hình thái (hoặc từ nguyên nếu phù hợp). Nếu là dạng biến tố, cho biết lemma và dạng biến tố; nếu không, đừng đề cập đến biến tố hoặc lemma."
+prompt.explain_selected_text,"In {l1Name}, concisely explain the following {l2Name} text:
+
+{text}
+
+Keep your explanation brief.","请用{l1Name}简洁地解释下面的{l2Name}文本：
+
+{text}
+
+请保持简洁。","請用{l1Name}簡潔地解釋下面的{l2Name}文字：
+
+{text}
+
+請保持簡潔。","اشرح بإيجاز باللغة {l1Name} النص التالي باللغة {l2Name}:
+
+{text}
+
+أبقِ الشرح موجزًا.","Erkläre auf {l1Name} kurz den folgenden {l2Name}-Text:
+
+{text}
+
+Halte deine Erklärung kurz.","Explica brevemente en {l1Name} el siguiente texto en {l2Name}:
+
+{text}
+
+Mantén la explicación breve.","Expliquez brièvement en {l1Name} le texte suivant en {l2Name} :
+
+{text}
+
+Restez concis.","Jelaskan secara singkat dalam {l1Name} teks {l2Name} berikut:
+
+{text}
+
+Buat penjelasan tetap singkat.","Spiega brevemente in {l1Name} il seguente testo in {l2Name}:
+
+{text}
+
+Mantieni la spiegazione breve.","{l1Name}で、次の{l2Name}テキストを簡潔に説明してください：
+
+{text}
+
+簡潔に説明してください。","{l1Name}로 다음 {l2Name} 텍스트를 간결하게 설명하세요:
+
+{text}
+
+설명을 간결하게 유지하세요.","Leg in {l1Name} kort uit de volgende {l2Name}-tekst:
+
+{text}
+
+Houd je uitleg kort.","Krótko wyjaśnij po {l1Name} następujący tekst w {l2Name}:
+
+{text}
+
+Zachowaj zwięzłość.","Explique brevemente em {l1Name} o seguinte texto em {l2Name}:
+
+{text}
+
+Mantenha a explicação breve.","Кратко объясни на {l1Name} следующий текст на {l2Name}:
+
+{text}
+
+Будь кратким.","อธิบายสั้น ๆ ใน{l1Name}ข้อความ{l2Name}ต่อไปนี้:
+
+{text}
+
+คำอธิบายสั้นลง","{l1Name} dilinde aşağıdaki {l2Name} metnini kısaca açıkla:
+
+{text}
+
+Açıklamanı kısa tut.","Hãy giải thích ngắn gọn bằng {l1Name} văn bản {l2Name} sau:
+
+{text}
+
+Giữ giải thích ngắn gọn."
 prompt.explain_text_label,Text,文本,文本,النص,Text,Texto,Texte,Teks,Testo,テキスト,텍스트,Tekst,Tekst,Texto,Текст,ข้อความ,Metin,Văn bản
 prompt.explain_ticks,"Wrap every {l2Name} word, phrase, or whole sentence in single backticks (`). Wrap entire example sentences as one backticked span, e.g. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, not just the target word. Never nest backticks.",将每个{l2Name}单词、短语或整个句子都用单个反引号（`）括起来。整个例句要作为一个反引号整体，例如`その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`，而不是只括目标词。不要嵌套反引号。,將每個{l2Name}單詞、短語或整個句子都用單個反引號（`）括起來。整個例句要作為一個反引號整體，例如`その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`，而不是只括目標詞。不要嵌套反引號。,ضع كل كلمة أو عبارة أو جملة كاملة باللغة {l2Name} بين علامتي اقتباس خلفيتين مفردتين (`). ضع الجملة المثال كاملة ضمن زوج واحد من العلامات، مثل `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`، وليس الكلمة المستهدفة فقط. لا تستخدم علامات متداخلة.,"Setze jedes {l2Name}-Wort, jede Phrase oder den ganzen Satz in einfache Backticks (`). Umschließe ganze Beispielsätze als einen Backtick-Block, z. B. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, nicht nur das Zielwort. Verschachtele keine Backticks.","Envuelve cada palabra, frase u oración completa en {l2Name} con comillas invertidas simples (`). Envuelve las oraciones de ejemplo completas como un solo bloque, p. ej. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, no solo la palabra objetivo. No anides comillas.","Encadre chaque mot, expression ou phrase entière en {l2Name} par des accents graves simples (`). Encadre les phrases d'exemple entières comme un seul bloc, p. ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, pas seulement le mot cible. N'imbrique pas les accents graves.","Bungkus setiap kata, frasa, atau kalimat lengkap dalam bahasa {l2Name} dengan backtick tunggal (`). Bungkus kalimat contoh lengkap sebagai satu blok, misalnya `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, bukan hanya kata sasarannya. Jangan membuat backtick bersarang.","Racchiudi ogni parola, espressione o intera frase in {l2Name} tra apici singoli inversi (`). Racchiudi le frasi d'esempio intere come un unico blocco, ad es. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, non solo la parola bersaglio. Non annidare gli apici.",{l2Name}の単語・フレーズ・文全体はすべて単一のバッククォート（`）で囲んでください。例文は文全体を1つのバッククォートで囲んでください。例：`その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`。対象語だけを囲まないでください。バッククォートを入れ子にしないでください。,"모든 {l2Name} 단어, 구, 또는 전체 문장을 단일 백틱(`)으로 감싸세요. 예문 전체를 하나의 백틱 블록으로 감싸세요. 예: `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`. 대상 단어만 감싸지 마세요. 백틱을 중첩하지 마세요.","Zet elk {l2Name}-woord, elke zin of een hele zin tussen enkele backticks (`). Zet hele voorbeeldzinnen als één backtickblok, bijv. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, niet alleen het doelwoord. Nest geen backticks.","Umieszczaj każde słowo, frazę lub całe zdanie w języku {l2Name} w pojedynczych apostrofach wstecznych (`). Umieszczaj całe zdania przykładowe jako jeden blok, np. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, a nie tylko słowo docelowe. Nie zagnieżdżaj apostrofów.","Coloca cada palavra, expressão ou frase completa em {l2Name} entre acentos graves simples (`). Coloca as frases de exemplo completas como um único bloco, por ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, não apenas a palavra-alvo. Não aninhes acentos graves.","Обрамляй каждое слово, фразу или целое предложение на {l2Name} одиночными обратными кавычками (`). Обрамляй целые примеры одним блоком, например `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, а не только целевое слово. Не вкладывай обратные кавычки друг в друга.",ใส่เครื่องหมาย backtick เดี่ยว (`) ครอบทุกคำ วลี หรือทั้งประโยคภาษา{l2Name} ครอบทั้งประโยคตัวอย่างเป็นบล็อกเดียว เช่น `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した` ไม่ใช่แค่คำเป้าหมาย ห้ามใช้ backtick ซ้อนกัน,"{l2Name} dilindeki her kelimeyi, ifadeyi veya tüm cümleyi tek backtick (`) içine al. Örnek cümlelerin tamamını tek backtick bloğu olarak al, örn. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, sadece hedef kelimeyi değil. Backtick iç içe kullanma.","Bọc mọi từ, cụm từ hoặc cả câu tiếng {l2Name} trong dấu backtick đơn (`). Bọc toàn bộ câu ví dụ thành một khối backtick, ví dụ `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, không chỉ riêng từ mục tiêu. Không lồng backtick."
 prompt.explain_word,"Please succinctly explain the {l2Name} word ""{word}"", then give 2 examples with translations.","请简洁地解释{l2Name}单词""{word}""，然后给出2个带翻译的示例。","請簡潔地解釋{l2Name}單詞""{word}""，然後給出2個帶翻譯的示例。","يرجى شرح كلمة {l2Name} ""{word}"" بإيجاز، ثم أعط مثالين مع ترجماتهما.","Erkläre bitte kurz das {l2Name}-Wort ""{word}"" und gib dann 2 Beispiele mit Übersetzungen.","Explica brevemente la palabra en {l2Name} ""{word}"" y luego da 2 ejemplos con traducciones.","Expliquez brièvement le mot {l2Name} ""{word}"", puis donnez 2 exemples avec traductions.","Jelaskan secara singkat kata {l2Name} ""{word}"", lalu berikan 2 contoh dengan terjemahan.","Spiega brevemente la parola {l2Name} ""{word}"", poi fornisci 2 esempi con traduzioni.","{l2Name}の単語""{word}""を簡潔に説明し、翻訳付きの例を2つ挙げてください。","{l2Name} 단어 ""{word}""를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.","Leg kort uit wat het {l2Name}-woord ""{word}"" betekent en geef daarna 2 voorbeelden met vertalingen.","Krótko wyjaśnij słowo w języku {l2Name} ""{word}"", a następnie podaj 2 przykłady z tłumaczeniami.","Explique brevemente a palavra em {l2Name} ""{word}"" e, em seguida, dê 2 exemplos com traduções.","Кратко объясни слово на {l2Name} ""{word}"", затем приведи 2 примера с переводами.","กรุณาอธิบายคำภาษา{l2Name} ""{word}"" โดยสรุป แล้วยกตัวอย่างพร้อมคำแปล 2 ตัวอย่าง","Lütfen {l2Name} dilindeki ""{word}"" kelimesini kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.","Vui lòng giải thích ngắn gọn từ tiếng {l2Name} ""{word}"", sau đó đưa ra 2 ví dụ kèm bản dịch."
@@ -1226,7 +1303,81 @@ prompt.explain_word_context,"Please succinctly explain the {l2Name} word ""{word
 prompt.explain_word_context_form,"Please succinctly explain the {l2Name} word ""{word}"" (inflected form: {contextForm}) in ""{context}"", then give 2 examples with translations.","请简洁地解释{l2Name}单词""{word}""（屈折形式：{contextForm}）在""{context}""中的含义，然后给出2个带翻译的示例。","請簡潔地解釋{l2Name}單詞""{word}""（屈折形式：{contextForm}）在""{context}""中的含義，然後給出2個帶翻譯的示例。","يرجى شرح كلمة {l2Name} ""{word}"" (الصيغة المصرفة: {contextForm}) بإيجاز في سياق ""{context}""، ثم أعط مثالين مع ترجماتهما.","Erkläre bitte kurz das {l2Name}-Wort ""{word}"" (flektierte Form: {contextForm}) im Satz ""{context}"" und gib dann 2 Beispiele mit Übersetzungen.","Explica brevemente la palabra en {l2Name} ""{word}"" (forma flexionada: {contextForm}) en ""{context}"" y luego da 2 ejemplos con traducciones.","Expliquez brièvement le mot {l2Name} ""{word}"" (forme fléchie : {contextForm}) dans ""{context}"", puis donnez 2 exemples avec traductions.","Jelaskan secara singkat kata {l2Name} ""{word}"" (bentuk infleksi: {contextForm}) dalam ""{context}"", lalu berikan 2 contoh dengan terjemahan.","Spiega brevemente la parola {l2Name} ""{word}"" (forma flessa: {contextForm}) in ""{context}"", poi fornisci 2 esempi con traduzioni.","""{context}""における{l2Name}の単語""{word}""（屈折形：{contextForm}）を簡潔に説明し、翻訳付きの例を2つ挙げてください。","""{context}""에서 {l2Name} 단어 ""{word}""(굴절형: {contextForm})를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.","Leg kort uit wat het {l2Name}-woord ""{word}"" (verbuigingsvorm: {contextForm}) betekent in ""{context}"" en geef daarna 2 voorbeelden met vertalingen.","Krótko wyjaśnij słowo w języku {l2Name} ""{word}"" (forma odmieniona: {contextForm}) w zdaniu ""{context}"", a następnie podaj 2 przykłady z tłumaczeniami.","Explique brevemente a palavra em {l2Name} ""{word}"" (forma flexionada: {contextForm}) em ""{context}"" e, em seguida, dê 2 exemplos com traduções.","Кратко объясни слово на {l2Name} ""{word}"" (словоизменительная форма: {contextForm}) во фразе ""{context}"", затем приведи 2 примера с переводами.","กรุณาอธิบายคำภาษา{l2Name} ""{word}"" (รูปผัน: {contextForm}) ใน ""{context}"" โดยสรุป แล้วยกตัวอย่างพร้อมคำแปล 2 ตัวอย่าง","Lütfen {l2Name} dilindeki ""{word}"" kelimesini (çekimli biçimi: {contextForm}) ""{context}"" içinde kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.","Vui lòng giải thích ngắn gọn từ tiếng {l2Name} ""{word}"" (dạng biến cách: {contextForm}) trong ""{context}"", sau đó đưa ra 2 ví dụ kèm bản dịch."
 prompt.explain_word_examples,Also give 2 examples of how the word is typically used.,再给出2个该单词典型用法的示例。,再給出2個該單詞典型用法的示例。,أيضًا اذكر مثالين يوضحان الاستخدام المعتاد للكلمة.,"Gib außerdem 2 Beispiele dafür, wie das Wort typischerweise verwendet wird.",Da también 2 ejemplos de cómo se usa habitualmente la palabra.,Donne aussi 2 exemples d'utilisation typique du mot.,Berikan juga 2 contoh bagaimana kata tersebut biasanya digunakan.,Fornisci anche 2 esempi di come la parola viene solitamente usata.,また、その単語が通常どのように使われるかの例を2つ示してください。,단어가 일반적으로 어떻게 사용되는지 예 2개도 제시하세요.,Geef ook 2 voorbeelden van hoe het woord doorgaans wordt gebruikt.,Podaj również 2 przykłady typowego użycia słowa.,Dá também 2 exemplos de como a palavra é normalmente usada.,Также приведи 2 примера типичного использования слова.,นอกจากนี้ ให้ยกตัวอย่าง 2 ตัวอย่างการใช้งานทั่วไปของคำนี้,Ayrıca kelimenin tipik olarak nasıl kullanıldığına dair 2 örnek ver.,Cũng đưa ra 2 ví dụ về cách từ này thường được dùng.
 prompt.explain_word_examples_context,Also give 2 examples of how the word is used in the same sense as in the context provided.,再给出2个示例，说明该词在与所提供语境相同的含义下如何使用。,再給出2個示例，說明該詞在與所提供語境相同的含義下如何使用。,أيضًا اذكر مثالين يوضحان استخدام الكلمة بنفس المعنى الوارد في السياق المقدم.,"Gib außerdem 2 Beispiele dafür, wie das Wort in derselben Bedeutung wie im angegebenen Kontext verwendet wird.",Da también 2 ejemplos de cómo se usa la palabra con el mismo sentido que en el contexto proporcionado.,Donne aussi 2 exemples de la façon dont le mot est utilisé dans le même sens que dans le contexte fourni.,Berikan juga 2 contoh bagaimana kata tersebut digunakan dalam makna yang sama seperti pada konteks yang diberikan.,Fornisci anche 2 esempi di come la parola viene usata con lo stesso significato del contesto fornito.,また、提供された文脈と同じ意味でその単語がどのように使われるかの例を2つ示してください。,제공된 맥락과 같은 의미로 단어가 어떻게 사용되는지 예 2개도 제시하세요.,Geef ook 2 voorbeelden van hoe het woord in dezelfde betekenis als in de gegeven context wordt gebruikt.,Podaj również 2 przykłady użycia słowa w tym samym znaczeniu co w podanym kontekście.,Dá também 2 exemplos de como a palavra é usada com o mesmo sentido que no contexto fornecido.,"Также приведи 2 примера использования слова в том же значении, что и в предоставленном контексте.",นอกจากนี้ ให้ยกตัวอย่าง 2 ตัวอย่างว่าใช้คำนี้ในความหมายเดียวกันกับบริบทที่ให้ไว้อย่างไร,Ayrıca kelimenin verilen bağlamdakiyle aynı anlamda nasıl kullanıldığına dair 2 örnek ver.,Cũng đưa ra 2 ví dụ về cách từ này được dùng với cùng nghĩa như trong ngữ cảnh đã cho.
+prompt.followup_difficult_expressions,"In {l1Name}, identify and briefly explain the difficult expressions in the following {l2Name} text:
+
+{text}","请用{l1Name}识别并简要解释下面{l2Name}文本中的难词短语：
+
+{text}","請用{l1Name}識別並簡要解釋下面{l2Name}文字中的難詞短語：
+
+{text}","باللغة {l1Name}، حدّد واشرح بإيجاز التعبيرات الصعبة في النص التالي باللغة {l2Name}:
+
+{text}","Erkläre auf {l1Name} kurz die schwierigen Ausdrücke im folgenden {l2Name}-Text:
+
+{text}","En {l1Name}, identifica y explica brevemente las expresiones difíciles del siguiente texto en {l2Name}:
+
+{text}","En {l1Name}, identifiez et expliquez brièvement les expressions difficiles du texte suivant en {l2Name} :
+
+{text}","Dalam {l1Name}, identifikasi dan jelaskan secara singkat ungkapan sulit dalam teks {l2Name} berikut:
+
+{text}","In {l1Name}, identifica e spiega brevemente le espressioni difficili nel seguente testo in {l2Name}:
+
+{text}","{l1Name}で、次の{l2Name}テキストの中の難しい表現を特定して簡潔に説明してください：
+
+{text}","{l1Name}로 다음 {l2Name} 텍스트의 어려운 표현을 찾아 간결하게 설명하세요:
+
+{text}","Identificeer en leg in {l1Name} kort de moeilijke uitdrukkingen uit in de volgende {l2Name}-tekst:
+
+{text}","Po {l1Name} wskaż i krótko wyjaśnij trudne wyrażenia w następującym tekście w {l2Name}:
+
+{text}","Em {l1Name}, identifique e explique brevemente as expressões difíceis no seguinte texto em {l2Name}:
+
+{text}","На {l1Name} определи и кратко объясни трудные выражения в следующем тексте на {l2Name}:
+
+{text}","ใน{l1Name} จงระบุและอธิบายสั้น ๆ ถึงสำนวนยากในข้อความ{l2Name}ต่อไปนี้:
+
+{text}","{l1Name} dilinde aşağıdaki {l2Name} metnindeki zor ifadeleri belirle ve kısaca açıkla:
+
+{text}","Bằng {l1Name}, hãy xác định và giải thích ngắn gọn các cụm từ khó trong văn bản {l2Name} sau:
+
+{text}"
 prompt.followup_etymology,"Please give the etymology of the {l2Name} word ""{word}"".","请给出{l2Name}单词""{word}""的词源。","請給出{l2Name}單詞""{word}""的詞源。","يرجى تقديم أصل كلمة {l2Name} ""{word}"".","Gib bitte die Etymologie des {l2Name}-Wortes ""{word}"" an.","Da la etimología de la palabra en {l2Name} ""{word}"".","Donnez l'étymologie du mot {l2Name} ""{word}"".","Berikan etimologi kata {l2Name} ""{word}"".","Fornisci l'etimologia della parola {l2Name} ""{word}"".","{l2Name}の単語""{word}""の語源を挙げてください。","{l2Name} 단어 ""{word}""의 어원을 알려주세요.","Geef de etymologie van het {l2Name}-woord ""{word}"".","Podaj etymologię słowa w języku {l2Name} ""{word}"".","Dá a etimologia da palavra em {l2Name} ""{word}"".","Приведи этимологию слова на {l2Name} ""{word}"".","กรุณาให้ที่มาเชิงนิรุกติศาสตร์ของคำภาษา{l2Name} ""{word}""","Lütfen {l2Name} dilindeki ""{word}"" kelimesinin etimolojisini ver.","Vui lòng cung cấp từ nguyên của từ tiếng {l2Name} ""{word}""."
+prompt.followup_grammar_points,"In {l1Name}, identify and briefly explain the grammar points in the following {l2Name} text:
+
+{text}","请用{l1Name}识别并简要解释下面{l2Name}文本中的语法要点：
+
+{text}","請用{l1Name}識別並簡要解釋下面{l2Name}文字中的語法要點：
+
+{text}","باللغة {l1Name}، حدّد واشرح بإيجاز النقاط النحوية في النص التالي باللغة {l2Name}:
+
+{text}","Erkläre auf {l1Name} kurz die Grammatikpunkte im folgenden {l2Name}-Text:
+
+{text}","En {l1Name}, identifica y explica brevemente los puntos gramaticales del siguiente texto en {l2Name}:
+
+{text}","En {l1Name}, identifiez et expliquez brièvement les points de grammaire du texte suivant en {l2Name} :
+
+{text}","Dalam {l1Name}, identifikasi dan jelaskan secara singkat poin tata bahasa dalam teks {l2Name} berikut:
+
+{text}","In {l1Name}, identifica e spiega brevemente i punti grammaticali nel seguente testo in {l2Name}:
+
+{text}","{l1Name}で、次の{l2Name}テキストの中の文法ポイントを特定して簡潔に説明してください：
+
+{text}","{l1Name}로 다음 {l2Name} 텍스트의 문법 포인트를 찾아 간결하게 설명하세요:
+
+{text}","Identificeer en leg in {l1Name} kort de grammaticapunten uit in de volgende {l2Name}-tekst:
+
+{text}","Po {l1Name} wskaż i krótko wyjaśnij punkty gramatyczne w następującym tekście w {l2Name}:
+
+{text}","Em {l1Name}, identifique e explique brevemente os pontos gramaticais no seguinte texto em {l2Name}:
+
+{text}","На {l1Name} определи и кратко объясни грамматические моменты в следующем тексте на {l2Name}:
+
+{text}","ใน{l1Name} จงระบุและอธิบายสั้น ๆ ถึงจุดไวยากรณ์ในข้อความ{l2Name}ต่อไปนี้:
+
+{text}","{l1Name} dilinde aşağıdaki {l2Name} metnindeki dil bilgisi noktalarını belirle ve kısaca açıkla:
+
+{text}","Bằng {l1Name}, hãy xác định và giải thích ngắn gọn các điểm ngữ pháp trong văn bản {l2Name} sau:
+
+{text}"
 prompt.followup_inflection,"Please explain the lemma (dictionary form) of the {l2Name} word ""{word}"", how the word is inflecting, and the meaning of the inflected form.","请解释{l2Name}单词""{word}""的词元（词典形式）、该词的屈折变化方式，以及屈折形式的意义。","請解釋{l2Name}單詞""{word}""的詞元（詞典形式）、該詞的屈折變化方式，以及屈折形式的意義。","يرجى شرح الليما (الصيغة المعجمية) لكلمة {l2Name} ""{word}""، وكيفية تصريفها، ومعنى الصيغة المصرفة.","Erkläre bitte das Lemma (Wörterbuchform) des {l2Name}-Wortes ""{word}"", wie das Wort flektiert wird und die Bedeutung der flektierten Form.","Explica el lema (forma de diccionario) de la palabra en {l2Name} ""{word}"", cómo se flexiona la palabra y el significado de la forma flexionada.","Expliquez le lemme (forme de dictionnaire) du mot {l2Name} ""{word}"", comment le mot se fléchit et le sens de la forme fléchie.","Jelaskan lemma (bentuk kamus) dari kata {l2Name} ""{word}"", bagaimana kata itu berinfleksi, dan arti bentuk infleksinya.","Spiega il lemma (forma di dizionario) della parola {l2Name} ""{word}"", come si flette la parola e il significato della forma flessa.","{l2Name}の単語""{word}""の見出し語（辞書形）、その語の活用の仕方、および活用形の意味を説明してください。","{l2Name} 단어 ""{word}""의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.","Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord ""{word}"", hoe het woord verbuigt en de betekenis van de verbogen vorm.","Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} ""{word}"", jak słowo się odmienia oraz znaczenie formy odmienionej.","Explica o lema (forma de dicionário) da palavra em {l2Name} ""{word}"", como a palavra se flexiona e o significado da forma flexionada.","Объясни лемму (словарную форму) слова на {l2Name} ""{word}"", как слово изменяется и значение словоизменительной формы.","กรุณาอธิบายคำตั้ง (รูปพจนานุกรม) ของคำภาษา{l2Name} ""{word}"" วิธีการผันรูปของคำ และความหมายของรูปผัน","Lütfen {l2Name} dilindeki ""{word}"" kelimesinin lemmasını (sözlük biçimini), kelimenin nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.","Vui lòng giải thích lemma (dạng từ điển) của từ tiếng {l2Name} ""{word}"", cách từ đó biến cách và ý nghĩa của dạng biến cách."
 prompt.followup_inflection_context,"Please explain the lemma (dictionary form) of the {l2Name} word ""{word}"", how the word is inflecting in ""{context}"", and the meaning of the inflected form.","请解释{l2Name}单词""{word}""的词元（词典形式）、该词在""{context}""中的屈折变化方式，以及屈折形式的意义。","請解釋{l2Name}單詞""{word}""的詞元（詞典形式）、該詞在""{context}""中的屈折變化方式，以及屈折形式的意義。","يرجى شرح الليما (الصيغة المعجمية) لكلمة {l2Name} ""{word}""، وكيفية تصريفها في ""{context}""، ومعنى الصيغة المصرفة.","Erkläre bitte das Lemma (Wörterbuchform) des {l2Name}-Wortes ""{word}"", wie das Wort in ""{context}"" flektiert wird und die Bedeutung der flektierten Form.","Explica el lema (forma de diccionario) de la palabra en {l2Name} ""{word}"", cómo se flexiona la palabra en ""{context}"" y el significado de la forma flexionada.","Expliquez le lemme (forme de dictionnaire) du mot {l2Name} ""{word}"", comment le mot se fléchit dans ""{context}"" et le sens de la forme fléchie.","Jelaskan lemma (bentuk kamus) dari kata {l2Name} ""{word}"", bagaimana kata itu berinfleksi dalam ""{context}"", dan arti bentuk infleksinya.","Spiega il lemma (forma di dizionario) della parola {l2Name} ""{word}"", come si flette la parola in ""{context}"" e il significato della forma flessa.","""{context}""における{l2Name}の単語""{word}""の見出し語（辞書形）、その語の活用の仕方、および活用形の意味を説明してください。","""{context}""에서 {l2Name} 단어 ""{word}""의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.","Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord ""{word}"", hoe het woord in ""{context}"" verbuigt en de betekenis van de verbogen vorm.","Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} ""{word}"", jak słowo odmienia się w zdaniu ""{context}"" oraz znaczenie formy odmienionej.","Explica o lema (forma de dicionário) da palavra em {l2Name} ""{word}"", como a palavra se flexiona em ""{context}"" e o significado da forma flexionada.","Объясни лемму (словарную форму) слова на {l2Name} ""{word}"", как слово изменяется во фразе ""{context}"" и значение словоизменительной формы.","กรุณาอธิบายคำตั้ง (รูปพจนานุกรม) ของคำภาษา{l2Name} ""{word}"" วิธีการผันรูปของคำใน ""{context}"" และความหมายของรูปผัน","Lütfen {l2Name} dilindeki ""{word}"" kelimesinin lemmasını (sözlük biçimini), kelimenin ""{context}"" içinde nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.","Vui lòng giải thích lemma (dạng từ điển) của từ tiếng {l2Name} ""{word}"", cách từ đó biến cách trong ""{context}"" và ý nghĩa của dạng biến cách."
 prompt.followup_inflection_context_form,"Please explain the lemma (dictionary form) of the {l2Name} word ""{word}"" (inflected form: {contextForm}), how the word is inflecting in ""{context}"", and the meaning of the inflected form.","请解释{l2Name}单词""{word}""（屈折形式：{contextForm}）的词元（词典形式）、该词在""{context}""中的屈折变化方式，以及屈折形式的意义。","請解釋{l2Name}單詞""{word}""（屈折形式：{contextForm}）的詞元（詞典形式）、該詞在""{context}""中的屈折變化方式，以及屈折形式的意義。","يرجى شرح الليما (الصيغة المعجمية) لكلمة {l2Name} ""{word}"" (الصيغة المصرفة: {contextForm})، وكيفية تصريفها في ""{context}""، ومعنى الصيغة المصرفة.","Erkläre bitte das Lemma (Wörterbuchform) des {l2Name}-Wortes ""{word}"" (flektierte Form: {contextForm}), wie das Wort in ""{context}"" flektiert wird und die Bedeutung der flektierten Form.","Explica el lema (forma de diccionario) de la palabra en {l2Name} ""{word}"" (forma flexionada: {contextForm}), cómo se flexiona la palabra en ""{context}"" y el significado de la forma flexionada.","Expliquez le lemme (forme de dictionnaire) du mot {l2Name} ""{word}"" (forme fléchie : {contextForm}), comment le mot se fléchit dans ""{context}"" et le sens de la forme fléchie.","Jelaskan lemma (bentuk kamus) dari kata {l2Name} ""{word}"" (bentuk infleksi: {contextForm}), bagaimana kata itu berinfleksi dalam ""{context}"", dan arti bentuk infleksinya.","Spiega il lemma (forma di dizionario) della parola {l2Name} ""{word}"" (forma flessa: {contextForm}), come si flette la parola in ""{context}"" e il significato della forma flessa.","""{context}""における{l2Name}の単語""{word}""（屈折形：{contextForm}）の見出し語（辞書形）、その語の活用の仕方、および活用形の意味を説明してください。","""{context}""에서 {l2Name} 단어 ""{word}""(굴절형: {contextForm})의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.","Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord ""{word}"" (verbuigingsvorm: {contextForm}), hoe het woord in ""{context}"" verbuigt en de betekenis van de verbogen vorm.","Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} ""{word}"" (forma odmieniona: {contextForm}), jak słowo odmienia się w zdaniu ""{context}"" oraz znaczenie formy odmienionej.","Explica o lema (forma de dicionário) da palavra em {l2Name} ""{word}"" (forma flexionada: {contextForm}), como a palavra se flexiona em ""{context}"" e o significado da forma flexionada.","Объясни лемму (словарную форму) слова на {l2Name} ""{word}"" (словоизменительная форма: {contextForm}), как слово изменяется во фразе ""{context}"" и значение словоизменительной формы.","กรุณาอธิบายคำตั้ง (รูปพจนานุกรม) ของคำภาษา{l2Name} ""{word}"" (รูปผัน: {contextForm}) วิธีการผันรูปของคำใน ""{context}"" และความหมายของรูปผัน","Lütfen {l2Name} dilindeki ""{word}"" kelimesinin lemmasını (sözlük biçimini) (çekimli biçimi: {contextForm}), kelimenin ""{context}"" içinde nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.","Vui lòng giải thích lemma (dạng từ điển) của từ tiếng {l2Name} ""{word}"" (dạng biến cách: {contextForm}), cách từ đó biến cách trong ""{context}"" và ý nghĩa của dạng biến cách."

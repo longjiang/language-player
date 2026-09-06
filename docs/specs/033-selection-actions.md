@@ -34,8 +34,8 @@ When a multi-token phrase like 家賃滞納 is saved, `TokenizedText` retokenize
 
 ### Components
 - `use-selection-popup.ts` — native-selection capture + dismissal; returns `{ containerRef, selection, clear }`.
-- `use-text-actions.ts` — shared copy/speak/explain/translate handlers for `TextActionMenu` (single source for the AI-explain prompt builder and `/translate` call).
-- `text-action-panels.tsx` — shared `ExplainPanel`, `TranslatePanel`, and `renderInlineMarkdown` for `TextActionMenu`.
+- `use-text-actions.ts` — shared copy/speak/translate handlers for `TextActionMenu` (the `/translate` call). The **AI-explain** action no longer goes through this hook: it opens the shared `AiExplanation` chat (`apps/web/src/components/ai-explanation.tsx`, SPEC-035) with the `TEXT_ACTION_ASK_AI_PRESETS` one-tap presets (*Summarize* / *Difficult expressions* / *Grammar points*) and the free-form follow-up input, auto-streaming a concise explanation via `TEXT_ACTION_ASK_AI_INITIAL_PRESET`.
+- `text-action-panels.tsx` — shared `TranslatePanel` and `renderInlineMarkdown` for `TextActionMenu` (`ExplainPanel` is superseded by the `AiExplanation` chat for the AI-explain action).
 - `tokenized-text.tsx` — new opt-in `selectionDictionary` prop; renders `DictionaryPopup` with the selected text as a lemma-less token and coordinates the two popups.
 - `dictionary-popup.tsx` — optional `extractPhrases` prop (selection popup): calls `/extract-phrases`, looks up each phrase, and renders a "Phrases" card section with a loading spinner; shows the LLM pronunciation next to the header. Saved-word matching includes phrase-card entry IDs (plus a diagnostic log on mismatch) so words saved from the Phrases section aren't flagged as unrecognized.
 - `merge-phrase-tokens.ts` (packages/utils) — pure, platform-agnostic retokenization helper: collapses saved multi-token phrase forms into single atomic tokens (longest-first, case-insensitive, exact token-boundary alignment; single-token forms and boundary-splitting selections are left untouched).

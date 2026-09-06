@@ -1,4 +1,34 @@
 {
+    "Açıklamanı kısa tut": {
+        "\"": "Hãy giải thích ngắn gọn bằng {l1Name} văn bản {l2Name} sau:"
+    },
+    "Buat penjelasan tetap singkat": {
+        "\"": "Spiega brevemente in {l1Name} il seguente testo in {l2Name}:"
+    },
+    "Halte deine Erklärung kurz": {
+        "\"": "Explica brevemente en {l1Name} el siguiente texto en {l2Name}:"
+    },
+    "Houd je uitleg kort": {
+        "\"": "Krótko wyjaśnij po {l1Name} następujący tekst w {l2Name}:"
+    },
+    "Keep your explanation brief": {
+        "\"": "请用{l1Name}简洁地解释下面的{l2Name}文本："
+    },
+    "Mantenha a explicação breve": {
+        "\"": "Кратко объясни на {l1Name} следующий текст на {l2Name}:"
+    },
+    "Mantieni la spiegazione breve": {
+        "\"": "{l1Name}で、次の{l2Name}テキストを簡潔に説明してください："
+    },
+    "Mantén la explicación breve": {
+        "\"": "Expliquez brièvement en {l1Name} le texte suivant en {l2Name} :"
+    },
+    "Restez concis": {
+        "\"": "Jelaskan secara singkat dalam {l1Name} teks {l2Name} berikut:"
+    },
+    "Zachowaj zwięzłość": {
+        "\"": "Explique brevemente em {l1Name} o seguinte texto em {l2Name}:"
+    },
     "a11y": {
         "channel_preferences": "Channel preferences",
         "click_to_seek": "Click to seek",
@@ -59,12 +89,14 @@
         "delete_all": "Delete All",
         "delete_playlist": "Delete Playlist",
         "didnt_know": "Didn't know",
+        "difficult_expressions": "Difficult expressions",
         "download": "Download",
         "edit": "Edit",
         "email_support": "Email Support",
         "etymology": "Etymology",
         "expand_all": "Expand All",
         "expand_sidebar": "Expand sidebar",
+        "explain": "Explain",
         "explore_videos": "Explore Videos",
         "export": "Export",
         "fill_with_sample": "Fill with sample",
@@ -73,6 +105,7 @@
         "go_pro": "Go Pro",
         "go_to_language_selection": "Go to language selection",
         "go_to_page": "Go to page",
+        "grammar_points": "Grammar points",
         "grant_admin": "Grant Admin",
         "grant_subscription": "Grant Subscription",
         "hide_sidebar": "Hide sidebar",
@@ -155,6 +188,7 @@
         "start_writing": "Start Writing",
         "stop": "Stop",
         "subscribe": "Subscribe",
+        "summarize": "Summarize",
         "summarize_book_up_to_chapter": "Summarize book up to this chapter",
         "summarize_this_chapter": "Summarize this chapter",
         "summarize_this_page": "Summarize this page",
@@ -1280,6 +1314,7 @@
         "explain_block_item2": "A phrase-by-phrase breakdown explaining how the text is constructed",
         "explain_context_label": "Context",
         "explain_morphology": "Give its pronunciation. If it is an inflected or conjugated form, state its dictionary form and explain the inflection. If it is not inflected, do not mention inflection or lemma.",
+        "explain_selected_text": "In {l1Name}, concisely explain the following {l2Name} text:",
         "explain_text_label": "Text",
         "explain_ticks": "Wrap every {l2Name} word, phrase, or whole sentence in single backticks (`). Wrap entire example sentences as one backticked span, e.g. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, not just the target word. Never nest backticks.",
         "explain_word": "Please succinctly explain the {l2Name} word \"{word}\", then give 2 examples with translations.",
@@ -1287,7 +1322,9 @@
         "explain_word_context_form": "Please succinctly explain the {l2Name} word \"{word}\" (inflected form: {contextForm}) in \"{context}\", then give 2 examples with translations.",
         "explain_word_examples": "Also give 2 examples of how the word is typically used.",
         "explain_word_examples_context": "Also give 2 examples of how the word is used in the same sense as in the context provided.",
+        "followup_difficult_expressions": "In {l1Name}, identify and briefly explain the difficult expressions in the following {l2Name} text:",
         "followup_etymology": "Please give the etymology of the {l2Name} word \"{word}\".",
+        "followup_grammar_points": "In {l1Name}, identify and briefly explain the grammar points in the following {l2Name} text:",
         "followup_inflection": "Please explain the lemma (dictionary form) of the {l2Name} word \"{word}\", how the word is inflecting, and the meaning of the inflected form.",
         "followup_inflection_context": "Please explain the lemma (dictionary form) of the {l2Name} word \"{word}\", how the word is inflecting in \"{context}\", and the meaning of the inflected form.",
         "followup_inflection_context_form": "Please explain the lemma (dictionary form) of the {l2Name} word \"{word}\" (inflected form: {contextForm}), how the word is inflecting in \"{context}\", and the meaning of the inflected form.",
@@ -1570,5 +1607,19 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "{text}\"": "Bằng {l1Name}, hãy xác định và giải thích ngắn gọn các điểm ngữ pháp trong văn bản {l2Name} sau:",
+    "Будь кратким": {
+        "\"": "อธิบายสั้น ๆ ใน{l1Name}ข้อความ{l2Name}ต่อไปนี้:"
+    },
+    "أبقِ الشرح موجزًا": {
+        "\"": "Erkläre auf {l1Name} kurz den folgenden {l2Name}-Text:"
+    },
+    "คำอธิบายสั้นลง\"": "{l1Name} dilinde aşağıdaki {l2Name} metnini kısaca açıkla:",
+    "簡潔に説明してください。\"": "{l1Name}로 다음 {l2Name} 텍스트를 간결하게 설명하세요:",
+    "請保持簡潔。\"": "اشرح بإيجاز باللغة {l1Name} النص التالي باللغة {l2Name}:",
+    "请保持简洁。\"": "請用{l1Name}簡潔地解釋下面的{l2Name}文字：",
+    "설명을 간결하게 유지하세요": {
+        "\"": "Leg in {l1Name} kort uit de volgende {l2Name}-tekst:"
     }
 }

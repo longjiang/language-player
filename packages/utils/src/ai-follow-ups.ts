@@ -91,6 +91,30 @@ export const READER_ASK_AI_INITIAL_PRESET: AiFollowUpPreset & { kind: 'prompt' }
   contentKey: 'page',
 };
 
+// ── Tokenized-text "Ask AI" presets ─────────────────────────────────────────
+// The tokenized-text ⋯ action menu's "Ask AI" reuses the shared `AiExplanation`
+// chat (the "Let DeepSeek Explain" component used everywhere else) with these
+// one-tap presets scoped to the selected text block. "Summarize" keeps the
+// summary shape; "difficult expressions" and "grammar points" are non-summary
+// analyses (suppress the summary instruction).
+
+/** Preset set for the tokenized-text "Ask AI" action menu. */
+export const TEXT_ACTION_ASK_AI_PRESETS: AiFollowUpPreset[] = [
+  { kind: 'prompt', labelKey: 'action.summarize', promptKey: 'prompt.summarize', contentKey: 'text' },
+  { kind: 'prompt', labelKey: 'action.difficult_expressions', promptKey: 'prompt.followup_difficult_expressions', contentKey: 'text', summaryInstruction: false },
+  { kind: 'prompt', labelKey: 'action.grammar_points', promptKey: 'prompt.followup_grammar_points', contentKey: 'text', summaryInstruction: false },
+];
+
+/** Auto-triggered on open for the tokenized-text "Ask AI": a concise
+ *  explanation of the selected text block. */
+export const TEXT_ACTION_ASK_AI_INITIAL_PRESET: AiFollowUpPreset & { kind: 'prompt' } = {
+  kind: 'prompt',
+  labelKey: 'action.explain',
+  promptKey: 'prompt.explain_selected_text',
+  contentKey: 'text',
+  summaryInstruction: false,
+};
+
 /** Cap on content sent to the model in one summary prompt (chars).
  *  Deprecated: the historical 12 000-char cap was removed so the full text /
  *  book is preloaded as context. Kept only for reference; do not apply it. */

@@ -40,6 +40,18 @@ and `presetKey()` (for used-once-per-transcript tracking). The dictionary popup
 and detail tab pass `DEFAULT_AI_FOLLOW_UPS` to keep their historical buttons;
 a future AI-chat surface can pass a different set or `[]`.
 
+### Tokenized-text action menu presets (`TEXT_ACTION_ASK_AI_PRESETS`)
+
+The tokenized-text ⋯ action menu's **Ask AI** (the same `AiExplanation` chat)
+passes `TEXT_ACTION_ASK_AI_PRESETS` — one-tap buttons *Summarize*,
+*Difficult expressions*, and *Grammar points* — scoped to the selected text
+block (`contentKey: 'text'`). The two non-summary presets set
+`summaryInstruction: false` so they are not mis-shaped as a summary.
+`TEXT_ACTION_ASK_AI_INITIAL_PRESET` auto-streams a **concise** explanation of
+the block on open (`prompt.explain_selected_text`), replacing the previous
+one-shot `buildExplainBlockPrompt` panel. A `summaryInstruction?: boolean` field
+on the prompt preset controls whether the summary instruction is appended.
+
 ### Multi-turn endpoint
 
 `POST /chatgpt/stream` now accepts `{ prompt, messages }` in addition to the

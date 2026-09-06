@@ -206,6 +206,8 @@ export {
   READER_ASK_AI_CONTENT_MAX,
   READER_AI_CONTEXT_WARN_MAX,
   truncateReaderAiContent,
+  TEXT_ACTION_ASK_AI_PRESETS,
+  TEXT_ACTION_ASK_AI_INITIAL_PRESET,
 } from './ai-follow-ups';
 export type { AiFollowUpPreset, ReaderAiContent } from './ai-follow-ups';
 export {

@@ -1,20 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, Modal, ScrollView, ActivityIndicator, Alert, Platform,
+  View, Text, Modal, ScrollView, ActivityIndicator, Alert, Platform, KeyboardAvoidingView,
 } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { Button, buttonTextClass } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useSpeech } from '@/hooks/use-speech';
-import { useStreamingExplanation } from '@langplayer/api-client';
-import { buildExplainBlockPrompt } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
-import { TokenizedText } from '@/components/TokenizedText';
-import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
+import { AiExplanation } from '@/components/dictionary/AiExplanation';
+import {
+  TEXT_ACTION_ASK_AI_PRESETS,
+  TEXT_ACTION_ASK_AI_INITIAL_PRESET,
+} from '@langplayer/utils';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { MoreVertical, X } from 'lucide-react-native';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -62,7 +63,7 @@ type ActionKind = 'explain' | 'translate';
  */
 export function TextActionMenu(props: TextActionMenuProps) {
   const { text, l2Code, l1Code, context, className, centered = false, fitContent = false, triggerTextScale = 1, children } = props;
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l1Lang } = useLanguage();
   const effectiveL1 = l1Code ?? l1Lang.code;
   const t = useT();
   // ── Trigger geometry (shared rule, see @langplayer/utils/action-trigger) ──
@@ -75,27 +76,19 @@ export function TextActionMenu(props: TextActionMenuProps) {
   const triggerBoxPx = actionTriggerBoxPx(triggerFontPx, triggerTokenSettings.leading ?? ACTION_TRIGGER_DEFAULT_LEADING);
   const triggerIconPx = actionTriggerIconPx(triggerFontPx);
   const { speak: speakTts, stop: stopTts, isSpeaking } = useSpeech();
-  const {
-    text: explainText,
-    error: explainError,
-    loading: explainLoading,
-    stream: streamExplain,
-    reset: resetExplain,
-  } = useStreamingExplanation();
 
   const [activeAction, setActiveAction] = useState<ActionKind | null>(null);
   const [translateResult, setTranslateResult] = useState<string | null>(null);
   const [translateLoading, setTranslateLoading] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
-  const [contextExpanded, setContextExpanded] = useState(false);
+  /** "Ask AI" (the shared AiExplanation chat) open for this text block. */
+  const [askAiOpen, setAskAiOpen] = useState(false);
 
   const closeAction = useCallback(() => {
     setActiveAction(null);
     setTranslateResult(null);
     setTranslateError(null);
-    setContextExpanded(false);
-    resetExplain();
-  }, [resetExplain]);
+  }, []);
 
   // ── Menu actions ──
 
@@ -115,29 +108,6 @@ export function TextActionMenu(props: TextActionMenuProps) {
       }
     }
   }, [text, l2Code, speakTts, stopTts, isSpeaking, t]);
-
-  const handleExplain = useCallback(() => {
-    setActiveAction('explain');
-    // Shared assembly (parity with web): numbered breakdown list + backtick item
-    // + context/text labels. Web previously included the backtick item; mobile
-    // did not — now both agree.
-    const prompt = buildExplainBlockPrompt({
-      templates: {
-        header: t('prompt.explain_block_header'),
-        item1: t('prompt.explain_block_item1'),
-        item2: t('prompt.explain_block_item2'),
-        ticks: t('prompt.explain_ticks'),
-        contextLabel: t('prompt.explain_context_label'),
-        textLabel: t('prompt.explain_text_label'),
-      },
-      l2Code,
-      l1Name: l1Lang?.name ?? '',
-      l2Name: l2Lang?.name ?? l2Code,
-      context,
-      text,
-    });
-    streamExplain(prompt);
-  }, [text, l2Code, l1Lang, l2Lang, context, t, streamExplain]);
 
   const handleTranslate = useCallback(async () => {
     setActiveAction('translate');
@@ -205,14 +175,14 @@ export function TextActionMenu(props: TextActionMenuProps) {
           handleSpeak();
           break;
         case 'explain':
-          handleExplain();
+          setAskAiOpen(true);
           break;
         case 'translate':
           void handleTranslate();
           break;
       }
     },
-    [handleCopy, handleSpeak, handleExplain, handleTranslate],
+    [handleCopy, handleSpeak, handleTranslate],
   );
 
   const menu = (
@@ -247,66 +217,50 @@ export function TextActionMenu(props: TextActionMenuProps) {
         )}
       </View>
 
-      {/* ── AI Explain Modal ── */}
-      <Modal
-        visible={activeAction === 'explain' && (!!explainText || explainLoading || !!explainError)}
-        transparent
-        animationType="fade"
-        onRequestClose={closeAction}
-      >
-        <View className="flex-1 bg-black/50 justify-center px-4">
-          {/* Backdrop: absolute overlay for tap-to-close, doesn't block scroll */}
-          <Pressable className="absolute inset-0" onPress={closeAction} />
-          <View
-            className="max-h-[80%] rounded-xl bg-card"
-          >
-            {/* Header */}
-            <View className="flex-row items-center justify-between border-b border-border px-5 py-3">
-              <View className="flex-row items-center gap-2">
-                <Text className="text-sm font-semibold text-foreground">
+      {/* ── "Ask AI" Modal — the shared AiExplanation chat (the "Let DeepSeek
+          Explain" component used everywhere else), auto-streaming a concise
+          explanation and preloading the summarize / difficult expressions /
+          grammar points presets. ── */}
+      <Modal visible={askAiOpen} transparent animationType="fade" onRequestClose={() => setAskAiOpen(false)}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1"
+        >
+          <View className="flex-1 items-center justify-center bg-black/40 px-6">
+            <View className="h-[80%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+              <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+                <Text className="flex-1 text-base font-semibold text-foreground" numberOfLines={1}>
                   {t('action.let_ai_explain')}
                 </Text>
-                {explainLoading && <ActivityIndicator size="small" color={ICON_MUTED} />}
+                <Pressable
+                  onPress={() => setAskAiOpen(false)}
+                  className="rounded p-1 active:bg-muted"
+                  accessibilityRole="button"
+                  accessibilityLabel={t('action.close')}
+                >
+                  <X size={18} color={ICON_MUTED} />
+                </Pressable>
               </View>
-              <Button onPress={closeAction} variant="ghost" size="icon">
-                <X size={16} color={ICON_MUTED} />
-              </Button>
-            </View>
-
-            {/* Body */}
-            <ScrollView className="px-5 py-4">
-              {/* Original text — tokenized, collapsible to 4 lines */}
-              <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
-                <View className={contextExpanded ? '' : 'max-h-[4.5rem] overflow-hidden'}>
-                  <TokenizedText text={text} l2Code={l2Code} />
-                </View>
-                {contextExpanded ? (
-                  <Button onPress={() => setContextExpanded(false)} variant="link" size="sm" className="mt-1">
-                    <Text className={buttonTextClass('link')}>{t('action.show_less')}</Text>
-                  </Button>
-                ) : (
-                  <Button onPress={() => setContextExpanded(true)} variant="link" size="sm" className="mt-1">
-                    <Text className={buttonTextClass('link')}>{t('action.show_more')}</Text>
-                  </Button>
-                )}
-              </View>
-
-              {/* DeepSeek breakdown */}
-              {explainError && !explainText ? (
-                <Text className="text-sm text-destructive">{explainError}</Text>
-              ) : (
-                <MarkdownExplanation
-                  text={explainText || ''}
-                  l2Code={l2Code}
-                  streaming={explainLoading}
+              <ScrollView className="flex-1 px-4 py-4" keyboardShouldPersistTaps="handled">
+                <AiExplanation
+                  word={text}
+                  contextText={undefined}
+                  contextForm={undefined}
+                  entryFound={true}
+                  autoLoad
+                  followUpPresets={TEXT_ACTION_ASK_AI_PRESETS}
+                  initialPreset={TEXT_ACTION_ASK_AI_INITIAL_PRESET}
+                  readerContent={{
+                    text,
+                    page: text,
+                    chapter: null,
+                    bookUpToChapter: null,
+                  }}
                 />
-              )}
-              {explainError && explainText ? (
-                <Text className="mt-2 text-xs text-destructive">{explainError}</Text>
-              ) : null}
-            </ScrollView>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ── Translate Result Modal ── */}
