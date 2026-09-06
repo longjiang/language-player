@@ -1,5 +1,6 @@
 /** Multiple-choice test scoring shared by web and mobile review screens. */
 import { languageNameFromCode } from './language';
+import { katakanaToHiragana } from './furigana';
 
 export type TestQuestionKind = 'definition' | 'pronunciation';
 
@@ -194,6 +195,13 @@ export function normalizeTestChoice(choice: string): string {
 // similarity (not a binary right/wrong), then the countdown timer always adds
 // or deducts a point, then the result maps to the same four buttons as choose
 // mode.
+//
+// The correct answer is derived from the context sentence itself using the same
+// forms the context highlight matches (SPEC-066), so it is the exact text shown
+// as the blank (e.g. たじろかせる) — never a reduced record form (たじろか).
+// Matching is script-tolerant: Japanese folds hiragana ⇄ katakana, and Chinese
+// (zh/yue) compares the simplified & traditional variants (built by the app via
+// the same lazy OpenCC conversion the render layer uses).
 
 /**
  * Normalized Levenshtein similarity in [0, 1] (1 = identical after
@@ -220,11 +228,129 @@ export function stringSimilarity(a: string, b: string): number {
   return Math.max(0, Math.min(1, 1 - (prev[n] ?? 0) / Math.max(m, n)));
 }
 
+/** Hiragana (平仮名) → katakana (片仮名). Used for Japanese spell matching. */
+export function hiraganaToKatakana(s: string): string {
+  return s.replace(/[\u3041-\u3096]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60));
+}
+
+/** Hiragana/katakana variants of a Japanese string (original first, deduped). */
+export function kanaVariants(text: string): string[] {
+  return [...new Set([text, katakanaToHiragana(text), hiraganaToKatakana(text)])];
+}
+
+/**
+ * Script variants of a string for script-tolerant comparison (original first,
+ * deduped).
+ *
+ * - Japanese: hiragana ⇄ katakana (synchronous, trivial Unicode math).
+ * - Chinese (zh/yue): simplified ⇄ traditional is app-side — the apps already
+ *   lazily load OpenCC for the render layer, so they supplement with
+ *   `toTraditional`/`toSimplified`; here we keep only the original.
+ * - Everything else: unchanged.
+ */
+export function scriptVariants(text: string, l2Code: string): string[] {
+  const base = (l2Code.split('-')[0] ?? '').toLowerCase();
+  if (base === 'ja') return kanaVariants(text);
+  return [text];
+}
+
+/**
+ * The exact text that the context-sentence highlight blanks, derived with the
+ * same logic as the highlight (SPEC-066): among the word's matchable forms
+ * (saved forms, context/instance surface forms, head, the resolved entry's
+ * head/alternate/kana/han_script variants) the longest form that actually
+ * appears in the context wins — so `たじろかせる` beats `たじろか`. For Japanese
+ * the context is folded to hiragana for matching but the returned text is the
+ * exact substring as it appears in the sentence (so script matches the blank).
+ * Falls back to `surfaceFormOf` when no form appears.
+ */
+export function spellBlankText(
+  context: string,
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: {
+    head?: string | null;
+    alternate?: string | null;
+    phonetic_detail?: { kana?: string } | null;
+    han_script?: {
+      simplified?: string;
+      traditional?: string;
+      kanji?: string | null;
+      hanja?: string | null;
+      hangul?: string;
+      han?: string;
+      hantu?: string;
+    } | null;
+  } | null | undefined,
+  l2Code: string,
+): string {
+  const base = (l2Code.split('-')[0] ?? '').toLowerCase();
+  const fold = (s: string) => (base === 'ja' ? katakanaToHiragana(s) : s);
+  const candidates = new Set<string>();
+  if (word) {
+    if (word.head) candidates.add(word.head);
+    for (const f of word.forms ?? []) if (f) candidates.add(f);
+    if (word.context?.form) candidates.add(word.context.form);
+    for (const inst of word.instances ?? []) if (inst.form) candidates.add(inst.form);
+  }
+  if (entry) {
+    if (entry.head) candidates.add(entry.head);
+    if (entry.alternate) candidates.add(entry.alternate);
+    if (entry.phonetic_detail?.kana) candidates.add(entry.phonetic_detail.kana);
+    const hs = entry.han_script;
+    if (hs) {
+      if (hs.simplified) candidates.add(hs.simplified);
+      if (hs.traditional) candidates.add(hs.traditional);
+    }
+  }
+  candidates.add(fallback);
+  candidates.add(surfaceFormOf(word, fallback));
+  candidates.add(lemmaFormOf(word, fallback));
+  candidates.add(pronunciationTargetOf(word, fallback, entry));
+
+  const foldedContext = fold(context);
+  let best = '';
+  let bestLen = -1;
+  for (const c of candidates) {
+    if (!c) continue;
+    const fc = fold(c);
+    if (!fc) continue;
+    const idx = foldedContext.indexOf(fc);
+    if (idx === -1) continue;
+    const len = base === 'ja' ? fc.length : c.length;
+    if (len > bestLen) {
+      best = base === 'ja' ? context.slice(idx, idx + fc.length) : c;
+      bestLen = len;
+    }
+  }
+  return best || surfaceFormOf(word, fallback);
+}
+
+/**
+ * The best `stringSimilarity` across every variant pair — the script-tolerant
+ * match score. Used both by `scoreSpellResult` and to decide whether a typed
+ * answer counts as "correct".
+ */
+export function bestScriptSimilarity(
+  answerVariants: string[],
+  correctVariants: string[],
+): number {
+  let best = 0;
+  for (const a of answerVariants) {
+    for (const c of correctVariants) {
+      const sim = stringSimilarity(a, c);
+      if (sim > best) best = sim;
+    }
+  }
+  return best;
+}
+
 /**
  * Grade a spell-mode answer with the SPEC-066 spell rules:
  *
- * - the submission is compared to the correct surface form (the exact text
- *   that was blanked in the context sentence) via `stringSimilarity`;
+ * - `answerVariants` / `correctVariants` are the script-folded alternatives for
+ *   the user's submission and the blanked word (see `scriptVariants`); the best
+ *   `stringSimilarity` across all pairs sets the base score;
  * - the ratio maps to a base score of 1–3 (≥0.9 → 3, ≥0.5 → 2, else → 1);
  * - the countdown timer always adjusts it: slower than 10 s deducts a point,
  *   faster than 5 s adds one (the same per-test thresholds as
@@ -233,12 +359,12 @@ export function stringSimilarity(a: string, b: string): number {
  *   same button mapping as choose mode.
  */
 export function scoreSpellResult(
-  submission: string,
-  correctAnswer: string,
+  answerVariants: string[],
+  correctVariants: string[],
   totalMs: number,
 ): 'again' | 'hard' | 'good' | 'easy' {
-  const sim = stringSimilarity(submission, correctAnswer);
-  let points = sim >= 0.9 ? 3 : sim >= 0.5 ? 2 : 1;
+  const best = bestScriptSimilarity(answerVariants, correctVariants);
+  let points = best >= 0.9 ? 3 : best >= 0.5 ? 2 : 1;
   if (totalMs > 10_000) points -= 1;
   else if (totalMs < 5_000) points += 1;
   points = Math.max(0, Math.min(3, points));

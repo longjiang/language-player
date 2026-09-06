@@ -125,6 +125,11 @@ export {
   lemmaFormOf,
   pronunciationTargetOf,
   stringSimilarity,
+  hiraganaToKatakana,
+  kanaVariants,
+  scriptVariants,
+  spellBlankText,
+  bestScriptSimilarity,
   scoreSpellResult,
   spellHintOf,
 } from './srs-test-mode';
