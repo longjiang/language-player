@@ -1798,6 +1798,20 @@ export default function ReviewPage() {
                   type="text"
                   value={spellText}
                   onChange={(e) => setSpellText(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Submit on Enter, but never while an IME is confirming its
+                    // candidate — browsers mark the commit keydown as composing
+                    // (`isComposing` true, or the legacy `keyCode === 229`), so
+                    // Japanese/Chinese input's "enter to confirm" won't submit.
+                    if (
+                      e.key === 'Enter' &&
+                      !e.nativeEvent.isComposing &&
+                      e.keyCode !== 229 &&
+                      spellText.trim()
+                    ) {
+                      void handleSpellSubmit();
+                    }
+                  }}
                   autoComplete="off"
                   autoCapitalize="off"
                   autoCorrect="off"
