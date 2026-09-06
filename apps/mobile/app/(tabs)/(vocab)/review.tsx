@@ -216,7 +216,7 @@ export default function ReviewScreen() {
     removeCard,
     pruneOrphans,
   } = useSrs();
-  const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, review, display, offlineMode } = useSettingsContext();
+  const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, review, offlineMode } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const dayStartHour = review.dayStartHour;
   const srsCardMeta = useMemo(
@@ -1246,8 +1246,11 @@ export default function ReviewScreen() {
   }, [cards[currentIndex]?.word.id]);
 
   // ── Auto-translate context text after the definition test (or back reveal) ──
+  // The translation shows on the SRS review card regardless of the user's
+  // display.translation setting — the review surface always shows the
+  // translation, unlike the video/reader surfaces which respect the toggle.
   useEffect(() => {
-    if (!showContextTranslation || !display.translation) return;
+    if (!showContextTranslation) return;
 
     const card = cards[currentIndex];
     const ctxText = card?.word.context?.text;
@@ -1295,7 +1298,7 @@ export default function ReviewScreen() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showContextTranslation, cards, currentIndex, l2Code, l1Lang.code, display.translation]);
+  }, [showContextTranslation, cards, currentIndex, l2Code, l1Lang.code]);
 
   // ── Per-card L1 dictionary lookup (non-English L1 users) ──
   // The batched lookup returns English-only definitions for speed; on reveal,
@@ -1634,7 +1637,7 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={displayInstance.context} date={displayInstance.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
               </View>
-              {showContextTranslation && display.translation && (displayInstance.context.translation || contextTranslation) && (
+              {showContextTranslation && (displayInstance.context.translation || contextTranslation) && (
                 <View className="mt-2 border-t border-border pt-2">
                   {displayInstance.context.translation ? (
                     <Text className="text-xs leading-relaxed text-muted-foreground">

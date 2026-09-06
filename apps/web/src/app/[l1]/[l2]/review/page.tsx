@@ -162,7 +162,7 @@ export default function ReviewPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
-  const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, display, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
+  const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
   const srsCardMeta = useMemo(
     () => ({ timezone: deviceTimezone(), dayStartHour }),
     [dayStartHour],
@@ -1359,8 +1359,11 @@ export default function ReviewPage() {
   }, [currentCard?.word.id]);
 
   // ── Auto-translate context text after the definition test (or back reveal) ──
+  // The translation shows on the SRS review card regardless of the user's
+  // display.translation setting — the review surface always shows the
+  // translation, unlike the video/reader surfaces which respect the toggle.
   useEffect(() => {
-    if (!showContextTranslation || !display.translation) return;
+    if (!showContextTranslation) return;
 
     const ctxText = currentCard?.word.context?.text;
     const savedTranslation = currentCard?.word.context?.translation;
@@ -1399,7 +1402,7 @@ export default function ReviewPage() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showContextTranslation, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code, display.translation]);
+  }, [showContextTranslation, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code]);
 
   // ── Render states ──
 
@@ -1576,10 +1579,10 @@ export default function ReviewPage() {
             <div className="text-xs text-muted-foreground/70 mt-1">
               <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
-            {showContextTranslation && display.translation && !wordCtx.translation && !contextTranslation && contextTranslating && (
+            {showContextTranslation && !wordCtx.translation && !contextTranslation && contextTranslating && (
               <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
             )}
-            {showContextTranslation && display.translation && (wordCtx.translation || contextTranslation) && (
+            {showContextTranslation && (wordCtx.translation || contextTranslation) && (
               wordCtx.translation ? (
                 <p
                   className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
