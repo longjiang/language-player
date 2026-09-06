@@ -26,7 +26,9 @@ import {
   scoreTestResult,
   scoreSpellResult,
   spellHintOf,
-  stringSimilarity,
+  spellBlankText,
+  scriptVariants,
+  bestScriptSimilarity,
   type SrsTestQuestion,
   type SrsTestDiagnostic,
   type SrsTestPriority,
@@ -43,6 +45,7 @@ import {
   setL1CachedEntry,
 } from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
+import { toTraditional, toSimplified } from '@/lib/chinese-script';
 import { clampTranslationSize } from '@/lib/reader-text-size';
 import {
   decomposeWordId,
@@ -157,6 +160,23 @@ function firstLookupForm(word: SavedLexicalItemRecord): string {
   return candidates.find((f) => typeof f === 'string' && f && f !== '?') ?? word.id;
 }
 
+/**
+ * Script-folded variants of a spell answer, for script-tolerant matching
+ * (SPEC-066 spell mode). Japanese folds hiragana ⇄ katakana in the shared
+ * utils; Chinese simplified/traditional is folded here via the same lazy
+ * OpenCC the render layer uses (ADR-0019), so the matcher agrees with what the
+ * learner sees in the context sentence.
+ */
+async function buildSpellVariants(text: string, l2Code: string): Promise<string[]> {
+  const base = baseCode(l2Code);
+  if (base === 'ja') return scriptVariants(text, l2Code);
+  if (base === 'zh' || base === 'yue') {
+    const [trad, simp] = await Promise.all([toTraditional(text), toSimplified(text)]);
+    return [...new Set([text, trad, simp])];
+  }
+  return [text];
+}
+
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
@@ -217,7 +237,7 @@ export default function ReviewPage() {
   /** True once the spell-mode answer has been submitted (input hidden). */
   const [spellSubmitted, setSpellSubmitted] = useState(false);
   /** The graded result of a spell submission (shown as feedback below). */
-  const [spellResult, setSpellResult] = useState<{ correct: boolean; answer: string } | null>(null);
+  const [spellResult, setSpellResult] = useState<{ correct: boolean; answer: string; submitted: string } | null>(null);
   /** Which test question kind is currently being regenerated (spinner state). */
   const [regeneratingKind, setRegeneratingKind] = useState<TestQuestionKind | null>(null);
   /** "Now" tick for the progress-bar countdown while a test session runs. */
@@ -850,23 +870,37 @@ export default function ReviewPage() {
    * form, time-adjust with the countdown (same bands as choose mode), then map
    * to the rating buttons via scoreSpellResult.
    */
-  const handleSpellSubmit = useCallback(() => {
+  const handleSpellSubmit = useCallback(async () => {
     const card = cards[currentIndex];
     if (!card || spellSubmitted) return;
-    const correctAnswer = surfaceFormOf(card.word, wordForm);
+    // The correct answer is the exact form blanked in the context sentence
+    // (derived with the same forms the highlight matches), not a reduced
+    // record form — e.g. たじろかせる, never たじろか.
+    const correctAnswer = spellBlankText(
+      card.word.context?.text ?? '',
+      card.word,
+      wordForm,
+      l1Entry ?? fallbackEntry ?? card.entry,
+      l2Code,
+    );
     const totalMs = testSessionStartRef.current > 0
       ? Math.max(0, Date.now() - testSessionStartRef.current)
       : 0;
-    const sim = stringSimilarity(spellText, correctAnswer);
-    const rating = scoreSpellResult(spellText, correctAnswer, totalMs);
+    // Script-tolerant matching: compare every variant pair and take the best.
+    const [answerVariants, correctVariants] = await Promise.all([
+      buildSpellVariants(spellText, l2Code),
+      buildSpellVariants(correctAnswer, l2Code),
+    ]);
+    const rating = scoreSpellResult(answerVariants, correctVariants, totalMs);
+    const correct = bestScriptSimilarity(answerVariants, correctVariants) >= 0.9;
     setSuggestedRating(rating);
     setSpellSubmitted(true);
-    setSpellResult({ correct: sim >= 0.9, answer: correctAnswer });
+    setSpellResult({ correct, answer: correctAnswer, submitted: spellText });
     testSessionStartRef.current = 0;
     setTestStartedAt(null);
     setShowDefinition(true);
-    log('[SRS Spell] answer submitted', { l2Code, word: wordForm, submitted: spellText, correct: correctAnswer, sim, totalMs, rating });
-  }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code]);
+    log('[SRS Spell] answer submitted', { l2Code, word: wordForm, submitted: spellText, correct: correctAnswer, correctMatch: correct, totalMs, rating });
+  }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code, l1Entry, fallbackEntry]);
 
   const handleReveal = useCallback(() => {
     if (reviewMode === 'choose') { void startTest(); return; }
@@ -1764,7 +1798,6 @@ export default function ReviewPage() {
                   type="text"
                   value={spellText}
                   onChange={(e) => setSpellText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && spellText.trim()) handleSpellSubmit(); }}
                   autoComplete="off"
                   autoCapitalize="off"
                   autoCorrect="off"
@@ -1787,11 +1820,16 @@ export default function ReviewPage() {
         ) : null}
 
         {reviewMode === 'spell' && spellSubmitted && spellResult && (
-          <div className="mt-4 w-full text-left">
+          <div className="mt-4 w-full text-left space-y-1">
             <p className={`text-sm font-semibold ${spellResult.correct ? 'text-green-600' : 'text-destructive'}`}>
               {spellResult.correct ? t('review.answer_correct') : t('review.answer_incorrect')}
             </p>
-            <p className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</p>
+            {!spellResult.correct && (
+              <>
+                <p className="text-sm text-muted-foreground">{t('review.spell_your_answer', { answer: spellResult.submitted })}</p>
+                <p className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</p>
+              </>
+            )}
           </div>
         )}
 
