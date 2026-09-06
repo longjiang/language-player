@@ -131,6 +131,8 @@ export {
   spellBlankText,
   bestScriptSimilarity,
   scoreSpellResult,
+  SPELL_TEST_TOTAL_MS,
+  SPELL_TEST_FAST_MS,
   spellHintOf,
 } from './srs-test-mode';
 export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo } from './srs-test-mode';

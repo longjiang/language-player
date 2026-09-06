@@ -707,15 +707,22 @@ choose mode.
   the session. Until it is pressed the input is not shown, so the learner can
   read the sentence and reflect first (matching the choose-mode gate).
 - **Countdown progress** — after Start Test the same blue/green progress bar
-  from choose mode counts down a budget of **T = 10 s × totalTests** (spell
-  mode has exactly one test → T = 10 s), blue while more than 5 s remain.
-- **Input + hint** — a text input with a **Submit** button, plus a muted hint
-  underneath that shows **the first character of the pronunciation of the
+  from choose mode counts down a budget of **T = 20 s** (spell mode has exactly
+  one test, and the allowance is **doubled** from the choose-mode 10 s because
+  typing the exact blanked surface form — often through a CJK IME — is much
+  slower than tapping a choice), blue while more than **10 s** remain.
+- **Input + hint** — a segmented character-count input (the number of boxes =
+  the correct answer's character count) with a **Submit** button, plus a muted
+  hint underneath that shows **the first character of the pronunciation of the
   lemma** when the entry has a pronunciation (`pronunciationReadingOf`), or
   otherwise **the first character of the lemma** — but only when the lemma is
   more than one character long (a single-char lemma's first char IS the whole
   word and would give the answer away). Shared helper: `spellHintOf`.
-  **Enter-to-submit with IME safety (web):** the web input submits on Enter
+  The input is a **single real text field** whose characters span across the
+  boxes (one character per box, left to right), so IME composition works
+  normally — the native control owns the value and composition, and the boxes
+  are a pure visual distribution of it. **Enter-to-submit with IME safety
+  (web):** the web input submits on Enter
   only when the browser's `KeyboardEvent.isComposing` is false *and* the
   legacy `keyCode === 229` IME indicator is absent, so an IME's "enter to
   confirm" never fires an early answer. **Mobile** stays button-only (React
@@ -748,9 +755,9 @@ choose mode.
   - **≥ 0.9** → 2 (correct — essentially exact, any script);
   - **0.7–0.9** → 1 (close — a small typo), regardless of time → hard;
   - **< 0.7** → 0 (wrong), regardless of time → again;
-  - for a **correct** answer (base 2) the countdown applies the choose-mode
-    bands: **faster than 5 s → easy (3)**, **slower than 10 s → hard (1)**,
-    otherwise **good (2)**;
+  - for a **correct** answer (base 2) the countdown applies the doubled
+    spell-mode bands: **faster than 10 s → easy (3)**, **slower than 20 s →
+    hard (1)**, otherwise **good (2)**;
   - map points → **again(0) / hard(1) / good(2) / easy(3)** — the same button
     mapping as choose mode. Shared helper: `scoreSpellResult`
     (`packages/utils/src/srs-test-mode.ts`).
@@ -1020,6 +1027,15 @@ types count while unexpired — there is no `status` filter.
   (`isComposing` / `keyCode === 229`) so IME "enter to confirm" never submits
   (mobile is button-only — RN exposes no `isComposing`); an incorrect answer
   shows both the learner's typed answer and the correct answer.
+- ✅ **Spell time allowance doubled + character-count input** — implemented
+  (2026-09-xx, both review pages + shared utils): the spell countdown budget is
+  now **20 s** with **< 10 s → easy / > 20 s → hard** grading bands
+  (`SPELL_TEST_TOTAL_MS`/`SPELL_TEST_FAST_MS` in
+  `packages/utils/src/srs-test-mode.ts`, used by `scoreSpellResult` and the
+  progress bar on both platforms). The spell input is a **segmented
+  character-count field** — one box per character of the correct blanked word —
+  built as a single real text field whose value spans across the boxes, so IME
+  composition works normally.
 
 ## Known Issues & Resolutions (2026-08-13)
 

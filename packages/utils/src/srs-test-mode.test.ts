@@ -389,19 +389,28 @@ describe('stringSimilarity', () => {
 
 describe('scoreSpellResult', () => {
   it('exact answer (base 2), normal speed → good (2)', () => {
-    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 7_000)).toBe('good');
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 15_000)).toBe('good');
   });
 
-  it('exact answer, fast (<5s) → easy (3)', () => {
-    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 3_000)).toBe('easy');
+  it('exact answer, fast (<10s) → easy (3)', () => {
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 8_000)).toBe('easy');
   });
 
-  it('exact answer, slow (>10s) → hard (1)', () => {
-    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 12_000)).toBe('hard');
+  it('exact answer, slow (>20s) → hard (1)', () => {
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 22_000)).toBe('hard');
+  });
+
+  it('exact answer, boundary 10s stays in the fast window → easy', () => {
+    // Doubled fast mark: < 10s → easy (choose mode would use 5s).
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 9_999)).toBe('easy');
+  });
+
+  it('exact answer, boundary 20s stays good (not yet slow)', () => {
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 20_000)).toBe('good');
   });
 
   it('very wrong answer is again regardless of time', () => {
-    expect(scoreSpellResult(['wrench'], ['Apple tree'], 12_000)).toBe('again');
+    expect(scoreSpellResult(['wrench'], ['Apple tree'], 22_000)).toBe('again');
     expect(scoreSpellResult(['wrench'], ['Apple tree'], 3_000)).toBe('again');
   });
 
@@ -412,7 +421,7 @@ describe('scoreSpellResult', () => {
 
   it('one-char-edit answer (base 1, close) → hard, time-independent', () => {
     // "Appel tree" vs "Apple tree" → sim ≈ 0.8 → close → hard.
-    expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 7_000)).toBe('hard');
+    expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 15_000)).toBe('hard');
     expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 3_000)).toBe('hard');
   });
 
@@ -422,7 +431,7 @@ describe('scoreSpellResult', () => {
     expect(scoreSpellResult(
       scriptVariants('たじろかせる', 'ja'),
       scriptVariants('タジロカセル', 'ja'),
-      7_000,
+      15_000,
     )).toBe('good');
   });
 
@@ -430,7 +439,7 @@ describe('scoreSpellResult', () => {
     expect(scoreSpellResult(
       ['這裡', '这里'],
       ['这里', '這裏'],
-      7_000,
+      15_000,
     )).toBe('good');
   });
 });

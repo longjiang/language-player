@@ -346,7 +346,22 @@ export function bestScriptSimilarity(
 }
 
 /**
- * Grade a spell-mode answer with the SPEC-066 spell rules (2026-09-06 tighten):
+ * Spell-mode time allowance.
+ *
+ * SPEC-066 originally gave spell mode a budget of T = 10 s and the same
+ * 5 s / 10 s time bands as choose mode. The allowance was doubled
+ * (2026-09-xx) because typing the exact blanked surface/inflected form —
+ * often through a CJK IME — is much slower than tapping a multiple-choice
+ * option. Both the visible countdown AND the grading bands scale together so
+ * the blue/green bar stays consistent with the fast/slow scoring: budget
+ * 20 s, fast < 10 s → easy, slow > 20 s → hard.
+ */
+export const SPELL_TEST_TOTAL_MS = 20_000;
+export const SPELL_TEST_FAST_MS = 10_000;
+
+/**
+ * Grade a spell-mode answer with the SPEC-066 spell rules (2026-09-06 tighten;
+ * 2026-09-xx time allowance doubled):
  *
  * - `answerVariants` / `correctVariants` are the script-folded alternatives for
  *   the user's submission and the blanked word (see `scriptVariants`); the best
@@ -354,8 +369,9 @@ export function bestScriptSimilarity(
  * - base points map similarity to 0–2, then the countdown only moves a
  *   *correct* answer (matching choose mode, which only time-adjusts a perfect
  *   score) so the fast bonus can never rescue a wrong or typo'd answer:
- *   - ≥ 0.9 → 2 (correct — essentially exact, script-folded); fast (<5 s) → 3
- *     (easy), slow (>10 s) → 1 (hard), else → 2 (good);
+ *   - ≥ 0.9 → 2 (correct — essentially exact, script-folded); fast
+ *     (< `SPELL_TEST_FAST_MS`) → 3 (easy), slow (> `SPELL_TEST_TOTAL_MS`) →
+ *     1 (hard), else → 2 (good);
  *   - 0.7–0.9 → 1 (close — a small typo), regardless of time → hard;
  *   - < 0.7 → 0 (wrong), regardless of time → again;
  * - map points → again(0) / hard(1) / good(2) / easy(3) — the same button
@@ -369,8 +385,8 @@ export function scoreSpellResult(
   const best = bestScriptSimilarity(answerVariants, correctVariants);
   let points = best >= 0.9 ? 2 : best >= 0.7 ? 1 : 0;
   if (points === 2) {
-    if (totalMs < 5_000) points = 3;
-    else if (totalMs > 10_000) points = 1;
+    if (totalMs < SPELL_TEST_FAST_MS) points = 3;
+    else if (totalMs > SPELL_TEST_TOTAL_MS) points = 1;
   }
   return (['again', 'hard', 'good', 'easy'] as const)[points]!;
 }

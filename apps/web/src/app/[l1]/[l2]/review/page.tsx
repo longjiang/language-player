@@ -25,6 +25,8 @@ import {
   scoreTestAnswer,
   scoreTestResult,
   scoreSpellResult,
+  SPELL_TEST_TOTAL_MS,
+  SPELL_TEST_FAST_MS,
   spellHintOf,
   spellBlankText,
   scriptVariants,
@@ -1170,9 +1172,13 @@ export default function ReviewPage() {
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
   // 5 s × totalTests remain (still inside the fast window that earns the +1
   // bonus); green once past that threshold (racing the 10 s/test slow mark).
-  const testTotalTests = Math.max(1, testSlots.filter((slot) => slot.status !== 'skipped').length);
-  const testTotalMs = 10_000 * testTotalTests;
-  const testFastMs = 5_000 * testTotalTests;
+  // Spell mode has exactly one test and a doubled allowance (budget 20 s,
+  // fast < 10 s) because typing the blanked form (often via a CJK IME) is much
+  // slower than tapping a choice.
+  const isSpellTest = reviewMode === 'spell';
+  const testTotalTests = isSpellTest ? 1 : Math.max(1, testSlots.filter((slot) => slot.status !== 'skipped').length);
+  const testTotalMs = (isSpellTest ? SPELL_TEST_TOTAL_MS : 10_000) * testTotalTests;
+  const testFastMs = (isSpellTest ? SPELL_TEST_FAST_MS : 5_000) * testTotalTests;
   const testElapsedMs = testSessionStartRef.current > 0
     ? Math.max(0, testNow - testSessionStartRef.current)
     : 0;
