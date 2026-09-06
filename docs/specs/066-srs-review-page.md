@@ -793,6 +793,32 @@ choose mode.
   (`review.spell_correct_answer`); when correct it shows a single
   Correct line.
 
+### Mixed mode
+
+Mixed mode is the **default** review mode. It is a per-card choice between the
+two test-backed modes, driven by the card's SRS state:
+
+- **`new` card** → behaves like **choose mode** (multiple choice) — the extra
+  scaffolding introduces freshly-saved words gently;
+- **every other state** (`learning` / `review` / `relearning`) → behaves like
+  **spell mode** — the learner types the word.
+
+The mode selector lists **Mixed / Choose / Spell / Recall** (Mixed first, as the
+default). Internally the selector stores `'mixed'`; the review page resolves the
+*effective* behavior mode per card via
+`resolveReviewMode(mode, cardState)` (shared `packages/utils/src/srs-test-mode.ts`),
+so the choose/spell UI, progress bar, prefetching, and rating dispatch all key
+off the resolved mode rather than the raw selector value.
+
+- **No user choice on a per-card basis** — the learner picks a single mode; the
+  card's state decides which test runs.
+- **Scaffolding for new cards, typing for review cards** — new cards use the
+  choose-mode Start Test gate + multiple-choice questions; everything else uses
+  the spell-mode blanked sentence + type-the-answer input.
+- **Prefetch** — choice tests are prefetched only for the cards that will be
+  choice-tested (new cards in mixed mode; all cards in choose mode), so a
+  review card in mixed mode never burns LLM tokens on an unused generated test.
+
 ### Interaction & input
 
 **Web**
@@ -1032,6 +1058,17 @@ types count while unexpired — there is no `status` filter.
   `Select`) and a **native menu on mobile** (`@react-native-menu/menu`), each
   option carrying an icon (web: lucide `Brain` / `ListChecks` / `Keyboard`;
   mobile: iOS SF Symbols on the menu items + a lucide icon on the trigger).
+- ✅ **Mixed mode + reorder** — implemented (both review pages + shared utils):
+  added **mixed mode** (default), which behaves like **choose** for `new` cards
+  and **spell** for every other state, resolved per card via
+  `resolveReviewMode(mode, cardState)` in
+  `packages/utils/src/srs-test-mode.ts`; the mode selector is now
+  **Mixed / Choose / Spell / Recall** (Mixed first). New/unset users default to
+  `mixed`; anyone who already picked a mode keeps their stored choice. The
+  new `review.mixed_mode` label ("Mixed mode") is added, and the choose/spell
+  UI, progress bar, prefetch, and rating dispatch all key off the resolved
+  (effective) mode. Choice tests are prefetched only for cards that are
+  choice-tested (new cards in mixed mode; all cards in choose mode).
 - ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
   utils): blank the term in the context sentence, show the bolded translation,
   then Start Test shows a countdown bar, a segmented character-count input +
