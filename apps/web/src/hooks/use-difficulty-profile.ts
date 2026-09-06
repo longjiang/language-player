@@ -35,7 +35,8 @@ export function useDifficultyProfile(): DifficultyProfile | null {
       })
       .catch(() => {
         _pendingPromise = null;
-        // silently fail — components fall back to hardcoded getLevel()
+        // silently fail — getLevelFromDifficulty returns undefined without a
+        // profile, so level badges are omitted (no hardcoded fallback level).
       });
   }, []);
 

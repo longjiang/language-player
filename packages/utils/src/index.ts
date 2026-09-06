@@ -29,7 +29,7 @@ export {
 } from './settings-diagnostics';
 export type { KeyValueStorage, SettingsDiagEvent } from './settings-diagnostics';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
-export { clampDifficulty, levelFromHours, hoursFromLevel } from './difficulty';
+export { levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
 export { cleanPronunciation, formatPronunciation } from './pronunciation';
 export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
