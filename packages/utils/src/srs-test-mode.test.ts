@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bestScriptSimilarity,
   buildPronunciationQuestionText,
   buildSrsQuestionPrompt,
   getTestKinds,
+  hiraganaToKatakana,
   isObviousPronunciationWrong,
+  kanaVariants,
   lemmaFormOf,
   pronunciationTargetOf,
   needsPronunciationTest,
@@ -11,6 +14,8 @@ import {
   parseSrsQuestionResponse,
   scoreSpellResult,
   scoreTestResult,
+  scriptVariants,
+  spellBlankText,
   spellHintOf,
   stringSimilarity,
   surfaceFormOf,
@@ -384,28 +389,93 @@ describe('stringSimilarity', () => {
 
 describe('scoreSpellResult', () => {
   it('exact answer (base 3), normal speed → easy (3)', () => {
-    expect(scoreSpellResult('Apple tree', 'Apple tree', 7_000)).toBe('easy');
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 7_000)).toBe('easy');
   });
 
   it('exact answer, fast (<5s) → easy (3)', () => {
-    expect(scoreSpellResult('Apple tree', 'Apple tree', 3_000)).toBe('easy');
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 3_000)).toBe('easy');
   });
 
   it('exact answer, slow (>10s) → good (2)', () => {
-    expect(scoreSpellResult('Apple tree', 'Apple tree', 12_000)).toBe('good');
+    expect(scoreSpellResult(['Apple tree'], ['Apple tree'], 12_000)).toBe('good');
   });
 
   it('very wrong answer, slow → again (0)', () => {
-    expect(scoreSpellResult('wrench', 'Apple tree', 12_000)).toBe('again');
+    expect(scoreSpellResult(['wrench'], ['Apple tree'], 12_000)).toBe('again');
   });
 
   it('very wrong answer, fast → good (1 + 1 = 2)', () => {
-    expect(scoreSpellResult('wrench', 'Apple tree', 3_000)).toBe('good');
+    expect(scoreSpellResult(['wrench'], ['Apple tree'], 3_000)).toBe('good');
   });
 
   it('one-char-edit answer (base 2), normal → good (2)', () => {
     // "Appel tree" vs "Apple tree" → similarity ≥ 0.5 → base 2.
-    expect(scoreSpellResult('Appel tree', 'Apple tree', 7_000)).toBe('good');
+    expect(scoreSpellResult(['Appel tree'], ['Apple tree'], 7_000)).toBe('good');
+  });
+
+  it('script variants match (katakana vs hiragana) → easy', () => {
+    // たじろかせる (hiragana) vs タジロカセル (katakana) share a variant.
+    expect(scriptVariants('たじろかせる', 'ja')).toContain('タジロカセル');
+    expect(scoreSpellResult(
+      scriptVariants('たじろかせる', 'ja'),
+      scriptVariants('タジロカセル', 'ja'),
+      7_000,
+    )).toBe('easy');
+  });
+
+  it('script variants match (simplified vs traditional Chinese)', () => {
+    // CEDICT variant sets supplied by the app; the comparator is indifferent.
+    expect(scoreSpellResult(
+      ['這裡', '这里'],
+      ['这里', '這裏'],
+      7_000,
+    )).toBe('easy');
+  });
+});
+
+describe('kanaVariants / scriptVariants', () => {
+  it('katakana → hiragana and back', () => {
+    expect(hiraganaToKatakana('たじろかせる')).toBe('タジロカセル');
+    expect(kanaVariants('たじろかせる')).toEqual(expect.arrayContaining(['たじろかせる', 'タジロカセル']));
+  });
+
+  it('scriptVariants only folds Japanese kana (Chinese folding is app-side)', () => {
+    expect(scriptVariants('这里', 'zh-CN')).toEqual(['这里']);
+    expect(scriptVariants('这里', 'yue')).toEqual(['这里']);
+    expect(scriptVariants('hello', 'fr')).toEqual(['hello']);
+  });
+});
+
+describe('bestScriptSimilarity', () => {
+  it('takes the best across script-folded variant pairs', () => {
+    expect(bestScriptSimilarity(
+      scriptVariants('タジロカセル', 'ja'),
+      scriptVariants('たじろかせる', 'ja'),
+    )).toBe(1);
+    // Chinese variants are app-supplied (OpenCC is lazy/async); the comparator
+    // is indifferent to which script each side is in.
+    expect(bestScriptSimilarity(
+      ['這裡', '这里'],
+      ['这里', '這裏'],
+    )).toBe(1);
+  });
+});
+
+describe('spellBlankText', () => {
+  const word = { forms: ['たじろか', 'たじろかせる'], head: 'たじろぐ', context: { form: 'たじろか' } };
+  const context = 'それは第一印象でまず人をたじろかせる（“退縮”）種類の顔だった。';
+
+  it('picks the longest form that actually appears in the context', () => {
+    expect(spellBlankText(context, word, 'たじろぐ', null, 'ja')).toBe('たじろかせる');
+  });
+
+  it('returns the exact context substring for katakana-in-context', () => {
+    const katakanaContext = 'それは第一印象でまず人をタジロカセル（“退縮”）種類の顔だった。';
+    expect(spellBlankText(katakanaContext, word, 'たじろぐ', null, 'ja')).toBe('タジロカセル');
+  });
+
+  it('falls back to surfaceFormOf when no form appears', () => {
+    expect(spellBlankText('全く別の文です。', word, 'たじろぐ', null, 'ja')).toBe('たじろか');
   });
 });
 
