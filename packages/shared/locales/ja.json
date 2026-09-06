@@ -1326,6 +1326,7 @@
         "hard": "難しい",
         "hard_hint": "苦労して思い出した",
         "loading_test": "読み込み中…",
+        "mixed_mode": "ミックスモード",
         "no_definition_available": "この単語は辞書に見つかりません。",
         "recall_mode": "想起モード",
         "shortcut_hint": "<space></space>で裏返す、<k1></k1>–<k2></k2>で評価、<enter></enter>で続行",

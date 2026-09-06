@@ -1,8 +1,27 @@
 /** Multiple-choice test scoring shared by web and mobile review screens. */
 import { languageNameFromCode, isPhoneticsEligible } from './language';
 import { katakanaToHiragana } from './furigana';
+import type { SrsCardState } from './fsrs-scheduler';
 
 export type TestQuestionKind = 'definition' | 'pronunciation';
+
+/** The user-selectable review mode dropdown values (web + mobile). */
+export type ReviewMode = 'mixed' | 'recall' | 'choose' | 'spell';
+
+/**
+ * Resolve the ACTUAL behavior mode from the selector mode and a card's SRS
+ * state. 'mixed' is the default mode: it uses multiple-choice (choose) for NEW
+ * cards — introducing them with scaffolding — and spell for every other state
+ * (learning / review / relearning), so review cards are typed. Returns the
+ * concrete behavior mode, never 'mixed'.
+ */
+export function resolveReviewMode(
+  mode: ReviewMode,
+  cardState: SrsCardState | null,
+): Exclude<ReviewMode, 'mixed'> {
+  if (mode === 'mixed') return cardState === 'new' ? 'choose' : 'spell';
+  return mode;
+}
 
 export interface SrsTestQuestion {
   kind: TestQuestionKind;

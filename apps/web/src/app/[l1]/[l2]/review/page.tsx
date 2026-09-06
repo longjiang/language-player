@@ -31,10 +31,12 @@ import {
   spellBlankText,
   scriptVariants,
   bestScriptSimilarity,
+  resolveReviewMode,
   type SrsTestQuestion,
   type SrsTestDiagnostic,
   type SrsTestPriority,
   type TestQuestionKind,
+  type ReviewMode,
 } from '@langplayer/utils';
 import { getSrsTestManager } from '@/lib/srs-test-manager';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
@@ -80,6 +82,7 @@ import {
   Brain,
   ListChecks,
   Keyboard,
+  Shuffle,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -201,12 +204,15 @@ export default function ReviewPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
-  const [reviewMode, setReviewMode] = useState<'recall' | 'choose' | 'spell'>(() => {
-    if (typeof window === 'undefined') return 'recall';
+  const [reviewMode, setReviewMode] = useState<ReviewMode>(() => {
+    if (typeof window === 'undefined') return 'mixed';
     const stored = window.localStorage.getItem('lp:srs-review-mode');
     // Migrate the pre-rename 'test' value to 'choose'.
     if (stored === 'test' || stored === 'choose') return 'choose';
-    return stored === 'spell' ? 'spell' : 'recall';
+    if (stored === 'spell') return 'spell';
+    if (stored === 'recall') return 'recall';
+    // Unset (or already 'mixed') → default to mixed mode.
+    return 'mixed';
   });
   /** Generation session id — bumped whenever the current test is invalidated
    *  (mode switch, card change, rating, remove), so stale async results from
@@ -217,7 +223,7 @@ export default function ReviewPage() {
    *  question. */
   const testSessionStartRef = useRef(0);
 
-  const changeReviewMode = useCallback((mode: 'recall' | 'choose' | 'spell') => {
+  const changeReviewMode = useCallback((mode: ReviewMode) => {
     testRequestVersionRef.current += 1;
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
@@ -742,13 +748,17 @@ export default function ReviewPage() {
   // through the manager's single queue (one LLM call at a time) at prefetch
   // priority, which sits behind user regeneration and current-card work.
   useEffect(() => {
-    if (reviewMode !== 'choose' || rated) return;
+    if (reviewMode === 'recall' || rated) return;
     const manager = getSrsTestManager();
     void manager.ready();
     const wantedKeys: string[] = [];
     for (let offset = 0; offset <= 2; offset++) {
       const card = cards[currentIndex + offset];
       if (!card) continue;
+      // In mixed mode only NEW cards are choice-tested (review cards use spell
+      // and need no generated test); in choose mode every card is choice-tested.
+      const cardMode = resolveReviewMode(reviewMode, fsrs.getCardState(card.srs));
+      if (cardMode !== 'choose') continue;
       const cardKey = `${l2Code}:${baseCode(l1.code)}:${card.word.id}`;
       wantedKeys.push(cardKey);
       if (offset === 0) continue; // current card: generated on Start Test only
@@ -910,10 +920,12 @@ export default function ReviewPage() {
   }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code, l1Entry, fallbackEntry]);
 
   const handleReveal = useCallback(() => {
-    if (reviewMode === 'choose') { void startTest(); return; }
-    if (reviewMode === 'spell') { void startSpell(); return; }
+    const card = cards[currentIndex];
+    const mode = resolveReviewMode(reviewMode, card ? fsrs.getCardState(card.srs) : null);
+    if (mode === 'choose') { void startTest(); return; }
+    if (mode === 'spell') { void startSpell(); return; }
     setShowDefinition(true);
-  }, [reviewMode, startTest, startSpell]);
+  }, [reviewMode, cards, currentIndex, startTest, startSpell]);
 
   const handleTestAnswer = useCallback((answer: string) => {
     log('[SRS Test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), answerCount: testAnswers.length, questionCount: testSlots.length });
@@ -1162,18 +1174,21 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
-  const definitionTestAnswered = reviewMode === 'choose'
+  // The behavior mode for the CURRENT card: 'mixed' resolves to choose for new
+  // cards and spell for every other state (SPEC-066 mixed mode).
+  const effectiveMode = resolveReviewMode(reviewMode, currentCardState);
+  const definitionTestAnswered = effectiveMode === 'choose'
     && testSlots.some((slot, index) => slot.kind === 'definition' && Boolean(testAnswers[index]));
   // Spell mode keeps the context translation visible throughout (the learner
   // sees the translated sentence with the bolded term even before the test
   // starts, per SPEC-066 spell mode).
-  const showContextTranslation = showDefinition || definitionTestAnswered || reviewMode === 'spell';
+  const showContextTranslation = showDefinition || definitionTestAnswered || effectiveMode === 'spell';
   // When the learner's L1 == L2 (zh/zh-Hans/zh-Hant are equivalent via
   // baseCode), the context "translation" is the same language and — with the
   // target bolded — would leak the blanked word in spell mode. So in spell mode
   // we replace the sentence translation with a contextual rephrasing of the
   // target word (server `rephrase_term`), so the target word never appears.
-  const sameLangRephrase = reviewMode === 'spell' && baseCode(l1.code) === l2Code;
+  const sameLangRephrase = effectiveMode === 'spell' && baseCode(l1.code) === l2Code;
 
   // ── Test progress bar (SPEC-066) ──
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
@@ -1182,7 +1197,7 @@ export default function ReviewPage() {
   // Spell mode has exactly one test and a doubled allowance (budget 20 s,
   // fast < 10 s) because typing the blanked form (often via a CJK IME) is much
   // slower than tapping a choice.
-  const isSpellTest = reviewMode === 'spell';
+  const isSpellTest = effectiveMode === 'spell';
   const testTotalTests = isSpellTest ? 1 : Math.max(1, testSlots.filter((slot) => slot.status !== 'skipped').length);
   const testTotalMs = (isSpellTest ? SPELL_TEST_TOTAL_MS : 10_000) * testTotalTests;
   const testFastMs = (isSpellTest ? SPELL_TEST_FAST_MS : 5_000) * testTotalTests;
@@ -1597,7 +1612,7 @@ export default function ReviewPage() {
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
   /** Muted first-character hint for the spell-mode input (reading or lemma). */
-  const spellHint = reviewMode === 'spell'
+  const spellHint = effectiveMode === 'spell'
     ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
     : null;
   /** Expected character count of the correct blanked word — drives the number of
@@ -1605,7 +1620,7 @@ export default function ReviewPage() {
    *  `spellBlankText` logic used to grade the answer, so the box count matches
    *  the exact text the learner is asked to type. Computed inline (not a hook)
    *  because it sits after the `!currentCard` early-return guard. */
-  const spellExpectedLen = reviewMode === 'spell' && currentCard
+  const spellExpectedLen = effectiveMode === 'spell' && currentCard
     ? Array.from(spellBlankText(
         currentCard.word.context?.text ?? '',
         currentCard.word,
@@ -1618,17 +1633,18 @@ export default function ReviewPage() {
   // current (first unanswered) slot renders its own status below.
   const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
 
-  // Review-mode dropdown options (Recall / Choose / Spell) with icons.
+  // Review-mode dropdown options (Mixed / Choose / Spell / Recall) with icons.
   const MODE_OPTIONS = [
-    { key: 'recall' as const, label: t('review.recall_mode'), Icon: Brain },
+    { key: 'mixed' as const, label: t('review.mixed_mode'), Icon: Shuffle },
     { key: 'choose' as const, label: t('review.choose_mode'), Icon: ListChecks },
     { key: 'spell' as const, label: t('review.spell_mode'), Icon: Keyboard },
+    { key: 'recall' as const, label: t('review.recall_mode'), Icon: Brain },
   ];
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <Select value={reviewMode} onValueChange={(v) => changeReviewMode(v as 'recall' | 'choose' | 'spell')}>
+        <Select value={reviewMode} onValueChange={(v) => changeReviewMode(v as ReviewMode)}>
           <SelectTrigger className="w-[190px]">
             {/* SelectValue mirrors the selected item's content (icon + label) so
                 the trigger shows the current mode's icon exactly once. */}
@@ -1687,7 +1703,7 @@ export default function ReviewPage() {
                 highlightEntryIds={targetHighlightEntryIds}
                 phoneticsOnHighlight={showDefinition}
                 quickGlossOnHighlight={showDefinition}
-                blankHighlighted={reviewMode === 'spell' && !spellSubmitted}
+                blankHighlighted={effectiveMode === 'spell' && !spellSubmitted}
                 context={{
                   youtube_id: wordCtx.youtube_id,
                   videoTitle: wordCtx.videoTitle,
@@ -1768,8 +1784,8 @@ export default function ReviewPage() {
         {/* Test progress bar: counts down T = 10 s × totalTests once the
             session starts. Blue while more than 5 s × totalTests remain,
             green otherwise (SPEC-066). */}
-        {((reviewMode === 'choose' && testStartedAt !== null && !rated)
-          || (reviewMode === 'spell' && testStartedAt !== null && !rated && !spellSubmitted)) && (
+        {((effectiveMode === 'choose' && testStartedAt !== null && !rated)
+          || (effectiveMode === 'spell' && testStartedAt !== null && !rated && !spellSubmitted)) && (
           <div className="mt-4 w-full">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div
@@ -1784,7 +1800,7 @@ export default function ReviewPage() {
             the next. Questions are generated one at a time through the shared
             manager — a failing test shows its own error + retry + diagnostic
             and never blocks the other test's loading. */}
-        {reviewMode === 'choose' && testSlots.length > 0 ? (
+        {effectiveMode === 'choose' && testSlots.length > 0 ? (
           <div className="mt-4 w-full space-y-6 text-left">
             {visibleTestSlots.map((slot, slotIndex) => {
               const result = testAnswers[slotIndex];
@@ -1884,11 +1900,11 @@ export default function ReviewPage() {
               );
             })}
           </div>
-        ) : reviewMode === 'choose' ? (
+        ) : effectiveMode === 'choose' ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
             {t('review.start_test')}
           </Button>
-        ) : reviewMode === 'spell' && !showDefinition && !spellSubmitted ? (
+        ) : effectiveMode === 'spell' && !showDefinition && !spellSubmitted ? (
           testStartedAt === null ? (
             <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
               {t('review.start_test')}
@@ -1913,13 +1929,13 @@ export default function ReviewPage() {
               {spellHint && <p className="text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</p>}
             </div>
           )
-        ) : !showDefinition && reviewMode === 'recall' ? (
+        ) : !showDefinition && effectiveMode === 'recall' ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
             {t('review.show_definition')}
           </Button>
         ) : null}
 
-        {reviewMode === 'spell' && spellSubmitted && spellResult && (
+        {effectiveMode === 'spell' && spellSubmitted && spellResult && (
           <div className="mt-4 w-full text-left space-y-1">
             <p className={`text-sm font-semibold ${spellResult.correct ? 'text-green-600' : 'text-destructive'}`}>
               {spellResult.correct ? t('review.answer_correct') : t('review.answer_incorrect')}
