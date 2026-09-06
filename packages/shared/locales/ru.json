@@ -1334,6 +1334,7 @@
         "spell_hint": "Начинается с",
         "spell_mode": "Режим правописания",
         "spell_prompt": "Введите пропущенное слово",
+        "spell_your_answer": "Ваш ответ: {answer}",
         "srs_new": "новый",
         "srs_review": "{count, plural, one {повторено 1 раз} few {повторено # раза} many {повторено # раз} other {повторено # раз}}",
         "start_test": "Начать тест",

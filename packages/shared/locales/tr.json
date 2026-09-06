@@ -1334,6 +1334,7 @@
         "spell_hint": "Şununla başlar",
         "spell_mode": "Yazım modu",
         "spell_prompt": "Eksik kelimeyi yazın",
+        "spell_your_answer": "Cevabınız: {answer}",
         "srs_new": "yeni",
         "srs_review": "{count, plural, one {# kez gözden geçirildi} other {# kez gözden geçirildi}}",
         "start_test": "Testi başlat",

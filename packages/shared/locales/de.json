@@ -1334,6 +1334,7 @@
         "spell_hint": "Beginnt mit",
         "spell_mode": "Schreibmodus",
         "spell_prompt": "Gib das fehlende Wort ein",
+        "spell_your_answer": "Deine Antwort: {answer}",
         "srs_new": "neu",
         "srs_review": "{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}",
         "start_test": "Test starten",

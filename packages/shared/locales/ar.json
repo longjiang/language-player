@@ -1334,6 +1334,7 @@
         "spell_hint": "يبدأ بـ",
         "spell_mode": "وضع الإملاء",
         "spell_prompt": "اكتب الكلمة المفقودة",
+        "spell_your_answer": "إجابتك: {answer}",
         "srs_new": "جديد",
         "srs_review": "{count, plural, one {تمت المراجعة مرة واحدة} two {تمت المراجعة مرتين} few {تمت المراجعة # مرات} other {تمت المراجعة # مرة}}",
         "start_test": "بدء الاختبار",

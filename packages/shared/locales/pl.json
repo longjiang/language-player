@@ -1334,6 +1334,7 @@
         "spell_hint": "Zaczyna się od",
         "spell_mode": "Tryb pisowni",
         "spell_prompt": "Wpisz brakujące słowo",
+        "spell_your_answer": "Twoja odpowiedź: {answer}",
         "srs_new": "nowy",
         "srs_review": "{count, plural, one {przejrzane 1 raz} few {przejrzane # razy} many {przejrzane # razy} other {przejrzane # razy}}",
         "start_test": "Rozpocznij test",

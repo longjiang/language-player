@@ -1297,6 +1297,7 @@
         "spell_hint": "首字母",
         "spell_mode": "拼寫模式",
         "spell_prompt": "輸入缺失的單詞",
+        "spell_your_answer": "你的答案：{answer}",
         "srs_review": "{count, plural, other {已複習 # 次}}",
         "start_test": "開始測試",
         "submit": "提交",
