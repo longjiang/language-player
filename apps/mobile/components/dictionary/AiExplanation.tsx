@@ -13,12 +13,12 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, AI_EXAMPLES_LIMIT, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse, buildWordExplainPrompt, presetKey, splitAiQuotes, normalizeQuoteBlocks, READER_AI_QUOTE_INSTRUCTION, READER_AI_SUMMARY_INSTRUCTION, type AiFollowUpPreset, type ReaderAiContent } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/SubsSearchRow';
 import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { Sparkles, RefreshCw, Copy, Check, Send } from 'lucide-react-native';
+import { Sparkles, RefreshCw, Copy, Check, Send, Quote, ChevronRight } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 /** One AI-selected video example: the search result (for the chip) plus the
@@ -401,41 +401,55 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     startStream(prompt, { messages: history });
   }, [startStream, appendMessage, buildHistory, quoteChips]);
 
-  // Reader Ask-AI: many chat messages interleave [[original||translation]]
-  // quote markers with prose. `renderInlineQuotes` splits the raw text on those
-  // markers and renders each as a small tappable chip INLINE at its position
-  // (RN's <Text> nests), rather than stripping them out and piling every chip
-  // at the bottom. Every marker renders as a chip (the model is asked to quote
-  // exactly; a chip whose passage isn't verbatim simply opens a search that
-  // finds nothing rather than dropping the quote and leaving a gap).
+  // Reader Ask-AI: chat messages interleave [[original||translation]] quote
+  // markers with prose. `renderInlineQuotes` splits the raw text on those
+  // markers and renders each as a full-width BLOCK chip (own row: quote icon
+  // on the left, right-chevron on the right) at its position, rather than
+  // stripping them out and piling every chip at the bottom. Every marker
+  // renders as a chip (the model is asked to quote exactly; a chip whose
+  // passage isn't verbatim simply opens a search that finds nothing rather
+  // than dropping the quote and leaving a gap). The text is normalized first
+  // (normalizeQuoteBlocks) so a marker the model slipped into the middle of a
+  // sentence is hoisted onto its own line — the chip never breaks a sentence
+  // inline, and the surrounding prose stays readable.
   const renderInlineQuotes = useCallback(
-    (text: string) => {
-      const segments = splitAiQuotes(text);
+    (raw: string) => {
+      const segments = splitAiQuotes(normalizeQuoteBlocks(raw));
       return (
-        <Text className="text-sm leading-relaxed text-foreground">
+        <View className="gap-1.5">
           {segments.map((seg, i) =>
             seg.type === 'text' ? (
-              <Text key={i}>{seg.value}</Text>
+              seg.value.trim().length > 0 ? (
+                <Text key={i} className="text-sm leading-relaxed text-foreground">
+                  {seg.value.trim()}
+                </Text>
+              ) : null
             ) : (
-              <Text
+              <Pressable
                 key={i}
                 onPress={() => onQuotePress?.(seg.original)}
-                className="mx-0.5 rounded border border-border bg-muted/60 px-1.5 py-0.5"
+                accessibilityLabel={t('action.search')}
+                className="flex-row items-center gap-2 rounded-md border border-border bg-muted/60 px-2.5 py-2 active:bg-muted"
               >
-                <Text className="text-xs font-medium text-foreground">{seg.original}</Text>
-                {seg.translation ? (
-                  <>
-                    {'\n'}
-                    <Text className="text-[10px] text-muted-foreground">{seg.translation}</Text>
-                  </>
-                ) : null}
-              </Text>
+                <Quote size={13} color={ICON_MUTED} />
+                <View className="min-w-0 flex-1">
+                  <Text numberOfLines={1} className="text-xs font-medium text-foreground">
+                    {seg.original}
+                  </Text>
+                  {seg.translation ? (
+                    <Text numberOfLines={1} className="text-[11px] text-muted-foreground">
+                      {seg.translation}
+                    </Text>
+                  ) : null}
+                </View>
+                <ChevronRight size={13} color={ICON_MUTED} />
+              </Pressable>
             ),
           )}
-        </Text>
+        </View>
       );
     },
-    [onQuotePress],
+    [onQuotePress, t],
   );
 
   // ── Example chips: lazy translations (same pipeline as the results list) ──

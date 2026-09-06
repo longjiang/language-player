@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Quote, ChevronRight } from 'lucide-react';
 import { cleanAiQuote } from '@langplayer/utils';
 import { TokenizedText } from '@/components/tokenized-text';
 
@@ -15,9 +16,11 @@ interface MarkdownExplanationProps {
   /** True while the response is still streaming: backticked spans render as
    *  plain code and tokenization is deferred until the stream ends. */
   streaming?: boolean;
-  /** Reader "Ask AI": render `[[original||translation]]` markers as small
-   *  tappable chips INLINE at the position the model placed them (instead of
-   *  raw text). `onQuotePress` opens the reader search. */
+  /** Reader "Ask AI": render `[[original||translation]]` markers as tappable
+   *  chips at the position the model placed them (instead of raw text).
+   *  Each chip is a full-width BLOCK (own line), with a quote icon on the
+   *  left and a right-chevron on the right. `onQuotePress` opens the reader
+   *  search. */
   quoteChips?: {
     onQuotePress: (original: string) => void;
   };
@@ -25,14 +28,31 @@ interface MarkdownExplanationProps {
 
 /**
  * Turns `[[original||translation]]` quote markers in markdown text nodes into
- * custom `quoteChip` hast elements, so react-markdown renders them as inline
- * chips at their position (the reader "Ask AI" summary). Non-matching text is
- * left untouched; markers that straddle formatting boundaries (e.g. a quote
+ * custom `quoteChip` hast elements, so react-markdown renders them as chips at
+ * their position (the reader "Ask AI" summary). In a PARAGRAPH's own text the
+ * markers are hoisted to BLOCK level — the paragraph is split into prose
+ * paragraphs and standalone `quoteChip` nodes, so a chip never renders inside
+ * the sentence around it (the prompt asks the model to emit each marker on its
+ * own line; this cleans up the ones it still places mid-sentence). Markers
+ * inside inline formatting (bold/emphasis) convert in place. Non-matching text
+ * is left untouched; markers that straddle formatting boundaries (e.g. a quote
  * containing its own markdown) are not converted and stay as raw text.
  */
 function remarkReaderQuote() {
   return (tree: any) => {
+    // Built fresh per plugin run: a /g regex is stateful (`lastIndex`), and
+    // sharing one between `.test()` and `matchAll` silently skips matches.
     const markerRe = /\[\[([\s\S]+?)\|\|([\s\S]+?)\]\]/g;
+    const makeChip = (m: RegExpMatchArray): any | null => {
+      const original = cleanAiQuote(m[1] ?? '');
+      const translation = cleanAiQuote(m[2] ?? '');
+      if (!original) return null;
+      return {
+        type: 'quoteChip',
+        data: { hName: 'quoteChip', hProperties: { original, translation } },
+      };
+    };
+    /** Split a plain-text value into prose / block-chip pieces. */
     const convertText = (value: string): any[] => {
       const matches = [...value.matchAll(markerRe)];
       if (matches.length === 0) return [{ type: 'text', value }];
@@ -41,21 +61,16 @@ function remarkReaderQuote() {
       for (const m of matches) {
         const start = m.index ?? 0;
         if (start > last) children.push({ type: 'text', value: value.slice(last, start) });
-        const original = cleanAiQuote(m[1] ?? '');
-        const translation = cleanAiQuote(m[2] ?? '');
-        if (original) {
-          children.push({
-            type: 'quoteChip',
-            data: { hName: 'quoteChip', hProperties: { original, translation } },
-          });
-        }
+        const chip = makeChip(m);
+        if (chip) children.push(chip);
         last = start + m[0].length;
       }
       if (last < value.length) children.push({ type: 'text', value: value.slice(last) });
       return children;
     };
-
-    const walk = (node: any): void => {
+    /** In-place conversion (the old inline behavior) for inline-formatting
+     *  subtrees — a chip inside bold still renders full-width. */
+    const walkInline = (node: any): void => {
       if (!node || !Array.isArray(node.children)) return;
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
@@ -67,12 +82,59 @@ function remarkReaderQuote() {
             i += replaced.length - 1;
           }
         } else {
-          walk(child);
+          walkInline(child);
+        }
+      }
+    };
+    /** True when the paragraph has a marker in one of its DIRECT text nodes
+     *  (markers only inside inline formatting don't need the split). Uses a
+     *  fresh non-global regex — a /g regex's `lastIndex` would leak between
+     *  `.test()` calls and corrupt the later `matchAll`. */
+    const paragraphHasMarker = (node: any): boolean =>
+      Array.isArray(node.children) &&
+      node.children.some(
+        (c: any) => c?.type === 'text' && /\[\[[\s\S]+?\|\|[\s\S]+?\]\]/.test(c.value ?? ''),
+      );
+
+    const process = (parent: any): void => {
+      if (!parent || !Array.isArray(parent.children)) return;
+      for (let i = 0; i < parent.children.length; i++) {
+        const child = parent.children[i];
+        if (!child) continue;
+        if (child.type === 'paragraph' && paragraphHasMarker(child)) {
+          // Rebuild the paragraph as [prose paragraph, chip, prose paragraph,
+          // …] so each chip becomes a sibling BLOCK of the prose.
+          const expanded: any[] = [];
+          let prose: any[] = [];
+          const flushProse = () => {
+            if (prose.length > 0) expanded.push({ type: 'paragraph', children: prose });
+            prose = [];
+          };
+          for (const inner of child.children) {
+            if (inner?.type === 'text') {
+              for (const piece of convertText(inner.value ?? '')) {
+                if (piece.type === 'text') {
+                  if (piece.value.trim()) prose.push(piece);
+                } else {
+                  flushProse();
+                  expanded.push(piece);
+                }
+              }
+            } else {
+              walkInline(inner);
+              prose.push(inner);
+            }
+          }
+          flushProse();
+          parent.children.splice(i, 1, ...expanded);
+          i += expanded.length - 1;
+        } else {
+          process(child);
         }
       }
     };
 
-    walk(tree);
+    process(tree);
   };
 }
 
@@ -96,17 +158,23 @@ export function MarkdownExplanation({ text, l2Code, streaming = false, quoteChip
     if (quoteChips) {
       renderers.quoteChip = ({ original, translation }: any) => {
         const o = String(original ?? '').trim();
-        const t = String(translation ?? '').trim();
+        const gloss = String(translation ?? '').trim();
         if (!o) return null;
         return (
           <button
             type="button"
             onClick={() => quoteChips.onQuotePress(o)}
-            title="Search this passage"
-            className="mx-0.5 inline-flex max-w-full flex-col gap-0.5 rounded border border-border bg-muted/60 px-1.5 py-0.5 align-middle transition-colors hover:border-primary hover:bg-muted"
+            title={gloss ? `${o} — ${gloss}` : o}
+            className="my-1.5 flex w-full items-center gap-2.5 rounded-md border border-border bg-muted/60 px-2.5 py-2 text-left transition-colors hover:border-primary hover:bg-muted"
           >
-            <span className="truncate text-xs font-medium text-foreground">{o}</span>
-            {t ? <span className="truncate text-[10px] text-muted-foreground">{t}</span> : null}
+            <Quote className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 flex-1 flex-col">
+              <span className="block truncate text-xs font-medium text-foreground">{o}</span>
+              {gloss ? (
+                <span className="block truncate text-[11px] text-muted-foreground">{gloss}</span>
+              ) : null}
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           </button>
         );
       };
