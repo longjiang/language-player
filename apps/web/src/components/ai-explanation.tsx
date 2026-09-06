@@ -42,6 +42,7 @@ import {
   Check,
   Copy,
   Send,
+  Trash2,
 } from 'lucide-react';
 
 /** One AI-selected video example: the search result (for the chip) plus the
@@ -107,6 +108,15 @@ interface AiExplanationProps {
   /** Reader "Ask AI": open the chat but do NOT auto-stream. The user must tap a
    *  preset button or send a message to get a response (readers only). */
   demandMode?: boolean;
+  /** Persist the chat transcript under this localStorage key, restoring it on
+   *  mount (e.g. per note, per web page, per book, per video). When omitted the
+   *  transcript is ephemeral (current behavior). */
+  storageKey?: string;
+  /** Video "Ask AI": when set, `[MM:SS]` timestamps in each assistant reply
+   *  render as tappable chips that call back with the time in seconds (the
+   *  caller seeks the video). Also appends a timestamp-citation instruction to
+   *  prompts so the model cites the subtitle timestamps it refers to. */
+  onTimestampPress?: (timeSeconds: number) => void;
 }
 
 // ── Subs-search helpers (mirror subs-search-results.tsx) ──
@@ -127,6 +137,48 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
 }
 
 /**
+ * Persisted Ask-AI chat transcript shape (subset of `ChatMessage` sufficient
+ * to rebuild a session — `examples` and transient fields are dropped).
+ */
+interface PersistedAiMessage {
+  role: 'user' | 'assistant';
+  text: string;
+  label?: string;
+  prompt?: string;
+}
+
+function loadPersistedMessages(storageKey: string): PersistedAiMessage[] {
+  try {
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (m): m is PersistedAiMessage =>
+        !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string',
+    );
+  } catch {
+    return [];
+  }
+}
+
+function savePersistedMessages(storageKey: string, messages: PersistedAiMessage[]): void {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(messages));
+  } catch {
+    /* quota/unavailable — persistence is best-effort */
+  }
+}
+
+function clearPersistedMessages(storageKey: string): void {
+  try {
+    window.localStorage.removeItem(storageKey);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
  * "Let DeepSeek Explain" — Pro-only feature shown in the dictionary popup.
  *
  * Matches Classic + GO behaviour:
@@ -140,7 +192,7 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
  * history so the model keeps the word/context grounding without re-assembling
  * a flat prompt.
  */
-export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress, demandMode = false }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress, demandMode = false, storageKey, onTimestampPress }: AiExplanationProps) {
   const { data: session } = useSession();
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -206,6 +258,50 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
     return id;
   }, []);
+
+  // ── Persisted session (storageKey) ─────────────────────────────────────────
+  // When a storageKey is supplied (per note / web page / book / video), the
+  // transcript is persisted so the chat survives navigation. Restored on
+  // mount / storage-key change; saved on every message change.
+  useEffect(() => {
+    if (!storageKey) return;
+    const saved = loadPersistedMessages(storageKey);
+    const restored: ChatMessage[] = saved.map((m, i) => ({
+      id: i,
+      role: m.role,
+      text: m.text,
+      label: m.label,
+      prompt: m.prompt,
+    }));
+    messageIdRef.current = restored.length;
+    setMessages(restored);
+    setStreamingId(null);
+    setUsedFollowUps(new Set());
+    emptyAssistantIdRef.current = null;
+    loggedEmptyBubbleRef.current = new Set();
+    reset();
+  }, [storageKey, reset]);
+
+  useEffect(() => {
+    if (!storageKey) return;
+    const persisted = messages
+      .filter((m) => (m.role === 'user' ? !!(m.text || m.label) : !!m.text))
+      .map((m) => ({ role: m.role, text: m.text, label: m.label, prompt: m.prompt }));
+    savePersistedMessages(storageKey, persisted);
+  }, [messages, storageKey]);
+
+  /** Clear the persisted transcript (and drop the stored copy). */
+  const handleClear = useCallback(() => {
+    setMessages([]);
+    setStreamingId(null);
+    setUsedFollowUps(new Set());
+    setFreeFormText('');
+    emptyAssistantIdRef.current = null;
+    loggedEmptyBubbleRef.current = new Set();
+    initialStreamStartedRef.current = false;
+    if (storageKey) clearPersistedMessages(storageKey);
+    reset();
+  }, [storageKey, reset]);
 
   const updateMessage = useCallback((id: number, patch: Partial<ChatMessage>) => {
     setMessages((prev) =>
@@ -730,10 +826,22 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
             <span>{t('msg.reader_context_too_large')}</span>
           </div>
         )}
-        <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <Sparkles className="h-3 w-3" />
-          {t('label.ai_says')}
-          {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
+        <div className="mb-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-3 w-3" />
+            {t('label.ai_says')}
+            {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
+          </div>
+          {storageKey && messages.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Trash2 className="h-3 w-3" />
+              {t('action.clear_conversation')}
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">

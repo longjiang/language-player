@@ -195,6 +195,18 @@ to `AiExplanation`. Preset config lives in `@langplayer/utils`
 `normalizeQuoteBlocks` / `cleanAiQuote` /
 `READER_AI_SUMMARY_INSTRUCTION` / `READER_AI_QUOTE_INSTRUCTION`).
 
+**Session persistence.** The reader Ask-AI chat transcript is persisted per
+entity so it survives navigation/reload:
+- *notes reader* — keyed by note id (`lp-ask-ai:note:<id>`);
+- *web reader* — keyed by the loaded URL (`lp-ask-ai:web:<url>`);
+- *image reader* — keyed by the current image id (`lp-ask-ai:image:<id>`);
+- *EPUB reader* — keyed by the open book id (`lp-ask-ai:epub:<id>`).
+
+`AiExplanation` accepts an optional `storageKey`; when set it restores the
+transcript on mount and saves on every message change (web: `localStorage`;
+mobile: `AsyncStorage`). A **Clear conversation** button (shown when a session
+exists) resets and removes the stored copy.
+
 ### 8. Search, table of contents, and place
 
 - **Search.** A search panel over the reader's content. For books it searches the whole book; for the notes/web reader it searches the block stream. Results show a snippet with the matched span highlighted (and a chapter label for books); clicking a result jumps to and highlights the matching block. Recent searches are remembered (and can be cleared). Matching is **invisible-char and whitespace insensitive**: zero-width/invisible characters (most commonly a zero-width space `U+200B`, which web pages and EPUB sources insert between CJK characters) and any whitespace run are stripped/collapsed on both the query and the text before substring search, so searching a visually-contiguous phrase matches even when an invisible character sits in the middle (implemented in `@langplayer/utils/findTextMatches`, shared by the web and mobile search panels).

@@ -37,6 +37,7 @@ action.cancel_auto_renewal,Cancel Auto-Renewal,取消自动续费,取消自動�
 action.change_language,Change language,切换语言,切換語言,تغيير اللغة,Sprache ändern,Cambiar idioma,Changer de langue,Ganti bahasa,Cambia lingua,言語を変更,언어 변경,Taal wijzigen,Zmień język,Mudar idioma,Сменить язык,เปลี่ยนภาษา,Dili değiştir,Đổi ngôn ngữ
 action.clear,Clear,,,مسح,Löschen,Borrar,Effacer,Hapus,Cancella,クリア,지우기,Wissen,Wyczyść,Limpar,Очистить,ล้าง,Temizle,Xóa
 action.clear_all,Clear All,全部清除,全部清除,مسح الكل,Alle löschen,Limpiar todo,Tout effacer,Hapus Semua,Cancella tutto,すべてクリア,모두 지우기,Alles wissen,Wyczyść wszystko,Limpar Tudo,Очистить всё,ล้างทั้งหมด,Tümünü Temizle,Xóa tất cả
+action.clear_conversation,Clear conversation,清空对话,清空對話,مسح المحادثة,Unterhaltung löschen,Borrar conversación,Effacer la conversation,Hapus percakapan,Cancella conversazione,会話を消去,대화 지우기,Gesprek wissen,Wyczyść rozmowę,Limpar conversa,Очистить разговор,ล้างการสนทนา,Sohbeti temizle,Xóa hội thoại
 action.clear_recent_searches,Clear,清除,清除,مسح,Löschen,Borrar,Effacer,Hapus,Cancella,消去,지우기,Wissen,Wyczyść,Limpar,Очистить,ล้าง,Temizle,Xoá
 action.clear_words,Clear Words,清除单词,清除單詞,مسح الكلمات,Wörter Löschen,Borrar Palabras,Effacer les Mots,Hapus Kata-kata,Cancella Parole,単語を消去,단어 지우기,Woorden Wissen,Wyczyść Słowa,Limpar Palavras,Очистить Слова,ล้างคำศัพท์,Kelimeleri Temizle,Xóa Từ
 action.close,Close,关闭,關閉,إغلاق,Schließen,Cerrar,Fermer,Tutup,Chiudi,閉じる,닫기,Sluiten,Zamknij,Fechar,Закрыть,ปิด,Kapat,Đóng

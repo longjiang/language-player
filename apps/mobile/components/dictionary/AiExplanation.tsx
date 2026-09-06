@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, TextInput, KeyboardAvoidingView, Platfor
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useStreamingExplanation, type StreamHistoryTurn } from '@langplayer/api-client';
@@ -100,6 +101,15 @@ interface AiExplanationProps {
   /** Reader "Ask AI": open the chat but do NOT auto-stream. The user must tap a
    *  preset button or send a message to get a response (readers only). */
   demandMode?: boolean;
+  /** Persist the chat transcript under this storage key, restoring it on mount
+   *  (e.g. per note, per web page, per book, per video). When omitted the
+   *  transcript is ephemeral (current behavior). */
+  storageKey?: string;
+  /** Video "Ask AI": when set, `[MM:SS]` timestamps in each assistant reply
+   *  render as tappable chips that call back with the time in seconds (the
+   *  caller seeks the video). Also appends a timestamp-citation instruction to
+   *  prompts so the model cites the subtitle timestamps it refers to. */
+  onTimestampPress?: (timeSeconds: number) => void;
 }
 
 /**
@@ -107,7 +117,49 @@ interface AiExplanationProps {
  * Matches web: multi-turn streaming chat with regenerate, copy, a free-form
  * follow-up input, and optional configurable one-tap preset buttons.
  */
-export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress, demandMode = false }: AiExplanationProps) {
+/**
+ * Persisted Ask-AI chat transcript shape (subset of `ChatMessage` sufficient to
+ * rebuild a session — `examples` and transient fields are dropped).
+ */
+interface PersistedAiMessage {
+  role: 'user' | 'assistant';
+  text: string;
+  label?: string;
+  prompt?: string;
+}
+
+async function loadPersistedMessages(storageKey: string): Promise<PersistedAiMessage[]> {
+  try {
+    const raw = await AsyncStorage.getItem(storageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (m): m is PersistedAiMessage =>
+        !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string',
+    );
+  } catch {
+    return [];
+  }
+}
+
+async function savePersistedMessages(storageKey: string, messages: PersistedAiMessage[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(storageKey, JSON.stringify(messages));
+  } catch {
+    /* persistence is best-effort */
+  }
+}
+
+async function clearPersistedMessages(storageKey: string): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(storageKey);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false, searchTerms, followUpPresets = [], readerContent, initialPreset, quoteChips = false, onQuotePress, demandMode = false, storageKey, onTimestampPress }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
@@ -121,6 +173,52 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Persisted session (storageKey) ─────────────────────────────────────────
+  // When a storageKey is supplied (per note / web page / book / video), the
+  // transcript is persisted so the chat survives navigation. Restored on
+  // mount / storage-key change; saved on every message change.
+  useEffect(() => {
+    if (!storageKey) return;
+    let cancelled = false;
+    (async () => {
+      const saved = await loadPersistedMessages(storageKey);
+      if (cancelled) return;
+      const restored: ChatMessage[] = saved.map((m, i) => ({
+        id: i,
+        role: m.role,
+        text: m.text,
+        label: m.label,
+        prompt: m.prompt,
+      }));
+      messageIdRef.current = restored.length;
+      setMessages(restored);
+      setStreamingId(null);
+      setUsedFollowUps(new Set());
+      reset();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [storageKey, reset]);
+
+  useEffect(() => {
+    if (!storageKey) return;
+    const persisted = messages
+      .filter((m) => (m.role === 'user' ? !!(m.text || m.label) : !!m.text))
+      .map((m) => ({ role: m.role, text: m.text, label: m.label, prompt: m.prompt }));
+    void savePersistedMessages(storageKey, persisted);
+  }, [messages, storageKey]);
+
+  /** Clear the persisted transcript (and drop the stored copy). */
+  const handleClear = useCallback(() => {
+    setMessages([]);
+    setStreamingId(null);
+    setUsedFollowUps(new Set());
+    setFreeFormText('');
+    if (storageKey) void clearPersistedMessages(storageKey);
+    reset();
+  }, [storageKey, reset]);
 
   // ── "Examples from Videos" player modal state ──
   // The shared SubsSearchPlaybackModal (the same modal the subs-search results
@@ -613,10 +711,17 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
             </Text>
           </View>
         ) : null}
-        <View className="mb-2 flex-row items-center gap-2">
-          <Sparkles size={12} color={ICON_MUTED} />
-          <Text className="text-xs text-muted-foreground">{t('label.ai_says')}</Text>
-          {loading && <ActivityIndicator size="small" color={ICON_MUTED} />}
+        <View className="mb-2 flex-row items-center justify-between gap-2">
+          <View className="flex-row items-center gap-2">
+            <Sparkles size={12} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">{t('label.ai_says')}</Text>
+            {loading && <ActivityIndicator size="small" color={ICON_MUTED} />}
+          </View>
+          {storageKey && messages.length > 0 ? (
+            <Pressable onPress={handleClear} className="rounded-md px-1.5 py-0.5 active:bg-muted" accessibilityRole="button">
+              <Text className="text-[11px] text-muted-foreground">{t('action.clear_conversation')}</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         {/* Chat transcript — explicit per-message margins (mb-3) so the gap

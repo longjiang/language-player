@@ -72,6 +72,9 @@ export interface ReaderPanelProps {
   initialLocation?: ReaderLoc | null;
   /** Called whenever the visible page's start changes (persist the position). */
   onLocationChange?: (loc: ReaderLoc) => void;
+  /** Ask-AI session persistence key (e.g. per note / per web page URL). When
+   *  set, the reader's "Ask AI" chat transcript is persisted and restored. */
+  askAiStorageKey?: string;
 }
 
 export function ReaderPanel({
@@ -92,6 +95,7 @@ export function ReaderPanel({
   onOpenSidebar,
   initialLocation,
   onLocationChange,
+  askAiStorageKey,
 }: ReaderPanelProps) {
   const t = useT();
   const router = useRouter();
@@ -494,6 +498,7 @@ export function ReaderPanel({
               contextForm={undefined}
               entryFound={true}
               demandMode
+              storageKey={askAiStorageKey}
               followUpPresets={READER_ASK_AI_TEXT_PRESETS}
               quoteChips
               onQuotePress={openSearchFor}

@@ -20,6 +20,8 @@ interface ReaderAskAiSheetProps {
   presets: AiFollowUpPreset[];
   /** Fired when a quote chip is tapped (opens the reader search for that text). */
   onQuotePress?: (original: string) => void;
+  /** Persist the chat transcript under this storage key (per note/page/book). */
+  storageKey?: string;
 }
 
 /**
@@ -28,7 +30,7 @@ interface ReaderAskAiSheetProps {
  * preset button or types a message to get a response. Preloads the reader's
  * summary follow-up buttons; shared by the notes / web / image / epub readers.
  */
-export function ReaderAskAiSheet({ open, onClose, title, content, presets, onQuotePress }: ReaderAskAiSheetProps) {
+export function ReaderAskAiSheet({ open, onClose, title, content, presets, onQuotePress, storageKey }: ReaderAskAiSheetProps) {
   const t = useT();
   return (
     <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
@@ -55,6 +57,7 @@ export function ReaderAskAiSheet({ open, onClose, title, content, presets, onQuo
                 word={title}
                 entryFound={true}
                 demandMode
+                storageKey={storageKey}
                 followUpPresets={presets}
                 readerContent={content}
                 quoteChips={!!onQuotePress}

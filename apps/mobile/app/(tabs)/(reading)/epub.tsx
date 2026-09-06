@@ -786,6 +786,7 @@ export default function EpubReaderScreen() {
         title={nearestMarker?.label || epub.fileName || t('title.epub_reader')}
         presets={READER_ASK_AI_EPUB_PRESETS}
         content={epubAskAiContent}
+        storageKey={epub.openBookId != null ? `lp-ask-ai:epub:${epub.openBookId}` : undefined}
         onQuotePress={openSearchFor}
       />
     </View>

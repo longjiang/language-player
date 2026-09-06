@@ -427,6 +427,7 @@ export default function ImageReaderScreen() {
         onClose={() => setAskAiOpen(false)}
         title={current?.title || current?.name || t('title.image_reader')}
         presets={READER_ASK_AI_TEXT_PRESETS}
+        storageKey={currentId ? `lp-ask-ai:image:${currentId}` : undefined}
         content={
           {
             text: current?.md ?? '',

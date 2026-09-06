@@ -361,6 +361,7 @@ export default function WebReaderScreen() {
         onClose={() => setAskAiOpen(false)}
         title={title || t('title.web_reader')}
         presets={READER_ASK_AI_TEXT_PRESETS}
+        storageKey={url ? `lp-ask-ai:web:${url}` : undefined}
         content={
           {
             text,
