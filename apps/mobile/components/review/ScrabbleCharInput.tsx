@@ -1,6 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, Animated, PanResponder, type GestureResponderEvent, type PanResponderGestureState, type LayoutChangeEvent } from 'react-native';
 import { shuffleScrabbleBlocks, type ScrabbleBlock } from '@langplayer/utils';
+import { srsLogger } from '@/lib/logger';
+
+const { log } = srsLogger;
 
 /**
  * Scrabble-mode block arrangement input (SPEC-066).
@@ -74,15 +77,23 @@ function BlockTile({
   const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => !disabled,
     onMoveShouldSetPanResponder: () => !disabled,
+    // The review card lives inside a ScrollView. Once this block claims the
+    // JS responder, block the NATIVE responder (the ScrollView's pan
+    // recognizer) from stealing/cancelling the touch — otherwise a drag on a
+    // block is treated as a scroll and neither onDragMove nor onTap fires
+    // (SPEC-066 scrabble drag).
+    onShouldBlockNativeResponder: () => true,
     onPanResponderGrant: (e) => {
       movedRef.current = false;
       handlersRef.current.onDragStart(block, fromSlot, e);
+      log('[srs-scrabble] grant', { char: block.char, fromSlot });
     },
     onPanResponderMove: (e, g) => {
       if (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8) movedRef.current = true;
       handlersRef.current.onDragMove(e, g);
     },
     onPanResponderRelease: (e, g) => {
+      log('[srs-scrabble] release', { char: block.char, fromSlot, moved: movedRef.current, dx: g.dx, dy: g.dy });
       if (movedRef.current) {
         handlersRef.current.onDragRelease(block, fromSlot, e, g);
       } else {
@@ -91,6 +102,7 @@ function BlockTile({
       movedRef.current = false;
     },
     onPanResponderTerminate: () => {
+      log('[srs-scrabble] terminate', { char: block.char, fromSlot });
       handlersRef.current.onTap(block, fromSlot); // snap back / treat as tap
       movedRef.current = false;
     },
@@ -169,10 +181,11 @@ export function ScrabbleCharInput({
       const existingIdx = next.indexOf(blockId);
       if (existingIdx !== -1) next[existingIdx] = null; // clear its old slot
       next[desired] = blockId; // displaces whatever was there (returns to pool)
+      log('[srs-scrabble] place', { blockId, char: blockByKey.get(blockId)?.char ?? '', targetSlot: desired, slots: next });
       maybeSubmit(next);
       return next;
     });
-  }, [maybeSubmit]);
+  }, [maybeSubmit, blockByKey]);
 
   /** Remove the block from a slot — sent back to the pool. */
   const removeFromSlot = useCallback((slotIndex: number) => {
@@ -235,19 +248,21 @@ export function ScrabbleCharInput({
     } else if (fromSlot != null) {
       removeFromSlot(fromSlot);
     }
+    log('[srs-scrabble] drag-release', { blockId, char: blockByKey.get(blockId)?.char ?? '', fromSlot, target, moveX: g.moveX, moveY: g.moveY, origin });
     draggingIdRef.current = null;
     setDraggingId(null);
     setDragGhost(null);
-  }, [placeBlock, removeFromSlot]);
+  }, [placeBlock, removeFromSlot, blockByKey]);
 
   const onTap = useCallback((block: ScrabbleBlock, fromSlot: number | null) => {
     if (disabled || submittedRef.current) return;
+    log('[srs-scrabble] tap', { char: block.char, id: block.id, fromSlot, disabled, submitted: submittedRef.current, slots });
     if (fromSlot != null) removeFromSlot(fromSlot);
     else placeBlock(block.id);
     draggingIdRef.current = null;
     setDraggingId(null);
     setDragGhost(null);
-  }, [disabled, removeFromSlot, placeBlock]);
+  }, [disabled, removeFromSlot, placeBlock, slots]);
 
   const slotBase = 'h-11 w-10 items-center justify-center rounded-lg border';
   const poolBase = 'h-11 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm';
