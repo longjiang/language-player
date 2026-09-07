@@ -82,7 +82,7 @@ export {
   flushPendingOps,
 } from './saved-words-sync';
 export type { PendingSavedWordOp, SavedWordRowApi } from './saved-words-sync';
-export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';
+export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine, parseNotes, extractNoteMarkers } from './subs-csv';
 export { segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
 export {
   writtenFormVariants,
