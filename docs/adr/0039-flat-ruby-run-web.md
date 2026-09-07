@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Created**: 2026-08-16
-- **Last updated**: 2026-08-16 (matches the implemented code)
+- **Last updated**: 2026-09-07 (document CJK line-breaking / kinsoku)
 - **Scope**: Web (`apps/web`)
 
 ## Context
@@ -127,6 +127,28 @@ ruby {
 ```
 
 `ruby-align: center` remains the fallback for engines without overhang.
+
+### Line-breaking / kinsoku
+
+CJK (Chinese-family: `zh`, `yue`) tokenized text relies on the browser's text
+composer to own line-breaking. The container uses `word-break: normal` (the
+browser default) plus `overflow-wrap: break-word`, and **no `<wbr/>` is
+inserted** between characters or tokens — `withCjkBreak` and the in-token
+helpers are plain keyed wrappers. Letting the composer decide means its native
+kinsoku rules apply: no closing punctuation (`。，`) at the start of a line and
+no opening quote/paren (`“「(` at the end of a line, matching native text
+composers.
+
+This replaced the earlier approach (added 2026-08-20 in the "wrap Chinese ruby
+text at character boundaries" fix) of `word-break: break-all` plus an explicit
+`<wbr/>` between every character. `break-all` disables those rules and the
+`<wbr/>` adds break opportunities at punctuation boundaries, so together they
+let punctuation start a line and opening quotes end a line. Modern Chromium
+already exposes Han line-break opportunities at ruby boundaries without
+`<wbr/>` — a single ruby word still wraps at character boundaries — so the
+explicit break opportunities were both unnecessary and harmful.
+`overflow-wrap: break-word` is kept so a long non-CJK "word" (e.g. an English
+loanword inside a Chinese paragraph) can still wrap instead of clipping.
 
 ## Alternatives considered
 
