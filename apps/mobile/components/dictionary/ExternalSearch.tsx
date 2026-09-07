@@ -58,7 +58,7 @@ export function ExternalSearch({ term, l1Code, l2Code, l2Name, traditional }: Ex
           <Text className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t(EXTERNAL_SEARCH_GROUP_TITLES[group as ExternalSearchGroup])}
           </Text>
-          <View className="overflow-hidden rounded-lg border border-border">
+          <View className="flex-row flex-wrap gap-1.5">
             {links.map((link) => (
               <LinkRow key={link.key} link={link} />
             ))}
@@ -74,7 +74,7 @@ function LinkRow({ link }: { link: ExternalSearchLink }) {
   return (
     <Pressable
       onPress={() => { Linking.openURL(link.url).catch(() => {}); }}
-      className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+      className="w-[48%] flex-row items-center gap-2 rounded-lg border border-border px-3 py-2 active:bg-muted"
     >
       <Image
         source={{ uri: faviconUrl(link.domain) }}
