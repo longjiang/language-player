@@ -135,8 +135,9 @@ export {
   SPELL_TEST_FAST_MS,
   spellHintInfo,
   resolveReviewMode,
+  shuffleScrabbleBlocks,
 } from './srs-test-mode';
-export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode, SpellHintKind, SpellHintInfo } from './srs-test-mode';
+export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode, SpellHintKind, SpellHintInfo, ScrabbleBlock } from './srs-test-mode';
 export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
 export type {
   SrsTestCacheStorage,

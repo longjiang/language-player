@@ -1329,6 +1329,8 @@
         "mixed_mode": "혼합 모드",
         "no_definition_available": "이 단어는 사전에서 찾을 수 없습니다.",
         "recall_mode": "회상 모드",
+        "scrabble_mode": "스크래블 모드",
+        "scrabble_prompt": "글자를 배열하세요",
         "shortcut_hint": "<space></space> 눌러 뒤집기, <k1></k1>–<k2></k2> 평가, <enter></enter> 계속",
         "show_definition": "정의 보기",
         "spell_correct_answer": "정답: {answer}",

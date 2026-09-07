@@ -1329,6 +1329,8 @@
         "mixed_mode": "ミックスモード",
         "no_definition_available": "この単語は辞書に見つかりません。",
         "recall_mode": "想起モード",
+        "scrabble_mode": "スクラブルモード",
+        "scrabble_prompt": "文字を並べる",
         "shortcut_hint": "<space></space>で裏返す、<k1></k1>–<k2></k2>で評価、<enter></enter>で続行",
         "show_definition": "定義を表示",
         "spell_correct_answer": "正解：{answer}",

@@ -6,18 +6,29 @@ import type { SrsCardState } from './fsrs-scheduler';
 export type TestQuestionKind = 'definition' | 'pronunciation';
 
 /** The user-selectable review mode dropdown values (web + mobile). */
-export type ReviewMode = 'mixed' | 'recall' | 'choose' | 'spell';
+export type ReviewMode = 'mixed' | 'recall' | 'choose' | 'spell' | 'scrabble';
 
+/**
+ * Resolve the ACTUAL behavior mode from the selector mode and a card's SRS
+ * state. 'mixed' is the default mode: it picks a test style from the card's
+ * progress — multiple choice for NEW cards (gentle scaffolding), scrabble for
+ * a card reviewed exactly once (rearrange the shuffled characters), and spell
+ * for a card reviewed more than once (type it). Returns the concrete behavior
+ * mode, never 'mixed'.
+ */
 /**
  * Resolve the ACTUAL behavior mode from the selector mode and a card's SRS
  * state. 'mixed' is the default mode: it uses multiple-choice (choose) for NEW
  * cards — introducing them with scaffolding — and spell for every other state
- * (learning / review / relearning), so review cards are typed. Returns the
- * concrete behavior mode, never 'mixed'.
+ * (learning / review / relearning), so review cards are typed. 'scrabble' is a
+ * selectable mode that reuses the set-typed flow with shuffled block
+ * arrangement (see the Scrabble mode docs). Returns the concrete behavior mode,
+ * never 'mixed'.
  */
 export function resolveReviewMode(
   mode: ReviewMode,
   cardState: SrsCardState | null,
+  reps = 0,
 ): Exclude<ReviewMode, 'mixed'> {
   if (mode === 'mixed') return cardState === 'new' ? 'choose' : 'spell';
   return mode;
@@ -410,8 +421,47 @@ export function scoreSpellResult(
   return (['again', 'hard', 'good', 'easy'] as const)[points]!;
 }
 
-export type SpellHintKind = 'phonetic' | 'orthographic';
+// ── Scrabble mode ─────────────────────────────────────────────────────────
+//
+// Scrabble mode reuses the spell-mode flow (blanked context sentence, Start
+// Test gate, countdown budget, script-tolerant grading via `scoreSpellResult`)
+// but, instead of typing, the learner ARRANGES the answer's characters. The
+// answer characters are shuffled into letter blocks (one block per character,
+// same size as the spell character boxes); the learner drags a block onto a
+// slot (or taps a block to send it to the first empty slot) until every slot
+// is filled, at which point the answer is auto-submitted. No hint is shown.
 
+export interface ScrabbleBlock {
+  /** The character this block holds (one Unicode code point). */
+  char: string;
+  /** Stable identity so identical characters are distinct blocks. */
+  id: number;
+}
+
+/**
+ * The shuffled letter blocks for a scrabble answer, derived from the same
+ * blanked surface form spell mode grades (`spellBlankText`). Each character is
+ * a distinct block carrying a stable `id` so duplicate characters (e.g. っ in
+ * いって) are separate draggable blocks. Shuffled with a Fisher–Yates over the
+ * code-point array so CJK/emoji/surrogate pairs stay intact.
+ *
+ * `shuffle` must be called ONCE per test (on the Start Test action), not on
+ * every render, so the block order stays put while the learner arranges.
+ */
+export function shuffleScrabbleBlocks(answer: string): ScrabbleBlock[] {
+  const chars = Array.from(answer);
+  const blocks = chars.map((char, id) => ({ char, id }));
+  // Fisher–Yates in place.
+  for (let i = blocks.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = blocks[i]!;
+    blocks[i] = blocks[j]!;
+    blocks[j] = tmp;
+  }
+  return blocks;
+}
+
+export type SpellHintKind = 'phonetic' | 'orthographic';
 export interface SpellHintInfo {
   /** The muted first character to show as the hint. */
   char: string;

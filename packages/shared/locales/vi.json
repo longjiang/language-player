@@ -1329,6 +1329,8 @@
         "mixed_mode": "Chế độ kết hợp",
         "no_definition_available": "Không tìm thấy từ này trong từ điển của chúng tôi.",
         "recall_mode": "Chế độ nhớ lại",
+        "scrabble_mode": "Chế độ Scrabble",
+        "scrabble_prompt": "Sắp xếp các chữ cái",
         "shortcut_hint": "Nhấn <space></space> để lật, <k1></k1>–<k2></k2> để đánh giá, <enter></enter> để tiếp tục",
         "show_definition": "Hiển thị định nghĩa",
         "spell_correct_answer": "Câu trả lời đúng: {answer}",
