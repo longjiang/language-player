@@ -18,6 +18,7 @@ import { useVideos } from '@langplayer/api-client';
 import {
   parseSubsL2,
   findMatchLine,
+  parseNotes,
   durationToSeconds,
   applyFilterAndSort,
   contextChar,
@@ -619,6 +620,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               date: v.date,
               category: v.category != null ? Number(v.category) : null,
               tv_show: v.tv_show != null ? Number(v.tv_show) : null,
+              notes: parseNotes(v.notes),
               matchLineIndex: findMatchLine(lines, searchTerm),
             };
           })

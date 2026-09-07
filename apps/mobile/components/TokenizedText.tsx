@@ -4,6 +4,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { useColorScheme } from 'nativewind';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
+import type { VideoNote, SubtitleNoteMarker } from '@langplayer/shared';
 import {
   colors,
   decomposeWordId,
@@ -21,6 +22,7 @@ import {
   sentenceForToken,
   tokenMatchesAnyForm,
   tokenMatchesAnyTerm,
+  extractNoteMarkers,
 } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -66,6 +68,7 @@ import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
 import { buildSelectionMap, selectionSourceOffset, selectionTermAt } from '@/lib/selection-map';
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
+import { NoteBadge, NotePopup } from '@/components/note-popup';
 
 const { log, logwarn } = tokenizedTextLogger;
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
@@ -78,6 +81,10 @@ const rubyPitchLoggedRef = { current: new Set<string>() };
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
+  /** Video annotations referenced by `[n]` markers in subtitles (SPEC-093).
+   *  When provided, `[n]` markers are stripped from the rendered text and each
+   *  renders as a solid-circle badge that opens a note dialog on tap. */
+  notes?: VideoNote[];
   highlightTerms?: string[];
   /** Entry ids (e.g. the saved word's id) to highlight by dictionary
    *  resolution, matching web's tokenized-text.tsx. Catches inflected
@@ -211,8 +218,26 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx }: TokenizedTextProps) {
+function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx, notes }: TokenizedTextProps) {
   const t = useT();
+  // SPEC-093: when a notes map is supplied, strip `[n]` markers from the text
+  // so the lemmatizer never sees bracket junk. The clean text is what gets
+  // tokenized, measured, and rendered; each marker becomes an inline badge
+  // (see renderItems + render loop below).
+  const noteContext = useMemo(
+    () => (notes?.length ? extractNoteMarkers(rawText) : { cleanText: rawText, markers: [] }),
+    [rawText, notes],
+  );
+  const noteById = useMemo(
+    () => new Map((notes ?? []).map((n) => [n.id, n])),
+    [notes],
+  );
+  const noteMarkers = useMemo<SubtitleNoteMarker[]>(
+    () => noteContext.markers.map((m) => ({ id: m.id, index: m.index, note: noteById.get(m.id)?.note ?? '' })),
+    [noteContext.markers, noteById],
+  );
+  const text = noteContext.cleanText;
+  const [selectedNote, setSelectedNote] = useState<SubtitleNoteMarker | null>(null);
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -605,6 +630,33 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     () => mergePhraseTokens(text, tokens, [...savedPhraseCandidates, ...highlightKanaForms]),
     [text, tokens, savedPhraseCandidates, highlightKanaForms],
   );
+
+  // Interleave note badges into the render order by the char offset each
+  // marker occupies in the clean text (which is exactly what displayTokens
+  // concatenate back to). Each badge is drawn at the token boundary where its
+  // `[n]` marker was stripped from (SPEC-093).
+  const renderItems = useMemo(() => {
+    if (noteMarkers.length === 0) {
+      return displayTokens.map((_, i) => ({ kind: 'token' as const, tokenIndex: i }));
+    }
+    const markers = [...noteMarkers].sort((a, b) => a.index - b.index);
+    const items: Array<{ kind: 'token'; tokenIndex: number } | { kind: 'note'; marker: SubtitleNoteMarker }> = [];
+    let pos = 0;
+    let mi = 0;
+    for (let ti = 0; ti < displayTokens.length; ti++) {
+      while (mi < markers.length && markers[mi]!.index <= pos) {
+        items.push({ kind: 'note', marker: markers[mi]! });
+        mi++;
+      }
+      items.push({ kind: 'token', tokenIndex: ti });
+      pos += displayTokens[ti]!.text.length;
+    }
+    while (mi < markers.length) {
+      items.push({ kind: 'note', marker: markers[mi]! });
+      mi++;
+    }
+    return items;
+  }, [displayTokens, noteMarkers]);
 
   // ── Map format ranges (links, highlights, markdown bold/italic/code) onto
   //    display-token indices. Merged saved phrases keep their exact source
@@ -1283,7 +1335,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
           >
             {(() => {
               let wordIndexSoFar = 0;
-              const useParagraph = NATIVE_PARAGRAPH_ACTIVE && !showDefinition;
+              // SPEC-093: when notes are present, bypass the single native
+              // attributed-string paragraph (which cannot draw interactive
+              // badges inline) and use the JS flex path so note badges render
+              // as flex items between words.
+              const hasNotes = noteMarkers.length > 0;
+              const useParagraph = NATIVE_PARAGRAPH_ACTIVE && !showDefinition && !hasNotes;
               // Dev-only: log the ruby render path once per change, so the
               // Metro log shows which path this build actually takes (native
               // paragraph / native per-token / JS fallback).
@@ -1317,7 +1374,21 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   ? '└─ RubyTextParagraph (single native attributed string)'
                   : '└─ View flex-row flex-wrap items-end (line container)',
               ];
-              const rendered = displayTokens.map((token, i) => {
+              const rendered = renderItems.map((item) => {
+              // ── Note badge (SPEC-093): render the solid-circle marker where
+              // a `[n]` note was stripped from the clean text. ──
+              if (item.kind === 'note') {
+                return (
+                  <NoteBadge
+                    key={`note-${item.marker.id}`}
+                    id={item.marker.id}
+                    muted={!item.marker.note}
+                    onPress={() => { setSelectedWord(null); setSelectedTokenIndex(null); setSelectedNote(item.marker); }}
+                  />
+                );
+              }
+              const i = item.tokenIndex;
+              const token = displayTokens[i]!;
               if (!isWord(token)) {
                 // Whitespace gap tokens must get explicit dimensions: in this
                 // View-based (ruby/definition) path every token is a flex
@@ -1640,7 +1711,23 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               let wordIndexSoFar = 0;
               // SPEC-082 Task 5: first-line indent (U+3000 = 1 em).
               const indentNode = leadingIndent ? '\u3000' : '';
-              const spans = displayTokens.map((token, i) => {
+              const spans = renderItems.map((item) => {
+              // ── Note badge (SPEC-093): a nested tappable Text in the plain
+              // inline path (a Pressable cannot live inside an RN <Text>). ──
+              if (item.kind === 'note') {
+                return (
+                  <Text
+                    key={`note-${item.marker.id}`}
+                    onPress={() => { setSelectedWord(null); setSelectedTokenIndex(null); setSelectedNote(item.marker); }}
+                    className={`inline-block h-[1.1em] w-[1.1em] rounded-full align-middle text-center ${item.marker.note ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    style={{ fontSize: textStyle.fontSize ? textStyle.fontSize * 0.62 : 10 }}
+                  >
+                    {item.marker.id}
+                  </Text>
+                );
+              }
+              const i = item.tokenIndex;
+              const token = displayTokens[i]!;
               const isWordToken = isWord(token);
               if (isWordToken) wordIndexSoFar++;
               const isKaraokeSpoken = karaokeProgress !== undefined ? wordIndexSoFar <= spokenWordCount : undefined;
@@ -1761,6 +1848,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             onClose={closeTextSelection}
           />
         )}
+
+        {/* Note popup — opened by tapping a note badge (SPEC-093) */}
+        {selectedNote && (
+          <NotePopup note={selectedNote} onClose={() => setSelectedNote(null)} />
+        )}
       </>
     );
   }
@@ -1844,6 +1936,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.text === next.text &&
     prev.l2Code === next.l2Code &&
     prev.tokens === next.tokens &&
+    prev.notes === next.notes &&
     prev.deferTokenization === next.deferTokenization &&
     prev.karaokeProgress === next.karaokeProgress &&
     prev.karaokeDimOpacity === next.karaokeDimOpacity &&

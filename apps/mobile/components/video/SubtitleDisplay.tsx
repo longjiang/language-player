@@ -16,7 +16,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { baseCode, translationSizeFactor } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
-import type { SubtitleLine, SubtitleSyncedLine, TokenCache } from '@langplayer/shared';
+import type { SubtitleLine, SubtitleSyncedLine, TokenCache, VideoNote } from '@langplayer/shared';
 
 /** ADR-0034: free users see the first 10 transcript lines. */
 const FREE_TRANSCRIPT_LINES = 10;
@@ -31,6 +31,9 @@ interface SubtitleDisplayProps {
   tokenCache?: TokenCache;
   tokenCacheLoaded?: boolean;
   onSeekToLine?: (time: number) => void;
+  /** Video annotations referenced by `[n]` markers in the subtitle lines
+   *  (SPEC-093). TokenizedText uses these to render note badges. */
+  notes?: VideoNote[];
   /** Terms to highlight in the subtitle text. */
   highlightTerms?: string[];
   /** In single-line mode, shown until playback reaches the first line (e.g. the subs-search match line). */
@@ -45,7 +48,7 @@ interface SubtitleDisplayProps {
   overlay?: boolean;
 }
 
-export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, defaultLine, singleLine = false, singlelineTextScale = SINGLELINE_TEXT_SCALE, overlay = false }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, notes, highlightTerms, defaultLine, singleLine = false, singlelineTextScale = SINGLELINE_TEXT_SCALE, overlay = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback, tokenizedText } = useSettingsContext();
@@ -263,6 +266,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                     tokenCacheLoaded={tokenCacheLoaded}
                     karaokeProgress={karaokeProgress}
                     highlightTerms={highlightTerms}
+                    notes={notes}
                     textScale={singlelineTextScale}
                     textAlign="center"
                     textColor={overlay ? 'text-primary-foreground' : undefined}
@@ -348,6 +352,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                       tokenCacheLoaded={tokenCacheLoaded}
                       karaokeProgress={karaokeProgress}
                       highlightTerms={highlightTerms}
+                      notes={notes}
                       textScale={1}
                       // SPEC-084: selection on the transcript list.
                       selectionDictionary
