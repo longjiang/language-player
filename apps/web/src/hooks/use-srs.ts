@@ -10,6 +10,7 @@ import {
   getCardState,
   getLanguageCards,
   mergeSrsCards,
+  reconcileCardsToServer,
 } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import {
@@ -142,6 +143,28 @@ export function useSrs() {
           const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
           for (const [l2, cloudLangCards] of Object.entries(cloud.cards)) {
             mergedCards[l2] = mergeSrsCards(prev.cards[l2] ?? {}, cloudLangCards);
+          }
+          // Reconcile stale local-only cards against the authoritative server
+          // deck (SPEC-066, mirrors the mobile pull-merge reconcile): a card is
+          // kept only if the server has it OR there is unsynced local work (a
+          // pending/error op for this l2::wordId). Local-only cards with
+          // neither are phantoms (never persisted / stale session) and would
+          // inflate this device's deck, making the new/again/review header
+          // counts diverge from the server and other clients.
+          const pendingKeys = new Set<string>();
+          for (const op of loadPendingSrsOps()) {
+            pendingKeys.add(`${op.l2}\u0000${op.wordId}`);
+          }
+          for (const lang of Object.keys(mergedCards)) {
+            const serverLang = cloud.cards[lang];
+            if (!serverLang) continue; // server deck not loaded for this lang
+            const langCards = mergedCards[lang];
+            if (!langCards) continue;
+            mergedCards[lang] = reconcileCardsToServer(
+              langCards,
+              serverLang,
+              (id) => pendingKeys.has(`${lang}\u0000${id}`),
+            );
           }
           return { cards: mergedCards };
         });

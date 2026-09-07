@@ -380,11 +380,25 @@ today" message.
 - `useSavedWordsContext()` — saved words in localStorage, hydrated from
   `GET /saved-words` row API.
 - `useSrs()` — `zthSrsProgress` in localStorage, hydrated from `GET /srs`,
-  mutations via `PUT/DELETE /srs/cards`.
+  mutations via `PUT/DELETE /srs/cards`; writes go through the durable SRS
+  pending-op queue (`zthSrsProgressPendingOps`, ADR-0040).
 - `useSettingsContext()` — `display.translation` for the translation toggle.
 - `useSubscriptionContext()` — `isPro` for the free cap.
 - `useCloudUserData()` — guards against a misleading "no cards" flash while
   cloud hydration is pending.
+- **Server-deck reconciliation (2026-09-07):** after hydrating from
+  `GET /srs`, `useSrs` merges the server deck over local state **and then drops
+  local-only cards that are neither on the authoritative server deck nor backed
+  by unsynced local work (a pending/error op in the SRS pending-op queue)**,
+  via `reconcileCardsToServer` (`packages/utils/src/fsrs-scheduler.ts`).
+  `mergeSrsCards` alone keeps every local card, so a browser whose localStorage
+  carries cards the server never persisted (a stuck/cleared pending op, a stale
+  session) kept an inflated deck — the new/again/review header counts then
+  diverged between two browsers/devices on the same account, in the same class
+  as the saved-words divergence SPEC-062 identified. The reconcile is skipped
+  per-language until that language's server deck has loaded, so legitimate
+  local-only work is never dropped before cloud hydration. This is platform
+  parity with the mobile pull-merge reconcile below.
 
 **Mobile**
 
@@ -1021,6 +1035,7 @@ orphaned.
 | 15 | Language code | `baseCode(l2.code)` for SRS/saved-word keys | Raw `l2Lang.code` | No practical difference today (L2 codes are already base codes) |
 | 16 | Unused/dead code | Cleaned up in Phase 6 (`fetchingEntries`, `handleSpeak`, unused imports removed) | `removeWord` intentionally unused: unsaving happens from saved-words/dictionary surfaces, not Review (2026-08-11) | Intended — no delete control on the card; orphan pruning removes the card (disparity 4) |
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
+| 18 | Reconcile local-only cards | `useSrs` dropped local-only cards against the server deck (2026-09-07) | `refreshFromCache()` does the same | **Resolved (2026-09-07)** — web now reconciles stale server-absent local cards against the authoritative deck, matching the mobile pull-merge reconcile, so the new/again/review header counts converge across devices/browsers |
 
 ## Implementation Status (2026-08-11)
 

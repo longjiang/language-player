@@ -16,6 +16,7 @@ import {
   normalizeFsrsCard,
   planNewDeck,
   rate,
+  reconcileCardsToServer,
   remainingNewCardsToday,
   srsDueLabel,
   type FsrsCard,
@@ -516,5 +517,41 @@ describe('fsrs-scheduler: LWW merge', () => {
     const merged = mergeSrsCards({ w: localReviewed }, { w: cloudNew });
     expect(merged['w']!.state).toBe(localReviewed.state);
     expect(merged['w']!.reps).toBe(1);
+  });
+});
+
+describe('fsrs-scheduler: reconcile cards to server (SPEC-066)', () => {
+  const serverCard = rate(newCard(NOW - 5000), 'good', NOW - 5000);
+
+  it('drops a local-only card that is neither on the server nor protected', () => {
+    // 'phantom' is local-only, not on the server, and has no pending op.
+    const local = { a: serverCard, phantom: newCard(NOW - 86_400_000) };
+    const cleaned = reconcileCardsToServer(local, { a: serverCard }, () => false);
+    expect(Object.keys(cleaned)).toEqual(['a']);
+  });
+
+  it('keeps a card that is on the server even without a pending op', () => {
+    const cleaned = reconcileCardsToServer(
+      { a: serverCard },
+      { a: serverCard },
+      () => false,
+    );
+    expect(cleaned['a']).toBe(serverCard);
+  });
+
+  it('keeps a local-only card backed by unsynced local work (a pending op)', () => {
+    const phantom = newCard(NOW - 86_400_000);
+    const cleaned = reconcileCardsToServer(
+      { phantom },
+      {}, // server does not have it
+      (id) => id === 'phantom',
+    );
+    expect(cleaned['phantom']).toBe(phantom);
+  });
+
+  it('returns the record unchanged when the server deck for the language is not loaded', () => {
+    const local = { a: serverCard, phantom: newCard(NOW - 86_400_000) };
+    const cleaned = reconcileCardsToServer(local, undefined, () => true);
+    expect(cleaned).toBe(local); // no drop before hydration finishes
   });
 });
