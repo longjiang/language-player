@@ -192,8 +192,8 @@ async function buildSpellVariants(text: string, l2Code: string): Promise<string[
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
-  const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord, getPendingPutWordIds } = useSavedWordsContext();
-  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans, reconcileOrphans } = useSrs();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated, getPendingPutWordIds } = useSavedWordsContext();
+  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, pruneOrphans, reconcileOrphans } = useSrs();
   const { loaded: settingsLoaded, cloudHydrated: settingsCloudHydrated, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
   const srsCardMeta = useMemo(
     () => ({ timezone: deviceTimezone(), dayStartHour }),
@@ -1068,34 +1068,6 @@ export default function ReviewPage() {
     setTestStartedAt(null);
   }, [testAnswered, testStartedAt, testAnswers, testSlots, testQuestionIndex, testScores, wordForm, l2Code, cards, currentIndex, loadSlot]);
 
-  /** Remove this word from saved words and SRS. The card drops from the list naturally. */
-  const handleRemove = useCallback(() => {
-    const card = cards[currentIndex];
-    if (!card) return;
-    testRequestVersionRef.current += 1;
-    log('[SRS Review] handleRemove (u / remove button)', { l2: l2Code, wordId: card.word.id });
-    removeSavedWord(l2Code, card.word.id);
-    removeCard(l2Code, card.word.id);
-    setShowDefinition(false);
-    setTestSlots([]);
-    setTestAnswers([]);
-    setTestQuestionIndex(0);
-    setTestStartedAt(null);
-    testSessionStartRef.current = 0;
-    setTestSelectedAnswer(null);
-    setTestAnswerCorrect(null);
-    setTestScores([]);
-    setSuggestedRating(null);
-    setRegeneratingKind(null);
-    setSpellText('');
-    setSpellArrange(0);
-    setSpellSubmitted(false);
-    setSpellResult(null);
-    setRated(false);
-    // Don't increment currentIndex — the removed card drops from the array,
-    // so the next card shifts into the current slot.
-  }, [cards, currentIndex, l2Code, removeSavedWord, removeCard]);
-
   // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
   useEffect(() => {
     if (cards.length > 0 && currentIndex >= cards.length) {
@@ -1201,22 +1173,6 @@ export default function ReviewPage() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [showDefinition, rated, handleReveal]);
-
-  // ── Keyboard shortcut: u = unsave the current word (always active) ──
-  useEffect(() => {
-    if (cards.length === 0) return;
-
-    const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'u' || e.key === 'U') {
-        e.preventDefault();
-        handleRemove();
-      }
-    };
-
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [cards.length, handleRemove]);
 
   // ── Keyboard shortcut: Ctrl/Cmd+Z to undo the last rating ──
   useEffect(() => {
@@ -2158,9 +2114,6 @@ export default function ReviewPage() {
               space: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Space</kbd>,
               enter: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Enter</kbd>,
             })}
-            {' · '}
-            <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">u</kbd>
-            {' '}{t('action.delete').toLowerCase()}
           </p>
         </>
       )}

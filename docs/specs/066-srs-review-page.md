@@ -886,8 +886,9 @@ all key off the resolved mode rather than the raw selector value.
 **Web**
 
 - Keyboard shortcuts: `Space` / `Enter` reveal; after reveal `1` Again, `2`
-  Hard, `3` Good, `4` Easy (`Space`/`Enter` also rate Good); `u` unsaves the
-  current word; `Ctrl/Cmd+Z` undoes the last rating.
+  Hard, `3` Good, `4` Easy (`Space`/`Enter` also rate Good); `Ctrl/Cmd+Z`
+  undoes the last rating. (The `u` unsave shortcut was removed because it was
+  dangerous in spell/scrabble modes.)
 - Shortcuts are ignored while typing in inputs.
 - **Ratings respect the enabled buttons (2026-09-06)** — after a test mode
   (choose/spell) reveals the back, the test result sets `suggestedRating` and
@@ -1000,7 +1001,7 @@ orphaned.
 | 2 | No-context fallback | No visible word front (only SRS info + Show Definition) | Shows the headword centered as the card front | **Mobile is correct** — web should show the headword when a word has no context |
 | 3 | Daily new limit source | Reads `SettingsContext.review.dailyNewLimit` (`settings_v2` / `GET /user-settings`) | Reads `SettingsContext.review.dailyNewLimit` (`settings_v2` / `GET /user-settings`) | **Resolved** — both apps read `settings_v2` since ADR-0037 (2026-08-13); the legacy SRS settings row is removed |
 | 4 | Orphan reconciliation | Server-side `reconcileOrphans()` via `POST /srs/cards/reconcile`; hardened local prune only for anonymous/offline | Same | **Resolved** — both apps reconcile on the server (2026-09-06); the fragile client-side `pruneOrphans` is a hardened anonymous/offline fallback that never purges a whole deck |
-| 5 | Keyboard shortcuts | 1–4, Space/Enter, `u`, Ctrl/Cmd+Z | None | Platform difference; mobile is touch-only |
+| 5 | Keyboard shortcuts | 1–4, Space/Enter, Ctrl/Cmd+Z | None | Platform difference; mobile is touch-only |
 | 6 | L1-translated definitions | Fetches L1-translated entry on reveal for non-English L1 | Uses cached/offline entries as-is | **Web is correct** — mobile should port the L1-translated entry lookup |
 | 7 | Offline | Online-only: localStorage + row API + network fetches | Offline-first: SecureStore, SQLite dictionary, sync outbox | Intended per platform (SPEC-053) |
 | 8 | Loading/flash guard | Guards authenticated hydration (`cloudLoaded`, `savedWordsEmpty`) to avoid a false "No words" flash | No equivalent guard; `loaded` is true after local load even while cloud hydration is pending | **Web is correct** — mobile should port the guard (commit `d2faf8f3` was never ported) |
