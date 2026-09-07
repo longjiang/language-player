@@ -122,10 +122,21 @@ export interface NativeRubyTextParagraphProps {
   /** Dispatched with { start, end } (UTF-16 offsets into the BASE text —
    *  readings are ruby attributes, not part of the string) when the user
    *  drag-selects a non-collapsed range (SPEC-084). Fires continuously while
-   *  selection handles move; JS applies a settle timer. */
+   *  selection handles move; JS tracks the range but no longer auto-opens
+   *  the popup — the native edit menu (Copy / Read Aloud / Look Up) is the
+   *  tooltip. */
   onSelection?: (event: { nativeEvent: { start: number; end: number } }) => void;
+  /** Dispatched with { action, start, end } when the user picks one of the
+   *  native selection context-menu items (Copy / Read Aloud / Look Up).
+   *  `start`/`end` are UTF-16 offsets into the base text at action time.
+   *  Copy is handled natively by the platform and not emitted. */
+  onSelectionAction?: (event: { nativeEvent: { action: 'readAloud' | 'lookUp'; start: number; end: number } }) => void;
   /** Bump to collapse the native selection (dictionary popup dismiss) —
    *  SPEC-084 Task 1.3. */
   clearSelection?: number;
+  /** Localized labels for the native selection context-menu items (Copy /
+   *  Read Aloud / Look Up). Passed from JS so the native menu respects the
+   *  app's i18n (SPEC-033 tooltip revision). */
+  selectionActionLabels?: { copy: string; readAloud: string; lookUp: string };
   style?: ViewStyle | ViewStyle[];
 }

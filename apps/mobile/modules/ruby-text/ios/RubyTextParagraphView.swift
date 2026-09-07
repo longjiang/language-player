@@ -3,17 +3,28 @@ import ExpoModulesCore
 import UIKit
 
 /**
- * Selectable UITextView whose edit-menu actions are all disabled (SPEC-084
- * Task 1): long-press still enters selection mode with native handles, but no
- * Copy / Select All callout appears — the app's own dictionary popup is the
- * only consumer of a selection. `canPerformAction` returning false works on
- * every iOS version; iOS 16+ also returns an empty edit menu from the
- * delegate (RubyTextParagraphView.textView(_:editMenuForTextIn:)).
+ * Selectable UITextView that presents a minimal selection context menu
+ * (SPEC-033 tooltip revision): exactly Copy / Read Aloud / Look Up. Copy is
+ * the system action; Read Aloud / Look Up are custom selectors forwarded to
+ * the owning paragraph view (which emits an `onSelectionAction` event so the
+ * JS side speaks the selection or opens the dictionary popup). Every other
+ * standard edit-menu action (Select All, Paste, …) is suppressed.
+ *
+ * This class is the view you select in, so it owns `canPerformAction` and the
+ * custom selectors; the paragraph view holds a weak back-reference to emit.
  */
 private final class RubySelectionTextView: UITextView {
+  weak var source: RubyTextParagraphView?
+
   override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-    false
+    if action == #selector(UIResponderStandardEditActions.copy(_:)) { return true }
+    if action == #selector(readAloud(_:)) { return true }
+    if action == #selector(lookUp(_:)) { return true }
+    return false
   }
+
+  @objc func readAloud(_ sender: Any?) { source?.emitSelectionAction("readAloud") }
+  @objc func lookUp(_ sender: Any?) { source?.emitSelectionAction("lookUp") }
 }
 
 /**
@@ -45,9 +56,17 @@ internal final class RubyTextParagraphView: ExpoView {
   let onTokenTap = EventDispatcher()
   let onLineGrid = EventDispatcher()
   /// Selection changed (SPEC-084): { start, end } — UTF-16 offsets into the
-  /// base-text string. Emitted only for non-collapsed ranges; JS applies its
-  /// own settle timer while handles are being dragged.
+  /// base-text string. Emitted only for non-collapsed ranges; JS tracks the
+  /// range but no longer auto-opens the popup (the edit menu is the tooltip).
   let onSelection = EventDispatcher()
+  /// Native selection context-menu action (SPEC-033 tooltip revision):
+  /// { action: "readAloud" | "lookUp", start, end }.
+  let onSelectionAction = EventDispatcher()
+  /// Localized labels for the native selection context-menu items, passed
+  /// from JS so the menu respects the app's i18n.
+  var selectionActionLabels: [String: String]? {
+    didSet { if oldValue?.hashValue != selectionActionLabels?.hashValue { refreshEditMenu() } }
+  }
   /// Bump this prop to collapse the native selection (popup dismiss) —
   /// SPEC-084 Task 1.3, web's clear() equivalent.
   var clearSelection: Int = 0 { didSet { if clearSelection != oldValue { collapseSelection() } } }
@@ -118,6 +137,7 @@ internal final class RubyTextParagraphView: ExpoView {
     textView.isOpaque = false
     textView.clipsToBounds = false
     textView.delegate = self
+    textView.source = self
     addSubview(textView)
 
     let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
@@ -126,6 +146,25 @@ internal final class RubyTextParagraphView: ExpoView {
     // drives native selection (SPEC-084 Task 1.4).
     tap.delegate = self
     addGestureRecognizer(tap)
+  }
+
+  /// Emit a native selection context-menu action (SPEC-033 tooltip revision):
+  /// the selected action plus the current UTF-16 selection offsets.
+  func emitSelectionAction(_ action: String) {
+    let sel = textView.selectedRange
+    guard sel.length > 0 else { return }
+    onSelectionAction(["action": action, "start": sel.location, "end": sel.location + sel.length])
+  }
+
+  /// Rebuild the legacy UIMenuController items when the localized labels
+  /// arrive (iOS < 16 path; 16+ uses the delegate editMenuForTextIn).
+  private func refreshEditMenu() {
+    guard let labels = selectionActionLabels else { return }
+    UIMenuController.shared.menuItems = [
+      UIMenuItem(title: labels["copy"] ?? "Copy", action: #selector(UIResponderStandardEditActions.copy(_:))),
+      UIMenuItem(title: labels["readAloud"] ?? "Read Aloud", action: #selector(RubySelectionTextView.readAloud(_:))),
+      UIMenuItem(title: labels["lookUp"] ?? "Look Up", action: #selector(RubySelectionTextView.lookUp(_:))),
+    ]
   }
 
   /// Collapse the current selection so a dismissed popup cannot be
@@ -519,23 +558,44 @@ internal final class RubyTextParagraphView: ExpoView {
 
 extension RubyTextParagraphView: UITextViewDelegate {
   /// Report non-collapsed selections as { start, end } (UTF-16, base text).
-  /// Fires continuously while selection handles are dragged — JS applies a
-  /// settle timer and opens the dictionary popup once the selection is quiet.
+  /// Fires continuously while selection handles are dragged; JS tracks the
+  /// range (and dismisses a token popup) but no longer auto-opens the
+  /// dictionary popup — the native edit menu is the tooltip.
   func textViewDidChangeSelection(_ textView: UITextView) {
     let sel = textView.selectedRange
     guard sel.length > 0 else { return }
     onSelection(["start": sel.location, "end": sel.location + sel.length])
   }
 
-  /// iOS 16+: return an empty edit menu so no Copy / Select All callout
-  /// appears over the selection (the dictionary popup is the consumer).
+  /// iOS 16+: build the selection context menu with exactly Copy / Read
+  /// Aloud / Look Up. Copy is the system action (system-localized label);
+  /// Read Aloud / Look Up use the JS-provided labels and emit events.
   @available(iOS 16.0, *)
   func textView(
     _ textView: UITextView,
     editMenuForTextIn range: NSRange,
     suggestedActions: [UIMenuElement]
   ) -> UIMenu? {
-    UIMenu()
+    let labels = selectionActionLabels ?? [:]
+    let copy = UIAction(
+      title: labels["copy"] ?? "Copy",
+      image: UIImage(systemName: "doc.on.doc")
+    ) { [weak self] _ in
+      self?.textView.copy(nil)
+    }
+    let read = UIAction(
+      title: labels["readAloud"] ?? "Read Aloud",
+      image: UIImage(systemName: "speaker.wave.2")
+    ) { [weak self] _ in
+      self?.emitSelectionAction("readAloud")
+    }
+    let lookUp = UIAction(
+      title: labels["lookUp"] ?? "Look Up",
+      image: UIImage(systemName: "book")
+    ) { [weak self] _ in
+      self?.emitSelectionAction("lookUp")
+    }
+    return UIMenu(children: [copy, read, lookUp])
   }
 }
 

@@ -1,5 +1,7 @@
 package expo.modules.rubytext
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -139,6 +141,17 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
   private val onTokenTap by EventDispatcher<Map<String, Any>>()
   private val onSelection by EventDispatcher<Map<String, Any>>()
   private val onLineGrid by EventDispatcher<Map<String, Any>>()
+  private val onSelectionAction by EventDispatcher<Map<String, Any>>()
+
+  /** Localized labels for the native selection context-menu items (SPEC-033
+   *  tooltip revision). Defaults to English when not provided. */
+  var selectionActionLabels: Map<String, String>? = null
+
+  companion object {
+    private const val MENU_COPY = 1001
+    private const val MENU_READ_ALOUD = 1002
+    private const val MENU_LOOK_UP = 1003
+  }
 
   /** Offset index of the built string: one (start, end, run) entry per run,
    *  in string order. Tap lookup walks this instead of querying spans —
@@ -171,15 +184,56 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     Log.i("LP Mobile", "[RubyText] Android RubyTextParagraphView created (TextView + spans)")
     // Native selection: long-press handles, highlight, onSelectionChanged.
     setTextIsSelectable(true)
-    // Hide the Copy / Select All context menu — the dictionary popup is the
-    // only consumer of a selection. Selection handles remain.
+    // Selection context menu with exactly Copy / Read Aloud / Look Up
+    // (SPEC-033 tooltip revision). Copy + the two custom actions; everything
+    // else (Select All, Paste, …) is suppressed. The custom actions emit an
+    // onSelectionAction event so the JS side speaks / looks up the selection.
     setCustomSelectionActionModeCallback(object : ActionMode.Callback {
-      override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean = false
+      override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+        val start = selectionStart
+        val end = selectionEnd
+        menu.clear()
+        val labels = selectionActionLabels ?: emptyMap()
+        menu.add(0, MENU_COPY, 0, labels["copy"] ?: "Copy")
+          .setOnMenuItemClickListener {
+            copySelection(start, end); mode.finish(); true
+          }
+        menu.add(0, MENU_READ_ALOUD, 1, labels["readAloud"] ?: "Read Aloud")
+          .setOnMenuItemClickListener {
+            emitSelectionAction("readAloud", start, end); mode.finish(); true
+          }
+        menu.add(0, MENU_LOOK_UP, 2, labels["lookUp"] ?: "Look Up")
+          .setOnMenuItemClickListener {
+            emitSelectionAction("lookUp", start, end); mode.finish(); true
+          }
+        return true
+      }
       override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
       override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean = false
       override fun onDestroyActionMode(mode: ActionMode) {}
     })
     setIncludeFontPadding(false)
+  }
+
+  /** Copy the selected range to the clipboard (Android has no public
+   *  TextView.copy; the selectable TextView normally provides it via the
+   *  system action mode, which we've replaced with a custom one). */
+  private fun copySelection(start: Int, end: Int) {
+    if (start < 0 || end < 0 || start == end) return
+    try {
+      val selected = text.subSequence(start, end).toString()
+      val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      cm.setPrimaryClip(ClipData.newPlainText("text", selected))
+    } catch (e: Exception) {
+      Log.w("LP Mobile", "[RubyText] copy failed: ${e.message}")
+    }
+  }
+
+  /** Emit a native selection context-menu action (SPEC-033 tooltip revision):
+   *  the selected action plus the current UTF-16 selection offsets. */
+  private fun emitSelectionAction(action: String, start: Int, end: Int) {
+    if (start < 0 || end < 0 || start == end) return
+    onSelectionAction(mapOf("action" to action, "start" to start, "end" to end))
   }
 
   /** Collapse the current selection (web clear() parity — SPEC-084). */

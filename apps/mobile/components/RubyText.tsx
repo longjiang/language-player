@@ -281,6 +281,11 @@ export interface RubyTextParagraphProps {
    *  readings excluded — SPEC-084). Fires continuously while selection
    *  handles move; the consumer applies a settle timer. */
   onSelectionChange?: (range: { start: number; end: number }) => void;
+  /** Reported with { action, start, end } when the user picks one of the
+   *  native selection context-menu items (Copy / Read Aloud / Look Up). */
+  onSelectionAction?: (action: 'readAloud' | 'lookUp', range: { start: number; end: number }) => void;
+  /** Localized labels for the native selection context-menu items. */
+  selectionActionLabels?: { copy: string; readAloud: string; lookUp: string };
   /** Bump to collapse the native selection (dictionary popup dismiss —
    *  SPEC-084). */
   clearSelection?: number;
@@ -315,6 +320,8 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     fontWeight,
     onTokenTap,
     onSelectionChange,
+    onSelectionAction,
+    selectionActionLabels,
     clearSelection,
     onLineGrid,
     testID,
@@ -511,7 +518,14 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               onSelection={(event) =>
                 onSelectionChange?.({ start: event.nativeEvent.start, end: event.nativeEvent.end })
               }
+              onSelectionAction={(event) =>
+                onSelectionAction?.(event.nativeEvent.action, {
+                  start: event.nativeEvent.start,
+                  end: event.nativeEvent.end,
+                })
+              }
               clearSelection={clearSelection ?? 0}
+              selectionActionLabels={selectionActionLabels}
               onLineGrid={(event) => setNativeGrid(event.nativeEvent.lines)}
               // The RN Text measurement excludes the ruby annotation band.
               // Once the native paragraph reports its ruby-aware fragment

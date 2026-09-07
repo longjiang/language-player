@@ -71,7 +71,7 @@ class RubyTextModule : Module() {
     }
 
     View(RubyTextParagraphView::class) {
-      Events("onTokenTap", "onSelection", "onLineGrid")
+      Events("onTokenTap", "onSelection", "onLineGrid", "onSelectionAction")
 
       Prop("runs") { view: RubyTextParagraphView, runs: List<Map<String, Any?>> ->
         view.runs = runs.mapNotNull { dict ->
@@ -121,6 +121,10 @@ class RubyTextModule : Module() {
 
       Prop("clearSelection") { view: RubyTextParagraphView, nonce: Int ->
         view.clearSelection = nonce
+      }
+
+      Prop("selectionActionLabels") { view: RubyTextParagraphView, labels: Map<String, String> ->
+        view.selectionActionLabels = labels
       }
     }
   }
