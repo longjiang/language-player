@@ -156,7 +156,7 @@ function ExternalSearchToggle({
     <Button
       onPress={onToggle}
       variant="outline"
-      className="relative shrink-0 px-6"
+      className="relative min-w-0 flex-1 pr-9"
       accessibilityRole="button"
       accessibilityLabel={t('action.external_search')}
     >
