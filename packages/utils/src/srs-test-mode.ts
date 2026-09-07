@@ -18,11 +18,10 @@ export type ReviewMode = 'mixed' | 'recall' | 'choose' | 'spell' | 'scrabble';
  */
 /**
  * Resolve the ACTUAL behavior mode from the selector mode and a card's SRS
- * state. 'mixed' is the default mode: it uses multiple-choice (choose) for NEW
- * cards — introducing them with scaffolding — and spell for every other state
- * (learning / review / relearning), so review cards are typed. 'scrabble' is a
- * selectable mode that reuses the set-typed flow with shuffled block
- * arrangement (see the Scrabble mode docs). Returns the concrete behavior mode,
+ * state. 'mixed' is the default mode: it picks a test style from the card's
+ * progress — multiple choice for NEW cards (gentle scaffolding), scrabble for a
+ * card reviewed exactly once (rearrange the shuffled characters), and spell for
+ * a card reviewed more than once (type it). Returns the concrete behavior mode,
  * never 'mixed'.
  */
 export function resolveReviewMode(
@@ -30,7 +29,11 @@ export function resolveReviewMode(
   cardState: SrsCardState | null,
   reps = 0,
 ): Exclude<ReviewMode, 'mixed'> {
-  if (mode === 'mixed') return cardState === 'new' ? 'choose' : 'spell';
+  if (mode === 'mixed') {
+    if (cardState === 'new' || reps === 0) return 'choose';
+    if (reps === 1) return 'scrabble';
+    return 'spell';
+  }
   return mode;
 }
 

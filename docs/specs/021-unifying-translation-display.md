@@ -127,11 +127,12 @@ contextTranslation           ← on-the-fly translated when word was saved (fall
 **Mobile status**: ✅ Ported (review screen shows context translation).
 
 **Same-language pairs (L1 == L2)**: When the learner's L1 equals the L2 (base
-subtag, so `zh`/`zh-Hans`/`zh-Hant` are equivalent) in SRS **spell mode**, the
-review context-translation slot shows a **contextual rephrasing of the target
-word** rather than a sentence translation — the client sends
-`rephrase_term: true` to `POST /translate` and the server rephrases the term's
-meaning without repeating it, so the blanked word never appears. See
+subtag, so `zh`/`zh-Hans`/`zh-Hant` are equivalent) in SRS **spell or scrabble
+mode** (the modes that blank the target word), the review context-translation
+slot shows a **contextual rephrasing of the target word** rather than a sentence
+translation — the client sends `rephrase_term: true` to `POST /translate` and
+the server rephrases the term's meaning without repeating it, so the blanked
+word never appears. See
 [SPEC-066 — Spell mode](../specs/066-srs-review-page.md#spell-mode).
 
 ---

@@ -816,28 +816,67 @@ choose mode.
   (`review.spell_correct_answer`); when correct it shows a single
   Correct line.
 
+### Scrabble mode
+
+Scrabble mode is a second "type/arrange the word" variant, added alongside
+spell mode. It is **exactly** spell mode except for how the learner produces the
+answer:
+
+- **Block pool** — the answer's characters are shuffled into letter blocks (one
+  block per Unicode code point, same size as the spell character boxes). The
+  block order is randomized once when the test starts (it is not re-shuffled on
+  every render). Duplicate characters are distinct blocks (each carries a stable
+  identity) so a word like いって shows two っ blocks.
+- **Interaction** — the learner fills a row of empty slots by either:
+  - **tap a block** → it goes to the first empty slot, or
+  - **drag a block** onto a specific slot.
+  Tapping an occupied slot returns its block to the pool, so a misplaced block
+  can be fixed before the last slot auto-submits.
+- **Auto-submit** — filling the **last** slot automatically submits the arranged
+  word. There is **no submit button** (unlike spell mode, which has one).
+- **No hints** — scrabble mode shows **no** first-character hint (neither the
+  `spell_hint_phonetic` nor the `spell_hint_orthographic` line) and no
+  placeholder in the first box.
+
+Everything else matches spell mode: the **Start Test gate** (context first, then
+a Start Test button), the **blanked context sentence** with the bolded
+translation, the **same-language rephrasing** for L1 == L2, the **20 s countdown
+bar** (`SPELL_TEST_TOTAL_MS`/`SPELL_TEST_FAST_MS`), grading via
+`scoreSpellResult` with the same script-tolerant similarity bands, and the same
+reveal + correct/incorrect feedback on the back. Both share helpers
+`scoreSpellResult`, `spellBlankText`, and `buildSpellVariants`; the block pool is
+built with `shuffleScrabbleBlocks` in `packages/utils/src/srs-test-mode.ts`, and
+the arrangement UI is a dedicated `ScrabbleCharInput` component on each platform
+(web `apps/web/src/components/review/scrabble-char-input.tsx`, mobile
+`apps/mobile/components/review/ScrabbleCharInput.tsx`).
+
 ### Mixed mode
 
-Mixed mode is the **default** review mode. It is a per-card choice between the
-two test-backed modes, driven by the card's SRS state:
+Mixed mode is the **default** review mode. It is a per-card choice among the
+test-backed modes, driven by how many times the card has been **reviewed**
+(lifetime `reps` count on the card):
 
-- **`new` card** → behaves like **choose mode** (multiple choice) — the extra
-  scaffolding introduces freshly-saved words gently;
-- **every other state** (`learning` / `review` / `relearning`) → behaves like
-  **spell mode** — the learner types the word.
+- **`new` card** (`reps === 0` or state `new`) → behaves like **choose mode**
+  (multiple choice) — the extra scaffolding introduces freshly-saved words
+  gently;
+- **card reviewed exactly once** (`reps === 1`) → behaves like **scrabble mode**
+  — the learner arranges the word's shuffled characters;
+- **card reviewed more than once** (`reps >= 2`) → behaves like **spell mode** —
+  the learner types the word.
 
-The mode selector lists **Mixed / Choose / Spell / Recall** (Mixed first, as the
-default). Internally the selector stores `'mixed'`; the review page resolves the
-*effective* behavior mode per card via
-`resolveReviewMode(mode, cardState)` (shared `packages/utils/src/srs-test-mode.ts`),
-so the choose/spell UI, progress bar, prefetching, and rating dispatch all key
-off the resolved mode rather than the raw selector value.
+The mode selector lists **Mixed / Choose / Scrabble / Spell / Recall** (Mixed
+first, as the default). Internally the selector stores `'mixed'`; the review page
+resolves the *effective* behavior mode per card via
+`resolveReviewMode(mode, cardState, reps)` (shared `packages/utils/src/srs-test-mode.ts`),
+so the choose/scrabble/spell UI, progress bar, prefetching, and rating dispatch
+all key off the resolved mode rather than the raw selector value.
 
 - **No user choice on a per-card basis** — the learner picks a single mode; the
-  card's state decides which test runs.
-- **Scaffolding for new cards, typing for review cards** — new cards use the
-  choose-mode Start Test gate + multiple-choice questions; everything else uses
-  the spell-mode blanked sentence + type-the-answer input.
+  card's review count decides which test runs.
+- **Scaffolding for new cards, arranging once, typing thereafter** — new cards
+  use the choose-mode Start Test gate + multiple-choice questions; a card
+  reviewed exactly once uses the scrabble block arrangement; everything else
+  uses the spell-mode blanked sentence + type-the-answer input.
 - **Prefetch** — choice tests are prefetched only for the cards that will be
   choice-tested (new cards in mixed mode; all cards in choose mode), so a
   review card in mixed mode never burns LLM tokens on an unused generated test.
@@ -1126,6 +1165,24 @@ orphaned.
   UI, progress bar, prefetch, and rating dispatch all key off the resolved
   (effective) mode. Choice tests are prefetched only for cards that are
   choice-tested (new cards in mixed mode; all cards in choose mode).
+- ✅ **Scrabble mode** — implemented (both review pages + shared utils): a
+  second "type/arrange" variant that is identical to spell mode except the
+  answer's characters are shuffled into letter blocks and the learner arranges
+  them into slots by tap (first empty slot) or drag (specific slot), filling the
+  last slot auto-submits, and there is **no hint**. `ReviewMode` gains
+  `'scrabble'`; the block pool uses `shuffleScrabbleBlocks` in
+  `packages/utils/src/srs-test-mode.ts`; each platform gets a `ScrabbleCharInput`
+  component (web `apps/web/src/components/review/scrabble-char-input.tsx`, mobile
+  `apps/mobile/components/review/ScrabbleCharInput.tsx`); the mode selector is
+  now **Mixed / Choose / Scrabble / Spell / Recall**. Grading reuses
+  `scoreSpellResult`, and the same-language rephrasing applies to scrabble too.
+  New `review.scrabble_mode` ("Scrabble mode") and `review.scrabble_prompt`
+  ("Arrange the letters") labels are added.
+- ✅ **Mixed mode 3-way split** — implemented (both review pages + shared utils):
+  mixed mode now keys off the card's **review count** (`reps`) instead of state:
+  `new` → choose, `reps === 1` → scrabble, `reps >= 2` → spell
+  (`resolveReviewMode(mode, cardState, reps)`). Choice tests are still
+  prefetched only for the cards that end up choice-tested.
 - ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
   utils): blank the term in the context sentence, show the bolded translation,
   then Start Test shows a countdown bar, a segmented character-count input +
