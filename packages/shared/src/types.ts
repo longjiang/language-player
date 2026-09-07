@@ -40,6 +40,29 @@ export interface YouTubeVideo {
    *  a 16:9 box, so odd aspect ratios (e.g. 4:3 TV shows) render larger
    *  without letterboxing (SPEC-010 wide layout). */
   aspect_ratio?: number;
+  /**
+   * Cultural/language annotations referenced by `[n]` markers embedded in the
+   * `subs_l2` line text (SPEC-093). Parsed from the video's CSV `notes` column
+   * (`id,note`). When present, TokenizedText strips the `[n]` markers and
+   * renders each as a solid-circle badge that opens the note on tap.
+   */
+  notes?: VideoNote[];
+}
+
+/** A single annotation referenced by a `[n]` marker in a subtitle line. */
+export interface VideoNote {
+  id: number;
+  note: string;
+}
+
+/** A resolved note marker positioned in a subtitle line's clean (marker-free)
+ *  text. `index` is a char offset into the line text that sits on a token
+ *  boundary — the badge is drawn there. */
+export interface SubtitleNoteMarker {
+  id: number;
+  index: number;
+  /** Note content resolved from the video's `notes` map. */
+  note: string;
 }
 
 /** A video the user has liked, as returned by GET /likes. */
