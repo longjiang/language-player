@@ -1001,6 +1001,17 @@ export default function ReviewPage() {
     await gradeSpellLikeAnswer(arranged);
   }, [gradeSpellLikeAnswer, wordForm, l2Code]);
 
+  /**
+   * Override a spell/scrabble answer the grader judged incorrect but the learner
+   * knows is right (e.g. an accepted script variant like 締め付け vs 締めつけ).
+   * Flips the result to correct and promotes the suggested rating to Good so the
+   * learner can rate it as normal.
+   */
+  const handleMarkCorrect = useCallback(() => {
+    setSuggestedRating('good');
+    setSpellResult((prev) => (prev ? { ...prev, correct: true } : prev));
+  }, []);
+
   const handleReveal = useCallback(() => {
     const card = cards[currentIndex];
     const mode = resolveReviewMode(reviewMode, card ? fsrs.getCardState(card.srs) : null, card?.srs.reps ?? 0);
@@ -2043,6 +2054,12 @@ export default function ReviewPage() {
               <>
                 <p className="text-sm text-muted-foreground">{t('review.spell_your_answer', { answer: spellResult.submitted })}</p>
                 <p className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</p>
+                <button
+                  onClick={handleMarkCorrect}
+                  className="mt-1 inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  {t('review.mark_correct')}
+                </button>
               </>
             )}
           </div>
