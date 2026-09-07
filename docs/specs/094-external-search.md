@@ -22,6 +22,8 @@ Every link is a button that shows the site's **favicon**, a **title**, and an **
 
 The option set is **per-language** — it depends on the L2 (target language) and, for a few sources, on the L1 (user's native language) and the L2's script properties (han/kana, etc.). The set is derived from Classic's `LookUpIn.vue` / `EntryExternal.vue`, which is the source of truth for which external sources exist for which language.
 
+The **"Context Sentence"** and **"External Search"** toggles render as two equal-width buttons sharing one row (each `flex-1`, i.e. a 50/50 split) with identical icon / label / trailing-chevron styling, so the popup action row reads as one consistent pair.
+
 ## User Stories
 
 - As a learner, I want to open a word's definition in a reference dictionary or see images for it, without leaving the popup, so I can deepen my understanding of a word I just looked up.

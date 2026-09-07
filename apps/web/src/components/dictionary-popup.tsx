@@ -627,7 +627,7 @@ export function DictionaryPopup({
                   <button
                     type="button"
                     onClick={() => setExternalOpen((o) => !o)}
-                    className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative shrink-0 px-6')}
+                    className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative flex-1 min-w-0 pr-9')}
                     aria-expanded={externalOpen}
                   >
                     <span className="flex items-center gap-2">
@@ -652,7 +652,7 @@ export function DictionaryPopup({
                 <button
                   type="button"
                   onClick={() => setExternalOpen((o) => !o)}
-                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative shrink-0 px-6')}
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative flex-1 min-w-0 pr-9')}
                   aria-expanded={externalOpen}
                 >
                   <span className="flex items-center gap-2">
