@@ -17,6 +17,12 @@ export default function ExplorePage() {
   const t = useT();
   const { level: savedLevel, loaded: progressLoaded } = useProgress(baseCode(l2.code));
   const [level, setLevel] = useState<number | undefined>(undefined);
+  // Kids mode: shows recommended kids videos of ALL levels; mutually
+  // exclusive with the level pills. When active, level is cleared.
+  const [kidsMode, setKidsMode] = useState(false);
+  // Default feed includes music & entertainment; the toggle below the pills
+  // flips to the discovery feed (which excludes them).
+  const [excludeMusic, setExcludeMusic] = useState(false);
   const exploreCache = useExploreCache();
 
   // Seed the filter from the user's saved level once on first load.
@@ -25,22 +31,25 @@ export default function ExplorePage() {
   const seededRef = useRef(false);
 
   useEffect(() => {
-    if (!seededRef.current && progressLoaded && savedLevel !== undefined) {
+    if (!seededRef.current && progressLoaded && savedLevel !== undefined && !kidsMode) {
       seededRef.current = true;
       setLevel(savedLevel);
     }
-  }, [progressLoaded, savedLevel]);
+  }, [progressLoaded, savedLevel, kidsMode]);
 
   // Defer the video fetch until progress is loaded AND the level filter
   // has been seeded, so we don't fire two requests (once without level,
   // once with the saved level).
-  const deferFetch = !progressLoaded || (savedLevel !== undefined && level === undefined);
+  const deferFetch = !progressLoaded || (savedLevel !== undefined && !kidsMode && level === undefined);
 
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
     l2: baseCode(l2.code),
-    level,
+    // Kids mode shows all levels, so drop the level when kids is active.
+    level: kidsMode ? undefined : level,
     cache: exploreCache,
     defer: deferFetch,
+    madeForKids: kidsMode,
+    excludeMusic,
   });
 
   // ── Infinite scroll ─────────────────────────────────────────────
@@ -77,10 +86,27 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      {/* Level filter */}
-      <div className="mb-6">
-        <LevelFilter selected={level} onChange={setLevel} l2Code={baseCode(l2.code)} />
+      {/* Level filter + Kids pill (kids & levels mutually exclusive) */}
+      <div className="mb-3">
+        <LevelFilter
+          selected={level}
+          onChange={setLevel}
+          kidsSelected={kidsMode}
+          onKidsChange={setKidsMode}
+          l2Code={baseCode(l2.code)}
+        />
       </div>
+
+      {/* Exclude music & entertainment toggle (below the pills) */}
+      <label className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
+        <input
+          type="checkbox"
+          checked={excludeMusic}
+          onChange={(e) => setExcludeMusic(e.target.checked)}
+          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+        />
+        {t('filter.exclude_music_and_entertainment')}
+      </label>
 
       {/* Loading — first load */}
       {loading && videos.length === 0 && (

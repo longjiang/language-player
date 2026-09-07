@@ -318,6 +318,8 @@
         "cefr_b2": "B2",
         "cefr_c1": "C1",
         "cefr_c2": "C2",
+        "exclude_music_and_entertainment": "音楽とエンタメを除外",
+        "kids": "キッズ",
         "music": "音楽",
         "non_music": "音楽以外"
     },

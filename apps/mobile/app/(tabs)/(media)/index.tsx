@@ -8,6 +8,7 @@ import { useVideos } from '@langplayer/api-client';
 import { useProgress } from '@/hooks/use-progress';
 import { VideoGrid } from '@/components/video/VideoGrid';
 import { LevelFilter } from '@/components/video/LevelFilter';
+import { Root as Switch } from '@/components/ui/switch';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -26,17 +27,23 @@ export default function ExploreScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [level, setLevel] = useState<number | undefined>(undefined);
+  // Kids mode: shows recommended kids videos of ALL levels; mutually
+  // exclusive with the level pills. When active, level is cleared.
+  const [kidsMode, setKidsMode] = useState(false);
+  // Default feed includes music & entertainment; the toggle below the pills
+  // flips to the discovery feed (which excludes them).
+  const [excludeMusic, setExcludeMusic] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const seededRef = useRef(false);
   const requestSeqRef = useRef(0);
 
   useEffect(() => {
-    if (!seededRef.current && progressLoaded && savedLevel !== undefined) {
+    if (!seededRef.current && progressLoaded && savedLevel !== undefined && !kidsMode) {
       seededRef.current = true;
       setLevel(savedLevel);
     }
-  }, [progressLoaded, savedLevel]);
+  }, [progressLoaded, savedLevel, kidsMode]);
 
   const fetchVideos = async (append: boolean, pageNum: number) => {
     const seq = ++requestSeqRef.current;
@@ -44,10 +51,13 @@ export default function ExploreScreen() {
     try {
       const res = await getRecommendations({
         l2: baseCode(l2Lang.code),
-        level,
+        // Kids mode shows all levels, so drop the level when kids is active.
+        level: kidsMode ? undefined : level,
         limit: 24,
         page: pageNum,
         userId: user?.id,
+        categoryMode: excludeMusic ? 'discovery' : 'mixed',
+        madeForKids: kidsMode,
       });
       if (seq !== requestSeqRef.current) return;
       const newVideos = Array.isArray(res) ? res : (res as any)?.videos ?? (res as any)?.data ?? [];
@@ -79,7 +89,7 @@ export default function ExploreScreen() {
     if (!progressLoaded) return;
     setPage(1);
     fetchVideos(false, 1);
-  }, [l2Lang.code, level, progressLoaded]);
+  }, [l2Lang.code, level, kidsMode, excludeMusic, progressLoaded]);
 
   const handleLoadMore = () => {
     if (loading || !hasMore) return;
@@ -104,7 +114,12 @@ export default function ExploreScreen() {
         </Text>
       </View>
       <OfflineFeatureNotice />
-      <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
+      <LevelFilter level={level} onSelect={setLevel} kidsSelected={kidsMode} onKidsChange={setKidsMode} l2Code={l2Lang.code} />
+        {/* Exclude music & entertainment toggle (below the pills) */}
+        <View className="flex-row items-center px-4 py-2">
+          <Switch checked={excludeMusic} onCheckedChange={setExcludeMusic} />
+          <Text className="ml-3 text-sm text-muted-foreground">{t('filter.exclude_music_and_entertainment')}</Text>
+        </View>
         {error && videos.length === 0 && (
           <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
             <Text className="text-base text-destructive">{t(error as any)}</Text>

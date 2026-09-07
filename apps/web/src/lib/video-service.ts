@@ -33,6 +33,8 @@ export async function getRecommendedVideos(
   pageSize = 24,
   userId?: string,
   excludeIds?: string[],
+  categoryMode?: 'mixed' | 'discovery' | 'music',
+  madeForKids?: boolean,
 ): Promise<VideoListResult> {
   try {
     const params = new URLSearchParams();
@@ -42,6 +44,8 @@ export async function getRecommendedVideos(
     params.set('page', String(page));
     if (userId) params.set('user_id', userId);
     if (excludeIds && excludeIds.length > 0) params.set('exclude_ids', excludeIds.join(','));
+    if (categoryMode) params.set('category_mode', categoryMode);
+    if (madeForKids !== undefined) params.set('made_for_kids', madeForKids ? '1' : '0');
 
     const res = await fetch(`${PYTHON_URL}/recommend-videos?${params}`, {
       cache: 'no-store', // per-user — must not be cached globally
