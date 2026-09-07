@@ -10,21 +10,6 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
-/**
- * Ruby elements do not consistently expose Han-character line-break
- * opportunities in Chromium/WebKit, even when their parent uses
- * `word-break: break-all`. Keep the reading attached to each character while
- * adding an explicit break opportunity between adjacent characters.
- */
-function renderCjkBreakableText(text: string): React.ReactNode {
-  return [...text].map((char, index) => (
-    <React.Fragment key={`${index}-${char}`}>
-      {index > 0 ? <wbr /> : null}
-      {char}
-    </React.Fragment>
-  ));
-}
-
 // ── Module-level L1 definition cache ──
 // Key: `${l2Code}:${text}:${l1Code}` → first definition in the user's L1.
 // Populated by per-word /dictionary/lookup calls when L1 ≠ English.
@@ -275,7 +260,6 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const l2Settings = getL2(l2Code);
   const l2Base = baseCode(l2Code);
   const isChinese = l2Base === 'zh';
-  const isCjkLanguage = ['zh', 'yue'].includes(l2Base);
   const useTraditional = isChinese && l2Settings.display.traditional;
 
   // Per-token OpenCC conversion (lazy-loaded once at module level).
@@ -511,7 +495,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
        
         onClick={segmentClick}
       >
-        {renderCjkBreakableText('＿'.repeat(Math.max(1, token.text.length)))}
+        {'＿'.repeat(Math.max(1, token.text.length))}
       </span>
     ) : (
       <span className="px-1 text-muted-foreground/40 select-none">
@@ -540,7 +524,6 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         <>
           {rubySegments.map((seg, j) =>
             <React.Fragment key={j}>
-              {isCjkLanguage && j > 0 ? <wbr /> : null}
               {seg.reading ? (
                 <ruby className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
                   {seg.text}
@@ -556,7 +539,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         </>
       ) : (
         <span className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
-          {isCjkLanguage ? renderCjkBreakableText(displayText) : displayText}
+          {displayText}
         </span>
       );
     } else {
@@ -567,18 +550,16 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
                 seg.reading
                   ? (
                     <React.Fragment key={j}>
-                      {isCjkLanguage && j > 0 ? <wbr /> : null}
                       <ruby>{seg.text}<rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
                     </React.Fragment>
                   )
                   : (
                     <React.Fragment key={j}>
-                      {isCjkLanguage && j > 0 ? <wbr /> : null}
                       {seg.text}
                     </React.Fragment>
                   )
               )
-            : isCjkLanguage ? renderCjkBreakableText(displayText) : displayText}
+            : displayText}
         </span>
       );
     }
