@@ -142,7 +142,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
           {/* One RubyText per ruby segment, as fragment siblings — no wrapping
               view, mirroring web's inline <ruby> elements. Each measures its
               own fallback column once and hands the box to the native view. */}
-          {(isBlanked ? [{ text: '▯' }] : rubySegs).map((seg, j) => (
+          {(isBlanked ? [{ text: '＿'.repeat(Math.max(1, word.length)) }] : rubySegs).map((seg, j) => (
             <RubyText
               key={j}
               segment={seg}
@@ -261,7 +261,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
 
   return (
     <>
-      {(isBlanked ? [{ text: '▯' }] : rubySegs).map((seg, j) => (
+      {(isBlanked ? [{ text: '＿'.repeat(Math.max(1, word.length)) }] : rubySegs).map((seg, j) => (
         <RubyText
           key={j}
           segment={seg}
@@ -525,7 +525,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
       }
     >
       {isBlanked ? (
-        <Text className={textColor}>▯</Text>
+        <Text className={textColor}>{'＿'.repeat(Math.max(1, word.length))}</Text>
       ) : (
         <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
       )}

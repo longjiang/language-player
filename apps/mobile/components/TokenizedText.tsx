@@ -840,7 +840,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
         const isHighlightedToken = tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
         let displayText = tokenDisplayText;
         if (quizMode && !revealedTokens.has(i) || (blankHighlighted && isHighlightedToken)) {
-          displayText = '▯';
+          displayText = '＿'.repeat(Math.max(1, word.length));
         } else if (
           replaceWithPhonetics && isWordToken && shouldShowPhonetics(token)
           && token.pronunciation && (!isHighlightedToken || phoneticsOnHighlight)
@@ -1511,7 +1511,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
 
                 const debugSegs = isBlanked
-                  ? [{ text: '▯' }]
+                  ? [{ text: '＿'.repeat(Math.max(1, word.length)) }]
                   : hasRuby && token.pronunciation
                     ? buildRuby(displayText, token.pronunciation, l2Code)
                     : [{ text: displayText }];
