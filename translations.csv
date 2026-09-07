@@ -94,6 +94,7 @@ action.log_in,Log In,登录,登入,تسجيل الدخول,Anmelden,Iniciar sesi
 action.log_out,Log Out,退出登录,登出,تسجيل الخروج,Abmelden,Cerrar sesión,Se déconnecter,Keluar,Esci,ログアウト,로그아웃,Uitloggen,Wyloguj się,Sair,Выйти,ออกจากระบบ,Çıkış Yap,Đăng xuất
 action.login,Login,登录,登入,تسجيل الدخول,Anmelden,Iniciar sesión,Connexion,Masuk,Accedi,ログイン,로그인,Inloggen,Zaloguj się,Entrar,Войти,เข้าสู่ระบบ,Giriş Yap,Đăng nhập
 action.logout,Logout,退出登录,登出,تسجيل الخروج,Abmelden,Cerrar sesión,Déconnexion,Keluar,Esci,ログアウト,로그아웃,Uitloggen,Wyloguj się,Sair,Выйти,ออกจากระบบ,Çıkış Yap,Đăng xuất
+action.look_up,Look up,查询,查詢,ابحث,Nachschlagen,Buscar,Chercher,Cari,Cerca,調べる,찾아보기,Opzoeken,Sprawdź,Consultar,Найти,ค้นหา,Ara,Tra cứu
 action.more,More,更多,更多,المزيد,Mehr,Más,Plus,Lainnya,Altro,その他,더보기,Meer,Więcej,Mais,Ещё,เพิ่มเติม,Daha Fazla,Thêm
 action.morphemes,Morphemes,语素,語素,المورفيمات,Morpheme,Morfemas,Morphèmes,Morfem,Morfemi,形態素,형태소,Morfemen,Morfemy,Morfemas,Морфемы,หน่วยคำ,Biçimbirimler,Hình vị
 action.my_notes,My Notes,我的笔记,我的筆記,ملاحظاتي,Meine Notizen,Mis notas,Mes notes,Catatan Saya,Le mie note,マイノート,내 노트,Mijn notities,Moje notatki,Minhas notas,Мои заметки,บันทึกของฉัน,Notlarım,Ghi chú của tôi
@@ -113,6 +114,7 @@ action.paste,Paste,粘贴,貼上,لصق,Einfügen,Pegar,Coller,Tempel,Incolla,�
 action.previous,Previous,上一个,上一個,السابق,Zurück,Anterior,Précédent,Sebelumnya,Precedente,前へ,이전,Vorige,Poprzedni,Anterior,Назад,ก่อนหน้า,Önceki,Trước
 action.previous_chapter,Previous,上一章,上一章,السابق,Zurück,Anterior,Précédent,Sebelumnya,Precedente,前へ,이전,Vorige,Poprzedni,Anterior,Назад,ก่อนหน้า,Önceki,Trước
 action.read,Read,阅读,閱讀,قراءة,Lesen,Leer,Lire,Baca,Leggi,読む,읽기,Lezen,Przeczytaj,Ler,Читать,อ่าน,Oku,Đọc
+action.read_aloud,Read aloud,朗读,朗讀,اقرأ بصوت عالٍ,Vorlesen,Leer en voz alta,Lire à voix haute,Bacakan,Leggi ad alta voce,読み上げる,소리 내어 읽기,Voorlezen,Czytaj na głos,Ler em voz alta,Читать вслух,อ่านออกเสียง,Yüksek sesle oku,Đọc to
 action.regenerate,Regenerate,重新生成,重新產生,إعادة إنشاء,Neu generieren,Regenerar,Régénérer,Perbarui,Rigenera,再生成,다시 생성,Opnieuw genereren,Regeneruj,Regenerar,Перегенерировать,สร้างใหม่,Yeniden Oluştur,Tạo lại
 action.register,Register,注册,註冊,التسجيل,Registrieren,Registrarse,S'inscrire,Daftar,Registrati,登録,회원가입,Registreren,Zarejestruj się,Registrar,Регистрация,ลงทะเบียน,Kayıt Ol,Đăng ký
 action.remove,Remove,移除,移除,إزالة,Entfernen,Eliminar,Retirer,Hapus,Rimuovi,削除,제거,Verwijderen,Usuń,Remover,Удалить,นำออก,Kaldır,Xóa

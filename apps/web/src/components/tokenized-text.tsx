@@ -11,8 +11,12 @@ import {
 } from '@langplayer/shared';
 import { DictionaryPopup } from './dictionary-popup';
 import { NoteBadge, NotePopup } from './note-popup';
+import { SelectionTooltip } from './selection-tooltip';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useT } from '@/hooks/use-t';
+import { useSpeech } from '@/hooks/use-speech';
+import { copyText } from '@/lib/clipboard';
 import { baseCode, isRTL } from '@/lib/language-data';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -38,7 +42,7 @@ import {
 } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
-import { useSelectionPopup } from '@/hooks/use-selection-popup';
+import { useSelectionPopup, type TextSelectionInfo } from '@/hooks/use-selection-popup';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 
 // Re-exported for callers that imported the constant from this component
@@ -309,6 +313,34 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0);
   const { containerRef, selection: textSelection, clear: clearTextSelection } = useSelectionPopup<HTMLSpanElement>();
+  // SPEC-033 (tooltip revision): when a selection is made, show a custom
+  // tooltip (Copy / Read aloud / Look up) instead of opening the dictionary
+  // popup immediately. Only "Look up" pushes the selection into the popup.
+  const [selectionLookup, setSelectionLookup] = useState<TextSelectionInfo | null>(null);
+  const t = useT();
+  const { speak: speakTts, stop: stopTts, isSpeaking } = useSpeech();
+
+  const copySelection = useCallback(async () => {
+    if (!textSelection) return;
+    await copyText(textSelection.text);
+    // Keep the selection active — the tooltip remains until the user clicks
+    // elsewhere (native behavior) or dismisses it.
+  }, [textSelection]);
+
+  const speakSelection = useCallback(() => {
+    if (isSpeaking) stopTts();
+    else if (textSelection) speakTts(textSelection.text, l2Code);
+  }, [isSpeaking, stopTts, speakTts, textSelection, l2Code]);
+
+  const openSelectionLookup = useCallback(() => {
+    if (textSelection) setSelectionLookup(textSelection);
+  }, [textSelection]);
+
+  const closeSelectionLookup = useCallback(() => {
+    setSelectionLookup(null);
+    clearTextSelection();
+  }, [clearTextSelection]);
+
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
   const lastTextRef = useRef(text); // avoid redundant tokenize re-triggers
@@ -749,9 +781,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     if (rect) {
       setPopupPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
     }
-    // A token popup supersedes the selection popup.
+    // A token popup supersedes the selection popup (and its lookup tooltip).
     clearTextSelection();
-  }, [selectionDictionary, clearTextSelection]);
+    setSelectionLookup(null);
+  }, [selectionDictionary, clearTextSelection, setSelectionLookup]);
 
   // A new text selection supersedes the token dictionary popup.
   useEffect(() => {
@@ -1123,22 +1156,36 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       )}
       </span>
 
+      {/* Selection tooltip — copy / read aloud / look up; the native
+          selection stays active so the learner can keep adjusting it by
+          dragging the handles. "Look up" opens the dictionary popup. */}
+      {selectionDictionary && textSelection && !selectionLookup && (
+        <SelectionTooltip
+          text={textSelection.text}
+          rect={textSelection.rect}
+          onCopy={copySelection}
+          onSpeak={speakSelection}
+          onLookUp={openSelectionLookup}
+          isSpeaking={isSpeaking}
+        />
+      )}
+
       {/* Selection dictionary popup — the selected text becomes the lookup term */}
-      {selectionDictionary && textSelection && (
+      {selectionDictionary && selectionLookup && (
         <DictionaryPopup
-          token={{ text: textSelection.text, lemmas: [] }}
+          token={{ text: selectionLookup.text, lemmas: [] }}
           l1Code={l1.code}
           l2Code={l2Code}
           context={{
             ...externalContext,
-            form: textSelection.text,
+            form: selectionLookup.text,
             text: selectedTextContext ?? text,
           }}
-          position={textSelection.rect}
+          position={selectionLookup.rect}
           linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
           onOpenLink={onOpenLink}
           extractPhrases
-          onClose={clearTextSelection}
+          onClose={closeSelectionLookup}
         />
       )}
     </>

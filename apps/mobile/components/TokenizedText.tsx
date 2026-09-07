@@ -38,6 +38,7 @@ import { logPhoneticsSummary, logRubyRenderPath, logRenderedTokens, scheduleTree
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
+import { useSpeech } from '@/hooks/use-speech';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { useProgressLevel } from '@/hooks/use-progress-level';
@@ -264,6 +265,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
   const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
   const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { speak } = useSpeech();
 
   // Clear any pending settle timer on unmount.
   useEffect(() => {
@@ -1076,20 +1078,39 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   }, []);
 
   // ── Selection dictionary (SPEC-084 Task 4) ──
-  // Bump the settle timer on every native selection event; open the popup
-  // once the selection has been quiet (handles no longer moving).
+  // The native selection context menu (Copy / Read Aloud / Look Up) is now the
+  // tooltip (SPEC-033 revision): drag-selecting no longer auto-opens the popup.
+  // onSelection just tracks the live range (so "Look up" can open the popup
+  // with it) and dismisses a token popup while a non-collapsed selection is
+  // active. The popup opens only when the user taps "Look up".
   const handleNativeSelection = useCallback((range: { start: number; end: number }) => {
     if (!selectionDictionary) return;
     pendingSelectionRef.current = range;
-    if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current);
-    selectionTimerRef.current = setTimeout(() => {
-      selectionTimerRef.current = null;
-      const sel = pendingSelectionRef.current;
-      pendingSelectionRef.current = null;
-      if (!sel || sel.start === sel.end) return;
-      setTextSelection(sel);
-    }, SELECTION_SETTLE_MS);
+    // A live selection supersedes the token popup (web parity).
+    if (range.start !== range.end) {
+      setSelectedWord(null);
+      setSelectedTokenIndex(null);
+      setSelectedLemma(null);
+      setSelectedTokenPron(null);
+      setSelectedLinkUrl(null);
+    }
   }, [selectionDictionary]);
+
+  // Native context-menu action (SPEC-033 revision): "Look up" opens the popup;
+  // "Read aloud" speaks the selected text. Copy is handled natively.
+  const handleSelectionAction = useCallback((
+    action: 'readAloud' | 'lookUp',
+    range: { start: number; end: number },
+  ) => {
+    if (!selectionDictionary || !selectionMap) return;
+    if (action === 'lookUp') {
+      setTextSelection(range);
+      return;
+    }
+    // readAloud
+    const term = selectionTermAt(selectionMap, range.start, range.end);
+    if (term.trim()) speak(term, l2Code);
+  }, [selectionDictionary, selectionMap, speak, l2Code]);
 
   // A new text selection supersedes the token dictionary popup (web parity).
   useEffect(() => {
@@ -1691,6 +1712,10 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                     onPressWord={handlePressWord}
                     onReveal={handleReveal}
                     onSelectionChange={selectionDictionary ? handleNativeSelection : undefined}
+                    onSelectionAction={selectionDictionary ? handleSelectionAction : undefined}
+                    selectionActionLabels={selectionDictionary
+                      ? { copy: t('action.copy'), readAloud: t('action.read_aloud'), lookUp: t('action.look_up') }
+                      : undefined}
                     clearSelection={clearSelectionNonce}
                     onLineGrid={onLineGrid}
                   />
