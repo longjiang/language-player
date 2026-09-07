@@ -1120,6 +1120,17 @@ export default function ReviewScreen() {
   }, [gradeSpellLikeAnswer, spellText]);
 
   /**
+   * Override a spell/scrabble answer the grader judged incorrect but the learner
+   * knows is right (e.g. an accepted script variant like 締め付け vs 締めつけ).
+   * Flips the result to correct and promotes the suggested rating to Good so the
+   * learner can rate it as normal.
+   */
+  const handleMarkCorrect = useCallback(() => {
+    setSuggestedRating('good');
+    setSpellResult((prev) => (prev ? { ...prev, correct: true } : prev));
+  }, []);
+
+  /**
    * Start the current card's scrabble test. Identical to spell mode except
    * there is no typed text — the learner arranges shuffled letter blocks, and
    * submitting happens automatically when the last slot is filled.
@@ -2070,6 +2081,14 @@ export default function ReviewScreen() {
                 <>
                   <Text className="text-sm text-muted-foreground">{t('review.spell_your_answer', { answer: spellResult.submitted })}</Text>
                   <Text className="text-sm text-muted-foreground">{t('review.spell_correct_answer', { answer: spellResult.answer })}</Text>
+                  <Pressable
+                    onPress={handleMarkCorrect}
+                    className="mt-1 self-start rounded-md border border-border px-2 py-1"
+                    accessibilityRole="button"
+                    accessibilityLabel={t('review.mark_correct')}
+                  >
+                    <Text className="text-xs font-medium text-muted-foreground">{t('review.mark_correct')}</Text>
+                  </Pressable>
                 </>
               )}
             </View>

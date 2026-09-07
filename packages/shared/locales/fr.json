@@ -1326,6 +1326,7 @@
         "hard": "Difficile",
         "hard_hint": "Rappelé avec difficulté",
         "loading_test": "Chargement…",
+        "mark_correct": "Marquer comme correct",
         "mixed_mode": "Mode mixte",
         "no_definition_available": "Ce mot est introuvable dans notre dictionnaire.",
         "recall_mode": "Mode rappel",

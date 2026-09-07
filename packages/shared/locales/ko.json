@@ -1326,6 +1326,7 @@
         "hard": "어려움",
         "hard_hint": "어렵게 기억함",
         "loading_test": "로드 중…",
+        "mark_correct": "정답으로 표시",
         "mixed_mode": "혼합 모드",
         "no_definition_available": "이 단어는 사전에서 찾을 수 없습니다.",
         "recall_mode": "회상 모드",

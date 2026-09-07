@@ -815,6 +815,13 @@ choose mode.
   typed answer (`review.spell_your_answer`) and the correct answer
   (`review.spell_correct_answer`); when correct it shows a single
   Correct line.
+- **Mark as correct override (2026-09-xx, both review pages)** — when spell or
+  scrabble mode judges an answer incorrect, the learner can tap a small
+  **Mark as correct** button (`review.mark_correct`). It flips the result to
+  correct and promotes the suggested rating to **Good** (matching a correct
+  answer), so an accepted variant the similarity grader rejected (e.g. 締め付け
+  vs 締めつけ) can be rated normally instead of only as Again. The override
+  applies only before the learner rates the card.
 
 ### Scrabble mode
 

@@ -1326,6 +1326,7 @@
         "hard": "Hard",
         "hard_hint": "Recalled with difficulty",
         "loading_test": "Loading…",
+        "mark_correct": "Mark as correct",
         "mixed_mode": "Mixed mode",
         "no_definition_available": "This word is not found in our dictionary.",
         "recall_mode": "Recall mode",
