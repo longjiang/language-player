@@ -56,6 +56,23 @@ describe('buildRuby Chinese/Cantonese per-character segmentation', () => {
     ]);
   });
 
+  it('splits lzh (Literary Chinese) pinyin per character like zh', () => {
+    expect(buildRuby('酒德颂', 'jiǔ dé sòng', 'lzh')).toEqual([
+      { text: '酒', reading: 'jiǔ' },
+      { text: '德', reading: 'dé' },
+      { text: '颂', reading: 'sòng' },
+    ]);
+  });
+
+  it('splits cmn (Mandarin) pinyin per character like zh', () => {
+    expect(buildRuby('你好世界', 'nǐ hǎo shì jiè', 'cmn')).toEqual([
+      { text: '你', reading: 'nǐ' },
+      { text: '好', reading: 'hǎo' },
+      { text: '世', reading: 'shì' },
+      { text: '界', reading: 'jiè' },
+    ]);
+  });
+
   it('falls back to one word-level segment when counts mismatch', () => {
     expect(buildRuby('不到长城非好汉', 'bú dào cháng chéng fēi hǎo', 'zh')).toEqual([
       { text: '不到长城非好汉', reading: 'bú dào cháng chéng fēi hǎo' },

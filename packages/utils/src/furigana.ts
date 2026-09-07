@@ -333,7 +333,11 @@ export function buildRuby(
   }
 
   // ── Chinese / Cantonese: per-character pinyin/jyutping ──
-  if (base === 'zh' || base === 'yue') {
+  // `lzh` (Literary Chinese) carries Mandarin pinyin from the server and is
+  // read per character, exactly like `zh`. `cmn` is the ISO 639-3 alias for
+  // Mandarin and is likewise per-character. The other Han variants (nan, hak,
+  // wuu, …) still have no readings, so they never reach this branch.
+  if (base === 'zh' || base === 'yue' || base === 'lzh' || base === 'cmn') {
     const chars = [...text];
     const syllables = pronunciation.trim().split(/\s+/).filter(Boolean);
     if (chars.length === syllables.length) {
