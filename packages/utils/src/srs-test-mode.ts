@@ -410,23 +410,41 @@ export function scoreSpellResult(
   return (['again', 'hard', 'good', 'easy'] as const)[points]!;
 }
 
+export type SpellHintKind = 'phonetic' | 'orthographic';
+
+export interface SpellHintInfo {
+  /** The muted first character to show as the hint. */
+  char: string;
+  /**
+   * Whether the hint derives from the reading (phonetic) or from the written
+   * answer (orthographic). Drives the hint's label.
+   */
+  kind: SpellHintKind;
+}
+
 /**
  * The muted first-character hint shown under the spell-mode input.
  *
- * - the **pronunciation (reading)** hint — the reading's first character — is
- *   only shown for languages that support phonetic ruby/annotation
- *   (`isPhoneticsEligible`). For languages whose native script is Latin (or
- *   Burmese), the orthography already reveals the pronunciation, so a reading
- *   hint (often the first char of an IPA string) is noise; those use the
- *   orthography hint instead.
- * - otherwise (languages with no pronunciation-based hint, or any language
- *   when no reading is available) it is the **lemma/orthography** first
- *   character, but only when the lemma is longer than one character (a
- *   single-character lemma's first char IS the whole word and would give the
- *   answer away);
- * - returns null when no hint applies (single-character lemma, no reading).
+ * The hint's KIND decides both its label and its source (SPEC-066):
+ *
+ * - **phonetic** (reading) hint — only for phonetics-eligible languages
+ *   (`isPhoneticsEligible`, e.g. Japanese/Chinese/Korean — see `language.ts`)
+ *   when the matched **dictionary entry** exposes a reading
+ *   (`pronunciationReadingOf`, i.e. EDICT kana / CEDICT pinyin /
+ *   romanization). The character is the reading's first character, taken from
+ *   the dictionary entry.
+ * - **orthographic** (spelling) hint — otherwise: phonetics-suppressed
+ *   languages (Latin-script, Burmese) or a phonetic-ruby language whose entry
+ *   has no reading. The character is the first character of the **answer** —
+ *   the exact text blanked in the context sentence (`spellBlankText`) — never
+ *   the dictionary lemma — so the hint always matches the surface form the
+ *   learner must type.
+ *
+ * Returns null when no hint applies: a single-character answer (its first char
+ * would reveal the whole word) with no pronunciation hint available.
  */
-export function spellHintOf(
+export function spellHintInfo(
+  context: string,
   word: SrsWordFormInfo | undefined,
   fallback: string,
   entry: {
@@ -434,51 +452,29 @@ export function spellHintOf(
     pronunciation?: string;
     alternate?: string | null;
     phonetic_detail?: { kana?: string; pinyin?: string; romanization?: string; ipa?: string } | null;
+    han_script?: {
+      simplified?: string;
+      traditional?: string;
+      kanji?: string | null;
+      hanja?: string | null;
+      hangul?: string;
+      han?: string;
+      hantu?: string;
+    } | null;
   } | null | undefined,
   l2Code: string,
-): string | null {
-  // Pronunciation-based hint is only meaningful when the language supports
+): SpellHintInfo | null {
+  // A pronunciation-based hint is only meaningful when the language supports
   // phonetic annotation (ruby/romanization). Latin-script languages and
   // Burmese are phonetics-suppressed, so they stay on the orthography hint.
   if (isPhoneticsEligible(l2Code)) {
     const reading = pronunciationReadingOf(entry, l2Code);
-    if (reading) return reading[0]!;
+    if (reading) return { char: reading[0]!, kind: 'phonetic' };
   }
-  const lemma = pronunciationTargetOf(word, fallback, entry);
-  if (lemma.length > 1) return lemma[0]!;
-  return null;
-}
-
-/**
- * The muted type-over placeholder for the FIRST spell character box.
- *
- * Unlike `spellHintOf` — which may return a pronunciation (reading) hint for
- * phonetic-ruby languages — this returns the orthographic first character of
- * the lemma ONLY, i.e. the script the learner actually types over. For a
- * phonetic-ruby language a reading hint (e.g. kana `お` for a kanji surface)
- * is a different script from what is typed, so it is never used as a
- * placeholder; it stays hint-only. For languages whose native script is already
- * phonetic (Latin-script, Burmese) — or any language with no reading — the
- * lemma's first character is shown so the learner types over it. Mirrors
- * `spellHintOf`'s orthography branch (`lemma.length > 1`).
- */
-export function spellHintPlaceholder(
-  word: SrsWordFormInfo | undefined,
-  fallback: string,
-  entry: {
-    head?: string | null;
-    pronunciation?: string;
-    alternate?: string | null;
-    phonetic_detail?: { kana?: string; pinyin?: string; romanization?: string; ipa?: string } | null;
-  } | null | undefined,
-  l2Code: string,
-): string | null {
-  if (isPhoneticsEligible(l2Code)) {
-    const reading = pronunciationReadingOf(entry, l2Code);
-    if (reading) return null; // reading hint — not a type-over placeholder
-  }
-  const lemma = pronunciationTargetOf(word, fallback, entry);
-  if (lemma.length > 1) return lemma[0]!;
+  // Orthographic hint is derived from the ANSWER (the blanked surface form),
+  // not the dictionary lemma, so it always matches what the learner types.
+  const answer = spellBlankText(context, word, fallback, entry, l2Code);
+  if (answer.length > 1) return { char: answer[0]!, kind: 'orthographic' };
   return null;
 }
 
