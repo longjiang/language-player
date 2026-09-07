@@ -11,7 +11,7 @@ import { UserMenu } from './user-menu';
 import { Logo } from '@/components/ui/logo';
 import {
   Menu, X, ChevronDown, Search,
-  Compass, Music, Tv, Clapperboard, Upload,
+  Compass, Tv, Clapperboard, Upload,
   BookOpen, Globe, BookMarked, ImageIcon,
   RotateCcw, FileText, Youtube,
 } from 'lucide-react';
@@ -26,7 +26,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Media',
     links: [
       { key: 'title.explore', href: 'explore' },
-      { key: 'title.music_and_entertainment', href: 'music' },
       { key: 'title.live_tv', href: 'live-tv' },
       { key: 'title.tv_shows', href: 'tv-shows' },
       { key: 'title.channels', href: 'channels' },
@@ -53,7 +52,6 @@ const NAV_GROUPS: NavGroup[] = [
 
 const NAV_ICONS: Record<string, React.ReactNode> = {
   explore: <Compass className="h-4 w-4" />,
-  music: <Music className="h-4 w-4" />,
   'live-tv': <Tv className="h-4 w-4" />,
   'tv-shows': <Clapperboard className="h-4 w-4" />,
   channels: <Youtube className="h-4 w-4" />,

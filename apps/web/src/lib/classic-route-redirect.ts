@@ -53,7 +53,6 @@ const WEB_ROUTE_PATTERNS = [
   '/:l1/:l2/liked-videos',
   '/:l1/:l2/live-tv',
   '/:l1/:l2/local-media',
-  '/:l1/:l2/music',
   '/:l1/:l2/my-channels',
   '/:l1/:l2/playlists',
   '/:l1/:l2/playlists/:playlistId',
@@ -127,6 +126,12 @@ const LEGACY_ALIASES: AliasRule[] = [
   },
   {
     pattern: '/:l1/:l2/explore-media',
+    to: (params) => `/${params.l1}/${params.l2}/explore`,
+  },
+  {
+    // Music & Entertainment page removed (music is now part of the Explore
+    // feed by default), so classic /music URLs land on Explore.
+    pattern: '/:l1/:l2/music',
     to: (params) => `/${params.l1}/${params.l2}/explore`,
   },
   {

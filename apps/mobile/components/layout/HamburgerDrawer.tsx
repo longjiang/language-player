@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import {
-  Compass, Music, Tv, Clapperboard, Upload,
+  Compass, Tv, Clapperboard, Upload,
   FileText, BookMarked, RotateCcw, Globe, BookOpen, ImageIcon,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -28,7 +28,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Media',
     links: [
       { key: 'title.explore', href: '/(tabs)/(media)' },
-      { key: 'title.music_and_entertainment', href: '/(tabs)/(media)/music' },
       { key: 'title.live_tv', href: '/(tabs)/(media)/live-tv' },
       { key: 'title.tv_shows', href: '/(tabs)/(media)/tv-shows' },
       { key: 'title.channels', href: '/(tabs)/(media)/channels' },
@@ -59,7 +58,6 @@ const NAV_ICONS: Record<string, React.JSX.Element> = {
   '(reading)': <FileText size={16} color={ICON_COLOR} />,
   '(vocab)': <BookMarked size={16} color={ICON_COLOR} />,
   explore: <Compass size={16} color={ICON_COLOR} />,
-  music: <Music size={16} color={ICON_COLOR} />,
   'live-tv': <Tv size={16} color={ICON_COLOR} />,
   'tv-shows': <Clapperboard size={16} color={ICON_COLOR} />,
   channels: <Tv size={16} color={ICON_COLOR} />,
