@@ -223,6 +223,34 @@ export function mergeSrsCards(
   return merged;
 }
 
+/**
+ * Reconcile a per-language card record against the authoritative server deck.
+ *
+ * `mergeSrsCards` keeps every local-only card, so a device whose localStorage
+ * holds cards the server never persisted (a stuck/cleared pending op, a stale
+ * session) ends up with an inflated deck, and the new/again/review header
+ * counts diverge between clients (SPEC-066). This drops local-only cards that
+ * are neither present on the server deck NOR backed by unsynced local work (a
+ * pending/error outbox op for that `l2::wordId`), mirroring the mobile
+ * pull-merge reconciliation in SPEC-066 §Storage & sync.
+ *
+ * When `serverCards` is undefined — a language whose authoritative server deck
+ * has not loaded (still hydrating, or offline-only) — the record is returned
+ * unchanged so legitimate local work is never dropped before hydration.
+ */
+export function reconcileCardsToServer(
+  localCards: Record<string, SrsFields>,
+  serverCards: Record<string, unknown> | undefined,
+  isProtected: (id: string) => boolean,
+): Record<string, SrsFields> {
+  if (!serverCards) return localCards;
+  const cleaned: Record<string, SrsFields> = {};
+  for (const [id, card] of Object.entries(localCards)) {
+    if (serverCards[id] || isProtected(id)) cleaned[id] = card;
+  }
+  return cleaned;
+}
+
 /** Convert a legacy SM-2 card to a seeded FSRS card without resetting `due`. */
 function normalizeLegacyCard(raw: Record<string, unknown>): FsrsCard {
   const now = Date.now();

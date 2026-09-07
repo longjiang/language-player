@@ -52,6 +52,7 @@ export {
   getLanguageCards,
   getActiveNewCardIds,
   mergeSrsCards,
+  reconcileCardsToServer,
 } from './fsrs-scheduler';
 export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating, SrsReviewStatus } from './fsrs-scheduler';
 /** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …). */
