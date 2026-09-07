@@ -16,7 +16,7 @@ import { isReaderTapSuppressed } from '@/lib/reader-tap-guard';
 import { log } from '@/lib/logger';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
-import type { SubtitleLine } from '@langplayer/shared';
+import type { SubtitleLine, VideoNote } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
@@ -50,6 +50,9 @@ interface SubtitleDisplayProps {
   currentTime: number;
   /** Video title for word-saving context */
   videoTitle?: string;
+  /** Video annotations referenced by `[n]` markers in the subtitle lines
+   *  (SPEC-093). TokenizedText uses these to render note badges. */
+  notes?: VideoNote[];
   /** Pre-computed token cache from /lemmatize-video-normalized */
   tokenCache?: TokenCache;
   /** Whether the token cache has finished loading. When false, TokenizedText
@@ -119,7 +122,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, singlelineTextScale = SINGLELINE_TEXT_SCALE, onPauseLine, onTranslationProgress, band = false, overlay = true, hasPrevVideo, hasNextVideo, onPrevVideo, onNextVideo, onSwitchToTranscriptMode, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, singlelineTextScale = SINGLELINE_TEXT_SCALE, onPauseLine, onTranslationProgress, band = false, overlay = true, hasPrevVideo, hasNextVideo, onPrevVideo, onNextVideo, onSwitchToTranscriptMode, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2 } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
@@ -537,6 +540,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   karaokeDimOpacity={overlay ? 0.72 : 0.7}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
+                  notes={notes}
                   context={videoTitle ? { videoTitle } : undefined}
                 />
               </div>
@@ -634,6 +638,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 highlightForms={highlightTerms}
+                notes={notes}
                 selectionDictionary
                 context={{
                   starttime: shownLine.starttime,
@@ -736,6 +741,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                     // Highlight the search terms in multiline mode too (like
                     // singleline mode) so the matched line stands out.
                     highlightForms={highlightTerms}
+                    notes={notes}
                     selectionDictionary
                     context={{
                       starttime: line.starttime,

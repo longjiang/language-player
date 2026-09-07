@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { SubsSearchRow } from './subs-search-row';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { youTubeCategoryLabel } from '@langplayer/shared';
-import { parseSubsL2, findMatchLine } from '@langplayer/utils';
+import { parseSubsL2, findMatchLine, parseNotes } from '@langplayer/utils';
 import {
   Search,
   ChevronDown,
@@ -544,6 +544,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               date: v.date,
               category: v.category != null ? Number(v.category) : null,
               tv_show: v.tv_show != null ? Number(v.tv_show) : null,
+              notes: parseNotes(v.notes),
               matchLineIndex: findMatchLine(lines, searchTerm),
             };
           })

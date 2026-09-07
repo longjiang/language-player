@@ -6,8 +6,11 @@ import {
   type DictionaryEntry,
   type LemmatizedToken,
   type SavedWordContext,
+  type VideoNote,
+  type SubtitleNoteMarker,
 } from '@langplayer/shared';
 import { DictionaryPopup } from './dictionary-popup';
+import { NoteBadge, NotePopup } from './note-popup';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode, isRTL } from '@/lib/language-data';
@@ -31,6 +34,7 @@ import {
   splitPhraseTokens,
   tokenMatchesAnyForm,
   tokenMatchesAnyTerm,
+  extractNoteMarkers,
 } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
@@ -74,6 +78,12 @@ function highlightPlainText(text: string, formats: FormatRange[] | undefined): R
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
+  /**
+   * Video annotations referenced by `[n]` markers in subtitles (SPEC-093).
+   * When provided, `[n]` markers are stripped from the rendered text and each
+   * renders as a solid-circle badge that opens a note dialog on tap.
+   */
+  notes?: VideoNote[];
   /**
    * Extra multiplier on top of the user's zoom setting from SettingsContext
    * (tokenizedText.zoom). Defaults to 1 (user zoom alone). Only single-line
@@ -195,7 +205,7 @@ export interface TokenizedTextProps {
  * Passes context through for word saving (video title, subtitle line, etc.).
  */
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
-  text,
+  text: rawText,
   l2Code,
   textScale,
   inline = false,
@@ -228,8 +238,28 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   onTokenHover,
   typeFace,
   disablePopup = false,
+  notes,
 }) => {
   const { l1 } = useLanguage();
+  // SPEC-093: when a notes map is supplied, strip `[n]` markers from the text
+  // so the lemmatizer never sees bracket junk. The clean text is what gets
+  // tokenized, measured, and rendered; each marker becomes an inline badge
+  // (see renderItems + render loop below).
+  const noteContext = useMemo(
+    () => (notes?.length ? extractNoteMarkers(rawText) : { cleanText: rawText, markers: [] }),
+    [rawText, notes],
+  );
+  const noteById = useMemo(
+    () => new Map((notes ?? []).map((n) => [n.id, n])),
+    [notes],
+  );
+  const noteMarkers = useMemo<SubtitleNoteMarker[]>(
+    () => noteContext.markers.map((m) => ({ id: m.id, index: m.index, note: noteById.get(m.id)?.note ?? '' })),
+    [noteContext.markers, noteById],
+  );
+  // All downstream logic (tokenization, offsets, sentence context, karaoke,
+  // selection, format mapping) operates on the clean text.
+  const text = noteContext.cleanText;
   const { savedWords } = useSavedWordsContext();
   // SPEC-080: tag L2 content with a glyph-safe `lang` and its matching `dir`
   // so CJK renders with the correct regional glyph variants.
@@ -274,6 +304,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  const [selectedNote, setSelectedNote] = useState<SubtitleNoteMarker | null>(null);
   const [popupPosition, setPopupPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0);
@@ -465,6 +496,34 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       return range;
     });
   }, [displayTokens, text, onTokenHover]);
+
+  // Interleave note badges into the render order by the char offset each
+  // marker occupies in the clean text (which is exactly what displayTokens
+  // concatenate back to). Each badge is drawn at the token boundary where its
+  // `[n]` marker was stripped from — before the token that follows it, or at
+  // the line end. Mirrors the inline-image mechanism (SPEC-087) but for notes.
+  const renderItems = useMemo(() => {
+    if (noteMarkers.length === 0) {
+      return displayTokens.map((_, i) => ({ kind: 'token' as const, tokenIndex: i }));
+    }
+    const markers = [...noteMarkers].sort((a, b) => a.index - b.index);
+    const items: Array<{ kind: 'token'; tokenIndex: number } | { kind: 'note'; marker: SubtitleNoteMarker }> = [];
+    let pos = 0;
+    let mi = 0;
+    for (let ti = 0; ti < displayTokens.length; ti++) {
+      while (mi < markers.length && markers[mi]!.index <= pos) {
+        items.push({ kind: 'note', marker: markers[mi]! });
+        mi++;
+      }
+      items.push({ kind: 'token', tokenIndex: ti });
+      pos += displayTokens[ti]!.text.length;
+    }
+    while (mi < markers.length) {
+      items.push({ kind: 'note', marker: markers[mi]! });
+      mi++;
+    }
+    return items;
+  }, [displayTokens, noteMarkers]);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
@@ -899,7 +958,24 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             }
           }
           let cumulativeWeight = 0;
-          return displayTokens.map((token, i) => {
+          return renderItems.map((item) => {
+          // ── Note badge (SPEC-093): render the solid-circle marker where a
+          // `[n]` note was stripped from the clean text. ──
+          if (item.kind === 'note') {
+            return (
+              <NoteBadge
+                key={`note-${item.marker.id}`}
+                id={item.marker.id}
+                muted={!item.marker.note}
+                onClick={() => {
+                  setSelectedToken(null);
+                  setSelectedNote(item.marker);
+                }}
+              />
+            );
+          }
+          const i = item.tokenIndex;
+          const token = displayTokens[i]!;
           const l2Settings = getL2(l2Code);
           const nextToken = displayTokens[i + 1];
           const nextTokenIsSeparator = nextToken ? isSeparatorToken(nextToken.text) : true;
@@ -1035,6 +1111,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
           onOpenLink={onOpenLink}
           onClose={() => setSelectedToken(null)}
+        />
+      )}
+
+      {/* Note popup — opened by tapping a note badge (SPEC-093) */}
+      {selectedNote && (
+        <NotePopup
+          note={selectedNote}
+          onClose={() => setSelectedNote(null)}
         />
       )}
       </span>
