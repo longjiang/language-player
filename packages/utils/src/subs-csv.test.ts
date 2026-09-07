@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSubtitleCSV, findMatchLine } from './subs-csv';
+import { parseSubtitleCSV, findMatchLine, parseNotes, extractNoteMarkers } from './subs-csv';
 
 describe('parseSubtitleCSV', () => {
   it('parses basic starttime,line CSV', () => {
@@ -73,5 +73,43 @@ describe('findMatchLine with entity-encoded data', () => {
     expect(lines[0]?.line).toBe("♪ ISN'T IT LOVELY ♪");
     expect(lines[1]?.line).toBe('she said "fold \'em" plainly');
     expect(findMatchLine(lines, "isn't")).toBe(0);
+  });
+});
+
+describe('parseNotes', () => {
+  it('parses the video notes CSV into VideoNote[] (id coerced to number)', () => {
+    const csv = 'id,note\r\n1,酒德：饮酒的德性。\r\n2,大人：古时用以指称圣人或有道德的人。\r\n';
+    expect(parseNotes(csv)).toEqual([
+      { id: 1, note: '酒德：饮酒的德性。' },
+      { id: 2, note: '大人：古时用以指称圣人或有道德的人。' },
+    ]);
+  });
+
+  it('returns [] for empty/malformed input', () => {
+    expect(parseNotes('')).toEqual([]);
+    expect(parseNotes(undefined)).toEqual([]);
+  });
+});
+
+describe('extractNoteMarkers', () => {
+  it('strips [n] markers and records their clean-text offset', () => {
+    const { cleanText, markers } = extractNoteMarkers('酒德颂[1]先生');
+    expect(cleanText).toBe('酒德颂先生');
+    expect(markers).toEqual([{ id: 1, index: 3 }]);
+  });
+
+  it('handles multiple markers and markers at the line end', () => {
+    const { cleanText, markers } = extractNoteMarkers('有大人[2]先生[3]');
+    expect(cleanText).toBe('有大人先生');
+    expect(markers).toEqual([
+      { id: 2, index: 3 },
+      { id: 3, index: 5 },
+    ]);
+  });
+
+  it('returns the input untouched when there are no markers', () => {
+    const { cleanText, markers } = extractNoteMarkers('天地为一朝');
+    expect(cleanText).toBe('天地为一朝');
+    expect(markers).toEqual([]);
   });
 });
