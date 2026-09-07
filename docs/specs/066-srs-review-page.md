@@ -874,6 +874,18 @@ answer:
   learner types the single character. The same resolved string is used both to
   build the blocks and to grade the arranged answer, so correctness compares the
   phonetics against the phonetics.
+  - **The entry (and its reading) must be loaded first.** For an LLM-generated
+    entry the exact-id fetch — the only path to that entry — previously ran only
+    on reveal, which is *after* the scrabble test; so at the moment the mode was
+    resolved the reading read as absent and the card wrongly fell back to spell.
+    A single-char scrabble card therefore **waits** for the entry: it keeps
+    scrabble mode, holds a **spinner** in place of the Start Test button, and
+    fires the exact-entry lookup early (un-gated from reveal,
+    `scrabbleNeedsEntryFetch`), then re-evaluates reactively once the entry
+    lands — phonetics → phonetic-scrabble, none → spell. `scrabbleFallsBackToSpell`
+    is only evaluated *after* an entry is available, so "not loaded" is a wait,
+    not a fall back. On **mobile + offline**, if the offline lookup tried and
+    found no entry, the card falls back to spell instead of spinning.
 
 Everything else matches spell mode: the **Start Test gate** (context first, then
 a Start Test button), the **blanked context sentence** with the bolded
@@ -1225,7 +1237,11 @@ orphaned.
   languages (`isPhoneticsEligible`); when the matched entry exposes no phonetics
   (phonetics-suppressed L2, or a phonetics-eligible entry with no reading) the
   card runs as spell mode (`scrabbleFallsBackToSpell`). The same resolved string
-  both builds the blocks and grades the arranged answer.
+  both builds the blocks and grades the arranged answer. The card **waits** for
+  the entry to load (`scrabbleNeedsEntryFetch`, un-gated exact-id fetch, spinner
+  in place of Start Test) before deciding, so an unloaded LLM entry no longer
+  wrongly downgrades to spell; on mobile + offline an entry that can't be loaded
+  falls back to spell.
 - ✅ **Mixed mode 3-way split** — implemented (both review pages + shared utils):
   mixed mode now keys off the card's **review count** (`reps`) instead of state:
   `new` → choose, `reps === 1` → scrabble, `reps >= 2` → spell
