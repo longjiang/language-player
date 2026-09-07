@@ -858,6 +858,19 @@ answer:
 - **No hints** — scrabble mode shows **no** first-character hint (neither the
   `spell_hint_phonetic` nor the `spell_hint_orthographic` line) and no
   placeholder in the first box.
+- **Single-character answers (2026-09-xx)** — a one-character answer would be a
+  trivially-solvable single block (the learner just taps it). So when the blanked
+  answer is a single character, the block pool is instead derived from the
+  **matched dictionary entry's phonetics** (`scrabbleAnswerText`): pinyin for
+  zh/yue, kana for ja, romanization for other phonetics-eligible L2s — so the
+  learner arranges the reading (e.g. 水 → みず, 我 → wǒ). The substitution applies
+  only to **phonetics-eligible** languages (`isPhoneticsEligible`). If the
+  matched entry exposes **no phonetics** — a phonetics-suppressed language
+  (Latin-script, Burmese) or a phonetics-eligible entry with no reading — the
+  card runs as **spell mode** instead (`scrabbleFallsBackToSpell`), so the
+  learner types the single character. The same resolved string is used both to
+  build the blocks and to grade the arranged answer, so correctness compares the
+  phonetics against the phonetics.
 
 Everything else matches spell mode: the **Start Test gate** (context first, then
 a Start Test button), the **blanked context sentence** with the bolded
@@ -1201,6 +1214,15 @@ orphaned.
   `scoreSpellResult`, and the same-language rephrasing applies to scrabble too.
   New `review.scrabble_mode` ("Scrabble mode") and `review.scrabble_prompt`
   ("Arrange the letters") labels are added.
+- ✅ **Scrabble single-character answers** — implemented (both review pages +
+  shared utils): a one-character answer is a trivially-solvable single block, so
+  scrabble derives its blocks from the matched dictionary entry's phonetics
+  (`scrabbleAnswerText` — pinyin for zh/yue, kana for ja, romanization for other
+  phonetics-eligible L2s). The substitution applies only to phonetics-eligible
+  languages (`isPhoneticsEligible`); when the matched entry exposes no phonetics
+  (phonetics-suppressed L2, or a phonetics-eligible entry with no reading) the
+  card runs as spell mode (`scrabbleFallsBackToSpell`). The same resolved string
+  both builds the blocks and grades the arranged answer.
 - ✅ **Mixed mode 3-way split** — implemented (both review pages + shared utils):
   mixed mode now keys off the card's **review count** (`reps`) instead of state:
   `new` → choose, `reps === 1` → scrabble, `reps >= 2` → spell
