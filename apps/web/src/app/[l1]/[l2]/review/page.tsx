@@ -27,8 +27,7 @@ import {
   scoreSpellResult,
   SPELL_TEST_TOTAL_MS,
   SPELL_TEST_FAST_MS,
-  spellHintOf,
-  spellHintPlaceholder,
+  spellHintInfo,
   spellBlankText,
   scriptVariants,
   bestScriptSimilarity,
@@ -1643,14 +1642,24 @@ export default function ReviewPage() {
   const entry = l1Entry ?? fallbackEntry ?? currentCard.entry;
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
-  /** Muted first-character hint for the spell-mode input (reading or lemma). */
-  const spellHint = effectiveMode === 'spell'
-    ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
+  /** Muted first-character hint for the spell-mode input (reading or answer),
+   *  with its kind (phonetic vs orthographic) so the label matches the hint. */
+  const spellHintInfoValue = effectiveMode === 'spell'
+    ? spellHintInfo(
+        currentCard.word.context?.text ?? '',
+        currentCard.word,
+        wordForm,
+        entry,
+        l2Code,
+      )
     : null;
+  /** The char shown in the muted hint text. */
+  const spellHint = spellHintInfoValue?.char ?? null;
   /** Muted type-over placeholder for the FIRST spell character box — only the
-   *  orthographic (lemma) hint, never a reading hint (different script). */
-  const spellPlaceholder = effectiveMode === 'spell'
-    ? spellHintPlaceholder(currentCard.word, wordForm, entry, l2Code)
+   *  orthographic (answer) hint, never a phonetic/reading hint (different
+   *  script than the typed orthography in the kanji-surface case). */
+  const spellPlaceholder = spellHintInfoValue?.kind === 'orthographic'
+    ? spellHintInfoValue.char
     : null;
   /** Expected character count of the correct blanked word — drives the number of
    *  character boxes in the spell input (SPEC-066). Derived with the same
@@ -1964,7 +1973,16 @@ export default function ReviewPage() {
                   {t('review.submit')}
                 </Button>
               </div>
-              {spellHint && <p className="text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</p>}
+              {spellHint && spellHintInfoValue && (
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    spellHintInfoValue.kind === 'phonetic'
+                      ? 'review.spell_hint_phonetic'
+                      : 'review.spell_hint_orthographic',
+                    { char: spellHint },
+                  )}
+                </p>
+              )}
             </div>
           )
         ) : !showDefinition && effectiveMode === 'recall' ? (

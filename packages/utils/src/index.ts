@@ -133,11 +133,10 @@ export {
   scoreSpellResult,
   SPELL_TEST_TOTAL_MS,
   SPELL_TEST_FAST_MS,
-  spellHintOf,
-  spellHintPlaceholder,
+  spellHintInfo,
   resolveReviewMode,
 } from './srs-test-mode';
-export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode } from './srs-test-mode';
+export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode, SpellHintKind, SpellHintInfo } from './srs-test-mode';
 export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
 export type {
   SrsTestCacheStorage,

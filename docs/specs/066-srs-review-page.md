@@ -741,23 +741,32 @@ choose mode.
   hint underneath. The prompt label, the character boxes, the Submit button, and
   the hint are all **horizontally centered** (the Submit button width is clamped
   to a max so it reads as a centered action rather than a full-width banner).
-  The hint is **the first character of the pronunciation of the
-  lemma** (`pronunciationReadingOf`) — but only for languages that support
-  phonetic ruby/annotation (`isPhoneticsEligible`; e.g. Japanese/Chinese/Korean,
-  where the orthography doesn't reveal the reading). For languages whose native
-  script is already phonetic (Latin-script languages, Burmese), the reading hint
-  (often the first char of an IPA string) is noise, so the hint is instead
-  **the first character of the lemma** — as it is for any language whose entry
-  has no reading — but only when the lemma is
-  more than one character long (a single-char lemma's first char IS the whole
-  word and would give the answer away). Shared helper: `spellHintOf`.
-  When the hint is the **orthographic** (lemma-first-char) type — i.e. not a
-  pronunciation/reading hint — it is also shown as a **muted type-over
-  placeholder in the first character box** (`SpellCharInput`
-  `firstCharPlaceholder`), so the learner sees the first character and types
-  over it. A pronunciation/reading hint (e.g. kana `お` for a kanji surface) is
-  a different script from what is typed and is never used as a placeholder — it
-  stays hint-only. Shared helper: `spellHintPlaceholder`.
+  The hint is the **first character of the answer or its reading**, with a
+  label that names its kind. The hint's KIND drives both the label and the
+  source (shared helper: `spellHintInfo`, returns `{ char, kind }`):
+  - **phonetic / reading hint** (`kind: 'phonetic'`) — for languages that
+    support phonetic ruby/annotation (`isPhoneticsEligible`; e.g.
+    Japanese/Chinese/Korean, where the orthography doesn't reveal the reading)
+    **when the matched dictionary entry exposes a reading**: the first
+    character of `pronunciationReadingOf` (EDICT kana / CEDICT pinyin /
+    romanization), taken from the **dictionary entry**. Labeled *reading
+    starts with* (e.g. 读音以…开头 / `review.spell_hint_phonetic`).
+  - **orthographic / spelling hint** (`kind: 'orthographic'`) — otherwise:
+    phonetics-suppressed languages (Latin-script, Burmese) or a phonetic-ruby
+    language whose entry has no reading. The character is the first character
+    of the **answer** (`spellBlankText` — the exact surface form blanked in the
+    sentence), **never the dictionary lemma**, so it always matches the surface
+    form the learner must type. Labeled *spelling starts with* (e.g.
+    书写以…开头 / `review.spell_hint_orthographic`).
+  - **No hint** — when the answer is a single character (its first char IS the
+    whole word and would give the answer away) and no pronunciation hint is
+    available; `spellHintInfo` returns null.
+  When the hint is the **orthographic** (answer-first-char) type, it is also
+  shown as a **muted type-over placeholder in the first character box**
+  (`SpellCharInput` `firstCharPlaceholder`), so the learner sees the first
+  character and types over it. A phonetic/reading hint (e.g. kana `お` for a
+  kanji surface) is a different script from what is typed in the kanji-surface
+  case and is never used as a placeholder — it stays hint-only.
   The input is a **single real text field** whose characters span across the
   boxes (one character per box, left to right), so IME composition works
   normally — the native control owns the value and composition, and the boxes

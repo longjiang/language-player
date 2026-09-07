@@ -30,8 +30,7 @@ import {
   scoreSpellResult,
   SPELL_TEST_TOTAL_MS,
   SPELL_TEST_FAST_MS,
-  spellHintOf,
-  spellHintPlaceholder,
+  spellHintInfo,
   spellBlankText,
   scriptVariants,
   bestScriptSimilarity,
@@ -1657,28 +1656,33 @@ export default function ReviewScreen() {
   const currentCardState = fsrs.getCardState(currentCard.srs);
 
   const entry = l1Entry ?? fallbackEntry ?? currentEntry;
-  /** Muted first-character hint for the spell-mode input (reading or lemma). */
-  const spellHint = effectiveMode === 'spell'
-    ? spellHintOf(currentCard.word, wordForm, entry, l2Code)
+  // The context sentence the spell answer is blanked from (resolved the same
+  // way handleSpellSubmit does — latest instance context, else card context).
+  const rawInstances = (currentCard.word as any).instances as Array<{ context: SavedWordContext }> | undefined;
+  const lastContext = rawInstances && rawInstances.length
+    ? rawInstances[rawInstances.length - 1]?.context
+    : (currentCard.word.context as SavedWordContext | undefined);
+  const spellContextText = lastContext?.text ?? '';
+  /** Muted first-character hint for the spell-mode input (reading or answer),
+   *  with its kind (phonetic vs orthographic) so the label matches the hint.
+   *  Derived from the same `spellContextText` used to grade the answer. */
+  const spellHintInfoValue = effectiveMode === 'spell'
+    ? spellHintInfo(spellContextText, currentCard.word, wordForm, entry, l2Code)
     : null;
+  /** The char shown in the muted hint text. */
+  const spellHint = spellHintInfoValue?.char ?? null;
   /** Muted type-over placeholder for the FIRST spell character box — only the
-   *  orthographic (lemma) hint, never a reading hint (different script). */
-  const spellPlaceholder = effectiveMode === 'spell'
-    ? spellHintPlaceholder(currentCard.word, wordForm, entry, l2Code)
+   *  orthographic (answer) hint, never a phonetic/reading hint (different
+   *  script than the typed orthography in the kanji-surface case). */
+  const spellPlaceholder = spellHintInfoValue?.kind === 'orthographic'
+    ? spellHintInfoValue.char
     : null;
   /** Expected character count of the correct blanked word — drives the number of
-   *  character boxes in the spell input (SPEC-066). Mirrors the context
-   *  resolution in handleSpellSubmit (latest instance context). Computed inline
-   *  (not a hook) because it sits after the `!currentCard` early-return guard. */
+   *  character boxes in the spell input (SPEC-066). Derived with the same
+   *  `spellBlankText` logic used to grade the answer, so the box count matches
+   *  the exact text the learner is asked to type. */
   const spellExpectedLen = effectiveMode === 'spell' && currentCard
-    ? (() => {
-        const rawInstances = (currentCard.word as any).instances as Array<{ context: SavedWordContext }> | undefined;
-        const lastContext = rawInstances && rawInstances.length
-          ? rawInstances[rawInstances.length - 1]?.context
-          : (currentCard.word.context as SavedWordContext | undefined);
-        const contextText = lastContext?.text ?? '';
-        return Array.from(spellBlankText(contextText, currentCard.word, wordForm, entry, l2Code)).length;
-      })()
+    ? Array.from(spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code)).length
     : 0;
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
@@ -1960,7 +1964,16 @@ export default function ReviewScreen() {
                     <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
                   </Button>
                 </View>
-                {spellHint && <Text className="text-center text-xs text-muted-foreground">{t('review.spell_hint')} “{spellHint}”</Text>}
+                {spellHint && spellHintInfoValue && (
+                  <Text className="text-center text-xs text-muted-foreground">
+                    {t(
+                      spellHintInfoValue.kind === 'phonetic'
+                        ? 'review.spell_hint_phonetic'
+                        : 'review.spell_hint_orthographic',
+                      { char: spellHint },
+                    )}
+                  </Text>
+                )}
               </View>
             )
           ) : !showTabs && effectiveMode === 'recall' ? (

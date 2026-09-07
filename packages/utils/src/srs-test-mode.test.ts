@@ -16,8 +16,7 @@ import {
   scoreTestResult,
   scriptVariants,
   spellBlankText,
-  spellHintOf,
-  spellHintPlaceholder,
+  spellHintInfo,
   stringSimilarity,
   surfaceFormOf,
   validateSrsDefinitionChoices,
@@ -491,120 +490,82 @@ describe('spellBlankText', () => {
   });
 });
 
-describe('spellHintOf', () => {
-  const word = { forms: ['然るべき'], head: '然るべき', context: { form: '然るべき' } };
-
-  it('uses the first char of the reading when the entry has one', () => {
-    const hint = spellHintOf(
-      word,
+describe('spellHintInfo', () => {
+  it('uses the first char of the reading when the entry has one (phonetic)', () => {
+    const info = spellHintInfo(
+      '然るべき',
+      { forms: ['然るべき'], head: '然るべき', context: { form: '然るべき' } },
       '然るべき',
       { head: '然るべき', alternate: 'しかるべき', pronunciation: 'shikarubeki' },
       'ja',
     );
     // EDICT reading is the kana alternate, not the romaji pronunciation.
-    expect(hint).toBe('し');
+    expect(info).toEqual({ char: 'し', kind: 'phonetic' });
   });
 
-  it('falls back to the first char of the lemma when there is no reading', () => {
-    const hint = spellHintOf(
-      word,
+  it('falls back to the first char of the answer (orthographic) when there is no reading', () => {
+    const info = spellHintInfo(
+      '然るべき',
+      { forms: ['然るべき'], head: '然るべき', context: { form: '然るべき' } },
       '然るべき',
       { head: '然るべき', pronunciation: '' },
       'ja',
     );
-    expect(hint).toBe('然');
+    expect(info).toEqual({ char: '然', kind: 'orthographic' });
   });
 
-  it('returns null when the lemma is a single character (no hint)', () => {
-    const hint = spellHintOf(
+  it('derives the orthographic hint from the ANSWER, not the dictionary lemma', () => {
+    // No kana reading on the entry, so no phonetic hint. The answer (the exact
+    // surface blanked in the context) is the kana あわさ, whose first char is あ
+    // — never the lemma's first char 遣 — so the hint matches the answer.
+    const info = spellHintInfo(
+      '彼らが私をどんな目にあわされるのか。',
+      { forms: ['遣わす', 'あわさ'], head: '遣わす', context: { form: 'あわさ' } },
+      '遣わす',
+      { head: '遣わす', pronunciation: 'awasu' },
+      'ja',
+    );
+    expect(info).toEqual({ char: 'あ', kind: 'orthographic' });
+  });
+
+  it('returns null when the answer is a single character (no hint)', () => {
+    const info = spellHintInfo(
+      '猫',
       { forms: ['猫'], head: '猫', context: { form: '猫' } },
       '猫',
       { head: '猫', pronunciation: '' },
       'ja',
     );
-    expect(hint).toBeNull();
+    expect(info).toBeNull();
   });
 
-  it('returns null when there is no entry and the fallback lemma is one char', () => {
-    expect(spellHintOf(undefined, 'a', undefined, 'en')).toBeNull();
+  it('returns null when there is no entry and the answer is one char', () => {
+    expect(spellHintInfo('a', undefined, 'a', undefined, 'en')).toBeNull();
   });
 
-  it('uses orthography (not the reading) for a Latin-script language', () => {
-    // 'en' is phonetics-suppressed (isPhoneticsEligible false) — the native
-    // script already reveals pronunciation, so the reading hint (the first char
-    // of the IPA "ˈæpəl" = "ˈ") would be noise. Use the orthography first char.
-    const hint = spellHintOf(
+  it('uses the orthography first char of the answer for a Latin-script language', () => {
+    // 'en' is phonetics-suppressed (isPhoneticsEligible false) — the reading
+    // hint (the first char of the IPA "ˈæpəl" = "ˈ") would be noise. The hint
+    // is the orthography first char of the answer.
+    const info = spellHintInfo(
+      'an apple',
       { forms: ['apple'], head: 'apple', context: { form: 'apple' } },
       'apple',
       { head: 'apple', pronunciation: 'ˈæpəl' },
       'en',
     );
-    expect(hint).toBe('a');
+    expect(info).toEqual({ char: 'a', kind: 'orthographic' });
   });
 
   it('still uses the reading hint for a phonetics-eligible non-CJK language', () => {
     // 'th' is phonetics-eligible; a reading (romanization) hint is meaningful.
-    const hint = spellHintOf(
+    const info = spellHintInfo(
+      'สวัสดี',
       { forms: ['สวัสดี'], head: 'สวัสดี', context: { form: 'สวัสดี' } },
       'สวัสดี',
       { head: 'สวัสดี', pronunciation: 'sà-wàt-dii' },
       'th',
     );
-    expect(hint).toBe('s');
-  });
-});
-
-describe('spellHintPlaceholder', () => {
-  const word = { forms: ['然るべき'], head: '然るべき', context: { form: '然るべき' } };
-
-  it('returns null for a pronunciation (reading) hint — different script', () => {
-    // ja has a kana reading; the placeholder is only for the orthographic hint.
-    expect(spellHintPlaceholder(
-      word,
-      '然るべき',
-      { head: '然るべき', alternate: 'しかるべき', pronunciation: 'shikarubeki' },
-      'ja',
-    )).toBeNull();
-  });
-
-  it('returns the lemma first char when there is no reading', () => {
-    expect(spellHintPlaceholder(
-      word,
-      '然るべき',
-      { head: '然るべき', pronunciation: '' },
-      'ja',
-    )).toBe('然');
-  });
-
-  it('returns the orthography first char for a phonetics-suppressed language', () => {
-    expect(spellHintPlaceholder(
-      { forms: ['apple'], head: 'apple', context: { form: 'apple' } },
-      'apple',
-      { head: 'apple', pronunciation: 'ˈæpəl' },
-      'en',
-    )).toBe('a');
-  });
-
-  it('returns null for a single-character lemma (no hint)', () => {
-    expect(spellHintPlaceholder(
-      { forms: ['猫'], head: '猫', context: { form: '猫' } },
-      '猫',
-      { head: '猫', pronunciation: '' },
-      'ja',
-    )).toBeNull();
-  });
-
-  it('returns null when there is no entry and the fallback lemma is one char', () => {
-    expect(spellHintPlaceholder(undefined, 'a', undefined, 'en')).toBeNull();
-  });
-
-  it('still returns null for a reading hint on a phonetics-eligible non-CJK language', () => {
-    // 'th' reading hint is romanized Latin; the typed surface is Thai script.
-    expect(spellHintPlaceholder(
-      { forms: ['สวัสดี'], head: 'สวัสดี', context: { form: 'สวัสดี' } },
-      'สวัสดี',
-      { head: 'สวัสดี', pronunciation: 'sà-wàt-dii' },
-      'th',
-    )).toBeNull();
+    expect(info).toEqual({ char: 's', kind: 'phonetic' });
   });
 });
