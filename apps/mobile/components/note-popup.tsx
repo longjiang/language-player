@@ -25,7 +25,7 @@ export function NoteBadge({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Note ${id}`}
-      className={`mx-0.5 inline-flex h-[1.1em] w-[1.1em] -translate-y-[0.1em] items-center justify-center rounded-full align-middle ${
+      className={`mx-0.5 h-[1.1em] w-[1.1em] -translate-y-[0.1em] items-center justify-center rounded-full ${
         muted ? 'bg-muted' : 'bg-primary'
       }`}
       style={style}

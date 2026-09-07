@@ -1719,7 +1719,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                   <Text
                     key={`note-${item.marker.id}`}
                     onPress={() => { setSelectedWord(null); setSelectedTokenIndex(null); setSelectedNote(item.marker); }}
-                    className={`inline-block h-[1.1em] w-[1.1em] rounded-full align-middle text-center ${item.marker.note ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    className={`h-[1.1em] w-[1.1em] rounded-full text-center ${item.marker.note ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                     style={{ fontSize: textStyle.fontSize ? textStyle.fontSize * 0.62 : 10 }}
                   >
                     {item.marker.id}
