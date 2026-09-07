@@ -566,6 +566,37 @@ export function scrabbleNeedsEntryFetch(
   return Array.from(spellBlankText(context, word, fallback, entry, l2Code)).length === 1;
 }
 
+/**
+ * Languages whose orthography requires an IME (input-method composition) to
+ * type on a standard keyboard — Chinese, Japanese, Korean, and the Han-script
+ * Chinese varieties. For these, scrabble mode cannot offer a direct
+ * "type the letter" path (the learner would have to compose each character
+ * through an IME, which is precisely what the block arrangement avoids), so it
+ * stays arrange-only.
+ *
+ * Every other L2 can be typed letter-by-letter on a physical keyboard (with
+ * the appropriate layout), so scrabble mode additionally lets the learner fill
+ * the slots by typing — and a keystroke moves a matching letter block into the
+ * next available slot (SPEC-066 scrabble keyboard-fill).
+ */
+const IME_ORTHOGRAPHY_LANGUAGES = new Set([
+  'zh', 'yue', 'ja', 'ko',
+  // Han-script Chinese varieties: all composed via a CJK IME, gated out too.
+  'lzh', 'nan', 'hak', 'wuu', 'hsn', 'cjy', 'cpx', 'czh', 'cdo', 'cng', 'gan', 'mnp',
+]);
+
+/**
+ * True when the scrabble-mode input may accept a physical-keyboard fill in
+ * addition to the block arrangement. False for languages that require an IME
+ * (Chinese/Japanese/Korean and Han-script varieties) — see
+ * `IME_ORTHOGRAPHY_LANGUAGES`. Both review platforms gate the keyboard-fill
+ * path on this so a CJK card never offers direct typing.
+ */
+export function supportsScrabbleKeyboard(l2Code: string): boolean {
+  const base = (l2Code.split('-')[0] ?? '').toLowerCase();
+  return !IME_ORTHOGRAPHY_LANGUAGES.has(base);
+}
+
 export type SpellHintKind = 'phonetic' | 'orthographic';
 export interface SpellHintInfo {
   /** The muted first character to show as the hint. */
