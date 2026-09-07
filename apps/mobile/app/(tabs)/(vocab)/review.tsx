@@ -32,6 +32,8 @@ import {
   SPELL_TEST_FAST_MS,
   spellHintInfo,
   spellBlankText,
+  scrabbleAnswerText,
+  scrabbleFallsBackToSpell,
   scriptVariants,
   bestScriptSimilarity,
   resolveReviewMode,
@@ -86,6 +88,17 @@ const { log, logwarn } = srsLogger;
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
 type TestAnswer = { answer: string; correct: boolean; score: 1 | 2 | 3 | 4 };
+
+/** The context sentence the spell/scrabble answer is blanked from — the latest
+ *  instance's context (the record context is typed loosely on mobile, so mirror
+ *  the render's resolution: latest instance context, else the card context). */
+function reviewContextText(word: { context?: Record<string, unknown> } | undefined): string {
+  const rawInstances = (word as any).instances as Array<{ context?: Record<string, unknown> }> | undefined;
+  const lastContext = rawInstances && rawInstances.length
+    ? rawInstances[rawInstances.length - 1]?.context
+    : word?.context;
+  return (lastContext?.text as string | undefined) ?? '';
+}
 
 /**
  * Per-question state of the test-mode flow. Each test (definition, and
@@ -682,11 +695,26 @@ export default function ReviewScreen() {
   // The behavior mode for the CURRENT card: 'mixed' resolves to choose for new
   // cards, scrabble for a card reviewed exactly once, and spell for a card
   // reviewed more than once (SPEC-066 mixed mode).
-  const effectiveMode = resolveReviewMode(
+  const currentCardForMode = cards[currentIndex];
+  let effectiveMode = resolveReviewMode(
     reviewMode,
-    cards[currentIndex] ? fsrs.getCardState(cards[currentIndex].srs) : null,
-    cards[currentIndex]?.srs.reps ?? 0,
+    currentCardForMode ? fsrs.getCardState(currentCardForMode.srs) : null,
+    currentCardForMode?.srs.reps ?? 0,
   );
+  // A single-character scrabble answer is a trivial one-block tap, so scrabble
+  // arranges the matched entry's phonetics instead; when the entry exposes no
+  // phonetics this card runs as spell mode (SPEC-066 scrabble).
+  if (effectiveMode === 'scrabble' && currentCardForMode) {
+    effectiveMode = scrabbleFallsBackToSpell(
+      reviewContextText(currentCardForMode.word),
+      currentCardForMode.word,
+      wordForm,
+      l1Entry ?? fallbackEntry ?? currentEntry,
+      l2Code,
+    )
+      ? 'spell'
+      : 'scrabble';
+  }
   // Scrabble and spell share the whole "type/arrange the blanked word" flow:
   // same countdown budget, same blanked context, same grading.
   const isSpellLike = effectiveMode === 'spell' || effectiveMode === 'scrabble';
@@ -1069,30 +1097,15 @@ export default function ReviewScreen() {
   /**
    * Grade a submitted spell/scrabble answer. Shared by both handlers: they
    * differ only in where the submitted string comes from (typed text vs. the
-   * arranged blocks). Grades by similarity with the blanked surface form,
+   * arranged blocks). Grades by similarity with `correctAnswer` — for spell the
+   * blanked surface form, for scrabble the string the blocks were derived from
+   * (which, for a single-character answer, is the entry's phonetics) —
    * time-adjust with the countdown, then map to the rating buttons via
    * scoreSpellResult.
    */
-  const gradeSpellLikeAnswer = useCallback(async (submitted: string) => {
+  const gradeSpellLikeAnswer = useCallback(async (submitted: string, correctAnswer: string) => {
     const card = cards[currentIndex];
     if (!card || spellSubmitted) return;
-    // The sentence that is blanked — the latest instance's context (the record
-    // context is typed loosely on mobile, so mirror the render's resolution).
-    const rawInstances = (card.word as any).instances as Array<{ form: string; context: SavedWordContext }> | undefined;
-    const lastContext = rawInstances && rawInstances.length
-      ? rawInstances[rawInstances.length - 1]?.context
-      : (card.word.context as SavedWordContext | undefined);
-    const contextText = lastContext?.text ?? '';
-    // The correct answer is the exact form blanked in the context sentence
-    // (derived with the same forms the highlight matches), not a reduced
-    // record form — e.g. たじろかせる, never たじろか.
-    const correctAnswer = spellBlankText(
-      contextText,
-      card.word,
-      wordForm,
-      l1Entry ?? fallbackEntry ?? currentEntry,
-      l2Code,
-    );
     const totalMs = testSessionStartRef.current > 0
       ? Math.max(0, Date.now() - testSessionStartRef.current)
       : 0;
@@ -1110,14 +1123,27 @@ export default function ReviewScreen() {
     setTestStartedAt(null);
     setShowTabs(true);
     log('[srs-spell] answer submitted', { l2Code, word: wordForm, submitted, correct: correctAnswer, correctMatch: correct, totalMs, rating });
-  }, [cards, currentIndex, spellSubmitted, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
+  }, [cards, currentIndex, spellSubmitted, wordForm, l2Code]);
 
   /**
    * Submit the spell-mode answer (typed text).
    */
   const handleSpellSubmit = useCallback(async () => {
-    await gradeSpellLikeAnswer(spellText);
-  }, [gradeSpellLikeAnswer, spellText]);
+    const card = cards[currentIndex];
+    // The correct answer is the exact form blanked in the context sentence
+    // (derived with the same forms the highlight matches), not a reduced
+    // record form — e.g. たじろかせる, never たじろか.
+    const correctAnswer = card
+      ? spellBlankText(
+          reviewContextText(card.word),
+          card.word,
+          wordForm,
+          l1Entry ?? fallbackEntry ?? currentEntry,
+          l2Code,
+        )
+      : '';
+    await gradeSpellLikeAnswer(spellText, correctAnswer);
+  }, [gradeSpellLikeAnswer, spellText, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
 
   /**
    * Override a spell/scrabble answer the grader judged incorrect but the learner
@@ -1151,8 +1177,17 @@ export default function ReviewScreen() {
     const now = Date.now();
     testSessionStartRef.current = now;
     setTestStartedAt(now);
-    log('[srs-scrabble] session started', { l2Code, word: wordForm, correct: surfaceFormOf(card.word, wordForm) });
-  }, [cards, currentIndex, wordForm, l2Code]);
+    // The blocks derive from scrabbleAnswerText — a single-char answer arranges
+    // the entry's phonetics — so log that resolved string for diagnostics.
+    const correct = scrabbleAnswerText(
+      reviewContextText(card.word),
+      card.word,
+      wordForm,
+      l1Entry ?? fallbackEntry ?? currentEntry,
+      l2Code,
+    );
+    log('[srs-scrabble] session started', { l2Code, word: wordForm, correct });
+  }, [cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
 
   /**
    * Submit the scrabble-mode answer — called automatically when the LAST block
@@ -1160,16 +1195,44 @@ export default function ReviewScreen() {
    * string built from the blocks in slot order.
    */
   const handleScrabbleSubmit = useCallback(async (arranged: string) => {
-    log('[srs-scrabble] blocks arranged (auto-submit)', { l2Code, word: wordForm, arranged });
-    await gradeSpellLikeAnswer(arranged);
-  }, [gradeSpellLikeAnswer, wordForm, l2Code]);
+    const card = cards[currentIndex];
+    // The correct answer is the same string the blocks were derived from —
+    // a single-char answer arranges the matched entry's phonetics (see
+    // scrabbleAnswerText), so grading must compare against that reading.
+    const correctAnswer = card
+      ? scrabbleAnswerText(
+          reviewContextText(card.word),
+          card.word,
+          wordForm,
+          l1Entry ?? fallbackEntry ?? currentEntry,
+          l2Code,
+        )
+      : '';
+    log('[srs-scrabble] blocks arranged (auto-submit)', { l2Code, word: wordForm, arranged, correctAnswer });
+    await gradeSpellLikeAnswer(arranged, correctAnswer);
+  }, [gradeSpellLikeAnswer, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
 
   const handleReveal = useCallback(() => {
     const card = cards[currentIndex];
     const mode = resolveReviewMode(reviewMode, card ? fsrs.getCardState(card.srs) : null, card?.srs.reps ?? 0);
     if (mode === 'choose') { void startTest(); return; }
     if (mode === 'spell') { void startSpell(); return; }
-    if (mode === 'scrabble') { void startScrabble(); return; }
+    if (mode === 'scrabble') {
+      // A single-character answer can't be meaningfully arranged; if the
+      // matched entry exposes no phonetics, run this card as spell mode.
+      const fallsBack = card
+        ? scrabbleFallsBackToSpell(
+            reviewContextText(card.word),
+            card.word,
+            wordForm,
+            l1Entry ?? fallbackEntry ?? currentEntry,
+            l2Code,
+          )
+        : false;
+      if (fallsBack) { void startSpell(); return; }
+      void startScrabble();
+      return;
+    }
     log('[srs] reveal', {
       wordId: card?.word.id,
       head: card ? wordLabel(card.word) : undefined,
@@ -1177,7 +1240,7 @@ export default function ReviewScreen() {
       totalCards: cards.length,
     });
     setShowTabs(true);
-  }, [cards, currentIndex, reviewMode, startTest, startSpell, startScrabble]);
+  }, [cards, currentIndex, reviewMode, startTest, startSpell, startScrabble, wordForm, l1Entry, fallbackEntry, currentEntry, l2Code]);
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
@@ -1754,11 +1817,12 @@ export default function ReviewScreen() {
   const spellExpectedLen = effectiveMode === 'spell' && currentCard
     ? Array.from(spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code)).length
     : 0;
-  /** The correct blanked word — the scrabble mode derives its letter blocks
+  /** The correct scrabble answer — the scrabble mode derives its letter blocks
    *  (and shuffle) from this exact string, so the block count matches the
-   *  spelling test. */
-  const scrabbleAnswer = isSpellLike && currentCard
-    ? spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code)
+   *  spelling test. For a single-character answer this is the matched entry's
+   *  phonetics (see scrabbleAnswerText); otherwise it is the blanked word. */
+  const scrabbleAnswer = effectiveMode === 'scrabble' && currentCard
+    ? scrabbleAnswerText(spellContextText, currentCard.word, wordForm, entry, l2Code)
     : '';
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
