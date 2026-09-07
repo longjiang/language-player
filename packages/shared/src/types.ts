@@ -122,6 +122,8 @@ export interface SubsSearchVideo {
   title: string;
   youtube_id: string;
   subs_l2: SubtitleLine[];
+  /** Annotations referenced by `[n]` markers in the subtitle lines (SPEC-093). */
+  notes?: VideoNote[];
   views?: number;
   duration?: number;
   date?: string;

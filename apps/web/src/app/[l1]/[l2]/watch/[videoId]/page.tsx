@@ -512,6 +512,7 @@ export default function WatchPage() {
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
               videoTitle={v.title}
+              notes={v.notes}
               liked={isLiked(l2Code, v)}
               onToggleLike={handleToggleLike}
               likeDisabled={!isSignedIn || !v.id}
@@ -549,6 +550,7 @@ export default function WatchPage() {
             tokenCache={tokenCache}
             tokenCacheLoaded={tokenCacheLoaded}
             videoTitle={v.title}
+            notes={v.notes}
             liked={isLiked(l2Code, v)}
             onToggleLike={handleToggleLike}
             likeDisabled={!isSignedIn || !v.id}
@@ -573,7 +575,7 @@ export default function WatchPage() {
             >
               {(tab) => {
                 if (tab === 'subs') {
-                  return <SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />;
+                  return <SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} notes={v.notes} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />;
                 }
                 if (tab === 'ai') {
                   return (

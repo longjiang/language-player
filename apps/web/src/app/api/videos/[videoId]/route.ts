@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import { parseCSVSubtitles } from '@/lib/subtitle-csv';
+import { parseNotes } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { fetchYouTubeL2Captions } from '@/lib/video-service';
 
@@ -101,6 +102,9 @@ export async function GET(request: Request, props: { params: Promise<{ videoId: 
       // player contain-fit non-16:9 videos instead of forcing a 16:9 box.
       aspect_ratio: typeof item.aspect_ratio === 'number' ? item.aspect_ratio : undefined,
       subs_l2: l2Lines,
+      // SPEC-093: parse the video's `notes` column (CSV `id,note`) so subtitle
+      // `[n]` markers can be resolved to note badges on the client.
+      notes: parseNotes(item.notes),
     };
 
     return NextResponse.json(

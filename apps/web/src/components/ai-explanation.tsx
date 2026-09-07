@@ -29,6 +29,7 @@ import { SubsSearchPlaybackModal } from '@/components/video/subs-search-playback
 import {
   parseSubsL2,
   findMatchLine,
+  parseNotes,
   durationToSeconds,
   AI_EXAMPLES_LIMIT,
   buildAiExamplesPayload,
@@ -606,6 +607,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
             date: v.date,
             category: v.category != null ? Number(v.category) : null,
             tv_show: v.tv_show != null ? Number(v.tv_show) : null,
+            notes: parseNotes(v.notes),
             matchLineIndex: findMatchLine(lines, term),
           };
         })
