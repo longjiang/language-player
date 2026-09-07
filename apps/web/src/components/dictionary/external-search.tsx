@@ -49,7 +49,7 @@ export function ExternalSearch({ term, l1Code, l2Code, traditional }: ExternalSe
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      className="flex min-w-0 items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
     >
       <img
         src={faviconUrl(link.domain)}
@@ -70,7 +70,7 @@ export function ExternalSearch({ term, l1Code, l2Code, traditional }: ExternalSe
           <div className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t(EXTERNAL_SEARCH_GROUP_TITLES[group as ExternalSearchGroup])}
           </div>
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="grid grid-cols-2 gap-1.5">
             {links.map(renderLink)}
           </div>
         </div>

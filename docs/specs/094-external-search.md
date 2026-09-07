@@ -24,6 +24,8 @@ The option set is **per-language** — it depends on the L2 (target language) an
 
 The **"Context Sentence"** and **"External Search"** toggles render as two equal-width buttons sharing one row (each `flex-1`, i.e. a 50/50 split) with identical icon / label / trailing-chevron styling, so the popup action row reads as one consistent pair.
 
+Within each group the links render in a **two-column grid** (each button is a bordered cell showing the site's favicon, a title, and an external-link icon) rather than a single-column list.
+
 ## User Stories
 
 - As a learner, I want to open a word's definition in a reference dictionary or see images for it, without leaving the popup, so I can deepen my understanding of a word I just looked up.
