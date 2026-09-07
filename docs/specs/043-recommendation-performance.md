@@ -28,6 +28,14 @@ real traffic warms the index), and **Phase B** — quality fixes that change fee
 and are therefore **gated on product decisions** (ef tuning, and the discovery/category
 mismatch that is the *root cause* of both jon's fallback and his empty high-level feeds).
 
+> **Contract change 2026-09-07 (SPEC-004 explore):** GET `/recommend-videos` now defaults
+> to a third category mode, **mixed**, which includes music & entertainment (categories
+> 10/24) in the feed — the old discovery default excluded them. A `category_mode` query
+> param selects `mixed` (default), `discovery` (exclude 10/24), or `music` (only 10/24).
+> The legacy `music` query param is honored as a fallback. `_vector_recommend_core` and
+> `_recommend_videos_core` gained a real `_MUSIC_MODE_MIXED` arm (no category filter), and
+> the paginated cache key now includes the mode so mixed ↔ discovery don't cross-contaminate.
+
 All numbers below were verified against the live database on 2026-08-05
 (`verify_recommendation_assessment.py`, `verify_fallback_source.py`, and prior
 `profiling_*.py` scripts).

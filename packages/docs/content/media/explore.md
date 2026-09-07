@@ -4,7 +4,7 @@ Discover videos in your target language, matched to your level.
 
 ## How It Works
 
-The {$title.explore} page shows recommended videos for your language pair. Each video is sourced from {$option.youtube} and selected for language learning — we exclude music and entertainment content (those have their own [{$title.music_and_entertainment}](/docs/media/music) page).
+The {$title.explore} page shows recommended videos for your language pair. Each video is sourced from {$option.youtube} and selected for language learning. By default the feed includes music and entertainment content; use the **Exclude music & entertainment** toggle below the pills if you'd rather see only other kinds of videos.
 
 Videos are sorted by popularity and filtered by difficulty when you select a level. The recommendation engine learns from your watch history, so videos you've already watched won't appear again.
 
@@ -20,7 +20,7 @@ The pills at the top let you filter by proficiency level. The labels adapt to yo
 | {$lang.en} | {$level.exam_ielts} 1 → 9 |
 | Others | {$level.exam_cefr} Pre-A1 → C2 |
 
-Click a pill to filter videos at that level. Click **{$filter.all}** to see videos at every level. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
+Click a pill to filter videos at that level. Click **{$filter.all}** to see videos at every level. Click **{$filter.kids}** to see recommended kids videos across all levels — the Kids pill and the level pills are mutually exclusive, so picking one clears the other. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
 
 ## Video Cards
 
@@ -52,5 +52,5 @@ Your channel preferences are saved per language, so subscribing to a {$lang.ja} 
 
 - Set your proficiency level on your [profile page](/docs/account/profile) so {$title.explore} starts with the right filter
 - Switch levels to find easier or harder content — switching back is instant
-- Use [{$title.music_and_entertainment}](/docs/media/music) for music videos and entertainment content
+- Toggle **Exclude music & entertainment** to keep music and entertainment videos out of the feed
 - Your watch history is private and only used to avoid showing the same video twice

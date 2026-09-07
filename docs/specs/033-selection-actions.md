@@ -3,13 +3,15 @@
 ## Metadata
 - **Spec ID**: SPEC-033
 - **Feature**: Select any portion of tokenized text and look it up in the dictionary popup
-- **Status**: implemented (2026-08-02; revised 2026-08-02 — selection now opens the dictionary popup instead of an action menu; revised 2026-09-02 — substring selection inside a token wins over the whole-token popup, and cross-boundary phrases retokenize for highlighting)
+- **Status**: implemented (2026-08-02; revised 2026-08-02 — selection now opens the dictionary popup instead of an action menu; revised 2026-09-02 — substring selection inside a token wins over the whole-token popup, and cross-boundary phrases retokenize for highlighting; revised 2026-09-07 — a Copy / Read aloud / Look up tooltip now appears first and the selection stays active; only "Look up" opens the popup)
 - **Created**: 2026-08-02
 - **ROADMAP Phase**: Phase 4 (Reading) — applies to the web reader, EPUB reader, web reader, and video transcripts
 
 ## Overview
 
-`TokenizedText` currently offers per-word interaction (click a token → dictionary popup) and per-block actions (the ⋯ `TextActionMenu`). This feature adds a third entry point: the user drag-selects (or Shift-arrow-selects) any arbitrary portion of the text using the browser's native selection, and the dictionary popup opens with the selected text fed in as the lookup term — no lemma required. The popup shows the selected text as its header, followed by the DeepSeek explanation, the image strip, canonical phrase cards from the `/extract-phrases` endpoint (SPEC-036), and whatever dictionary entry cards the standard lookup returns.
+`TokenizedText` currently offers per-word interaction (click a token → dictionary popup) and per-block actions (the ⋯ `TextActionMenu`). This feature adds a third entry point: the user drag-selects (or Shift-arrow-selects) any arbitrary portion of the text using the browser's native selection, and a small tooltip appears with **Copy / Read aloud / Look up** actions. The native selection stays active (so the learner can keep dragging the handles to re-tune the selection), and only tapping **Look up** opens the dictionary popup with the selected text fed in as the lookup term — no lemma required. The popup shows the selected text as its header, followed by the DeepSeek explanation, the image strip, canonical phrase cards from the `/extract-phrases` endpoint (SPEC-036), and whatever dictionary entry cards the standard lookup returns.
+
+**Revision 2026-09-07 — tooltip before the popup.** Previously (revised 2026-08-02) a selection opened the dictionary popup directly. Now a `SelectionTooltip` (copy / read aloud / look up) is shown first, the browser selection is NOT collapsed, and only "Look up" opens the popup. This lets the learner adjust the selection by dragging the handles after the tooltip appears — especially important on touch where getting the range right in one shot is hard. `onMouseDown` preventDefault on the tooltip keeps the browser from collapsing the selection when the tooltip is clicked.
 
 When a multi-token phrase like 家賃滞納 is saved, `TokenizedText` retokenizes every matching line client-side: saved forms are matched against the token stream (longest-first, exact token-boundary alignment) and collapsed into a single atomic token, so the phrase highlights as saved, opens one dictionary popup, and behaves as one unit everywhere downstream (SPEC-033 §Phrase retokenization).
 
@@ -34,17 +36,18 @@ When a multi-token phrase like 家賃滞納 is saved, `TokenizedText` retokenize
 
 ### Components
 - `use-selection-popup.ts` — native-selection capture + dismissal; returns `{ containerRef, selection, clear }`.
+- `selection-tooltip.tsx` — the Copy / Read aloud / Look up tooltip shown at the selection rect (2026-09-07). `onMouseDown` preventDefault keeps the selection active.
 - `use-text-actions.ts` — shared copy/speak/translate handlers for `TextActionMenu` (the `/translate` call). The **AI-explain** action no longer goes through this hook: it opens the shared `AiExplanation` chat (`apps/web/src/components/ai-explanation.tsx`, SPEC-035) with the `TEXT_ACTION_ASK_AI_PRESETS` one-tap presets (*Summarize* / *Difficult expressions* / *Grammar points*) and the free-form follow-up input, auto-streaming a concise explanation via `TEXT_ACTION_ASK_AI_INITIAL_PRESET`.
 - `text-action-panels.tsx` — shared `TranslatePanel` and `renderInlineMarkdown` for `TextActionMenu` (`ExplainPanel` is superseded by the `AiExplanation` chat for the AI-explain action).
-- `tokenized-text.tsx` — new opt-in `selectionDictionary` prop; renders `DictionaryPopup` with the selected text as a lemma-less token and coordinates the two popups.
+- `tokenized-text.tsx` — new opt-in `selectionDictionary` prop; renders `SelectionTooltip` on a selection and only opens `DictionaryPopup` (with the selected text as a lemma-less token) after the user taps **Look up**.
 - `dictionary-popup.tsx` — optional `extractPhrases` prop (selection popup): calls `/extract-phrases`, looks up each phrase, and renders a "Phrases" card section with a loading spinner; shows the LLM pronunciation next to the header. Saved-word matching includes phrase-card entry IDs (plus a diagnostic log on mismatch) so words saved from the Phrases section aren't flagged as unrecognized.
 - `merge-phrase-tokens.ts` (packages/utils) — pure, platform-agnostic retokenization helper: collapses saved multi-token phrase forms into single atomic tokens (longest-first, case-insensitive, exact token-boundary alignment; single-token forms and boundary-splitting selections are left untouched).
 - `split-phrase-tokens.ts` (packages/utils) — cross-boundary retokenization (2026-09-02, §Cross-boundary retokenization): splits tokens that a saved/search phrase crosses into an atomic phrase token plus placeholder fragments (web consumer only; mobile keeps the merge-only behavior).
 - `token-span.tsx` — ruby `<rt>` readings are `select-none` so `selection.toString()` matches the source text; passes the clicked element through `onClick` for the substring-selection arbitration.
 
 ### States
-- **Selection made** — the dictionary dialog opens, anchored visually to the selection rect (spawn animation); header is the selected text.
-- **No selection / collapsed** — no popup.
+- **Selection made** — the Copy / Read aloud / Look up tooltip appears at the selection rect; the native selection stays active so the learner can keep adjusting it. Only tapping **Look up** opens the dictionary dialog (anchored to the selection rect, spawn animation; header is the selected text).
+- **No selection / collapsed** — no tooltip, no popup.
 - **Lookup in flight / empty** — the dialog shows its loading spinner; if no entries come back, the "no dictionary entry" state renders with the AI explanation and images still available.
 - **Edge cases** — quiz-mode blanks and annotation glosses are `select-none` (selection skips them); `phoneticsMode === 'word'` selects the visible pronunciation; traditional-Chinese display selects the displayed glyphs; those strings become the lookup term as-is.
 

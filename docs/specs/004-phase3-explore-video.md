@@ -28,7 +28,7 @@
 
 - **`VideoCard`** — Thumbnail (`mqdefault.jpg`), play overlay on hover, difficulty badge (C1/B2 etc.), duration badge (MM:SS), views count
 - **`VideoGrid`** — Responsive grid: 4 cols → 2 cols → 1 col
-- **`LevelFilter`** — CEFR pill selector: All / A1 / A2 / B1 / B2 / C1 / C2 / Native, color-coded
+- **`LevelFilter`** — CEFR pill selector: All / A1 / A2 / B1 / B2 / C1 / C2 / Native, color-coded. **Revised 2026-09-07**: adds a **Kids** pill (mutually exclusive with the level pills — selecting it shows recommended kids videos of all levels and clears the level; the feed requests `made_for_kids=1` with no level). A separate **"Exclude music & entertainment"** toggle below the pills flips the default feed (which now includes music/entertainment) to the discovery feed (`category_mode=discovery`). The dedicated Music & Entertainment page was removed.
 - **Explore page** — Real data fetching, loading skeleton cards (8-placeholder), error state with retry, empty state with suggestion, "Load More" button with spinner
 
 ### Part C: Video Player (`/[l1]/[l2]/watch/[videoId]`)

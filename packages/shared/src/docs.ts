@@ -533,7 +533,7 @@ Discover videos in your target language, matched to your level.
 
 ## How It Works
 
-The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning — we exclude music and entertainment content (those have their own [Music & Entertainment](/docs/media/music) page).
+The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning. By default the feed includes music and entertainment content; use the **Exclude music & entertainment** toggle below the pills if you'd rather see only other kinds of videos.
 
 Videos are sorted by popularity and filtered by difficulty when you select a level. The recommendation engine learns from your watch history, so videos you've already watched won't appear again.
 
@@ -549,7 +549,7 @@ The pills at the top let you filter by proficiency level. The labels adapt to yo
 | English | IELTS 1 → 9 |
 | Others | CEFR Pre-A1 → C2 |
 
-Click a pill to filter videos at that level. Click **All** to see videos at every level. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
+Click a pill to filter videos at that level. Click **All** to see videos at every level. Click **Kids** to see recommended kids videos across all levels — the Kids pill and the level pills are mutually exclusive, so picking one clears the other. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
 
 ## Video Cards
 
@@ -581,7 +581,7 @@ Your channel preferences are saved per language, so subscribing to a Japanese ne
 
 - Set your proficiency level on your [profile page](/docs/account/profile) so Explore starts with the right filter
 - Switch levels to find easier or harder content — switching back is instant
-- Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
+- Toggle **Exclude music & entertainment** to keep music and entertainment videos out of the feed
 - Your watch history is private and only used to avoid showing the same video twice
 ` },
   { path: 'media/live-tv', title: 'Live TV', category: 'media', content: `# Live TV
@@ -613,30 +613,6 @@ Click any channel to switch to it. The URL updates automatically, so you can boo
 - If a stream stops working, refreshing the page will re-fetch the channel list with fresh health checks
 - Live TV is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
 - Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for French) to hear different accents and vocabulary
-` },
-  { path: 'media/music', title: 'Music & Entertainment', category: 'media', content: `# Music & Entertainment
-
-Music videos and entertainment content for your target language.
-
-## How It Works
-
-This page works exactly like [Explore](/docs/media/explore), but only shows music (YouTube category 10) and entertainment (category 24) videos. Everything else — level filters, infinite scroll, video cards, and channel subscriptions — works the same way.
-
-Music and entertainment content is separated from the main Explore page so your learning feed stays focused on general content like vlogs, news, educational videos, and conversations.
-
-## Why Separate?
-
-Music videos and entertainment make up a significant portion of YouTube content. For example, in our database of Japanese videos at the JLPT N1 level, about one-third (3,190 out of 9,489) fall into these two categories. Mixing them into Explore would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
-
-## Channel Subscriptions
-
-If you subscribe to a music or entertainment channel, those videos still appear here. The channel subscription system works across both pages — your preferences are shared.
-
-## Tips
-
-- Use the level filter to find music at your proficiency level
-- Subscribe to your favorite music channels to see their newest videos first
-- Switch between Explore and Music & Entertainment to vary your learning
 ` },
   { path: 'media/search', title: 'Search', category: 'media', content: `# Search
 
@@ -2154,29 +2130,6 @@ Language Player يبث البرامج المباشرة من القنوات ال�
 - إذا توقف البث عن العمل، قم بتحديث الصفحة لإعادة تحميل قائمة القنوات مع فحوصات صحية جديدة
 - تلفزيون مباشر هو انغماس نقي — لا توجد ترجمة أو شروح. استخدم [مشغل الفيديو](/docs/media/video-player) إذا كنت تريد ترجمة تفاعلية
 - جرب قنوات من دول مختلفة تتحدث نفس اللغة (مثل فرنسا وبلجيكا وسويسرا لـ الفرنسية) لسماع لهجات ومفردات مختلفة` },
-    { path: 'media/music', title: 'الموسيقى والترفيه', category: 'media', content: `# الموسيقى والترفيه
-
-مقاطع الفيديو الموسيقية والمحتوى الترفيهي بلغتك المستهدفة.
-
-## كيف يعمل
-
-تعمل هذه الصفحة تمامًا مثل [استكشاف](/docs/media/explore)، ولكنها تعرض فقط مقاطع الفيديو الموسيقية (الفئة 10 يوتيوب) ومقاطع الترفيه (الفئة 24). كل شيء آخر — مرشحات المستوى، التمرير اللانهائي، بطاقات الفيديو، والاشتراكات في القنوات — يعمل بنفس الطريقة.
-
-يتم فصل المحتوى الموسيقي والترفيهي عن صفحة استكشاف الرئيسية ليبقى محتوى تعلمك مركزًا على المحتوى العام مثل المدونات المرئية، الأخبار، مقاطع الفيديو التعليمية، والمحادثات.
-
-## لماذا الفصل؟
-
-تشكل مقاطع الفيديو الموسيقية والترفيه جزءًا كبيرًا من محتوى يوتيوب. على سبيل المثال، في قاعدة بياناتنا التي تحتوي على اليابانية فيديو بمستوى JLPT N1، حوالي الثلث (3,190 من أصل 9,489) يقع ضمن هاتين الفئتين. مزجها مع استكشاف سيهيمن على التغذية ويطغى على أنواع المحتوى الأخرى. إبقاؤها منفصلة يمنحك التحكم في وقت رغبتك بالموسيقى ووقت رغبتك بأنواع الفيديو الأخرى.
-
-## اشتراكات القنوات اشتراك
-
-إذا اشتركت في قناة موسيقية أو ترفيهية، تظل مقاطع الفيديو تلك تظهر هنا. نظام الاشتراك في القنوات يعمل عبر كلتا الصفحتين — تفضيلاتك مشتركة.
-
-## نصائح
-
-- استخدم مرشح المستوى للعثور على الموسيقى المناسبة لمستوى كفاءتك
-- اشترك اشتراك في قنواتك الموسيقية المفضلة لرؤية أحدث مقاطع الفيديو أولاً
-- تنقل بين استكشاف والموسيقى والترفيه لتنويع تعلمك` },
     { path: 'media/search', title: 'بحث', category: 'media', content: `# بحث
 
 ابحث عن فيديوهات وقنوات بلغتك المستهدفة، أو انتقل مباشرة إلى أي فيديو يوتيوب.
@@ -3668,29 +3621,6 @@ Klicken Sie auf einen beliebigen Sender, um zu wechseln. Die URL wird automatisc
 - Wenn ein Stream nicht mehr funktioniert, lädt ein erneutes Laden der Seite die Senderliste mit aktuellen Gesundheitschecks neu
 - Live-TV ist reines Eintauchen – es gibt keine Untertitel oder Übersetzungen. Nutzen Sie den [Videoplayer](/docs/media/video-player), wenn Sie interaktive Untertitel wünschen
 - Probieren Sie Sender aus verschiedenen Ländern mit derselben Sprache (z. B. Frankreich, Belgien und die Schweiz für Französisch), um verschiedene Akzente und Vokabeln zu hören` },
-    { path: 'media/music', title: 'Musik & Unterhaltung', category: 'media', content: `# Musik & Unterhaltung
-
-Musikvideos und Unterhaltungsinhalte für deine Zielsprache.
-
-## So funktioniert es
-
-Diese Seite funktioniert genau wie [Entdecken](/docs/media/explore), zeigt aber nur Musik (YouTube-Kategorie 10) und Unterhaltung (Kategorie 24) an. Alles andere – Level-Filter, unendliches Scrollen, Videokarten und Kanalabonnements – funktioniert auf die gleiche Weise.
-
-Musik- und Unterhaltungsinhalte sind von der Hauptseite Entdecken getrennt, damit dein Lernfeed auf allgemeine Inhalte wie Vlogs, Nachrichten, Lehrvideos und Gespräche fokussiert bleibt.
-
-## Warum trennen?
-
-Musikvideos und Unterhaltungsinhalte machen einen erheblichen Teil der YouTube-Inhalte aus. In unserer Datenbank mit Japanisch Videos auf dem Niveau JLPT N1 fallen beispielsweise etwa ein Drittel (3.190 von 9.489) in diese beiden Kategorien. Würde man sie in Entdecken einmischen, würde das den Feed dominieren und andere Inhaltstypen verdrängen. Die Trennung gibt dir die Kontrolle darüber, wann du Musik und wann du andere Videoarten sehen möchtest.
-
-## Kanal-Abonnement
-
-Wenn du einen Musik- oder Unterhaltungskanal abonnierst, erscheinen diese Videos weiterhin hier. Das Kanalabonnement-System funktioniert auf beiden Seiten – deine Einstellungen werden geteilt.
-
-## Tipps
-
-- Verwende den Level-Filter, um Musik auf deinem Kenntnisstand zu finden
-- Abonnieren deinen Lieblingsmusikkanälen, um deren neueste Videos zuerst zu sehen
-- Wechsle zwischen Entdecken und Musik & Unterhaltung, um dein Lernen abwechslungsreich zu gestalten` },
     { path: 'media/search', title: 'Suchen', category: 'media', content: `# Suchen
 
 Finden Sie Videos und Kanäle in Ihrer Zielsprache oder springen Sie direkt zu einem beliebigen YouTube-Video.
@@ -5202,7 +5132,7 @@ Discover videos in your target language, matched to your level.
 
 ## How It Works
 
-The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning — we exclude music and entertainment content (those have their own [Music & Entertainment](/docs/media/music) page).
+The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning. By default the feed includes music and entertainment content; use the **Exclude music & entertainment** toggle below the pills if you'd rather see only other kinds of videos.
 
 Videos are sorted by popularity and filtered by difficulty when you select a level. The recommendation engine learns from your watch history, so videos you've already watched won't appear again.
 
@@ -5218,7 +5148,7 @@ The pills at the top let you filter by proficiency level. The labels adapt to yo
 | English | IELTS 1 → 9 |
 | Others | CEFR Pre-A1 → C2 |
 
-Click a pill to filter videos at that level. Click **All** to see videos at every level. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
+Click a pill to filter videos at that level. Click **All** to see videos at every level. Click **Kids** to see recommended kids videos across all levels — the Kids pill and the level pills are mutually exclusive, so picking one clears the other. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
 
 ## Video Cards
 
@@ -5250,7 +5180,7 @@ Your channel preferences are saved per language, so subscribing to a Japanese ne
 
 - Set your proficiency level on your [profile page](/docs/account/profile) so Explore starts with the right filter
 - Switch levels to find easier or harder content — switching back is instant
-- Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
+- Toggle **Exclude music & entertainment** to keep music and entertainment videos out of the feed
 - Your watch history is private and only used to avoid showing the same video twice
 ` },
     { path: 'media/live-tv', title: 'Live TV', category: 'media', content: `# Live TV
@@ -5282,30 +5212,6 @@ Click any channel to switch to it. The URL updates automatically, so you can boo
 - If a stream stops working, refreshing the page will re-fetch the channel list with fresh health checks
 - Live TV is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
 - Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for French) to hear different accents and vocabulary
-` },
-    { path: 'media/music', title: 'Music & Entertainment', category: 'media', content: `# Music & Entertainment
-
-Music videos and entertainment content for your target language.
-
-## How It Works
-
-This page works exactly like [Explore](/docs/media/explore), but only shows music (YouTube category 10) and entertainment (category 24) videos. Everything else — level filters, infinite scroll, video cards, and channel subscriptions — works the same way.
-
-Music and entertainment content is separated from the main Explore page so your learning feed stays focused on general content like vlogs, news, educational videos, and conversations.
-
-## Why Separate?
-
-Music videos and entertainment make up a significant portion of YouTube content. For example, in our database of Japanese videos at the JLPT N1 level, about one-third (3,190 out of 9,489) fall into these two categories. Mixing them into Explore would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
-
-## Channel Subscriptions
-
-If you subscribe to a music or entertainment channel, those videos still appear here. The channel subscription system works across both pages — your preferences are shared.
-
-## Tips
-
-- Use the level filter to find music at your proficiency level
-- Subscribe to your favorite music channels to see their newest videos first
-- Switch between Explore and Music & Entertainment to vary your learning
 ` },
     { path: 'media/search', title: 'Search', category: 'media', content: `# Search
 
@@ -6814,29 +6720,6 @@ Haz clic en cualquier canal para cambiar a él. La URL se actualiza automáticam
 - Si una transmisión deja de funcionar, actualizar la página volverá a obtener la lista de canales con verificaciones de estado frescas
 - TV en vivo es inmersión pura — no hay subtítulos ni traducciones. Usa el [Reproductor de Video](/docs/media/video-player) si deseas subtítulos interactivos
 - Prueba canales de diferentes países que hablen el mismo idioma (ej. Francia, Bélgica y Suiza para Francés) para escuchar diferentes acentos y vocabulario` },
-    { path: 'media/music', title: 'Música y Entretenimiento', category: 'media', content: `# Música y Entretenimiento
-
-Videos musicales y contenido de entretenimiento para tu idioma objetivo.
-
-## Cómo Funciona
-
-Esta página funciona exactamente como [Explorar](/docs/media/explore), pero solo muestra videos de música (categoría YouTube 10) y entretenimiento (categoría 24). Todo lo demás — filtros de nivel, desplazamiento infinito, tarjetas de video y suscripciones a canales — funciona de la misma manera.
-
-El contenido musical y de entretenimiento está separado de la página principal de Explorar para que tu feed de aprendizaje se mantenga enfocado en contenido general como vlogs, noticias, videos educativos y conversaciones.
-
-## ¿Por Qué Separar?
-
-Los videos musicales y de entretenimiento constituyen una parte significativa del contenido de YouTube. Por ejemplo, en nuestra base de datos de Japonés videos en el nivel JLPT N1, aproximadamente un tercio (3,190 de 9,489) pertenecen a estas dos categorías. Mezclarlos en Explorar dominaría el feed y desplazaría otros tipos de contenido. Mantenerlos separados te da control sobre cuándo quieres música y cuándo quieres otros tipos de videos.
-
-## Suscripcións de Canales
-
-Si te suscribes a un canal de música o entretenimiento, esos videos aún aparecen aquí. El sistema de suscripción a canales funciona en ambas páginas: tus preferencias se comparten.
-
-## Consejos
-
-- Usa el filtro de nivel para encontrar música adecuada a tu nivel de competencia
-- Suscribirse a tus canales de música favoritos para ver primero sus videos más nuevos
-- Cambia entre Explorar y Música y Entretenimiento para variar tu aprendizaje` },
     { path: 'media/search', title: 'Buscar', category: 'media', content: `# Buscar
 
 Encuentra videos y canales en tu idioma de destino, o ve directamente a cualquier video de YouTube.
@@ -8328,29 +8211,6 @@ Cliquez sur n'importe quelle chaîne pour y basculer. L'URL se met à jour autom
 - Si un flux cesse de fonctionner, actualiser la page récupérera la liste des chaînes avec des contrôles de santé à jour
 - TV en direct est une immersion pure — il n'y a ni sous-titres ni traductions. Utilisez le [Lecteur vidéo](/docs/media/video-player) si vous voulez des sous-titres interactifs
 - Essayez des chaînes de différents pays parlant la même langue (par exemple, la France, la Belgique et la Suisse pour Français) pour entendre différents accents et vocabulaires` },
-    { path: 'media/music', title: 'Musique et Divertissement', category: 'media', content: `# Musique et Divertissement
-
-Vidéos musicales et contenus de divertissement dans votre langue cible.
-
-## Comment ça marche
-
-Cette page fonctionne exactement comme [Explorer](/docs/media/explore), mais n'affiche que les vidéos de musique (YouTube catégorie 10) et de divertissement (catégorie 24). Tout le reste — filtres de niveau, défilement infini, fiches vidéo et abonnements aux chaînes — fonctionne de la même manière.
-
-Le contenu musical et de divertissement est séparé de la page principale Explorer afin que votre flux d'apprentissage reste concentré sur du contenu général comme les vlogs, les actualités, les vidéos éducatives et les conversations.
-
-## Pourquoi séparer ?
-
-Les vidéos musicales et de divertissement constituent une part importante du contenu YouTube. Par exemple, dans notre base de données de Japonais vidéos au niveau JLPT N1, environ un tiers (3 190 sur 9 489) appartient à ces deux catégories. Les mélanger dans Explorer dominerait le flux et éclipserait d'autres types de contenu. Les garder séparées vous donne le contrôle sur le moment où vous souhaitez de la musique et le moment où vous voulez d'autres types de vidéos.
-
-## Abonnements aux chaînes Abonnement
-
-Si vous vous abonnez à une chaîne de musique ou de divertissement, ces vidéos apparaissent toujours ici. Le système d'abonnement aux chaînes fonctionne sur les deux pages — vos préférences sont partagées.
-
-## Conseils
-
-- Utilisez le filtre de niveau pour trouver de la musique adaptée à votre niveau
-- S'abonner à vos chaînes musicales préférées pour voir leurs nouvelles vidéos en premier
-- Alternez entre Explorer et Musique et Divertissement pour varier votre apprentissage` },
     { path: 'media/search', title: 'Rechercher', category: 'media', content: `# Rechercher
 
 Trouvez des vidéos et des chaînes dans votre langue cible, ou allez directement vers n'importe quelle vidéo YouTube.
@@ -9842,29 +9702,6 @@ Klik saluran mana pun untuk beralih ke saluran tersebut. URL akan diperbarui sec
 - Jika streaming berhenti berfungsi, segarkan halaman untuk mengambil ulang daftar saluran dengan pemeriksaan kesehatan terbaru
 - TV Langsung adalah imersi murni — tidak ada teks terjemahan atau terjemahan. Gunakan [Pemutar Video](/docs/media/video-player) jika Anda menginginkan teks interaktif
 - Coba saluran dari berbagai negara yang menggunakan bahasa yang sama (misalnya, Prancis, Belgia, dan Swiss untuk Prancis) untuk mendengar aksen dan kosakata yang berbeda` },
-    { path: 'media/music', title: 'Musik dan Hiburan', category: 'media', content: `# Musik dan Hiburan
-
-Video musik dan konten hiburan untuk bahasa target Anda.
-
-## Cara Kerjanya
-
-Halaman ini berfungsi persis seperti [Jelajahi](/docs/media/explore), tetapi hanya menampilkan video musik (YouTube kategori 10) dan hiburan (kategori 24). Segala hal lainnya — filter level, gulir tak terbatas, kartu video, dan langganan saluran — berfungsi dengan cara yang sama.
-
-Konten musik dan hiburan dipisahkan dari halaman Jelajahi utama agar umpan belajar Anda tetap fokus pada konten umum seperti vlog, berita, video edukasi, dan percakapan.
-
-## Mengapa Dipisahkan?
-
-Video musik dan hiburan mencakup sebagian besar konten YouTube. Misalnya, dalam database kami yang berisi Jepang video di level JLPT N1, sekitar sepertiga (3.190 dari 9.489) termasuk dalam dua kategori ini. Mencampurkannya ke Jelajahi akan mendominasi umpan dan mengesampingkan jenis konten lainnya. Memisahkannya memberi Anda kendali kapan ingin mendengarkan musik dan kapan ingin menonton jenis video lainnya.
-
-## Langganan Saluran
-
-Jika Anda berlangganan saluran musik atau hiburan, video tersebut tetap muncul di sini. Sistem langganan saluran berfungsi di kedua halaman — preferensi Anda dibagikan.
-
-## Tips
-
-- Gunakan filter level untuk menemukan musik sesuai tingkat kemahiran Anda
-- Berlangganan ke saluran musik favorit Anda untuk melihat video terbaru mereka terlebih dahulu
-- Beralihlah antara Jelajahi dan Musik dan Hiburan untuk memvariasikan pembelajaran Anda` },
     { path: 'media/search', title: 'Cari', category: 'media', content: `# Cari
 
 Temukan video dan saluran dalam bahasa target Anda, atau langsung menuju ke video YouTube mana pun.
@@ -11356,29 +11193,6 @@ Clicca su qualsiasi canale per passare a esso. L'URL si aggiorna automaticamente
 - Se uno stream smette di funzionare, aggiornare la pagina recupererà l'elenco dei canali con nuovi controlli di salute
 - TV in diretta è pura immersione — non ci sono sottotitoli o traduzioni. Usa il [Lettore Video](/docs/media/video-player) se desideri sottotitoli interattivi
 - Prova canali da diversi paesi che parlano la stessa lingua (es. Francia, Belgio e Svizzera per Francese) per sentire accenti e vocaboli diversi` },
-    { path: 'media/music', title: 'Musica e Intrattenimento', category: 'media', content: `# Musica e Intrattenimento
-
-Video musicali e contenuti di intrattenimento per la tua lingua di destinazione.
-
-## Come Funziona
-
-Questa pagina funziona esattamente come [Esplora](/docs/media/explore), ma mostra solo video musicali (categoria 10 di YouTube) e di intrattenimento (categoria 24). Tutto il resto — filtri per livello, scorrimento infinito, schede video e abbonamenti ai canali — funziona allo stesso modo.
-
-I contenuti musicali e di intrattenimento sono separati dalla pagina principale Esplora in modo che il tuo feed di apprendimento rimanga focalizzato su contenuti generali come vlog, notizie, video educativi e conversazioni.
-
-## Perché Separare?
-
-I video musicali e di intrattenimento costituiscono una parte significativa dei contenuti di YouTube. Ad esempio, nel nostro database di Giapponese video al livello N1 di JLPT, circa un terzo (3.190 su 9.489) rientra in queste due categorie. Mescolarli in Esplora dominerebbe il feed e sopraffarebbe altri tipi di contenuti. Tenerli separati ti dà il controllo su quando vuoi musica e quando vuoi altri tipi di video.
-
-## Abbonamento dei Canali
-
-Se ti iscrivi a un canale musicale o di intrattenimento, quei video appaiono comunque qui. Il sistema di abbonamento ai canali funziona su entrambe le pagine — le tue preferenze sono condivise.
-
-## Suggerimenti
-
-- Usa il filtro per livello per trovare musica adatta al tuo livello di competenza
-- Abbònati ai tuoi canali musicali preferiti per vedere prima i loro video più recenti
-- Alterna tra Esplora e Musica e Intrattenimento per variare il tuo apprendimento` },
     { path: 'media/search', title: 'Cerca', category: 'media', content: `# Cerca
 
 Trova video e canali nella tua lingua di destinazione, oppure vai direttamente a qualsiasi video YouTube.
@@ -12870,29 +12684,6 @@ L2として中国語を選択した場合、選択後に2つの列の間に文�
 - 配信が停止した場合、ページを更新すると最新のヘルスチェックでチャンネルリストが再取得されます
 - ライブTVは完全な没入体験です — 字幕や翻訳はありません。インタラクティブな字幕が必要な場合は[動画プレイヤー](/docs/media/video-player)をご利用ください
 - フランス語の場合、フランス、ベルギー、スイスなど同じ言語を話す異なる国のチャンネルを試すと、さまざまなアクセントや語彙に触れられます` },
-    { path: 'media/music', title: '音楽とエンターテイメント', category: 'media', content: `# 音楽とエンターテイメント
-
-あなたの対象言語のミュージックビデオやエンターテイメントコンテンツ。
-
-## 仕組み
-
-このページは[探索](/docs/media/explore)とまったく同じように機能しますが、音楽（YouTubeカテゴリ10）とエンターテイメント（カテゴリ24）の動画のみを表示します。他のすべて—レベルフィルター、無限スクロール、動画カード、チャンネル登録—は同じように動作します。
-
-音楽とエンターテイメントのコンテンツはメインの探索ページから分離されているため、学習フィードはブログ、ニュース、教育動画、会話などの一般的なコンテンツに集中できます。
-
-## なぜ分けるのか？
-
-ミュージックビデオとエンターテイメントはYouTubeコンテンツのかなりの部分を占めています。例えば、JLPT N1レベルの日本語動画のデータベースでは、約3分の1（9,489件中3,190件）がこれら2つのカテゴリに該当します。これらを探索に混ぜると、フィードが支配され、他のコンテンツタイプが圧迫されます。これらを分離することで、音楽を楽しみたいときと他の種類の動画を見たいときを自分でコントロールできます。
-
-## チャンネルサブスクリプション
-
-音楽やエンターテイメントのチャンネルに登録している場合、それらの動画はここに表示されます。チャンネル登録システムは両方のページで機能し、あなたの設定は共有されます。
-
-## ヒント
-
-- レベルフィルターを使用して、自分の習熟度に合った音楽を見つけましょう
-- お気に入りの音楽チャンネルを購読するして、最新の動画を最初に表示しましょう
-- 探索と音楽とエンターテイメントを切り替えて、学習に変化をつけましょう` },
     { path: 'media/search', title: '検索', category: 'media', content: `# 検索
 
 対象言語の動画やチャンネルを検索するか、任意のYouTube動画に直接アクセスできます。
@@ -14384,29 +14175,6 @@ L2로 중국어을 선택하면, 선택 후 두 열 사이에 문자 전환 버�
 - 스트림이 작동을 멈춘 경우, 페이지를 새로고침하면 새 상태 점검과 함께 채널 목록을 다시 불러옵니다
 - 실시간 TV는 순수 몰입형입니다 — 자막이나 번역이 없습니다. 대화형 자막이 필요하면 [비디오 플레이어](/docs/media/video-player)를 사용하세요
 - 같은 언어를 사용하는 다른 국가의 채널(예: 프랑스어의 경우 프랑스, 벨기에, 스위스)을 시청하여 다양한 억양과 어휘를 들어보세요` },
-    { path: 'media/music', title: '음악 및 엔터테인먼트', category: 'media', content: `# 음악 및 엔터테인먼트
-
-당신의 대상 언어로 된 뮤직비디오와 엔터테인먼트 콘텐츠입니다.
-
-## 작동 방식
-
-이 페이지는 [탐색](/docs/media/explore)와 동일하게 작동하지만, 음악(YouTube 카테고리 10)과 엔터테인먼트(카테고리 24) 동영상만 표시합니다. 그 외의 모든 기능 — 레벨 필터, 무한 스크롤, 비디오 카드, 채널 구독 — 은 동일하게 작동합니다.
-
-음악과 엔터테인먼트 콘텐츠는 기본 탐색 페이지에서 분리되어 있어, 학습 피드가 블로그, 뉴스, 교육용 동영상, 대화와 같은 일반 콘텐츠에 집중할 수 있습니다.
-
-## 분리된 이유
-
-뮤직비디오와 엔터테인먼트는 YouTube 콘텐츠의 상당 부분을 차지합니다. 예를 들어, JLPT N1 레벨의 일본어 동영상 데이터베이스에서 약 3분의 1(9,489개 중 3,190개)이 이 두 카테고리에 속합니다. 이를 탐색에 섞으면 피드가 채워지고 다른 콘텐츠 유형이 밀려나게 됩니다. 이들을 분리하면 음악을 원할 때와 다른 유형의 동영상을 원할 때를 직접 선택할 수 있습니다.
-
-## 채널 구독
-
-음악 또는 엔터테인먼트 채널을 구독하면 해당 동영상이 여기에 계속 표시됩니다. 채널 구독 시스템은 두 페이지에서 모두 작동하며, 사용자의 기본 설정이 공유됩니다.
-
-## 팁
-
-- 레벨 필터를 사용하여 자신의 실력에 맞는 음악을 찾아보세요
-- 좋아하는 음악 채널을 구독하여 최신 동영상을 먼저 확인하세요
-- 탐색과 음악 및 엔터테인먼트을 번갈아 사용하며 학습에 변화를 주세요` },
     { path: 'media/search', title: '검색', category: 'media', content: `# 검색
 
 대상 언어의 동영상과 채널을 찾거나, 아무 YouTube 동영상으로 바로 이동하세요.
@@ -15898,29 +15666,6 @@ Klik op een zender om ernaartoe te schakelen. De URL wordt automatisch bijgewerk
 - Als een stream stopt met werken, vernieuw dan de pagina om de zenderlijst opnieuw op te halen met verse gezondheidscontroles
 - Live TV is pure onderdompeling — er zijn geen ondertitels of vertalingen. Gebruik de [Videospeler](/docs/media/video-player) als je interactieve ondertiteling wilt
 - Probeer zenders uit verschillende landen die dezelfde taal spreken (bijv. Frankrijk, België en Zwitserland voor Frans) om verschillende accenten en woordenschat te horen` },
-    { path: 'media/music', title: 'Muziek en Entertainment', category: 'media', content: `# Muziek en Entertainment
-
-Muziekvideo's en entertainmentinhoud voor jouw doeltaal.
-
-## Hoe Het Werkt
-
-Deze pagina werkt precies zoals [Verkennen](/docs/media/explore), maar toont alleen muziek (YouTube categorie 10) en entertainment (categorie 24) video's. Al het andere — niveaufilters, oneindig scrollen, videokaarten en kanaalabonnementen — werkt op dezelfde manier.
-
-Muziek- en entertainmentinhoud is gescheiden van de hoofdpagina Verkennen, zodat jouw leerfeed gericht blijft op algemene inhoud zoals vlogs, nieuws, educatieve video's en gesprekken.
-
-## Waarom Apart?
-
-Muziekvideo's en entertainment vormen een aanzienlijk deel van de YouTube-inhoud. In onze database van Japans video's op het JLPT N1-niveau valt bijvoorbeeld ongeveer een derde (3.190 van de 9.489) in deze twee categorieën. Als je ze in Verkennen zou mixen, zouden ze de feed domineren en andere inhoudstypen verdringen. Door ze apart te houden, heb jij controle over wanneer je muziek wilt en wanneer je andere soorten video's wilt.
-
-## KanaalAbonnements
-
-Als je je abonneert op een muziek- of entertainmentkanaal, verschijnen die video's nog steeds hier. Het kanaalabonnementssysteem werkt op beide pagina's — jouw voorkeuren worden gedeeld.
-
-## Tips
-
-- Gebruik de niveaufilter om muziek op jouw vaardigheidsniveau te vinden
-- Abonneren op jouw favoriete muziekkanalen om eerst hun nieuwste video's te zien
-- Schakel tussen Verkennen en Muziek en Entertainment om jouw leren te variëren` },
     { path: 'media/search', title: 'Zoeken', category: 'media', content: `# Zoeken
 
 Vind video's en kanalen in je doeltaal, of ga direct naar elke YouTube-video.
@@ -17412,29 +17157,6 @@ Kliknij dowolny kanał, aby się na niego przełączyć. Adres URL aktualizuje s
 - Jeśli strumień przestanie działać, odświeżenie strony ponownie pobierze listę kanałów z aktualnymi sprawdzeniami stanu
 - TV na żywo to czyste zanurzenie — nie ma napisów ani tłumaczeń. Użyj [Odtwarzacza wideo](/docs/media/video-player), jeśli chcesz mieć interaktywne napisy
 - Spróbuj kanałów z różnych krajów mówiących tym samym językiem (np. Francja, Belgia i Szwajcaria dla Francuski), aby usłyszeć różne akcenty i słownictwo` },
-    { path: 'media/music', title: 'Muzyka i Rozrywka', category: 'media', content: `# Muzyka i Rozrywka
-
-Teledyski i treści rozrywkowe w Twoim języku docelowym.
-
-## Jak to działa
-
-Ta strona działa dokładnie tak samo jak [Odkrywaj](/docs/media/explore), ale wyświetla tylko teledyski (kategoria 10 YouTube) i filmy rozrywkowe (kategoria 24). Wszystko inne – filtry poziomu, przewijanie nieskończone, karty wideo i subskrypcje kanałów – działa tak samo.
-
-Treści muzyczne i rozrywkowe są oddzielone od głównej strony Odkrywaj, aby Twój kanał edukacyjny pozostał skupiony na ogólnych treściach, takich jak vlogi, wiadomości, filmy edukacyjne i rozmowy.
-
-## Dlaczego oddzielnie?
-
-Teledyski i treści rozrywkowe stanowią znaczną część materiałów YouTube. Na przykład w naszej bazie Japoński filmów na poziomie JLPT N1 około jedna trzecia (3 190 z 9 489) należy do tych dwóch kategorii. Wmieszanie ich w Odkrywaj zdominowałoby kanał i wyparło inne rodzaje treści. Utrzymanie ich osobno daje Ci kontrolę nad tym, kiedy chcesz słuchać muzyki, a kiedy oglądać inne filmy.
-
-## Kanały Subskrypcja
-
-Jeśli subskrybujesz kanał muzyczny lub rozrywkowy, te filmy nadal pojawiają się tutaj. System subskrypcji kanałów działa na obu stronach – Twoje preferencje są współdzielone.
-
-## Wskazówki
-
-- Użyj filtra poziomu, aby znaleźć muzykę odpowiadającą Twoim umiejętnościom
-- Subskrybuj do ulubionych kanałów muzycznych, aby najpierw widzieć ich najnowsze filmy
-- Przełączaj się między Odkrywaj a Muzyka i Rozrywka, aby urozmaicić naukę` },
     { path: 'media/search', title: 'Szukaj', category: 'media', content: `# Szukaj
 
 Znajdź filmy i kanały w swoim języku docelowym lub przejdź bezpośrednio do dowolnego filmu YouTube.
@@ -18926,29 +18648,6 @@ Clique em qualquer canal para mudar para ele. A URL é atualizada automaticament
 - Se um stream parar de funcionar, atualizar a página recarregará a lista de canais com novas verificações de integridade
 - TV ao vivo é imersão pura — não há legendas ou traduções. Use o [Reprodutor de Vídeo](/docs/media/video-player) se quiser legendas interativas
 - Experimente canais de diferentes países que falam o mesmo idioma (ex.: França, Bélgica e Suíça para Francês) para ouvir diferentes sotaques e vocabulários` },
-    { path: 'media/music', title: 'Música e Entretenimento', category: 'media', content: `# Música e Entretenimento
-
-Vídeos musicais e conteúdo de entretenimento para o seu idioma-alvo.
-
-## Como Funciona
-
-Esta página funciona exatamente como [Explorar](/docs/media/explore), mas mostra apenas vídeos de música (YouTube categoria 10) e entretenimento (categoria 24). Todo o resto — filtros de nível, rolagem infinita, cartões de vídeo e inscrições em canais — funciona da mesma forma.
-
-O conteúdo musical e de entretenimento é separado da página principal Explorar para que seu feed de aprendizado permaneça focado em conteúdo geral, como vlogs, notícias, vídeos educacionais e conversas.
-
-## Por Que Separar?
-
-Vídeos musicais e de entretenimento compõem uma parte significativa do conteúdo de YouTube. Por exemplo, em nosso banco de dados de Japonês vídeos no nível JLPT N1, cerca de um terço (3.190 de 9.489) se enquadra nessas duas categorias. Misturá-los em Explorar dominaria o feed e prejudicaria outros tipos de conteúdo. Mantê-los separados dá a você controle sobre quando quer música e quando quer outros tipos de vídeos.
-
-## Inscrições em Canais Assinatura
-
-Se você se inscrever em um canal de música ou entretenimento, esses vídeos ainda aparecem aqui. O sistema de inscrição em canais funciona em ambas as páginas — suas preferências são compartilhadas.
-
-## Dicas
-
-- Use o filtro de nível para encontrar música no seu nível de proficiência
-- Subscrever para seus canais de música favoritos para ver os vídeos mais recentes primeiro
-- Alterne entre Explorar e Música e Entretenimento para variar seu aprendizado` },
     { path: 'media/search', title: 'Pesquisar', category: 'media', content: `# Pesquisar
 
 Encontre vídeos e canais no seu idioma-alvo, ou vá direto para qualquer vídeo do YouTube.
@@ -20440,29 +20139,6 @@ Language Player бесплатен в использовании с опцион
 - Если поток перестал работать, обновите страницу — список каналов будет перезагружен с новыми проверками состояния
 - Прямой эфир — это полное погружение: никаких субтитров или переводов. Используйте [Видеоплеер](/docs/media/video-player), если вам нужны интерактивные субтитры
 - Попробуйте каналы из разных стран, говорящих на одном языке (например, Франция, Бельгия и Швейцария для Французский), чтобы услышать разные акценты и лексику` },
-    { path: 'media/music', title: 'Музыка и Развлечения', category: 'media', content: `# Музыка и Развлечения
-
-Музыкальные клипы и развлекательный контент на вашем целевом языке.
-
-## Как это работает
-
-Эта страница работает точно так же, как [Обзор](/docs/media/explore), но показывает только музыкальные (YouTube категория 10) и развлекательные (категория 24) видео. Всё остальное — фильтры уровня, бесконечная прокрутка, карточки видео и подписки на каналы — работает аналогично.
-
-Музыка и развлекательный контент отделены от основной страницы Обзор, чтобы ваша учебная лента оставалась сосредоточенной на общем контенте, таком как влоги, новости, образовательные видео и беседы.
-
-## Зачем разделять?
-
-Музыкальные клипы и развлекательный контент составляют значительную часть контента YouTube. Например, в нашей базе данных видео Японский на уровне JLPT N1 около одной трети (3 190 из 9 489) относятся к этим двум категориям. Их смешивание с Обзор перегрузило бы ленту и вытеснило другие типы контента. Разделение даёт вам контроль над тем, когда вы хотите музыку, а когда — другие типы видео.
-
-## Подписки на каналы Подписка
-
-Если вы подписаны на музыкальный или развлекательный канал, эти видео всё равно отображаются здесь. Система подписок на каналы работает на обеих страницах — ваши предпочтения едины.
-
-## Советы
-
-- Используйте фильтр уровня, чтобы найти музыку, соответствующую вашему уровню владения языком
-- Подписаться на любимые музыкальные каналы, чтобы первыми видеть их новые видео
-- Переключайтесь между Обзор и Музыка и Развлечения, чтобы разнообразить обучение` },
     { path: 'media/search', title: 'Поиск', category: 'media', content: `# Поиск
 
 Находите видео и каналы на целевом языке или переходите прямо к любому видео с YouTube.
@@ -21954,29 +21630,6 @@ Language Player สตรีมการถ่ายทอดสดจากช�
 - หากสตรีมหยุดทำงาน การรีเฟรชหน้าเว็บจะดึงรายการช่องใหม่พร้อมการตรวจสอบสถานะที่สดใหม่
 - ทีวีสด เป็นการซึมซับภาษาบริสุทธิ์ — ไม่มีคำบรรยายหรือคำแปลใดๆ ใช้ [เครื่องเล่นวิดีโอ](/docs/media/video-player) หากคุณต้องการคำบรรยายแบบโต้ตอบ
 - ลองรับชมช่องจากประเทศต่างๆ ที่ใช้ภาษาเดียวกัน (เช่น ฝรั่งเศส เบลเยียม และสวิตเซอร์แลนด์สำหรับ ฝรั่งเศส) เพื่อฟังสำเนียงและคำศัพท์ที่หลากหลาย` },
-    { path: 'media/music', title: 'เพลงและความบันเทิง', category: 'media', content: `# เพลงและความบันเทิง
-
-มิวสิกวิดีโอและคอนเทนต์บันเทิงสำหรับภาษาที่คุณกำลังเรียนรู้
-
-## วิธีการทำงาน
-
-หน้านี้ทำงานเหมือนกับ [สำรวจ](/docs/media/explore) ทุกประการ แต่จะแสดงเฉพาะวิดีโอเพลง (หมวดหมู่ YouTube 10) และวิดีโอความบันเทิง (หมวดหมู่ 24) เท่านั้น ทุกอย่างอื่น ๆ — ตัวกรองระดับ การเลื่อนแบบไม่สิ้นสุด การ์ดวิดีโอ และการติดตามช่อง — ทำงานในลักษณะเดียวกัน
-
-คอนเทนต์เพลงและความบันเทิงถูกแยกออกจากหน้า สำรวจ หลัก เพื่อให้ฟีดการเรียนรู้ของคุณเน้นไปที่คอนเทนต์ทั่วไป เช่น วlog ข่าวสาร วิดีโอเพื่อการศึกษา และบทสนทนา
-
-## เหตุใดจึงแยกออกจากกัน
-
-มิวสิกวิดีโอและคอนเทนต์บันเทิงเป็นส่วนสำคัญของคอนเทนต์ YouTube ตัวอย่างเช่น ในฐานข้อมูลของเราที่มีวิดีโอ ญี่ปุ่น ในระดับ JLPT N1 ประมาณหนึ่งในสาม (3,190 จาก 9,489 วิดีโอ) อยู่ในสองหมวดหมู่นี้ การรวมพวกเขาไว้ใน สำรวจ จะทำให้ฟีดถูกครอบงำและเบียดบังคอนเทนต์ประเภทอื่น การแยกไว้ต่างหากช่วยให้คุณควบคุมได้ว่าต้องการดูเพลงเมื่อใดและต้องการดูวิดีโอประเภทอื่นเมื่อใด
-
-## การการสมัครสมาชิกช่อง
-
-หากคุณติดตามช่องเพลงหรือช่องบันเทิง วิดีโอเหล่านั้นจะยังคงปรากฏที่นี่ ระบบติดตามช่องทำงานร่วมกันทั้งสองหน้า — การตั้งค่าของคุณจะถูกแชร์ร่วมกัน
-
-## เคล็ดลับ
-
-- ใช้ตัวกรองระดับเพื่อค้นหาเพลงที่เหมาะสมกับระดับความสามารถของคุณ
-- สมัครสมาชิก ช่องเพลงที่คุณชื่นชอบเพื่อดูวิดีโอใหม่ล่าสุดก่อน
-- สลับระหว่าง สำรวจ และ เพลงและความบันเทิง เพื่อเพิ่มความหลากหลายในการเรียนรู้` },
     { path: 'media/search', title: 'ค้นหา', category: 'media', content: `# ค้นหา
 
 ค้นหาวิดีโอและช่องในภาษาที่คุณกำลังเรียนรู้ หรือข้ามไปยังวิดีโอYouTubeใดๆ ได้ทันที
@@ -23468,29 +23121,6 @@ Herhangi bir kanala geçmek için tıklayın. URL otomatik olarak güncellenir, 
 - Bir yayın çalışmayı durdurursa, sayfayı yenilemek kanal listesini güncel sağlık kontrolleriyle yeniden getirir
 - Canlı TV tamamen daldırma yöntemidir — altyazı veya çeviri yoktur. Etkileşimli altyazılar istiyorsanız [Video Oynatıcı](/docs/media/video-player) kullanın
 - Aynı dili konuşan farklı ülkelerin kanallarını deneyin (örneğin, Fransızca için Fransa, Belçika ve İsviçre) farklı aksanlar ve kelime dağarcığı duymak için` },
-    { path: 'media/music', title: 'Müzik ve Eğlence', category: 'media', content: `# Müzik ve Eğlence
-
-Hedef dilinizdeki müzik videoları ve eğlence içerikleri.
-
-## Nasıl Çalışır
-
-Bu sayfa, [Keşfet](/docs/media/explore) ile tamamen aynı şekilde çalışır, ancak yalnızca müzik (YouTube kategori 10) ve eğlence (kategori 24) videolarını gösterir. Seviye filtreleri, sonsuz kaydırma, video kartları ve kanal abonelikleri dahil her şey aynı şekilde çalışır.
-
-Müzik ve eğlence içerikleri ana Keşfet sayfasından ayrılmıştır, böylece öğrenme akışınız vloglar, haberler, eğitim videoları ve sohbetler gibi genel içeriklere odaklanmış kalır.
-
-## Neden Ayrı?
-
-Müzik videoları ve eğlence, YouTube içeriğinin önemli bir bölümünü oluşturur. Örneğin, JLPT N1 seviyesindeki Japonca videosu veritabanımızda, yaklaşık üçte biri (9.489 üzerinden 3.190) bu iki kategoriye girer. Bunları Keşfet ile karıştırmak, akışa hâkim olur ve diğer içerik türlerini gölgede bırakırdı. Ayrı tutmak, müzik ve diğer video türleri arasında ne zaman geçiş yapmak istediğiniz konusunda size kontrol sağlar.
-
-## Kanal Abonelikleri
-
-Bir müzik veya eğlence kanalına abone olursanız, bu videolar yine burada görünür. Kanal abonelik sistemi her iki sayfada da çalışır — tercihleriniz paylaşılır.
-
-## İpuçları
-
-- Seviye filtresini kullanarak kendi yeterlilik seviyenize uygun müzik bulun
-- En yeni videolarını ilk görmek için favori müzik kanallarınıza Abone Ol
-- Öğrenmenizi çeşitlendirmek için Keşfet ve Müzik ve Eğlence arasında geçiş yapın` },
     { path: 'media/search', title: 'Ara', category: 'media', content: `# Ara
 
 Hedef dilinizde videolar ve kanallar bulun veya doğrudan herhangi bir YouTube videosuna gidin.
@@ -24982,29 +24612,6 @@ Nhấp vào bất kỳ kênh nào để chuyển sang kênh đó. URL tự độ
 - Nếu một luồng ngừng hoạt động, làm mới trang sẽ tải lại danh sách kênh với các kiểm tra tình trạng mới
 - TV trực tiếp là sự đắm chìm hoàn toàn — không có phụ đề hoặc bản dịch. Sử dụng [Trình phát Video](/docs/media/video-player) nếu bạn muốn có chú thích tương tác
 - Thử các kênh từ các quốc gia khác nhau nói cùng một ngôn ngữ (ví dụ: Pháp, Bỉ và Thụy Sĩ cho Pháp) để nghe các giọng và từ vựng khác nhau` },
-    { path: 'media/music', title: 'Âm nhạc và Giải trí', category: 'media', content: `# Âm nhạc và Giải trí
-
-Video ca nhạc và nội dung giải trí bằng ngôn ngữ mục tiêu của bạn.
-
-## Cách Hoạt Động
-
-Trang này hoạt động giống hệt như [Khám phá](/docs/media/explore), nhưng chỉ hiển thị video âm nhạc (thể loại YouTube 10) và giải trí (thể loại 24). Mọi thứ khác — bộ lọc cấp độ, cuộn vô hạn, thẻ video và đăng ký kênh — đều hoạt động tương tự.
-
-Nội dung âm nhạc và giải trí được tách riêng khỏi trang Khám phá chính để nguồn học của bạn tập trung vào nội dung tổng quát như vlog, tin tức, video giáo dục và hội thoại.
-
-## Tại Sao Lại Tách Riêng?
-
-Video ca nhạc và giải trí chiếm một phần đáng kể trong nội dung YouTube. Ví dụ, trong cơ sở dữ liệu Tiếng Nhật video ở cấp độ JLPT N1 của chúng tôi, khoảng một phần ba (3.190 trên 9.489) thuộc hai thể loại này. Trộn chúng vào Khám phá sẽ lấn át nguồn cấp dữ liệu và lấn át các loại nội dung khác. Việc giữ chúng riêng biệt giúp bạn kiểm soát khi nào muốn xem nhạc và khi nào muốn xem các loại video khác.
-
-## Kênh Gói đăng ký
-
-Nếu bạn đăng ký một kênh âm nhạc hoặc giải trí, những video đó vẫn xuất hiện ở đây. Hệ thống đăng ký kênh hoạt động trên cả hai trang — sở thích của bạn được chia sẻ.
-
-## Mẹo
-
-- Sử dụng bộ lọc cấp độ để tìm nhạc phù hợp với trình độ của bạn
-- Đăng ký vào các kênh nhạc yêu thích để xem video mới nhất của họ trước
-- Chuyển đổi giữa Khám phá và Âm nhạc và Giải trí để đa dạng hóa việc học` },
     { path: 'media/search', title: 'Tìm kiếm', category: 'media', content: `# Tìm kiếm
 
 Tìm video và kênh bằng ngôn ngữ mục tiêu của bạn, hoặc truy cập trực tiếp vào bất kỳ video YouTube nào.
@@ -26496,29 +26103,6 @@ Language Player 从全球免费频道流式传输实时广播。视频播放器�
 - 如果流媒体停止工作，刷新页面将重新获取频道列表并进行最新健康检查
 - 直播电视 是纯沉浸式体验——无字幕或翻译。如需互动字幕，请使用[视频播放器](/docs/media/video-player)
 - 尝试不同国家/地区但使用相同语言的频道（例如，法语 的法国、比利时和瑞士），以体验不同的口音和词汇` },
-    { path: 'media/music', title: '音乐与娱乐', category: 'media', content: `# 音乐与娱乐
-
-目标语言的音乐视频和娱乐内容。
-
-## 工作原理
-
-此页面与[发现](/docs/media/explore)完全相同，但仅显示音乐（YouTube类别10）和娱乐（类别24）视频。其他所有功能——等级筛选、无限滚动、视频卡片和频道订阅——均完全相同。
-
-音乐和娱乐内容与主发现页面分离，使您的学习内容专注于日常内容，如视频博客、新闻、教育视频和对话。
-
-## 为何分离？
-
-音乐视频和娱乐内容在YouTube内容中占据很大比例。例如，在我们JLPTN1级别的日语个视频数据库中，约三分之一（9,489个中的3,190个）属于这两类。将它们混入发现会占据主导地位并排挤其他内容类型。分开管理让您可以自主选择何时观看音乐内容，何时观看其他类型视频。
-
-## 频道订阅
-
-如果您订阅了音乐或娱乐频道，这些视频仍会显示在此处。频道订阅系统在两页面间通用——您的偏好设置会同步共享。
-
-## 提示
-
-- 使用等级筛选功能查找适合您语言水平的音乐
-- 订阅您喜爱的音乐频道，优先观看其最新视频
-- 在发现和音乐与娱乐之间切换，丰富学习体验` },
     { path: 'media/search', title: '搜索', category: 'media', content: `# 搜索
 
 查找目标语言中的视频和频道，或直接跳转到任意YouTube视频。
@@ -28010,29 +27594,6 @@ Language Player串流來自全球免費頻道的即時廣播。影片播放器�
 - 如果串流停止運作，重新整理頁面會重新擷取頻道清單並進行新的健康檢查
 - 直播電視是純粹沉浸式體驗——沒有字幕或翻譯。如果您想要互動式字幕，請使用[影片播放器](/docs/media/video-player)
 - 嘗試來自不同國家但使用同一語言的頻道（例如：法國、比利時和瑞士以取得法語），以聆聽不同的口音和詞彙` },
-    { path: 'media/music', title: '音樂與娛樂', category: 'media', content: `# 音樂與娛樂
-
-針對您的目標語言提供的音樂影片和娛樂內容。
-
-## 運作方式
-
-此頁面的運作方式與[探索](/docs/media/explore)完全相同，但僅顯示音樂（YouTube類別10）和娛樂（類別24）影片。其他所有功能——等級篩選、無限捲動、影片卡片和頻道訂閱——運作方式均相同。
-
-音樂和娛樂內容與主頁面探索分開，讓您的學習資訊流保持專注於一般內容，例如影音部落格、新聞、教育影片和對話。
-
-## 為何分開？
-
-音樂影片和娛樂內容佔了YouTube內容的很大一部分。例如，在我們日語影片的資料庫中，JLPT N1等級裡約有三分之一（9,489部中的3,190部）屬於這兩個類別。將它們混入探索會主導資訊流並排擠其他內容類型。保持分離能讓您自行決定何時想看音樂、何時想看其他類型的影片。
-
-## 頻道Subscription
-
-如果您訂閱了音樂或娛樂頻道，這些影片仍然會在此處出現。頻道訂閱系統在兩個頁面之間通用——您的偏好設定會同步。
-
-## 提示
-
-- 使用等級篩選功能尋找符合您程度的音樂
-- 訂閱您喜愛的音樂頻道，即可優先觀看其最新影片
-- 在探索和音樂與娛樂之間切換，豐富您的學習體驗` },
     { path: 'media/search', title: '搜尋', category: 'media', content: `# 搜尋
 
 在目標語言中尋找影片與頻道，或直接跳轉至任何YouTube影片。

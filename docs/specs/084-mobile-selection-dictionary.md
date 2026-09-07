@@ -4,10 +4,14 @@
 
 - **Spec ID**: SPEC-084
 - **Feature**: Port SPEC-033 (native text selection → dictionary popup) to `apps/mobile/`, matching `apps/web`
-- **Status**: in-progress (all 6 tasks implemented, commits `12cedf42`…`e827735a`; native device verification pending — no build executed)
+- **Status**: in-progress (all 6 tasks implemented, commits `12cedf42`…`e827735a`; **revised 2026-09-07** — the native selection context menu is now the tooltip, per the SPEC-033 tooltip revision; native device verification pending — no build executed)
 - **Created**: 2026-08-18
 - **ROADMAP Phase**: Mobile parity — Reading / Media / Vocab
-- **Web ref**: SPEC-033 (`docs/specs/033-selection-actions.md`), web sources `apps/web/src/hooks/use-selection-popup.ts`, `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/components/dictionary-popup.tsx`, shared `packages/utils/src/sentence.ts` (`sentenceContaining`), `packages/utils` `mergePhraseTokens` (already consumed by mobile)
+- **Web ref**: SPEC-033 (`docs/specs/033-selection-actions.md`), web sources `apps/web/src/hooks/use-selection-popup.ts`, `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/components/dictionary-popup.tsx`, `apps/web/src/components/selection-tooltip.tsx`, shared `packages/utils/src/sentence.ts` (`sentenceContaining`), `packages/utils` `mergePhraseTokens` (already consumed by mobile)
+
+## Revision 2026-09-07 — native context menu as the tooltip
+
+SPEC-033's tooltip revision applies to mobile via the **native selection context menu** (not a custom RN toolbar): long-press selects, the platform edit menu shows exactly **Copy / Read Aloud / Look Up** (no Select All, no other items), and the selection stays active so handles can be re-dragged. Copy is handled natively; Read Aloud / Look Up emit an `onSelectionAction` event the JS turns into speech / a popup open. `TokenizedText` no longer auto-opens the popup on a settle timer (the 2026-08-18 behavior is superseded). Menu labels are passed from JS so the native menu respects the app's i18n.
 
 ## Overview
 
@@ -91,7 +95,7 @@ Key findings:
   2. When enabled, wire selection in **both** host paths:
      - **Plain path**: outer `Text` gets `selectable` + `onSelectionChange`; offsets are into the rendered string (may differ from `text` via script conversion / phonetics-replace / quiz blank) → build a rendered→source offset map from `displayTokens` using the same per-token display-text logic; fallback: substring search (`text.indexOf(selectedText)`, web parity).
      - **Paragraph path**: pass `onSelectionChange` through Task 3; native offsets → source via cumulative run lengths (see Task 3.3).
-  3. **Settle timer**: after the last `onSelectionChange` (drag handles fire continuously), wait ~400 ms, then if `start != end` compute `selectedText = text.slice(start, end)` and open the popup. Ignore changes while the popup is open (web: no selectionchange auto-close).
+  3. **Settle timer**: after the last `onSelectionChange` (drag handles fire continuously), wait ~400 ms, then if `start != end` compute `selectedText = text.slice(start, end)` and open the popup. Ignore changes while the popup is open (web: no selectionchange auto-close). **Superseded 2026-09-07**: the native selection context menu is the tooltip, so `onSelectionChange` just tracks the live range (and dismisses a token popup while a non-collapsed selection is active). The popup opens only when the user taps **Look up** in the native menu (`onSelectionAction`).
   4. **Supersede rules** (web parity): a new selection clears the token popup; a token press clears the selection. `clear()` also collapses the native selection via the Task 1/2 clear mechanism so a dismissed popup cannot re-open on a stray gesture.
   5. Selection popup: `DictionaryPopup visible word={selectedText} context={sentenceContaining(text, startOffset, baseCode(l2Code))} extractPhrases …` — lemma omitted (lemma-less lookup, exactly web's `{ text: <selection>, lemmas: [] }`).
   6. Per-token taps + selectable Text coexistence on the plain path: verify on both platforms (RN nested `Text onPress` inside a `selectable` parent). If taps conflict, selection supersedes taps only while a selection is active — the reader still has tap-to-lookup between selections.
@@ -161,7 +165,7 @@ All six tasks are implemented and committed; `tsc --noEmit` (apps/mobile) and th
 - **Manual matrix** (dev/release builds):
   | Context | iOS | Android |
   |---|---|---|
-  | Ruby paragraph (ja book) | long-press select → popup; tap still works; no callout | same after Task 2 rewrite; no context menu |
+  | Ruby paragraph (ja book) | long-press select → native menu (Copy / Read Aloud / Look Up); Look Up → popup; tap still works; no Select All | same after Task 2 rewrite; no Select All |
   | Plain path (phonetics off) | select → popup | select → popup |
   | extractPhrases | Phrases cards + pronunciation | same |
   | Supersede | selection closes token popup & vice versa | same |
