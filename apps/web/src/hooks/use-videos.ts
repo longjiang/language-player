@@ -81,10 +81,11 @@ export function useVideos({ l2, level, pageSize = 12, cache, defer, endpoint = '
         params.set('page', String(pageNum));
         params.set('page_size', String(pageSize));
         // Category-mode contract: mixed (default) includes music & entertainment;
-        // the exclude-music toggle flips to discovery. Kids requests set
-        // made_for_kids=1 and drop the level to show all levels.
+        // the exclude-music toggle flips to discovery. The default feed excludes
+        // made_for_kids videos (made_for_kids=0); only the Kids pill requests
+        // kids videos (made_for_kids=1) and drops the level to show all levels.
         params.set('category_mode', excludeMusic ? 'discovery' : 'mixed');
-        if (madeForKids) params.set('made_for_kids', '1');
+        params.set('made_for_kids', madeForKids ? '1' : '0');
 
         const res = await fetch(`${endpoint}?${params}`);
         if (!res.ok) throw new Error(`Failed to load videos (${res.status})`);

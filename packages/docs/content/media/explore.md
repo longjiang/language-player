@@ -20,7 +20,7 @@ The pills at the top let you filter by proficiency level. The labels adapt to yo
 | {$lang.en} | {$level.exam_ielts} 1 → 9 |
 | Others | {$level.exam_cefr} Pre-A1 → C2 |
 
-Click a pill to filter videos at that level. Click **{$filter.all}** to see videos at every level. Click **{$filter.kids}** to see recommended kids videos across all levels — the Kids pill and the level pills are mutually exclusive, so picking one clears the other. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
+Click a pill to filter videos at that level. Click **{$filter.all}** to see videos at every level. Click **{$filter.kids}** to see recommended kids videos across all levels — the Kids pill and the level pills are mutually exclusive, so picking one clears the other. Kids videos are only shown when the Kids pill is selected; the default feed excludes them. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
 
 ## Video Cards
 
