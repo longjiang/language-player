@@ -26,6 +26,8 @@ The **"Context Sentence"** and **"External Search"** toggles render as two equal
 
 Within each group the links render in a **two-column grid** (each button is a bordered cell showing the site's favicon, a title, and an external-link icon) rather than a single-column list.
 
+The same `ExternalSearch` component is also surfaced as an **External Search** tab (Globe icon, label `action.external_search`) in the dictionary entry-detail tabs panel (ADR-0007), placed after the DeepSeek tab; it uses the same per-language option set and favicon layout as the popup panel.
+
 ## User Stories
 
 - As a learner, I want to open a word's definition in a reference dictionary or see images for it, without leaving the popup, so I can deepen my understanding of a word I just looked up.

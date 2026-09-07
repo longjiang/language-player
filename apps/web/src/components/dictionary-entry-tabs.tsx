@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
 import { DEFAULT_AI_FOLLOW_UPS } from '@langplayer/utils';
-import { BookOpen, Film, Binary, Sparkles, Library } from 'lucide-react';
+import { BookOpen, Film, Binary, Sparkles, Library, Globe } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
@@ -13,6 +13,7 @@ import { SubsSearchResults } from '@/components/video/subs-search-results';
 import { InflectionTable } from '@/components/inflection-table';
 import { AiExplanation } from '@/components/ai-explanation';
 import { CorpusPanel } from '@/components/dictionary/corpus/corpus-panel';
+import { ExternalSearch } from '@/components/dictionary/external-search';
 
 interface DictionaryEntryTabsProps {
   entry: DictionaryEntry;
@@ -69,6 +70,13 @@ export function DictionaryEntryTabs({
     if (!isControlled) setInternalTab(key);
   };
 
+  // Traditional-script form for CJK-friendly sources (e.g. Moedict in the
+  // External Search tab) — mirrors the popup's traditionalForm derivation.
+  const externalTraditional = useMemo(() => {
+    const tr = entry.han_script?.traditional ?? entry.alternate;
+    return tr && tr.trim() ? tr : undefined;
+  }, [entry]);
+
   // ── Inflected search terms ──
   const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entry, l2Code);
   const [exactMatch, setExactMatch] = useState(false);
@@ -87,18 +95,21 @@ export function DictionaryEntryTabs({
   // (e.g. hidden entirely for Chinese, Thai, Vietnamese).
   const hasInflections = isInflectable(baseCode(l2Code));
   const inflectionsTab = { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> };
+  const externalTab = { key: 'external', label: t('action.external_search'), icon: <Globe className="h-4 w-4" /> };
 
   const tabs = showDefinitionTab
     ? [
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
+        externalTab,
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
         ...(hasInflections ? [inflectionsTab] : []),
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
+        externalTab,
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
         ...(hasInflections ? [inflectionsTab] : []),
       ];
@@ -149,6 +160,9 @@ export function DictionaryEntryTabs({
             // "Examples from Videos" follow-up must find the same videos.
             searchTerms={allTerms}
           />
+        )}
+        {effectiveTab === 'external' && (
+          <ExternalSearch term={entry.head} l1Code={l1Code ?? 'en'} l2Code={l2Code} traditional={externalTraditional} />
         )}
         {/* Prefetch strategy: Examples/Images/Inflections stay mounted (hidden)
             so their fetches start as soon as the tabs mount or the entry changes.

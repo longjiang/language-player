@@ -354,6 +354,7 @@ The tabs in the detail view use the existing `TabbedPanel` component. Tabs are a
 | `examples` | `title.examples_from_videos` | `<SubsSearchResults>` (embedded YouTube player + subtitle display) |
 | `inflections` | `title.conjugations` | `<InflectionTable>` |
 | `deepseek` | `action.let_ai_explain` | `<AiExplanation>` |
+| `external` | `action.external_search` | `<ExternalSearch>` (curated external lookup links grouped by heading — SPEC-094; same component as the popup dictionary) |
 
 The definitions panel is always visible alongside the tabs — the 'Dictionary' tab is obsolete since the definitions ARE the left panel. When space allows (wide layout), the definitions panel is always visible alongside the tabs, and the active tab's content renders in the tabs panel. In narrow layout, the definitions panel is above, and the tab bar + active tab content appears below it.
 
