@@ -8,12 +8,12 @@ import { shuffleScrabbleBlocks, type ScrabbleBlock } from '@langplayer/utils';
  *
  * The correct answer's characters are shuffled into letter blocks (one block
  * per code point, same size as the spell character boxes). The learner fills a
- * row of empty slots by either:
- *   - tapping a block → it flies to the first empty slot, or
- *   - dragging a block onto a specific slot.
+ * row of empty slots by dragging/tapping blocks:
+ *   - a block taken from the pool is placed into the slot it is dropped on, or
+ *     into the next (first) empty slot when released off the slot row, and
+ *   - any interaction with a block already in a slot returns it to the pool.
  * Filling the LAST slot auto-submits the arranged word (no submit button, no
- * hint — unlike spell mode). Tapping an occupied slot returns its block to the
- * pool so a misplaced block can be fixed before the last slot auto-submits.
+ * hint — unlike spell mode).
  *
  * The block order is shuffled once when the answer changes (the parent remounts
  * this component per card/mode via a `key`), so the pool stays put while the
@@ -37,10 +37,17 @@ interface DragState {
   /** The slot index this block was dragged from, or null when from the pool. */
   fromSlot: number | null;
   pointerId: number;
+  /** Pointer position when the drag started (for the click-vs-drag threshold). */
+  startX: number;
+  startY: number;
   x: number;
   y: number;
-  moveCount: number;
+  /** True once the pointer has travelled beyond DRAG_THRESHOLD (a real drag). */
+  moved: boolean;
 }
+
+/** Pointer travel (px) before a click counts as a visual drag (ghost). */
+const DRAG_THRESHOLD = 5;
 
 export function ScrabbleCharInput({
   answer,
@@ -111,30 +118,32 @@ export function ScrabbleCharInput({
     setSlots(next);
   }, [slots]);
 
-  const finishDrag = useCallback((e: React.PointerEvent, d: DragState) => {
-    let target = -1;
+  const getSlotIndexAt = useCallback((e: React.PointerEvent) => {
     for (let i = 0; i < slotRefs.current.length; i += 1) {
       const node = slotRefs.current[i];
       if (!node) continue;
       const r = node.getBoundingClientRect();
       if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-        target = i;
-        break;
+        return i;
       }
     }
-    if (target >= 0) {
-      placeBlock(d.blockId, target);
-    } else if (d.fromSlot != null) {
-      // Dropped off the slots → return to the pool.
-      removeFromSlot(d.fromSlot);
-    }
-  }, [placeBlock, removeFromSlot]);
+    return -1;
+  }, []);
 
   const onPointerDown = useCallback((e: React.PointerEvent, blockId: number, fromSlot: number | null) => {
     if (disabled || submittedRef.current) return;
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    const d: DragState = { blockId, fromSlot, pointerId: e.pointerId, x: e.clientX, y: e.clientY, moveCount: 0 };
+    const d: DragState = {
+      blockId,
+      fromSlot,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      x: e.clientX,
+      y: e.clientY,
+      moved: false,
+    };
     dragRef.current = d;
     setDrag(d);
   }, [disabled]);
@@ -142,7 +151,8 @@ export function ScrabbleCharInput({
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    const next = { ...d, x: e.clientX, y: e.clientY, moveCount: d.moveCount + 1 };
+    const moved = d.moved || Math.hypot(e.clientX - d.startX, e.clientY - d.startY) > DRAG_THRESHOLD;
+    const next = { ...d, x: e.clientX, y: e.clientY, moved };
     dragRef.current = next;
     setDrag(next);
   }, []);
@@ -150,23 +160,30 @@ export function ScrabbleCharInput({
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    if (d.moveCount > 0) {
-      finishDrag(e, d);
-    } else if (d.fromSlot != null) {
-      removeFromSlot(d.fromSlot); // tap on an occupied slot → back to pool
+    if (d.fromSlot != null) {
+      // The block came from inside a slot → return it to the pool.
+      removeFromSlot(d.fromSlot);
     } else {
-      placeBlock(d.blockId); // tap on a pool block → first empty slot
+      // The block came from the pool:
+      const target = getSlotIndexAt(e);
+      if (target >= 0) {
+        // Released over a slot → drop it there.
+        placeBlock(d.blockId, target);
+      } else {
+        // Released off the slot row → drop it into the next available slot.
+        placeBlock(d.blockId);
+      }
     }
     dragRef.current = null;
     setDrag(null);
-  }, [finishDrag, removeFromSlot, placeBlock]);
+  }, [getSlotIndexAt, removeFromSlot, placeBlock]);
 
   const onPointerCancel = useCallback(() => {
     dragRef.current = null;
     setDrag(null);
   }, []);
 
-  const dragging = drag && drag.moveCount > 0 ? drag : null;
+  const dragging = drag && drag.moved ? drag : null;
 
   return (
     <div className="w-full space-y-3">
