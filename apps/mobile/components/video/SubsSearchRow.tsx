@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Image, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
+import { extractNoteMarkers } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 
 /** mm:ss clock label for a subtitle timestamp or video duration. */
@@ -24,16 +25,37 @@ export interface SubsSearchRowSegment {
 }
 
 /** Highlight every search-term match in a line, preferring the longest term
- *  on a tie (web subs-search-row fidelity, SPEC-082 Task 7). */
+ *  on a tie (web subs-search-row fidelity, SPEC-082 Task 7). Also strips `[n]`
+ *  note markers (SPEC-093) and draws a small circled number where each marker
+ *  was, so the annotation is visible in the preview without leaking raw
+ *  brackets. The circled numbers are non-interactive here — the row opens the
+ *  playback modal, where the full interactive (tap-to-open) note line renders.
+ */
 function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
   const active = terms.map((t) => t.trim()).filter(Boolean);
-  if (active.length === 0) return <Text>{line}</Text>;
+  const { cleanText, markers } = useMemo(() => extractNoteMarkers(line), [line]);
+  if (active.length === 0 && markers.length === 0) return <Text>{cleanText}</Text>;
 
-  const lowerLine = line.toLowerCase();
+  const lowerLine = cleanText.toLowerCase();
   const nodes: React.ReactNode[] = [];
-  let pos = 0;
+  // Boundaries where a note badge is drawn (operate on the clean text).
+  const markerBoundaries = new Map<number, number>();
+  for (const mk of markers) markerBoundaries.set(mk.index, mk.id);
 
-  while (pos < line.length) {
+  const emitBadge = (at: number) => {
+    const id = markerBoundaries.get(at);
+    if (id != null) {
+      nodes.push(
+        <Text key={`note-${at}-${id}`} className="bg-primary text-primary-foreground rounded-full text-center text-[10px] font-semibold">
+          {' '}{id}{' '}
+        </Text>,
+      );
+    }
+  };
+
+  let pos = 0;
+  while (pos < cleanText.length) {
+    emitBadge(pos);
     // Find the earliest match of any term; prefer the longest term on ties.
     let bestIdx = -1;
     let bestLen = 0;
@@ -48,17 +70,18 @@ function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
       }
     }
     if (bestIdx === -1) {
-      nodes.push(<Text key={`tail-${pos}`}>{line.slice(pos)}</Text>);
+      nodes.push(<Text key={`tail-${pos}`}>{cleanText.slice(pos)}</Text>);
       break;
     }
-    if (bestIdx > pos) nodes.push(<Text key={`pre-${pos}`}>{line.slice(pos, bestIdx)}</Text>);
+    if (bestIdx > pos) nodes.push(<Text key={`pre-${pos}`}>{cleanText.slice(pos, bestIdx)}</Text>);
     nodes.push(
       <Text key={`hit-${bestIdx}-${bestLen}`} className="font-semibold text-primary">
-        {line.slice(bestIdx, bestIdx + bestLen)}
+        {cleanText.slice(bestIdx, bestIdx + bestLen)}
       </Text>,
     );
     pos = bestIdx + bestLen;
   }
+  emitBadge(cleanText.length);
 
   return <Text>{nodes}</Text>;
 }

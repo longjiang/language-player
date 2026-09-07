@@ -27,7 +27,7 @@ import { YouTubeChannelCard } from '@/components/video/YouTubeChannelCard';
 import { AddToPlaylistDialog } from '@/components/video/AddToPlaylistDialog';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
-import { parseSubtitleCSV } from '@langplayer/utils';
+import { parseSubtitleCSV, parseNotes } from '@langplayer/utils';
 import { AlertCircle } from 'lucide-react-native';
 import { SUPPORTED_L2S, type SubtitleSyncedLine, type YouTubeVideo } from '@langplayer/shared';
 
@@ -285,6 +285,9 @@ export default function WatchScreen() {
           // SPEC-010: native aspect ratio (width/height) — lets the player
           // contain-fit non-16:9 videos instead of forcing a 16:9 box.
           aspect_ratio: rawVideo.aspect_ratio,
+          // SPEC-093: parse the video's `notes` column (CSV `id,note`) so
+          // subtitle `[n]` markers can be resolved to note badges on the client.
+          notes: parseNotes(rawVideo.notes),
         };
         setVideo(v);
         setDuration(v.duration ?? 0);
@@ -520,6 +523,7 @@ export default function WatchScreen() {
               currentTime={currentTime}
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
+              notes={v.notes}
               onSeekToLine={handleSeekToLine}
             />
             <View className="flex-row justify-center pb-2 pt-1">
@@ -575,6 +579,7 @@ export default function WatchScreen() {
             currentTime={currentTime}
             tokenCache={tokenCache}
             tokenCacheLoaded={tokenCacheLoaded}
+            notes={v.notes}
             onSeekToLine={handleSeekToLine}
           />
           <View className="flex-row justify-end px-2 py-1">
@@ -631,6 +636,7 @@ export default function WatchScreen() {
           currentTime={currentTime}
           tokenCache={tokenCache}
           tokenCacheLoaded={tokenCacheLoaded}
+          notes={v.notes}
           onSeekToLine={handleSeekToLine}
         />
       }

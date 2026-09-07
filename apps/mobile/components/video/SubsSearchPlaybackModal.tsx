@@ -428,6 +428,7 @@ export function SubsSearchPlaybackModal({
                 activeLineIndex={activeLineIndex}
                 currentTime={currentTime}
                 highlightTerms={highlightTerms}
+                notes={currentVideo?.notes}
                 defaultLine={defaultSubtitleLine}
                 onSeekToLine={(t) => playerRef.current?.seekTo(t)}
               />
@@ -461,6 +462,7 @@ export function SubsSearchPlaybackModal({
                     activeLineIndex={activeLineIndex}
                     currentTime={currentTime}
                     highlightTerms={highlightTerms}
+                    notes={currentVideo?.notes}
                     defaultLine={defaultSubtitleLine}
                     onSeekToLine={(t) => playerRef.current?.seekTo(t)}
                   />
