@@ -1262,7 +1262,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
       {/* ── Advanced search modal ── */}
       <Dialog open={advancedOpen} onOpenChange={setAdvancedOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto p-4">
+        <DialogContent className="max-h-[85vh] overflow-y-auto overflow-x-hidden p-4">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <Settings2 className="h-4 w-4" />
@@ -1270,7 +1270,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
             {/* Custom search terms */}
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">
@@ -1315,7 +1315,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                 </span>
               </button>
               {showsExpanded && (
-                <div className="max-h-52 overflow-y-auto border-t border-border p-2">
+                <div className="max-h-52 overflow-y-auto overflow-x-hidden border-t border-border p-2">
                   <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40">
                     <input
                       type="checkbox"
@@ -1337,7 +1337,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                           checked={tvShowIds.includes(show.id)}
                           onChange={() => toggleShow(show.id)}
                         />
-                        <span className="min-w-0 flex-1 truncate">{show.title}</span>
+                        <span className="min-w-0 flex-1 break-words">{show.title}</span>
                       </label>
                     ))
                   )}
@@ -1361,7 +1361,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                 </span>
               </button>
               {categoriesExpanded && (
-                <div className="max-h-52 overflow-y-auto border-t border-border p-2">
+                <div className="max-h-52 overflow-y-auto overflow-x-hidden border-t border-border p-2">
                   <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40">
                     <input
                       type="checkbox"
@@ -1383,7 +1383,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                           checked={categoryIds.includes(id)}
                           onChange={() => toggleCategory(id)}
                         />
-                        <span className="min-w-0 flex-1">{categoryLabel(id)}</span>
+                        <span className="min-w-0 flex-1 break-words">{categoryLabel(id)}</span>
                         <span className="text-xs text-muted-foreground">{count}</span>
                       </label>
                     ))
