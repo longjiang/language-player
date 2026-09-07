@@ -14,6 +14,7 @@ import {
   parseSrsQuestionResponse,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
+  scrabbleNeedsEntryFetch,
   scoreSpellResult,
   scoreTestResult,
   scriptVariants,
@@ -614,5 +615,23 @@ describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble)',
     const entry = { head: 'a', pronunciation: 'eɪ' };
     expect(scrabbleAnswerText(context, word, 'a', entry, 'en')).toBe('a');
     expect(scrabbleFallsBackToSpell(context, word, 'a', entry, 'en')).toBe(true);
+  });
+
+  it('scrabbleNeedsEntryFetch is true only for a single-char answer whose entry is not loaded', () => {
+    const word = { forms: ['水'], head: '水', context: { form: '水' } };
+    const context = '水を飲む。';
+    // Entry not loaded (null) + single-char answer → needs a fetch.
+    expect(scrabbleNeedsEntryFetch(context, word, '水', null, 'ja')).toBe(true);
+    // Multi-char answer → never needs the entry (blocks come from the word).
+    const multi = { forms: ['たじろかせる'], head: 'たじろぐ', context: { form: 'たじろか' } };
+    const multiContext = '人をたじろかせる（“退縮”）種類の顔だった。';
+    expect(scrabbleNeedsEntryFetch(multiContext, multi, 'たじろぐ', null, 'ja')).toBe(false);
+  });
+
+  it('scrabbleNeedsEntryFetch is false once the entry is loaded', () => {
+    const word = { forms: ['水'], head: '水', context: { form: '水' } };
+    const context = '水を飲む。';
+    const entry = { head: '水', alternate: 'みず', pronunciation: 'mizu' };
+    expect(scrabbleNeedsEntryFetch(context, word, '水', entry, 'ja')).toBe(false);
   });
 });
