@@ -894,7 +894,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                     <View className={`h-4 w-4 items-center justify-center rounded border ${tvShowIds.includes(show.id) ? 'border-primary bg-primary' : 'border-border'}`}>
                       {tvShowIds.includes(show.id) && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
                     </View>
-                    <Text className="min-w-0 flex-1 text-sm text-foreground" numberOfLines={1}>{show.title}</Text>
+                    <Text className="min-w-0 flex-1 text-sm text-foreground">{show.title}</Text>
                   </Pressable>
                 ))
               )}
