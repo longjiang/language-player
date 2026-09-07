@@ -270,13 +270,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const glyphLang = useGlyphLang(l2Code);
   const contentDir = isRTL(l2Code) ? 'rtl' : 'ltr';
   // Each Chinese token is rendered as a sequence of inline ruby bases so its
-  // pinyin stays attached to the matching character. Chromium/WebKit do not
-  // consistently expose the normal Han line-break opportunities across that
-  // ruby boundary, which can leave a long tokenized line clipped at the right
-  // edge. CJK text has no whitespace-based word boundary to preserve, so allow
-  // character-level breaks only for Chinese-family L2s. Other languages keep
-  // their normal word-wrapping behavior.
-  const cjkWrapClass = ['zh', 'yue'].includes(baseCode(l2Code)) ? 'break-all' : '';
+  // pinyin stays attached to the matching character. We let the browser's text
+  // composer own CJK line-breaking: `word-break: normal` (the browser default)
+  // applies its native kinsoku shori — no closing punctuation (。，) at the
+  // start of a line, no opening quote/paren (“「( at the end of a line —
+  // exactly like native text composers. `overflow-wrap: break-word` keeps a
+  // long non-CJK "word" (e.g. an English loanword) from clipping, again
+  // matching native. The old `word-break: break-all` disabled those rules and,
+  // together with the per-character <wbr/> inserted below, is what let
+  // punctuation start a line. We now use the composer alone and drop those
+  // <wbr/> overrides, so the engine applies its own type-breaking rules.
+  const cjkWrapClass = ['zh', 'yue'].includes(baseCode(l2Code)) ? 'break-normal break-words' : '';
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
 
@@ -1074,11 +1078,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               format={flat && fmt !== 'image' ? fmt : null}
             />
           );
+          // Keyed wrapper (key = token index) for the flat/boxed token render.
+          // No <wbr/> is inserted here: the browser's composer (word-break:
+          // normal) owns CJK line-breaking and applies its kinsoku rules.
           const withCjkBreak = (node: React.ReactNode) => (
-            <React.Fragment key={i}>
-              {cjkWrapClass && i > 0 ? <wbr /> : null}
-              {node}
-            </React.Fragment>
+            <React.Fragment key={i}>{node}</React.Fragment>
           );
           // Inline image: an `image` format range replaces its alt text with
           // the image, drawn inline in the line flow (SPEC-087 §2). Render it
