@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, Animated, PanResponder, type GestureResponderEvent, type PanResponderGestureState, type LayoutChangeEvent } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, TextInput, Animated, PanResponder, type GestureResponderEvent, type PanResponderGestureState, type LayoutChangeEvent, type NativeSyntheticEvent, type TextInputKeyPressEventData } from 'react-native';
 import { shuffleScrabbleBlocks, type ScrabbleBlock } from '@langplayer/utils';
 import { srsLogger } from '@/lib/logger';
 
@@ -22,6 +22,14 @@ const { log } = srsLogger;
  * learner arranges. `onSubmit` is called with the arranged string the moment
  * every slot is filled.
  *
+ * When `keyboardEnabled` (a non-IME language per `supportsScrabbleKeyboard`), a
+ * hidden focused `TextInput` with the soft keyboard suppressed
+ * (`showSoftInputOnFocus={false}`, `caretHidden`) captures a PHYSICAL keyboard:
+ * each printable keystroke moves a matching pool block into the next empty
+ * slot, and Backspace pops the rightmost filled block. This is hardware-keyboard
+ * only, so the on-screen keyboard is never summoned and the block pool stays the
+ * source of truth — typing just drives the same placement as a tap/drag.
+ *
  * Drag uses React Native's PanResponder (no extra dependency): a ghost block
  * follows the finger in the input container's own coordinate space (measured
  * from the container origin), and on release the release point is hit-tested
@@ -35,6 +43,12 @@ export interface ScrabbleCharInputProps {
   disabled?: boolean;
   /** Accessible label for the group (slot row + block pool). */
   label?: string;
+  /**
+   * Enable the physical-keyboard fill path (non-IME L2 per
+   * `supportsScrabbleKeyboard`). When set, hardware typed characters move
+   * matching pool blocks into the slots; the soft keyboard / IME is not shown.
+   */
+  keyboardEnabled?: boolean;
 }
 
 interface SlotLayout {
@@ -124,6 +138,7 @@ export function ScrabbleCharInput({
   onSubmit,
   disabled = false,
   label,
+  keyboardEnabled = false,
 }: ScrabbleCharInputProps) {
   // Shuffle ONCE per answer (the component is remounted per card via a `key`).
   const [blocks] = useState<ScrabbleBlock[]>(() => shuffleScrabbleBlocks(answer));
@@ -143,6 +158,7 @@ export function ScrabbleCharInput({
   const draggingIdRef = useRef<number | null>(null);
   const ghostX = useRef(new Animated.Value(0)).current;
   const ghostY = useRef(new Animated.Value(0)).current;
+  const kbInputRef = useRef<TextInput | null>(null);
 
   // The block array is SHUFFLED in place, so array index ≠ block id. Look up
   // blocks by their stable id (never by array index) so the ghost and the
@@ -264,6 +280,42 @@ export function ScrabbleCharInput({
     setDragGhost(null);
   }, [disabled, removeFromSlot, placeBlock, slots]);
 
+  // ── Physical-keyboard fill (SPEC-066) ──────────────────────────────────
+  // A hidden focused TextInput (soft keyboard suppressed) receives hardware
+  // keystrokes; each inserted character moves a matching pool block into the
+  // next empty slot, and Backspace pops the rightmost filled block. The field is
+  // cleared after every insertion so it only ever holds the latest character.
+  const handleKbChangeText = useCallback((text: string) => {
+    if (disabled || submittedRef.current) return;
+    const chars = Array.from(text);
+    if (chars.length > 0) {
+      // Case-insensitive so a shifted capital still moves the lowercase block.
+      const typed = chars[chars.length - 1]!;
+      const match = pool.find((b) => b.char.length === 1 && b.char.toLowerCase() === typed.toLowerCase());
+      if (match) placeBlock(match.id);
+    }
+    kbInputRef.current?.clear();
+  }, [disabled, pool, placeBlock]);
+
+  const handleKbKeyPress = useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    if (disabled || submittedRef.current) return;
+    if (e.nativeEvent.key === 'Backspace') {
+      let filled = -1;
+      for (let i = slots.length - 1; i >= 0; i -= 1) {
+        if (slots[i] != null) { filled = i; break; }
+      }
+      if (filled >= 0) removeFromSlot(filled);
+    }
+  }, [disabled, slots, removeFromSlot]);
+
+  // Focus the hidden field while the keyboard-fill path is active so a hardware
+  // keyboard can be used without tapping first.
+  useEffect(() => {
+    if (keyboardEnabled && !disabled && !submittedRef.current) {
+      kbInputRef.current?.focus();
+    }
+  }, [keyboardEnabled, disabled]);
+
   const slotBase = 'h-11 w-10 items-center justify-center rounded-lg border';
   const poolBase = 'h-11 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm';
 
@@ -273,6 +325,26 @@ export function ScrabbleCharInput({
       collapsable={false}
       className="w-full gap-3"
     >
+      {/* Hidden physical-keyboard capture field. Soft keyboard suppressed
+          (`showSoftInputOnFocus={false}`) + `caretHidden` so only a hardware
+          keyboard drives it; the on-screen keyboard is never summoned. */}
+      {keyboardEnabled && (
+        <TextInput
+          ref={kbInputRef}
+          autoFocus
+          showSoftInputOnFocus={false}
+          caretHidden
+          autoComplete="off"
+          autoCorrect={false}
+          autoCapitalize="none"
+          spellCheck={false}
+          multiline={false}
+          onChangeText={handleKbChangeText}
+          onKeyPress={handleKbKeyPress}
+          style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
+        />
+      )}
+
       {/* Slots (one box per answer character) */}
       <View className="flex-row flex-wrap items-center justify-center gap-1.5" accessibilityLabel={label}>
         {Array.from({ length: slotCount }).map((_, i) => {

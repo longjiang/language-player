@@ -35,6 +35,7 @@ import {
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
+  supportsScrabbleKeyboard,
   scriptVariants,
   bestScriptSimilarity,
   resolveReviewMode,
@@ -2168,6 +2169,7 @@ export default function ReviewScreen() {
                   answer={scrabbleAnswer}
                   onSubmit={(arranged) => void handleScrabbleSubmit(arranged)}
                   label={t('review.scrabble_prompt')}
+                  keyboardEnabled={supportsScrabbleKeyboard(l2Code)}
                 />
               </View>
             )
