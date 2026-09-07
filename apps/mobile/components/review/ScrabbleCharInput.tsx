@@ -132,6 +132,15 @@ export function ScrabbleCharInput({
   const ghostX = useRef(new Animated.Value(0)).current;
   const ghostY = useRef(new Animated.Value(0)).current;
 
+  // The block array is SHUFFLED in place, so array index ≠ block id. Look up
+  // blocks by their stable id (never by array index) so the ghost and the
+  // arranged string always use the actual block's character.
+  const blockByKey = useMemo(() => {
+    const map = new Map<number, ScrabbleBlock>();
+    for (const b of blocks) map.set(b.id, b);
+    return map;
+  }, [blocks]);
+
   // Pool = blocks not currently placed in a slot.
   const pool = useMemo(() => {
     const used = new Set(slots.filter((v): v is number => v != null));
@@ -140,8 +149,8 @@ export function ScrabbleCharInput({
 
   const buildArranged = useCallback(
     (next: (number | null)[]): string =>
-      next.map((bid) => (bid == null ? '' : blocks[bid]!.char)).join(''),
-    [blocks],
+      next.map((bid) => (bid == null ? '' : blockByKey.get(bid)?.char ?? '')).join(''),
+    [blockByKey],
   );
 
   const maybeSubmit = useCallback((next: (number | null)[]) => {
@@ -253,7 +262,7 @@ export function ScrabbleCharInput({
       <View className="flex-row flex-wrap items-center justify-center gap-1.5" accessibilityLabel={label}>
         {Array.from({ length: slotCount }).map((_, i) => {
           const blockId = slots[i];
-          const block = blockId != null ? blocks[blockId] : null;
+          const block = blockId != null ? blockByKey.get(blockId) ?? null : null;
           return (
             <BlockTile
               key={i}
@@ -307,7 +316,7 @@ export function ScrabbleCharInput({
           className="h-11 w-10 items-center justify-center rounded-lg border border-primary bg-card shadow-lg"
         >
           <Text className="text-lg font-medium text-foreground">
-            {draggingId != null ? blocks[draggingId]?.char ?? '' : ''}
+            {draggingId != null ? blockByKey.get(draggingId)?.char ?? '' : ''}
           </Text>
         </Animated.View>
       )}
