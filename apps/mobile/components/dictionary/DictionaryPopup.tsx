@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, buttonTextClass } from '@/components/ui/button';
+import { Pressable } from '@/components/ui/pressable';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -9,7 +11,6 @@ import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard
 import { DictionaryEntryCardSkeleton } from '@/components/dictionary/DictionaryEntryCardSkeleton';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
-import { WebViewSheet } from '@/components/WebViewSheet';
 import {
   getCachedEntries,
   setCachedEntries,
@@ -31,10 +32,11 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExternalLink, ImageIcon, X, ChevronDown, ChevronUp, Quote } from 'lucide-react-native';
+import { ExternalLink, Copy, Check, Globe, X, ChevronDown, ChevronUp, Quote } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { ExternalSearch } from '@/components/dictionary/ExternalSearch';
 
 const { log } = popupLogger;
 
@@ -46,21 +48,22 @@ const { log } = popupLogger;
  * so the popup stays compact by default.
  */
 /**
- * Context-sentence section: the "Context Sentence" toggle and the image
- * button share one row; the expanded sentence block breaks out as its own
- * full-width row beneath (never squeezed beside the image button). The
- * image button is injected so this component owns only the expand state.
+ * Context-sentence section: the "Context Sentence" toggle and the trailing
+ * button (the External Search toggle) share one row; the expanded sentence
+ * block breaks out as its own full-width row beneath (never squeezed beside
+ * the trailing button). The trailing button is injected so this component
+ * owns only the expand state.
  */
 function ContextSentenceSection({
   context,
   l2Code,
   l1Code,
-  imageButton,
+  trailingButton,
 }: {
   context: string;
   l2Code: string;
   l1Code: string;
-  imageButton: ReactNode;
+  trailingButton: ReactNode;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -107,7 +110,7 @@ function ContextSentenceSection({
               : <ChevronDown size={14} color={ICON_MUTED} />}
           </View>
         </Button>
-        {imageButton}
+        {trailingButton}
       </View>
       {open && (
         <View className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
@@ -135,6 +138,55 @@ function ContextSentenceSection({
         </View>
       )}
     </>
+  );
+}
+
+/** External Search toggle button (globe + label + chevron), shared by the
+ *  context and no-context rows. Toggles the ExternalSearch panel. */
+function ExternalSearchToggle({
+  open,
+  onToggle,
+  t,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <Button
+      onPress={onToggle}
+      variant="outline"
+      className="relative shrink-0 px-6"
+      accessibilityRole="button"
+      accessibilityLabel={t('action.external_search')}
+    >
+      <Globe size={16} color={ICON_PRIMARY} />
+      <Text className={buttonTextClass('outline')} numberOfLines={1}>{t('action.external_search')}</Text>
+      <View className="absolute right-3">
+        {open
+          ? <ChevronUp size={14} color={ICON_MUTED} />
+          : <ChevronDown size={14} color={ICON_MUTED} />}
+      </View>
+    </Button>
+  );
+}
+
+/** The expanded External Search panel (SPEC-094) in a bordered, muted box. */
+function ExternalSearchPanel({
+  term,
+  l1LangCode,
+  l2LangCode,
+  l2Name,
+}: {
+  term: string;
+  l1LangCode: string;
+  l2LangCode: string;
+  l2Name: string;
+}) {
+  return (
+    <View className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
+      <ExternalSearch term={term} l1Code={l1LangCode} l2Code={l2LangCode} l2Name={l2Name} />
+    </View>
   );
 }
 
@@ -232,7 +284,10 @@ export function DictionaryPopup({
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showImageSearch, setShowImageSearch] = useState(false);
+  // Whether the "External Search" panel is expanded below the toggle button.
+  const [externalOpen, setExternalOpen] = useState(false);
+  // Brief "copied" feedback for the surface-form copy button.
+  const [copied, setCopied] = useState(false);
   const [scrollContentHeight, setScrollContentHeight] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
   const popupLookupStartRef = useRef<number | null>(null);
@@ -553,7 +608,15 @@ export function DictionaryPopup({
 
   // Google Images URL for the "Search images" button — same term the popup's
   // compact image strip used (first result head, else lemma, else surface form).
-  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(results?.[0]?.head ?? lemmaForm ?? word)}`;
+  const copyWord = useCallback(async () => {
+    try {
+      await Clipboard.setStringAsync(word);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      // Clipboard may be unavailable (e.g. backgrounded); no-op.
+    }
+  }, [word]);
 
   // ── Popup render timing (phase 2) ──
   // When the popup subtree begins rendering on this open. Combined with the
@@ -654,10 +717,20 @@ export function DictionaryPopup({
                 onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
               >
                 <View className="flex-1 mr-2">
-                  <View className="flex-row items-baseline gap-2 flex-wrap">
+                  <View className="flex-row items-center gap-1.5 flex-wrap">
                     <Text className="text-xl font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
                       {word}
                     </Text>
+                    <Pressable
+                      onPress={() => void copyWord()}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('action.copy')}
+                    >
+                      {copied
+                        ? <Check size={14} color={ICON_MUTED} />
+                        : <Copy size={14} color={ICON_MUTED} />}
+                    </Pressable>
                     {tokenPron ? (
                       <Text className="text-sm text-muted-foreground">[{tokenPron}]</Text>
                     ) : extractPhrases && phrasePronunciation ? (
@@ -730,57 +803,45 @@ export function DictionaryPopup({
                   </>
                 )}
 
-                {/* Context sentence + Search Google Images: the two buttons
-                    share one row; the expanded context block breaks out as
-                    its own full-width row beneath the row (not squeezed
-                    beside the image button). */}
+                {/* Context sentence + External Search: the two buttons share
+                    one row; the expanded context block and the external-search
+                    panel each break out as their own full-width row beneath
+                    the row. */}
                 {(context || !status.effectiveOffline) && (
                   context ? (
-                    <ContextSentenceSection
-                      context={context}
-                      l2Code={l2}
-                      l1Code={baseCode(l1Lang.code)}
-                      imageButton={
-                        !status.effectiveOffline ? (
-                          /* Search Google Images — opens the in-app browser
-                             (replaces the in-popup gallery), icon-only, same
-                             outline button family as the row. */
-                          <Button
-                            onPress={() => setShowImageSearch(true)}
-                            variant="outline"
-                            size="icon"
-                            className="shrink-0"
-                            accessibilityRole="button"
-                            accessibilityLabel={t('action.search_images')}
-                          >
-                            <ImageIcon size={16} color={ICON_PRIMARY} />
-                          </Button>
-                        ) : null
-                      }
-                    />
+                    <>
+                      <ContextSentenceSection
+                        context={context}
+                        l2Code={l2}
+                        l1Code={baseCode(l1Lang.code)}
+                        trailingButton={
+                          !status.effectiveOffline ? (
+                            <ExternalSearchToggle
+                              open={externalOpen}
+                              onToggle={() => setExternalOpen((o) => !o)}
+                              t={t}
+                            />
+                          ) : null
+                        }
+                      />
+                      {externalOpen && !status.effectiveOffline && (
+                        <ExternalSearchPanel term={word} l1LangCode={l1Lang.code} l2LangCode={l2Lang.code} l2Name={l2Lang.name} />
+                      )}
+                    </>
                   ) : (
-                    <View className="mb-3 flex-row gap-2 justify-end">
-                      <Button
-                        onPress={() => setShowImageSearch(true)}
-                        variant="outline"
-                        size="icon"
-                        className="shrink-0"
-                        accessibilityRole="button"
-                        accessibilityLabel={t('action.search_images')}
-                      >
-                        <ImageIcon size={16} color={ICON_PRIMARY} />
-                      </Button>
-                    </View>
+                    <>
+                      <View className="mb-3 flex-row gap-2 justify-end">
+                        <ExternalSearchToggle
+                          open={externalOpen}
+                          onToggle={() => setExternalOpen((o) => !o)}
+                          t={t}
+                        />
+                      </View>
+                      {externalOpen && !status.effectiveOffline && (
+                        <ExternalSearchPanel term={word} l1LangCode={l1Lang.code} l2LangCode={l2Lang.code} l2Name={l2Lang.name} />
+                      )}
+                    </>
                   )
-                )}
-
-                {!status.effectiveOffline && (
-                  <WebViewSheet
-                    visible={showImageSearch}
-                    url={googleImagesUrl}
-                    title={t('action.search_images')}
-                    onClose={() => setShowImageSearch(false)}
-                  />
                 )}
 
                 {error && (

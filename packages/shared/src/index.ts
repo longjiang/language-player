@@ -24,3 +24,4 @@ export * from './markdown/inline';
 export * from './markdown/vision';
 export * from './voice-selection';
 export * from './youtube-categories';
+export * from './external-search';

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef, type CSSProperties, 
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, ImageIcon, ChevronDown, ChevronUp, Quote } from 'lucide-react';
+import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, Globe, ChevronDown, ChevronUp, Quote, Copy, Check } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
@@ -22,6 +22,7 @@ import { suppressReaderTap } from '@/lib/reader-tap-guard';
 import { getCachedEntries, setCachedEntries, subscribeToCache, getL1CachedEntries, setL1CachedEntry } from '@/lib/dictionary-cache';
 import { lookupL1Text } from '@/lib/l1-lookup';
 import { WordList } from '@/components/dictionary/word-list';
+import { ExternalSearch } from '@/components/dictionary/external-search';
 import { DictionaryEntryCardSkeleton } from '@/components/dictionary/dictionary-entry-card-skeleton';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -62,21 +63,22 @@ const POPUP_TOP = 96;
  * first expand). Hidden behind a toggle button so the popup stays compact.
  */
 /**
- * Context-sentence section: the "Context Sentence" toggle and the image
- * button share one row; the expanded sentence block breaks out as its own
- * full-width row beneath (never squeezed beside the image button). The
- * image button is injected so this component owns only the expand state.
+ * Context-sentence section: the "Context Sentence" toggle and the trailing
+ * button (the External Search toggle) share one row; the expanded sentence
+ * block breaks out as its own full-width row beneath (never squeezed beside
+ * the trailing button). The trailing button is injected so this component
+ * owns only the expand state.
  */
 function ContextSentenceSection({
   context,
   l2Code,
   l1Code,
-  imageButton,
+  trailingButton,
 }: {
   context: string;
   l2Code: string;
   l1Code: string;
-  imageButton: ReactNode;
+  trailingButton: ReactNode;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -113,7 +115,7 @@ function ContextSentenceSection({
             ? <ChevronUp className="absolute right-3 h-3.5 w-3.5" />
             : <ChevronDown className="absolute right-3 h-3.5 w-3.5" />}
         </button>
-        {imageButton}
+        {trailingButton}
       </div>
       {open && (
         <div className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
@@ -157,6 +159,20 @@ export function DictionaryPopup({
 
   const { savedWords, removeSavedWord } = useSavedWordsContext();
   const [dialogOpen, setDialogOpen] = useState(true);
+  // Whether the "External Search" panel is expanded below the toggle button.
+  const [externalOpen, setExternalOpen] = useState(false);
+  // Brief "copied" feedback for the surface-form copy button.
+  const [copied, setCopied] = useState(false);
+
+  const copySurface = async () => {
+    try {
+      await navigator.clipboard.writeText(token.text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      // Clipboard may be unavailable (e.g. insecure context); no-op.
+    }
+  };
 
   // Re-resolve saved words from the dictionary cache whenever it populates
   // (e.g. the review page pre-fetches the saved entry for the current card).
@@ -482,6 +498,17 @@ export function DictionaryPopup({
     });
   }, [unmatchedSavedWords, token.text, entries, phraseCards]);
 
+  // Traditional-script form of the surface term, when the resolved entry
+  // carries one (used by CJK-friendly sources like Moedict in the External
+  // Search panel). Falls back to the surface form inside the builder.
+  const traditionalForm = useMemo(() => {
+    for (const e of [...entries, ...phraseCards]) {
+      const tr = e.han_script?.traditional ?? e.alternate;
+      if (tr && tr.trim()) return tr;
+    }
+    return undefined;
+  }, [entries, phraseCards]);
+
   // Phrase cards that aren't duplicates of the standard lookup results.
   const mainEntryIds = useMemo(() => new Set(entries.map((e) => e.id)), [entries]);
   const visiblePhraseCards = useMemo(
@@ -504,7 +531,18 @@ export function DictionaryPopup({
         {/* Header */}
         <div className="mb-1 flex items-center justify-between">
           <div>
-            <span className="text-xl font-bold">{token.text}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="text-xl font-bold">{token.text}</span>
+              <button
+                type="button"
+                onClick={copySurface}
+                className="rounded p-0.5 text-muted-foreground/60 transition-colors hover:text-foreground"
+                aria-label={t('action.copy')}
+                title={t('action.copy')}
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              </button>
+            </span>
             {token.pronunciation && (
               <span className="ml-2 text-sm text-muted-foreground">
                 [{token.pronunciation}]
@@ -576,41 +614,62 @@ export function DictionaryPopup({
             followUpPresets={DEFAULT_AI_FOLLOW_UPS}
           />
 
-          {/* Context sentence + Search Google Images: the two buttons share
-              one row; the expanded context block breaks out as its own
-              full-width row beneath the row (not squeezed beside the image
-              button). */}
+          {/* Context sentence + External Search: the two buttons share one
+              row; the expanded context block and the external-search panel
+              each break out as their own full-width row beneath the row. */}
           {context?.text ? (
-            <ContextSentenceSection
-              context={context.text}
-              l2Code={l2Code}
-              l1Code={l1Code}
-              imageButton={
-                <a
-                  href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-9 shrink-0 px-0')}
-                  title={t('action.search_images')}
-                  aria-label={t('action.search_images')}
-                >
-                  <ImageIcon className="h-4 w-4" />
-                </a>
-              }
-            />
+            <>
+              <ContextSentenceSection
+                context={context.text}
+                l2Code={l2Code}
+                l1Code={l1Code}
+                trailingButton={
+                  <button
+                    type="button"
+                    onClick={() => setExternalOpen((o) => !o)}
+                    className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative shrink-0 px-6')}
+                    aria-expanded={externalOpen}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 shrink-0" />
+                      <span className="text-sm font-medium">{t('action.external_search')}</span>
+                    </span>
+                    {externalOpen
+                      ? <ChevronUp className="absolute right-3 h-3.5 w-3.5" />
+                      : <ChevronDown className="absolute right-3 h-3.5 w-3.5" />}
+                  </button>
+                }
+              />
+              {externalOpen && (
+                <div className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <ExternalSearch term={token.text} l1Code={l1Code} l2Code={l2Code} traditional={traditionalForm} />
+                </div>
+              )}
+            </>
           ) : (
-            <div className="mb-3 flex gap-2 justify-end">
-              <a
-                href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-9 shrink-0 px-0')}
-                title={t('action.search_images')}
-                aria-label={t('action.search_images')}
-              >
-                <ImageIcon className="h-4 w-4" />
-              </a>
-            </div>
+            <>
+              <div className="mb-3 flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setExternalOpen((o) => !o)}
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'relative shrink-0 px-6')}
+                  aria-expanded={externalOpen}
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 shrink-0" />
+                    <span className="text-sm font-medium">{t('action.external_search')}</span>
+                  </span>
+                  {externalOpen
+                    ? <ChevronUp className="absolute right-3 h-3.5 w-3.5" />
+                    : <ChevronDown className="absolute right-3 h-3.5 w-3.5" />}
+                </button>
+              </div>
+              {externalOpen && (
+                <div className="mb-2 w-full rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <ExternalSearch term={token.text} l1Code={l1Code} l2Code={l2Code} traditional={traditionalForm} />
+                </div>
+              )}
+            </>
           )}
 
           {/* Entry cards are loading — show a stable card skeleton instead of
