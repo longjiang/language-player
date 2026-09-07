@@ -1836,7 +1836,14 @@ export default function ReviewScreen() {
       {/* Flashcard — only as tall as content, max height fills remaining space */}
       <View className="px-4 mb-2 flex-1">
         <View className={`max-h-full rounded-xl border border-border bg-card ${isSm ? 'p-8' : 'p-4'}`}>
-          <ScrollView>
+          {/* The review card hosts spell/scrabble inputs. Without
+              keyboardShouldPersistTaps the ScrollView swallows taps meant for
+              the spell TextInput (no keyboard on tap) and the scrabble blocks
+              (unresponsive) — the same class of ScrollView gesture bug the
+              scrabble PanResponder's onShouldBlockNativeResponder addresses,
+              but for tap-to-focus/keyboard persistence. Every other
+              text-input ScrollView in the app sets this (SPEC-066). */}
+          <ScrollView keyboardShouldPersistTaps="handled">
             {/* Context sentences — loop over saved word instances */}
           {instances.length === 0 ? (
             /* No saved context (e.g. word saved from dictionary search):
