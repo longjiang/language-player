@@ -32,6 +32,7 @@ import {
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
+  supportsScrabbleKeyboard,
   scriptVariants,
   bestScriptSimilarity,
   resolveReviewMode,
@@ -2117,6 +2118,7 @@ export default function ReviewPage() {
                 onSubmit={(arranged) => void handleScrabbleSubmit(arranged)}
                 id="scrabble-input"
                 label={t('review.scrabble_prompt')}
+                keyboardEnabled={supportsScrabbleKeyboard(l2Code)}
               />
             </div>
           )
