@@ -12,6 +12,8 @@ import {
   needsPronunciationTest,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  scrabbleAnswerText,
+  scrabbleFallsBackToSpell,
   scoreSpellResult,
   scoreTestResult,
   scriptVariants,
@@ -567,5 +569,50 @@ describe('spellHintInfo', () => {
       'th',
     );
     expect(info).toEqual({ char: 's', kind: 'phonetic' });
+  });
+});
+
+describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble)', () => {
+  it('keeps the blanked word for a multi-character answer', () => {
+    const word = { forms: ['たじろか', 'たじろかせる'], head: 'たじろぐ', context: { form: 'たじろか' } };
+    const context = 'それは第一印象でまず人をたじろかせる（“退縮”）種類の顔だった。';
+    expect(scrabbleAnswerText(context, word, 'たじろぐ', null, 'ja')).toBe('たじろかせる');
+    expect(scrabbleFallsBackToSpell(context, word, 'たじろぐ', null, 'ja')).toBe(false);
+  });
+
+  it('arranges the reading for a single-char answer with a reading (ja kanji)', () => {
+    const word = { forms: ['水'], head: '水', context: { form: '水' } };
+    const context = '水を飲む。';
+    const entry = { head: '水', alternate: 'みず', pronunciation: 'mizu' };
+    expect(scrabbleAnswerText(context, word, '水', entry, 'ja')).toBe('みず');
+    expect(scrabbleFallsBackToSpell(context, word, '水', entry, 'ja')).toBe(false);
+  });
+
+  it('arranges pinyin for a single-char Chinese answer', () => {
+    const word = { forms: ['我'], head: '我', context: { form: '我' } };
+    const context = '我明天去北京。';
+    const entry = { head: '我', phonetic_detail: { pinyin: 'wǒ' } };
+    expect(scrabbleAnswerText(context, word, '我', entry, 'zh')).toBe('wǒ');
+    expect(scrabbleFallsBackToSpell(context, word, '我', entry, 'zh')).toBe(false);
+  });
+
+  it('falls back to spell when a phonetics-eligible entry has no reading', () => {
+    // Japanese entry with only a romaji pronunciation — ja never falls back to
+    // romaji, so there is no kana reading to arrange → spell mode.
+    const word = { forms: ['水'], head: '水', context: { form: '水' } };
+    const context = '水を飲む。';
+    const entry = { head: '水', pronunciation: 'mizu' };
+    expect(scrabbleAnswerText(context, word, '水', entry, 'ja')).toBe('水');
+    expect(scrabbleFallsBackToSpell(context, word, '水', entry, 'ja')).toBe(true);
+  });
+
+  it('falls back to spell for a phonetics-suppressed (Latin-script) single-char answer', () => {
+    // 'en' is phonetics-suppressed; even though the entry carries an IPA
+    // pronunciation, a 1-block IPA arrangement is not meaningful → spell mode.
+    const word = { forms: ['a'], head: 'a', context: { form: 'a' } };
+    const context = 'a';
+    const entry = { head: 'a', pronunciation: 'eɪ' };
+    expect(scrabbleAnswerText(context, word, 'a', entry, 'en')).toBe('a');
+    expect(scrabbleFallsBackToSpell(context, word, 'a', entry, 'en')).toBe(true);
   });
 });

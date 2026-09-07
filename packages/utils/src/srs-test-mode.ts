@@ -464,6 +464,85 @@ export function shuffleScrabbleBlocks(answer: string): ScrabbleBlock[] {
   return blocks;
 }
 
+/**
+ * The shape of a dropped-in dictionary entry used by the scrabble helpers.
+ * Structurally compatible with what `spellBlankText` / `pronunciationReadingOf`
+ * accept, so a `DictionaryEntry` from the review pages can be passed as-is.
+ */
+export interface SrsScrabbleEntryLike {
+  head?: string | null;
+  pronunciation?: string;
+  alternate?: string | null;
+  phonetic_detail?: {
+    kana?: string;
+    pinyin?: string;
+    romanization?: string;
+    ipa?: string;
+  } | null;
+  han_script?: {
+    simplified?: string;
+    traditional?: string;
+    kanji?: string | null;
+    hanja?: string | null;
+    hangul?: string;
+    han?: string;
+    hantu?: string;
+  } | null;
+}
+
+/**
+ * The string scrabble mode derives its letter blocks from.
+ *
+ * Normally identical to `spellBlankText` (the exact surface form blanked in the
+ * context sentence). But a SINGLE-character answer cannot be meaningfully
+ * arranged — the learner would just tap the lone block to submit. In that case
+ * scrabble arranges the matched dictionary entry's phonetics instead, so the
+ * blocks spell out the reading (e.g. pinyin `wǒ` for 我, kana `みず` for 水).
+ *
+ * The phonetics substitution only applies to phonetics-eligible languages
+ * (`isPhoneticsEligible`, e.g. Japanese/Chinese/Korean/Thai — the languages
+ * whose orthography does not reveal their reading). For phonetics-suppressed
+ * languages (Latin-script, Burmese) the "phonetics" would only be the IPA / the
+ * same letter — not a meaningful block set — so those keep the blanked word and
+ * the caller must instead fall back to spell mode for the card (see
+ * `scrabbleFallsBackToSpell`).
+ */
+export function scrabbleAnswerText(
+  context: string,
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: SrsScrabbleEntryLike | null | undefined,
+  l2Code: string,
+): string {
+  const blanked = spellBlankText(context, word, fallback, entry, l2Code);
+  if (Array.from(blanked).length === 1) {
+    const reading = isPhoneticsEligible(l2Code) ? pronunciationReadingOf(entry, l2Code) : '';
+    if (reading) return reading;
+  }
+  return blanked;
+}
+
+/**
+ * True when a card whose resolved mode is `scrabble` should instead run as
+ * **spell mode**: the scrabble answer is a single character (so arranging it is
+ * a trivial one-block tap) AND the matched dictionary entry exposes no
+ * phonetics to arrange in its place. This is the spelling-time counterpart of
+ * `scrabbleAnswerText`: phonetics-suppressed languages, and phonetics-eligible
+ * languages whose entry has no reading, both fall back to typing the word.
+ */
+export function scrabbleFallsBackToSpell(
+  context: string,
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: SrsScrabbleEntryLike | null | undefined,
+  l2Code: string,
+): boolean {
+  const blanked = spellBlankText(context, word, fallback, entry, l2Code);
+  if (Array.from(blanked).length > 1) return false;
+  const reading = isPhoneticsEligible(l2Code) ? pronunciationReadingOf(entry, l2Code) : '';
+  return !reading;
+}
+
 export type SpellHintKind = 'phonetic' | 'orthographic';
 export interface SpellHintInfo {
   /** The muted first character to show as the hint. */
