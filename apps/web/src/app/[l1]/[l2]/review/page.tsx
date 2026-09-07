@@ -31,6 +31,7 @@ import {
   spellBlankText,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
+  scrabbleNeedsEntryFetch,
   scriptVariants,
   bestScriptSimilarity,
   resolveReviewMode,
@@ -1047,16 +1048,16 @@ export default function ReviewPage() {
     if (mode === 'choose') { void startTest(); return; }
     if (mode === 'spell') { void startSpell(); return; }
     if (mode === 'scrabble') {
-      // A single-character answer can't be meaningfully arranged; if the
-      // matched entry exposes no phonetics, run this card as spell mode.
+      // The phonetics-based scrabble needs the matched entry loaded. If it is
+      // still loading (an LLM entry is fetched by id only on reveal, which is
+      // after the test), wait on the spinner rather than starting the wrong mode.
+      const scrabbleEntry = card ? (l1Entry ?? fallbackEntry ?? card.entry) : null;
+      if (card && scrabbleNeedsEntryFetch(card.word.context?.text ?? '', card.word, wordForm, scrabbleEntry, l2Code)) {
+        return;
+      }
+      // Once loaded: a single-char answer with no usable phonetics runs as spell.
       const fallsBack = card
-        ? scrabbleFallsBackToSpell(
-            card.word.context?.text ?? '',
-            card.word,
-            wordForm,
-            l1Entry ?? fallbackEntry ?? card.entry,
-            l2Code,
-          )
+        ? scrabbleFallsBackToSpell(card.word.context?.text ?? '', card.word, wordForm, scrabbleEntry, l2Code)
         : false;
       if (fallsBack) { void startSpell(); return; }
       void startScrabble();
@@ -1276,18 +1277,26 @@ export default function ReviewPage() {
   // reviewed more than once (SPEC-066 mixed mode).
   let effectiveMode = resolveReviewMode(reviewMode, currentCardState, currentCard?.srs.reps ?? 0);
   // A single-character scrabble answer is a trivial one-block tap, so scrabble
-  // arranges the matched entry's phonetics instead; when the entry exposes no
-  // phonetics this card runs as spell mode (SPEC-066 scrabble).
+  // arranges the matched entry's phonetics instead. The entry (and its reading)
+  // may not be loaded yet — for LLM entries it is fetched by id only on reveal,
+  // which is *after* the test. While it loads we hold a spinner (a wait); once
+  // the entry is available we decide: phonetics → scrabble, none → spell (a
+  // fall back). SPEC-066 scrabble single-char.
+  let scrabbleEntryPending = false;
   if (effectiveMode === 'scrabble' && currentCard) {
-    effectiveMode = scrabbleFallsBackToSpell(
-      currentCard.word.context?.text ?? '',
-      currentCard.word,
-      wordForm,
-      l1Entry ?? fallbackEntry ?? currentCard.entry,
-      l2Code,
-    )
-      ? 'spell'
-      : 'scrabble';
+    const scrabbleEntry = l1Entry ?? fallbackEntry ?? currentCard.entry;
+    const scrabbleCtx = currentCard.word.context?.text ?? '';
+    if (scrabbleNeedsEntryFetch(scrabbleCtx, currentCard.word, wordForm, scrabbleEntry, l2Code)) {
+      // Entry not loaded yet — wait for it (spinner); re-evaluate when it lands.
+      scrabbleEntryPending = true;
+    } else if (Array.from(spellBlankText(scrabbleCtx, currentCard.word, wordForm, scrabbleEntry, l2Code)).length === 1) {
+      // Entry loaded but has no usable phonetics → fall back to spell.
+      effectiveMode = scrabbleFallsBackToSpell(scrabbleCtx, currentCard.word, wordForm, scrabbleEntry, l2Code)
+        ? 'spell'
+        : 'scrabble';
+    }
+    // A multi-character answer falls through unchanged: its blocks come from the
+    // word itself, so it never needs the entry's phonetics.
   }
   // Scrabble and spell share the whole "type/arrange the blanked word" flow:
   // same countdown budget, same blanked context, same grading.
@@ -1426,7 +1435,11 @@ export default function ReviewPage() {
   // the bookmark read "not saved" for an entry that is actually saved.
   useEffect(() => {
     const sw = currentCard?.word;
-    if (!sw || !showDefinition || fallbackEntry || l1Entry?.id === sw.id) return;
+    if (!sw || fallbackEntry || l1Entry?.id === sw.id) return;
+    // Run on reveal, and also while a single-char scrabble card is waiting for
+    // its entry's phonetics (the test runs before reveal, so the exact-id fetch
+    // — the only path to an LLM entry — must fire early).
+    if (!showDefinition && !scrabbleEntryPending) return;
     const id = sw.id;
     // An English cache hit must not block the L1 fetch — the whole point of
     // this effect is to replace the English definitions with translated ones.
@@ -1542,6 +1555,7 @@ export default function ReviewPage() {
     return () => { cancelled = true; };
   }, [
     showDefinition,
+    scrabbleEntryPending,
     currentCard?.word.id,
     currentEntry,
     fallbackEntry,
@@ -2052,9 +2066,17 @@ export default function ReviewPage() {
           </Button>
         ) : isSpellLike && !showDefinition && !spellSubmitted ? (
           testStartedAt === null ? (
-            <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
-              {t('review.start_test')}
-            </Button>
+            scrabbleEntryPending ? (
+              // The phonetics for a single-char scrabble answer come from the
+              // matched entry, which is still being fetched — wait for it.
+              <div className="mt-4 flex justify-center py-4" aria-label={t('review.loading_test')}>
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
+                {t('review.start_test')}
+              </Button>
+            )
           ) : effectiveMode === 'spell' ? (
             <div className="mt-4 w-full space-y-3 text-center">
               <label htmlFor="spell-input" className="block text-sm font-medium text-foreground">{t('review.spell_prompt')}</label>
