@@ -543,6 +543,29 @@ export function scrabbleFallsBackToSpell(
   return !reading;
 }
 
+/**
+ * True when a single-char scrabble card still needs its matched dictionary
+ * entry fetched — i.e. the entry is not loaded yet, so its phonetics (the
+ * string the blocks are derived from) are not yet available. Used to gate the
+ * exact-entry lookup on the review pages and to hold a spinner while it runs.
+ *
+ * This is deliberately distinct from `scrabbleFallsBackToSpell`: an unloaded
+ * entry is a *wait*, not a *fall back* — the card stays in scrabble mode and
+ * re-evaluates reactively once the entry arrives (and only then decides between
+ * phonetic-scrabble and spell). `scrabbleFallsBackToSpell` is evaluated only
+ * after the entry is loaded.
+ */
+export function scrabbleNeedsEntryFetch(
+  context: string,
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: SrsScrabbleEntryLike | null | undefined,
+  l2Code: string,
+): boolean {
+  if (entry) return false;
+  return Array.from(spellBlankText(context, word, fallback, entry, l2Code)).length === 1;
+}
+
 export type SpellHintKind = 'phonetic' | 'orthographic';
 export interface SpellHintInfo {
   /** The muted first character to show as the hint. */
