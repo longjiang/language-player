@@ -282,8 +282,14 @@ original `lemmatize_chinese.py` remains for the legacy video path.
      the token is split into dictionary-known pieces (e.g. `動物學` → `動物`
      + `學` → `dung6 mat6 hok6`). Cantonese has few homonyms, so piecewise
      readings are reliable; characters absent from the lexicon are skipped.
+   - `lzh` (Literary Chinese / 文言文) → tone-marked pinyin via pypinyin.
+     Literary Chinese is read aloud with the modern Mandarin sound values of
+     its characters (酒德颂 → `jiǔ dé sòng`), so pypinyin is the correct
+     reading source. `lzh` joined the pinyin policy on 2026-08-12; its jieba
+     cache namespace was bumped to `jieba-han-v2` so rows cached before the
+     policy (empty readings) are never reused.
    - other Han variants → no pronunciation yet
-3. Cache key: `cache/lemmatization/jieba/{lang}/{md5}`
+3. Cache key: `cache/lemmatization/jieba/{lang}/{md5}` (lzh → `jieba-han-v2/{lang}/{md5}`)
 
 **POS tags**: jieba's POS tagset (e.g., `n` = noun, `v` = verb, `a` = adjective,
 `l` = idiom, `x` = punctuation).
