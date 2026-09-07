@@ -1293,6 +1293,8 @@
         "mixed_mode": "混合模式",
         "no_definition_available": "詞典中未找到此單詞。",
         "recall_mode": "回憶模式",
+        "scrabble_mode": "拼字模式",
+        "scrabble_prompt": "排列字母",
         "shortcut_hint": "按<space></space>翻轉，<k1></k1>–<k2></k2>評分，<enter></enter>繼續",
         "spell_correct_answer": "正確答案：{answer}",
         "spell_hint_orthographic": "書寫以「{char}」開頭",

@@ -1329,6 +1329,8 @@
         "mixed_mode": "Mode campuran",
         "no_definition_available": "Kata ini tidak ditemukan di kamus kami.",
         "recall_mode": "Mode mengingat",
+        "scrabble_mode": "Mode Scrabble",
+        "scrabble_prompt": "Susun huruf",
         "shortcut_hint": "Tekan <space></space> untuk membalik, <k1></k1>–<k2></k2> untuk menilai, <enter></enter> untuk lanjut",
         "show_definition": "Tampilkan Definisi",
         "spell_correct_answer": "Jawaban yang benar: {answer}",

@@ -1306,6 +1306,8 @@
         "mixed_mode": "混合模式",
         "no_definition_available": "词典中未找到此单词。",
         "recall_mode": "回忆模式",
+        "scrabble_mode": "拼字模式",
+        "scrabble_prompt": "排列字母",
         "shortcut_hint": "按<space></space>翻转，<k1></k1>–<k2></k2>评分，<enter></enter>继续",
         "show_definition": "显示释义",
         "spell_correct_answer": "正确答案：{answer}",

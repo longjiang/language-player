@@ -1329,6 +1329,8 @@
         "mixed_mode": "Karma mod",
         "no_definition_available": "Bu kelime sözlüğümüzde bulunamadı.",
         "recall_mode": "Hatırlama modu",
+        "scrabble_mode": "Scrabble modu",
+        "scrabble_prompt": "Harfleri diz",
         "shortcut_hint": "Çevirmek için <space></space>, puanlamak için <k1></k1>–<k2></k2>, devam etmek için <enter></enter> tuşuna bas",
         "show_definition": "Tanımı Göster",
         "spell_correct_answer": "Doğru cevap: {answer}",

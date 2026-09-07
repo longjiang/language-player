@@ -1329,6 +1329,8 @@
         "mixed_mode": "Gemengde modus",
         "no_definition_available": "Dit woord staat niet in ons woordenboek.",
         "recall_mode": "Herinneringsmodus",
+        "scrabble_mode": "Scrabble-modus",
+        "scrabble_prompt": "Schik de letters",
         "shortcut_hint": "Druk <space></space> om te draaien, <k1></k1>–<k2></k2> om te beoordelen, <enter></enter> om door te gaan",
         "show_definition": "Definitie tonen",
         "spell_correct_answer": "Juiste antwoord: {answer}",

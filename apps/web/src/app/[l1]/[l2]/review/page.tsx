@@ -69,6 +69,7 @@ import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { SpellCharInput } from '@/components/review/spell-char-input';
+import { ScrabbleCharInput } from '@/components/review/scrabble-char-input';
 import { useT } from '@/hooks/use-t';
 import { log, logwarn } from '@/lib/logger';
 import { toast } from 'sonner';
@@ -83,6 +84,7 @@ import {
   ListChecks,
   Keyboard,
   Shuffle,
+  Blocks,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -209,6 +211,7 @@ export default function ReviewPage() {
     const stored = window.localStorage.getItem('lp:srs-review-mode');
     // Migrate the pre-rename 'test' value to 'choose'.
     if (stored === 'test' || stored === 'choose') return 'choose';
+    if (stored === 'scrabble') return 'scrabble';
     if (stored === 'spell') return 'spell';
     if (stored === 'recall') return 'recall';
     // Unset (or already 'mixed') → default to mixed mode.
@@ -234,6 +237,7 @@ export default function ReviewPage() {
     setShowDefinition(false);
     setRegeneratingKind(null);
     setSpellText('');
+    setSpellArrange(0);
     setSpellSubmitted(false);
     setSpellResult(null);
   }, []);
@@ -247,6 +251,8 @@ export default function ReviewPage() {
   const [testScores, setTestScores] = useState<number[]>([]);
   /** Spell-mode text input value (the learner's typed answer). */
   const [spellText, setSpellText] = useState('');
+  /** Scrabble-mode key — bumped on each Start Test so the block pool reshuffles. */
+  const [spellArrange, setSpellArrange] = useState(0);
   /** True once the spell-mode answer has been submitted (input hidden). */
   const [spellSubmitted, setSpellSubmitted] = useState(false);
   /** The graded result of a spell submission (shown as feedback below). */
@@ -541,6 +547,7 @@ export default function ReviewPage() {
     setSuggestedRating(null);
     setRegeneratingKind(null);
     setSpellText('');
+    setSpellArrange(0);
     setSpellSubmitted(false);
     setSpellResult(null);
 
@@ -786,8 +793,9 @@ export default function ReviewPage() {
       const card = cards[currentIndex + offset];
       if (!card) continue;
       // In mixed mode only NEW cards are choice-tested (review cards use spell
-      // and need no generated test); in choose mode every card is choice-tested.
-      const cardMode = resolveReviewMode(reviewMode, fsrs.getCardState(card.srs));
+      // / scrabble and need no generated test); in choose mode every card is
+      // choice-tested.
+      const cardMode = resolveReviewMode(reviewMode, fsrs.getCardState(card.srs), card.srs.reps);
       if (cardMode !== 'choose') continue;
       const cardKey = `${l2Code}:${baseCode(l1.code)}:${card.word.id}`;
       wantedKeys.push(cardKey);
@@ -902,6 +910,7 @@ export default function ReviewPage() {
     setSpellText('');
     setSpellSubmitted(false);
     setSpellResult(null);
+    setSpellArrange(0);
     setTestAnswers([]);
     setTestQuestionIndex(0);
     setSuggestedRating(null);
@@ -913,11 +922,13 @@ export default function ReviewPage() {
   }, [cards, currentIndex, wordForm, l2Code]);
 
   /**
-   * Submit the spell-mode answer. Grade by similarity with the blanked surface
-   * form, time-adjust with the countdown (same bands as choose mode), then map
-   * to the rating buttons via scoreSpellResult.
+   * Grade a submitted spell/scrabble answer. Shared by both handlers: they
+   * differ only in where the submitted string comes from (typed text vs. the
+   * arranged blocks). Grades by similarity with the blanked surface form,
+   * time-adjust with the countdown, then map to the rating buttons via
+   * scoreSpellResult. When correct, `correctAnswer` is the blanked text.
    */
-  const handleSpellSubmit = useCallback(async () => {
+  const gradeSpellLikeAnswer = useCallback(async (submitted: string) => {
     const card = cards[currentIndex];
     if (!card || spellSubmitted) return;
     // The correct answer is the exact form blanked in the context sentence
@@ -935,27 +946,69 @@ export default function ReviewPage() {
       : 0;
     // Script-tolerant matching: compare every variant pair and take the best.
     const [answerVariants, correctVariants] = await Promise.all([
-      buildSpellVariants(spellText, l2Code),
+      buildSpellVariants(submitted, l2Code),
       buildSpellVariants(correctAnswer, l2Code),
     ]);
     const rating = scoreSpellResult(answerVariants, correctVariants, totalMs);
     const correct = bestScriptSimilarity(answerVariants, correctVariants) >= 0.9;
     setSuggestedRating(rating);
     setSpellSubmitted(true);
-    setSpellResult({ correct, answer: correctAnswer, submitted: spellText });
+    setSpellResult({ correct, answer: correctAnswer, submitted });
     testSessionStartRef.current = 0;
     setTestStartedAt(null);
     setShowDefinition(true);
-    log('[SRS Spell] answer submitted', { l2Code, word: wordForm, submitted: spellText, correct: correctAnswer, correctMatch: correct, totalMs, rating });
-  }, [cards, currentIndex, spellText, spellSubmitted, wordForm, l2Code, l1Entry, fallbackEntry]);
+    log('[SRS Spell] answer submitted', { l2Code, word: wordForm, submitted, correct: correctAnswer, correctMatch: correct, totalMs, rating });
+  }, [cards, currentIndex, spellSubmitted, wordForm, l2Code, l1Entry, fallbackEntry]);
+
+  /**
+   * Submit the spell-mode answer (typed text).
+   */
+  const handleSpellSubmit = useCallback(async () => {
+    await gradeSpellLikeAnswer(spellText);
+  }, [gradeSpellLikeAnswer, spellText]);
+
+  /**
+   * Start the current card's scrabble test. Identical to spell mode except
+   * there is no typed text — the learner arranges shuffled letter blocks, and
+   * submitting happens automatically when the last slot is filled.
+   */
+  const startScrabble = useCallback(() => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    testRequestVersionRef.current += 1;
+    setShowDefinition(false);
+    setSpellText('');
+    setSpellSubmitted(false);
+    setSpellResult(null);
+    setSpellArrange(0);
+    setTestAnswers([]);
+    setTestQuestionIndex(0);
+    setSuggestedRating(null);
+    setRegeneratingKind(null);
+    const now = Date.now();
+    testSessionStartRef.current = now;
+    setTestStartedAt(now);
+    log('[SRS Scrabble] session started', { l2Code, word: wordForm, correct: surfaceFormOf(card.word, wordForm) });
+  }, [cards, currentIndex, wordForm, l2Code]);
+
+  /**
+   * Submit the scrabble-mode answer — called automatically when the LAST block
+   * slot is filled (there is no submit button and no hint). `arranged` is the
+   * string built from the blocks in slot order.
+   */
+  const handleScrabbleSubmit = useCallback(async (arranged: string) => {
+    log('[SRS Scrabble] blocks arranged (auto-submit)', { l2Code, word: wordForm, arranged });
+    await gradeSpellLikeAnswer(arranged);
+  }, [gradeSpellLikeAnswer, wordForm, l2Code]);
 
   const handleReveal = useCallback(() => {
     const card = cards[currentIndex];
-    const mode = resolveReviewMode(reviewMode, card ? fsrs.getCardState(card.srs) : null);
+    const mode = resolveReviewMode(reviewMode, card ? fsrs.getCardState(card.srs) : null, card?.srs.reps ?? 0);
     if (mode === 'choose') { void startTest(); return; }
     if (mode === 'spell') { void startSpell(); return; }
+    if (mode === 'scrabble') { void startScrabble(); return; }
     setShowDefinition(true);
-  }, [reviewMode, cards, currentIndex, startTest, startSpell]);
+  }, [reviewMode, cards, currentIndex, startTest, startSpell, startScrabble]);
 
   const handleTestAnswer = useCallback((answer: string) => {
     log('[SRS Test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), answerCount: testAnswers.length, questionCount: testSlots.length });
@@ -1035,6 +1088,7 @@ export default function ReviewPage() {
     setSuggestedRating(null);
     setRegeneratingKind(null);
     setSpellText('');
+    setSpellArrange(0);
     setSpellSubmitted(false);
     setSpellResult(null);
     setRated(false);
@@ -1075,6 +1129,7 @@ export default function ReviewPage() {
         setSuggestedRating(null);
         setRegeneratingKind(null);
         setSpellText('');
+        setSpellArrange(0);
         setSpellSubmitted(false);
         setSpellResult(null);
       }
@@ -1206,29 +1261,34 @@ export default function ReviewPage() {
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
   // The behavior mode for the CURRENT card: 'mixed' resolves to choose for new
-  // cards and spell for every other state (SPEC-066 mixed mode).
-  const effectiveMode = resolveReviewMode(reviewMode, currentCardState);
+  // cards, scrabble for a card reviewed exactly once, and spell for a card
+  // reviewed more than once (SPEC-066 mixed mode).
+  const effectiveMode = resolveReviewMode(reviewMode, currentCardState, currentCard?.srs.reps ?? 0);
+  // Scrabble and spell share the whole "type/arrange the blanked word" flow:
+  // same countdown budget, same blanked context, same grading.
+  const isSpellLike = effectiveMode === 'spell' || effectiveMode === 'scrabble';
   const definitionTestAnswered = effectiveMode === 'choose'
     && testSlots.some((slot, index) => slot.kind === 'definition' && Boolean(testAnswers[index]));
-  // Spell mode keeps the context translation visible throughout (the learner
-  // sees the translated sentence with the bolded term even before the test
-  // starts, per SPEC-066 spell mode).
-  const showContextTranslation = showDefinition || definitionTestAnswered || effectiveMode === 'spell';
+  // Spell/scrabble mode keeps the context translation visible throughout (the
+  // learner sees the translated sentence with the bolded term even before the
+  // test starts, per SPEC-066 spell mode).
+  const showContextTranslation = showDefinition || definitionTestAnswered || isSpellLike;
   // When the learner's L1 == L2 (zh/zh-Hans/zh-Hant are equivalent via
   // baseCode), the context "translation" is the same language and — with the
-  // target bolded — would leak the blanked word in spell mode. So in spell mode
-  // we replace the sentence translation with a contextual rephrasing of the
-  // target word (server `rephrase_term`), so the target word never appears.
-  const sameLangRephrase = effectiveMode === 'spell' && baseCode(l1.code) === l2Code;
+  // target bolded — would leak the blanked word in spell/scrabble mode. So in
+  // those modes we replace the sentence translation with a contextual
+  // rephrasing of the target word (server `rephrase_term`), so the target word
+  // never appears.
+  const sameLangRephrase = isSpellLike && baseCode(l1.code) === l2Code;
 
   // ── Test progress bar (SPEC-066) ──
   // Counts down a total budget of T = 10 s × totalTests. Blue while more than
   // 5 s × totalTests remain (still inside the fast window that earns the +1
   // bonus); green once past that threshold (racing the 10 s/test slow mark).
-  // Spell mode has exactly one test and a doubled allowance (budget 20 s,
-  // fast < 10 s) because typing the blanked form (often via a CJK IME) is much
-  // slower than tapping a choice.
-  const isSpellTest = effectiveMode === 'spell';
+  // Spell/scrabble mode has exactly one test and a doubled allowance (budget
+  // 20 s, fast < 10 s) because typing the blanked form (often via a CJK IME)
+  // or arranging the blocks is much slower than tapping a choice.
+  const isSpellTest = isSpellLike;
   const testTotalTests = isSpellTest ? 1 : Math.max(1, testSlots.filter((slot) => slot.status !== 'skipped').length);
   const testTotalMs = (isSpellTest ? SPELL_TEST_TOTAL_MS : 10_000) * testTotalTests;
   const testFastMs = (isSpellTest ? SPELL_TEST_FAST_MS : 5_000) * testTotalTests;
@@ -1675,14 +1735,28 @@ export default function ReviewPage() {
         l2Code,
       )).length
     : 0;
+  /** The correct blanked word — the scrabble mode derives its letter blocks
+   *  (and shuffle) from this exact string, so the block count matches the
+   *  spelling test. */
+  const scrabbleAnswer = isSpellLike && currentCard
+    ? spellBlankText(
+        currentCard.word.context?.text ?? '',
+        currentCard.word,
+        wordForm,
+        entry,
+        l2Code,
+      )
+    : '';
   // Keep later tests hidden until the preceding test has been answered; the
   // current (first unanswered) slot renders its own status below.
   const visibleTestSlots = testSlots.slice(0, testQuestionIndex + 1);
 
-  // Review-mode dropdown options (Mixed / Choose / Spell / Recall) with icons.
+  // Review-mode dropdown options (Mixed / Choose / Scrabble / Spell / Recall)
+  // with icons.
   const MODE_OPTIONS = [
     { key: 'mixed' as const, label: t('review.mixed_mode'), Icon: Shuffle },
     { key: 'choose' as const, label: t('review.choose_mode'), Icon: ListChecks },
+    { key: 'scrabble' as const, label: t('review.scrabble_mode'), Icon: Blocks },
     { key: 'spell' as const, label: t('review.spell_mode'), Icon: Keyboard },
     { key: 'recall' as const, label: t('review.recall_mode'), Icon: Brain },
   ];
@@ -1749,7 +1823,7 @@ export default function ReviewPage() {
                 highlightEntryIds={targetHighlightEntryIds}
                 phoneticsOnHighlight={showDefinition}
                 quickGlossOnHighlight={showDefinition}
-                blankHighlighted={effectiveMode === 'spell' && !spellSubmitted}
+                blankHighlighted={isSpellLike && !spellSubmitted}
                 context={{
                   youtube_id: wordCtx.youtube_id,
                   videoTitle: wordCtx.videoTitle,
@@ -1831,7 +1905,7 @@ export default function ReviewPage() {
             session starts. Blue while more than 5 s × totalTests remain,
             green otherwise (SPEC-066). */}
         {((effectiveMode === 'choose' && testStartedAt !== null && !rated)
-          || (effectiveMode === 'spell' && testStartedAt !== null && !rated && !spellSubmitted)) && (
+          || (isSpellLike && testStartedAt !== null && !rated && !spellSubmitted)) && (
           <div className="mt-4 w-full">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div
@@ -1950,12 +2024,12 @@ export default function ReviewPage() {
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
             {t('review.start_test')}
           </Button>
-        ) : effectiveMode === 'spell' && !showDefinition && !spellSubmitted ? (
+        ) : isSpellLike && !showDefinition && !spellSubmitted ? (
           testStartedAt === null ? (
             <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
               {t('review.start_test')}
             </Button>
-          ) : (
+          ) : effectiveMode === 'spell' ? (
             <div className="mt-4 w-full space-y-3 text-center">
               <label htmlFor="spell-input" className="block text-sm font-medium text-foreground">{t('review.spell_prompt')}</label>
               <SpellCharInput
@@ -1984,6 +2058,19 @@ export default function ReviewPage() {
                 </p>
               )}
             </div>
+          ) : (
+            // Scrabble: no hint, no submit button — filling the last slot
+            // auto-submits (the component calls handleScrabbleSubmit).
+            <div className="mt-4 w-full space-y-3 text-center">
+              <label htmlFor="scrabble-input" className="block text-sm font-medium text-foreground">{t('review.scrabble_prompt')}</label>
+              <ScrabbleCharInput
+                key={`scrabble-${scrabbleAnswer}-${spellArrange}`}
+                answer={scrabbleAnswer}
+                onSubmit={(arranged) => void handleScrabbleSubmit(arranged)}
+                id="scrabble-input"
+                label={t('review.scrabble_prompt')}
+              />
+            </div>
           )
         ) : !showDefinition && effectiveMode === 'recall' ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
@@ -1991,7 +2078,7 @@ export default function ReviewPage() {
           </Button>
         ) : null}
 
-        {effectiveMode === 'spell' && spellSubmitted && spellResult && (
+        {isSpellLike && spellSubmitted && spellResult && (
           <div className="mt-4 w-full text-left space-y-1">
             <p className={`text-sm font-semibold ${spellResult.correct ? 'text-green-600' : 'text-destructive'}`}>
               {spellResult.correct ? t('review.answer_correct') : t('review.answer_incorrect')}

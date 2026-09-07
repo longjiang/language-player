@@ -1329,6 +1329,8 @@
         "mixed_mode": "Tryb mieszany",
         "no_definition_available": "Nie znaleziono tego słowa w naszym słowniku.",
         "recall_mode": "Tryb przypominania",
+        "scrabble_mode": "Tryb Scrabble",
+        "scrabble_prompt": "Ułóż litery",
         "shortcut_hint": "Naciśnij <space></space> aby odwrócić, <k1></k1>–<k2></k2> aby ocenić, <enter></enter> aby kontynuować",
         "show_definition": "Pokaż definicję",
         "spell_correct_answer": "Poprawna odpowiedź: {answer}",

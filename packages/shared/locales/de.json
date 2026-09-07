@@ -1329,6 +1329,8 @@
         "mixed_mode": "Gemischter Modus",
         "no_definition_available": "Dieses Wort wurde in unserem Wörterbuch nicht gefunden.",
         "recall_mode": "Abrufmodus",
+        "scrabble_mode": "Buchstabenmodus",
+        "scrabble_prompt": "Ordne die Buchstaben",
         "shortcut_hint": "Drücke <space></space> zum Umdrehen, <k1></k1>–<k2></k2> zum Bewerten, <enter></enter> zum Fortfahren",
         "show_definition": "Definition anzeigen",
         "spell_correct_answer": "Richtige Antwort: {answer}",

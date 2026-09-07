@@ -1329,6 +1329,8 @@
         "mixed_mode": "وضع مختلط",
         "no_definition_available": "لم يتم العثور على هذه الكلمة في قاموسنا.",
         "recall_mode": "وضع الاستدعاء",
+        "scrabble_mode": "وضع الحروف",
+        "scrabble_prompt": "رتب الحروف",
         "shortcut_hint": "اضغط <space></space> للقلب، <k1></k1>–<k2></k2> للتقييم، <enter></enter> للمتابعة",
         "show_definition": "إظهار التعريف",
         "spell_correct_answer": "الإجابة الصحيحة: {answer}",

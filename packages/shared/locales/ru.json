@@ -1329,6 +1329,8 @@
         "mixed_mode": "Смешанный режим",
         "no_definition_available": "Это слово не найдено в нашем словаре.",
         "recall_mode": "Режим вспоминания",
+        "scrabble_mode": "Режим «Скраббл»",
+        "scrabble_prompt": "Расставьте буквы",
         "shortcut_hint": "Нажми <space></space> чтобы перевернуть, <k1></k1>–<k2></k2> чтобы оценить, <enter></enter> чтобы продолжить",
         "show_definition": "Показать определение",
         "spell_correct_answer": "Правильный ответ: {answer}",

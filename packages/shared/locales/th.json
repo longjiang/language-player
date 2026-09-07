@@ -1329,6 +1329,8 @@
         "mixed_mode": "โหมดผสม",
         "no_definition_available": "ไม่พบคำนี้ในพจนานุกรมของเรา",
         "recall_mode": "โหมดทบทวนความจำ",
+        "scrabble_mode": "โหมดสแคร็บเบิล",
+        "scrabble_prompt": "เรียงตัวอักษร",
         "shortcut_hint": "กด <space></space> เพื่อพลิก, <k1></k1>–<k2></k2> เพื่อให้คะแนน, <enter></enter> เพื่อดำเนินการต่อ",
         "show_definition": "แสดงคำจำกัดความ",
         "spell_correct_answer": "คำตอบที่ถูกต้อง: {answer}",

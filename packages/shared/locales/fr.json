@@ -1329,6 +1329,8 @@
         "mixed_mode": "Mode mixte",
         "no_definition_available": "Ce mot est introuvable dans notre dictionnaire.",
         "recall_mode": "Mode rappel",
+        "scrabble_mode": "Mode Scrabble",
+        "scrabble_prompt": "Ordonne les lettres",
         "shortcut_hint": "Appuyez sur <space></space> pour retourner, <k1></k1>–<k2></k2> pour noter, <enter></enter> pour continuer",
         "show_definition": "Afficher la définition",
         "spell_correct_answer": "Bonne réponse : {answer}",
