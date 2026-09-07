@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { shuffleScrabbleBlocks, type ScrabbleBlock } from '@langplayer/utils';
 
 /**
@@ -14,6 +14,13 @@ import { shuffleScrabbleBlocks, type ScrabbleBlock } from '@langplayer/utils';
  *   - any interaction with a block already in a slot returns it to the pool.
  * Filling the LAST slot auto-submits the arranged word (no submit button, no
  * hint — unlike spell mode).
+ *
+ * When `keyboardEnabled` (a non-IME language per `supportsScrabbleKeyboard`),
+ * a hidden physical-keyboard input is layered over the slots: each printable
+ * keystroke moves a matching pool block into the next available slot, and
+ * Backspace returns the rightmost filled block to the pool. The soft keyboard /
+ * IME is never summoned (physical keyboard only) — the block pool stays the
+ * source of truth, and typing just drives the same placement as a tap/drag.
  *
  * The block order is shuffled once when the answer changes (the parent remounts
  * this component per card/mode via a `key`), so the pool stays put while the
@@ -30,6 +37,12 @@ export interface ScrabbleCharInputProps {
   label?: string;
   /** Optional id forwarded to the slot-row region (for a `<label htmlFor>`). */
   id?: string;
+  /**
+   * Enable the physical-keyboard fill path (non-IME L2 per
+   * `supportsScrabbleKeyboard`). When set, typing moves matching pool blocks
+   * into the slots; soft keyboard / IME is not shown.
+   */
+  keyboardEnabled?: boolean;
 }
 
 interface DragState {
@@ -55,6 +68,7 @@ export function ScrabbleCharInput({
   disabled = false,
   label,
   id,
+  keyboardEnabled = false,
 }: ScrabbleCharInputProps) {
   // Shuffle ONCE per answer (the component is remounted per card via a `key`).
   const [blocks] = useState<ScrabbleBlock[]>(() => shuffleScrabbleBlocks(answer));
@@ -69,6 +83,7 @@ export function ScrabbleCharInput({
 
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const submittedRef = useRef(false);
+  const keyboardInputRef = useRef<HTMLInputElement | null>(null);
 
   // The block array is SHUFFLED in place, so array index ≠ block id. Look up
   // blocks by their stable id (never by array index) so the ghost and the
@@ -183,10 +198,70 @@ export function ScrabbleCharInput({
     setDrag(null);
   }, []);
 
+  // ── Physical-keyboard fill (SPEC-066) ──────────────────────────────────
+  // A hidden input is focused so printable keystrokes arrive here; each key
+  // moves a matching pool block into the next empty slot (same placement as a
+  // tap/drag), and Backspace returns the rightmost filled block to the pool.
+  // The soft keyboard / IME is never shown — this path is for physical
+  // keyboards on languages that don't need an IME.
+  const handleKeyboardInput = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (disabled || submittedRef.current) return;
+    // Same IME guard as the spell input: never act mid-composition.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      // Return the rightmost filled block to the pool.
+      let filled = -1;
+      for (let i = slots.length - 1; i >= 0; i -= 1) {
+        if (slots[i] != null) { filled = i; break; }
+      }
+      if (filled >= 0) removeFromSlot(filled);
+      return;
+    }
+    if (e.key.length === 1) {
+      // Case-insensitive: a shifted capital still moves the lowercase block.
+      const typed = e.key;
+      const match = pool.find((b) => b.char.length === 1 && b.char.toLowerCase() === typed.toLowerCase());
+      if (match) {
+        e.preventDefault();
+        placeBlock(match.id);
+      }
+    }
+  }, [disabled, pool, slots, placeBlock, removeFromSlot]);
+
+  // Focus the hidden keyboard input while the keyboard-fill path is active so a
+  // physical keyboard can be used without clicking first. Clicking a block (a
+  // non-focusable div) keeps this input focused, so typing continues between
+  // block taps.
+  useEffect(() => {
+    if (keyboardEnabled && !disabled && !submittedRef.current) {
+      keyboardInputRef.current?.focus();
+    }
+  }, [keyboardEnabled, disabled]);
+
   const dragging = drag && drag.moved ? drag : null;
 
   return (
-    <div className="w-full space-y-3">
+    <div className="relative w-full space-y-3">
+      {/* Hidden physical-keyboard capture field. `pointer-events-none` keeps it
+          from blocking the drag/tap surface; `tabIndex={-1}` keeps it out of
+          tab order; autoFocus + the effect above give it focus on mount so a
+          physical keyboard fills the slots immediately. */}
+      {keyboardEnabled && (
+        <input
+          ref={keyboardInputRef}
+          type="text"
+          autoFocus
+          tabIndex={-1}
+          value=""
+          onChange={() => {}}
+          onKeyDown={handleKeyboardInput}
+          aria-hidden="true"
+          className="pointer-events-none absolute h-px w-px opacity-0"
+        />
+      )}
+
       {/* Slots (one box per answer character) */}
       <div id={id} role="group" aria-label={label} className="flex flex-wrap items-center justify-center gap-1.5">
         {Array.from({ length: slotCount }).map((_, i) => {
