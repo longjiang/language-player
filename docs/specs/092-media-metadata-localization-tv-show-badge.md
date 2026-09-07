@@ -67,6 +67,10 @@ sort — the `tv_shows` table has no year column.
   `youTubeCategoryLabel` (previously only 10 and 24 had names). Counts and
   the "All categories" row are unchanged. The All/Music/Non-Music/TV-Shows
   pills keep their `category === 10 || 24` behavior (SPEC-079/082).
+- Long show/category labels wrap onto multiple lines in the checklist so the
+  dialog never scrolls horizontally (`min-w-0` on the content grid item lets
+  the text wrap inside the dialog's width; the dialog and each checklist list
+  clip horizontal overflow).
 
 ### TV-shows list toolbar
 - Web `apps/web/src/app/[l1]/[l2]/tv-shows/page.tsx`:
