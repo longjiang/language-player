@@ -10,6 +10,7 @@ import { LevelFilter } from '@/components/video/level-filter';
 import { useVideos } from '@/hooks/use-videos';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { languageName, baseCode } from '@/lib/language-data';
 
 export default function ExplorePage() {
@@ -97,16 +98,17 @@ export default function ExplorePage() {
         />
       </div>
 
-      {/* Exclude music & entertainment toggle (below the pills) */}
-      <label className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
-        <input
-          type="checkbox"
-          checked={excludeMusic}
-          onChange={(e) => setExcludeMusic(e.target.checked)}
-          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-        />
-        {t('filter.exclude_music_and_entertainment')}
-      </label>
+      {/* Exclude music & entertainment toggle (below the pills) — a shadcn/radix
+          Switch, not a checkbox. */}
+      <div className="mb-6 flex items-center gap-2">
+        <Switch id="exclude-music-switch" checked={excludeMusic} onCheckedChange={setExcludeMusic} />
+        <label
+          htmlFor="exclude-music-switch"
+          className="cursor-pointer select-none text-sm text-muted-foreground"
+        >
+          {t('filter.exclude_music_and_entertainment')}
+        </label>
+      </div>
 
       {/* Loading — first load */}
       {loading && videos.length === 0 && (
