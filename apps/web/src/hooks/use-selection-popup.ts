@@ -63,14 +63,20 @@ function selectionStartOffset(container: Node, range: Range): number | null {
  * non-collapsed selections as `selection` (with the range's viewport rect so a
  * popup can be anchored to it).
  *
- * The popup owns its own dismissal (close button / overlay / Escape), so the
- * selection is only cleared explicitly via `clear()` — which also collapses
- * the browser selection so a dismissed popup cannot be re-triggered by a
- * stray click on the old highlight.
+ * `selection` tracks the live native selection: it is set when a valid
+ * non-collapsed selection appears inside the container, and cleared whenever
+ * that selection goes away on the same discrete triggers (mouseup / keyup /
+ * touch-settle) — e.g. when the user clicks away to cancel it. This guarantees
+ * the tooltip can never remain visible without a real selection (SPEC-033
+ * §States). It is also cleared explicitly via `clear()` — which likewise
+ * collapses the browser selection so a dismissed popup cannot be re-triggered
+ * by a stray click on the old highlight.
  *
  * There is deliberately no selectionchange auto-close: clicking or dragging
  * inside the popup dialog collapses/replaces the underlying text selection,
- * which would otherwise unmount the popup mid-interaction.
+ * which would otherwise unmount the popup mid-interaction. The dictionary popup
+ * holds its own `selectionLookup` state, so clearing `selection` on a mouseup
+ * inside the dialog never unmounts it.
  *
  * Touch devices (iPhone/iPad Safari): iOS selects text by long-press +
  * selection handles and does not reliably fire `mouseup` afterwards, so touch
@@ -96,13 +102,32 @@ export function useSelectionPopup<T extends Element>() {
 
     const capture = () => {
       const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+      // No valid selection: the native selection was collapsed (e.g. the user
+      // clicked away to cancel it), moved outside the container, or is empty.
+      // Clear the reported selection so the tooltip can never stay visible
+      // without a real selection (SPEC-033 §States). We only ever clear on the
+      // same discrete triggers that set it (mouseup / keyup / touch-settle) —
+      // never on `selectionchange` auto-close — so the dictionary popup (which
+      // holds its own `selectionLookup` state) is never unmounted mid-interaction.
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        setSelection(null);
+        return;
+      }
       const range = sel.getRangeAt(0);
-      if (!container.contains(range.commonAncestorContainer)) return;
+      if (!container.contains(range.commonAncestorContainer)) {
+        setSelection(null);
+        return;
+      }
       const text = sel.toString();
-      if (!text.trim()) return;
+      if (!text.trim()) {
+        setSelection(null);
+        return;
+      }
       const rect = range.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) return;
+      if (rect.width === 0 && rect.height === 0) {
+        setSelection(null);
+        return;
+      }
       const startOffset = selectionStartOffset(container, range);
       setSelection((prev) =>
         prev?.text === text && prev.rect.x === rect.left && prev.rect.y === rect.top
