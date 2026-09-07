@@ -15,6 +15,7 @@ import {
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
+  supportsScrabbleKeyboard,
   scoreSpellResult,
   scoreTestResult,
   scriptVariants,
@@ -633,5 +634,32 @@ describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble)',
     const context = '水を飲む。';
     const entry = { head: '水', alternate: 'みず', pronunciation: 'mizu' };
     expect(scrabbleNeedsEntryFetch(context, word, '水', entry, 'ja')).toBe(false);
+  });
+});
+
+describe('supportsScrabbleKeyboard', () => {
+  it('allows non-IME (non-CJK) languages', () => {
+    expect(supportsScrabbleKeyboard('en')).toBe(true);
+    expect(supportsScrabbleKeyboard('fr')).toBe(true);
+    expect(supportsScrabbleKeyboard('de')).toBe(true);
+    expect(supportsScrabbleKeyboard('es')).toBe(true);
+    expect(supportsScrabbleKeyboard('ar')).toBe(true);
+    expect(supportsScrabbleKeyboard('hi')).toBe(true);
+    expect(supportsScrabbleKeyboard('ru')).toBe(true);
+    expect(supportsScrabbleKeyboard('th')).toBe(true);
+  });
+
+  it('gates out languages that require an IME (Chinese/Japanese/Korean)', () => {
+    expect(supportsScrabbleKeyboard('zh')).toBe(false);
+    expect(supportsScrabbleKeyboard('zh-Hans')).toBe(false);
+    expect(supportsScrabbleKeyboard('yue')).toBe(false);
+    expect(supportsScrabbleKeyboard('ja')).toBe(false);
+    expect(supportsScrabbleKeyboard('ko')).toBe(false);
+  });
+
+  it('gates out Han-script Chinese varieties too', () => {
+    expect(supportsScrabbleKeyboard('lzh')).toBe(false);
+    expect(supportsScrabbleKeyboard('nan')).toBe(false);
+    expect(supportsScrabbleKeyboard('wuu')).toBe(false);
   });
 });
