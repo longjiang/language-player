@@ -861,6 +861,23 @@ answer:
 - **No hints** — scrabble mode shows **no** first-character hint (neither the
   `spell_hint_phonetic` nor the `spell_hint_orthographic` line) and no
   placeholder in the first box.
+- **Physical-keyboard fill (non-IME only, 2026-09-xx)** — for L2s that do not
+  require an IME (`supportsScrabbleKeyboard`: every language except
+  Chinese/Japanese/Korean and the Han-script varieties), the learner can also
+  fill the slots by typing on a **physical keyboard** in addition to dragging/
+  tapping blocks. A hidden focused text field (web `<input>`; mobile `TextInput`
+  with `showSoftInputOnFocus={false}` + `caretHidden`) captures keystrokes
+  without summoning the soft keyboard or IME. Each printable keystroke moves a
+  matching pool block into the next empty slot (**case-insensitive**), and
+  Backspace returns the rightmost filled block to the pool. The block pool stays
+  the **source of truth** — typing drives the same placement + auto-submit as a
+  tap/drag, so no new answer string or grading path exists. This feature is
+  absent for IME-required L2s (CJK), which stay arrange-only. The existing "no
+  submit button / no hint" behavior is unchanged. On **mobile** this targets a
+  hardware keyboard (the on-screen keyboard is suppressed); reliability depends
+  on the device/OS hardware-keyboard support (see the Web ↔ Mobile disparities
+  note). The review page's rate/reveal/undo shortcut listeners ignore keystrokes
+  that originate in this hidden field, so typing is never mistaken for a rating.
 - **Single-character answers (2026-09-xx)** — a one-character answer would be a
   trivially-solvable single block (the learner just taps it). So when the blanked
   answer is a single character, the block pool is instead derived from the
@@ -1064,6 +1081,7 @@ orphaned.
 | 16 | Unused/dead code | Cleaned up in Phase 6 (`fetchingEntries`, `handleSpeak`, unused imports removed) | `removeWord` intentionally unused: unsaving happens from saved-words/dictionary surfaces, not Review (2026-08-11) | Intended — no delete control on the card; orphan pruning removes the card (disparity 4) |
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
 | 18 | Reconcile local-only cards | `useSrs` dropped local-only cards against the server deck (2026-09-07) | `refreshFromCache()` does the same | **Resolved (2026-09-07)** — web now reconciles stale server-absent local cards against the authoritative deck, matching the mobile pull-merge reconcile, so the new/again/review header counts converge across devices/browsers |
+| 19 | Scrabble keyboard-fill | Hidden `<input>`, reliable on any desktop keyboard | Hidden `TextInput` with `showSoftInputOnFocus={false}`; relies on hardware-keyboard support, whose availability/behaviour varies by device & OS | Both gate on `supportsScrabbleKeyboard` and use a hidden focused field that never summons the soft keyboard/IME; mobile is best-effort for physical keyboards (on-screen touch blocks remain the primary input there). Web's rate/reveal/undo shortcuts ignore this field's keystrokes. |
 
 ## Implementation Status (2026-08-11)
 
@@ -1229,6 +1247,13 @@ orphaned.
   `scoreSpellResult`, and the same-language rephrasing applies to scrabble too.
   New `review.scrabble_mode` ("Scrabble mode") and `review.scrabble_prompt`
   ("Arrange the letters") labels are added.
+- ✅ **Scrabble physical-keyboard fill** — implemented (both review pages +
+  shared utils): for non-IME L2s (`supportsScrabbleKeyboard`) a hidden focused
+  field captures a physical keyboard (web `<input>`; mobile `TextInput` with
+  `showSoftInputOnFocus={false}`), so each printable keystroke moves a matching
+  pool block into the next empty slot (case-insensitive) and Backspace pops the
+  rightmost filled block. The soft keyboard/IME is never summoned; CJK cards stay
+  arrange-only. See the [Scrabble mode](#scrabble-mode) behaviour notes.
 - ✅ **Scrabble single-character answers** — implemented (both review pages +
   shared utils): a one-character answer is a trivially-solvable single block, so
   scrabble derives its blocks from the matched dictionary entry's phonetics
