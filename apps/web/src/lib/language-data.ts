@@ -207,7 +207,6 @@ const UNIVERSAL_PAGE_PATTERNS = [
   /^\/[^/]+\/[^/]+\/explore$/,
   /^\/[^/]+\/[^/]+\/live-tv$/,
   /^\/[^/]+\/[^/]+\/tv-shows$/,
-  /^\/[^/]+\/[^/]+\/music$/,
   /^\/[^/]+\/[^/]+\/watch-history$/,
   /^\/[^/]+\/[^/]+\/dictionary$/,
   /^\/[^/]+\/[^/]+\/saved-words$/,

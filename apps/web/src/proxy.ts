@@ -22,7 +22,7 @@ const DEPRECATED_L1_FALLBACK: Record<string, string> = {
 };
 
 /** Pages that don't count toward the guest navigation limit (content consumption). */
-const GUEST_NAV_FREE_SEGMENTS = ['watch', 'explore', 'search', 'dictionary', 'music', 'live-tv', 'tv-shows', 'reader', 'web-reader', 'epub', 'channel', 'docs'];
+const GUEST_NAV_FREE_SEGMENTS = ['watch', 'explore', 'search', 'dictionary', 'live-tv', 'tv-shows', 'reader', 'web-reader', 'epub', 'channel', 'docs'];
 
 /** Parse Accept-Language header and return the best matching supported L1 code, or null. */
 function detectLocale(request: NextRequest): string | null {

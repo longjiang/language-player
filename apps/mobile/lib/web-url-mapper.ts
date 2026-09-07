@@ -30,7 +30,6 @@ const AUTH_ROUTES: Record<string, string> = {
 const STATIC_ROUTES: Record<string, string> = {
   explore: '/(tabs)/(media)',
   search: '/(tabs)/(media)/search',
-  music: '/(tabs)/(media)/music',
   'live-tv': '/(tabs)/(media)/live-tv',
   'local-media': '/(tabs)/(media)/local-media',
   'watch-history': '/(tabs)/(media)/watch-history',

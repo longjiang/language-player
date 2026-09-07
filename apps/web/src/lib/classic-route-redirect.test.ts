@@ -87,7 +87,6 @@ describe('classicRouteAction', () => {
       '/en/ja/about',
       '/en/ja/explore',
       '/en/ja/search',
-      '/en/ja/music',
       '/en/ja/my-channels',
       '/en/ja/live-tv',
       '/en/ja/watch/abc123',
@@ -208,6 +207,7 @@ describe('classicRouteAction', () => {
       expectAlias('/privacy-policy', '/docs/privacy-policy?l1=en');
       expectAlias('/en/ja/docs', '/docs?l1=en');
       expectAlias('/en/ja/docs/media/explore', '/docs/media/explore?l1=en');
+      expectAlias('/en/ja/music', '/en/ja/explore');
       expectAlias('/verify-email', '/register');
     });
 
