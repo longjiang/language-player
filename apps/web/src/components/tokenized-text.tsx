@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   isSameEntryId,
   type DictionaryEntry,
@@ -1162,17 +1163,23 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
       {/* Selection tooltip — copy / read aloud / look up; the native
           selection stays active so the learner can keep adjusting it by
-          dragging the handles. "Look up" opens the dictionary popup. */}
-      {selectionDictionary && textSelection && !selectionLookup && (
-        <SelectionTooltip
-          text={textSelection.text}
-          rect={textSelection.rect}
-          onCopy={copySelection}
-          onSpeak={speakSelection}
-          onLookUp={openSelectionLookup}
-          isSpeaking={isSpeaking}
-        />
-      )}
+          dragging the handles. "Look up" opens the dictionary popup.
+          Rendered through a portal to <body> because the tokenized text
+          lives inside a <p> — a <div> tooltip there would be invalid HTML and
+          trigger a hydration error. */}
+      {selectionDictionary && textSelection && !selectionLookup &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <SelectionTooltip
+            text={textSelection.text}
+            rect={textSelection.rect}
+            onCopy={copySelection}
+            onSpeak={speakSelection}
+            onLookUp={openSelectionLookup}
+            isSpeaking={isSpeaking}
+          />,
+          document.body,
+        )}
 
       {/* Selection dictionary popup — the selected text becomes the lookup term */}
       {selectionDictionary && selectionLookup && (
