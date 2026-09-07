@@ -848,11 +848,14 @@ answer:
   block order is randomized once when the test starts (it is not re-shuffled on
   every render). Duplicate characters are distinct blocks (each carries a stable
   identity) so a word like いって shows two っ blocks.
-- **Interaction** — the learner fills a row of empty slots by either:
-  - **tap a block** → it goes to the first empty slot, or
-  - **drag a block** onto a specific slot.
-  Tapping an occupied slot returns its block to the pool, so a misplaced block
-  can be fixed before the last slot auto-submits.
+- **Interaction** — the learner fills a row of empty slots by dragging/tapping
+  letter blocks into the slot row:
+  - a block taken from the **pool** goes into the slot it is dropped on, or into
+    the **next empty slot** when released off the slot row; and
+  - any interaction with a block **already in a slot** returns it to the pool.
+  Because a short click that drifts a few pixels still places the block (it is
+  not mistaken for an aborted drag), a misplaced block can be fixed before the
+  last slot auto-submits.
 - **Auto-submit** — filling the **last** slot automatically submits the arranged
   word. There is **no submit button** (unlike spell mode, which has one).
 - **No hints** — scrabble mode shows **no** first-character hint (neither the
