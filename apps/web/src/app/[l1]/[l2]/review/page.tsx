@@ -766,7 +766,7 @@ export default function ReviewPage() {
     setTestSlots((prev) => prev.map((slot, i) => (
       i === index ? { ...slot, status: 'loading', question: undefined, diagnostic: undefined } : slot
     )));
-    setTestAnswers((prev) => { const next = [...prev]; next.splice(index); return next; });
+    setTestAnswers((prev) => prev.slice(0, index));
     setTestScores((prev) => { const next = [...prev]; next.splice(index); return next; });
     setTestQuestionIndex(index);
     setTestStartedAt(null);
@@ -890,7 +890,7 @@ export default function ReviewPage() {
     }
     // All tests settled (answered or skipped) → complete the card.
     const numTests = testSlots.filter((slot) => slot.status !== 'skipped').length;
-    const correctCount = testAnswers.reduce((n, a) => (a.correct ? n + 1 : n), 0);
+    const correctCount = testAnswers.reduce((n, a) => (a?.correct ? n + 1 : n), 0);
     const totalMs = Date.now() - testSessionStartRef.current;
     const rating = scoreTestResult(correctCount, numTests, totalMs);
     setSuggestedRating(rating);
@@ -1086,7 +1086,12 @@ export default function ReviewPage() {
     log('[SRS Test] answer accepted', { word: wordForm, questionIndex: testQuestionIndex, correct: isCorrect, score, isFinal: testQuestionIndex === kinds.length - 1 });
     setTestScores((previous) => [...previous, score]);
     setTestAnswers((previous) => {
-      const next = [...previous];
+      // slice() (not spread): a skipped test leaves a hole in testAnswers, and
+      // array spread materializes holes as real `undefined`, which the reduce()
+      // below then throws on (Cannot read properties of undefined 'correct').
+      // slice() keeps the hole, and reduce() skips holes — the SPEC-066
+      // "skipped tests do not count toward scoring" invariant.
+      const next = previous.slice();
       next[testQuestionIndex] = { answer, correct: isCorrect, score };
       return next;
     });
@@ -1113,7 +1118,7 @@ export default function ReviewPage() {
     // Skipped tests do not count toward the scoring.
     const numTests = testSlots.filter((slot) => slot.status !== 'skipped').length;
     const correctCount =
-      testAnswers.reduce((n, a) => (a.correct ? n + 1 : n), 0) + (isCorrect ? 1 : 0);
+      testAnswers.reduce((n, a) => (a?.correct ? n + 1 : n), 0) + (isCorrect ? 1 : 0);
     const totalMs = Date.now() - testSessionStartRef.current;
     const rating = scoreTestResult(correctCount, numTests, totalMs);
     // Always reveal the dictionary back after the final answer, correct or wrong.
