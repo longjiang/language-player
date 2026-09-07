@@ -17,6 +17,10 @@ interface UseVideosOptions {
   defer?: boolean;
   /** API endpoint path (default: /api/videos/recommend). */
   endpoint?: string;
+  /** When true, request kids-only videos (made_for_kids) and ignore level. */
+  madeForKids?: boolean;
+  /** When true, exclude music & entertainment (category_mode=discovery). */
+  excludeMusic?: boolean;
 }
 
 interface UseVideosResult {
@@ -28,13 +32,19 @@ interface UseVideosResult {
   retry: () => void;
 }
 
-function cacheKey(l2: string, level: number | undefined, endpoint: string): string {
-  const base = `${l2}:${level ?? 'all'}`;
+function cacheKey(
+  l2: string,
+  level: number | undefined,
+  endpoint: string,
+  madeForKids?: boolean,
+  excludeMusic?: boolean,
+): string {
+  const base = `${l2}:${level ?? 'all'}:${madeForKids ? 'kids' : 'allAges'}:${excludeMusic ? 'noMusic' : 'mixed'}`;
   return endpoint === '/api/videos/recommend' ? base : `${endpoint}:${base}`;
 }
 
-export function useVideos({ l2, level, pageSize = 12, cache, defer, endpoint = '/api/videos/recommend' }: UseVideosOptions): UseVideosResult {
-  const key = cacheKey(l2, level, endpoint);
+export function useVideos({ l2, level, pageSize = 12, cache, defer, endpoint = '/api/videos/recommend', madeForKids, excludeMusic }: UseVideosOptions): UseVideosResult {
+  const key = cacheKey(l2, level, endpoint, madeForKids, excludeMusic);
 
   // Restore from cache on mount / level change if available
   const [videos, setVideos] = useState<YouTubeVideo[]>(() => {
@@ -70,6 +80,11 @@ export function useVideos({ l2, level, pageSize = 12, cache, defer, endpoint = '
         if (level) params.set('level', String(level));
         params.set('page', String(pageNum));
         params.set('page_size', String(pageSize));
+        // Category-mode contract: mixed (default) includes music & entertainment;
+        // the exclude-music toggle flips to discovery. Kids requests set
+        // made_for_kids=1 and drop the level to show all levels.
+        params.set('category_mode', excludeMusic ? 'discovery' : 'mixed');
+        if (madeForKids) params.set('made_for_kids', '1');
 
         const res = await fetch(`${endpoint}?${params}`);
         if (!res.ok) throw new Error(`Failed to load videos (${res.status})`);
@@ -102,7 +117,7 @@ export function useVideos({ l2, level, pageSize = 12, cache, defer, endpoint = '
         setLoading(false);
       }
     },
-    [l2, level, pageSize, cache, key, endpoint],
+    [l2, level, pageSize, cache, key, endpoint, madeForKids, excludeMusic],
   );
 
   // Need to track the current key for the fetchEffect
