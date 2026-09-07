@@ -137,8 +137,10 @@ export {
   spellHintInfo,
   resolveReviewMode,
   shuffleScrabbleBlocks,
+  scrabbleAnswerText,
+  scrabbleFallsBackToSpell,
 } from './srs-test-mode';
-export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode, SpellHintKind, SpellHintInfo, ScrabbleBlock } from './srs-test-mode';
+export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode, SpellHintKind, SpellHintInfo, ScrabbleBlock, SrsScrabbleEntryLike } from './srs-test-mode';
 export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
 export type {
   SrsTestCacheStorage,
