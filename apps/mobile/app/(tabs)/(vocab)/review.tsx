@@ -34,6 +34,7 @@ import {
   spellBlankText,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
+  scrabbleNeedsEntryFetch,
   scriptVariants,
   bestScriptSimilarity,
   resolveReviewMode,
@@ -539,6 +540,25 @@ export default function ReviewScreen() {
       : null;
   const currentEntry = exactCachedEntry ?? exactCanonicalEntry ?? null;
 
+  // A single-char scrabble card waits for its entry's phonetics before the
+  // scramble runs; the exact-id fetch (the only path to an LLM entry) must fire
+  // before reveal, so it is gated on this too — not just on showTabs.
+  const currentScrabbleCard = currentDueCard
+    ? (store.cards[l2Code] ?? {})[currentDueCard.id] ?? null
+    : null;
+  const currentScrabbleSingleChar = Boolean(
+    currentDueCard &&
+    currentScrabbleCard &&
+    resolveReviewMode(reviewMode, fsrs.getCardState(currentScrabbleCard), currentScrabbleCard.reps ?? 0) === 'scrabble' &&
+    scrabbleNeedsEntryFetch(
+      reviewContextText(currentDueCard),
+      currentDueCard,
+      wordForm,
+      l1Entry ?? fallbackEntry ?? currentEntry,
+      l2Code,
+    ),
+  );
+
   // ── Resolve the exact saved entry before showing the back side ──
   // Old cards often have no shared-cache entry (they were never enriched
   // online). On reveal, try offline first, then the exact /dictionary/entry
@@ -546,7 +566,7 @@ export default function ReviewScreen() {
   // translated); only then fall back to a translated text-lookup entry.
   useEffect(() => {
     const id = currentDueCard?.id;
-    if (!id || !showTabs || fallbackEntry || l1Entry?.id === id) return;
+    if (!id || (!showTabs && !currentScrabbleSingleChar) || fallbackEntry || l1Entry?.id === id) return;
     const l1CacheL2 = baseCode(l2Code);
     if (getL1CachedEntry(l1CacheL2, l1Lang.code, id)) return;
     // Seed the English id cache from the canonical entry when present, but
@@ -655,6 +675,7 @@ export default function ReviewScreen() {
     return () => { cancelled = true; };
   }, [
     showTabs,
+    currentScrabbleSingleChar,
     currentDueCard?.id,
     currentDueCard?.canonicalEntry,
     fallbackEntry,
@@ -702,18 +723,33 @@ export default function ReviewScreen() {
     currentCardForMode?.srs.reps ?? 0,
   );
   // A single-character scrabble answer is a trivial one-block tap, so scrabble
-  // arranges the matched entry's phonetics instead; when the entry exposes no
-  // phonetics this card runs as spell mode (SPEC-066 scrabble).
+  // arranges the matched entry's phonetics instead. The entry (and its reading)
+  // may not be loaded yet — for LLM entries it is fetched by id only on reveal,
+  // which is *after* the test. While it loads we hold a spinner (a wait); once
+  // the entry is available we decide: phonetics → scrabble, none → spell (a
+  // fall back). On mobile + offline a card whose entry can't be loaded also
+  // falls back to spell (SPEC-066 scrabble single-char).
+  let scrabbleEntryPending = false;
   if (effectiveMode === 'scrabble' && currentCardForMode) {
-    effectiveMode = scrabbleFallsBackToSpell(
-      reviewContextText(currentCardForMode.word),
-      currentCardForMode.word,
-      wordForm,
-      l1Entry ?? fallbackEntry ?? currentEntry,
-      l2Code,
-    )
-      ? 'spell'
-      : 'scrabble';
+    const scrabbleEntry = l1Entry ?? fallbackEntry ?? currentEntry;
+    const scrabbleCtx = reviewContextText(currentCardForMode.word);
+    if (scrabbleNeedsEntryFetch(scrabbleCtx, currentCardForMode.word, wordForm, scrabbleEntry, l2Code)) {
+      // Entry not loaded yet. Hold on the spinner — but on mobile + offline, if
+      // the (offline) lookup already tried and found nothing, fall back to spell.
+      if (offlineMode && offlineEntryLookupDone[currentCardForMode.word.id]) {
+        effectiveMode = 'spell';
+      } else {
+        effectiveMode = 'scrabble';
+        scrabbleEntryPending = true;
+      }
+    } else if (Array.from(spellBlankText(scrabbleCtx, currentCardForMode.word, wordForm, scrabbleEntry, l2Code)).length === 1) {
+      // Entry loaded but has no usable phonetics → fall back to spell.
+      effectiveMode = scrabbleFallsBackToSpell(scrabbleCtx, currentCardForMode.word, wordForm, scrabbleEntry, l2Code)
+        ? 'spell'
+        : 'scrabble';
+    }
+    // A multi-character answer falls through unchanged: its blocks come from the
+    // word itself, so it never needs the entry's phonetics.
   }
   // Scrabble and spell share the whole "type/arrange the blanked word" flow:
   // same countdown budget, same blanked context, same grading.
@@ -1214,22 +1250,12 @@ export default function ReviewScreen() {
 
   const handleReveal = useCallback(() => {
     const card = cards[currentIndex];
-    const mode = resolveReviewMode(reviewMode, card ? fsrs.getCardState(card.srs) : null, card?.srs.reps ?? 0);
-    if (mode === 'choose') { void startTest(); return; }
-    if (mode === 'spell') { void startSpell(); return; }
-    if (mode === 'scrabble') {
-      // A single-character answer can't be meaningfully arranged; if the
-      // matched entry exposes no phonetics, run this card as spell mode.
-      const fallsBack = card
-        ? scrabbleFallsBackToSpell(
-            reviewContextText(card.word),
-            card.word,
-            wordForm,
-            l1Entry ?? fallbackEntry ?? currentEntry,
-            l2Code,
-          )
-        : false;
-      if (fallsBack) { void startSpell(); return; }
+    // Use the already-resolved effectiveMode (it applies the single-char
+    // scrabble → spell fall back and the mobile-offline spell fall back).
+    if (effectiveMode === 'choose') { void startTest(); return; }
+    if (effectiveMode === 'spell') { void startSpell(); return; }
+    if (effectiveMode === 'scrabble') {
+      if (scrabbleEntryPending) return; // still loading the entry → hold on the spinner
       void startScrabble();
       return;
     }
@@ -1240,7 +1266,7 @@ export default function ReviewScreen() {
       totalCards: cards.length,
     });
     setShowTabs(true);
-  }, [cards, currentIndex, reviewMode, startTest, startSpell, startScrabble, wordForm, l1Entry, fallbackEntry, currentEntry, l2Code]);
+  }, [cards, currentIndex, effectiveMode, scrabbleEntryPending, startTest, startSpell, startScrabble]);
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
@@ -2094,9 +2120,17 @@ export default function ReviewScreen() {
             </Button>
           ) : isSpellLike && !showTabs && !spellSubmitted ? (
             testStartedAt === null ? (
-              <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2">
-                <Text className={buttonTextClass('outline')}>{t('review.start_test')}</Text>
-              </Button>
+              scrabbleEntryPending ? (
+                // The phonetics for a single-char scrabble answer come from the
+                // matched entry, which is still being looked up — wait for it.
+                <View className="mb-2 items-center justify-center py-4">
+                  <ActivityIndicator size="small" color={ICON_MUTED} />
+                </View>
+              ) : (
+                <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2">
+                  <Text className={buttonTextClass('outline')}>{t('review.start_test')}</Text>
+                </Button>
+              )
             ) : effectiveMode === 'spell' ? (
               <View className="mt-2 w-full gap-2">
                 <Text className="text-center text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
