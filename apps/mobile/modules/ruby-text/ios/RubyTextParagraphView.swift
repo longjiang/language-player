@@ -240,6 +240,17 @@ internal final class RubyTextParagraphView: ExpoView {
   private func handleTap(_ gesture: UITapGestureRecognizer) {
     let point = gesture.location(in: textView)
     guard let offset = characterOffset(at: point) else { return }
+    // A tap in the empty space past the last glyph resolves to the text end
+    // (offset == total). Don't open a token popup from an empty-space tap —
+    // the surrounding RN Pressable seeks the line instead. Taps ON a glyph
+    // (including the last one) disambiguate to an offset < total, so those
+    // still open their popup. (characterOffset returns total only for taps
+    // at/past the end caret; see the geometry commentary above.)
+    let total = runs.reduce(0) { $0 + ($1.text as NSString).length }
+    guard offset < total else {
+      print("[LP Mobile] [RubyTextParagraph] empty-space tap x=\(Int(point.x)) y=\(Int(point.y)) offset=\(offset) total=\(total) — ignoring (no token popup)")
+      return
+    }
     guard let run = run(atUtf16Offset: offset), run.tappable else { return }
     print("[LP Mobile] [RubyTextParagraph] tap x=\(Int(point.x)) y=\(Int(point.y)) offset=\(offset) token=\(run.tokenId) text=\"\(run.text)\"")
     onTokenTap(["tokenId": run.tokenId])
