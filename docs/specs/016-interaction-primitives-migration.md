@@ -150,9 +150,10 @@ npx shadcn@latest add tabs
 measuring them rather than at a fixed breakpoint — `full` (every tab shows
 icon + label), `compact` (active keeps its label, the rest collapse to
 icon-only), or `icon` (all icon-only); the widest mode that fits is used.
-Triggers stay content-sized (`flex-none`) so a label never truncates, and the
-tab bar is `w-full justify-between`, so the group spans the full width and,
-when collapsed to icon-only, the icons spread out to fill it.
+Triggers are equal-width (`flex-1`, with `min-w-0` so a label can truncate
+instead of overflowing), so each tab grows to fill the available width; when a
+mode collapses the non-active tabs to icon-only, those icon tabs fill their
+equal share of the bar.
 
 #### 1.4 Hover Card (dictionary popup)
 
