@@ -450,34 +450,24 @@ export default function WatchScreen() {
   const liked = !!video && isLiked(l2Code, video);
   const likeDisabled = !isSignedIn || !video?.id;
   const openPlaylistDialog = useCallback(() => setPlaylistDialogOpen(true), []);
-  const playlistDisabled = !isSignedIn;
-
-  // ── Loading ──
-  if (loading) {
-    return (
-      <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color={ICON_MUTED} />
-      </View>
-    );
-  }
-
-  // ── Error ──
-  if (error || !video) {
-    return (
-      <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 items-center justify-center bg-background px-8">
-        <AlertCircle size={48} color={ICON_DESTRUCTIVE} />
-        <Text className="mt-4 text-xl font-bold text-foreground">{t('msg.video_unavailable')}</Text>
-        {error ? <Text className="mt-2 text-center text-muted-foreground">{error}</Text> : null}
-      </View>
-    );
-  }
+  // Save-to-playlist needs a loaded video, so disable it while metadata loads
+  // (the dialog itself also no-ops on a null video).
+  const playlistDisabled = !isSignedIn || !video;
 
   const v = video;
+
+  // Play immediately with the URL's videoId (optimistic) so an imported video
+  // starts before metadata/subs finish loading — SPEC "play immediately while
+  // info/subs load" (web parity). The youtube_id rarely differs from the URL
+  // id, so keying on the URL id first avoids a player destroy+recreate when
+  // the API response arrives.
+  const effectiveYoutubeId = video?.youtube_id ?? (typeof videoId === 'string' ? videoId : '');
 
   const playerElement = (
     <YouTubePlayer
       ref={playerRef}
-      youtubeId={v.youtube_id}
+      youtubeId={effectiveYoutubeId}
+      autoplay
       startTime={startTime}
       onTimeUpdate={handleTimeUpdate}
       onDuration={handleDuration}
@@ -487,10 +477,29 @@ export default function WatchScreen() {
       containerWidth={playerContainerWidth || undefined}
       // SPEC-010 wide layout: contain-fit non-16:9 videos to the visible part
       // of the column. Only on widescreen (narrow keeps 16:9).
-      aspectRatio={isWide ? v.aspect_ratio : undefined}
+      aspectRatio={isWide ? v?.aspect_ratio : undefined}
       availableHeight={isWide ? (playerAvailHeight || undefined) : undefined}
     />
   );
+
+  // Non-blocking status shown below the player while metadata/subs load, so
+  // the player is never replaced by a full-screen spinner (SPEC-010 web
+  // parity: loading/error surface below the player, never over it).
+  const videoLoadStatus = !video ? (
+    <View className="flex-row items-center justify-center gap-2 py-3">
+      {error ? (
+        <>
+          <AlertCircle size={16} color={ICON_DESTRUCTIVE} />
+          <Text className="text-sm text-destructive">{error}</Text>
+        </>
+      ) : (
+        <>
+          <ActivityIndicator size="small" color={ICON_MUTED} />
+          <Text className="text-sm text-muted-foreground">{t('msg.loading')}</Text>
+        </>
+      )}
+    </View>
+  ) : null;
 
   // ── Subtitles Mode: Wide (landscape) ──
   if (isSubtitles && isWide) {
@@ -532,7 +541,7 @@ export default function WatchScreen() {
               currentTime={currentTime}
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
-              notes={v.notes}
+              notes={video?.notes}
               onSeekToLine={handleSeekToLine}
             />
             <View className="flex-row justify-center pb-2 pt-1">
@@ -561,6 +570,7 @@ export default function WatchScreen() {
                 playlistDisabled={playlistDisabled}
               />
             </View>
+            {videoLoadStatus}
           </View>
         </View>
         <AddToPlaylistDialog
@@ -588,7 +598,7 @@ export default function WatchScreen() {
             currentTime={currentTime}
             tokenCache={tokenCache}
             tokenCacheLoaded={tokenCacheLoaded}
-            notes={v.notes}
+            notes={video?.notes}
             onSeekToLine={handleSeekToLine}
           />
           <View className="flex-row justify-end px-2 py-1">
@@ -616,6 +626,7 @@ export default function WatchScreen() {
               playlistDisabled={playlistDisabled}
             />
           </View>
+          {videoLoadStatus}
         </View>
         <AddToPlaylistDialog
           open={playlistDialogOpen}
@@ -627,12 +638,12 @@ export default function WatchScreen() {
   }
 
   // ── Transcript Mode ──
-  const videoInfo = (
+  const videoInfo = video ? (
     <View>
-      <VideoMeta video={v} />
-      {v.channel_id ? <View className="mt-4"><YouTubeChannelCard channelId={v.channel_id} /></View> : null}
+      <VideoMeta video={video} />
+      {video.channel_id ? <View className="mt-4"><YouTubeChannelCard channelId={video.channel_id} /></View> : null}
     </View>
-  );
+  ) : null;
 
   const transcriptPanel = (
     <TranscriptQueuePanel
@@ -645,15 +656,15 @@ export default function WatchScreen() {
           currentTime={currentTime}
           tokenCache={tokenCache}
           tokenCacheLoaded={tokenCacheLoaded}
-          notes={v.notes}
+          notes={video?.notes}
           onSeekToLine={handleSeekToLine}
         />
       }
-      queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+      queue={<VideoQueueList currentYoutubeId={effectiveYoutubeId} />}
       askAi={
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <VideoAskAiContent
-            videoTitle={v.title ?? ''}
+            videoTitle={video?.title ?? ''}
             subtitleLines={subtitleLines.map((l) => ({ starttime: l.starttime, l2Line: l.l2Line }))}
             onSeek={(time) => { handleSeekToLine(time); setPanelTab('transcript'); }}
             storageKey={`lp-ask-ai:video:${videoId}`}
@@ -702,6 +713,8 @@ export default function WatchScreen() {
               playlistDisabled={playlistDisabled}
             />
           </View>
+
+          {videoLoadStatus}
 
           {/* Video info moves to the left column on wide screens (web parity) */}
           {isWide && videoInfo}
