@@ -94,6 +94,7 @@ Mobile should use the same effective breakpoints as web:
 | Settings wide split with capped sidebar | ✅ (threshold/width need alignment) |
 | Shared `Sidebar` sheet/persistent panel | ✅ (breakpoint needs alignment) |
 | Watch player wide/narrow aspect-ratio layout | ✅ (near parity) |
+| Watch plays immediately + autoplays (optimistic player) | ✅ — the player renders with the URL's videoId and `autoplay`, and loads metadata/subs + info in the background with a non-blocking status below the player (web parity, no import special-case) |
 | Language picker 640 breakpoint | ✅ |
 | `TabbedPanel` measurement-based label collapsing | ✅ |
 
