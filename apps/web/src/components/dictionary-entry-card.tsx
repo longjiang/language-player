@@ -1,9 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { BookmarkCheck, BookOpen, Circle, ExternalLink, Video } from 'lucide-react';
+import { buildPlaybackVideoFromContext, formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
+import { BookmarkCheck, BookOpen, Circle, ExternalLink, Play, Video } from 'lucide-react';
+import { SubsSearchPlaybackModal } from '@/components/video/subs-search-playback-modal';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
@@ -167,6 +168,56 @@ export function DictionaryEntryCard({
   const sourceLabel = hasVideoSource
     ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
     : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
+
+  // ── Saved-context playback (SPEC-066) ──
+  // When the saved context is from a YouTube video, the source portion of the
+  // saved-metadata line is tappable and reopens the shared subs-search playback
+  // modal, cued/paused at the saved timestamp. `renderSavedSource` is shared by
+  // the compact + full variants (which use different inline icon sizes).
+  const [contextPlaying, setContextPlaying] = useState(false);
+  const playbackVideo = useMemo(
+    () => (savedCtx ? buildPlaybackVideoFromContext(savedCtx) : null),
+    [savedCtx],
+  );
+  const renderSavedSource = (iconClass: 'h-3 w-3' | 'h-4 w-4') => {
+    if (!(hasVideoSource || hasTextSource)) return null;
+    const Icon = hasVideoSource ? Video : BookOpen;
+    const label = sourceLabel ?? null;
+    if (playbackVideo) {
+      return (
+        <>
+          {' · '}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setContextPlaying(true); }}
+            className="inline-flex max-w-full items-center gap-1 align-[-2px] text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={t('action.watch')}
+            title={label ?? t('action.watch')}
+          >
+            <Icon className={`inline ${iconClass} flex-shrink-0`} />
+            {label && <span className="min-w-0 truncate">{label}</span>}
+            <Play className={`inline ${iconClass} flex-shrink-0 text-primary`} />
+          </button>
+        </>
+      );
+    }
+    return (
+      <>
+        {' · '}
+        <Icon className={`inline ${iconClass} align-[-2px]`} />
+        {label && <> {' '}{label}</>}
+      </>
+    );
+  };
+  const contextPlaybackModal = playbackVideo ? (
+    <SubsSearchPlaybackModal
+      videos={[playbackVideo]}
+      index={contextPlaying ? 0 : null}
+      onIndexChange={(i) => setContextPlaying(i !== null)}
+      highlightTerms={savedCtx?.form ? [savedCtx.form] : []}
+      autoplay={false}
+    />
+  ) : null;
 
   // ── Shared: SRS review-status dot (appears when this entry is a saved word
   // with an SRS card). Uses the shared getSrsReviewStatus and matches the
@@ -350,19 +401,12 @@ export function DictionaryEntryCard({
               <BookmarkCheck className="inline h-3 w-3 align-[-2px]" />
               {' '}
               <span className="whitespace-nowrap">{saveDateStr}</span>
-              {(hasVideoSource || hasTextSource) && (
-                <>
-                  {' · '}
-                  {hasVideoSource
-                    ? <Video className="inline h-3 w-3 align-[-2px]" />
-                    : <BookOpen className="inline h-3 w-3 align-[-2px]" />}
-                  {sourceLabel && <> {' '}{sourceLabel}</>}
-                </>
-              )}
+              {(hasVideoSource || hasTextSource) && renderSavedSource('h-3 w-3')}
               {contextSentence && <> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</>}
             </p>
           </div>
         )}
+        {contextPlaybackModal}
 
         {/* Footer */}
         <div className="mt-auto flex items-center gap-2 pt-2 text-[10px]">
@@ -522,19 +566,12 @@ export function DictionaryEntryCard({
             <BookmarkCheck className="inline h-4 w-4 align-[-2px]" />
             {' '}
             <span className="whitespace-nowrap">{saveDateStr}</span>
-            {(hasVideoSource || hasTextSource) && (
-              <>
-                {' · '}
-                {hasVideoSource
-                  ? <Video className="inline h-4 w-4 align-[-2px]" />
-                  : <BookOpen className="inline h-4 w-4 align-[-2px]" />}
-                {sourceLabel && <> {' '}{sourceLabel}</>}
-              </>
-            )}
+            {(hasVideoSource || hasTextSource) && renderSavedSource('h-4 w-4')}
             {contextSentence && <> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</>}
           </p>
         </div>
       )}
+      {contextPlaybackModal}
 
       {/* Footer source + save */}
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
