@@ -9,7 +9,7 @@ import { useVideos } from '@langplayer/api-client';
 import { apiClient } from '@langplayer/api-client';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { languageName, baseCode } from '@/lib/language-data';
-import { Search, Loader2, AlertCircle, Film, Tag } from 'lucide-react';
+import { Search, Loader2, AlertCircle, Film, Tag, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Lazy-load VideoGrid — only needed after search results come back.
@@ -162,7 +162,7 @@ export default function SearchPage() {
           />
         </div>
         <Button type="submit" disabled={loading || !query.trim()}>
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isImport ? <Download className="mr-2 h-4 w-4" /> : <Search className="mr-2 h-4 w-4" />}
           {isImport ? t('action.import') : t('action.search')}
         </Button>
       </form>
