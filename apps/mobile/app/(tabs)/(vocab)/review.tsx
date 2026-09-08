@@ -32,6 +32,7 @@ import {
   SPELL_TEST_FAST_MS,
   spellHintInfo,
   spellBlankText,
+  spellSurfaceInTokens,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
@@ -84,6 +85,7 @@ import {
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { srsLogger } from '@/lib/logger';
+import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 
 const { log, logwarn } = srsLogger;
 
@@ -341,6 +343,9 @@ export default function ReviewScreen() {
   const [l1Entry, setL1Entry] = useState<DictionaryEntry | null>(null);
   /** Best text-lookup entry when the exact saved id is stale/unresolvable. */
   const [fallbackEntry, setFallbackEntry] = useState<DictionaryEntry | null>(null);
+  /** Tokenized current-card context, used to resolve the true blanked surface
+   *  when the record carries only lemma forms (SPEC-066). */
+  const [currentTokensForCard, setCurrentTokensForCard] = useState<Array<{ text: string; lemmas?: Array<{ lemma?: string }> }> | null>(null);
   /** Cards whose offline entry lookup already finished (even with a miss). */
   const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
@@ -693,6 +698,21 @@ export default function ReviewScreen() {
     srs: (store.cards[l2Code] ?? {})[word.id] || fsrs.newCard(),
     entry: word.id === currentDueCard?.id ? currentEntry : null,
   })), [dueCards, store, l2Code, currentDueCard?.id, currentEntry]);
+
+  // Resolve the blanked surface for a card from its tokenized context. Used by
+  // the spell/scrabble answer, box count, hint, and scrabble blocks so a
+  // lemma-only record still reports the true inflected surface (SPEC-066). See
+  // the `spellingSurface` memo below for the rationale; factored into a callback
+  // so the submit handlers can reuse it.
+  const resolveSurfaceFor = useCallback((card: { word: SavedWordMeta }): string => {
+    const contextText = reviewContextText(card.word);
+    if (!contextText) return '';
+    const tokens = currentTokensForCard;
+    if (!tokens || tokens.length === 0) return '';
+    const resolvedEntry = l1Entry ?? fallbackEntry ?? currentEntry;
+    return spellSurfaceInTokens(tokens, card.word, wordForm, resolvedEntry);
+  }, [currentTokensForCard, l1Entry, fallbackEntry, currentEntry, wordForm]);
+
   const nextReviewLabelFor = useCallback((card: { srs: SrsFields }, quality: Rating) => {
     const nextReviewInterval = getNextReviewInterval(fsrs.rate(card.srs, quality).due);
     const nextReviewKey = nextReviewInterval.unit === 'minutes'
@@ -755,6 +775,36 @@ export default function ReviewScreen() {
   // Scrabble and spell share the whole "type/arrange the blanked word" flow:
   // same countdown budget, same blanked context, same grading.
   const isSpellLike = effectiveMode === 'spell' || effectiveMode === 'scrabble';
+
+  // ── Resolve the blanked surface from the tokenized context ──
+  // A saved record may carry only lemma forms (a card saved before the surface
+  // form was stored: e.g. 傾げる/かしげる in the record, but the sentence reads
+  // かしげた). spellBlankText matches record forms as literal substrings of the
+  // sentence, so a lemma-only record never matches and falls back to the lemma —
+  // making the spell/scrabble answer, box count, and hint point at the wrong
+  // text. Tokenizing recovers the true surface exactly as the context blank
+  // does: the token whose surface/lemma matches one of the word's forms.
+  const spellingSurface = useMemo(() => {
+    if (!currentCardForMode) return '';
+    if (!isSpellLike) return '';
+    return resolveSurfaceFor(currentCardForMode);
+  }, [currentCardForMode, isSpellLike, resolveSurfaceFor]);
+
+  // Tokenize the current card's context so the surface above can be resolved
+  // from the sentence (the tokenizer is pre-warmed for upcoming cards, and this
+  // line is already rendered by TokenizedText). Reset on card change.
+  useEffect(() => {
+    setCurrentTokensForCard(null);
+    if (!currentCardForMode) return;
+    const contextText = reviewContextText(currentCardForMode.word);
+    if (!contextText) return;
+    let cancelled = false;
+    lemmatizeText(contextText, l2Code)
+      .then((tokens: LemmatizedToken[]) => { if (!cancelled) setCurrentTokensForCard(tokens); })
+      .catch(() => { /* leave null — fall back to spellBlankText */ });
+    return () => { cancelled = true; };
+  }, [currentCardForMode?.word.id, l2Code]);
+
   const definitionTestAnswered = effectiveMode === 'choose'
     && testSlots.some((slot, index) => slot.kind === 'definition' && Boolean(testAnswers[index]));
   const showContextTranslation = showTabs || definitionTestAnswered || isSpellLike;
@@ -1169,18 +1219,22 @@ export default function ReviewScreen() {
     const card = cards[currentIndex];
     // The correct answer is the exact form blanked in the context sentence
     // (derived with the same forms the highlight matches), not a reduced
-    // record form — e.g. たじろかせる, never たじろか.
+    // record form — e.g. たじろかせる, never たじろか. Prefer the surface
+    // resolved from the tokenized context (resolveSurfaceFor), which recovers
+    // the true inflected form when the record carries only lemma forms; fall
+    // back to spellBlankText when no token matched.
     const correctAnswer = card
-      ? spellBlankText(
-          reviewContextText(card.word),
-          card.word,
-          wordForm,
-          l1Entry ?? fallbackEntry ?? currentEntry,
-          l2Code,
-        )
+      ? (resolveSurfaceFor(card)
+          || spellBlankText(
+              reviewContextText(card.word),
+              card.word,
+              wordForm,
+              l1Entry ?? fallbackEntry ?? currentEntry,
+              l2Code,
+            ))
       : '';
     await gradeSpellLikeAnswer(spellText, correctAnswer);
-  }, [gradeSpellLikeAnswer, spellText, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
+  }, [gradeSpellLikeAnswer, spellText, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry, resolveSurfaceFor]);
 
   /**
    * Override a spell/scrabble answer the grader judged incorrect but the learner
@@ -1222,9 +1276,10 @@ export default function ReviewScreen() {
       wordForm,
       l1Entry ?? fallbackEntry ?? currentEntry,
       l2Code,
+      resolveSurfaceFor(card) || undefined,
     );
     log('[srs-scrabble] session started', { l2Code, word: wordForm, correct });
-  }, [cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
+  }, [cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry, resolveSurfaceFor]);
 
   /**
    * Submit the scrabble-mode answer — called automatically when the LAST block
@@ -1235,7 +1290,9 @@ export default function ReviewScreen() {
     const card = cards[currentIndex];
     // The correct answer is the same string the blocks were derived from —
     // a single-char answer arranges the matched entry's phonetics (see
-    // scrabbleAnswerText), so grading must compare against that reading.
+    // scrabbleAnswerText), so grading must compare against that reading. Pass
+    // the surface resolved from the tokenized context (resolveSurfaceFor) so a
+    // lemma-only record still grades the true inflected surface.
     const correctAnswer = card
       ? scrabbleAnswerText(
           reviewContextText(card.word),
@@ -1243,11 +1300,12 @@ export default function ReviewScreen() {
           wordForm,
           l1Entry ?? fallbackEntry ?? currentEntry,
           l2Code,
+          resolveSurfaceFor(card) || undefined,
         )
       : '';
     log('[srs-scrabble] blocks arranged (auto-submit)', { l2Code, word: wordForm, arranged, correctAnswer });
     await gradeSpellLikeAnswer(arranged, correctAnswer);
-  }, [gradeSpellLikeAnswer, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry]);
+  }, [gradeSpellLikeAnswer, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, currentEntry, resolveSurfaceFor]);
 
   const handleReveal = useCallback(() => {
     const card = cards[currentIndex];
@@ -1827,7 +1885,7 @@ export default function ReviewScreen() {
    *  with its kind (phonetic vs orthographic) so the label matches the hint.
    *  Derived from the same `spellContextText` used to grade the answer. */
   const spellHintInfoValue = effectiveMode === 'spell'
-    ? spellHintInfo(spellContextText, currentCard.word, wordForm, entry, l2Code)
+    ? spellHintInfo(spellContextText, currentCard.word, wordForm, entry, l2Code, spellingSurface || undefined)
     : null;
   /** The char shown in the muted hint text. */
   const spellHint = spellHintInfoValue?.char ?? null;
@@ -1842,14 +1900,17 @@ export default function ReviewScreen() {
    *  `spellBlankText` logic used to grade the answer, so the box count matches
    *  the exact text the learner is asked to type. */
   const spellExpectedLen = effectiveMode === 'spell' && currentCard
-    ? Array.from(spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code)).length
+    ? Array.from(
+        spellingSurface
+          || spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code),
+      ).length
     : 0;
   /** The correct scrabble answer — the scrabble mode derives its letter blocks
    *  (and shuffle) from this exact string, so the block count matches the
    *  spelling test. For a single-character answer this is the matched entry's
    *  phonetics (see scrabbleAnswerText); otherwise it is the blanked word. */
   const scrabbleAnswer = effectiveMode === 'scrabble' && currentCard
-    ? scrabbleAnswerText(spellContextText, currentCard.word, wordForm, entry, l2Code)
+    ? scrabbleAnswerText(spellContextText, currentCard.word, wordForm, entry, l2Code, spellingSurface || undefined)
     : '';
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
