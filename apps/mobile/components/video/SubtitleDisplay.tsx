@@ -305,7 +305,10 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
         ref={flatListRef}
         data={!isPro ? displayLines.slice(0, FREE_TRANSCRIPT_LINES) : displayLines}
         keyExtractor={(_, i) => String(i)}
-        contentContainerStyle={{ paddingHorizontal: 12 }}
+        // Web-parity: the transcript container (`space-y-2`) has no horizontal
+        // padding — the panel's p-4 provides it. Halve the scroll-pane padding
+        // (12 → 6) so the multiline transcript matches apps/web insets.
+        contentContainerStyle={{ paddingHorizontal: 6 }}
         onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
         onLayout={onLayout}
         onScrollBeginDrag={onScrollBeginDrag}
