@@ -469,6 +469,35 @@ today" message.
 - No tap-to-rate zones on the card — rating is only via the explicit buttons
   ([SPEC-049 §6](049-mobile-feature-parity.md#6-review-flashcards)).
 
+### Context playback (2026-09-xx)
+
+When a saved word's context is from a YouTube video (its `SavedWordContext`
+carries a `youtube_id`), the **source attribution line** becomes a tappable
+control (a small play affordance is shown). Tapping it opens the shared
+subs-search playback modal (`SubsSearchPlaybackModal` — the same modal the
+subs-search result rows and the DeepSeek "Examples from Videos" chips open),
+**cued/paused at the saved `starttime`** so the learner can replay the exact
+scene the word came from. The context sentence is passed as the single subtitle
+line and the target form (`context.form`) is highlighted, mirroring how a
+subs-search result opens at its match line. Autoplay is disabled (cue & pause),
+matching the modal's default.
+
+This behavior applies wherever the saved-word source line is rendered, not just
+Review: the **web + mobile `DictionaryEntryCard`** saved-metadata line and the
+**`SavedWordSource`** component (used on the review card front and the
+saved-words entry cards). The tokenized context sentence itself stays fully
+interactive — every word tap still opens the dictionary popup; only the source
+line carries the play action, so a tap on the sentence never conflicts with a
+tap on a word.
+
+The replayable video is built from the context with the shared
+`buildPlaybackVideoFromContext()` helper (`packages/shared`) — it turns a
+`SavedWordContext` into a single-video `SubsSearchVideo` (`youtube_id` → video,
+`text` → the one subtitle line, `starttime` → cue point, `matchLineIndex` →
+`0`), returns `null` for non-video (book/reader) contexts, and is reused by
+both apps. No new player was added — the existing subs-search modal is
+refactored/reused as-is.
+
 ### Card back (after flip)
 
 - The full dictionary entry with tabs (definition, examples, inflections,
