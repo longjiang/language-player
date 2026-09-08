@@ -130,6 +130,7 @@ export {
   kanaVariants,
   scriptVariants,
   spellBlankText,
+  spellSurfaceInTokens,
   bestScriptSimilarity,
   scoreSpellResult,
   SPELL_TEST_TOTAL_MS,

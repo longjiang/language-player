@@ -288,6 +288,53 @@ export function scriptVariants(text: string, l2Code: string): string[] {
 }
 
 /**
+ * Every form that could be the blanked surface of a saved word in its context
+ * sentence (SPEC-066). Shared by `spellBlankText` and `spellSurfaceInTokens` so
+ * the two agree on what "matches" the word in the sentence.
+ */
+function spellMatchableForms(
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: {
+    head?: string | null;
+    alternate?: string | null;
+    phonetic_detail?: { kana?: string } | null;
+    han_script?: {
+      simplified?: string;
+      traditional?: string;
+      kanji?: string | null;
+      hanja?: string | null;
+      hangul?: string;
+      han?: string;
+      hantu?: string;
+    } | null;
+  } | null | undefined,
+): Set<string> {
+  const candidates = new Set<string>();
+  if (word) {
+    if (word.head) candidates.add(word.head);
+    for (const f of word.forms ?? []) if (f) candidates.add(f);
+    if (word.context?.form) candidates.add(word.context.form);
+    for (const inst of word.instances ?? []) if (inst.form) candidates.add(inst.form);
+  }
+  if (entry) {
+    if (entry.head) candidates.add(entry.head);
+    if (entry.alternate) candidates.add(entry.alternate);
+    if (entry.phonetic_detail?.kana) candidates.add(entry.phonetic_detail.kana);
+    const hs = entry.han_script;
+    if (hs) {
+      if (hs.simplified) candidates.add(hs.simplified);
+      if (hs.traditional) candidates.add(hs.traditional);
+    }
+  }
+  candidates.add(fallback);
+  candidates.add(surfaceFormOf(word, fallback));
+  candidates.add(lemmaFormOf(word, fallback));
+  candidates.add(pronunciationTargetOf(word, fallback, entry));
+  return candidates;
+}
+
+/**
  * The exact text that the context-sentence highlight blanks, derived with the
  * same logic as the highlight (SPEC-066): among the word's matchable forms
  * (saved forms, context/instance surface forms, head, the resolved entry's
@@ -319,27 +366,7 @@ export function spellBlankText(
 ): string {
   const base = (l2Code.split('-')[0] ?? '').toLowerCase();
   const fold = (s: string) => (base === 'ja' ? katakanaToHiragana(s) : s);
-  const candidates = new Set<string>();
-  if (word) {
-    if (word.head) candidates.add(word.head);
-    for (const f of word.forms ?? []) if (f) candidates.add(f);
-    if (word.context?.form) candidates.add(word.context.form);
-    for (const inst of word.instances ?? []) if (inst.form) candidates.add(inst.form);
-  }
-  if (entry) {
-    if (entry.head) candidates.add(entry.head);
-    if (entry.alternate) candidates.add(entry.alternate);
-    if (entry.phonetic_detail?.kana) candidates.add(entry.phonetic_detail.kana);
-    const hs = entry.han_script;
-    if (hs) {
-      if (hs.simplified) candidates.add(hs.simplified);
-      if (hs.traditional) candidates.add(hs.traditional);
-    }
-  }
-  candidates.add(fallback);
-  candidates.add(surfaceFormOf(word, fallback));
-  candidates.add(lemmaFormOf(word, fallback));
-  candidates.add(pronunciationTargetOf(word, fallback, entry));
+  const candidates = spellMatchableForms(word, fallback, entry);
 
   const foldedContext = fold(context);
   let best = '';
@@ -357,6 +384,54 @@ export function spellBlankText(
     }
   }
   return best || surfaceFormOf(word, fallback);
+}
+
+/**
+ * Resolve the blanked surface from a **tokenized** context sentence.
+ *
+ * This is the robust path for records whose saved forms are all lemma-based and
+ * therefore can't be matched as a literal substring in the sentence by
+ * `spellBlankText`. A classic case (SPEC-066): a card saved before the surface
+ * form was stored — e.g. the record carries the kanji lemma 傾げる and its
+ * conjugations plus the kana lemma reading かしげる, while the sentence reads
+ * `と首をかしげた。`. Since no recorded form equals the inflected surface
+ * かしげた, `spellBlankText` falls back to the lemma and reports 傾げる.
+ *
+ * Tokenizing resolves it exactly the way the context highlight/blank does: the
+ * token whose surface or lemma matches one of the matchable forms carries the
+ * true surface in its `text`. Returns that surface, or `''` when no token
+ * matches (callers then fall back to `spellBlankText`). The token shape accepts
+ * the shared `LemmatizedToken` (`text` + `lemmas[].lemma`).
+ */
+export function spellSurfaceInTokens(
+  tokens: Array<{ text: string; lemmas?: Array<{ lemma?: string }> }>,
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: {
+    head?: string | null;
+    alternate?: string | null;
+    phonetic_detail?: { kana?: string } | null;
+    han_script?: {
+      simplified?: string;
+      traditional?: string;
+      kanji?: string | null;
+      hanja?: string | null;
+      hangul?: string;
+      han?: string;
+      hantu?: string;
+    } | null;
+  } | null | undefined,
+): string {
+  const forms = spellMatchableForms(word, fallback, entry);
+  for (const token of tokens) {
+    const surface = token.text ?? '';
+    if (!surface) continue;
+    if (forms.has(surface)) return surface;
+    for (const l of token.lemmas ?? []) {
+      if (l?.lemma && forms.has(l.lemma)) return surface;
+    }
+  }
+  return '';
 }
 
 /**

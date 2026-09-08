@@ -21,6 +21,7 @@ import {
   scriptVariants,
   spellBlankText,
   spellHintInfo,
+  spellSurfaceInTokens,
   stringSimilarity,
   surfaceFormOf,
   validateSrsDefinitionChoices,
@@ -491,6 +492,48 @@ describe('spellBlankText', () => {
 
   it('falls back to surfaceFormOf when no form appears', () => {
     expect(spellBlankText('全く別の文です。', word, 'たじろぐ', null, 'ja')).toBe('たじろか');
+  });
+});
+
+describe('spellSurfaceInTokens (lemma-only record with an inflected surface)', () => {
+  // Reproduces the SPEC-066 bug: the saved record carries only lemma forms
+  // (kanji 傾げる + its conjunctions + the kana lemma reading かしげる) while the
+  // sentence surface is the inflected かしげた. No recorded form equals it, so
+  // spellBlankText falls back to the lemma 傾げる.
+  const word = {
+    forms: ['傾げられる', '傾げり', '傾げる', '傾げった'],
+    context: { form: '傾げる' },
+    instances: [{ form: '傾げる' }],
+  };
+  const entry = { head: '傾げる', alternate: 'かしげる', phonetic_detail: { kana: 'かしげる' } };
+
+  it('returns the surface of the token whose lemma matches the reading', () => {
+    const tokens = [
+      { text: 'と', lemmas: [{ lemma: 'と' }] },
+      { text: '首', lemmas: [{ lemma: '首' }] },
+      { text: 'を', lemmas: [{ lemma: 'を' }] },
+      { text: 'かしげた', lemmas: [{ lemma: 'かしげる' }] },
+      { text: '。', lemmas: [] },
+    ];
+    expect(spellSurfaceInTokens(tokens, word, '傾げられる', entry)).toBe('かしげた');
+  });
+
+  it('matches on an exact token surface too', () => {
+    const tokens = [
+      { text: '首', lemmas: [{ lemma: '首' }] },
+      { text: 'を', lemmas: [] },
+      { text: '傾げる', lemmas: [{ lemma: '傾げる' }] },
+    ];
+    expect(spellSurfaceInTokens(tokens, word, '傾げられる', entry)).toBe('傾げる');
+  });
+
+  it('returns empty when no token matches', () => {
+    const tokens = [{ text: '猫', lemmas: [{ lemma: '猫' }] }];
+    expect(spellSurfaceInTokens(tokens, word, '傾げられる', entry)).toBe('');
+  });
+
+  it('returns empty when tokens are undefined/empty', () => {
+    expect(spellSurfaceInTokens([], word, '傾げられる', entry)).toBe('');
   });
 });
 
