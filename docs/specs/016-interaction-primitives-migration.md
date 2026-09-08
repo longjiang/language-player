@@ -146,6 +146,14 @@ npx shadcn@latest add tabs
 
 **Benefits**: Arrow key navigation between tabs, proper `tablist`/`tab`/`tabpanel` ARIA roles, RTL support, focus ring management.
 
+**Tab bar width behavior**: `TabbedPanel` labels adapt to the available width by
+measuring them rather than at a fixed breakpoint — `full` (every tab shows
+icon + label), `compact` (active keeps its label, the rest collapse to
+icon-only), or `icon` (all icon-only); the widest mode that fits is used.
+Triggers stay content-sized (`flex-none`) so a label never truncates, and the
+tab bar is `w-full justify-between`, so the group spans the full width and,
+when collapsed to icon-only, the icons spread out to fill it.
+
 #### 1.4 Hover Card (dictionary popup)
 
 **Component to replace**: `DictionaryPopup`

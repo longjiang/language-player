@@ -66,6 +66,10 @@ function MeasureBar({
  *  - 'icon'    every tab collapses to icon-only
  * The widest mode that still fits is used (full → compact → icon).
  *
+ * Triggers stay content-sized (`flex-none`), so no label ever truncates; the
+ * tab bar is `w-full justify-between`, so the group spans the full width and,
+ * when collapsed to icon-only, the icons spread out to fill it.
+ *
  * Usage:
  * ```tsx
  * const [tab, setTab] = useState('one');
@@ -142,7 +146,12 @@ export function TabbedPanel<T extends string = string>({
     <div ref={containerRef} className={cn('relative flex flex-col rounded-xl border border-border bg-card', className)}>
       {/* Tab bar — Radix Tabs provides keyboard nav and ARIA roles */}
       <Tabs value={activeTab} onValueChange={(v) => onTabClick ? onTabClick(v as T) : onTabChange(v as T)} className="flex-1 min-h-0 flex-col">
-        <TabsList className="border-b border-border w-full">
+        {/* `justify-between` spreads the content-sized triggers across the full
+            width so the bar spans the available space (and, when collapsed to
+            icon-only, the icons spread out to fill it) without forcing an
+            equal-width flex-1 distribution that would truncate a long active
+            label. */}
+        <TabsList className="border-b border-border w-full justify-between">
           {tabs.map((tab) => {
             const showLabel = !tab.icon || mode === 'full' || (mode === 'compact' && tab.key === activeTab);
             return (
