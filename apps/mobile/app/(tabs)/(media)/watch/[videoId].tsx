@@ -677,50 +677,69 @@ export default function WatchScreen() {
     />
   );
 
+  // Wide (landscape) left column: the player contain-fits to the column height
+  // (SPEC-010), which can push the control bar and video info below the fold.
+  // Wrap it in a ScrollView so wide screens can scroll to what's below the
+  // video (SPEC-052 web parity) — RN's `overflow-y-auto` on a View does NOT
+  // scroll; only a ScrollView does.
+  const videoColumnContent = (
+    <>
+      <View onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}>
+        {playerElement}
+      </View>
+
+      {/* Reduced control bar — only LP-specific controls per SPEC-010 */}
+      <View className={`flex-row justify-end ${isWide ? '' : 'border-b border-border px-2 py-1'}`}>
+        <VideoControlBar
+          reduced
+          playerRef={playerRef}
+          currentTime={currentTime}
+          duration={duration}
+          paused={paused}
+          onPauseToggle={handlePauseToggle}
+          onPreviousLine={handlePreviousLine}
+          onNextLine={handleNextLine}
+          onPreviousVideo={playPrevious}
+          onNextVideo={playNext}
+          onTogglePanel={handleTogglePanel}
+          hasPreviousLine={subtitleStartTimes.length > 0}
+          hasNextLine={subtitleStartTimes.length > 0}
+          hasPreviousVideo={hasPrevious}
+          hasNextVideo={hasNext}
+          panelOpen={!isSubtitles}
+          liked={liked}
+          onToggleLike={handleToggleLike}
+          likeDisabled={likeDisabled}
+          onSaveToPlaylist={openPlaylistDialog}
+          playlistDisabled={playlistDisabled}
+        />
+      </View>
+
+      {videoLoadStatus}
+
+      {/* Video info moves to the left column on wide screens (web parity) */}
+      {isWide && videoInfo}
+    </>
+  );
+
   return (
     <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 bg-background">
       {/* Wide (landscape): player + info left, transcript/queue right column */}
       <View className={isWide ? 'flex-1 flex-row min-h-0' : 'flex-1 min-h-0'}>
-        <View
-          className={isWide ? 'min-w-0 flex-1 space-y-4 overflow-y-auto px-4 py-6' : ''}
-          onLayout={isWide ? (e) => setPlayerAvailHeight(e.nativeEvent.layout.height) : undefined}
-        >
-          <View onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}>
-            {playerElement}
-          </View>
-
-          {/* Reduced control bar — only LP-specific controls per SPEC-010 */}
-          <View className={`flex-row justify-end ${isWide ? '' : 'border-b border-border px-2 py-1'}`}>
-            <VideoControlBar
-              reduced
-              playerRef={playerRef}
-              currentTime={currentTime}
-              duration={duration}
-              paused={paused}
-              onPauseToggle={handlePauseToggle}
-              onPreviousLine={handlePreviousLine}
-              onNextLine={handleNextLine}
-              onPreviousVideo={playPrevious}
-              onNextVideo={playNext}
-              onTogglePanel={handleTogglePanel}
-              hasPreviousLine={subtitleStartTimes.length > 0}
-              hasNextLine={subtitleStartTimes.length > 0}
-              hasPreviousVideo={hasPrevious}
-              hasNextVideo={hasNext}
-              panelOpen={!isSubtitles}
-              liked={liked}
-              onToggleLike={handleToggleLike}
-              likeDisabled={likeDisabled}
-              onSaveToPlaylist={openPlaylistDialog}
-              playlistDisabled={playlistDisabled}
-            />
-          </View>
-
-          {videoLoadStatus}
-
-          {/* Video info moves to the left column on wide screens (web parity) */}
-          {isWide && videoInfo}
-        </View>
+        {isWide ? (
+          /* Wide: scrollable player column (SPEC-052 web parity) */
+          <ScrollView
+            className="min-w-0 flex-1 px-4 py-6"
+            onLayout={(e) => setPlayerAvailHeight(e.nativeEvent.layout.height)}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="space-y-4">{videoColumnContent}</View>
+          </ScrollView>
+        ) : (
+          /* Narrow: natural-height player column (player + control bar only) */
+          <View>{videoColumnContent}</View>
+        )}
 
         {/* Tabbed panel: transcript / queue (info tab only on narrow) */}
         <View className={isWide ? 'min-h-0 w-[320px] border-l border-border' : 'min-h-0 flex-1'}>
