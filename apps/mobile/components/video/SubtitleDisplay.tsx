@@ -306,9 +306,11 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
         data={!isPro ? displayLines.slice(0, FREE_TRANSCRIPT_LINES) : displayLines}
         keyExtractor={(_, i) => String(i)}
         // Web-parity: the transcript container (`space-y-2`) has no horizontal
-        // padding — the panel's p-4 provides it. Halve the scroll-pane padding
-        // (12 → 6) so the multiline transcript matches apps/web insets.
-        contentContainerStyle={{ paddingHorizontal: 6 }}
+        // padding — the panel's p-4 plus each row's px-3 supply the inset. The
+        // FlatList content padding only pushed the multiline subs inward, so
+        // remove it entirely (scoped to this multiline FlatList; the single-line
+        // band and the shared p-4 panel padding are untouched).
+        contentContainerStyle={{ paddingHorizontal: 0 }}
         onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
         onLayout={onLayout}
         onScrollBeginDrag={onScrollBeginDrag}
