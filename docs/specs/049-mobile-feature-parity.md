@@ -164,7 +164,7 @@ zh-only as on web.
 | 7.2 | Always stack the subs-search translation below the subtitle | `be6326bc`, `a2439ca1` | **Ported** — `SimpleSubsForDebug` renders the L1 translation below the active subtitle |
 | 7.3 | Send target form to the translate API instead of pre-marking text | `faabb254`, `10f0ae7a`, `09d52d97` | **Ported** — `useSubtitleTranslation` gained `highlightForms` and sends per-line `forms` to `/translate_array`; `SimpleSubsForDebug` passes the matched highlight term per line |
 | 7.4 | Specific translated YouTube player errors | `3345cb39` | N/A on native — YouTube player errors come from the native webview/player |
-| 7.5 | Progressive SPEC-029 caption normalization | `5b0f9950` | Backend — server-side caption normalization; mobile consumes normalized captions |
+| 7.5 | Progressive SPEC-029 caption normalization | `5b0f9950` | Backend — server-side caption normalization; mobile consumes normalized captions via the server-side full mode (`subs_l2=1`). The mobile watch fetch uses a 60s `AbortSignal.timeout` so a cold import (~20s, YouTube fetch + LLM cleanup) isn't cancelled and mis-reported as "video unavailable"; per-video cost is one-time since cleaned captions are cached server-side |
 
 ## 8. Native Text Selection & Selection Actions
 

@@ -23,6 +23,15 @@ the raw auto-generated captions instantly, then normalizes them lazily in
 it arrives. The server-side full-transcript mode (below) remains the default
 for other clients (Classic app, mobile, direct API calls).
 
+The **mobile app** consumes the server-side full-transcript mode directly
+(`subs_l2=1`, no `clean_generated`), so a cold import can take ~20s while the
+server fetches YouTube metadata + raw captions and LLM-normalizes the whole
+transcript. The mobile watch fetch therefore uses a **60s `AbortSignal.timeout`**
+(not 15s) so the cold path finishes instead of being cancelled and
+mis-reported as a "video unavailable" error for a video that is actually
+available. Per video the cost is one-time — the cleaned captions are cached
+server-side for subsequent loads.
+
 ## Behavior
 
 - Normalization runs only for **auto-generated** transcripts
