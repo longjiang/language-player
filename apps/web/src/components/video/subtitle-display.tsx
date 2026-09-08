@@ -438,7 +438,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tok
         onPointerCancel={overlay ? handleBandPointerUp : undefined}
         onClickCapture={overlay ? handleBandClickCapture : undefined}
       >
-        <div className={cn('order-2 flex items-center justify-center gap-0.5 py-1', overlay ? 'px-0' : 'px-2')}>
+        {/* Control row. In the on-video overlay band (wide, "band mode") the
+            controls sit BELOW the subtitle (order-2). In the below-player
+            band (narrow, "single line mode") they sit ABOVE the subtitle
+            (order-1), centered — SPEC-010 §Subtitles mode narrow layout. */}
+        <div className={cn('flex items-center justify-center gap-0.5 py-1', overlay ? 'order-2 px-0' : 'order-1 px-2')}>
           <Button
             variant="ghost" size="icon"
             className={cn('h-8 w-8', btnColorClass)}
@@ -512,8 +516,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tok
 
         <div
           className={cn(
-            'order-1 flex-1 flex flex-col justify-center cursor-pointer min-h-0',
-            overlay ? 'px-0 py-1' : 'px-4 py-2',
+            'flex-1 flex flex-col justify-center cursor-pointer min-h-0',
+            overlay ? 'order-1 px-0 py-1' : 'order-2 px-4 py-2',
           )}
           onClick={handleBandRowClick}
         >

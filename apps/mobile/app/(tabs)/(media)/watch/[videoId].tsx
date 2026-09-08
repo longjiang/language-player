@@ -591,17 +591,9 @@ export default function WatchScreen() {
         </View>
         {/* Web parity: active line + controls in one band below the player */}
         <View className="bg-card border-t border-border">
-          <SubtitleDisplay
-            singleLine
-            lines={subtitleLines}
-            activeLineIndex={activeLineIndex}
-            currentTime={currentTime}
-            tokenCache={tokenCache}
-            tokenCacheLoaded={tokenCacheLoaded}
-            notes={video?.notes}
-            onSeekToLine={handleSeekToLine}
-          />
-          <View className="flex-row justify-end px-2 py-1">
+          {/* Single-line mode: the reduced control bar sits ABOVE the subtitle
+              and is centered horizontally (SPEC-010 §Subtitles mode narrow). */}
+          <View className="flex-row justify-center px-2 py-1">
             <VideoControlBar
               reduced
               playerRef={playerRef}
@@ -626,6 +618,16 @@ export default function WatchScreen() {
               playlistDisabled={playlistDisabled}
             />
           </View>
+          <SubtitleDisplay
+            singleLine
+            lines={subtitleLines}
+            activeLineIndex={activeLineIndex}
+            currentTime={currentTime}
+            tokenCache={tokenCache}
+            tokenCacheLoaded={tokenCacheLoaded}
+            notes={video?.notes}
+            onSeekToLine={handleSeekToLine}
+          />
           {videoLoadStatus}
         </View>
         <AddToPlaylistDialog
