@@ -574,6 +574,11 @@ export interface SrsScrabbleEntryLike {
  * scrabble arranges the matched dictionary entry's phonetics instead, so the
  * blocks spell out the reading (e.g. pinyin `wǒ` for 我, kana `みず` for 水).
  *
+ * `surface` is an optional pre-resolved blanked surface (e.g. tokenized via
+ * `spellSurfaceInTokens`). When provided it replaces the `spellBlankText`
+ * result so a lemma-only record still grades/derives the true inflected
+ * surface (SPEC-066). When omitted, defaults to `spellBlankText`.
+ *
  * The phonetics substitution only applies to phonetics-eligible languages
  * (`isPhoneticsEligible`, e.g. Japanese/Chinese/Korean/Thai — the languages
  * whose orthography does not reveal their reading). For phonetics-suppressed
@@ -588,8 +593,9 @@ export function scrabbleAnswerText(
   fallback: string,
   entry: SrsScrabbleEntryLike | null | undefined,
   l2Code: string,
+  surface?: string,
 ): string {
-  const blanked = spellBlankText(context, word, fallback, entry, l2Code);
+  const blanked = surface ?? spellBlankText(context, word, fallback, entry, l2Code);
   if (Array.from(blanked).length === 1) {
     const reading = isPhoneticsEligible(l2Code) ? pronunciationReadingOf(entry, l2Code) : '';
     if (reading) return reading;
@@ -699,7 +705,9 @@ export interface SpellHintInfo {
  *   has no reading. The character is the first character of the **answer** —
  *   the exact text blanked in the context sentence (`spellBlankText`) — never
  *   the dictionary lemma — so the hint always matches the surface form the
- *   learner must type.
+ *   learner must type. The optional `ans` arg supplies a pre-resolved surface
+ *   (e.g. from `spellSurfaceInTokens`) so a lemma-only record still hints from
+ *   the true inflected surface.
  *
  * Returns null when no hint applies: a single-character answer (its first char
  * would reveal the whole word) with no pronunciation hint available.
@@ -724,6 +732,7 @@ export function spellHintInfo(
     } | null;
   } | null | undefined,
   l2Code: string,
+  ans?: string,
 ): SpellHintInfo | null {
   // A pronunciation-based hint is only meaningful when the language supports
   // phonetic annotation (ruby/romanization). Latin-script languages and
@@ -734,7 +743,9 @@ export function spellHintInfo(
   }
   // Orthographic hint is derived from the ANSWER (the blanked surface form),
   // not the dictionary lemma, so it always matches what the learner types.
-  const answer = spellBlankText(context, word, fallback, entry, l2Code);
+  // `ans` is an optional pre-resolved surface (e.g. tokenized via
+  // `spellSurfaceInTokens`); when omitted it falls back to `spellBlankText`.
+  const answer = ans ?? spellBlankText(context, word, fallback, entry, l2Code);
   if (answer.length > 1) return { char: answer[0]!, kind: 'orthographic' };
   return null;
 }
