@@ -28,13 +28,8 @@ const config: Config = {
           foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
-          // Muted = translucent foreground (black in light, white in dark),
-          // not a solid gray. The alpha is baked here so bg-muted resolves to
-          // a ~6% tint; opacity modifiers (bg-muted/50) replace it and render
-          // that degree of the foreground color. Values mirror
-          // MUTED_ALPHA / MUTED_FOREGROUND_ALPHA in packages/shared/tokens.ts.
-          DEFAULT: 'hsl(var(--muted) / 0.06)',
-          foreground: 'hsl(var(--muted-foreground) / 0.65)',
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
