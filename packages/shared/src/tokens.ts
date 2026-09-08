@@ -128,8 +128,12 @@ export const lightSemantic: SemanticColors = {
   primaryForeground: '0 0% 100%',
   secondary: colors.neutral[100],
   secondaryForeground: '222 47% 11%',
-  muted: colors.neutral[100],
-  mutedForeground: colors.neutral[400],
+  // Muted surfaces/text are a translucent BLACK over the background in light
+  // mode (not a solid gray), so they adapt to any underlying color. The alpha
+  // is baked into the Tailwind/NativeWind color definition (see MUTED_ALPHA /
+  // MUTED_FOREGROUND_ALPHA), the token itself carries only the color channel.
+  muted: '0 0% 0%',
+  mutedForeground: '0 0% 0%',
   accent: colors.warm[500],
   accentForeground: '0 0% 100%',
   destructive: colors.red[500],
@@ -155,8 +159,10 @@ export const darkSemantic: SemanticColors = {
   primaryForeground: '0 0% 100%',
   secondary: '230 20% 18%',
   secondaryForeground: '0 0% 95%',
-  muted: '230 20% 18%',
-  mutedForeground: '215 14% 56%',
+  // Muted surfaces/text are a translucent WHITE over the background in dark
+  // mode (not a solid gray) — see the light-mode note on MUTED_ALPHA.
+  muted: '0 0% 100%',
+  mutedForeground: '0 0% 100%',
   accent: '24 100% 58%',
   accentForeground: '0 0% 100%',
   destructive: '0 72% 51%',
@@ -169,6 +175,16 @@ export const darkSemantic: SemanticColors = {
   input: '230 20% 22%',
   ring: '274 60% 46%',
 };
+
+// ── Muted translucency ────────────────────────
+// The muted/muted-foreground tokens hold a plain color channel (pure black in
+// light, pure white in dark). The actual "muted" look comes from applying a
+// fixed alpha over the background, baked into the Tailwind/NativeWind color
+// definition and mirrored here for the hslToHex() consumers (ruby readings,
+// theme icon colors). Keeping the alpha in one place means the design-token
+// change is expressed once and flows to every consumer.
+export const MUTED_ALPHA = 0.06;
+export const MUTED_FOREGROUND_ALPHA = 0.65;
 
 // ── Typography ──────────────────────────────
 
@@ -246,9 +262,11 @@ export const borderRadius = {
 
 /**
  * Convert HSL channels ("H S% L%") → hex string for React Native.
+ * When `alpha` is provided (< 1), returns an 8-digit #RRGGBBAA hex so the
+ * translucent muted tokens keep their alpha for native color props.
  * Portable, no platform APIs needed.
  */
-export function hslToHex(hsl: string): string {
+export function hslToHex(hsl: string, alpha = 1): string {
   const parts = hsl.split(' ');
   const h = parseFloat(parts[0]!);
   const s = parseFloat(parts[1]!) / 100;
@@ -264,7 +282,12 @@ export function hslToHex(hsl: string): string {
       .toString(16)
       .padStart(2, '0');
 
-  return `#${toHex(0)}${toHex(8)}${toHex(4)}`;
+  const base = `#${toHex(0)}${toHex(8)}${toHex(4)}`;
+  if (alpha >= 1) return base;
+  const alphaHex = Math.round(alpha * 255)
+    .toString(16)
+    .padStart(2, '0');
+  return `${base}${alphaHex}`;
 }
 
 /** Build a StyleSheet-compatible color map from semantic tokens. */
@@ -272,9 +295,15 @@ export function semanticColorsForMobile(
   mode: 'light' | 'dark',
 ): Record<keyof SemanticColors, string> {
   const source = mode === 'light' ? lightSemantic : darkSemantic;
+  // Muted keys carry their own baked translucency (see MUTED_ALPHA /
+  // MUTED_FOREGROUND_ALPHA); everything else resolves to a solid color.
+  const alphaByKey: Partial<Record<keyof SemanticColors, number>> = {
+    muted: MUTED_ALPHA,
+    mutedForeground: MUTED_FOREGROUND_ALPHA,
+  };
   const result: Record<string, string> = {};
   for (const [key, hsl] of Object.entries(source)) {
-    result[key] = hslToHex(hsl as string);
+    result[key] = hslToHex(hsl as string, alphaByKey[key as keyof SemanticColors] ?? 1);
   }
   return result as Record<keyof SemanticColors, string>;
 }
