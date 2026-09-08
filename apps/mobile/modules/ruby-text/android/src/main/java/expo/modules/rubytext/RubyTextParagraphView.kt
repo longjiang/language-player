@@ -222,7 +222,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     if (start < 0 || end < 0 || start == end) return
     try {
       val selected = text.subSequence(start, end).toString()
-      val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
       cm.setPrimaryClip(ClipData.newPlainText("text", selected))
     } catch (e: Exception) {
       Log.w("LP Mobile", "[RubyText] copy failed: ${e.message}")
