@@ -97,6 +97,25 @@ Design Tokens (packages/shared/src/tokens.ts)
 └── Border radius (rem)         e.g. DEFAULT = '0.75rem'
 ```
 
+### Muted as a translucent foreground
+
+`muted` and `muted-foreground` are the exception to "one HSL value" clarity. They are
+defined as a **pure color channel** — `0 0% 0%` (black) in light, `0 0% 100%` (white) in
+dark — and the muted *look* comes from a fixed alpha baked into each platform's color
+definition rather than into the token value:
+
+| Platform | Color definition |
+|---|---|
+| Web (`tailwind.config.ts`) | `muted: 'hsl(var(--muted) / 0.06)'`, `muted-foreground: 'hsl(var(--muted-foreground) / 0.65)'` |
+| Mobile (generated `tailwind.config.js`) | same, produced by `scripts/build-tokens.mts` (`MUTED_ALPHA` / `MUTED_FOREGROUND_ALPHA`) |
+
+Keeping the alpha out of the token value matters because Tailwind v3 **swaps** the alpha
+on opacity modifiers (`bg-muted/50` → `hsl(var(--muted) / 0.5)`); if the token carried the
+alpha too, modifiers would produce an invalid double-alpha `hsl(... / 0.06 / 0.5)`. The
+alpha constants are also mirrored in `semanticColorsForMobile()` so the native ruby
+reader and `theme-colors.ts` keep the same muted translucency for React Native `color`
+props.
+
 ### Build Pipeline
 
 ```
