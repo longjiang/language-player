@@ -254,10 +254,16 @@ export default function WatchScreen() {
 
     (async () => {
       try {
-        // Single endpoint: queries Directus, falls back to YouTube
+        // Single endpoint: queries Directus, falls back to YouTube.
+        // SPEC-029: mobile consumes SERVER-normalized captions (full mode), so
+        // for a freshly imported video this can take well over 15s while the
+        // server fetches YouTube metadata + raw captions and LLM-normalizes
+        // them (~20s observed for a cold import). The old 15s AbortSignal
+        // timeout fired first, cancelled the fetch, and surfaced a bogus
+        // "video unavailable" error. 60s gives the cold path room to finish.
         const res = await fetch(
           `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(videoId)}&subs_l2=1&l2=${l2Code}`,
-          { signal: AbortSignal.timeout(15000) },
+          { signal: AbortSignal.timeout(60000) },
         );
         if (!res.ok) throw new Error(t('msg.video_unavailable'));
 
@@ -318,9 +324,12 @@ export default function WatchScreen() {
         // the captions endpoint (same best-locale logic Nuxt uses).
         if (lines.length === 0) {
           try {
+            // Same generous timeout as the /videos fetch above: this cold path
+            // also normalizes the transcript server-side (SPEC-029 full mode),
+            // which can take well over 15s on a freshly imported video.
             const captionsRes = await fetch(
               `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(videoId)}&l2=${l2Code}`,
-              { signal: AbortSignal.timeout(15000) },
+              { signal: AbortSignal.timeout(60000) },
             );
             if (captionsRes.ok) {
               const captions: any[] | null = await captionsRes.json();
