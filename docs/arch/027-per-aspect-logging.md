@@ -31,7 +31,7 @@ sync domain completely without touching anything else.
 
 ## Design
 
-### Level semantics (unchanged)
+### Level semantics (default INFO)
 
 | Level | Shows |
 |---|---|
@@ -39,6 +39,14 @@ sync domain completely without touching anything else.
 | 1 | `logerr()` |
 | 2 | `logerr()` + `logwarn()` |
 | 3 | everything (`log()` + `logwarn()` + `logerr()`) |
+
+**Logging is info-level by default — `log()` (level 3) is the channel for all
+application and debugging logs.** Use `logwarn()` (level 2) / `logerr()`
+(level 1) only when a **stack trace is genuinely required** (a caught
+exception, or a real warning you can only diagnose with a backtrace). Every
+non-info-level log that isn't a true error-with-stacktrace must carry a
+visible `// non-info-level: <reason — stack trace needed>` comment on the call
+site; an unflagged non-info log is a bug and should be demoted to `log()`.
 
 ### Domain resolution
 

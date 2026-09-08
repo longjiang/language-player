@@ -129,6 +129,10 @@ This applies to all source files in `apps/chrome-extension/`, `apps/web/`, and `
 
 Use a simple pattern — export `log()`, `logwarn()`, `logerr()` helpers that check the flag internally. Never call `console.log` directly in application code.
 
+**⚠️ Logging defaults to INFO — use `log()`, not `logwarn()`.** `log()` is the verbose/info channel (`LOG_LEVEL=3`) and is the default for *all* application and debugging logs: state changes, request/response values, branch decisions, timings, and instrumentation. `logwarn()` (`LOG_LEVEL=2`) and `logerr()` (`LOG_LEVEL=1`) are reserved for the cases where a **stack trace is genuinely required** — an actual error/caught exception, or a real warning condition you can only diagnose with a backtrace. A debugging trace is **not** a warning, and emitting it on the warning channel pollutes the warning level (and hides it from info-level filters).
+
+**If a log is not info-level, it must be clearly flagged as such.** Any `logwarn()`/`logerr()` call that isn't a true error-with-stacktrace must carry a visible marker explaining why a stack trace is needed — e.g. a trailing comment `// non-info-level: <reason — stack trace needed>` on the call site. Treat an unflagged non-info log as a bug and demote it to `log()`. When you add one, say so in the commit message so reviewers and future readers know it's deliberate, not a mistake.
+
 **⚠️ Never start or stop the Flask server.** The Flask server (`zerotohero-python-server/`) is the user's responsibility to manage — starting, stopping, restarting, and checking its status. If you need the server running for a test or endpoint call, ask the user to start it. If it appears to be down, tell the user rather than trying to restart it yourself. You may query the Flask API endpoints with `curl` or `fetch` to test behavior, but never manage the server process.
 
 **⚠️ Always rebuild the Chrome extension after editing source.** The extension at `apps/chrome-extension/` uses esbuild to bundle `src/content-entry.js` (plus React, shared packages) into `dist/content.js`. After any edit to `apps/chrome-extension/src/`, run:
@@ -454,7 +458,15 @@ calls must start with the app's bracketed prefix (`[LP Extension]`,
 `[LP Web]`, `[LP Mobile]`) so logs can be filtered by app, and all logging
 must be gated by the app-wide `LOG_LEVEL` switch. Use the exported `log()`,
 `logwarn()`, `logerr()` helpers — never call `console.log` directly in
-application code. (Detailed prefix/switch table is in [Commands](#commands).)
+application code. **Logging is info-level (`log()`) by default** — including
+all debugging traces. Reach for `logwarn()`/`logerr()` only when a stack trace
+is genuinely required, and flag any non-info-level log with a trailing
+`// non-info-level: <reason — stack trace needed>` comment so the deviation is
+visible (see [Logging defaults to INFO](#logging-defaults-to-info)). To see
+`log()` output, set the level to 3
+(`NEXT_PUBLIC_LOG_LEVEL=3`/`EXPO_PUBLIC_LOG_LEVEL=3`, or `setLogLevel(3)`),
+and set the browser console filter to Verbose/All. (Detailed prefix/switch
+table is in [Commands](#commands).)
 
 **Typechecking:**
 
