@@ -201,10 +201,10 @@ The mode can be toggled via:
 │          (aspect-video, 16:9)        │
 ├──────────────────────────────────────┤
 │  ┌──────────────────────────────┐    │
+│  │  [⏮← →⏭ ♥ 🔖 ◧]              │    │  ← huddled control row, centered
+│  │──────────────────────────────│    │
 │  │   "今天天气..."              │    │  ← subtitle row
 │  │   The weather is nice        │    │     min-h-[5rem], centered
-│  │──────────────────────────────│    │
-│  │  [⏮← →⏭ ♥ 🔖 ◧]              │    │  ← huddled control row
 │  └──────────────────────────────┘    │
 │                                      │
 │  (remaining space — empty)           │
@@ -212,9 +212,11 @@ The mode can be toggled via:
 └──────────────────────────────────────┘
 ```
 
-- **Not overlaid** when w:h ≤ 1 — fixed-height block below the player. Two rows:
+- **Not overlaid** when w:h ≤ 1 — fixed-height block below the player. Two rows
+  (this is the **single-line mode**; the control row sits ABOVE the subtitle,
+  centered, unlike the on-video overlay band below, which keeps it BELOW):
+  - **Control row**: `[⏮ ← → ⏭ ♥ 🔖 ◧]` as a huddled button group, centered horizontally.
   - **Subtitle row**: L2 text + L1 translation, centered. The text block is at least as wide as the control row and may grow wider.
-  - **Control row**: `[⏮ ← → ⏭ ♥ 🔖 ◧]` as a huddled button group, left-aligned.
   - No TTS button.
 - No video info. Player uses YouTube's native mobile controls.
 
@@ -264,14 +266,18 @@ The mode can be toggled via:
 > the L2 difficulty profile; it is **not** shown when the level can't be
 > determined (no misleading fallback level).
 
-Two-row layout: subtitle text (with translation) on top, controls below.
+Two-row layout. The row order depends on the presentation:
+- **On-video overlay band** (wide, w:h > 1 — "band mode"): subtitle text
+  (with translation) on top, controls below.
+- **Below-player band** (narrow, w:h ≤ 1 — "single-line mode"): controls on
+  top (centered), subtitle text below.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
+│  [⏮← →⏭ ♥ 🔖 ◧]                                  │  ← huddled control row
+│──────────────────────────────────────────────────────────│
 │        今天天气很好，我们出去走走吧...                    │  ← subtitle row
 │        The weather is nice, let's go out                 │
-│──────────────────────────────────────────────────────────│
-│  [⏮← →⏭ ♥ 🔖 ◧]                                  │  ← huddled control row
 └──────────────────────────────────────────────────────────┘
 ```
 
