@@ -535,6 +535,16 @@ describe('spellSurfaceInTokens (lemma-only record with an inflected surface)', (
   it('returns empty when tokens are undefined/empty', () => {
     expect(spellSurfaceInTokens([], word, '傾げられる', entry)).toBe('');
   });
+
+  it('scrabbleAnswerText honours a pre-resolved surface', () => {
+    expect(scrabbleAnswerText('と首をかしげた。', word, '傾げられる', entry, 'ja', 'かしげた')).toBe('かしげた');
+  });
+
+  it('spellHintInfo orthographic branch uses a pre-resolved answer', () => {
+    const noReading = { head: '傾げる', pronunciation: '' };
+    const info = spellHintInfo('と首をかしげた。', word, '傾げられる', noReading, 'ja', 'かしげた');
+    expect(info).toEqual({ char: 'か', kind: 'orthographic' });
+  });
 });
 
 describe('spellHintInfo', () => {
