@@ -4,12 +4,13 @@ import { Pressable } from '@/components/ui/pressable';
 import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
+import { buildPlaybackVideoFromContext, formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
 import { formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
-import { BookOpen, Bookmark, BookmarkCheck, ExternalLink, Video } from 'lucide-react-native';
+import { BookOpen, Bookmark, BookmarkCheck, ExternalLink, Play, Video } from 'lucide-react-native';
+import { SubsSearchPlaybackModal } from '@/components/video/SubsSearchPlaybackModal';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -192,6 +193,13 @@ export function DictionaryEntryCard({
     ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
     : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
 
+  // ── Saved-context playback (SPEC-066) ──
+  // When the saved context is from a YouTube video, the source portion of the
+  // saved-metadata line is tappable and reopens the shared subs-search playback
+  // modal, cued/paused at the saved timestamp.
+  const [contextPlaying, setContextPlaying] = useState(false);
+  const playbackVideo = savedCtx ? buildPlaybackVideoFromContext(savedCtx) : null;
+
   // ── Shared: SRS review-status dot — shown when this entry is a saved word
   // with an SRS card. Uses the shared getSrsReviewStatus and matches the review
   // page's blue/red/green deck-count indicator. Rendered beside the level
@@ -324,28 +332,73 @@ export function DictionaryEntryCard({
 
         {/* Saved metadata — date · source type + title · context sentence (form highlighted) */}
         {savedRecord && (
-          <View className="mt-2 flex-row items-start gap-1">
-            <BookmarkCheck size={12} color={ICON_MUTED} style={{ marginTop: 2 }} />
-            {/* Source-type icon lives OUTSIDE the Text — Svg (lucide icon)
-                cannot be a child of an RN <Text> (crashes on Android, drops
-                the icon on iOS). Web renders it inline in a DOM <p>. */}
-            {(hasVideoSource || hasTextSource) && (
-              <View style={{ marginTop: 3 }}>
-                {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}
-              </View>
+          <View className="mt-2 gap-1">
+            <View className="flex-row items-start gap-1">
+              <BookmarkCheck size={12} color={ICON_MUTED} style={{ marginTop: 2 }} />
+              {/* A playable video context gets a dedicated tappable source row
+                  (a nested Pressable, so it captures the touch and never ALSO
+                  triggers the card's own onPress navigation). The source icon
+                  lives OUTSIDE the Text — Svg (lucide icon) cannot be a child
+                  of an RN <Text> (crashes on Android, drops the icon on iOS). */}
+              {hasVideoSource && playbackVideo ? (
+                <Pressable
+                  onPress={() => setContextPlaying(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('action.watch')}
+                  className="min-w-0 flex-1 flex-row items-center gap-1"
+                >
+                  <Video size={12} color={ICON_MUTED} />
+                  {sourceLabel && (
+                    <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={1}>
+                      {sourceLabel}
+                    </Text>
+                  )}
+                  <Play size={12} color={ICON_MUTED} />
+                </Pressable>
+              ) : (
+                <>
+                  {(hasVideoSource || hasTextSource) && (
+                    <View className="flex-row items-center gap-1" style={{ marginTop: 3 }}>
+                      {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}
+                    </View>
+                  )}
+                  <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={3}>
+                    {saveDateStr
+                      ? <Text className="text-muted-foreground">{saveDateStr}</Text>
+                      : null}
+                    {sourceLabel && (
+                      <Text>{' · '}{sourceLabel}</Text>
+                    )}
+                    {contextSentence && (
+                      <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>
+                    )}
+                  </Text>
+                </>
+              )}
+            </View>
+            {/* For a playable video, the date + context sentence sit below the
+                tappable source row (the source label moved out of the flowing
+                text for its own tap target). */}
+            {hasVideoSource && playbackVideo && (
+              <Text className="pl-5 text-xs text-muted-foreground" numberOfLines={3}>
+                {saveDateStr
+                  ? <Text className="text-muted-foreground">{saveDateStr}</Text>
+                  : null}
+                {contextSentence && (
+                  <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>
+                )}
+              </Text>
             )}
-            <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={3}>
-              {saveDateStr
-                ? <Text className="text-muted-foreground">{saveDateStr}</Text>
-                : null}
-              {sourceLabel && (
-                <Text>{' · '}{sourceLabel}</Text>
-              )}
-              {contextSentence && (
-                <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>
-              )}
-            </Text>
           </View>
+        )}
+        {playbackVideo && (
+          <SubsSearchPlaybackModal
+            videos={[playbackVideo]}
+            index={contextPlaying ? 0 : null}
+            onIndexChange={(i) => setContextPlaying(i !== null)}
+            highlightTerms={savedCtx?.form ? [savedCtx.form] : []}
+            autoplay={false}
+          />
         )}
 
         {/* Source + save */}
