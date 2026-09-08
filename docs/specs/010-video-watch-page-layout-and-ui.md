@@ -25,6 +25,12 @@ A `playback.transcriptMode` setting already exists in the settings page (`'trans
 3. **Easy exit** — One tap/click returns to the full transcript mode with all study tools.
 4. **Reduce custom control bar** — YouTube's native controls (play, seek, volume, speed, fullscreen) handle standard playback. LP's control bar is reduced to only LP-specific controls (prev/next line, prev/next video, sidebar toggle) with no feature overlap.
 5. **Seamless toggle** — Switching between modes is instant, preserving video position and state.
+6. **Play immediately while loading** — The player is rendered optimistically with
+   `effectiveYoutubeId = video?.youtube_id ?? videoId` and `autoplay`, so the video
+   starts right away (e.g. a URL-imported video) while metadata, channel info, and
+   subtitles load in the background. Loading/error status surfaces below the
+   player, never replacing it, so playback continues uninterrupted through the
+   load and across mode/layout changes.
 
 ---
 
