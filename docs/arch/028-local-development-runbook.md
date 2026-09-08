@@ -117,6 +117,15 @@ must start with the app's bracketed prefix and be gated by the app-wide
 Use the exported `log()`, `logwarn()`, `logerr()` helpers — never call
 `console.log` directly.
 
+**Logging is info-level (`log()`) by default** for all application and
+debugging logs. Use `logwarn()` / `logerr()` only when a stack trace is
+genuinely required (a real error/exception, or a warning you can only diagnose
+with a backtrace), and flag any non-info-level log with a trailing
+`// non-info-level: <reason — stack trace needed>` comment. To see `log()`
+output, set the level to 3
+(`NEXT_PUBLIC_LOG_LEVEL=3` / `EXPO_PUBLIC_LOG_LEVEL=3`, or `setLogLevel(3)`)
+and set the browser console filter to Verbose/All.
+
 ---
 
 ## Web — `apps/web`
@@ -162,7 +171,9 @@ login, video/channel APIs, and subtitle fetching.
 
 Next.js prints to the terminal running the dev server. App logs use the
 `[LP Web]` prefix and are gated by `NEXT_PUBLIC_LOG_LEVEL`
-(0=off, 1=errors, 2=warnings, 3=verbose).
+(0=off, 1=errors, 2=warnings, 3=verbose). Logging is info-level (`log()`)
+by default, so to see `log()` output set `NEXT_PUBLIC_LOG_LEVEL=3` (or
+`setLogLevel(3)` in the console) and set the console filter to Verbose/All.
 
 ### Stop / restart
 

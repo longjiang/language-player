@@ -13,6 +13,13 @@
  *   2 = warnings    — logerr() + logwarn()
  *   3 = verbose     — logerr() + logwarn() + log()
  *
+ * Logging is INFO-level by default: `log()` is the channel for all application
+ * and debugging logs. `logwarn()` / `logerr()` are reserved for the cases where
+ * a stack trace is genuinely required (a caught exception, or a real warning
+ * you can only diagnose with a backtrace); any non-info-level log that isn't a
+ * true error-with-stacktrace must be flagged with a trailing
+ * `// non-info-level: <reason — stack trace needed>` comment at the call site.
+ *
  * Per-aspect overrides: a logger created with a category (e.g. "translation")
  * uses the category's level when one is set, otherwise the global level.
  * This lets you keep the console quiet globally while still following one
@@ -127,9 +134,12 @@ if (typeof globalThis !== 'undefined' && process.env.NODE_ENV !== 'production') 
 }
 
 export interface Logger {
-  /** Verbose debug log — shown at LOG_LEVEL >= 3. */
+  /** Info-level debug log — the default channel for application/debugging
+   *  logs. Shown at LOG_LEVEL >= 3. */
   log(msg: string, ...args: unknown[]): void;
-  /** Warning — shown at LOG_LEVEL >= 2. */
+  /** Warning — reserved for cases where a stack trace is genuinely required.
+   *  Shown at LOG_LEVEL >= 2. Any non-true-error usage must be flagged with a
+   *  `// non-info-level:` comment at the call site. */
   logwarn(msg: string, ...args: unknown[]): void;
   /** Error — shown at LOG_LEVEL >= 1. */
   logerr(msg: string, ...args: unknown[]): void;
