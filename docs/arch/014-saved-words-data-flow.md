@@ -437,6 +437,16 @@ SavedWordsPage                  (apps/web/src/app/[l1]/[l2]/saved-words/page.tsx
 | **Context line** | `safeCtx.text` (truncated, with `…` prefix/suffix), only when `≠ head` |
 | **Source** | `SavedWordSource` — reads `context.youtube_id`/`videoTitle` vs `textTitle` |
 | **SRS dot** | Rendered by the shared `DictionaryEntryCard` (compact + full, both apps) via `@langplayer/utils` `getSrsReviewStatus(useSrs().getCard(l2, word.id))` — blue/red/green matching the review page |
+
+> **Saved-context playback (2026-09-xx).** When a saved word's context is from a
+> YouTube video (has `youtube_id`), the source line becomes a tappable control
+> that reopens the shared subs-search playback modal cued/paused at the saved
+> `starttime`, via `buildPlaybackVideoFromContext()` in `packages/shared` (turns
+> a `SavedWordContext` into a single-video `SubsSearchVideo`). Applies to the
+> `SavedWordSource` component (review card front, saved-words cards) and the
+> `DictionaryEntryCard` saved-metadata line on both apps. The tokenized context
+> sentence is unchanged — only the source line handles play. See [SPEC-066 —
+> Context playback](../specs/066-srs-review-page.md#context-playback-2026-09-xx).
 | **Bookmark** | Filled amber icon → calls `removeSavedWord(l2, word.id)` |
 
 #### InlineDefinition — Lazy-Loaded Entry Fetch
