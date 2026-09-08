@@ -119,12 +119,10 @@ export default function SearchPage() {
 
   const handleInputChange = useCallback((value: string) => {
     setQuery(value);
-    // Check YouTube URL in real-time (like GO does)
-    const youtubeId = extractYouTubeID(value);
-    if (youtubeId) {
-      router.push(`/${l1.code}/${l2.code}/watch/${youtubeId}`);
-    }
-  }, [extractYouTubeID, router, l1.code, l2.code]);
+    // Note: importing is button-driven, not auto — typing a YouTube URL only
+    // flips the submit action to "Import"; the user confirms via Enter/tap so
+    // the button (and its label) is actually visible.
+  }, []);
 
   const handleTagClick = useCallback((tag: string) => {
     setQuery(tag);
@@ -133,6 +131,9 @@ export default function SearchPage() {
 
   const hasResults = results && results.length > 0;
   const hasSearched = results !== null || error !== null;
+  // When the field holds a YouTube URL, the submit action becomes "Import"
+  // (navigate straight to the video) instead of a text search.
+  const isImport = !!extractYouTubeID(query.trim());
 
   return (
     <div className={hasResults ? 'mx-auto max-w-7xl px-4 py-6' : 'mx-auto max-w-2xl px-4 py-12'}>
@@ -162,7 +163,7 @@ export default function SearchPage() {
         </div>
         <Button type="submit" disabled={loading || !query.trim()}>
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-          {t('action.search')}
+          {isImport ? t('action.import') : t('action.search')}
         </Button>
       </form>
 

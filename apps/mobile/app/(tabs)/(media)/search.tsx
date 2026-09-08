@@ -92,6 +92,9 @@ export default function SearchScreen() {
 
   const visibleTags = tagsExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
   const hasResults = results && results.length > 0;
+  // When the field holds a YouTube URL, the submit action becomes "Import"
+  // (navigate straight to the video) instead of a text search.
+  const isImport = !!extractYouTubeID(query.trim());
 
   return (
     <PageContainer maxWidth={hasResults ? '7xl' : '2xl'}>
@@ -116,7 +119,7 @@ export default function SearchScreen() {
           disabled={loading || !query.trim()}
           {...e2e('search-button')}
         >
-          <Text className={buttonTextClass('default')}>{t('action.search')}</Text>
+          <Text className={buttonTextClass('default')}>{isImport ? t('action.import') : t('action.search')}</Text>
         </Button>
       </View>
 
