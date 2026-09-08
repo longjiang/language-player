@@ -29,7 +29,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens.ts');
-const { lightSemantic, darkSemantic, typography, MUTED_ALPHA, MUTED_FOREGROUND_ALPHA } = await import(TOKENS_PATH);
+const { lightSemantic, darkSemantic, typography } = await import(TOKENS_PATH);
 
 // ── Helpers ────────────────────────────────────
 
@@ -42,20 +42,6 @@ function kebabCase(str: string): string {
 function formatKey(key: string): string {
   const k = kebabCase(key);
   return k.includes('-') ? `'${k}'` : k;
-}
-
-/** Muted keys bake their translucency into the color value (see
- *  MUTED_ALPHA / MUTED_FOREGROUND_ALPHA); all others keep the <alpha-value>
- *  placeholder so bg- and text- opacity modifiers continue to work. */
-function alphaFor(key: string): string {
-  switch (key) {
-    case 'muted':
-      return String(MUTED_ALPHA);
-    case 'mutedForeground':
-      return String(MUTED_FOREGROUND_ALPHA);
-    default:
-      return '<alpha-value>';
-  }
 }
 
 // ── All semantic color keys (light and dark have the same keys) ──
@@ -91,7 +77,7 @@ ${cssVarLines(darkSemantic, '    ')}
 // so opacity modifiers (bg-primary/20) continue to work.
 
 const colorEntries = semanticKeys.map(
-  (key) => `        ${formatKey(key)}: 'hsl(var(--${kebabCase(key)}) / ${alphaFor(key)})',`,
+  (key) => `        ${formatKey(key)}: 'hsl(var(--${kebabCase(key)}) / <alpha-value>)',`,
 );
 
 const fontFamilyEntries = (

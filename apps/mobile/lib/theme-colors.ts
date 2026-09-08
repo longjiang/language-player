@@ -1,17 +1,7 @@
-import { colors, darkSemantic, hslToHex } from '@langplayer/shared';
+import { darkSemantic, hslToHex } from '@langplayer/shared';
 
-/**
- * Muted icon / placeholder color. The `muted-foreground` semantic token is now
- * a translucent pure black/white (see tokens.ts MUTED_FOREGROUND_ALPHA), which
- * is only correct over the matching theme background. These static exports are
- * used in both light and dark themes (settings, profile, login), so they stay a
- * theme-agnostic neutral gray derived from the shared raw scale rather than the
- * themed token.
- */
-const MUTED_NEUTRAL = hslToHex(colors.neutral[400]);
-
-/** Icon color derived from a theme-agnostic muted gray (see MUTED_NEUTRAL). */
-export const ICON_MUTED = MUTED_NEUTRAL;
+/** Icon color derived from dark theme muted-foreground token. */
+export const ICON_MUTED = hslToHex(darkSemantic.mutedForeground);
 
 /** Primary foreground (white in both themes). */
 export const ICON_ON_PRIMARY = hslToHex(darkSemantic.primaryForeground);
@@ -23,7 +13,7 @@ export const ICON_ON_ACCENT = hslToHex(darkSemantic.accentForeground);
 export const ICON_PRIMARY = hslToHex(darkSemantic.primary);
 
 /** Placeholder text color. */
-export const PLACEHOLDER_COLOR = MUTED_NEUTRAL;
+export const PLACEHOLDER_COLOR = hslToHex(darkSemantic.mutedForeground);
 
 /** Destructive/error color. */
 export const ICON_DESTRUCTIVE = hslToHex(darkSemantic.destructive);

@@ -66,14 +66,6 @@ The rest of the semantic palette stays as defined in ADR-0011 and `packages/shar
 - `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`
 - `border`, `input`, `ring`
 
-> **Exception (muted):** `muted` and `muted-foreground` are the one supporting pair
-> that is **not** a "stays as defined" color. To keep muted surfaces/text from being a
-> fixed gray that clashes with the app background, they are now a **translucent pure
-> black (light theme) / pure white (dark theme)** foreground over the background. The
-> token holds only the color channel; the translucency lives in the Tailwind/NativeWind
-> color definitions and the shared `MUTED_ALPHA` / `MUTED_FOREGROUND_ALPHA` constants
-> (see ADR-0011). `secondary` is unaffected.
-
 The `ring` color should follow the primary (so focus rings match the brand purple).
 
 ### 1.3 Web `brand-*` scale
