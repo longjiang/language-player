@@ -195,44 +195,6 @@ async function buildSpellVariants(text: string, l2Code: string): Promise<string[
   return [text];
 }
 
-/**
- * Diagnostic log for the spell/scrabble correct-answer derivation.
- *
- * SPEC-066 says the correct answer must be the exact surface/inflected form
- * blanked in the context sentence (e.g. かしげた), never the dictionary lemma
- * (傾げる). This traces the inputs to `spellBlankText` and its output so a
- * wrong fallback to the lemma can be diagnosed against a real card record.
- *
- * Info-level (`log`, not `logwarn`): this is a debugging trace, not a warning.
- * To see it, run with LOG_LEVEL=3 (NEXT_PUBLIC_LOG_LEVEL=3 or setLogLevel(3))
- * and set the browser console filter to Verbose/All.
- */
-function logSpellAnswerDiagnostics(
-  l2Code: string,
-  word: SavedLexicalItemRecord,
-  wordForm: string,
-  entry: DictionaryEntry | null | undefined,
-) {
-  const contextText = word.context?.text ?? '';
-  const surface = surfaceFormOf(word, wordForm);
-  const lemma = lemmaFormOf(word, wordForm);
-  const blanked = spellBlankText(contextText, word, wordForm, entry, l2Code);
-  log('[SRS Spell] correct-answer derivation', {
-    l2: l2Code,
-    wordForm,
-    forms: word.forms ?? [],
-    contextForm: word.context?.form ?? null,
-    instanceForms: (word.instances ?? []).map((i) => i.form),
-    contextText,
-    entryHead: entry?.head ?? null,
-    entryAlternate: entry?.alternate ?? null,
-    entryKana: entry?.phonetic_detail?.kana ?? null,
-    surfaceFormOf: surface,
-    lemmaFormOf: lemma,
-    spellingAnswer: blanked,
-  });
-}
-
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
@@ -1034,7 +996,6 @@ export default function ReviewPage() {
               l2Code,
             ))
       : '';
-    if (card) logSpellAnswerDiagnostics(l2Code, card.word, wordForm, l1Entry ?? fallbackEntry ?? card.entry);
     await gradeSpellLikeAnswer(spellText, correctAnswer);
   }, [gradeSpellLikeAnswer, spellText, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, resolveSurfaceFor]);
 
@@ -1094,7 +1055,6 @@ export default function ReviewPage() {
           resolveSurfaceFor(card) || undefined,
         )
       : '';
-    if (card) logSpellAnswerDiagnostics(l2Code, card.word, wordForm, l1Entry ?? fallbackEntry ?? card.entry);
     log('[SRS Scrabble] blocks arranged (auto-submit)', { l2Code, word: wordForm, arranged, correctAnswer });
     await gradeSpellLikeAnswer(arranged, correctAnswer);
   }, [gradeSpellLikeAnswer, cards, currentIndex, wordForm, l2Code, l1Entry, fallbackEntry, resolveSurfaceFor]);
