@@ -25,3 +25,4 @@ export * from './markdown/vision';
 export * from './voice-selection';
 export * from './youtube-categories';
 export * from './external-search';
+export * from './saved-word-context';
