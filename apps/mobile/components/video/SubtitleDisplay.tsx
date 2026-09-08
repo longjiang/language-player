@@ -334,7 +334,10 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
 
           return (
             <Pressable
-              onPress={() => onSeekToLine?.(item.starttime)}
+              onPress={() => {
+                log(`[LP Mobile] [subs-multiline] row press → seek ${item.starttime} text="${item.l2Line.slice(0, 40)}"`);
+                onSeekToLine?.(item.starttime);
+              }}
               className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
             >
               <TextActionMenu
@@ -354,8 +357,16 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                       highlightTerms={highlightTerms}
                       notes={notes}
                       textScale={1}
-                      // SPEC-084: selection on the transcript list.
-                      selectionDictionary
+                      // NOTE: selectionDictionary is intentionally OFF here.
+                      // It routes the text through the native paragraph
+                      // (RubyTextParagraphView), whose tap handler maps an
+                      // empty-space tap (past the last glyph) to the LAST
+                      // token, opening the last word's popup instead of
+                      // seeking the line. With per-token pressables the
+                      // empty-space tap bubbles to the row's seek Pressable,
+                      // while word taps still open the dictionary. So native
+                      // drag-select lives only on the single-line subtitles,
+                      // not the multiline transcript.
                     />
                   </View>
                   {item.l1Line ? (

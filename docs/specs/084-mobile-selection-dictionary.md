@@ -120,7 +120,7 @@ Key findings:
 - **Mobile plan**:
   1. `PaginatedReader` gains `selectionDictionary?: boolean`, threaded to `TokenizedText` in `renderBlock` (`apps/mobile/components/reader/PaginatedReader.tsx`).
   2. Enable on the reader screens: `apps/mobile/app/(tabs)/(reading)/epub.tsx`, `web-reader.tsx`, `(reading)/index.tsx` (notes reader) — matching web's EpubReaderPanel + ReaderPanel.
-  3. Enable on subtitle **transcript** mode: both `TokenizedText` usages in `apps/mobile/components/video/SubtitleDisplay.tsx` (singleline 227, multiline 300). Not the on-video band (karaoke timing + selection conflict; web only enables transcript modes).
+  3. Enable on subtitle **transcript** mode: the `TokenizedText` usage in `apps/mobile/components/video/SubtitleDisplay.tsx` **singleline** mode (line ~227). **Not** the multiline transcript (the FlatList rows): selectionDictionary is deliberately OFF there because it routes the text through the native paragraph (`RubyTextParagraphView`), whose tap handler maps an empty-space tap (past the last glyph) to the LAST token — opening the last word's popup instead of seeking the line. With per-token pressables, empty-space taps bubble to the row's seek `Pressable` (word taps still open the dictionary). Not the on-video band (karaoke timing + selection conflict; web only enables transcript modes).
   4. Not enabled: SRS review card, AI explanation/inline text, quiz mode.
 
 ## Dependencies
