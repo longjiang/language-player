@@ -99,7 +99,9 @@ export function SettingsList({
         ],
       },
       {
-        titleKey: '', // no section header for DATA section
+        // Mobile-only settings: there is no web equivalent, so they live under
+        // their own section heading (ADR-0042).
+        titleKey: 'setting.mobile',
         rows: [
           { key: 'network', title: t('title.offline_mode'), subtitle: offlineMode ? t('label.offline') : '' },
           { key: 'offline', title: t('title.offline_dictionaries'), subtitle: '' },
