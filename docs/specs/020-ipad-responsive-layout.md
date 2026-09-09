@@ -28,7 +28,7 @@ These responsive patterns are already in place and do not need changes:
 
 | Component | What It Does | Verdict |
 |---|---|---|
-| **Settings** | Detects `width >= 600` → sidebar (`w-64`) + detail panel. Narrow mode uses stack navigation. Well-implemented split view. | ✅ |
+| **Settings** | **Modal since ADR-0042 (2026-09-09):** bottom sheet <768px, `max-w-5xl` sidebar+detail dialog ≥768px. The old `width >= 600` page split is gone. | ✅ |
 | **Video Player (Watch)** | Detects `screenWidth / screenHeight > 1` for landscape → overlays subtitles on video vs. band below. Correct logic. | ✅ |
 | **Language Picker** | `LanguagePickerWide` / `LanguagePickerNarrow` switch at `SM_BREAKPOINT` (640px). | ✅ |
 | **EPUB Pagination** | Uses `useWindowDimensions` — adapts page dimensions to any screen size. | ✅ |

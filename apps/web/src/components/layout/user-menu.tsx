@@ -20,6 +20,7 @@ import {
 import { clearUserData } from '@/lib/user-data-wipe';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { AboutDialog } from '@/components/about/about-dialog';
+import { SettingsDialog } from '@/components/settings/settings-dialog';
 
 interface UserMenuProps {
   l1Code?: string;
@@ -31,6 +32,7 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const close = () => setOpen(false);
 
   if (status === 'loading') {
@@ -104,6 +106,8 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
           </PopoverContent>
         </Popover>
         <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
+        {/* Settings is a modal (ADR-0042) — opened in place, no navigation. */}
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       </>
     );
   }
@@ -123,13 +127,13 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
             <p className="text-sm font-medium truncate">{session.user.name ?? session.user.email}</p>
             <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
           </Link>
-          <Link
-            href={`/${l1Code}/${l2Code}/settings`}
-            onClick={close}
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+          <button
+            type="button"
+            onClick={() => { close(); setSettingsOpen(true); }}
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Settings className="h-4 w-4" /> {t('title.settings')}
-          </Link>
+          </button>
           <Link
             href={`/${l1Code}/${l2Code}/watch-history`}
             onClick={close}

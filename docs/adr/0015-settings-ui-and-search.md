@@ -1,9 +1,10 @@
 # ADR 0015: Settings UI and Search — List→Detail Pattern for Web & Mobile
 
-> **Status:** Accepted
+> **Status:** Accepted — **Decision 1 superseded by [ADR-0042](../adr/0042-settings-modal-container.md) (2026-09-09)**
 > **Date:** 2026-07-25
 > **Replaces:** N/A (new architecture)
 > **See also:**
+> - [ADR-0042: Settings is a modal, routes are deep-link targets](../adr/0042-settings-modal-container.md) — **supersedes Decision 1** (the list→detail *container* is now a modal; routes are deep-link targets only). Decision 2 (search keys) below still governs.
 > - [SPEC-015: Mobile Settings Completion](../specs/015-mobile-settings-completion.md) — mobile implementation plan
 > - [ADR-0002: Next.js App Router](../adr/0002-nextjs-app-router.md) — web architecture context
 > - [ADR-0003: No Shared UI](../adr/0003-no-shared-ui.md) — rendering model boundary
@@ -38,6 +39,17 @@ Both use `useSettingsContext()` (global state) and `useT()` (shared i18n). The t
 ---
 
 ## Decision 1: Layout Pattern — List → Detail (Both Platforms)
+
+> **⚠️ Superseded (2026-09-09) by [ADR-0042](../adr/0042-settings-modal-container.md).**
+> The list→detail *navigation model* below is still how settings are organized
+> (searchable list → one detail pane per category, sidebar on wide screens),
+> but the **container is now a modal on both platforms** — small dialog /
+> bottom sheet below 768 px, large sidebar+detail modal at ≥ 768 px — and the
+> `/[l1]/[l2]/settings/*` routes are deep-link targets that open that modal
+> rather than pages. The web/mobile file trees, the `≥768px` / `≥600pt` split
+> values, and the "each row navigates" behavior described here no longer
+> describe the shipped UI; read them as the historical rationale for the
+> list→detail model.
 
 ### The Problem with Tabs
 

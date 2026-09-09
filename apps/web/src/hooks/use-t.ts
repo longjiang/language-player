@@ -48,7 +48,7 @@ export function useT() {
     }) as unknown as typeof t;
 
     // Mirror next-intl's translator helpers (t.raw, t.rich, t.has, t.markup, …)
-    // onto the wrapper so callers that use them — SettingsListPanel's t.raw(),
+    // onto the wrapper so callers that use them — the settings list's t.raw(),
     // review's t.rich() — keep working. These are own enumerable props on `t`.
     Object.assign(translation, t);
 

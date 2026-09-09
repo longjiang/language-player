@@ -7,6 +7,7 @@ import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
+import { useSettingsDialog } from '@/contexts/SettingsDialogContext';
 import { confirmLogoutIfOffline } from '@/lib/logout-guard';
 import { e2e } from '@/lib/e2e';
 import { Settings, User, LogOut, Star, CreditCard, Download, Crown, Trash2 } from 'lucide-react-native';
@@ -19,6 +20,7 @@ export default function MeScreen() {
   const { isPro, isLifetime } = useSubscription();
   const router = useRouter();
   const t = useT();
+  const { openSettings } = useSettingsDialog();
 
   const handleLogout = async () => {
     confirmLogoutIfOffline(t, status.effectiveOffline, () => {
@@ -27,7 +29,8 @@ export default function MeScreen() {
   };
 
   const menuItems = [
-    { icon: Settings, label: t('title.settings'), route: '/(tabs)/(me)/settings' },
+    // Settings is a modal (ADR-0042) — opened in place, not a route.
+    { icon: Settings, label: t('title.settings'), route: null, action: () => openSettings() },
     { icon: Star, label: t('title.saved_words'), route: '/(tabs)/(vocab)/saved-words' },
     { icon: Download, label: t('title.offline_dictionaries'), route: '/(tabs)/(me)/offline-dictionaries' },
     { icon: CreditCard, label: t('action.go_pro'), route: null },

@@ -10,11 +10,13 @@ import { confirmLogoutIfOffline } from '@/lib/logout-guard';
 import { ICON_PRIMARY } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import { AboutDialog } from '@/components/about/AboutDialog';
+import { useSettingsDialog } from '@/contexts/SettingsDialogContext';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
   const { status } = useSyncStatus();
   const t = useT();
+  const { openSettings } = useSettingsDialog();
   const [aboutOpen, setAboutOpen] = useState(false);
 
   const initial = user?.email?.charAt(0)?.toUpperCase() ?? '?';
@@ -26,7 +28,7 @@ export function UserMenu() {
     confirmLogoutIfOffline(t, status.effectiveOffline, () => {
       void logout().then(() => router.replace('/login' as any));
     });
-  }, [t, status.effectiveOffline, logout]);
+  }, [t, status.effectiveOffline, logout, openSettings]);
 
   const handleAction = useCallback(
     (event: string) => {
@@ -35,7 +37,8 @@ export function UserMenu() {
           router.push('/(tabs)/(me)/profile' as any);
           break;
         case 'settings':
-          router.push('/settings' as any);
+          // Settings is a modal (ADR-0042) — open it in place, no navigation.
+          openSettings();
           break;
         case 'history':
           router.push('/(tabs)/(media)/watch-history' as any);

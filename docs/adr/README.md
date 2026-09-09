@@ -42,3 +42,5 @@ NNNN-title-with-dashes.md
 | 0037 | Remove legacy user_srs_settings table and /srs/settings API | accepted | 2026-08-13 |
 | 0039 | Flat ruby run on web — bare `<ruby>` siblings, no per-token wrappers | accepted | 2026-08-16 |
 | 0040 | Harden the web SRS sync outbox — lossless flush, cap drop, undo LWW, stale-delete guard | accepted | 2026-08-17 |
+| 0041 | Render subtitle `[n]` notes inside TokenizedText | accepted | 2026-09-06 |
+| 0042 | Settings is a modal, routes are deep-link targets | accepted | 2026-09-09 |

@@ -1,15 +1,10 @@
 import React from 'react';
-import { View, ScrollView } from 'react-native';
-import { VoicePicker } from '@/components/VoicePicker';
+import { SettingsRoute } from '@/components/settings/SettingsRoute';
 
-export function SpeechSettings() {
-  return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-4 pt-6 pb-8">
-        <VoicePicker />
-      </View>
-    </ScrollView>
-  );
+/**
+ * `app/(tabs)/(me)/settings/speech.tsx` deep-link target (ADR-0042). Renders nothing itself — it opens the
+ * app-wide settings modal on the `speech` category.
+ */
+export default function SpeechSettingsRoute() {
+  return <SettingsRoute category="speech" />;
 }
-
-export default SpeechSettings;

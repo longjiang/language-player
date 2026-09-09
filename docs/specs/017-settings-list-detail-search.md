@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-017
 - **Feature**: Migrate settings from monolithic tabbed layout to list→detail pattern with locale-agnostic search
-- **Status**: draft
+- **Status**: superseded by [ADR-0042](../adr/0042-settings-modal-container.md) for the container (2026-09-09) — the list→detail model below shipped, but settings now lives in a modal on both platforms and the routes are deep-link targets only. Decision-2 search keys (`SETTINGS_SEARCH_KEYS`) still apply.
 - **Created**: 2026-07-25
 - **ROADMAP Phase**: Phase 7 — Mobile Integration (mobile first), Phase 8 — Sunset Classic (web follow-up)
 - **See also**:
