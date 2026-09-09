@@ -43,7 +43,7 @@ Sources and their availability (L2 = target language, L1 = native language, `han
 | Source | Group | Available when | URL template |
 |---|---|---|---|
 | Google Images | Images | always | `https://www.google.com/search?q={term}&tbm=isch` |
-| Wikipedia | Reference | always | `https://{l1}.m.wikipedia.org/w/index.php?search={term}` |
+| Wikipedia | Reference | always | `https://{l2Sub}.m.wikipedia.org/w/index.php?search={term}` |
 | Baidu Baike | Reference | `l2.han` | `https://baike.baidu.com/item/{term}` |
 | Usage Trends (Google Ngrams) | Reference | l2 ∈ {en, zh, fr, de, he, it, ru, es} | `https://books.google.com/ngrams/graph?content={term}&year_start={zh?1900:1800}&year_end=2019&corpus={langCorpus}&smoothing=3` |
 | Grammar Wiki (AllSet) | Reference | `l2 === 'zh'` | `https://resources.allsetlearning.com/gramwiki/?search={term}` |
@@ -69,6 +69,8 @@ Sources and their availability (L2 = target language, L1 = native language, `han
 | Youdao (per-language) | Dictionaries | l1 === 'zh' and l2 ∈ {en, ja, fr, ko} | `http://dict.youdao.com/w/{langSlug}/{term}` |
 
 The Classic app additionally generates a family of Naver `{l2}/KO` and `{l2}/EN` dictionaries for many languages, gated on the L1/L2 pairing. The shared builder reproduces the same logic with the same pairings.
+
+> **Wikipedia uses the L2 edition.** The panel links the **target-language (L2)** Wikipedia, not the native (L1) one. This deliberately deviates from Classic, which links the L1 wiki (`LookUpIn.vue`, `EntryExternal.vue`). `{l2Sub}` is the L2 code resolved through `wikipediaSubdomain()` (the same helper reading-suggestions uses, `packages/shared/src/reading-suggestions/wiki.ts`): base ISO codes map to themselves (`fr`→`fr`), known variants map to their canonical edition (`cmn`→`zh`, `nb`→`no`), and any code without a mapped/known live edition falls back to the raw `{l2}` code.
 
 ## Implementation Plan
 
@@ -141,4 +143,4 @@ New keys (all 18 locales): `action.external_search` ("External Search"). Group h
 
 - Favicon proxy: Google's `s2/favicons` service is used; confirm it's reachable and acceptable (a handful of regional sources like Baidu/Naver do expose favicons through it).
 - Moedict/Youdao URLs use an aggressive/legacy URL shape; keep them as Classic does for faithfulness.
-- Should the panel pre-fill the L2 language on Wikipedia (like the Wiktionary fragment) rather than always the L1 wiki? Classic uses L1 — kept for faithfulness.
+- ~~Should the panel pre-fill the L2 language on Wikipedia (like the Wiktionary fragment) rather than always the L1 wiki?~~ **Resolved** — the panel links the L2 Wikipedia (see the note on the Wikipedia row above). This intentionally differs from Classic, which uses the L1 wiki.

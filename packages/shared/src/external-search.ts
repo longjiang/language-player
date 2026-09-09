@@ -9,6 +9,8 @@
  * builder so the option set stays consistent.
  */
 
+import { wikipediaSubdomain } from './reading-suggestions/wiki';
+
 export type ExternalSearchGroup = 'images' | 'reference' | 'dictionaries';
 
 export interface ExternalSearchLink {
@@ -106,11 +108,13 @@ export function buildExternalSearchLinks(opts: ExternalSearchOptions): ExternalS
 
   // ── Reference ──────────────────────────────────────────────────
 
+  // Search the learner's target (L2) Wikipedia. This deliberately differs from
+  // Classic, which links the user's native (L1) wiki — see SPEC-094.
+  const wikiSub = wikipediaSubdomain(l2Code) ?? l2Code;
   links.push({
     key: 'wikipedia',
     titleKey: 'external.wikipedia',
-    // Classic: search the user's native (L1) Wikipedia.
-    url: `https://${enc(l1Code)}.m.wikipedia.org/w/index.php?search=${termEnc}`,
+    url: `https://${enc(wikiSub)}.m.wikipedia.org/w/index.php?search=${termEnc}`,
     domain: 'wikipedia.org',
   });
 
