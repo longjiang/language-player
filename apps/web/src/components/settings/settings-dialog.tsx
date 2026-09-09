@@ -70,6 +70,7 @@ export function SettingsDialog({
           className="flex h-[85vh] flex-col gap-0 overflow-hidden p-0 md:max-w-5xl"
         >
           <DialogTitle className="sr-only">{t('title.settings')}</DialogTitle>
+          <DialogCloseButton />
           <div className="grid min-h-0 flex-1 grid-cols-[280px_1fr]">
             <aside className="flex min-h-0 flex-col border-r border-border">
               <SettingsList selectedKey={category} onSelect={selectCategory} />
@@ -90,11 +91,12 @@ export function SettingsDialog({
         className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 w-[28rem] max-w-[90vw] sm:max-w-[28rem]"
       >
         <DialogTitle className="sr-only">{t('title.settings')}</DialogTitle>
+        <DialogCloseButton />
         {category === null ? (
           <SettingsList selectedKey={null} onSelect={selectCategory} />
         ) : (
           <>
-            <div className="flex items-center gap-1 border-b border-border px-2 py-1.5">
+            <div className="flex items-center gap-1 border-b border-border px-2 py-1.5 pr-12">
               <Button
                 variant="ghost"
                 size="icon"
@@ -104,16 +106,6 @@ export function SettingsDialog({
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <DialogClose asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ml-auto h-8 w-8"
-                  aria-label={t('action.close')}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </DialogClose>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
               <SettingsDetail category={category} />
@@ -122,5 +114,26 @@ export function SettingsDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * The modal's close affordance, pinned to the dialog's top-right corner so it
+ * is reachable in every state — wide sidebar layout, narrow list, narrow
+ * detail — and never scrolls out of view with the pane (ADR-0042).
+ */
+function DialogCloseButton() {
+  const t = useT();
+  return (
+    <DialogClose asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-2 top-2 z-10 h-8 w-8"
+        aria-label={t('action.close')}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </DialogClose>
   );
 }

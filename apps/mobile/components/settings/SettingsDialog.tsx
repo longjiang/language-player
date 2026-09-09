@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, X } from 'lucide-react-native';
 import * as Dialog from '@/components/ui/dialog';
 import { Pressable } from '@/components/ui/pressable';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -84,7 +84,7 @@ export function SettingsDialog({
     </View>
   ) : selected ? (
     <View className="flex-1">
-      <View className="flex-row items-center gap-1 border-b border-border pb-2">
+      <View className="flex-row items-center gap-1 border-b border-border pb-2 pr-10">
         <Pressable
           onPress={() => setSelected(null)}
           accessibilityRole="button"
@@ -111,11 +111,13 @@ export function SettingsDialog({
         {isMd ? (
           <Dialog.Content className="h-[85%] w-full max-w-5xl gap-0 overflow-hidden rounded-xl border border-border bg-background p-0">
             <Dialog.Title className="sr-only">{t('title.settings')}</Dialog.Title>
+            <CloseButton />
             {pane}
           </Dialog.Content>
         ) : (
           <Dialog.SheetContent className="h-[85%]">
             <Dialog.Title className="sr-only">{t('title.settings')}</Dialog.Title>
+            <CloseButton />
             {pane}
           </Dialog.SheetContent>
         )}
@@ -128,5 +130,23 @@ export function SettingsDialog({
         </View>
       )}
     </Dialog.Root>
+  );
+}
+
+/**
+ * The modal's close affordance, pinned to the dialog's top-right corner so it
+ * is reachable in every state — wide sidebar layout, narrow list, narrow
+ * detail — and never scrolls out of view with the pane (ADR-0042).
+ */
+function CloseButton() {
+  const t = useT();
+  return (
+    <Dialog.Close
+      accessibilityRole="button"
+      accessibilityLabel={t('action.close')}
+      className="absolute right-2 top-2 z-10 rounded-full bg-muted p-2"
+    >
+      <X size={18} color={ICON_MUTED} />
+    </Dialog.Close>
   );
 }

@@ -57,6 +57,13 @@ URL targets.**
 - **Wide screens show the list as a sidebar** (search bar + grouped rows) with
   the selected category's detail on the right. The category list is the same
   component in both shapes.
+- **The close affordance is always visible.** A close button is pinned to the
+  modal's top-right in *every* state — wide sidebar layout, narrow list, narrow
+  detail — outside the scrolling pane so it cannot scroll out of view. The
+  narrow detail additionally keeps its back control (back = up one level,
+  close = dismiss the modal). Before this, close existed only on the narrow
+  detail header, leaving the wide layout and the narrow list without a visible
+  way out.
 
 ### Routes are deep-link targets
 
