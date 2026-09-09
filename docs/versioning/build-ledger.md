@@ -68,9 +68,10 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 49 | 90cf86dd | 2026-09-03 | — | dev 32 (Debug; archived; lp-dev-32-android-90cf86ddc628.apk; 13aaf0cb71436514108b93cdf92970e84813d451fba2f97123708218454be8d9) |
 | 50 | 3fdcb4f7 | 2026-09-03 | — | dev 33 (Debug; archived; lp-dev-33-android-3fdcb4f7ce64.apk; 191fc7f25ef919b80b840f280c24816367ad0d6805111281df8d1c6b5c64a845) |
 | 51 | 3b3a8ee2 | 2026-09-03 | — | dev 34 (Debug; archived; lp-dev-34-android-3b3a8ee27312.apk; ea83c89fd29855932e03125c78e94ffbf55b1effc2b72dccc0efb023869b80de) |
-| 52 | c1ae1557 | 2026-09-03 | — | dev 35 (Debug; active; lp-dev-35-android-c1ae1557790c.apk; 3e7aa4c0a81e36158ba0f3c2fbc7323dbc0682e1405248d8012990772cb389a2) |
+| 52 | c1ae1557 | 2026-09-03 | — | dev 35 (Debug; archived; lp-dev-35-android-c1ae1557790c.apk; 3e7aa4c0a81e36158ba0f3c2fbc7323dbc0682e1405248d8012990772cb389a2) |
 | 53 | 19d8369b | 2026-09-08 | — | dev 36 (Debug; active; lp-dev-36-ios-device-19d8369b980a.zip; 8add57b6c8f7db5611c502f4db44b30142b319ba9ee5d95d6f8e12ad04452c47) |
 | 54 | 7806009c | 2026-09-08 | — | dev 37 (Debug; active; lp-dev-37-android-7806009cc5ec.apk; 65dc0d395fbbdea417f0c16e2c17d52f7c75ffba6a2eba50808d07925b692731) |
+| 55 | 74395962 | 2026-09-08 | — | dev 38 (Debug; active; lp-dev-38-ios-device-7439596290e6.zip; 7d9901363582b6d562535e0618479e33c1c437a85c17f5812bad110ebdf8b03a) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
