@@ -92,6 +92,17 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const videoWidth = availH ? Math.min(playerWidth, availH * AR) : playerWidth;
     const videoHeight = videoWidth / AR;
 
+    // SPEC-010 contain-fit: react-native-youtube-iframe ships the embed in a
+    // HARDCODED 16:9 `.container` (`padding-bottom: 56.25%`). So even when we
+    // size the WebView box to a video's native aspect (e.g. 4:3), the content
+    // inside stays 16:9 and the video is letterboxed instead of filling its box.
+    // Override the container's padding-bottom to the native AR whenever we are
+    // contain-fitting (wide + availableHeight). Narrow keeps the library's 16:9.
+    const containEnabled = availH != null;
+    const containerAspectInject = containEnabled
+      ? `(function(){var c=document.querySelector('.container');if(c){c.style.paddingBottom='${(100 / AR).toFixed(4)}%';}})();`
+      : undefined;
+
     // Aspect-ratio trace: log the contain-fit inputs and result so the
     // server-to-layout flow can be confirmed end-to-end (enable verbose logging).
     useEffect(() => {
@@ -263,6 +274,13 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             allowsFullscreenVideo: true,
             mediaPlaybackRequiresUserAction: false,
             onError: handlePlayerError,
+            // SPEC-010 non-16:9 contain-fit: re-shape the library's hardcoded
+            // 16:9 embed container so a 4:3 (etc.) WebView box is actually filled
+            // by the video rather than letterboxed. BeforeContentLoaded sizes the
+            // container before the player initializes (when AR is known at load);
+            // post-load re-asserts it once the async aspect_ratio arrives.
+            injectedJavaScriptBeforeContentLoaded: containerAspectInject,
+            injectedJavaScript: containerAspectInject,
           }}
           onChangeState={handleStateChange}
           onReady={() => setReady(true)}
