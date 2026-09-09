@@ -21,6 +21,44 @@ describe('external-search builder (SPEC-094)', () => {
     }
   });
 
+  it('links Wikipedia to the L2 edition, not the L1 (SPEC-094)', () => {
+    const links = buildExternalSearchLinks({
+      term: 'chat',
+      l1Code: 'en',
+      l2Code: 'fr',
+      l2Name: 'French',
+      l2Han: false,
+      l1Han: false,
+    });
+    expect(links.find((l) => l.key === 'wikipedia')!.url).toBe(
+      'https://fr.m.wikipedia.org/w/index.php?search=chat',
+    );
+  });
+
+  it('maps L2 Wikipedia subdomain overrides and falls back for unknown editions', () => {
+    const cmn = buildExternalSearchLinks({
+      term: 'hao', l1Code: 'en', l2Code: 'cmn', l2Name: 'Mandarin', l2Han: true, l1Han: false,
+    });
+    expect(cmn.find((l) => l.key === 'wikipedia')!.url).toBe(
+      'https://zh.m.wikipedia.org/w/index.php?search=hao',
+    );
+
+    const nb = buildExternalSearchLinks({
+      term: 'hus', l1Code: 'en', l2Code: 'nb', l2Name: 'Norwegian Bokmål', l2Han: false, l1Han: false,
+    });
+    expect(nb.find((l) => l.key === 'wikipedia')!.url).toBe(
+      'https://no.m.wikipedia.org/w/index.php?search=hus',
+    );
+
+    // Codes outside the live-edition allowlist fall back to the raw L2 code.
+    const grc = buildExternalSearchLinks({
+      term: 'logos', l1Code: 'en', l2Code: 'grc', l2Name: 'Ancient Greek', l2Han: false, l1Han: false,
+    });
+    expect(grc.find((l) => l.key === 'wikipedia')!.url).toBe(
+      'https://grc.m.wikipedia.org/w/index.php?search=logos',
+    );
+  });
+
   it('groups under images / reference / dictionaries in spec order', () => {
     const links = buildExternalSearchLinks({
       term: '猫',
