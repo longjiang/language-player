@@ -109,7 +109,10 @@ export function SettingsDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         {isMd ? (
-          <Dialog.Content className="h-[85%] w-full max-w-5xl gap-0 overflow-hidden rounded-xl border border-border bg-background p-0">
+          <Dialog.Content
+            containerClassName="px-4"
+            className="h-[85%] w-full max-w-5xl gap-0 overflow-hidden rounded-xl border border-border bg-background p-0"
+          >
             <Dialog.Title className="sr-only">{t('title.settings')}</Dialog.Title>
             <CloseButton />
             {pane}

@@ -80,6 +80,12 @@ export function Overlay({ className, open, forceMount, ...props }: OverlayProps)
 
 type ContentProps = DialogPrimitive.ContentProps & {
   className?: string;
+  /**
+   * Classes for the full-screen centering container (not the dialog itself).
+   * Use it for viewport gutters — e.g. `px-4` — so a full-width dialog keeps
+   * margins on every screen size (the settings modal on a wide iPad, ADR-0042).
+   */
+  containerClassName?: string;
 };
 
 /**
@@ -92,9 +98,9 @@ type ContentProps = DialogPrimitive.ContentProps & {
  * touch passes through to the scrollable content; callers may still override
  * it via props.
  */
-export function Content({ children, className, onStartShouldSetResponder, ...props }: ContentProps) {
+export function Content({ children, className, containerClassName, onStartShouldSetResponder, ...props }: ContentProps) {
   return (
-    <View className="absolute inset-0 flex items-center justify-center">
+    <View className={`absolute inset-0 flex items-center justify-center ${containerClassName ?? ''}`}>
       <DialogPrimitive.Content
         className={`bg-background border-border z-50 w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 ${className ?? ''}`}
         onStartShouldSetResponder={onStartShouldSetResponder ?? (() => false)}
