@@ -195,7 +195,7 @@ Frequency data lives directly in each dictionary table's `frequency` column — 
 |---|---|---|
 | `id` | TEXT PK | From source CSV |
 | `head` | TEXT NOT NULL | Hangul (e.g. `먹다`) |
-| `alternate` | TEXT | Hanja form |
+| `alternate` | TEXT | Hanja form — see "kengdic `alternate` caveats" below |
 | `pronunciation` | TEXT | Romanization |
 | `definitions` | TEXT | Pipe-separated English definitions |
 | `part_of_speech` | TEXT | POS |
@@ -204,6 +204,28 @@ Frequency data lives directly in each dictionary table's `frequency` column — 
 | `roman_search` | TEXT | Lowercase, no spaces — e.g. `meokda` |
 
 **Source**: `kengdic_2011.csv`
+
+#### kengdic `alternate` caveats (2026-09-09)
+
+`alternate` is the only column that carries hanja, and the loader copies it
+into `han_script.hanja` / `han_script.han`. It is **not** always a clean hanja
+string, so tokenized-text rendering validates it before display (shared
+`resolveByeonggi` in `packages/utils/src/han-script.ts`, documented in
+ARCH-017 → "Byeonggi source"):
+
+| Shape | Count | Example | Displayed? |
+|---|---|---|---|
+| Single hanja form | ~37.3K of 38,246 non-empty | `장작` → `長斫` | ✅ |
+| Comma-separated homograph list (up to 10) | 848 | `시사` → `時事,示唆,試寫,詩史` | ❌ — cannot tell which applies |
+| Hangul synonym | 53 | `애` → `아이` | ❌ — not hanja |
+| Romanization / placeholder | 15 | `버스` → `bus`, `장님` → `XXX` | ❌ |
+| Hanja + hangul mix | — | `식전술` → `食前술` | ❌ |
+| Hanja with `-` placeholder | — | `당좌 예금` → `當座-預金` | ✅ (kept verbatim) |
+
+10,187 heads have more than one kengdic row (homographs); when those rows carry
+**different** `alternate` values the token shows no hanja at all, even if one row
+has a value (e.g. `가` → 家 on 1 of 3 rows, `고` → 犒 on 2 of 3). 2,353 of
+121,943 heads are affected.
 
 ---
 

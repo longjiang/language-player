@@ -485,13 +485,34 @@ TokenizedText (single file, ~360 lines)
 | **Traditional Chinese** | OpenCC per-token in TokenSpan, bidirectional (ADR-0019) | Pre-converted at TokenizedText level via `getConverter()`/`getSimplifiedConverter()` | ✅ Done — batch conversion of unique texts, both directions |
 | **hardWords filter** | `getWordDifficulty()` in TokenSpan | `getWordDifficulty()` + `shouldShowPhonetics()` in TokenizedText | ✅ Done |
 | **quickGloss** | `QuickGloss` component for saved words | Inline `savedFormSet` + `firstDef` from dict cache | ✅ Done — rendered as small muted text after word; since 2026-08-22 also rendered in selection-enabled contexts (reader/transcript), with the selection map reproducing the gloss run so drag-select offsets stay correct |
-| **byeonggi** | Per-token `useMemo` from cache | `getTokenEntryData()` per token | ✅ Done |
+| **byeonggi** | Per-token `useMemo` from cache | `getTokenEntryData()` per token | ✅ Done — both call the shared `resolveByeonggi()` (see "Byeonggi source") |
 | **Quiz mode** | TokenSpan per-word blanking | `revealedTokens` Set | ✅ Done |
 | **Interlinear gloss** | Via `definition.show` in TokenSpan | First lemma below/beside word | ✅ Done |
 | **Batch dict lookup** | `bulkLookupWords()` + `cacheVersion` | Same pattern | ✅ Done |
 | **Video token cache** | Passed through to TokenizedText | Passed through to TokenizedText (fixed 2026-07-28) | ✅ Done |
 | **Ruby rendering** | HTML `<ruby>` + `<rt>` | Custom View-based flex row via `buildRuby()` | ✅ Different render, same logic |
 | **TokenSpan child component** | Separate `token-span.tsx` (260 lines) | Inline rendering in `TokenizedText.tsx` | Architectural difference — mobile uses a single-file approach |
+
+### Byeonggi source (hanja / hán tự) — shared rules
+
+`byeonggi` is the small muted annotation after a word when
+`l2[code].display.byeonggi` is on (Korean hanja, Vietnamese hán tự). Both
+platforms resolve it with **one shared function**,
+`resolveByeonggi()` in `packages/utils/src/han-script.ts`, so web and mobile
+cannot drift. Web calls it from `token-span.tsx` (`byeonggiText` memo); mobile
+calls it from `getTokenEntryData()` in `TokenizedText.tsx`.
+
+| Rule | Detail |
+|---|---|
+| **Field** | ko → `han_script.hanja`; vi → `han_script.han` (`hantu` fallback). **Never `alternate`** — for ja it holds kana, for zh the other script form (ADR-0006). |
+| **Match set** | The entries cached for the token's first lookup key that has any (lemma, then lowercase lemma, then surface form on mobile). Entries marked `match_type: 'exact'` are preferred; non-exact entries are used only when no exact match exists. |
+| **Disagreement** | If the exact matches carry more than one distinct raw value — including matches with **no** hanja — nothing is shown. A missing value counts as a value, so `가` (家 on 1 of 3 rows) and `고` (犒 on 2 of 3) show nothing. |
+| **Saved word** | When the token's saved entry resolves, its hanja wins over the match set (the user pinned the sense). The comma / validation rules below still apply. |
+| **Comma list** | A value containing `,` is a kengdic homograph list (848 rows) → nothing shown. Overrides the saved-word rule. Korean only: Vietnamese hán tự may legitimately contain `，`. |
+| **Validation** | The value must be Han script only — no hangul synonyms (`애` → `아이`), romanizations (`버스` → `bus`), or mixed forms (`식전술` → `食前술`). Hyphen placeholders (`當座-預金`) and CJK punctuation are kept. |
+
+The full data shapes are tabulated in
+[ARCH-004 → kengdic `alternate` caveats](004-python-dictionary-db-schema.md#kengdic-alternate-caveats-2026-09-09).
 
 ### Mobile Ruby Rendering
 
