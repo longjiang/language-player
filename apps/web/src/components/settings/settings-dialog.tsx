@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/hooks/use-t';
-import { log } from '@/lib/logger';
+import { settingsLogger } from '@/lib/logger';
 import { ArrowLeft, X } from 'lucide-react';
 import { SettingsList } from '@/components/settings/settings-list';
 import { SettingsDetail } from '@/components/settings/settings-detail';
@@ -52,14 +52,14 @@ export function SettingsDialog({
   useEffect(() => {
     if (!open || isMd === null) return;
     setCategory(initialCategory ?? (isMd ? 'display' : null));
-    log(`[LP Web] settings dialog opened category=${initialCategory ?? (isMd ? 'display' : 'list')} wide=${isMd}`);
+    settingsLogger.log(`settings dialog opened category=${initialCategory ?? (isMd ? 'display' : 'list')} wide=${isMd}`);
   }, [open, initialCategory, isMd]);
 
   if (isMd === null) return null;
 
   const selectCategory = (key: SettingsCategory) => {
     setCategory(key);
-    log(`[LP Web] settings dialog category=${key}`);
+    settingsLogger.log(`settings dialog category=${key}`);
   };
 
   if (isMd) {
