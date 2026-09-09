@@ -46,12 +46,17 @@ URL targets.**
 | | Narrow (< 768) | Wide (≥ 768) |
 |---|---|---|
 | **Web** | small centered dialog, popup-dictionary scale (`w-[28rem] max-w-[90vw]`, `max-h-[85vh]`) | large modal like the subs-search playback modal (`md:max-w-5xl`, `h-[85vh]`), `grid-cols-[280px_1fr]` |
-| **Mobile** | `Dialog.SheetContent` bottom sheet, like the popup dictionary | large centered `Dialog.Content` (`max-w-5xl`, 85% height), sidebar + detail |
+| **Mobile** | `Dialog.SheetContent` bottom sheet, like the popup dictionary | large centered `Dialog.Content` (`max-w-5xl`, 85% height, `px-4` viewport gutters), sidebar + detail |
 
 - **768 px (`md`)** is the small/large boundary on both platforms — the same
   boundary as SPEC-052's bottom-sheet policy (sheets < `md`, centered dialogs
   ≥ `md`). ADR-0015's `768` web / `600pt` mobile split values are retired;
   SPEC-052's `≥1024` settings split value is retired too.
+- **The mobile wide dialog keeps viewport gutters.** Its centering container
+  carries `px-4` (via the new `containerClassName` prop on the mobile
+  `Dialog.Content` wrapper), so a full-width `max-w-5xl` dialog never touches
+  the screen edges on an iPad — the same shape the subs-search playback modal
+  uses.
 - **Narrow screens drill down inside the modal**: list → detail with a back
   control, exactly like the popup dictionary's single-surface flow.
 - **Wide screens show the list as a sidebar** (search bar + grouped rows) with
