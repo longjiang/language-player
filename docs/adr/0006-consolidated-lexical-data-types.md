@@ -173,15 +173,21 @@ interface DictionaryEntry extends LexicalEntry {
    *  Vietnamese: chữ Hán (if head is quốc ngữ) */
   alternate?: string | null;
 
-  /** CJK script variants. Populated based on language. */
+  /** CJK script variants. Populated based on language.
+   *
+   *  This — not `alternate` — is the authoritative source for per-language
+   *  script fields, including the byeonggi annotation (hanja / hán tự) in
+   *  tokenized text. `alternate` holds a *different* value for ja (kana) and
+   *  zh (the other script form), so reading it as hanja mislabels those
+   *  languages. See ARCH-017 → "Byeonggi source" for the display rules. */
   han_script?: {
     traditional?: string;
     simplified?: string;
     kanji?: string | null;
-    hanja?: string | null;
+    hanja?: string | null;   // Korean hanja — kengdic's `alternate` column
     hangul?: string;
     han?: string;     // Vietnamese chữ Hán
-    hantu?: string;   // Vietnamese chữ Hán (alternate)
+    hantu?: string;   // Vietnamese chữ Hán (same string as `han`)
   } | null;
 
   /** Detailed phonetic information beyond the top-level pronunciation string. */

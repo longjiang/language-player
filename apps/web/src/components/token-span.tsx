@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
-import { buildRuby, katakanaToHiragana, pickSavedEntry } from '@langplayer/utils';
+import { buildRuby, katakanaToHiragana, pickSavedEntry, resolveByeonggi } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries, getCachedEntryById, getL1CachedEntry } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
@@ -339,13 +339,24 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   //    gloss), matching mobile — unsaved words keep the first cached match. ──
   const interlinearDef = showDefinition ? (savedFirstDef ?? firstDef) : null;
 
-  // ── Byeonggi: hanja (ko) / hán tự (vi) from first cached dictionary entry ──
+  // ── Byeonggi: hanja (ko) / hán tự (vi) from the token's dictionary matches ──
+  // The rules live in @langplayer/utils (resolveByeonggi) so web and mobile
+  // cannot drift: per-language field (never `alternate`), nothing when exact
+  // matches disagree, the saved entry wins, kengdic comma lists and non-hanja
+  // values are suppressed.
   const byeonggiText = useMemo(() => {
     if (!byeonggi) return null;
     // Only for Korean and Vietnamese
     const isKo = base === 'ko';
     const isVi = base === 'vi';
     if (!isKo && !isVi) return null;
+
+    // The entry the user actually saved pins the sense they chose — its hanja
+    // wins over the first cached match (mobile parity).
+    const savedEntry = savedWordId
+      ? (getCachedEntryById(l2Code, savedWordId) ?? getCachedEntryById(baseCode(l2Code), savedWordId))
+      : null;
+
     for (const lemma of token.lemmas) {
       // The batch dictionary lookup is case-sensitive on the server, while
       // Vietnamese lemmatization keeps sentence-initial capitals (e.g. "Bạn").
@@ -356,19 +367,17 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         : [lemma.lemma, lemma.lemma.toLowerCase()];
       for (const lookupText of lookupTexts) {
         const entries = getCachedEntries(base, lookupText);
-        if (!entries) continue;
-        for (const entry of entries) {
-          if (!entry.han_script) continue;
-          if (isKo && entry.han_script.hanja) return entry.han_script.hanja;
-          if (isVi && entry.han_script.han) return entry.han_script.han;
-        }
+        // The first key that has entries is this word's match set; when its
+        // matches are ambiguous we stop rather than guess from another lemma.
+        if (!entries || entries.length === 0) continue;
+        return resolveByeonggi({ base, entries, savedEntry });
       }
     }
+    return null;
     // cacheVersion is a dependency (below) so this memo re-runs once the async
     // batch lookup populates the dictionary cache — otherwise the first
     // (cache-miss) render would lock in null.
-    return null;
-  }, [byeonggi, base, l2Code, token.lemmas, cacheVersion]);
+  }, [byeonggi, base, l2Code, token.lemmas, cacheVersion, savedWordId]);
 
   // ── Byeonggi node: small muted text, same size as furigana <rt>, no brackets ──
   const byeonggiNode = (byeonggiText && !blankWord) ? (

@@ -32,6 +32,8 @@ export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhonetic
 export { levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
 export { cleanPronunciation, formatPronunciation } from './pronunciation';
+export { rawByeonggi, normalizeByeonggi, resolveByeonggi } from './han-script';
+export type { ByeonggiBase } from './han-script';
 export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
 export type { FuriganaSegment, RubySegment } from './furigana';
 export { getWordDifficulty, shouldShowPhonetics } from './phonetics-gate';

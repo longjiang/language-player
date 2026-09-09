@@ -99,7 +99,7 @@ virtualization (only mounted lines tokenize), so it needs no change.
 | F3 | `display.traditional` | `TokenSpan` lazy-loads OpenCC, converts per-token (ADR-0019) | TODO (G11) — no conversion | Needs OpenCC port or character map |
 | F4 | `tokenizedText.mode` | `TokenSpan` per-word blanking with quiz-reveal state | ✅ Done (G8) | — |
 | F5 | `tokenSpan.definition.show` | Interlinear gloss from dict cache | ✅ Done (G10) | — |
-| F6 | `display.byeonggi` | Rendered from dict cache han_script | ✅ Done (G12) | — |
+| F6 | `display.byeonggi` | Rendered from dict cache `han_script` via the shared `resolveByeonggi()` | ✅ Done (G12; rules consolidated 2026-09-09 — see ARCH-017 "Byeonggi source") | — |
 
 **F1 — hardWords filter**:
 - Requires `useProgressLevel(l2Code)` hook to get user's proficiency level (1–7)

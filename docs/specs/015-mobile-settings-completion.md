@@ -464,7 +464,7 @@ All 6 TokenizedText settings now fully wired and rendered:
 | G9 | `phonetics.conditions` | ✅ `getWordDifficulty()` + `shouldShowPhonetics()` — hardWords filter using dict cache levels |
 | G10 | `tokenSpan.definition.show` | ✅ First lemma rendered as interlinear gloss below/beside word |
 | G11 | `display.traditional` | ✅ `getConverter()` lazy-loads OpenCC, pre-converts all unique token texts |
-| G12 | `display.byeonggi` | ✅ `getTokenEntryData()` reads `han_script.hanja`/`hantu` from dict cache |
+| G12 | `display.byeonggi` | ✅ `getTokenEntryData()` resolves `han_script` through the shared `resolveByeonggi()` (per-language field, saved-entry preference, disagreement/comma/non-hanja suppression — ARCH-017 "Byeonggi source") |
 
 **Also added (SPEC-019):**
 - Batch dictionary lookup layer (`bulkLookupWords` + `cacheVersion`)

@@ -18,6 +18,7 @@ import {
   buildRuby,
   kanaFormsForEntries,
   mergePhraseTokens,
+  resolveByeonggi,
   sentenceContaining,
   sentenceForToken,
   tokenMatchesAnyForm,
@@ -561,20 +562,26 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   // back to the first cached match for unsaved words (or when the saved
   // entry isn't resolvable yet).
   const getTokenEntryData = useCallback((token: LemmatizedToken) => {
+    const base = baseCode(l2Code);
     if (!token.lemmas.length) {
       return { byeonggiText: null as string | null, firstDef: null as string | null, savedWordId: undefined as string | undefined };
     }
 
     const savedRecord = savedRecordForToken(token);
-    if (savedRecord) {
-      const savedEntry = resolveSavedEntry(savedRecord);
-      if (savedEntry?.definitions?.length) {
-        return {
-          byeonggiText: savedEntry.han_script?.hanja ?? savedEntry.han_script?.hantu ?? savedEntry.han_script?.han ?? null,
-          firstDef: firstGloss(savedEntry.definitions),
-          savedWordId: savedRecord.id,
-        };
-      }
+    const savedEntry = savedRecord ? resolveSavedEntry(savedRecord) : undefined;
+
+    // byeonggi follows the shared rules (packages/utils/han-script.ts):
+    // per-language field, nothing when exact matches disagree, the saved entry
+    // wins, kengdic comma lists / non-hanja values suppressed.
+    const byeonggiFor = (entries: DictionaryEntry[] | null | undefined) =>
+      resolveByeonggi({ base, entries, savedEntry });
+
+    if (savedRecord && savedEntry?.definitions?.length) {
+      return {
+        byeonggiText: byeonggiFor([savedEntry]),
+        firstDef: firstGloss(savedEntry.definitions),
+        savedWordId: savedRecord.id,
+      };
     }
 
     const firstLemma = token.lemmas[0]!.lemma;
@@ -598,15 +605,15 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
       if (surfaceEntries && surfaceEntries.length > 0) {
         const e = surfaceEntries[0]!;
         return {
-          byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? e.han_script?.han ?? null,
+          byeonggiText: byeonggiFor(surfaceEntries),
           firstDef: e.definitions ? firstGloss(e.definitions) : null,
         };
       }
-      return { byeonggiText: null, firstDef: null };
+      return { byeonggiText: savedEntry ? byeonggiFor([savedEntry]) : null, firstDef: null };
     }
     const firstEntry = entries[0]!;
     return {
-      byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? firstEntry.han_script?.han ?? null,
+      byeonggiText: byeonggiFor(entries),
       firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
     };
   }, [l2Code, cacheVersion, savedRecordForToken, resolveSavedEntry]);
