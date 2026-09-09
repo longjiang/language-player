@@ -96,6 +96,7 @@ All domain loggers are exported from `apps/mobile/lib/logger.ts`.
 | `popup` | `popupLogger` | `TokenizedText` token-press/popup timing + `DictionaryPopup` lookup timing | global |
 | `ask-ai` | `askAiLogger` | "Ask AI" chat session persistence: the restore / save / clear flow in `AiExplanation` (web `apps/web/src/components/ai-explanation.tsx`, mobile `apps/mobile/components/dictionary/AiExplanation.tsx`) — the storage key, the raw value read, parsed/filtered message counts, and the restore-vs-save effect ordering | global |
 | `sync` | `syncLogger` | `lib/sync-engine.ts`, `lib/sync-db.ts`, `lib/notes-sync.ts`, progress/SRS queue hooks, sync-related `SavedWordsContext` lines (migration, hydration, pull-merge, enqueue) | **off** (unless `EXPO_PUBLIC_LOG_LEVEL_SYNC` is set) |
+| `settings` | `settingsLogger` | Settings modal (ADR-0042): open/close, resolved sheet/dialog shape, category switches — `components/settings/SettingsDialog.tsx`, `contexts/SettingsDialogContext.tsx` (web twin in `apps/web/src/components/settings/settings-dialog.tsx`) | global |
 
 ### Adding a new domain
 

@@ -71,3 +71,10 @@ defaultOff('translation');
 defaultOff('boot');
 
 export { getLogLevel, setLogLevel };
+
+/**
+ * Per-aspect logger for the settings modal (ARCH-027 / ADR-0042): open/close,
+ * the resolved sheet/dialog shape, and category switches. Enable with
+ * EXPO_PUBLIC_LOG_LEVEL_SETTINGS=3 or setLogLevel(3, 'settings').
+ */
+export const settingsLogger = createLogger('[LP Mobile]', 'settings');

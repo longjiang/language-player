@@ -7,7 +7,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { MD_BREAKPOINT } from '@/lib/constants';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/contexts/SettingsContext';
-import { log } from '@/lib/logger';
+import { settingsLogger } from '@/lib/logger';
 import { SettingsList } from '@/components/settings/SettingsList';
 import { SettingsDetail } from '@/components/settings/SettingsDetail';
 import {
@@ -46,7 +46,7 @@ export function SettingsDialog({
   useEffect(() => {
     if (!open) return;
     setSelected(initialCategory ?? (isMd ? 'display' : null));
-    log(`[LP Mobile] settings dialog opened category=${initialCategory ?? (isMd ? 'display' : 'list')} wide=${isMd}`);
+    settingsLogger.log(`settings dialog opened category=${initialCategory ?? (isMd ? 'display' : 'list')} wide=${isMd}`);
   }, [open, initialCategory, isMd]);
 
   // "Settings saved" confirmation, debounced so a slider drag shows one pill.
@@ -70,7 +70,7 @@ export function SettingsDialog({
 
   const selectCategory = (key: SettingsCategory) => {
     setSelected(key);
-    log(`[LP Mobile] settings dialog category=${key}`);
+    settingsLogger.log(`settings dialog category=${key}`);
   };
 
   const pane = isMd ? (

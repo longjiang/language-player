@@ -56,3 +56,11 @@ export const speechLogger = createLogger('[LP Web]', 'speech');
  * 'ask-ai').
  */
 export const askAiLogger = createLogger('[LP Web]', 'ask-ai');
+
+/**
+ * Per-aspect logger for the settings modal (ARCH-027 / ADR-0042): open/close,
+ * the resolved small/large shape, and category switches. Enable with
+ * NEXT_PUBLIC_LOG_LEVEL_SETTINGS=3 or setLogLevel(3, 'settings') — the web app
+ * defaults to level 2 in development, so plain `log()` is otherwise hidden.
+ */
+export const settingsLogger = createLogger('[LP Web]', 'settings');

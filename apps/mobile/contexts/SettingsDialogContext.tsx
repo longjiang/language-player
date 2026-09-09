@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 import { usePathname, useRouter } from 'expo-router';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { type SettingsCategory } from '@/components/settings/settings-categories';
-import { log } from '@/lib/logger';
+import { settingsLogger } from '@/lib/logger';
 
 /**
  * App-wide host for the settings modal (ADR-0042). Mounted once in the root
@@ -37,7 +37,7 @@ export function SettingsDialogProvider({ children }: { children: React.ReactNode
   const [category, setCategory] = useState<SettingsCategory | null>(null);
 
   const openSettings = useCallback((next: SettingsCategory | null = null) => {
-    log(`[LP Mobile] openSettings category=${next ?? 'list'} from=${pathnameRef.current}`);
+    settingsLogger.log(`openSettings category=${next ?? 'list'} from=${pathnameRef.current}`);
     setCategory(next);
     setOpen(true);
   }, []);
@@ -51,7 +51,7 @@ export function SettingsDialogProvider({ children }: { children: React.ReactNode
     // modal closes, leave it so the URL matches what is on screen. When the
     // modal was opened in place there is no settings route and nothing to do.
     if (pathname.includes('/settings')) {
-      log('[LP Mobile] settings dialog closed — leaving settings route');
+      settingsLogger.log('settings dialog closed — leaving settings route');
       if (router.canGoBack()) router.back();
       else router.replace('/(tabs)/(me)' as never);
     }
