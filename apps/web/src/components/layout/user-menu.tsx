@@ -106,8 +106,6 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
           </PopoverContent>
         </Popover>
         <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
-        {/* Settings is a modal (ADR-0042) — opened in place, no navigation. */}
-        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       </>
     );
   }
@@ -192,6 +190,8 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
         </PopoverContent>
       </Popover>
       <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
+      {/* Settings is a modal (ADR-0042) — opened in place, no navigation. */}
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }
