@@ -69,6 +69,11 @@ URL targets.**
   close = dismiss the modal). Before this, close existed only on the narrow
   detail header, leaving the wide layout and the narrow list without a visible
   way out.
+- **Category lists differ by platform.** Web: Display, Playback, Speech,
+  Review, Subtitles Search (under `setting.appearance` / `setting.learning`).
+  Mobile adds three device-local categories — Offline Mode, Offline
+  Dictionaries, Sync Status — under a **Mobile** heading
+  (`setting.mobile`), because they have no web counterpart.
 
 ### Routes are deep-link targets
 
