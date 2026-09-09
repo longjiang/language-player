@@ -190,7 +190,15 @@ interface DictionaryEntry extends LexicalEntry {
     hantu?: string;   // Vietnamese chữ Hán (same string as `han`)
   } | null;
 
-  /** Detailed phonetic information beyond the top-level pronunciation string. */
+  /** Detailed phonetic information beyond the top-level pronunciation string.
+   *
+   *  Per-language field priority for display and ruby lives in
+   *  `packages/utils/src/pronunciation.ts`: `formatPronunciation()` for the
+   *  bracketed entry-card form and `entryReading()` for the raw ruby reading
+   *  (ja reads `kana`, zh/yue read `pronunciation` = pinyin/jyutping, ko/th
+   *  read `romanization`). `phonetic_detail` is also the source of a saved
+   *  word's ruby when its head word matches the surface exactly — see
+   *  ARCH-017 → "Reading source". */
   phonetic_detail?: {
     pinyin?: string;
     pinyin_numeric?: string;
