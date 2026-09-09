@@ -110,3 +110,108 @@ export function formatPronunciation(
 
   return null;
 }
+
+// ── Raw readings (ruby) ──────────────────────────────────────────
+
+/** Hiragana / katakana / prolonged sound mark — a Japanese kana reading. */
+const KANA_RE = /^[\u3040-\u309F\u30A0-\u30FF\u30FC]+$/;
+
+/**
+ * The bare phonetic reading of an entry — what belongs in ruby, with no
+ * brackets, pitch formatting, or word-replace decoration.
+ *
+ * Same per-language field priority as `formatPronunciation`, but returns the
+ * raw string so `buildRuby()` can segment it:
+ *
+ *   ja → phonetic_detail.kana (or a kana-only `alternate`); romaji is not ruby
+ *   zh, yue → pronunciation (CEDICT pinyin / CC-Canto jyutping) > phonetic_detail
+ *   ko, th → phonetic_detail.romanization > pronunciation
+ *   other → phonetic_detail.romanization > pronunciation > phonetic_detail.ipa
+ *
+ * Returns null when the entry carries no usable reading.
+ */
+export function entryReading(
+  entry: DictionaryEntry | null | undefined,
+  l2Code: string,
+): string | null {
+  if (!entry) return null;
+  const base = l2Code.split('-')[0]!;
+  const pd = entry.phonetic_detail;
+  const pron = cleanPronunciation(
+    entry.pronunciation && entry.pronunciation !== entry.head
+      ? entry.pronunciation
+      : null,
+  );
+
+  if (base === 'ja') {
+    if (pd?.kana) return cleanPronunciation(pd.kana);
+    // EDICT puts the kana reading of kana-only heads in `alternate`.
+    if (entry.alternate && KANA_RE.test(entry.alternate)) {
+      return cleanPronunciation(entry.alternate);
+    }
+    return null;
+  }
+  if (base === 'zh' || base === 'yue') {
+    return pron ?? cleanPronunciation(pd?.pinyin) ?? cleanPronunciation(pd?.jyutping);
+  }
+  if (base === 'ko' || base === 'th') {
+    return cleanPronunciation(pd?.romanization) ?? pron;
+  }
+  return cleanPronunciation(pd?.romanization) ?? pron ?? cleanPronunciation(pd?.ipa);
+}
+
+/**
+ * Does the entry's head word match the token's surface form exactly?
+ *
+ * Exact match is the whole point of the saved-word reading override: it steers
+ * clear of inflected languages, where a token's lemma and its surface form have
+ * different readings (the dictionary head would be the wrong word to annotate).
+ *
+ * Chinese additionally matches either script form, because the head word may be
+ * stored simplified while the text is traditional (or vice versa) — the reading
+ * is the same either way.
+ */
+export function entryMatchesSurface(
+  entry: DictionaryEntry | null | undefined,
+  surface: string,
+  l2Code: string,
+): boolean {
+  if (!entry || !surface) return false;
+  if (entry.head === surface) return true;
+  if (l2Code.split('-')[0] === 'zh') {
+    const hs = entry.han_script;
+    return (
+      hs?.traditional === surface ||
+      hs?.simplified === surface ||
+      entry.alternate === surface
+    );
+  }
+  return false;
+}
+
+/**
+ * Reading to use for a saved word's ruby, or null to keep the lemmatizer's
+ * pronunciation.
+ *
+ * The user saved a specific entry for this surface form, so when that entry's
+ * head word IS the surface form its dictionary reading is more reliable than
+ * the lemmatizer's — especially for homographs, where the user's choice pins
+ * the sense (and therefore the reading).
+ */
+export function savedEntryReading({
+  savedEntry,
+  surface,
+  l2Code,
+}: {
+  savedEntry: DictionaryEntry | null | undefined;
+  surface: string;
+  l2Code: string;
+}): string | null {
+  if (!savedEntry || !surface) return null;
+  if (!entryMatchesSurface(savedEntry, surface, l2Code)) return null;
+  const reading = entryReading(savedEntry, l2Code);
+  // A reading identical to the surface needs no ruby (same rule the renderers
+  // already apply to the lemmatizer pronunciation).
+  if (!reading || reading === surface) return null;
+  return reading;
+}

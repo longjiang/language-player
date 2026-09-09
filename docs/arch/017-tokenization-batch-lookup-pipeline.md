@@ -514,6 +514,35 @@ calls it from `getTokenEntryData()` in `TokenizedText.tsx`.
 The full data shapes are tabulated in
 [ARCH-004 → kengdic `alternate` caveats](004-python-dictionary-db-schema.md#kengdic-alternate-caveats-2026-09-09).
 
+### Reading source (ruby phonetics) — saved-word override
+
+Ruby is fed by `buildRuby(text, reading, l2Code)`; the reading normally comes
+from the lemmatizer (`LemmatizedToken.pronunciation` — MeCab katakana for ja,
+pinyin/jyutping for zh/yue, romanization for ko/th). One case replaces it:
+
+**If the token's saved entry's head word is exactly the token's surface form,
+that entry's dictionary reading wins.** The user saved a specific entry, which
+pins the sense — so for a homograph it pins the reading too, where the
+lemmatizer can only guess. Chinese matches either script form (`head`,
+`han_script.traditional`, `han_script.simplified`); every other language
+requires an exact `head === surface` match, which is what keeps inflected
+languages safe: an inflected surface never equals the head word, so the
+lemmatizer's pronunciation stays in charge there.
+
+Shared helpers in `packages/utils/src/pronunciation.ts`:
+
+| Helper | Purpose |
+|---|---|
+| `entryReading(entry, l2Code)` | Raw reading for ruby, no brackets: ja → `phonetic_detail.kana` (or kana-only `alternate`); zh/yue → `pronunciation` (CEDICT pinyin / CC-Canto jyutping) > `phonetic_detail`; ko/th → `phonetic_detail.romanization` > `pronunciation`; other → `romanization` > `pronunciation` > `ipa`. |
+| `entryMatchesSurface(entry, surface, l2Code)` | Exact head match; zh also matches the traditional/simplified forms. |
+| `savedEntryReading({ savedEntry, surface, l2Code })` | Null unless the entry matches the surface and the reading differs from it. |
+
+Both platforms apply it at the same point: web in `token-span.tsx`
+(`reading = savedReading ?? token.pronunciation`, used by ruby and by
+"phonetics replace" mode), mobile in `getTokenEntryData()`
+(`TokenizedText.tsx`), whose `reading` field every render path and the
+selection map consume.
+
 ### Mobile Ruby Rendering
 
 The mobile app cannot use HTML `<ruby>` tags (React Native has no native ruby annotation support). Instead, it uses a flex row layout:

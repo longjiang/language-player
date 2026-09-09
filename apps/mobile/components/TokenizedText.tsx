@@ -19,6 +19,7 @@ import {
   kanaFormsForEntries,
   mergePhraseTokens,
   resolveByeonggi,
+  savedEntryReading,
   sentenceContaining,
   sentenceForToken,
   tokenMatchesAnyForm,
@@ -555,20 +556,34 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
     );
   }, [l2Code]);
 
-  // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
-  // When the token is a saved word, the definition/byeonggi come from the
-  // exact entry the user saved — multiple dictionary entries can match one
+  // ── Per-token data from dictionary cache (byeonggi, gloss, reading) ──
+  // When the token is a saved word, the definition/byeonggi/reading come from
+  // the exact entry the user saved — multiple dictionary entries can match one
   // surface form, and the saved record pins the one the user chose. Falls
   // back to the first cached match for unsaved words (or when the saved
   // entry isn't resolvable yet).
   const getTokenEntryData = useCallback((token: LemmatizedToken) => {
     const base = baseCode(l2Code);
     if (!token.lemmas.length) {
-      return { byeonggiText: null as string | null, firstDef: null as string | null, savedWordId: undefined as string | undefined };
+      return {
+        byeonggiText: null as string | null,
+        firstDef: null as string | null,
+        savedWordId: undefined as string | undefined,
+        reading: null as string | null,
+      };
     }
 
     const savedRecord = savedRecordForToken(token);
     const savedEntry = savedRecord ? resolveSavedEntry(savedRecord) : undefined;
+
+    // Reading used for ruby / word-replace phonetics: the saved entry's own
+    // dictionary reading when its head word IS this surface form (the user
+    // pinned the sense, so its reading belongs to it), otherwise the
+    // lemmatizer's pronunciation. Shared rule: @langplayer/utils.
+    const reading =
+      savedEntryReading({ savedEntry, surface: token.text, l2Code }) ??
+      token.pronunciation ??
+      null;
 
     // byeonggi follows the shared rules (packages/utils/han-script.ts):
     // per-language field, nothing when exact matches disagree, the saved entry
@@ -581,6 +596,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
         byeonggiText: byeonggiFor([savedEntry]),
         firstDef: firstGloss(savedEntry.definitions),
         savedWordId: savedRecord.id,
+        reading,
       };
     }
 
@@ -607,14 +623,20 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
         return {
           byeonggiText: byeonggiFor(surfaceEntries),
           firstDef: e.definitions ? firstGloss(e.definitions) : null,
+          reading,
         };
       }
-      return { byeonggiText: savedEntry ? byeonggiFor([savedEntry]) : null, firstDef: null };
+      return {
+        byeonggiText: savedEntry ? byeonggiFor([savedEntry]) : null,
+        firstDef: null,
+        reading,
+      };
     }
     const firstEntry = entries[0]!;
     return {
       byeonggiText: byeonggiFor(entries),
       firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
+      reading,
     };
   }, [l2Code, cacheVersion, savedRecordForToken, resolveSavedEntry]);
 
@@ -847,14 +869,18 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
         const tokenDisplayText = convertedTexts.get(word) ?? word;
         const isWordToken = token.lemmas.length > 0;
         const isHighlightedToken = tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
+        // Effective reading: the saved entry's own reading when its head word is
+        // exactly this surface form, otherwise the lemmatizer pronunciation.
+        const { firstDef: tokenFirstDef, savedWordId: tokenSavedWordId, reading: tokenReading } =
+          getTokenEntryData(token);
         let displayText = tokenDisplayText;
         if (quizMode && !revealedTokens.has(i) || (blankHighlighted && isHighlightedToken)) {
           displayText = '＿'.repeat(Math.max(1, word.length));
         } else if (
           replaceWithPhonetics && isWordToken && shouldShowPhonetics(token)
-          && token.pronunciation && (!isHighlightedToken || phoneticsOnHighlight)
+          && tokenReading && (!isHighlightedToken || phoneticsOnHighlight)
         ) {
-          displayText = token.pronunciation;
+          displayText = tokenReading;
         }
         // Path 1 (quick gloss shown in selection-enabled contexts): the native
         // paragraph now renders the gloss inline as a run, so `rendered` must
@@ -863,7 +889,8 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
         const isSavedToken = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
         if (isSavedToken && quickGlossEnabled && !isHighlightedToken) {
           const firstLemma = token.lemmas[0]?.lemma;
-          const { firstDef, savedWordId } = getTokenEntryData(token);
+          const firstDef = tokenFirstDef;
+          const savedWordId = tokenSavedWordId;
           if (firstDef) {
             const l1GlossDef =
               l1Glosses[`${firstLemma ?? word}:${savedWordId ?? ''}`] ??
@@ -1478,19 +1505,21 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               const traditionalText = convertedTexts.get(word) ?? word;
               const isHighlighted =
                 tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
-              // In word-replace phonetics mode, use pronunciation as the display text.
+              const firstLemma = token.lemmas[0]?.lemma;
+              // `reading` is the saved entry's own reading when its head word is
+              // exactly this surface form, otherwise the lemmatizer pronunciation.
+              const { byeonggiText, firstDef, savedWordId, reading: tokenReading } = getTokenEntryData(token);
+              // In word-replace phonetics mode, use the reading as the display text.
               // When interlinear definition is on, always show the original word
               // (with optional ruby) — matching web's token-span.tsx behavior.
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
-              const displayText = replaceWithPhonetics && !showDefinition && shouldShowPhonetics(token) && token.pronunciation
+              const displayText = replaceWithPhonetics && !showDefinition && shouldShowPhonetics(token) && tokenReading
                 && (!isHighlighted || phoneticsOnHighlight)
-                ? token.pronunciation
+                ? tokenReading
                 : traditionalText;
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed || (blankHighlighted && isHighlighted);
-              const firstLemma = token.lemmas[0]?.lemma;
-              const { byeonggiText, firstDef, savedWordId } = getTokenEntryData(token);
               // L1 glosses are keyed by lookup text + saved entry id so two
               // tokens of the same text saved under different entries each get
               // their own gloss; the bare-text fallback covers older state.
@@ -1523,7 +1552,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
               // Suppress ruby for the highlighted (target) word unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
-              const hasRuby = !!(isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word
+              const hasRuby = !!(isRubyMode && showTokenPhonetics && tokenReading && tokenReading !== word
                 && (!isHighlighted || phoneticsOnHighlight));
 
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
@@ -1540,15 +1569,15 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
 
                 const debugSegs = isBlanked
                   ? [{ text: '＿'.repeat(Math.max(1, word.length)) }]
-                  : hasRuby && token.pronunciation
-                    ? buildRuby(displayText, token.pronunciation, l2Code)
+                  : hasRuby && tokenReading
+                    ? buildRuby(displayText, tokenReading, l2Code)
                     : [{ text: displayText }];
 
                 // ── Dev tree logging ──
                 {
                   const flatPath = NATIVE_RUBY_ACTIVE && !showDefinition;
                   if (useParagraph) {
-                    const readingForLog = token.pronunciation ?? '';
+                    const readingForLog = tokenReading ?? '';
                     const syllableCount = readingForLog.split(' ').filter(Boolean).length;
                     treeLines.push(
                       `├─ [${i}] word="${word}" display="${displayText}" hasRuby=${hasRuby} [paragraph runs ×${debugSegs.length}]${hasRuby ? ` readingLen=${readingForLog.length} syllables=${syllableCount}` : ''}${isBlanked ? ' blanked' : ''}${isKaraokeDimmed ? ' dimmed' : ''}`,
@@ -1637,7 +1666,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                 taps.push({
                   word,
                   lemma: firstLemma,
-                  pronunciation: token.pronunciation ?? null,
+                  pronunciation: tokenReading ?? null,
                   linkUrl,
                 });
                 return null;
@@ -1647,7 +1676,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                 index: i,
                 word,
                 displayText,
-                pronunciation: token.pronunciation ?? null,
+                pronunciation: tokenReading ?? null,
                 hasRuby,
                 reserveRubySlot: isRubyMode,
                 isBlanked,
@@ -1771,16 +1800,16 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               const tokenDisplayText = convertedTexts.get(word) ?? word;
               const isHighlighted =
                 tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
+              const firstLemma = token.lemmas[0]?.lemma;
+              const { byeonggiText, firstDef, savedWordId, reading: tokenReading } = getTokenEntryData(token);
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
-              const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
+              const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && tokenReading
                 && (!isHighlighted || phoneticsOnHighlight)
-                ? token.pronunciation
+                ? tokenReading
                 : tokenDisplayText;
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed || (blankHighlighted && isHighlighted);
-              const firstLemma = token.lemmas[0]?.lemma;
-              const { byeonggiText, firstDef, savedWordId } = getTokenEntryData(token);
               // L1 glosses are keyed by lookup text + saved entry id so two
               // tokens of the same text saved under different entries each get
               // their own gloss; the bare-text fallback covers older state.
@@ -1802,7 +1831,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
 
               const rawUrl = tokenFormat?.url ?? null;
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
-              const tokenPron = token.pronunciation ?? null;
+              const tokenPron = tokenReading ?? null;
 
               return (
                 <PlainTokenSpan

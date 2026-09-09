@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
-import { buildRuby, katakanaToHiragana, pickSavedEntry, resolveByeonggi } from '@langplayer/utils';
+import { buildRuby, katakanaToHiragana, pickSavedEntry, resolveByeonggi, savedEntryReading } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries, getCachedEntryById, getL1CachedEntry } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
@@ -307,22 +307,38 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     return null;
   }, [l2Code, token.text, token.lemmas]);
 
-  // ── Saved-word definition — the entry the user actually saved, resolved
-  //    by its id from the dictionary cache. Multiple dictionary entries can
-  //    match one surface form; the saved entry is the one the user chose, so
-  //    the quick gloss must prefer it over the first match. Re-runs when the
-  //    cache version bumps (the bulk lookup usually fills the id cache after
-  //    the first render). ──
+  // ── The entry the user actually saved for this token, when resolvable.
+  //    Multiple dictionary entries can match one surface form; the saved
+  //    record pins the one the user chose. Re-runs when the cache version
+  //    bumps (the bulk lookup usually fills the id cache after the first
+  //    render). Shared by the saved definition, the byeonggi hanja and the
+  //    saved-word reading. ──
+  const savedEntry = useMemo(
+    () => (savedWordId
+      ? (getCachedEntryById(l2Code, savedWordId) ?? getCachedEntryById(baseCode(l2Code), savedWordId))
+      : null),
+    [l2Code, savedWordId, cacheVersion],
+  );
+
+  // ── Saved-word definition — the entry the user actually saved. ──
   const savedFirstDef = useMemo(() => {
-    if (!savedWordId) return null;
-    const savedEntry =
-      getCachedEntryById(l2Code, savedWordId) ??
-      getCachedEntryById(baseCode(l2Code), savedWordId);
     if (savedEntry && savedEntry.definitions.length > 0) {
       return firstGloss(savedEntry.definitions);
     }
     return null;
-  }, [l2Code, savedWordId, cacheVersion]);
+  }, [savedEntry]);
+
+  // ── Saved-word reading: when the saved entry's head word IS this surface
+  //    form, its dictionary reading beats the lemmatizer's pronunciation —
+  //    the user pinned the sense, so the reading belongs to it. Exact-head
+  //    matching keeps inflected surfaces on the lemmatizer (the head word
+  //    would be a different word). Shared rule: @langplayer/utils. ──
+  const savedReading = useMemo(
+    () => savedEntryReading({ savedEntry, surface: token.text, l2Code }),
+    [savedEntry, token.text, l2Code],
+  );
+  /** Reading used for ruby / word-replace phonetics. */
+  const reading = savedReading ?? token.pronunciation;
 
   // ── Quick gloss: only for saved words with gloss enabled.
   //    Suppressed for highlighted words only when quickGlossOnHighlight is false
@@ -353,10 +369,6 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
     // The entry the user actually saved pins the sense they chose — its hanja
     // wins over the first cached match (mobile parity).
-    const savedEntry = savedWordId
-      ? (getCachedEntryById(l2Code, savedWordId) ?? getCachedEntryById(baseCode(l2Code), savedWordId))
-      : null;
-
     for (const lemma of token.lemmas) {
       // The batch dictionary lookup is case-sensitive on the server, while
       // Vietnamese lemmatization keeps sentence-initial capitals (e.g. "Bạn").
@@ -377,7 +389,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     // cacheVersion is a dependency (below) so this memo re-runs once the async
     // batch lookup populates the dictionary cache — otherwise the first
     // (cache-miss) render would lock in null.
-  }, [byeonggi, base, l2Code, token.lemmas, cacheVersion, savedWordId]);
+  }, [byeonggi, base, l2Code, token.lemmas, cacheVersion, savedEntry]);
 
   // ── Byeonggi node: small muted text, same size as furigana <rt>, no brackets ──
   const byeonggiNode = (byeonggiText && !blankWord) ? (
@@ -511,17 +523,17 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         {'＿'.repeat(Math.max(1, token.text.length))}
       </span>
     );
-  } else if (showPhonetics && phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
+  } else if (showPhonetics && phoneticsMode === 'word' && reading && reading !== token.text
       && (!isJapanese || hasKanji)) {
-    const phoneticText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
+    const phoneticText = base === 'ja' ? katakanaToHiragana(reading) : reading;
     wordContent = flat
       ? <span className={flatSegmentClasses} onClick={segmentClick}>{phoneticText}</span>
       : <span className={wordBgClass}>{phoneticText}</span>;
   } else {
     // ── Ruby text ──
-    const hasPhonetics = !blankWord && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text && (phoneticsOnHighlight || !isHighlighted);
+    const hasPhonetics = !blankWord && showPhonetics && phoneticsMode === 'ruby' && reading && reading !== token.text && (phoneticsOnHighlight || !isHighlighted);
     const rubySegments: RubySegment[] | null = hasPhonetics
-      ? buildRuby(displayText, token.pronunciation!, l2Code)
+      ? buildRuby(displayText, reading!, l2Code)
       : null;
 
     if (flat) {

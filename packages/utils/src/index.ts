@@ -31,7 +31,13 @@ export type { KeyValueStorage, SettingsDiagEvent } from './settings-diagnostics'
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
 export { levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
-export { cleanPronunciation, formatPronunciation } from './pronunciation';
+export {
+  cleanPronunciation,
+  formatPronunciation,
+  entryReading,
+  entryMatchesSurface,
+  savedEntryReading,
+} from './pronunciation';
 export { rawByeonggi, normalizeByeonggi, resolveByeonggi } from './han-script';
 export type { ByeonggiBase } from './han-script';
 export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
