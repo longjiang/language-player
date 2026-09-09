@@ -1,32 +1,10 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
-import { useSettingsContext } from '@/contexts/SettingsContext';
-import { useT } from '@/hooks/use-t';
-import { SectionHeader } from '@/components/settings/SectionHeader';
-import { ToggleRow } from '@/components/settings/ToggleRow';
+import { SettingsRoute } from '@/components/settings/SettingsRoute';
 
-export function NetworkSettings() {
-  const { offlineMode, setOfflineMode } = useSettingsContext();
-  const t = useT();
-
-  return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-4 pt-6 pb-8">
-        <View className="mb-5">
-          <SectionHeader title={t('setting.network')} />
-          <ToggleRow
-            label={t('title.offline_mode')}
-            desc={t('setting.offline_mode_desc')}
-            value={offlineMode}
-            onValueChange={setOfflineMode}
-          />
-          <Text className="text-xs text-muted-foreground mt-3">
-            {t('msg.offline_mode_not_synced')}
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
+/**
+ * `app/(tabs)/(me)/settings/network.tsx` deep-link target (ADR-0042). Renders nothing itself — it opens the
+ * app-wide settings modal on the `network` category.
+ */
+export default function NetworkSettingsRoute() {
+  return <SettingsRoute category="network" />;
 }
-
-export default NetworkSettings;

@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
-import { SliderRow } from '../settings/_components/SliderRow';
-import { ToggleRow } from '../settings/_components/ToggleRow';
+import { SliderRow } from '@/components/settings/SliderRow';
+import { ToggleRow } from '@/components/settings/ToggleRow';
 import { POPULAR_L2S } from '@langplayer/shared';
 import { Settings2, ChevronDown, ChevronUp } from 'lucide-react';
 import { TokenizerLanguageCard } from './tokenizer-language-card';

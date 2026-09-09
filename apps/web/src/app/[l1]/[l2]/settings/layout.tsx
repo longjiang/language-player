@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
-import { SettingsSidebar } from './_components/SettingsSidebar';
 
+/**
+ * Settings routes are deep-link targets only (ADR-0042) — the UI is the
+ * app-wide `SettingsDialog`, opened in place from the user menu. This layout
+ * keeps the route group's metadata and renders the dialog route's children.
+ */
 export const metadata: Metadata = {
   title: 'Settings',
   description: 'Customize your Language Player experience.',
@@ -14,12 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-12 lg:grid lg:grid-cols-[220px_1fr] lg:gap-10 lg:px-0">
-      <aside className="hidden lg:block">
-        <SettingsSidebar />
-      </aside>
-      <main>{children}</main>
-    </div>
-  );
+  return <>{children}</>;
 }

@@ -186,7 +186,7 @@ marked "ignore for now" are intentionally deferred.
 | Reading & Vocabulary | Review | ✅ Capped at 672px; card padding 16px (<640px), 32px (≥640px). |
 | Reading & Vocabulary | Popup | ✅ Popup dictionary needs to be a small modal like apps/web. |
 | Reading & Vocabulary | Image Search | ⚠️ 3 columns below 640px; 4 columns at ≥640px. [wide screens still shows 3 columns, should show 4 columns — issue persists, ignore for now] |
-| Settings, Profile & Auth | Settings | ✅ Stacked below 1024px; split view at ≥1024px with Display auto-selected, sidebar ~220px, and detail capped at 512px. |
+| Settings, Profile & Auth | Settings | ✅ Modal (ADR-0042): bottom sheet <768px, `max-w-5xl` sidebar+detail dialog ≥768px. No page route UI. |
 | Settings, Profile & Auth | Profile / Go Pro | ✅ Plan cards: 1 column (<640px), 3 columns (≥640px). |
 | Settings, Profile & Auth | Tokenizer (Test) | ✅ Capped at 672px. |
 | Settings, Profile & Auth | Auth Flow (Login, Register, Forgot, Reset, Verify, Delete) | ✅ Centered 448px container. |
@@ -266,7 +266,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 | Route (web → mobile) | Web behavior | Mobile today | Required mobile change |
 |---|---|---|---|
-| Settings → `(me)/settings` | `max-w-5xl`; single list <lg; `lg:grid-cols-[220px_1fr]` at ≥1024; root redirects to Display; details `max-w-lg` | Split at ≥600 with `min(256, width*0.4)` sidebar; wide root shows placeholder; details full width | Move split to ≥1024; auto-select Display on wide root; align sidebar width and detail max width |
+| Settings → `(me)/settings` | **Modal since ADR-0042 (2026-09-09):** small dialog <768; ≥768 a `md:max-w-5xl` modal with `grid-cols-[280px_1fr]` sidebar + detail | **Modal since ADR-0042:** `Dialog.SheetContent` bottom sheet <768; ≥768 a `max-w-5xl` centered dialog with sidebar + detail | ✅ Done — supersedes the old page/split rows (`max-w-5xl`, `≥1024` split) |
 | Profile → `(me)/profile` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan rows stacked | Add responsive plan row grid (1 <640, 3 ≥640) |
 | Go Pro → `(me)/go-pro` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan cards stacked | Add responsive plan grid (1 <640, 3 ≥640) |
 | Docs → `(me)/docs` | List `max-w-2xl`; detail `max-w-3xl` + TOC sidebar; slide-in <xl, sticky ≥1280 | `max-w-3xl` single screen; inline "On this page" list, no persistent sidebar | ✅ TOC sidebar parity: slide-in below 1280, persistent at ≥1280, H2/H3 anchors scroll to headings; content is capped `max-w-3xl` prose (no card panel) |

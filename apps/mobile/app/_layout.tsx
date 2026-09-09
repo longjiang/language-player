@@ -80,6 +80,7 @@ import { SavedWordsProvider } from '@/contexts/SavedWordsContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
+import { SettingsDialogProvider } from '@/contexts/SettingsDialogContext';
 import '../global.css';
 
 // Suppress all on-screen LogBox notifications. This is intentional for store
@@ -172,6 +173,7 @@ export default function RootLayout() {
                     <VideoPlayerProvider>
                       <SubscriptionProvider>
                       <UserLibraryProvider>
+                      <SettingsDialogProvider>
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(tabs)" />
@@ -181,6 +183,7 @@ export default function RootLayout() {
                         <Stack.Screen name="go-pro-error" />
                         <Stack.Screen name="go-pro-success" />
                       </Stack>
+                      </SettingsDialogProvider>
                       <PortalHost />
                       <Toast config={toastConfig} topOffset={insets.top + 8} />
                       <TokenizationWorkerHost />

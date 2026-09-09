@@ -4,6 +4,7 @@
 - **Spec ID**: SPEC-015
 - **Feature**: Complete mobile settings parity with web, integrate offline dictionaries, fix bugs
 - **Status**: complete ✅ — all 13 settings wired and consumed; all 3 Phase 5C playback features implemented
+  - **Container superseded (2026-09-09):** settings now lives in a modal (ADR-0042) — bottom sheet <768px, `max-w-5xl` sidebar+detail dialog ≥768px. The routed list→detail screens described below became deep-link targets that open that modal; the setting wiring they document is unchanged.
 - **Created**: 2026-07-25
 - **Updated**: 2026-07-26 — all phases complete, STATUS.md updated, consumption audit added
 - **ROADMAP Phase**: Phase 7 — Mobile Integration

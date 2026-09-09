@@ -637,12 +637,19 @@ apps/web/src/
 │   └── user-data-wipe.ts   ← logout wipe; records a diag event (keeps lp_settings_diag)
 ├── providers/
 │   └── settings-provider.tsx  ← wraps useSettings() in React context (implemented)
+├── components/settings/    ← settings MODAL (ADR-0042): dialog, list, detail,
+│                              deep-link route component, row primitives
 └── app/[l1]/[l2]/
-    └── layout.tsx          ← <SettingsProvider> in provider tree (implemented)
+    ├── layout.tsx          ← <SettingsProvider> in provider tree (implemented)
+    └── settings/           ← metadata + deep-link routes that open the modal
 
 apps/mobile/
 ├── hooks/use-settings.ts       ← mobile twin of the web hook (SecureStore + outbox)
 ├── contexts/SettingsContext.tsx ← SettingsProvider / useSettingsContext
+├── contexts/SettingsDialogContext.tsx ← app-wide settings modal host + openSettings()
+├── components/settings/        ← settings MODAL (ADR-0042): dialog, list, detail,
+│                                 route component, row primitives, per-category screens
+├── app/(tabs)/(me)/settings/   ← deep-link routes that open the modal
 └── lib/user-data-wipe.ts       ← logout wipe (keeps lp_settings_diag / lp_device_id)
 ```
 
