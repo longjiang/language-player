@@ -29,7 +29,7 @@ import {
   SPELL_TEST_FAST_MS,
   spellHintInfo,
   spellBlankText,
-  spellSurfaceInTokens,
+  spellSurfaceInContext,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
@@ -524,13 +524,17 @@ export default function ReviewPage() {
   // lemma-only record still reports the true inflected surface (SPEC-066). See
   // the `spellingSurface` memo below for the full rationale; this is factored
   // into a callback so the submit handlers can reuse it without a forward ref.
+  // The context text goes in too: `spellSurfaceInContext` merges the token
+  // stream exactly as the highlight does, so a form the lemmatizer fragmented
+  // (そぐわ + なかっ + た → the highlighted そぐわなかった) resolves to the text
+  // the learner sees highlighted, not to its first fragment (SPEC-066).
   const resolveSurfaceFor = useCallback((card: ReviewCard): string => {
     const contextText = card.word.context?.text ?? '';
     if (!contextText) return '';
     const tokens = currentTokensForCard;
     if (!tokens || tokens.length === 0) return '';
     const resolvedEntry = l1Entry ?? fallbackEntry ?? card.entry;
-    return spellSurfaceInTokens(tokens, card.word, wordForm, resolvedEntry);
+    return spellSurfaceInContext(contextText, tokens, card.word, wordForm, resolvedEntry);
   }, [currentTokensForCard, l1Entry, fallbackEntry, wordForm]);
 
   const nextReviewLabelFor = useCallback((card: ReviewCard, quality: Rating) => {

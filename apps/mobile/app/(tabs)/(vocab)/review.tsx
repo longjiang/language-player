@@ -32,7 +32,7 @@ import {
   SPELL_TEST_FAST_MS,
   spellHintInfo,
   spellBlankText,
-  spellSurfaceInTokens,
+  spellSurfaceInContext,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
@@ -703,14 +703,18 @@ export default function ReviewScreen() {
   // the spell/scrabble answer, box count, hint, and scrabble blocks so a
   // lemma-only record still reports the true inflected surface (SPEC-066). See
   // the `spellingSurface` memo below for the rationale; factored into a callback
-  // so the submit handlers can reuse it.
+  // so the submit handlers can reuse it. The context text goes in too:
+  // `spellSurfaceInContext` merges the token stream exactly as the highlight
+  // does, so a form the lemmatizer fragmented (そぐわ + なかっ + た → the
+  // highlighted そぐわなかった) resolves to the highlighted text, not to its
+  // first fragment (SPEC-066).
   const resolveSurfaceFor = useCallback((card: { word: SavedWordMeta }): string => {
     const contextText = reviewContextText(card.word);
     if (!contextText) return '';
     const tokens = currentTokensForCard;
     if (!tokens || tokens.length === 0) return '';
     const resolvedEntry = l1Entry ?? fallbackEntry ?? currentEntry;
-    return spellSurfaceInTokens(tokens, card.word, wordForm, resolvedEntry);
+    return spellSurfaceInContext(contextText, tokens, card.word, wordForm, resolvedEntry);
   }, [currentTokensForCard, l1Entry, fallbackEntry, currentEntry, wordForm]);
 
   const nextReviewLabelFor = useCallback((card: { srs: SrsFields }, quality: Rating) => {

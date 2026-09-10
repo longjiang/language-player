@@ -23,6 +23,7 @@ import {
   spellBlankText,
   spellHintInfo,
   spellSurfaceInTokens,
+  spellSurfaceInContext,
   stringSimilarity,
   surfaceFormOf,
   validateSrsDefinitionChoices,
@@ -545,6 +546,68 @@ describe('spellSurfaceInTokens (lemma-only record with an inflected surface)', (
     const noReading = { head: '傾げる', pronunciation: '' };
     const info = spellHintInfo('と首をかしげた。', word, '傾げられる', noReading, 'ja', 'かしげた');
     expect(info).toEqual({ char: 'か', kind: 'orthographic' });
+  });
+});
+
+describe('spellSurfaceInContext (answer must match the context highlight)', () => {
+  // The lemmatizer fragments the inflected surface そぐわなかった into
+  // そぐわ + なかっ + た. Because そぐわ is itself one of the saved forms, the
+  // raw-token resolution stopped at the fragment, so the learner who typed the
+  // highlighted そぐわなかった was graded wrong against そぐわ.
+  const text = 'それは彼女のイメージにまったくそぐわなかった（不適合的）。';
+  const tokens = [
+    { text: 'それ', lemmas: [{ lemma: '其れ' }] },
+    { text: 'は', lemmas: [{ lemma: 'は' }] },
+    { text: '彼女', lemmas: [{ lemma: '彼女' }] },
+    { text: 'の', lemmas: [{ lemma: 'の' }] },
+    { text: 'イメージ', lemmas: [{ lemma: 'イメージ' }] },
+    { text: 'に', lemmas: [{ lemma: 'に' }] },
+    { text: 'まったく', lemmas: [{ lemma: '全く' }] },
+    { text: 'そぐわ', lemmas: [{ lemma: 'そぐう' }] },
+    { text: 'なかっ', lemmas: [{ lemma: 'ない' }] },
+    { text: 'た', lemmas: [{ lemma: 'た' }] },
+    { text: '（', lemmas: [] },
+    { text: '不', lemmas: [{ lemma: '不' }] },
+    { text: '適合', lemmas: [{ lemma: '適合' }] },
+    { text: '的', lemmas: [{ lemma: '的' }] },
+    { text: '）', lemmas: [] },
+    { text: '。', lemmas: [] },
+  ];
+  const word = {
+    head: 'そぐう',
+    forms: ['そぐう', 'そぐわ', 'そぐわない', 'そぐわなかった'],
+    context: { form: 'そぐわ', text },
+  };
+
+  it('merges the fragmented form into the span the highlight covers', () => {
+    // The raw path stops at the first matching fragment…
+    expect(spellSurfaceInTokens(tokens, word, 'そぐう', null)).toBe('そぐわ');
+    // …while the highlight-aligned path returns the whole highlighted span.
+    expect(spellSurfaceInContext(text, tokens, word, 'そぐう', null)).toBe('そぐわなかった');
+  });
+
+  it('keeps an already-atomic surface unchanged', () => {
+    const atomic = [
+      { text: '水', lemmas: [{ lemma: '水' }] },
+      { text: 'を', lemmas: [{ lemma: 'を' }] },
+      { text: '飲む', lemmas: [{ lemma: '飲む' }] },
+      { text: '。', lemmas: [] },
+    ];
+    const w = { head: '水', forms: ['水'], context: { form: '水', text: '水を飲む。' } };
+    expect(spellSurfaceInContext('水を飲む。', atomic, w, '水', null)).toBe('水');
+  });
+
+  it('falls back to the raw-token result when the tokens do not tile the text', () => {
+    // mergePhraseTokens bails without exact tiling, so the previous raw-token
+    // behavior (first matching token) is preserved rather than failing.
+    const w = { head: '水', forms: ['水'], context: { form: '水', text } };
+    const partial = [{ text: '水', lemmas: [{ lemma: '水' }] }];
+    expect(spellSurfaceInContext(text, partial, w, '水', null)).toBe('水');
+  });
+
+  it('returns "" when nothing matches, so callers use spellBlankText', () => {
+    const w = { head: '猫', forms: ['猫'], context: { form: '猫', text } };
+    expect(spellSurfaceInContext(text, tokens, w, '猫', null)).toBe('');
   });
 });
 
