@@ -139,6 +139,7 @@ export {
   scriptVariants,
   spellBlankText,
   spellSurfaceInTokens,
+  spellSurfaceInContext,
   bestScriptSimilarity,
   scoreSpellResult,
   SPELL_TEST_TOTAL_MS,

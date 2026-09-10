@@ -1,7 +1,9 @@
 /** Multiple-choice test scoring shared by web and mobile review screens. */
 import { languageNameFromCode, isPhoneticsEligible } from './language';
 import { katakanaToHiragana } from './furigana';
+import { mergePhraseTokens } from './merge-phrase-tokens';
 import type { SrsCardState } from './fsrs-scheduler';
+import type { LemmatizedToken } from '@langplayer/shared';
 
 export type TestQuestionKind = 'definition' | 'pronunciation';
 
@@ -435,6 +437,57 @@ export function spellSurfaceInTokens(
 }
 
 /**
+ * The blanked surface resolved from a tokenized context, **aligned with the
+ * context highlight**.
+ *
+ * `spellSurfaceInTokens` reads the RAW token stream, so when the lemmatizer
+ * fragments an inflected form it returns only the first fragment: MeCab
+ * tokenizes そぐわなかった as そぐわ + なかっ + た, and since そぐわ is itself one
+ * of the saved forms, the answer resolved to そぐわ — the learner typed the
+ * highlighted そぐわなかった and was graded wrong.
+ *
+ * The context highlight never sees that fragmentation: `TokenizedText` runs
+ * `mergePhraseTokens` first, collapsing every contiguous token span that
+ * reconstructs to a saved form into one atomic token, and highlights that. This
+ * helper runs the SAME merge (same phrase list = the word's matchable forms, so
+ * the merged spans are exactly the ones that can highlight) before resolving, so
+ * the answer, the character-box count, the hint, and the scrabble blocks all
+ * describe the text the learner sees highlighted.
+ *
+ * Falls back to `spellSurfaceInTokens`' raw-token behavior when the tokens do not
+ * tile `text` (the merge bails and returns its input), and returns `''` when
+ * nothing matches — callers then fall back to `spellBlankText`.
+ */
+export function spellSurfaceInContext(
+  text: string,
+  tokens: Array<{ text: string; lemmas?: Array<{ lemma?: string }> }>,
+  word: SrsWordFormInfo | undefined,
+  fallback: string,
+  entry: {
+    head?: string | null;
+    alternate?: string | null;
+    phonetic_detail?: { kana?: string } | null;
+    han_script?: {
+      simplified?: string;
+      traditional?: string;
+      kanji?: string | null;
+      hanja?: string | null;
+      hangul?: string;
+      han?: string;
+      hantu?: string;
+    } | null;
+  } | null | undefined,
+): string {
+  const forms = spellMatchableForms(word, fallback, entry);
+  // `mergePhraseTokens` is typed for the canonical `LemmatizedToken`, while this
+  // helper accepts the same loose token shape as `spellSurfaceInTokens` (the
+  // mobile tokenizer's local shape is looser). The merge only reads `text` and
+  // `lemmas[].lemma`, and returns its input untouched when nothing merges.
+  const merged = mergePhraseTokens(text, tokens as LemmatizedToken[], [...forms]);
+  return spellSurfaceInTokens(merged, word, fallback, entry);
+}
+
+/**
  * The best `stringSimilarity` across every variant pair — the script-tolerant
  * match score. Used both by `scoreSpellResult` and to decide whether a typed
  * answer counts as "correct".
@@ -634,7 +687,7 @@ export interface SrsScrabbleEntryLike {
  *   returned so this helper and `scrabbleFallsBackToSpell` agree on the answer.
  *
  * `surface` is an optional pre-resolved blanked surface (e.g. tokenized via
- * `spellSurfaceInTokens`). When provided it replaces the `spellBlankText`
+ * `spellSurfaceInContext`). When provided it replaces the `spellBlankText`
  * result so a lemma-only record still grades/derives the true inflected
  * surface (SPEC-066). When omitted, defaults to `spellBlankText`.
  */
@@ -782,7 +835,7 @@ export interface SpellHintInfo {
  *   the exact text blanked in the context sentence (`spellBlankText`) — never
  *   the dictionary lemma — so the hint always matches the surface form the
  *   learner must type. The optional `ans` arg supplies a pre-resolved surface
- *   (e.g. from `spellSurfaceInTokens`) so a lemma-only record still hints from
+ *   (e.g. from `spellSurfaceInContext`) so a lemma-only record still hints from
  *   the true inflected surface.
  *
  * Returns null when no hint applies: a single-character answer (its first char
@@ -820,7 +873,7 @@ export function spellHintInfo(
   // Orthographic hint is derived from the ANSWER (the blanked surface form),
   // not the dictionary lemma, so it always matches what the learner types.
   // `ans` is an optional pre-resolved surface (e.g. tokenized via
-  // `spellSurfaceInTokens`); when omitted it falls back to `spellBlankText`.
+  // `spellSurfaceInContext`); when omitted it falls back to `spellBlankText`.
   const answer = ans ?? spellBlankText(context, word, fallback, entry, l2Code);
   if (answer.length > 1) return { char: answer[0]!, kind: 'orthographic' };
   return null;
