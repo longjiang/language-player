@@ -23,6 +23,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, List, Loader2, Search, Sparkles
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
+import { resolveReaderImageSource } from '@/lib/reader-assets';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import { computeRubyLayout, typeFaceFontFamily } from '@/lib/ruby-layout';
@@ -1097,6 +1098,19 @@ function fitImage(naturalW: number, naturalH: number, maxW: number, maxH: number
 }
 
 /**
+ * How long `Image.getSize` may take before the image is treated as unloadable.
+ * `getSize` can also simply never call back (an unresolvable URI such as a
+ * web-root path like `/travel.png`), which used to leave the loading spinner
+ * on screen forever — the watchdog guarantees the block settles either way.
+ */
+const IMAGE_SIZE_TIMEOUT_MS = 8000;
+
+/** Bundled-asset URIs already logged — one resolution line per asset instead of
+ *  one per mounted image block (a page mounts both the visible and the hidden
+ *  measuring copy of every block). */
+const loggedBundledImages = new Set<string>();
+
+/**
  * A standalone reader image that is capped to the page's scroll area (max
  * width = the content column, max height = the reader's visible viewport) and
  * never upscaled (SPEC-087 image sizing). Sizes to the image's NATURAL
@@ -1105,28 +1119,89 @@ function fitImage(naturalW: number, naturalH: number, maxW: number, maxH: number
  * Before the natural size loads, falls back to an estimated box so pagination
  * still has a height; `onContainerLayout` reports the rendered height (both
  * the estimate and the final size) to the pagination hook.
+ *
+ * Bundled app-relative paths (sample content's `/travel.png`) resolve through
+ * `resolveReaderImageSource()` to their Metro asset — URI AND intrinsic size —
+ * so those never enter the loading state at all.
+ *
+ * An image that cannot be resolved (or that fails to load) is NOT left as an
+ * endless spinner: the block settles into its alt text (or collapses) and the
+ * failure is logged.
  */
 function ReaderImage({
   uri,
+  alt,
   maxWidth,
   maxHeight,
   onContainerLayout,
 }: {
   uri: string;
+  /** Markdown alt text — the fallback shown when the image can't load. */
+  alt?: string;
   maxWidth: number;
   maxHeight: number;
   onContainerLayout?: (h: number) => void;
 }) {
-  const [natural, setNatural] = useState<{ width: number; height: number } | null>(null);
+  const source = useMemo(() => resolveReaderImageSource(uri), [uri]);
+  const [natural, setNatural] = useState<{ width: number; height: number } | null>(
+    source.width && source.height ? { width: source.width, height: source.height } : null,
+  );
+  const [failed, setFailed] = useState(false);
+
   useEffect(() => {
+    setFailed(false);
+    const knownWidth = source.width;
+    const knownHeight = source.height;
+    if (knownWidth && knownHeight) {
+      // Bundled asset: intrinsic size came from Metro synchronously.
+      if (!loggedBundledImages.has(source.uri)) {
+        loggedBundledImages.add(source.uri);
+        appLog(`[Reader] 🖼 bundled image ${knownWidth}x${knownHeight} uri=${source.uri}`);
+      }
+      setNatural((prev) =>
+        prev && prev.width === knownWidth && prev.height === knownHeight
+          ? prev
+          : { width: knownWidth, height: knownHeight },
+      );
+      return;
+    }
     let alive = true;
+    const fail = (reason: string) => {
+      if (!alive) return;
+      alive = false;
+      appLog(`[Reader] 🖼 image unavailable (${reason}) uri=${uri}`);
+      setFailed(true);
+    };
+    const timer = setTimeout(() => fail('getSize timed out'), IMAGE_SIZE_TIMEOUT_MS);
     Image.getSize(
-      uri,
-      (w, h) => { if (alive) setNatural({ width: w, height: h }); },
-      () => { if (alive) setNatural({ width: 0, height: 0 }); },
+      source.uri,
+      (w, h) => {
+        if (!alive) return;
+        alive = false;
+        clearTimeout(timer);
+        appLog(`[Reader] 🖼 image size ${w}x${h} uri=${source.uri}`);
+        if (w > 0 && h > 0) setNatural({ width: w, height: h });
+        else setFailed(true);
+      },
+      (e) => {
+        clearTimeout(timer);
+        fail(`getSize failed: ${(e as Error)?.message ?? e}`);
+      },
     );
-    return () => { alive = false; };
-  }, [uri]);
+    return () => { alive = false; clearTimeout(timer); };
+  }, [source.uri, source.width, source.height, uri]);
+
+  if (failed) {
+    // Broken image: keep the markdown alt text (web parity — a browser shows
+    // the alt text for a failed <img>) and collapse when there is none, so the
+    // page never reserves an empty box with a spinner in it.
+    if (!alt) return null;
+    return (
+      <View onLayout={onContainerLayout ? (e) => onContainerLayout(e.nativeEvent.layout.height) : undefined}>
+        <Text className="text-xs text-muted-foreground">{alt}</Text>
+      </View>
+    );
+  }
 
   const sized = !!natural && natural.width > 0 && natural.height > 0;
   const display = sized
@@ -1141,7 +1216,15 @@ function ReaderImage({
       onLayout={onContainerLayout ? (e) => onContainerLayout(e.nativeEvent.layout.height) : undefined}
     >
       {sized ? (
-        <Image source={{ uri }} style={{ width: display.width, height: display.height }} resizeMode="contain" />
+        <Image
+          source={{ uri: source.uri }}
+          style={{ width: display.width, height: display.height }}
+          resizeMode="contain"
+          onError={(e) => {
+            appLog(`[Reader] 🖼 image load failed uri=${source.uri} err=${e.nativeEvent?.error ?? 'unknown'}`);
+            setFailed(true);
+          }}
+        />
       ) : (
         <ActivityIndicator size="small" color={ICON_MUTED} style={{ flex: 1 }} />
       )}
@@ -1199,6 +1282,7 @@ function renderBlock(
       >
         <ReaderImage
           uri={block.uri}
+          alt={block.alt}
           maxWidth={contentWidth}
           maxHeight={maxImageHeight > 0 ? maxImageHeight : contentWidth * 2}
         />
@@ -1560,6 +1644,7 @@ function renderMeasuringBlock(
       <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="my-3">
         <ReaderImage
           uri={block.uri}
+          alt={block.alt}
           maxWidth={contentWidth}
           maxHeight={maxImageHeight > 0 ? maxImageHeight : contentWidth * 2}
         />
