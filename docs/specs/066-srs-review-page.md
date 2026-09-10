@@ -5,7 +5,9 @@
 - **Spec ID**: SPEC-066
 - **Feature**: SRS Review Page
 - **Status**: implemented (2026-08-11); `dailyNewLimit` semantics corrected
-  to match Anki/FSRS (2026-08-13), with reversible limit changes (2026-08-21)
+  to match Anki/FSRS (2026-08-13), with reversible limit changes (2026-08-21);
+  single-character answers in inflecting languages route to spell mode instead
+  of phonetics-scrabble (2026-09-10)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -907,31 +909,64 @@ answer:
   on the device/OS hardware-keyboard support (see the Web ↔ Mobile disparities
   note). The review page's rate/reveal/undo shortcut listeners ignore keystrokes
   that originate in this hidden field, so typing is never mistaken for a rating.
-- **Single-character answers (2026-09-xx)** — a one-character answer would be a
-  trivially-solvable single block (the learner just taps it). So when the blanked
-  answer is a single character, the block pool is instead derived from the
-  **matched dictionary entry's phonetics** (`scrabbleAnswerText`): pinyin for
-  zh/yue, kana for ja, romanization for other phonetics-eligible L2s — so the
-  learner arranges the reading (e.g. 水 → みず, 我 → wǒ). The substitution applies
-  only to **phonetics-eligible** languages (`isPhoneticsEligible`). If the
-  matched entry exposes **no phonetics** — a phonetics-suppressed language
-  (Latin-script, Burmese) or a phonetics-eligible entry with no reading — the
-  card runs as **spell mode** instead (`scrabbleFallsBackToSpell`), so the
-  learner types the single character. The same resolved string is used both to
-  build the blocks and to grade the arranged answer, so correctness compares the
-  phonetics against the phonetics.
-  - **The entry (and its reading) must be loaded first.** For an LLM-generated
-    entry the exact-id fetch — the only path to that entry — previously ran only
-    on reveal, which is *after* the scrabble test; so at the moment the mode was
-    resolved the reading read as absent and the card wrongly fell back to spell.
-    A single-char scrabble card therefore **waits** for the entry: it keeps
+- **Single-character answers (2026-09-xx; typology split 2026-09-10)** — a
+  one-character answer can never be *arranged* meaningfully (the learner would
+  tap the lone block to submit), so it is decided by the language's
+  **morphological typology** (`isInflectingLanguage` /
+  `NON_INFLECTING_LANGUAGES` in `packages/utils/src/srs-test-mode.ts`):
+  - **Inflecting language** (every language not in the analytic set — ja, ko,
+    ru, bg, uk, be, mk, sr, el, hy, ka, ar, fa, he, hi, bn, ta, te, ml, …) → the
+    card runs as **spell mode** and the learner **types** the single character:
+    `scrabbleFallsBackToSpell` returns true and `scrabbleAnswerText` returns the
+    blanked surface unchanged. Rationale: in an inflecting language the blanked
+    surface is frequently a non-head form, and the **dictionary head's reading
+    then disagrees with the word as written in the sentence** — the surface 渋
+    (しぶ) whose saved entry is the lemma 渋い (しぶい) would ask the learner to
+    arrange しぶい, a reading the context never shows. Typing the character is
+    exactly "the form that was blanked", which is what spell mode grades.
+    This override applies **regardless of how scrabble was selected**: Mixed
+    mode's `reps === 1` step and an explicit **Scrabble** selection both route to
+    spell, so an explicit selection can never start a one-block test.
+  - **Non-inflecting (analytic) language** (Chinese and the other Han varieties,
+    Thai, Khmer, Lao, Burmese, Malay/Indonesian, Vietnamese, …) → unchanged: the
+    block pool is derived from the **matched dictionary entry's phonetics**
+    (`scrabbleAnswerText`) — pinyin for zh/yue, romanization for the other
+    phonetics-eligible L2s — so the learner arranges the reading (e.g. 我 → wǒ).
+    The substitution applies only to **phonetics-eligible** languages
+    (`isPhoneticsEligible`); if the matched entry exposes **no phonetics** (a
+    phonetics-suppressed language such as Latin-script or Burmese, or an analytic
+    entry with no reading) the card runs as **spell mode** instead
+    (`scrabbleFallsBackToSpell`). The same resolved string is used both to build
+    the blocks and to grade the arranged answer, so correctness compares the
+    phonetics against the phonetics.
+  - **Both paths derive from the blanked surface.** The answer comes from
+    `spellBlankText` (preferring the token-resolved surface,
+    `spellSurfaceInTokens`) — the exact text the context blanked — never from a
+    reduced record form and, in the inflecting case, never from the entry's head
+    reading.
+  - **The entry (and its reading) must be loaded first — analytic languages
+    only.** For a non-inflecting single-char card whose LLM-generated entry is
+    not loaded, the exact-id fetch (the only path to that entry) would otherwise
+    run only on reveal, *after* the test; so the card **waits**: it keeps
     scrabble mode, holds a **spinner** in place of the Start Test button, and
-    fires the exact-entry lookup early (un-gated from reveal,
-    `scrabbleNeedsEntryFetch`), then re-evaluates reactively once the entry
-    lands — phonetics → phonetic-scrabble, none → spell. `scrabbleFallsBackToSpell`
-    is only evaluated *after* an entry is available, so "not loaded" is a wait,
-    not a fall back. On **mobile + offline**, if the offline lookup tried and
-    found no entry, the card falls back to spell instead of spinning.
+    fires the exact-entry lookup early (`scrabbleNeedsEntryFetch`), then
+    re-evaluates reactively once the entry lands — phonetics →
+    phonetic-scrabble, none → spell (`scrabbleFallsBackToSpell` is only evaluated
+    *after* an entry is available, so "not loaded" is a wait, not a fall back).
+    `scrabbleNeedsEntryFetch` is **always false for an inflecting language**: a
+    single-char card there is spell mode, whose answer comes from the context
+    sentence rather than the entry, so it must never hold the spinner. On
+    **mobile + offline**, if the offline lookup tried and found no entry, the
+    card falls back to spell instead of spinning.
+  - **Single-char spell cards (the inflecting route).** The answer is one
+    character, so the spell input shows **one box**; `spellHintInfo` returns a
+    **phonetic** hint only when the entry exposes a reading (for ja, the head's
+    kana first character — e.g. `し` for 渋い) and otherwise null (there is no
+    single-character orthographic hint — see the no-hint rule above). Because the
+    early exact-id fetch is gated on the analytic scrabble path, an uncached
+    **LLM** entry loads on reveal like any other spell card, so a single-char
+    inflecting card can show its hint only after the answer was submitted; a
+    cached entry (EDICT/CEDICT, offline dictionary) is available immediately.
 
 Everything else matches spell mode: the **Start Test gate** (context first, then
 a Start Test button), the **blanked context sentence** with the bolded
@@ -955,7 +990,10 @@ test-backed modes, driven by how many times the card has been **reviewed**
   (multiple choice) — the extra scaffolding introduces freshly-saved words
   gently;
 - **card reviewed exactly once** (`reps === 1`) → behaves like **scrabble mode**
-  — the learner arranges the word's shuffled characters;
+  — the learner arranges the word's shuffled characters. **Exception:** a
+  single-character answer in an inflecting language runs as spell mode instead
+  (see [Single-character
+  answers](#scrabble-mode)), so this step never starts a one-block test;
 - **card reviewed more than once** (`reps >= 2`) → behaves like **spell mode** —
   the learner types the word.
 
@@ -1284,22 +1322,35 @@ orphaned.
   rightmost filled block. The soft keyboard/IME is never summoned; CJK cards stay
   arrange-only. See the [Scrabble mode](#scrabble-mode) behaviour notes.
 - ✅ **Scrabble single-character answers** — implemented (both review pages +
-  shared utils): a one-character answer is a trivially-solvable single block, so
-  scrabble derives its blocks from the matched dictionary entry's phonetics
-  (`scrabbleAnswerText` — pinyin for zh/yue, kana for ja, romanization for other
-  phonetics-eligible L2s). The substitution applies only to phonetics-eligible
-  languages (`isPhoneticsEligible`); when the matched entry exposes no phonetics
-  (phonetics-suppressed L2, or a phonetics-eligible entry with no reading) the
-  card runs as spell mode (`scrabbleFallsBackToSpell`). The same resolved string
-  both builds the blocks and grades the arranged answer. The card **waits** for
-  the entry to load (`scrabbleNeedsEntryFetch`, un-gated exact-id fetch, spinner
-  in place of Start Test) before deciding, so an unloaded LLM entry no longer
-  wrongly downgrades to spell; on mobile + offline an entry that can't be loaded
-  falls back to spell.
+  shared utils; typology split 2026-09-10): a one-character answer is a
+  trivially-solvable single block, so it is handled by **morphological typology**
+  (`isInflectingLanguage` / `NON_INFLECTING_LANGUAGES`).
+  - **Inflecting languages** (ja, ko, ru, ar, el, hi, …) run the card as **spell
+    mode**: the learner types the blanked character
+    (`scrabbleFallsBackToSpell` → true, `scrabbleAnswerText` → the unchanged
+    blanked surface). The dictionary head's reading is not a safe answer there —
+    surface 渋 (しぶ) with saved entry 渋い (しぶい). Applies to Mixed mode's
+    `reps === 1` step *and* to an explicitly selected Scrabble mode.
+    `scrabbleNeedsEntryFetch` is false for these languages, so the card never
+    waits on the entry spinner.
+  - **Non-inflecting (analytic) languages** (Han varieties, th, km, lo, my, ms,
+    id, vi, …) are unchanged: the blocks come from the matched dictionary
+    entry's phonetics (`scrabbleAnswerText` — pinyin for zh/yue, romanization for
+    the other phonetics-eligible L2s) and the same resolved string grades the
+    arrangement. Only for **phonetics-eligible** languages
+    (`isPhoneticsEligible`); when the matched entry exposes no phonetics
+    (phonetics-suppressed L2, or an analytic entry with no reading) the card runs
+    as spell mode (`scrabbleFallsBackToSpell`). The card **waits** for the entry
+    to load (`scrabbleNeedsEntryFetch`, un-gated exact-id fetch, spinner in place
+    of Start Test) before deciding, so an unloaded LLM entry no longer wrongly
+    downgrades to spell; on mobile + offline an entry that can't be loaded falls
+    back to spell.
 - ✅ **Mixed mode 3-way split** — implemented (both review pages + shared utils):
   mixed mode now keys off the card's **review count** (`reps`) instead of state:
   `new` → choose, `reps === 1` → scrabble, `reps >= 2` → spell
-  (`resolveReviewMode(mode, cardState, reps)`). Choice tests are still
+  (`resolveReviewMode(mode, cardState, reps)`). A single-character answer in an
+  inflecting language overrides the `reps === 1` scrabble step to spell mode (see
+  [Single-character answers](#scrabble-mode)). Choice tests are still
   prefetched only for the cards that end up choice-tested.
 - ✅ **Spell mode** — implemented (2026-09-06, both review pages + shared
   utils): blank the term in the context sentence, show the bolded translation,
