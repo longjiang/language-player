@@ -5,6 +5,7 @@ import {
   buildSrsQuestionPrompt,
   getTestKinds,
   hiraganaToKatakana,
+  isInflectingLanguage,
   isObviousPronunciationWrong,
   kanaVariants,
   lemmaFormOf,
@@ -627,7 +628,7 @@ describe('spellHintInfo', () => {
   });
 });
 
-describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble)', () => {
+describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble by typology)', () => {
   it('keeps the blanked word for a multi-character answer', () => {
     const word = { forms: ['たじろか', 'たじろかせる'], head: 'たじろぐ', context: { form: 'たじろか' } };
     const context = 'それは第一印象でまず人をたじろかせる（“退縮”）種類の顔だった。';
@@ -635,15 +636,26 @@ describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble)',
     expect(scrabbleFallsBackToSpell(context, word, 'たじろぐ', null, 'ja')).toBe(false);
   });
 
-  it('arranges the reading for a single-char answer with a reading (ja kanji)', () => {
+  it('sends a single-char answer in an INFLECTING language to spell mode (ja)', () => {
+    // SPEC-066: the dictionary head's reading can disagree with the surface —
+    // surface 渋 (しぶ) whose saved entry is the lemma 渋い (しぶい) — so an
+    // inflecting language types the blanked character instead of arranging a
+    // reading the learner cannot derive from the context.
     const word = { forms: ['水'], head: '水', context: { form: '水' } };
     const context = '水を飲む。';
     const entry = { head: '水', alternate: 'みず', pronunciation: 'mizu' };
-    expect(scrabbleAnswerText(context, word, '水', entry, 'ja')).toBe('みず');
-    expect(scrabbleFallsBackToSpell(context, word, '水', entry, 'ja')).toBe(false);
+    expect(scrabbleAnswerText(context, word, '水', entry, 'ja')).toBe('水');
+    expect(scrabbleFallsBackToSpell(context, word, '水', entry, 'ja')).toBe(true);
   });
 
-  it('arranges pinyin for a single-char Chinese answer', () => {
+  it('sends a single-char answer to spell mode in an inflecting language even with no entry (ko)', () => {
+    const word = { forms: ['물'], head: '물', context: { form: '물' } };
+    const context = '물을 마신다.';
+    expect(scrabbleAnswerText(context, word, '물', null, 'ko')).toBe('물');
+    expect(scrabbleFallsBackToSpell(context, word, '물', null, 'ko')).toBe(true);
+  });
+
+  it('still arranges pinyin for a single-char Chinese answer (non-inflecting)', () => {
     const word = { forms: ['我'], head: '我', context: { form: '我' } };
     const context = '我明天去北京。';
     const entry = { head: '我', phonetic_detail: { pinyin: 'wǒ' } };
@@ -651,42 +663,74 @@ describe('scrabbleAnswerText / scrabbleFallsBackToSpell (single-char scrabble)',
     expect(scrabbleFallsBackToSpell(context, word, '我', entry, 'zh')).toBe(false);
   });
 
-  it('falls back to spell when a phonetics-eligible entry has no reading', () => {
-    // Japanese entry with only a romaji pronunciation — ja never falls back to
-    // romaji, so there is no kana reading to arrange → spell mode.
-    const word = { forms: ['水'], head: '水', context: { form: '水' } };
-    const context = '水を飲む。';
-    const entry = { head: '水', pronunciation: 'mizu' };
-    expect(scrabbleAnswerText(context, word, '水', entry, 'ja')).toBe('水');
-    expect(scrabbleFallsBackToSpell(context, word, '水', entry, 'ja')).toBe(true);
+  it('still arranges pinyin for a subtagged non-inflecting code (zh-Hant)', () => {
+    // The typology check strips the subtag, so zh-Hant/zh-Hans take the
+    // non-inflecting phonetics path exactly like zh.
+    const word = { forms: ['我'], head: '我', context: { form: '我' } };
+    const context = '我明天去北京。';
+    const entry = { head: '我', phonetic_detail: { pinyin: 'wǒ' } };
+    expect(scrabbleAnswerText(context, word, '我', entry, 'zh-Hant')).toBe('wǒ');
+    expect(scrabbleFallsBackToSpell(context, word, '我', entry, 'zh-Hant')).toBe(false);
+  });
+
+  it('falls back to spell when a non-inflecting entry exposes no reading (zh)', () => {
+    // Chinese entry with no pinyin → nothing to arrange → spell mode.
+    const word = { forms: ['我'], head: '我', context: { form: '我' } };
+    const context = '我明天去北京。';
+    const entry = { head: '我' };
+    expect(scrabbleAnswerText(context, word, '我', entry, 'zh')).toBe('我');
+    expect(scrabbleFallsBackToSpell(context, word, '我', entry, 'zh')).toBe(true);
   });
 
   it('falls back to spell for a phonetics-suppressed (Latin-script) single-char answer', () => {
-    // 'en' is phonetics-suppressed; even though the entry carries an IPA
-    // pronunciation, a 1-block IPA arrangement is not meaningful → spell mode.
+    // 'vi' is phonetics-suppressed; even though the entry carries a reading, a
+    // 1-block Latin arrangement is not meaningful → spell mode.
     const word = { forms: ['a'], head: 'a', context: { form: 'a' } };
     const context = 'a';
-    const entry = { head: 'a', pronunciation: 'eɪ' };
-    expect(scrabbleAnswerText(context, word, 'a', entry, 'en')).toBe('a');
-    expect(scrabbleFallsBackToSpell(context, word, 'a', entry, 'en')).toBe(true);
+    const entry = { head: 'a', pronunciation: 'aː' };
+    expect(scrabbleAnswerText(context, word, 'a', entry, 'vi')).toBe('a');
+    expect(scrabbleFallsBackToSpell(context, word, 'a', entry, 'vi')).toBe(true);
   });
 
-  it('scrabbleNeedsEntryFetch is true only for a single-char answer whose entry is not loaded', () => {
-    const word = { forms: ['水'], head: '水', context: { form: '水' } };
-    const context = '水を飲む。';
+  it('scrabbleNeedsEntryFetch waits for the entry only in a non-inflecting language', () => {
+    const word = { forms: ['我'], head: '我', context: { form: '我' } };
+    const context = '我明天去北京。';
     // Entry not loaded (null) + single-char answer → needs a fetch.
-    expect(scrabbleNeedsEntryFetch(context, word, '水', null, 'ja')).toBe(true);
+    expect(scrabbleNeedsEntryFetch(context, word, '我', null, 'zh')).toBe(true);
     // Multi-char answer → never needs the entry (blocks come from the word).
     const multi = { forms: ['たじろかせる'], head: 'たじろぐ', context: { form: 'たじろか' } };
     const multiContext = '人をたじろかせる（“退縮”）種類の顔だった。';
     expect(scrabbleNeedsEntryFetch(multiContext, multi, 'たじろぐ', null, 'ja')).toBe(false);
   });
 
+  it('scrabbleNeedsEntryFetch is never true in an inflecting language', () => {
+    // A single-char inflecting card is spell mode — its answer comes from the
+    // context sentence, not the entry — so it must never hold the spinner.
+    const jaWord = { forms: ['水'], head: '水', context: { form: '水' } };
+    expect(scrabbleNeedsEntryFetch('水を飲む。', jaWord, '水', null, 'ja')).toBe(false);
+    const koWord = { forms: ['물'], head: '물', context: { form: '물' } };
+    expect(scrabbleNeedsEntryFetch('물을 마신다.', koWord, '물', null, 'ko')).toBe(false);
+  });
+
   it('scrabbleNeedsEntryFetch is false once the entry is loaded', () => {
-    const word = { forms: ['水'], head: '水', context: { form: '水' } };
-    const context = '水を飲む。';
-    const entry = { head: '水', alternate: 'みず', pronunciation: 'mizu' };
-    expect(scrabbleNeedsEntryFetch(context, word, '水', entry, 'ja')).toBe(false);
+    const word = { forms: ['我'], head: '我', context: { form: '我' } };
+    const context = '我明天去北京。';
+    const entry = { head: '我', phonetic_detail: { pinyin: 'wǒ' } };
+    expect(scrabbleNeedsEntryFetch(context, word, '我', entry, 'zh')).toBe(false);
+  });
+});
+
+describe('isInflectingLanguage (SPEC-066 single-char scrabble typology)', () => {
+  it('classifies the analytic (non-inflecting) languages — including subtagged codes', () => {
+    for (const l2 of ['zh', 'zh-Hans', 'zh-Hant', 'cmn', 'yue', 'nan', 'hak', 'lzh', 'th', 'km', 'lo', 'my', 'bo', 'dz', 'ms', 'id', 'vi', 'za']) {
+      expect(isInflectingLanguage(l2), l2).toBe(false);
+    }
+  });
+
+  it('treats every other language as inflecting', () => {
+    for (const l2 of ['ja', 'ko', 'ru', 'bg', 'uk', 'mk', 'sr', 'el', 'hy', 'ka', 'ar', 'fa', 'he', 'hi', 'bn', 'ta', 'ta-LK', 'ml', 'sa', 'ojp', 'ryu', 'tr', 'en']) {
+      expect(isInflectingLanguage(l2), l2).toBe(true);
+    }
   });
 });
 

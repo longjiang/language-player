@@ -146,6 +146,8 @@ export {
   spellHintInfo,
   resolveReviewMode,
   shuffleScrabbleBlocks,
+  NON_INFLECTING_LANGUAGES,
+  isInflectingLanguage,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
