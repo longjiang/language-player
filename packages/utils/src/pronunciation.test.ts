@@ -38,7 +38,54 @@ describe('formatPronunciation', () => {
       pronunciation: 'nokori',
       phonetic_detail: { kana: 'のこり' },
     });
-    expect(formatPronunciation(e, 'ja')).toBe('[のこり]');
+    expect(formatPronunciation(e, 'ja')).toBe('[のこり, nokori]');
+  });
+
+  it('shows kana + romaji for a pitch-less entry (no romaji gating)', () => {
+    // EDICT stores the romaji in `pronunciation` and mirrors the kana into
+    // phonetic_detail.kana. おべっか has no pitch-accent row; the API
+    // serializes that as null even though the schema types it as optional.
+    const pd = {
+      kana: 'おべっか',
+      romaji: 'obekka',
+      pitch_accent: null,
+    } as unknown as DictionaryEntry['phonetic_detail'];
+    const e = entry({ head: 'おべっか', pronunciation: 'obekka', phonetic_detail: pd });
+    expect(formatPronunciation(e, 'ja')).toBe('[おべっか, obekka]');
+  });
+
+  it('keeps kana + romaji for heiban (pattern 0)', () => {
+    const e = entry({
+      head: '橋',
+      pronunciation: 'hashi',
+      phonetic_detail: { kana: 'はし', pitch_accent: [0] },
+    });
+    expect(formatPronunciation(e, 'ja')).toBe('[はし, hashi]⓪');
+  });
+
+  it('reads the romaji from phonetic_detail when pronunciation repeats the head', () => {
+    const e = entry({
+      head: 'のこり',
+      pronunciation: 'のこり',
+      phonetic_detail: { kana: 'のこり', romaji: 'nokori', pitch_accent: [3] },
+    });
+    expect(formatPronunciation(e, 'ja')).toBe('[のこりꜜ, nokorí]③');
+  });
+
+  it('never renders an empty romaji slot for kana entries without romaji', () => {
+    const noPron = entry({
+      head: 'のこり',
+      pronunciation: '',
+      phonetic_detail: { kana: 'のこり' },
+    });
+    expect(formatPronunciation(noPron, 'ja')).toBe('[のこり]');
+
+    const pitchNoPron = entry({
+      head: 'のこり',
+      pronunciation: '',
+      phonetic_detail: { kana: 'のこり', pitch_accent: [3] },
+    });
+    expect(formatPronunciation(pitchNoPron, 'ja')).toBe('[のこりꜜ]③');
   });
 
   it('falls back to Japanese romanization when kana is unavailable', () => {

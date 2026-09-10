@@ -285,6 +285,24 @@ Return ONLY valid JSON — a single object with these fields:
 
 ---
 
+## Pronunciation Display
+
+Every entry card renders its bracketed pronunciation row from one shared helper — `formatPronunciation(entry, l2Code)` in `packages/utils/src/pronunciation.ts` — so web (`DictionaryEntryCard`, `DictionaryPopup`, entry detail page), mobile (`DictionaryEntryCard`, `DictionaryPopup`), and the Chrome extension (`DictionaryCard`) always agree. The raw `entry.pronunciation` field is never displayed directly. `entryReading()` in the same file supplies the separate, unbracketed ruby reading (see [ARCH-017](017-tokenization-batch-lookup-pipeline.md#reading-source-ruby-phonetics--saved-word-override)).
+
+Per-language precedence as built:
+
+| L2 | Displayed pronunciation |
+|---|---|
+| `ja` | **Kana always paired with romaji.** With pitch-accent data: kana carrying the ↓ downstep, romaji with the accented vowel, then the circled pattern number — `[のこりꜜ, nokorí]③`. Without pitch data: the plain pair — `[おべっか, obekka]`. Kana alone only when the entry has no romaji anywhere; kana-less entries fall back to `romanization` > `romaji` > `pronunciation` > `ipa`. |
+| `zh`, `yue` | The dictionary's own `pronunciation` (CEDICT tone-marked pinyin / CC-Canto jyutping) > `phonetic_detail.pinyin` > `phonetic_detail.jyutping`. Cantonese never falls back to Mandarin pinyin. |
+| `ko` | `phonetic_detail.romanization` > `pronunciation` |
+| `th` | `phonetic_detail.romanization` (Paiboon+) > `pronunciation` > `phonetic_detail.ipa` |
+| other | `phonetic_detail.ipa` > `phonetic_detail.romanization` > `pronunciation` |
+
+Design rule for Japanese: the kana is the only place pitch markers can sit, and romaji is the only part a learner can read before kana is fluent, so **romaji is never gated on pitch-accent availability** — the earlier behavior showed romaji only for entries that had pitch-accent data (2026-09-10). Missing romaji degrades to kana alone rather than printing an empty second half.
+
+---
+
 ## Lemmatizer Schema
 
 The unified `/lemmatize` endpoint accepts text and a language code, returning a language-agnostic token array.
