@@ -4,8 +4,11 @@
  * All output uses [...] bracket notation.
  *
  * Language-specific priorities:
- *   ja  → pitch-accented kana + accented romaji if pitch data available,
- *          else kana > romanization > pronunciation
+ *   ja  → kana ALWAYS paired with romaji. With pitch-accent data the kana
+ *          carries the ↓ downstep, the romaji takes the accented vowel, and the
+ *          circled pattern number is appended; without pitch data the same pair
+ *          is shown plainly. Kana-less entries fall back to
+ *          romanization > pronunciation > ipa.
  *   zh, yue → pinyin (tone-marked) > pronunciation
  *   ko  → romanization > pronunciation
  *   th  → Paiboon+ romanization (tone-marked) > pronunciation > IPA
@@ -41,12 +44,13 @@ export function cleanPronunciation(
  * Compile a pronunciation string from a dictionary entry.
  *
  * Returns e.g.:
- *   "[なごり↓ nagorí]"  — Japanese with pitch accent
- *   "[なごり]"           — Japanese without pitch (kana only)
- *   "[nǐ hǎo]"          — Chinese pinyin (tone-marked)
- *   "[nagori]"          — fallback romaji
- *   "[sà-wàt-dii]"      — Thai Paiboon+ (tone-marked romanization)
- *   "[ipa]" / "[rom]"   — other languages
+ *   "[のこりꜜ, nokorí]③" — Japanese with pitch accent
+ *   "[おべっか, obekka]" — Japanese without pitch data (kana + romaji)
+ *   "[おべっか]" — Japanese kana with no romaji anywhere
+ *   "[nǐ hǎo]" — Chinese pinyin (tone-marked)
+ *   "[nagori]" — fallback romaji
+ *   "[sà-wàt-dii]" — Thai Paiboon+ (tone-marked romanization)
+ *   "[ipa]" / "[rom]" — other languages
  *
  * Returns null if no pronunciation data is available.
  */
@@ -63,17 +67,27 @@ export function formatPronunciation(
       : null,
   );
 
-  // ── Japanese: pitch-accented kana + romaji, or kana, or romaji ──
+  // ── Japanese: kana always shown together with romaji ──
+  // Both halves carry information the other cannot: the kana is where the
+  // pitch markers sit, the romaji is what a learner can actually read before
+  // kana is fluent — so romaji is NOT gated on pitch-accent data.
+  // Romaji source: `pronunciation` (EDICT's romaji column, which the API also
+  // mirrors into `phonetic_detail.romaji`), then the phonetic_detail copies.
   if (l2Code === 'ja') {
-    // Pitch accent available → [かꜜつ, kátsu]③
-    if (pd?.kana && pd?.pitch_accent?.length) {
-      const p = pd.pitch_accent[0]!;
-      const romaji = entry.pronunciation || '';
-      return `[${formatJapanesePron(pd.kana, romaji, p)}]${circledPattern(p)}`;
+    const kana = cleanPronunciation(pd?.kana);
+    if (kana) {
+      const romaji =
+        pron ?? cleanPronunciation(pd?.romaji) ?? cleanPronunciation(pd?.romanization);
+      // Pitch accent available → [かꜜつ, kátsu]③
+      const pitch = pd?.pitch_accent?.[0];
+      if (pitch != null) {
+        return `[${formatJapanesePron(kana, romaji ?? '', pitch)}]${circledPattern(pitch)}`;
+      }
+      // No pitch data → [おべっか, obekka] (kana alone when no romaji exists)
+      return romaji ? `[${kana}, ${romaji}]` : `[${kana}]`;
     }
-    // Kana without pitch
-    if (pd?.kana) return `[${cleanPronunciation(pd.kana)}]`;
-    // Fallbacks
+    // Kana-less entries keep the historical fallback order and fall through to
+    // the shared ipa/romanization tail below when nothing matches.
     if (pd?.romanization) return `[${cleanPronunciation(pd.romanization)}]`;
     if (pd?.romaji) return `[${cleanPronunciation(pd.romaji)}]`;
     if (pron) return `[${pron}]`;

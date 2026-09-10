@@ -129,6 +129,9 @@ export function applyDownstepOnly(moras: string[], pattern: number): string {
  *  Pattern 0 (heiban): 'kana, romaji'
  *  Pattern ≥1:        'kana↓, romají'
  *
+ *  With no romaji available the downstep kana alone is returned — the pair is
+ *  never rendered with an empty second half ('kana, ').
+ *
  *  The outer [...] brackets are added by formatPronunciation().
  */
 export function formatJapanesePron(
@@ -138,6 +141,7 @@ export function formatJapanesePron(
 ): string {
   const moras = splitIntoMoras(kana);
   const kanaPart = applyDownstepOnly(moras, pattern);
+  if (!romaji) return kanaPart;
   const romaPart = applyRomajiAccent(kana, romaji, pattern);
   return `${kanaPart}, ${romaPart}`;
 }
