@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo } from 'react';
 import { View, Text, Image, useWindowDimensions } from 'react-native';
 import type { ContentBlock, FormatRange, TextBlock } from '@langplayer/shared';
+import { resolveReaderImageSource } from '@/lib/reader-assets';
 
 // Loaded on demand to break the static require cycle:
 // TokenizedText → DictionaryPopup → AiExplanation → MarkdownExplanation →
@@ -120,16 +121,24 @@ export function MarkdownBlocks({
               </View>
             );
 
-          case 'image':
+          case 'image': {
+            // Bundled app-relative sample images (`/travel.png`) resolve to
+            // their Metro asset; remote/file/blob URIs pass through.
+            const source = resolveReaderImageSource(block.uri);
+            const width = Math.min(windowWidth - 48, 560);
+            const height = source.width && source.height
+              ? (width * source.height) / source.width
+              : width * 0.6;
             return (
               <View key={i} className="my-3 items-center">
                 <Image
-                  source={{ uri: block.uri }}
-                  style={{ width: Math.min(windowWidth - 48, 560), height: (Math.min(windowWidth - 48, 560)) * 0.6 }}
+                  source={{ uri: source.uri }}
+                  style={{ width, height }}
                   resizeMode="contain"
                 />
               </View>
             );
+          }
 
           case 'table':
             return (

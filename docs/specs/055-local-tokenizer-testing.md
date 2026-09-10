@@ -89,9 +89,15 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 > format range on the first text block. On web it draws inline in
 > `TokenizedText`; on mobile the existing `splitInlineImageBlocks` pass splits
 > it into a leading standalone `ImageBlock` (SPEC-087 — native inline-image
-> drawing is not yet implemented). Note the shared markdown src is a string, so
-> mobile can't resolve it to the bundled asset without extra resolution logic
-> (best-effort per the SPEC-087 gap).
+> drawing is not yet implemented). The shared markdown src is a string, so
+> mobile resolves it explicitly: `apps/mobile/lib/reader-assets.ts` maps the
+> app-relative path to the bundled Metro asset and hands the reader both the
+> loadable URI and the intrinsic size (466×444), so the block renders the image
+> instead of sitting on a size lookup. An image the reader cannot resolve or
+> load falls back to the alt text / collapses — it never leaves a spinner
+> running (2026-09-09 fix; before it, `/travel.png` was passed to
+> `Image.getSize` verbatim, which fails on React Native, and the card showed an
+> eternal spinner above the text).
 
 | `POPULAR_L2S` | Test case |
 |---|---|
