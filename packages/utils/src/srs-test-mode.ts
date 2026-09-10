@@ -508,6 +508,52 @@ export function scoreSpellResult(
 // same size as the spell character boxes); the learner drags a block onto a
 // slot (or taps a block to send it to the first empty slot) until every slot
 // is filled, at which point the answer is auto-submitted. No hint is shown.
+//
+// **Single-character answers are decided by LANGUAGE TYPOLOGY (SPEC-066).** In
+// an inflecting language the blanked surface may be a non-head form whose
+// reading is not the dictionary head's (surface 渋 しぶ via the saved lemma
+// 渋い しぶい), so arranging the entry's phonetics would ask for a reading the
+// sentence never shows. Those cards therefore decline scrabble and run as
+// **spell mode** — the learner types the character, which is what was blanked.
+// In a non-inflecting language a single character IS the word, so scrabble
+// arranges its phonetics instead. See `NON_INFLECTING_LANGUAGES`,
+// `scrabbleAnswerText`, and `scrabbleFallsBackToSpell`.
+
+/**
+ * Languages whose morphology is ANALYTIC (non-inflecting): a word's written
+ * surface is also its dictionary form, so one character is a complete,
+ * unambiguously-read word and arranging its phonetics is a meaningful test.
+ *
+ * Every language NOT in this set is treated as **inflecting**, which — for a
+ * single-character answer only — makes scrabble decline the card so it runs as
+ * **spell mode** (SPEC-066 single-character answers). Rationale: in an
+ * inflecting language a single-character surface is often a non-head form, and
+ * the dictionary head's reading then disagrees with the word as written in the
+ * sentence (surface `渋` read しぶ, saved entry lemma `渋い` read しぶい), so the
+ * arranged reading is not an answer the learner can derive from the context.
+ *
+ * Latin-script analytic languages are listed for completeness: for them
+ * `isPhoneticsEligible` already suppresses phonetics, so the scrabble branch
+ * runs as spell mode regardless of this classification.
+ */
+export const NON_INFLECTING_LANGUAGES = new Set([
+  // Chinese and the other Han varieties — analytic, one glyph per morpheme.
+  'zh', 'cmn', 'yue', 'nan', 'hak', 'wuu', 'hsn', 'cjy', 'cpx', 'czo', 'cdo',
+  'czh', 'cng', 'gan', 'lzh', 'och', 'mnp', 'ltc',
+  // Analytic Southeast Asian / neighbouring isolating languages.
+  'th', 'km', 'lo', 'my', 'bo', 'dz', 'ii', 'ksw', 'mhx',
+  // Analytic Latin-script languages (phonetics-suppressed — listed so the
+  // classification stays correct if that ever changes).
+  'ms', 'id', 'vi', 'za', 'hni',
+]);
+
+/**
+ * True when the language inflects, i.e. is not in `NON_INFLECTING_LANGUAGES`.
+ * Only consulted for single-character answers (see the Scrabble mode notes).
+ */
+export function isInflectingLanguage(l2Code: string): boolean {
+  return !NON_INFLECTING_LANGUAGES.has((l2Code.split('-')[0] ?? '').toLowerCase());
+}
 
 export interface ScrabbleBlock {
   /** The character this block holds (one Unicode code point). */
@@ -569,23 +615,28 @@ export interface SrsScrabbleEntryLike {
  * The string scrabble mode derives its letter blocks from.
  *
  * Normally identical to `spellBlankText` (the exact surface form blanked in the
- * context sentence). But a SINGLE-character answer cannot be meaningfully
- * arranged — the learner would just tap the lone block to submit. In that case
- * scrabble arranges the matched dictionary entry's phonetics instead, so the
- * blocks spell out the reading (e.g. pinyin `wǒ` for 我, kana `みず` for 水).
+ * context sentence). A SINGLE-character answer cannot be meaningfully arranged
+ * — the learner would just tap the lone block to submit — so it is substituted
+ * according to the language's typology:
+ *
+ * - **Non-inflecting language** (`!isInflectingLanguage`) → the matched
+ *   dictionary entry's phonetics, so the blocks spell out the reading (e.g.
+ *   pinyin `wǒ` for 我). The substitution only applies to phonetics-eligible
+ *   languages (`isPhoneticsEligible`, e.g. Chinese/Thai — the languages whose
+ *   orthography does not reveal their reading). For phonetics-suppressed
+ *   languages (Latin-script, Burmese) the "phonetics" would only be the IPA / the
+ *   same letter — not a meaningful block set — so those keep the blanked word
+ *   and the caller falls back to spell mode for the card (see
+ *   `scrabbleFallsBackToSpell`).
+ * - **Inflecting language** (ja, ko, ru, ar, …) → no substitution: scrabble
+ *   declines a single-character card and it runs as **spell mode** instead
+ *   (SPEC-066), so these blocks are never rendered. The blanked surface is
+ *   returned so this helper and `scrabbleFallsBackToSpell` agree on the answer.
  *
  * `surface` is an optional pre-resolved blanked surface (e.g. tokenized via
  * `spellSurfaceInTokens`). When provided it replaces the `spellBlankText`
  * result so a lemma-only record still grades/derives the true inflected
  * surface (SPEC-066). When omitted, defaults to `spellBlankText`.
- *
- * The phonetics substitution only applies to phonetics-eligible languages
- * (`isPhoneticsEligible`, e.g. Japanese/Chinese/Korean/Thai — the languages
- * whose orthography does not reveal their reading). For phonetics-suppressed
- * languages (Latin-script, Burmese) the "phonetics" would only be the IPA / the
- * same letter — not a meaningful block set — so those keep the blanked word and
- * the caller must instead fall back to spell mode for the card (see
- * `scrabbleFallsBackToSpell`).
  */
 export function scrabbleAnswerText(
   context: string,
@@ -597,6 +648,9 @@ export function scrabbleAnswerText(
 ): string {
   const blanked = surface ?? spellBlankText(context, word, fallback, entry, l2Code);
   if (Array.from(blanked).length === 1) {
+    // Inflecting language: a single-character card runs as spell mode
+    // (SPEC-066), so no reading is arranged — return the blanked surface.
+    if (isInflectingLanguage(l2Code)) return blanked;
     const reading = isPhoneticsEligible(l2Code) ? pronunciationReadingOf(entry, l2Code) : '';
     if (reading) return reading;
   }
@@ -605,11 +659,23 @@ export function scrabbleAnswerText(
 
 /**
  * True when a card whose resolved mode is `scrabble` should instead run as
- * **spell mode**: the scrabble answer is a single character (so arranging it is
- * a trivial one-block tap) AND the matched dictionary entry exposes no
- * phonetics to arrange in its place. This is the spelling-time counterpart of
- * `scrabbleAnswerText`: phonetics-suppressed languages, and phonetics-eligible
- * languages whose entry has no reading, both fall back to typing the word.
+ * **spell mode**. This is the spelling-time counterpart of
+ * `scrabbleAnswerText`, and it fires in two cases, both scoped to a
+ * **single-character** answer (a multi-character answer is always arrangeable):
+ *
+ * - **Inflecting language** (`isInflectingLanguage`) → always spell. The
+ *   dictionary head's reading can disagree with the word as written in the
+ *   sentence (surface `渋` しぶ vs the saved lemma `渋い` しぶい), so arranging
+ *   the entry's phonetics would grade an answer the learner cannot derive from
+ *   the context. The learner types the blanked character instead — which is
+ *   exactly what the context blanked, and what "spell the missing word" means.
+ *   This holds whether scrabble came from **Mixed** mode (`reps === 1`) or from
+ *   the learner explicitly selecting Scrabble, so an explicit selection cannot
+ *   start a one-block test.
+ * - **No usable phonetics** → for a non-inflecting language whose matched entry
+ *   exposes no reading, and for every phonetics-suppressed language (Latin
+ *   script, Burmese), where the "phonetics" would only be the IPA or the same
+ *   letter.
  */
 export function scrabbleFallsBackToSpell(
   context: string,
@@ -620,6 +686,8 @@ export function scrabbleFallsBackToSpell(
 ): boolean {
   const blanked = spellBlankText(context, word, fallback, entry, l2Code);
   if (Array.from(blanked).length > 1) return false;
+  // Inflecting language: type the character, never arrange a reading.
+  if (isInflectingLanguage(l2Code)) return true;
   const reading = isPhoneticsEligible(l2Code) ? pronunciationReadingOf(entry, l2Code) : '';
   return !reading;
 }
@@ -635,6 +703,11 @@ export function scrabbleFallsBackToSpell(
  * re-evaluates reactively once the entry arrives (and only then decides between
  * phonetic-scrabble and spell). `scrabbleFallsBackToSpell` is evaluated only
  * after the entry is loaded.
+ *
+ * Always false for an **inflecting language** (SPEC-066): a single-character
+ * card there never becomes scrabble — it runs as spell mode, whose answer comes
+ * from the context sentence rather than the entry — so there is no reading to
+ * wait for and the card must never sit on the spinner.
  */
 export function scrabbleNeedsEntryFetch(
   context: string,
@@ -643,6 +716,9 @@ export function scrabbleNeedsEntryFetch(
   entry: SrsScrabbleEntryLike | null | undefined,
   l2Code: string,
 ): boolean {
+  // Inflecting language: single-char is spell mode — the entry is not the
+  // source of the answer, so never wait for it.
+  if (isInflectingLanguage(l2Code)) return false;
   if (entry) return false;
   return Array.from(spellBlankText(context, word, fallback, entry, l2Code)).length === 1;
 }
