@@ -7,7 +7,9 @@
 - **Status**: implemented (2026-08-11); `dailyNewLimit` semantics corrected
   to match Anki/FSRS (2026-08-13), with reversible limit changes (2026-08-21);
   single-character answers in inflecting languages route to spell mode instead
-  of phonetics-scrabble (2026-09-10)
+  of phonetics-scrabble (2026-09-10); the spell answer is resolved through the
+  context highlight's own phrase merge so it can no longer be graded as a
+  fragment (2026-09-10)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -823,9 +825,9 @@ choose mode.
   Native's `TextInput` does not expose `isComposing`, so Enter is left off to
   avoid the same accidental submission). Only the **Submit** button is the
   always-available submit path on both platforms.
-- **Correct answer derivation (2026-09-06)** — the correct answer is the exact
-  text blanked in the context sentence, derived with the **same forms the
-  context highlight matches** (`spellBlankText` in
+- **Correct answer derivation (2026-09-06; highlight-aligned 2026-09-10)** — the
+  correct answer is the exact text blanked in the context sentence, derived with
+  the **same forms the context highlight matches** (`spellBlankText` in
   `packages/utils/src/srs-test-mode.ts`): among the word's matchable forms
   (saved forms, context/instance surface forms, head, the resolved entry's
   head/alternate/kana/han_script variants) the **longest form that actually
@@ -833,6 +835,21 @@ choose mode.
   reduced record form `たじろか`. For Japanese the context is folded to
   hiragana to find the form but the returned text is the exact substring as it
   appears in the sentence.
+  - **The token-resolved path must return the highlighted span, not a
+    fragment.** When a recorded form cannot be matched as a literal substring
+    (a lemma-only record such as 傾げる/かしげる for the surface かしげた) the
+    surface is resolved from the tokenized context instead — via
+    `spellSurfaceInContext`, which **runs the highlight's own merge first**
+    (`mergePhraseTokens` with the word's matchable forms) before reading the
+    matching token. Reading the **raw** token stream was a bug: a lemmatizer that
+    fragments an inflected surface (`そぐわなかった` → `そぐわ` + `なかっ` + `た`)
+    lets the first fragment win whenever it is itself a saved form, so the card
+    that highlights `そぐわなかった` graded the learner's typed
+    `そぐわなかった` against `そぐわ`. The merge collapses that span into one
+    atomic token — exactly as the highlight does — so the answer, the character
+    box count, the hint, and the scrabble blocks all describe the text the
+    learner sees highlighted. When the tokens do not tile the context text the
+    merge bails and the previous raw-token behavior is kept.
 - **Script-tolerant matching (2026-09-06, option C)** — the comparison is
   script-forgiving, so a learner is not penalized for typing the other script:
   - **Japanese** folds hiragana ⇄ katakana (`scriptVariants` / `kanaVariants`,
@@ -941,7 +958,8 @@ answer:
     phonetics against the phonetics.
   - **Both paths derive from the blanked surface.** The answer comes from
     `spellBlankText` (preferring the token-resolved surface,
-    `spellSurfaceInTokens`) — the exact text the context blanked — never from a
+    `spellSurfaceInContext` — the highlight-aligned resolver, see [Correct answer
+    derivation](#spell-mode)) — the exact text the context blanked, never from a
     reduced record form and, in the inflecting case, never from the entry's head
     reading.
   - **The entry (and its reading) must be loaded first — analytic languages
@@ -1369,6 +1387,16 @@ orphaned.
   and grading is script-tolerant — Japanese folds hiragana ⇄ katakana, Chinese
   compares simplified & traditional variants built with the app's lazy OpenCC
   (`scoreSpellResult`/`bestScriptSimilarity` over variant arrays).
+- ✅ **Spell answer matches the context highlight** — implemented (2026-09-10,
+  both review pages + shared utils): the token-resolved answer now runs the
+  highlight's own phrase merge first (`spellSurfaceInContext` →
+  `mergePhraseTokens` with the word's matchable forms), so a surface the
+  lemmatizer fragmented is graded as the whole highlighted span. Previously the
+  raw-token resolution returned the first fragment: the card highlighting
+  `そぐわなかった` (MeCab: `そぐわ` + `なかっ` + `た`, and `そぐわ` is itself a saved
+  form) graded the learner's typed `そぐわなかった` against `そぐわ` — wrong, with
+  a 3-box input for a 7-character answer. See [Correct answer
+  derivation](#spell-mode).
 - ✅ **Spell input & feedback polish** — implemented (2026-09-06, both review
   pages): web Enter-to-submit is gated on the IME-composition flags
   (`isComposing` / `keyCode === 229`) so IME "enter to confirm" never submits
