@@ -477,14 +477,6 @@ export default function ReaderPage() {
           <Clipboard className="h-3.5 w-3.5" />
           {t('action.paste')}
         </button>
-        <button
-          type="button"
-          onClick={handleOpenSidebar}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          <PanelRight className="h-3.5 w-3.5" />
-          {t('action.list_all_notes')}
-        </button>
       </div>
       {notice && <p className="text-xs text-destructive">{notice}</p>}
     </div>
