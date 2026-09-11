@@ -1208,6 +1208,80 @@ export function normalizeL2Settings(
   };
 }
 
+/**
+ * Values recovered from PRE-V2 legacy storage keys, waiting to be applied to a
+ * language entry.
+ *
+ * The legacy keys were written by the old flat stores, which had no notion of
+ * the V2 `l2[code]` map — `lp_show_translation` was global, `lp_show_phonetics`
+ * / `lp_use_traditional` were per-language but stored without a language, and
+ * `zthSpeechSettings` was a single global voice/rate pair. At migration time
+ * the app does not yet know which L2 the learner is about to open, so the
+ * recovered values are SEEDED into the first language entry created (see
+ * `ensureL2` in each app's `use-settings.ts`).
+ *
+ * This is a transient carrier: it is never written to storage or the cloud.
+ * (Before 2026-09-11 the migration stashed these under `__migrated*` fields on
+ * the settings object and nothing ever read them, so every migrated value was
+ * silently dropped — the fields also leaked into the persisted blob.)
+ */
+export interface LegacySettingsSeed {
+  /** Legacy `lp_show_translation` — now per-L2. */
+  translation?: boolean;
+  /** Legacy `lp_show_phonetics` — now per-L2. */
+  phonetics?: boolean;
+  /** Legacy `lp_use_traditional` — now per-L2. */
+  traditional?: boolean;
+  /** Legacy `zthSpeechSettings` — now per-L2. */
+  speech?: { voiceURI?: string | null; rate?: number };
+}
+
+/** True when the seed carries at least one value worth applying. */
+export function hasLegacySeedValues(seed: LegacySettingsSeed | null | undefined): boolean {
+  if (!seed) return false;
+  return seed.translation !== undefined
+    || seed.phonetics !== undefined
+    || seed.traditional !== undefined
+    || (seed.speech !== undefined && (seed.speech.voiceURI != null || seed.speech.rate != null));
+}
+
+/**
+ * Apply a legacy seed to a language entry, leaving any value the entry already
+ * carries untouched (an explicit per-L2 setting always outranks a recovered
+ * global legacy one).
+ *
+ * Legacy `lp_show_phonetics` predates the `show: 'ruby' | 'word' | false` shape
+ * — it was a plain boolean for "show phonetics", so `true` maps to the modern
+ * default (`'ruby'`) and `false` to `false` (hidden).
+ */
+export function applyLegacySeed(entry: L2Settings, seed: LegacySettingsSeed): L2Settings {
+  const next: L2Settings = {
+    tokenSpan: {
+      phonetics: { ...entry.tokenSpan.phonetics },
+      definition: { ...entry.tokenSpan.definition },
+    },
+    display: { ...entry.display },
+    speech: { ...entry.speech },
+    content: { ...entry.content },
+  };
+  if (seed.translation !== undefined) {
+    next.display.translation = seed.translation;
+  }
+  if (seed.traditional !== undefined) {
+    next.display.traditional = seed.traditional;
+  }
+  if (seed.phonetics !== undefined) {
+    next.tokenSpan.phonetics.show = seed.phonetics === false
+      ? false
+      : TOKEN_SPAN_DEFAULTS.phonetics.show;
+  }
+  if (seed.speech) {
+    if (seed.speech.voiceURI != null) next.speech.voiceURI = seed.speech.voiceURI;
+    if (seed.speech.rate != null) next.speech.rate = seed.speech.rate;
+  }
+  return next;
+}
+
 // ── Sketch Engine corpus (ARCH-020) ────────────────────────────────
 // Cleaned responses from the Flask `/sketch-engine/*` endpoints, ready to
 // render. See `docs/arch/020-sketch-engine-architecture.md`.

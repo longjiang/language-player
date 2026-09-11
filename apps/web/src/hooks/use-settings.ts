@@ -9,6 +9,8 @@ import type { KeyValueStorage } from '@langplayer/utils';
 import {
   createSettingsV2,
   normalizeSettingsV2,
+  applyLegacySeed,
+  hasLegacySeedValues,
   L2_DEFAULTS,
 } from '@langplayer/shared';
 import type {
@@ -19,6 +21,7 @@ import type {
   ReviewSettings,
   SearchSettings,
   L2Settings,
+  LegacySettingsSeed,
 } from '@langplayer/shared';
 
 const STORAGE_KEY = 'lp_settings';
@@ -59,6 +62,11 @@ export function useSettings() {
    * vectors like `ensureL2`). The guard in `persist` drops those writes.
    */
   const hydratedFromSource = useRef(false);
+
+  /** Pre-V2 legacy values that are now per-L2, waiting for the first language
+   *  entry to be created (see `migrateFromLegacy` / `ensureL2`). Transient —
+   *  never persisted or synced. */
+  const legacySeedRef = useRef<LegacySettingsSeed | null>(null);
 
   // ── Helper: persist to localStorage + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
@@ -113,26 +121,35 @@ export function useSettings() {
     }, SYNC_DEBOUNCE_MS);
   }, [session, putUserSettings]);
 
-  // ── Migrate from legacy keys (unchanged) ──
+  // ── Migrate from legacy keys ──
   // Returns null when no legacy keys exist: an empty local store must NOT be
   // persisted/synced (that would overwrite the user's cloud copy with
   // defaults — `createSettingsV2()` now stamps an epoch ts precisely so the
   // cloud row wins the LWW comparison on the next hydrate).
+  //
+  // Values that are now PER-L2 (translation, phonetics, traditional, speech)
+  // cannot be written here: the legacy keys carry no language, and the app does
+  // not know which L2 will be opened first. They go into `legacySeedRef` and are
+  // applied by `ensureL2` when it creates the first language entry. (Until
+  // 2026-09-11 these were stashed as `__migrated*` fields that NOTHING read, so
+  // every recovered phonetics/traditional/speech value was silently dropped and
+  // the dead fields were persisted into the blob.)
   const migrateFromLegacy = useCallback((): SettingsV2 | null => {
     try {
       let migrated = false;
       const newSettings = createSettingsV2();
+      const seed: LegacySettingsSeed = {};
       const oldTranslation = localStorage.getItem('lp_show_translation');
       if (oldTranslation !== null) {
-        try { newSettings.display.translation = JSON.parse(oldTranslation) as boolean; migrated = true; } catch {}
+        try { seed.translation = JSON.parse(oldTranslation) as boolean; migrated = true; } catch {}
       }
       const oldPhonetics = localStorage.getItem('lp_show_phonetics');
       if (oldPhonetics !== null) {
-        try { (newSettings as any).__migratedPhonetics = JSON.parse(oldPhonetics) as boolean; migrated = true; } catch {}
+        try { seed.phonetics = JSON.parse(oldPhonetics) as boolean; migrated = true; } catch {}
       }
       const oldTraditional = localStorage.getItem('lp_use_traditional');
       if (oldTraditional !== null) {
-        try { (newSettings as any).__migratedTraditional = JSON.parse(oldTraditional) as boolean; migrated = true; } catch {}
+        try { seed.traditional = JSON.parse(oldTraditional) as boolean; migrated = true; } catch {}
       }
       const oldSrs = localStorage.getItem('zthSrsProgress');
       if (oldSrs) {
@@ -149,12 +166,13 @@ export function useSettings() {
         try {
           const parsed = JSON.parse(oldSpeech);
           if (parsed.voiceURI || parsed.rate != null) {
-            (newSettings as any).__migratedSpeech = parsed;
+            seed.speech = { voiceURI: parsed.voiceURI ?? null, rate: parsed.rate };
             migrated = true;
           }
         } catch {}
       }
       if (!migrated) return null;
+      if (hasLegacySeedValues(seed)) legacySeedRef.current = seed;
       // A real migration is a real write — stamp a fresh ts so the migrated
       // values win the LWW comparison on other devices.
       newSettings.ts = new Date().toISOString();
@@ -380,10 +398,23 @@ export function useSettings() {
   const ensureL2 = useCallback((l2Code: string) => {
     setSettings((prev) => {
       if (prev.l2[l2Code]) return prev;
+      // Seed the first language entry with any recovered pre-V2 legacy values
+      // (translation / phonetics / traditional / speech). Applied here rather
+      // than at migration time because the legacy keys carry no language — the
+      // first L2 the learner opens is the one they came from. The seed is then
+      // cleared so a second language starts from the plain defaults.
+      const seed = legacySeedRef.current;
+      const entry = seed && hasLegacySeedValues(seed)
+        ? applyLegacySeed({ ...L2_DEFAULTS }, seed)
+        : L2_DEFAULTS;
+      if (seed && hasLegacySeedValues(seed)) {
+        legacySeedRef.current = null;
+        log('[settings] applied legacy seed to first language entry:', l2Code, JSON.stringify(seed));
+      }
       const next: SettingsV2 = {
         ...prev,
         ts: new Date().toISOString(),
-        l2: { ...prev.l2, [l2Code]: L2_DEFAULTS },
+        l2: { ...prev.l2, [l2Code]: entry },
       };
       persist(next);
       return next;
