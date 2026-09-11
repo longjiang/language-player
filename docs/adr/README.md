@@ -44,3 +44,5 @@ NNNN-title-with-dashes.md
 | 0040 | Harden the web SRS sync outbox — lossless flush, cap drop, undo LWW, stale-delete guard | accepted | 2026-08-17 |
 | 0041 | Render subtitle `[n]` notes inside TokenizedText | accepted | 2026-09-06 |
 | 0042 | Settings is a modal, routes are deep-link targets | accepted | 2026-09-09 |
+| 0043 | Serve textbook media from the existing shared host behind `ASSET_BASE_URL` | accepted | 2026-09-11 |
+| 0044 | Textbook exercise state is local-first, with an append-only attempt log in SRS's shape | accepted | 2026-09-11 |
