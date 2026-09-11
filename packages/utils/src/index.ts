@@ -264,3 +264,12 @@ export {
   actionTriggerBoxPx,
   actionTriggerIconPx,
 } from './action-trigger';
+export {
+  AUTO_TITLE_MAX_TOKENS,
+  AUTO_TITLE_ELLIPSIS,
+  noteFirstLine,
+  isUntitledNoteTitle,
+  autoTitleFromLine,
+  autoNoteTitle,
+} from './note-title';
+export type { AutoNoteTitleOptions, NoteTitleTokenizer } from './note-title';

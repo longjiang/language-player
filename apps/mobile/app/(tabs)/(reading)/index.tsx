@@ -13,7 +13,7 @@ import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
-import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
+import { READER_ASK_AI_TEXT_PRESETS, autoNoteTitle, type ReaderAiContent } from '@langplayer/utils';
 import { NotesSidebar } from '@/components/reader/NotesSidebar';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
@@ -219,15 +219,53 @@ export default function ReaderScreen() {
     autoSave(newText);
   };
 
+  /**
+   * Auto-title (SPEC-009 §"Notes Reader: auto-title from the first line").
+   * Leaving the editor for the reader is the moment a note that still reads
+   * "Untitled" takes its title from the first line of its text — at most 10
+   * tokens, ellipsis-trimmed. A title the user typed is never touched (the
+   * shared helper decides), and a tokenizer failure degrades to whitespace
+   * words rather than leaving the note untitled. Web does the same in its
+   * reader page's handleTokenize.
+   */
+  const autoTitleNote = useCallback(async () => {
+    const noteId = notes.currentNoteId;
+    if (noteId == null) return;
+    const next = await autoNoteTitle({
+      text,
+      currentTitle: notes.currentNote?.title,
+      untitledLabel: t('msg.untitled_note'),
+      // lemmatizeText is server-first with the local tokenizer as fallback
+      // (SPEC-018), so the title still tokenizes in Offline Mode.
+      tokenize: async (line) => {
+        const { lemmatizeText } = await import('@/lib/tokenizer');
+        return lemmatizeText(line, l2Lang.code);
+      },
+    });
+    if (!next) return;
+    log('[LP Mobile] notes reader: auto-titling the note from its first line', { noteId, title: next });
+    try {
+      await notes.renameNote(noteId, next);
+    } catch (e: any) {
+      // The note keeps the title it had; the notes list stays usable.
+      // non-info-level: unexpected failure writing the auto title — the stack
+      // separates a cache/sync problem from a bad payload.
+      logwarn('[LP Mobile] notes reader: auto-title save failed', noteId, e?.message ?? e);
+    }
+  }, [notes, t, text, l2Lang.code]);
+
   /** The ONLY way the Edit/Read tab moves — an explicit user action (tapping a
    *  tab, or Tokenize). Nothing else may switch it (see the editor-session
-   *  effect above). Logged so an implicit switch is visible in the logs. */
+   *  effect above). Logged so an implicit switch is visible in the logs.
+   *  Edit → Read also runs the auto-title, off the critical path: the tab
+   *  switches immediately and the title lands when the rename resolves. */
   const handleTabChange = useCallback((tab: 'edit' | 'read', source: 'tab' | 'tokenize' | 'empty_state') => {
+    if (tab === 'read' && activeTab === 'edit') void autoTitleNote();
     setActiveTab(prev => {
       if (prev !== tab) log('[LP Mobile] notes reader: tab switched by user', { from: prev, to: tab, source });
       return tab;
     });
-  }, []);
+  }, [activeTab, autoTitleNote]);
 
   // Delete
   const handleDelete = (noteId: number) => {
