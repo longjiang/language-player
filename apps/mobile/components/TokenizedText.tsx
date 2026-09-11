@@ -272,6 +272,14 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
   const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
   const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // DIAGNOSTIC (iOS single-char selection report, 2026-09-11): the dictionary
+  // popup has exactly two triggers — a token tap (handlePressWord) and the
+  // native "Look up" menu action (handleSelectionAction). Timestamping every
+  // native selection event lets the token-tap log state how long ago the user
+  // finished selecting, which distinguishes "the release tap opened the token
+  // popup over the native menu" from "the menu action was invoked".
+  const lastSelectionAtRef = useRef<number | null>(null);
+  const lastSelectionRangeRef = useRef<{ start: number; end: number } | null>(null);
   const { speak } = useSpeech();
 
   // Clear any pending settle timer on unmount.
@@ -1098,6 +1106,14 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
     const context = token
       ? sentenceForToken(text, tokens, token, baseCode(l2Code))
       : text;
+    const sinceSelectionMs = lastSelectionAtRef.current === null
+      ? null
+      : Date.now() - lastSelectionAtRef.current;
+    // DIAGNOSTIC, global logger on purpose (the `tokenized-text` domain is
+    // default-OFF, so a domain line would never reach the Metro log).
+    appLog(
+      `[TokenizedText] 🖱 POPUP-TRIGGER=tap word="${word}" index=${index} sinceSelectionMs=${sinceSelectionMs ?? 'none'} lastSelection=${lastSelectionRangeRef.current ? `${lastSelectionRangeRef.current.start}-${lastSelectionRangeRef.current.end}` : 'none'}`,
+    );
     log(
       `[TokenizedText] 📝 POPUP-OPEN word="${word}" index=${index} tokens=${tokens.length} textLen=${text.length} contextLen=${context.length} segmented=${context.length < text.length} context="${context.slice(0, 40)}"`,
     );
@@ -1125,6 +1141,12 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   const handleNativeSelection = useCallback((range: { start: number; end: number }) => {
     if (!selectionDictionary) return;
     pendingSelectionRef.current = range;
+    lastSelectionAtRef.current = Date.now();
+    lastSelectionRangeRef.current = range;
+    // Global logger on purpose — see the POPUP-TRIGGER note.
+    appLog(
+      `[TokenizedText] 🖱 SELECTION-TRACK start=${range.start} end=${range.end} len=${range.end - range.start} t=${lastSelectionAtRef.current}`,
+    );
     // A live selection supersedes the token popup (web parity).
     if (range.start !== range.end) {
       setSelectedWord(null);
@@ -1142,6 +1164,10 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
     range: { start: number; end: number },
   ) => {
     if (!selectionDictionary || !selectionMap) return;
+    // Global logger on purpose — see the POPUP-TRIGGER note.
+    appLog(
+      `[TokenizedText] 🖱 SELECTION-ACTION action=${action} start=${range.start} end=${range.end} len=${range.end - range.start}`,
+    );
     if (action === 'lookUp') {
       setTextSelection(range);
       return;
