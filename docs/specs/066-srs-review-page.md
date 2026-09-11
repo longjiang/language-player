@@ -9,7 +9,8 @@
   single-character answers in inflecting languages route to spell mode instead
   of phonetics-scrabble (2026-09-10); the spell answer is resolved through the
   context highlight's own phrase merge so it can no longer be graded as a
-  fragment (2026-09-10)
+  fragment (2026-09-10); spell/scrabble card fronts show the quick gloss after
+  the blank and the entry's definitions under the translation (2026-09-10)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -775,6 +776,29 @@ choose mode.
   L1 == L2 the target term is blanked *and* the context-translation slot shows a
   contextual rephrasing of the target word (see [Context
   translation](#context-translation)) so the blanked word never appears there.
+  - **Meaning aids (2026-09-10).** These modes test the word's *written form*,
+    never its meaning, so the card front also carries the meaning:
+    - the **quick gloss** renders right after the blank, exactly as it does for
+      any other saved word, gated by the learner's own quick-gloss setting
+      (`tokenizedText.quickGloss`) — a learner with quick gloss off sees nothing
+      new. Implemented as `quickGlossOnBlank` on both `TokenSpan`/`TokenizedText`
+      (web) and `TokenizedText` (mobile); it only lifts the *blank* suppression,
+      so a quiz blank (`mode: 'quiz'`) still hides its gloss and every other mode
+      keeps the reveal-gated behavior. The blank still hides the spelling **and**
+      the reading — a meaning gloss reveals neither.
+    - a **definitions line** under the context translation lists the resolved
+      entry's definitions, joined by the shared `formatDefinitionList` (fullwidth
+      `；` for zh/ja/ko L1s, ASCII `; ` otherwise) in the same muted small text as
+      the translation. It is skipped when the entry carries no definitions, and
+      **suppressed when L1 == L2**: the rephrasing guard above exists so the
+      target word never appears, and a definition written in the target language
+      (言い出す → 言い始める) would give the spelling away. To have the line in the
+      learner's language rather than the batch lookup's English, the per-card
+      L1-translated entry fetch also runs before the reveal for spell/scrabble
+      cards (same request, earlier).
+  - Both aids disappear with the blank on submit: the term is revealed and the
+    gloss/definitions return to the normal reveal-gated path (the card back shows
+    the full dictionary entry).
 - **Start Test gate** — a "Start Test" button (Space/Enter also works) begins
   the session. Until it is pressed the input is not shown, so the learner can
   read the sentence and reflect first (matching the choose-mode gate).
@@ -908,7 +932,10 @@ answer:
   word. There is **no submit button** (unlike spell mode, which has one).
 - **No hints** — scrabble mode shows **no** first-character hint (neither the
   `spell_hint_phonetic` nor the `spell_hint_orthographic` line) and no
-  placeholder in the first box.
+  placeholder in the first box. This suppresses the *reading/spelling* hints
+  only: the meaning aids shared with spell mode (the context translation, the
+  quick gloss after the blank, and the definitions line) still apply — see
+  [Pre-test state](#spell-mode).
 - **Physical-keyboard fill (non-IME only, 2026-09-xx)** — for L2s that do not
   require an IME (`supportsScrabbleKeyboard`: every language except
   Chinese/Japanese/Korean and the Han-script varieties), the learner can also
@@ -1387,6 +1414,17 @@ orphaned.
   and grading is script-tolerant — Japanese folds hiragana ⇄ katakana, Chinese
   compares simplified & traditional variants built with the app's lazy OpenCC
   (`scoreSpellResult`/`bestScriptSimilarity` over variant arrays).
+- ✅ **Spell/scrabble card-front meaning aids** — implemented (2026-09-10, both
+  review pages): the quick gloss renders after the blank (behind the learner's
+  quick-gloss setting) via a new `quickGlossOnBlank` prop on web
+  `TokenSpan`/`TokenizedText` and mobile `TokenizedText` — it lifts only the
+  blank suppression, so quiz blanks keep hiding their gloss; and a definitions
+  line lists the entry's definitions under the context translation, joined by
+  the shared `formatDefinitionList` (fullwidth `；` for zh/ja/ko L1s) in the same
+  muted small text. Both are spell/scrabble-only, skipped when empty, and
+  suppressed when L1 == L2 so the rephrase guard's "the target word never
+  appears" invariant holds. The per-card L1-translated entry fetch now starts
+  before the reveal for these modes so the line is in the learner's language.
 - ✅ **Spell answer matches the context highlight** — implemented (2026-09-10,
   both review pages + shared utils): the token-resolved answer now runs the
   highlight's own phrase merge first (`spellSurfaceInContext` →
