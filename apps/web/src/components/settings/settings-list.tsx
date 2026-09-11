@@ -34,12 +34,19 @@ export function SettingsList({
   selectedKey: SettingsCategory | null;
   onSelect: (key: SettingsCategory) => void;
 }) {
-  const { l1 } = useLanguage();
-  const { display, playback, review, search } = useSettingsContext();
+  const { l1, l2 } = useLanguage();
+  const { display, playback, review, search, getL2 } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
   const t = useT();
   const [query, setQuery] = useState('');
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
+
+  // The Speech row previews the per-L2 TTS rate the Speech page actually edits
+  // (`l2[code].speech.rate`). It previously rendered `playback.speed` — the
+  // GLOBAL video playback speed, which no control writes in either app, so the
+  // row sat at its 1.0 default and disagreed with mobile's SettingsList, which
+  // reads the speech rate.
+  const speechRate = getL2(l2.code).speech.rate;
 
   // Pre-resolve search keys on locale change
   useEffect(() => {
@@ -72,7 +79,7 @@ export function SettingsList({
           key: 'speech',
           icon: Mic,
           title: t('title.speech'),
-          subtitle: t('setting.speech_rate', { rate: playback.speed.toFixed(1) }),
+          subtitle: t('setting.speech_rate', { rate: speechRate.toFixed(1) }),
         },
       ],
     },
@@ -93,7 +100,7 @@ export function SettingsList({
         },
       ],
     },
-  ], [display.theme, playback.transcriptMode, playback.speed, review.dailyNewLimit, isPro, search.expandSubsSearch, t]);
+  ], [display.theme, playback.transcriptMode, speechRate, review.dailyNewLimit, isPro, search.expandSubsSearch, t]);
 
   const filteredSections = useMemo(() => {
     if (!query.trim()) return sections;
