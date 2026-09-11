@@ -4,7 +4,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Clipboard from 'expo-clipboard';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/input';
+import { Input, Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -44,6 +44,12 @@ export default function ReaderScreen() {
   const [savedFlash, setSavedFlash] = useState(false);
   const [loadingSample, setLoadingSample] = useState(false);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
+  /** Inline title editing in the title bar (web parity: the pencil next to
+   *  the note title). `titleEditOpenRef` guards the double commit that a
+   *  Return followed by a blur would otherwise trigger. */
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
+  const titleEditOpenRef = useRef(false);
   /** Reader's current global block (for the TOC active-entry highlight). */
   const [currentBlockIndex, setCurrentBlockIndex] = useState<number | null>(null);
   /** Reader "Ask AI" summary chat. */
@@ -133,6 +139,9 @@ export default function ReaderScreen() {
     sessionNoteIdRef.current = noteId;
     loadedTextRef.current = body;
     setSavedFlash(false);
+    // A title editor left open belongs to the note that just went away.
+    titleEditOpenRef.current = false;
+    setEditingTitle(false);
     setText(body);
     const asEdit = justCreatedRef.current || !body.trim();
     justCreatedRef.current = false;
@@ -238,6 +247,30 @@ export default function ReaderScreen() {
     setMobileOpen(false);
     justCreatedRef.current = true;
     void notes.createNote(t('msg.untitled_note'));
+  };
+
+  // ── Inline title editing (title bar) ───────────────────────────────────
+  // Web parity: apps/web's reader page shows a pencil next to the note title
+  // that swaps the heading for an input (apps/web …/reader/page.tsx).
+
+  /** Open the title editor seeded with the note's current title. */
+  const startTitleEdit = () => {
+    setTitleDraft(notes.currentNote?.title ?? '');
+    titleEditOpenRef.current = true;
+    setEditingTitle(true);
+  };
+
+  /** Commit the inline title edit (Return or blur). An empty draft is
+   *  discarded — the note keeps the title it had. */
+  const commitTitleEdit = async () => {
+    if (!titleEditOpenRef.current) return;
+    titleEditOpenRef.current = false;
+    setEditingTitle(false);
+    const noteId = notes.currentNoteId;
+    const next = titleDraft.trim();
+    if (noteId == null || !next || next === notes.currentNote?.title) return;
+    log('[LP Mobile] notes reader: title renamed from the title bar', { noteId, title: next });
+    await notes.renameNote(noteId, next);
   };
 
   // ── Default screen: text-file import (Browse) + clipboard paste ──
@@ -415,10 +448,38 @@ export default function ReaderScreen() {
         </View>
       ) : (
       <>
-      <View className="px-4 py-5">
-        <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
-          {notes.currentNote ? notes.currentNote.title : t('title.notes_reader')}
-        </Text>
+      <View className="flex-row items-center gap-2 px-4 py-5">
+        {editingTitle ? (
+          <Input
+            className="flex-1"
+            value={titleDraft}
+            onChangeText={setTitleDraft}
+            onSubmitEditing={() => void commitTitleEdit()}
+            onBlur={() => void commitTitleEdit()}
+            autoFocus
+            returnKeyType="done"
+            maxLength={200}
+            accessibilityLabel={t('action.edit')}
+          />
+        ) : (
+          <>
+            <Text className="flex-1 text-xl font-bold text-foreground" numberOfLines={1}>
+              {notes.currentNote ? notes.currentNote.title : t('title.notes_reader')}
+            </Text>
+            {/* Edit-title button — only for an open note (web parity: the
+                pencil is hidden while no note is open). */}
+            {notes.currentNoteId != null && (
+              <Pressable
+                onPress={startTitleEdit}
+                className="rounded p-1 active:bg-muted"
+                accessibilityRole="button"
+                accessibilityLabel={t('action.edit')}
+              >
+                <PenLine size={16} color={ICON_MUTED} />
+              </Pressable>
+            )}
+          </>
+        )}
       </View>
 
       {/* Main content — persistent panel on wide screens, sheet on narrow */}
