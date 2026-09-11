@@ -269,8 +269,9 @@ export default function ReaderScreen() {
       {!hasOpenNote ? (
         <View className="flex-1 px-4 pb-6">
           {/* List All Notes — its own row ABOVE the drop area, aligned right
-              (the usual sidebar-toggle button position). */}
-          <View className="flex-row justify-end pb-2">
+              (the usual sidebar-toggle button position). `pt-4` keeps it off
+              the app header, matching the note-open title bar's rhythm. */}
+          <View className="flex-row justify-end pt-4 pb-2">
             <Pressable
               onPress={() => (isWide ? setSidebarOpen(true) : setMobileOpen(true))}
               className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
