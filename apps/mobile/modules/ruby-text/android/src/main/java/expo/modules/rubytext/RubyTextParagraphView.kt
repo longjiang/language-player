@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.os.SystemClock
 import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -165,6 +166,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
   private val density: Float = resources.displayMetrics.density
   private var downX = 0f
   private var downY = 0f
+  /** `SystemClock.uptimeMillis()` of the last NON-collapsed selection change.
+   *  Only non-collapsed changes are stamped: a tap that merely dismisses an
+   *  old selection collapses it, and that tap must stay a tap. Compared
+   *  against `MotionEvent.downTime` — same uptime base — to tell the release
+   *  that ENDED a selection gesture from a genuine token tap. Mirrors iOS's
+   *  `TokenTapGesture.touchDownTime` / `lastSelectionChangeTime`. */
+  private var lastSelectionChangeTime = 0L
 
   private fun dp(value: Float): Float = value * density
 
@@ -254,6 +262,10 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     // text — readings are drawn by the spans, not part of the CharSequence).
     // Fires continuously while handles are dragged — JS applies a settle timer.
     if (selStart >= 0 && selEnd >= 0 && selStart != selEnd) {
+      // Stamp only NON-collapsed changes: this marks the current touch as a
+      // selection gesture so its release is not also read as a token tap
+      // (see onTouchEvent).
+      lastSelectionChangeTime = SystemClock.uptimeMillis()
       onSelection(mapOf("start" to selStart, "end" to selEnd))
     }
   }
@@ -299,8 +311,15 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
   }
 
   /** Map a tap to the token whose span contains the tapped offset — only for
-   *  real taps (movement within touch slop), so releasing a selection-handle
-   *  drag never opens the token popup. */
+   *  real taps. Two things disqualify a release:
+   *   1. Movement past touch slop — a selection-HANDLE drag.
+   *   2. A selection that was created by the touch now ending — the
+   *      stationary long-press that selects one character (or selects a word
+   *      without dragging). Android judges a tap by movement alone, so that
+   *      release satisfies both the long-press selection and this tap: the
+   *      token popup used to open on top of the Copy / Read Aloud / Look Up
+   *      menu. Confirmed on iOS (SPEC-084, 2026-09-11) and mirrored here so
+   *      both platforms behave identically. */
   override fun onTouchEvent(event: MotionEvent): Boolean {
     when (event.actionMasked) {
       MotionEvent.ACTION_DOWN -> {
@@ -309,7 +328,19 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       }
       MotionEvent.ACTION_UP -> {
         val slop = ViewConfiguration.get(context).scaledTouchSlop
-        if (abs(event.x - downX) <= slop && abs(event.y - downY) <= slop) {
+        val withinSlop = abs(event.x - downX) <= slop && abs(event.y - downY) <= slop
+        val selStart = selectionStart
+        val selEnd = selectionEnd
+        val selectionActive = selStart >= 0 && selEnd >= 0 && selStart != selEnd
+        // `event.downTime` is the start of THIS gesture, so a later,
+        // independent tap starts after the stamp and still opens its token.
+        val endedSelection = selectionActive && lastSelectionChangeTime >= event.downTime
+        if (withinSlop && endedSelection) {
+          Log.i(
+            "LP Mobile",
+            "[RubyText] paragraph tap ignored — release ended a selection gesture (selection $selStart..$selEnd); native menu stays up"
+          )
+        } else if (withinSlop) {
           val layout = layout
           if (layout != null) {
             val offset = characterOffsetAt(layout, event.x, event.y)
