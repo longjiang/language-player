@@ -239,7 +239,11 @@ mobile `apps/mobile/app/(tabs)/(reading)/index.tsx`:
   - **Paste** — creates a new note with the clipboard text; **Ctrl/Cmd-V**
     (web) does the same while no note is open
   - **List All Notes** — opens the notes side panel (persistent panel on wide
-    screens, slide-in sheet on narrow)
+    screens, slide-in sheet on narrow). **Mobile** puts this button in its own
+    right-aligned row **above** the dotted drop area — the usual
+    sidebar-toggle position, matching the note-open screen's toggle — spaced
+    off the app header (`pt-4 pb-2`); **web** keeps it inline in the drop
+    zone's button row.
 
 ### Auto-restore vs. nav re-entry (web)
 
@@ -249,6 +253,34 @@ mobile `apps/mobile/app/(tabs)/(reading)/index.tsx`:
 - **Nav re-entry**: tapping Nav → Notes Reader while a note is **already open**
   (the URL loses its `?noteId` param) closes the note and lands on the default
   screen — mirroring the EPUB reader's same-route Rule A close.
+
+## Notes Reader: the Edit and Read Tabs
+
+An **open note** has two tabs (the tabs exist only for an open note — see the
+default screen above):
+
+- **Edit** — a plain textarea for the note's text, with **Add Sample Text** and
+  **Tokenize** below it. Notes autosave while typing.
+- **Read** — the paginated, tokenized reader with translation (SPEC-087).
+
+The tab moves **only on an explicit user action**:
+
+| Action | Result |
+|---|---|
+| Tap/click **Edit** | Shows the textarea |
+| Tap/click **Read**, or **Tokenize** | Shows the paginated reader |
+| **New Note**, or opening an empty note | Opens on **Edit** |
+| Selecting a note that has text | Opens on **Read** |
+| Import / paste that opens a note | Follows the two rules above |
+
+**Editing text never switches tabs.** Autosaving, note sync, or a server
+refresh may replace the open note's body underneath the editor, but that must
+not move the tab — the user leaves the editor only by tapping **Read** or
+**Tokenize**. (Web's reader page sets its `activeTab` only in explicit
+handlers: select note → read, new note → edit, Tokenize → read. Mobile tracks
+its open editor session by note id + the body it was loaded with, and adopts
+an incoming body only while the text is untouched —
+`apps/mobile/app/(tabs)/(reading)/index.tsx`.)
 
 ## Edge Cases
 
@@ -286,7 +318,21 @@ ReaderPage
 | Select a note in sidebar | Loads that note in the reader |
 | Select a chapter in sidebar | Loads that chapter in the reader |
 | Click "New Note" | Creates a blank note, switches to edit tab |
+| Click "Tokenize" (or the Read tab) | Switches to the read tab — the only way in |
+| Edit a note's text | Stays on the current tab (an autosave never switches tabs) |
 | Rename a note | Inline title editing via pencil icon (saved notes only) |
 | Close EPUB | Returns to upload screen |
 | Press arrow keys | Navigate pages in the reader |
 | Toggle translation checkbox | Show/hide translated text blocks |
+
+## Revision (2026-09-11) — Explicit Edit/Read switching, mobile List All Notes row
+
+Two behaviors that were never written down are now specified above:
+
+- **The Edit/Read tabs switch only on an explicit action** (§"Notes Reader: the
+  Edit and Read Tabs" + the Interaction Summary rows). Mobile previously
+  re-derived the tab from the current-note object, so the 2-second autosave
+  flipped the user into Read mode mid-editing; web never had that behavior.
+- **Mobile's "List All Notes" button** lives in its own right-aligned row above
+  the dotted drop area, spaced off the app header — recorded in §"Notes Reader
+  Default Screen" (shipped in `e568d7dd` without a spec update).
