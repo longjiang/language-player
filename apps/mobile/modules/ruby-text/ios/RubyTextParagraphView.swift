@@ -1,5 +1,6 @@
 import CoreText
 import ExpoModulesCore
+import QuartzCore
 import UIKit
 
 /**
@@ -28,6 +29,25 @@ private final class RubySelectionTextView: UITextView {
 }
 
 /**
+ * Token-tap recognizer that remembers when the touch driving it began.
+ *
+ * A UITapGestureRecognizer judges a tap by MOVEMENT only — there is no upper
+ * bound on how long the finger may rest — so a stationary press-and-hold that
+ * creates a text selection also satisfies it. Stamping the touch-down time
+ * lets the paragraph view tell "this release ended a selection gesture" apart
+ * from "this release is a genuine token tap" (see
+ * `RubyTextParagraphView.selectionEstablishedDuringCurrentTouch`).
+ */
+private final class TokenTapGesture: UITapGestureRecognizer {
+  private(set) var touchDownTime: CFTimeInterval = 0
+
+  override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+    touchDownTime = CACurrentMediaTime()
+    super.touchesBegan(touches, with: event)
+  }
+}
+
+/**
  * Paragraph-level ruby renderer (iOS only).
  *
  * Unlike RubyTextView (one UILabel per token), this view puts an entire
@@ -53,6 +73,13 @@ internal final class RubyTextParagraphView: ExpoView {
   internal static weak var lastDiagnosticsView: RubyTextParagraphView?
 
   private let textView = RubySelectionTextView()
+  /// Token-tap recognizer (see `TokenTapGesture`): records its touch-down time
+  /// so the release that ended a selection gesture is not ALSO read as a tap.
+  private let tokenTap = TokenTapGesture()
+  /// CACurrentMediaTime() of the last NON-collapsed selection change. Only
+  /// non-collapsed changes are stamped: a tap that merely dismisses an old
+  /// selection (the textView collapses it) must still count as a tap.
+  private var lastSelectionChangeTime: CFTimeInterval = 0
   let onTokenTap = EventDispatcher()
   let onLineGrid = EventDispatcher()
   /// Selection changed (SPEC-084): { start, end } — UTF-16 offsets into the
@@ -140,12 +167,13 @@ internal final class RubyTextParagraphView: ExpoView {
     textView.source = self
     addSubview(textView)
 
-    let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
     // Allow the textView's own selection gestures to recognize alongside our
     // tap — a single tap still opens the token popup, while long-press/drag
-    // drives native selection (SPEC-084 Task 1.4).
-    tap.delegate = self
-    addGestureRecognizer(tap)
+    // drives native selection (SPEC-084 Task 1.4). The release that ENDS a
+    // selection gesture is filtered in handleTap.
+    tokenTap.addTarget(self, action: #selector(handleTap(_:)))
+    tokenTap.delegate = self
+    addGestureRecognizer(tokenTap)
   }
 
   /// Emit a native selection context-menu action (SPEC-033 tooltip revision):
@@ -236,8 +264,39 @@ internal final class RubyTextParagraphView: ExpoView {
     emitLineGridIfChanged()
   }
 
+  /// True when the non-collapsed selection currently on screen was created by
+  /// the touch that is ending right now — i.e. this release is the tail of a
+  /// SELECTION gesture, not a token tap.
+  ///
+  /// Both conditions are load-bearing:
+  ///   - `selectedRange.length > 0` — still-selected text. A tap that merely
+  ///     dismisses an old selection collapses it, so that tap is unaffected.
+  ///   - `lastSelectionChangeTime >= tokenTap.touchDownTime` — the selection
+  ///     appeared during THIS touch. A later, independent tap starts after
+  ///     the stamp, supersedes the selection, and opens its token as before.
+  private var selectionEstablishedDuringCurrentTouch: Bool {
+    guard textView.selectedRange.length > 0 else { return false }
+    return lastSelectionChangeTime >= tokenTap.touchDownTime
+  }
+
   @objc
   private func handleTap(_ gesture: UITapGestureRecognizer) {
+    // A release that ended a SELECTION gesture must not also open a token
+    // popup (2026-09-11 report: long-pressing ONE character showed the
+    // dictionary popup on top of the native Copy / Read Aloud / Look Up
+    // menu, while a multi-character selection — which needs a drag — showed
+    // the menu correctly). iOS judges a tap by movement alone, so a
+    // stationary hold, exactly what selecting a single character is,
+    // satisfies both the textView's selection long-press and this recognizer;
+    // the popup then covered the menu. Multi-character selections escaped it
+    // only because dragging a handle exceeds `allowableMovement` and fails
+    // the tap. Confirmed from device logs: SELECTION-TRACK len=1 followed
+    // 721 ms later by POPUP-TRIGGER=tap with no SELECTION-ACTION.
+    if selectionEstablishedDuringCurrentTouch {
+      let sel = textView.selectedRange
+      print("[LP Mobile] [RubyTextParagraph] token tap ignored — release ended a selection gesture (selection \(sel.location)..<\(NSMaxRange(sel))); native menu stays up")
+      return
+    }
     let point = gesture.location(in: textView)
     guard let offset = characterOffset(at: point) else { return }
     // A tap in the empty space past the last glyph resolves to the text end
@@ -575,6 +634,10 @@ extension RubyTextParagraphView: UITextViewDelegate {
   func textViewDidChangeSelection(_ textView: UITextView) {
     let sel = textView.selectedRange
     guard sel.length > 0 else { return }
+    // Stamp only NON-collapsed changes: this is what marks the current touch
+    // as a selection gesture so its release is not also read as a token tap
+    // (see selectionEstablishedDuringCurrentTouch).
+    lastSelectionChangeTime = CACurrentMediaTime()
     onSelection(["start": sel.location, "end": sel.location + sel.length])
   }
 
