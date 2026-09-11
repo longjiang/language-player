@@ -9,7 +9,7 @@
   [known issue](#known-issue-settings_v2-resets-to-default-debug-in-progress-2026-08-24)
   at the top of this page
 - **Created**: 2026-07-17
-- **Last updated**: 2026-09-11 (per-L2 vs global table rewritten to the as-built schema)
+- **Last updated**: 2026-09-11 (per-L2 vs global table rewritten to the as-built schema; `display.translation` moved per-L2)
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic (legacy, `settings_classic` only), GO (reference),
   Next.js Web (active, `settings_v2`), React Native Mobile (active,
@@ -139,6 +139,10 @@ This document analyzes how settings are stored, mutated, and synced across all t
 > names (the shipped blob is flat — see the structure below). Every row here is
 > verified against `packages/shared/src/types.ts` and the settings screens of
 > both apps.
+>
+> **Also on 2026-09-11:** `display.translation` (translation lines) moved from
+> global to per-L2 — it appears in the per-language table below, not the global
+> one. See [Migration](#migration-displaytranslation-global--per-l2-2026-09-11).
 
 #### Structure as built
 
@@ -171,7 +175,6 @@ SettingsV2
 | Quick gloss (saved words) | `tokenizedText.quickGloss` | `true` | Display |
 | Translation size | `tokenizedText.translationSize` | `0.8` | Display |
 | Theme | `display.theme` | `'dark'` | Display |
-| Show translation | `display.translation` | `true` | Display |
 | L2 ↔ translation split | `display.translationSplit` | `0.6` | reader splitter drag (web); no settings control |
 | Playback speed | `playback.speed` | `1.0` | **no control in either app** |
 | Auto-pause | `playback.autoPause` | `false` | Playback |
@@ -188,7 +191,7 @@ SettingsV2
 languages — if you want translations, you want them everywhere — and video
 player behavior is independent of which language you're studying. Classic's
 per-L2 model was overly granular (users rarely want a different `zoomLevel` per
-language).
+language). *(Translation lines are the one exception and are per-L2; see below.)*
 
 **`dailyNewLimit` is one global number, enforced per language.** Setting it to
 50 means 50 for every L2. But each L2's review deck gets its own budget
@@ -205,6 +208,7 @@ never used Language Player). Mirrors Classic's `l2Settings[l2Code].l1`.
 
 | Setting | Path | Default | Where edited |
 |---|---|---|---|
+| Show translation lines | `display.translation` | `true` | Display |
 | Phonetics display | `tokenSpan.phonetics.show` | `'ruby'` | Display |
 | Phonetics conditions | `tokenSpan.phonetics.conditions` | `'always'` | Display |
 | Interlinear gloss | `tokenSpan.definition.show` | `false` | Display |
@@ -217,6 +221,11 @@ never used Language Player). Mirrors Classic's `l2Settings[l2Code].l1`.
 
 **Why per-language:**
 
+- **Translation lines** (`display.translation`) — moved here 2026-09-11 (was
+  global). A learner may want translations for a language they are just
+  starting and none for one they read fluently. This restores Classic's own
+  per-L2 `showTranslation`; old blobs are migrated automatically (see the
+  note below).
 - **Phonetics** — needs differ by language (pinyin for zh, furigana for ja, none
   for en). `conditions: 'hardWords'` means a word is "hard" if its
   `levels[].numeric` or `frequencyLevel` ≥ the user's level, OR the entry is
@@ -233,6 +242,37 @@ never used Language Player). Mirrors Classic's `l2Settings[l2Code].l1`.
 - **Content filters** (`tvShowFilter`, `categoryFilter`) — content is
   language-scoped. These two are **schema-only today**: no screen writes them
   (they are carried over from Classic's per-L2 design).
+
+#### Migration: `display.translation` global → per-L2 (2026-09-11)
+
+`display.translation` was a single global boolean. It is now
+`l2[code].display.translation`, because a learner may want translation lines for
+a language they are just starting and none for one they read fluently — the
+same argument that keeps phonetics and script variant per-L2. It also restores
+Classic's own per-L2 `showTranslation`, which the V2 flattening had dropped.
+Tracking: commits `1f2fde5e` (schema), `caca78a1` (web), `ba02d77f` (mobile).
+
+Migration is automatic and needs **no `v` bump** — `normalizeSettingsV2()` folds
+a stored/cloud `display.translation` into every language entry that does not
+already carry a per-L2 value (idempotent and additive; an explicit per-L2 value
+always wins). A learner who had translations OFF does not silently get them
+back. A brand-new language starts from `L2_DISPLAY_DEFAULTS.translation`
+(`true`), which is the normal per-L2 semantic — the same way phonetics defaults
+to `'ruby'` for a language you have never configured.
+
+`normalizeSettingsV2()` also gained **per-entry** normalization in the same
+change (`normalizeL2Settings()`). It previously did `l2: raw.l2 ?? base.l2`,
+which left every field added after a blob was written as `undefined` for that
+language — consumers defended with `?? false` / `!== false` checks and any that
+did not read the wrong value. Adding a per-L2 field is only safe with this in
+place, and it fixes the same latent gap for the fields that already existed.
+
+**Test-page harnesses.** The web `/[l1]/[l2]/tokenizer` page and mobile's
+`(me)/tokenizer-test` render MANY languages at once, so there is no single
+language for their translation toggle to write to. Each card now follows its own
+language's setting, and the page-level toggle became a local, **unpersisted**
+preview override (`showTranslationOverride`) that flips every card for
+comparison without editing each language's setting.
 
 #### Mobile-only, device-local (never synced to the account)
 
@@ -472,6 +512,9 @@ simply ignored for that utterance. Diagnostics via the `speech` log domain
 - `playback.speed` is a schema field with **no control in either app** (it has
   never been written since the V2 migration), and `l2[code].content`
   (`tvShowFilter`, `categoryFilter`) has no control and no writer.
+- **`display.translation` is per-L2, not global** (moved 2026-09-11). The
+  design's `global.display.translation` no longer exists; the shipped path is
+  `l2[code].display.translation`.
 
 ---
 
@@ -485,8 +528,8 @@ simply ignored for that utterance. Diagnostics via the `speech` log domain
 > setting. The structure and type sketches below are kept as the design
 > rationale, **not** as a description of the code — in particular the
 > `global.*` / `interaction.*` wrapper and the placement of `definition`,
-> `zoom`, `quickGloss` and quiz mode do not match the shipped types
-> (the differences are listed in the "Not implemented" list above).
+> `translation`, `zoom`, `quickGloss` and quiz mode do not match the shipped
+> types (the differences are listed in the "Not implemented" list above).
 
 ### Design Goals
 
@@ -583,9 +626,9 @@ On first load, the `useSettings()` hook reads from the three old localStorage ke
 ├──────────────────────────────┬───────────────────────┤
 │  Old Key / Source            │  New Path             │
 ├──────────────────────────────┼───────────────────────┤
-│  lp_show_translation         │  global.display.translation │
+│  lp_show_translation         │  l2[currentL2].display.translation │
 │  lp_use_traditional          │  l2[currentL2].display.traditional │
-│  lp_show_phonetics           │  l2[currentL2].display.phonetics │
+│  lp_show_phonetics           │  l2[currentL2].display.phonetics   │
 │  zthSpeechSettings.voiceURI  │  l2[currentL2].speech.voiceURI  │
 │  zthSpeechSettings.rate      │  l2[currentL2].speech.rate      │
 │  zthSrsProgress.settings     │  global.review.dailyNewLimit   │
@@ -600,7 +643,20 @@ On first load, the `useSettings()` hook reads from the three old localStorage ke
 4. **Do NOT delete the old keys** — Classic and GO apps may still read them. The old keys become stale but harmless.
 5. **Migration runs once** — the presence of `lp_settings` with `v: 2` prevents re-migration.
 
-**Caveat:** Old `lp_show_translation` was global; V2 `global.display.translation` is also global, so migration is direct. Old `lp_use_traditional` and `lp_show_phonetics` were global but map to per-L2 in V2 (`l2[code].display.*`) because the V2 design keeps script variant and phonetics as language-specific concerns.
+**Caveat (updated 2026-09-11):** all four per-language legacy keys map to
+`l2[currentL2].display.*` / `l2[currentL2].speech.*`. None of them carries a
+language, and settings migration runs before the app knows which L2 the learner
+will open, so the recovered values are held in a `LegacySettingsSeed` and applied
+by `ensureL2` when it creates the **first** language entry — the first language
+the learner visits is the one they came from. The seed is transient (never
+persisted or synced). Legacy `lp_show_phonetics` was a plain boolean, so `true`
+maps to the modern default `'ruby'` and `false` to hidden.
+
+Before 2026-09-11 that migration was **broken**: it stashed the recovered
+phonetics / traditional / speech values in `__migratedPhonetics` /
+`__migratedTraditional` / `__migratedSpeech` fields on the settings object and
+nothing ever read them, so every migrated value was silently dropped (and the
+dead fields leaked into the persisted blob). Fixed in `e2faa10a`.
 
 ### Component API
 
