@@ -198,18 +198,25 @@ Two consequences are mandatory for this feature:
 
 Any future prop added to `TokenizedText` for this feature **must** be added to `tokenizedTextPropsEqual`, and compared by stable reference only.
 
-## Tokenization: Precomputed at Authoring Time
+## Tokenization: Runtime, Parent-Owned
 
 Both apps obtain tokens from Flask — `POST /lemmatize-normalized` (`zerotohero-python-server/routes/text_routes.py:184`) and `POST /lemmatize-normalized/batch` (`:219`), the latter reached on web via `enqueueLemmatize` (`apps/web/src/lib/lemmatize-queue.ts:36`, batch size 12 / 60 ms flush, cache key `${l2Code}:${text}`).
 
-Crucially, **web has no client-side tokenizer at all** — no kuromoji/jieba/snowball dependency exists in `apps/web`. Mobile has a local fallback chain (`apps/mobile/lib/tokenizer.ts`), but web is online-only.
+**Nothing is tokenized at authoring time.** Content files store text only — no token blobs, no build step, and nothing to keep in sync when a passage is edited or re-transcribed.
 
-Textbook prose is static, so:
+Instead the `TaskShell` is the lemmatization authority for its task, exactly as the paginated reader is for its page. It calls the batch endpoint once for the passages a task renders and hands the result to each `TokenizedText` through the existing seams: the `tokens` prop skips both the API and the `IntersectionObserver` lazy-tokenization gate (`tokenized-text.tsx:598`), and `deferTokenization` exists precisely so a parent can own lemmatization instead of the child starting its own queue request.
 
-- **Pre-tokenize each passage at authoring time** via `/lemmatize-normalized/batch` and store the resulting `LemmatizedToken[]` (`packages/shared/src/types.ts:186`) in the content payload.
-- Pass them via the existing `tokens` prop, which **skips the API entirely** (`tokenized-text.tsx:598`) and also skips the `IntersectionObserver` lazy-tokenization gate.
+Consequences to accept:
 
-This makes the textbook render instantly, removes per-line network chatter, and — critically — makes web textbook content work **offline**, which is otherwise impossible.
+- **Web needs the server in order to tokenize.** Web has no client-side tokenizer at all — no kuromoji/jieba/snowball dependency exists in `apps/web`. Mobile degrades better: it has a Chinese offline path (`zh: { needsDictSegmentation: true }`, `packages/shared/src/constants.ts:337`, implemented as jieba-compatible max-matching over the downloaded dictionary's headword set in `apps/mobile/lib/tokenizer.ts:265`).
+- This costs little in practice, because a task already needs the network for its audio and images (ADR-0043). The textbook is **online-first by construction** — tokenization is not the only thing that would fail offline.
+- A task's passage is short (a few sentences), so it resolves in a single batch flush rather than a per-line storm.
+
+### Render the passage only once its tokens have arrived
+
+This is a direct consequence of tokenizing at runtime and it is easy to get wrong. While `TokenizedText` is tokenizing it returns **plain text** — and that text already has the `{{bN}}` markers stripped. So rendering the passage before tokens land shows the passage with **no blanks at all**, and the blanks then pop in. It does not show placeholders.
+
+`TaskShell` therefore fetches the task's tokens and renders the passage only once they are available, showing the task skeleton until then. The transition is skeleton → complete passage, never skeleton → blankless passage → blanks.
 
 ## Grading
 
@@ -352,7 +359,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 ## Data Flow
 
 1. Student opens `/[l1]/[l2]/textbook` → book index loads (units → lessons → tasks).
-2. Student picks a task → task JSON loads, including precomputed `tokens` and resolved asset URLs.
+2. Student picks a task → task JSON loads and asset URLs resolve. `TaskShell` requests tokens for the task's passages (`/lemmatize-normalized/batch`) and holds the skeleton until they arrive.
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText` with `blank` format ranges.
 4. Student responds; each `BlankField` writes to its slice of the task store. The token tree never re-renders.
 5. Student submits → `gradeTask` runs locally → per-blank correct/incorrect is shown → the attempt is persisted (ADR-0044).
@@ -360,10 +367,10 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## States
 
-- **Loading**: task skeleton with the passage as plain text; `TokenizedText` already falls back to plain text while tokenizing, but precomputed tokens make this near-instant.
+- **Loading**: task skeleton from when the task is selected until its tokens resolve. The passage is deliberately **not** rendered before then — see "Render the passage only once its tokens have arrived" above.
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
 - **Error**: a task whose audio or image fails to load still renders the text and blanks, with an inline retry on the failing stimulus — a broken asset must never block the exercise.
-- **Offline**: text, blanks, and grading work from cached content; audio and uncached images degrade with an explicit notice. (Web has no client-side tokenizer, so precomputed tokens are what makes this possible.)
+- **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
 - **Autoplay blocked**: audio requires an explicit tap; never autoplay.
@@ -371,7 +378,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## Phasing
 
-- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
+- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section); answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
 - **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), `MockApp` (B ➍).
 - **Phase 3 — writing lesson.** `DictationField` (wrapping `SpellCharInput`), `FreeWrite`, note-capture.
