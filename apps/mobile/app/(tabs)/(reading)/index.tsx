@@ -28,8 +28,10 @@ import { loadSampleContent } from '@langplayer/shared';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, updateDisplay, getL2, updateL2 } = useSettingsContext();
   const t = useT();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2Lang.code).display.translation;
   const notes = useReaderNotes(l2Lang.code);
   const { isWide, sidebarOpen, setSidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
@@ -106,7 +108,7 @@ export default function ReaderScreen() {
     text: activeTab === 'read' ? text : '',
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: display.translation,
+    showTranslation,
     translationSplit: display.translationSplit,
     resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
     initialAnchor,
@@ -455,8 +457,10 @@ export default function ReaderScreen() {
                 contentWidth={pagination.contentWidth}
                 l2Code={l2Lang.code}
                 l1Code={l1Lang.code}
-                showTranslation={display.translation}
-                onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
+                showTranslation={showTranslation}
+                onToggleTranslation={() => updateL2(l2Lang.code, {
+                  display: { ...getL2(l2Lang.code).display, translation: !showTranslation },
+                })}
                 showTextActions
                 translationSideBySide={isMd}
                 selectionDictionary

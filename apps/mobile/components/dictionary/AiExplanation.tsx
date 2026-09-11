@@ -198,7 +198,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
-  const { display } = useSettingsContext();
+  const { getL2 } = useSettingsContext();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(baseCode(l2Lang.code)).display.translation;
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
   const [showAi, setShowAi] = useState(demandMode);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -791,7 +793,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     exampleTranslationInput.lines,
     l1Lang.code,
     baseCode(l2Lang.code),
-    display.translation && exampleTranslationInput.lines.length > 0,
+    showTranslation && exampleTranslationInput.lines.length > 0,
     0,
     exampleTranslationInput.forms,
   );
@@ -959,7 +961,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                             onSelect={() => openExamplePlayer(i)}
                             segments={exampleSegments[i] ?? []}
                             highlightTerms={[word]}
-                            showTranslation={display.translation}
+                            showTranslation={showTranslation}
                             translationStart={exampleTranslationInput.rowStarts[i] ?? 0}
                             translations={exampleTranslations}
                           />

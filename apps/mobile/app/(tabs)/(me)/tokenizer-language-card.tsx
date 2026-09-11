@@ -19,9 +19,18 @@ const { log: appLog } = bootLogger;
  * imports the language's sample chunk. Same lazy-load contract as the web
  * tokenizer page.
  */
-export function TokenizerLanguageCard({ code, height, longSample }: { code: string; height: number; longSample: boolean }) {
+export function TokenizerLanguageCard({ code, height, longSample, showTranslationOverride }: { code: string; height: number; longSample: boolean; /** Test-page PREVIEW override for the per-L2 translation setting. `undefined`
+ *  = follow this language's own `l2[code].display.translation` (the default,
+ *  and what every real surface does). The harness sets it so the calibration
+ *  view can be flipped across all languages at once without editing each
+ *  language's setting; it is deliberately NOT persisted. */
+showTranslationOverride?: boolean }) {
   const { l1Lang } = useLanguage();
-  const { display } = useSettingsContext();
+  const { getL2 } = useSettingsContext();
+  // This card renders ONE language (`code`), so it follows that language's
+  // per-L2 translation setting — the test screen shows many L2s at once and
+  // each must reflect its own value.
+  const showTranslation = showTranslationOverride ?? getL2(code).display.translation;
   const { isMd } = useResponsive();
   const t = useT();
 
@@ -52,7 +61,7 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
     text: sampleMarkdown,
     l1Code: l1Lang.code,
     l2Code: code,
-    showTranslation: display.translation,
+    showTranslation,
     resetKey: `${code}:${longSample ? 'long' : 'short'}:${sample ? 'ready' : 'loading'}`,
   });
 
@@ -101,7 +110,7 @@ export function TokenizerLanguageCard({ code, height, longSample }: { code: stri
             measuring={samplePagination.measuring}
             l2Code={code}
             l1Code={l1Lang.code}
-            showTranslation={display.translation}
+            showTranslation={showTranslation}
             translationSideBySide={isMd}
             showTextActions
             t={t}

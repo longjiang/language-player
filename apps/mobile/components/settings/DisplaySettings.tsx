@@ -64,7 +64,7 @@ export function DisplaySettings() {
   // G2: Fetch L1 translation of the sample sentence when translation is enabled
   const [previewTranslation, setPreviewTranslation] = useState('');
   useEffect(() => {
-    if (!previewText || !display.translation || !popupEnabled) {
+    if (!previewText || !l2Settings.display.translation || !popupEnabled) {
       setPreviewTranslation('');
       return;
     }
@@ -82,7 +82,7 @@ export function DisplaySettings() {
     return () => {
       cancelled = true;
     };
-  }, [previewText, l1Lang.code, l2Lang.code, display.translation, popupEnabled]);
+  }, [previewText, l1Lang.code, l2Lang.code, l2Settings.display.translation, popupEnabled]);
 
   if (!loaded) return null;
 
@@ -108,8 +108,10 @@ export function DisplaySettings() {
           <ToggleRow
             label={t('label.show_translation')}
             desc={t('msg.show_translation_desc')}
-            value={display.translation}
-            onValueChange={(v) => updateDisplay({ translation: v })}
+            value={l2Settings.display.translation}
+            onValueChange={(v) => updateL2(l2Lang.code, {
+              display: { ...l2Settings.display, translation: v },
+            })}
           />
           <ToggleRow
             label={t('label.enable_popup_dictionary')}

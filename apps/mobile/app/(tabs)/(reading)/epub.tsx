@@ -34,8 +34,10 @@ const SAVE_LOCATION_DEBOUNCE_MS = 800;
 
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, updateDisplay, tokenizedText } = useSettingsContext();
+  const { display, updateDisplay, getL2, updateL2, tokenizedText } = useSettingsContext();
   const t = useT();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2Lang.code).display.translation;
   const epub = useEpub(l2Lang.code);
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -155,7 +157,7 @@ export default function EpubReaderScreen() {
     text: '',
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: display.translation,
+    showTranslation,
     translationSplit: display.translationSplit,
     resetKey: epub.openBookId,
     preParsedBlocks: epub.blocks,
@@ -571,11 +573,13 @@ export default function EpubReaderScreen() {
           lazyPagination
           l2Code={l2Lang.code}
           l1Code={l1Lang.code}
-          showTranslation={display.translation}
+          showTranslation={showTranslation}
           onToggleTranslation={() => {
-            const next = !display.translation;
+            const next = !showTranslation;
             translationLogger.log(`toggle translation → ${next ? 'on' : 'off'}`);
-            updateDisplay({ translation: next });
+            updateL2(l2Lang.code, {
+              display: { ...getL2(l2Lang.code).display, translation: next },
+            });
           }}
           showTextActions
           translationSideBySide={isMd}

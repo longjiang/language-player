@@ -49,8 +49,10 @@ function faviconUrl(url: string): string {
 
 export default function WebReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, updateDisplay, getL2, updateL2 } = useSettingsContext();
   const t = useT();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2Lang.code).display.translation;
   const { url: urlParam } = useLocalSearchParams<{ url?: string }>();
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
@@ -86,7 +88,7 @@ export default function WebReaderScreen() {
     text,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: display.translation,
+    showTranslation,
     translationSplit: display.translationSplit,
     resetKey: title || null,
     initialAnchor,
@@ -282,8 +284,10 @@ export default function WebReaderScreen() {
                   contentWidth={pagination.contentWidth}
                   l2Code={l2Lang.code}
                   l1Code={l1Lang.code}
-                  showTranslation={display.translation}
-                  onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
+                  showTranslation={showTranslation}
+                  onToggleTranslation={() => updateL2(l2Lang.code, {
+                    display: { ...getL2(l2Lang.code).display, translation: !showTranslation },
+                  })}
                   showTextActions
                   translationSideBySide={isMd}
                   selectionDictionary

@@ -33,11 +33,20 @@ const tokenizerTestOrder = (() => {
 const WIDE_BREAKPOINT = 768;
 
 export default function TokenizerScreen() {
-  const { tokenizedText, updateTokenizedText, display, updateDisplay } = useSettingsContext();
+  const { tokenizedText, updateTokenizedText } = useSettingsContext();
   const t = useT();
   const { width, height } = useWindowDimensions();
   const cols = width >= WIDE_BREAKPOINT ? 2 : 1;
   const cardHeight = Math.round(Math.max(480, height * 0.62));
+
+  // ── Translation preview override ──
+  // Translation lines are per-L2 (`l2[code].display.translation`), and this
+  // screen renders MANY languages at once — each card follows its own
+  // language's setting. This toggle is therefore a local, unpersisted PREVIEW:
+  // it flips every card at once so the calibration view can be compared with
+  // and without translations without editing 20 languages' settings. `null` =
+  // follow each language's own value.
+  const [translationPreview, setTranslationPreview] = useState<boolean | null>(null);
 
   // ── Settings hidden behind a toggle ──
   const [showSettings, setShowSettings] = useState(false);
@@ -100,8 +109,8 @@ export default function TokenizerScreen() {
           <ToggleRow
             label={t('label.show_translation')}
             desc={t('msg.show_translation_desc')}
-            value={display.translation}
-            onValueChange={(v) => updateDisplay({ translation: v })}
+            value={translationPreview ?? true}
+            onValueChange={(v) => setTranslationPreview(v)}
           />
           <ToggleRow
             label={t('setting.long_sample_text')}
@@ -125,7 +134,7 @@ export default function TokenizerScreen() {
         className="flex-1"
         ListHeaderComponent={header}
         renderItem={({ item }) => (
-          <TokenizerLanguageCard code={item} height={cardHeight} longSample={longSample} />
+          <TokenizerLanguageCard code={item} height={cardHeight} longSample={longSample} showTranslationOverride={translationPreview ?? undefined} />
         )}
       />
     </PageContainer>
