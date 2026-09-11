@@ -37,7 +37,7 @@ Two constraints shape the alternatives:
 
 ## Consequences
 
-- **Resume works offline and across restarts**, with no network dependency and no migration.
+- **Resume works offline and across restarts**, with no network dependency and no migration. This is a property of the **store**, not of the feature: a task still needs the network to tokenize its passage on web and to fetch its audio and images (SPEC-095, ADR-0043). Textbook offline support is a degradation — saved answers stay readable — not a supported mode.
 - **No cross-device sync.** A student's textbook answers do not follow them between web and mobile. This is the same accepted gap that reading position already has, and it is the deliberate cost of not inventing a server schema mid-migration.
 - **The data model is sync-ready.** Append-only entries with stable ids and void semantics are exactly what the SRS log already proves works for outbox-based sync, idempotency, and undo, so a future sync is additive rather than a redesign.
 - **Content versioning becomes load-bearing.** Re-authoring a shipped task without bumping its content version will orphan or mis-grade saved responses; the authoring validator should flag a changed task whose version did not change.
