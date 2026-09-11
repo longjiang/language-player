@@ -3,6 +3,7 @@ import {
   bestScriptSimilarity,
   buildPronunciationQuestionText,
   buildSrsQuestionPrompt,
+  formatDefinitionList,
   getTestKinds,
   hiraganaToKatakana,
   isInflectingLanguage,
@@ -821,5 +822,29 @@ describe('supportsScrabbleKeyboard', () => {
     expect(supportsScrabbleKeyboard('lzh')).toBe(false);
     expect(supportsScrabbleKeyboard('nan')).toBe(false);
     expect(supportsScrabbleKeyboard('wuu')).toBe(false);
+  });
+});
+
+describe('formatDefinitionList (spell/scrabble card-front definitions line)', () => {
+  it('joins definitions with an ASCII semicolon for non-CJK L1s', () => {
+    expect(formatDefinitionList(['to suit', 'to match'], 'en')).toBe('to suit; to match');
+    expect(formatDefinitionList(['convenir', 'correspondre'], 'fr')).toBe('convenir; correspondre');
+  });
+
+  it('uses a fullwidth semicolon for CJK L1s, subtags included', () => {
+    expect(formatDefinitionList(['合适的', '相称的'], 'zh')).toBe('合适的；相称的');
+    expect(formatDefinitionList(['合适的', '相称的'], 'zh-Hans')).toBe('合适的；相称的');
+    expect(formatDefinitionList(['合う', '似合う'], 'ja')).toBe('合う；似合う');
+    expect(formatDefinitionList(['어울리다'], 'ko')).toBe('어울리다');
+  });
+
+  it('trims entries and drops empties without leaving stray separators', () => {
+    expect(formatDefinitionList(['  合适的  ', '', '   ', '相称的'], 'zh')).toBe('合适的；相称的');
+  });
+
+  it('returns "" when there is nothing to show', () => {
+    expect(formatDefinitionList([], 'zh')).toBe('');
+    expect(formatDefinitionList(undefined, 'zh')).toBe('');
+    expect(formatDefinitionList(null, 'zh')).toBe('');
   });
 });
