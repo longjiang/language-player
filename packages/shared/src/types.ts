@@ -900,8 +900,6 @@ export interface TokenizedTextSettings {
 export interface DisplaySettings {
   /** `light` | `dark` | `system` — follows OS preference when `system`. */
   theme: 'light' | 'dark' | 'system';
-  /** Show L1 translation lines alongside L2 text. */
-  translation: boolean;
   /** Fraction (0–1) of the side-by-side row width given to the L2 tokenized
    *  text column, the remainder going to the translation column. 0.6 matches
    *  the legacy 3:2 `flex-[3]`/`flex-[2]` split. Used by the readers' resizable
@@ -1007,6 +1005,14 @@ export interface TokenSpanSettings {
 }
 
 export interface L2DisplaySettings {
+  /** Show L1 translation lines alongside this language's L2 text.
+   *
+   *  PER-L2 since 2026-09-11 (was `display.translation`, global). A learner may
+   *  want translations for a language they are just starting and none for one
+   *  they read fluently, so the toggle is scoped like phonetics and script
+   *  variant. Old blobs are migrated by `normalizeSettingsV2`, which folds the
+   *  legacy global value into every configured language. */
+  translation: boolean;
   /** zh only: `true` = traditional (繁體), `false` = simplified (简体). Ignored for other languages. */
   traditional: boolean;
   /** ko: show hanja alongside hangul. vi: show hán tự alongside quốc ngữ. Ignored otherwise. */
@@ -1041,7 +1047,6 @@ export const TOKENIZED_TEXT_DEFAULTS: TokenizedTextSettings = {
 
 export const DISPLAY_DEFAULTS: DisplaySettings = {
   theme: 'dark',
-  translation: true,
   translationSplit: 0.6,
 };
 
@@ -1069,6 +1074,7 @@ export const TOKEN_SPAN_DEFAULTS: TokenSpanSettings = {
 };
 
 export const L2_DISPLAY_DEFAULTS: L2DisplaySettings = {
+  translation: true,
   traditional: false,
   byeonggi: true,
 };
@@ -1104,15 +1110,10 @@ export const L2_DEFAULTS: L2Settings = {
 export function createSettingsV2(l2Code?: string): SettingsV2 {
   const l2: Record<string, L2Settings> = {};
   if (l2Code) {
-    l2[l2Code] = {
-      tokenSpan: {
-        phonetics: { ...TOKEN_SPAN_DEFAULTS.phonetics },
-        definition: { ...TOKEN_SPAN_DEFAULTS.definition },
-      },
-      display: { ...L2_DISPLAY_DEFAULTS },
-      speech: { ...SPEECH_DEFAULTS },
-      content: { ...CONTENT_DEFAULTS },
-    };
+    // One definition of "a fresh language entry" — the same normalizer the
+    // read path uses, so a newly seeded L2 is field-for-field identical to one
+    // that came back from storage.
+    l2[l2Code] = normalizeL2Settings(null);
   }
   return {
     v: 2,
@@ -1133,6 +1134,25 @@ export function normalizeSettingsV2(
 ): SettingsV2 {
   const base = createSettingsV2();
   if (!raw) return base;
+
+  // Legacy fold-in (2026-09-11): `display.translation` used to be GLOBAL. It is
+  // now per-L2 (`l2[code].display.translation`), so a pre-migration blob's
+  // global value is copied into every language it has configured — otherwise
+  // the value would be dropped on read and a learner who had translations off
+  // would see them reappear. Read from `raw`, never from the merged object,
+  // because the merged `display` no longer carries the field at all.
+  const legacyGlobalTranslation = (raw.display as { translation?: unknown } | undefined)
+    ?.translation;
+  const inheritedTranslation = typeof legacyGlobalTranslation === 'boolean'
+    ? legacyGlobalTranslation
+    : undefined;
+
+  const rawL2 = raw.l2 ?? base.l2;
+  const l2: Record<string, L2Settings> = {};
+  for (const [code, entry] of Object.entries(rawL2)) {
+    l2[code] = normalizeL2Settings(entry, inheritedTranslation);
+  }
+
   return {
     ...base,
     ...raw,
@@ -1143,8 +1163,48 @@ export function normalizeSettingsV2(
     playback: { ...base.playback, ...(raw.playback ?? {}) },
     review: { ...base.review, ...(raw.review ?? {}) },
     search: { ...base.search, ...(raw.search ?? {}) },
-    l2: raw.l2 ?? base.l2,
+    l2,
     languagePair: raw.languagePair ?? base.languagePair,
+  };
+}
+
+/**
+ * Fill one language's entry from `L2_DEFAULTS`.
+ *
+ * Each sub-object is merged explicitly (not spread wholesale) so a blob
+ * written by an older schema — which is missing whatever fields were added
+ * since — still comes back COMPLETE. Without this, a stored entry silently
+ * carried `undefined` for every field added after it was written; consumers
+ * had to defend with `?? false` / `!== false` checks, and any that did not
+ * (e.g. a plain truthiness test) read the wrong value.
+ *
+ * `inheritedTranslation` carries the pre-2026-09-11 global
+ * `display.translation` into entries that predate the per-L2 move.
+ */
+export function normalizeL2Settings(
+  entry: Partial<L2Settings> | null | undefined,
+  inheritedTranslation?: boolean,
+): L2Settings {
+  const e = entry ?? {};
+  const display: Partial<L2DisplaySettings> = e.display ?? {};
+  const tokenSpan: Partial<TokenSpanSettings> = e.tokenSpan ?? {};
+  const phonetics = tokenSpan.phonetics ?? ({} as Partial<TokenSpanSettings['phonetics']>);
+  const definition = tokenSpan.definition ?? ({} as Partial<TokenSpanSettings['definition']>);
+  return {
+    tokenSpan: {
+      phonetics: { ...TOKEN_SPAN_DEFAULTS.phonetics, ...phonetics },
+      definition: { ...TOKEN_SPAN_DEFAULTS.definition, ...definition },
+    },
+    display: {
+      ...L2_DISPLAY_DEFAULTS,
+      ...display,
+      // The per-L2 value wins when present; otherwise inherit the legacy global.
+      translation: display.translation
+        ?? inheritedTranslation
+        ?? L2_DISPLAY_DEFAULTS.translation,
+    },
+    speech: { ...SPEECH_DEFAULTS, ...(e.speech ?? {}) },
+    content: { ...CONTENT_DEFAULTS, ...(e.content ?? {}) },
   };
 }
 
