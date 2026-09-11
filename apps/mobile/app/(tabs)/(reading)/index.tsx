@@ -70,30 +70,88 @@ export default function ReaderScreen() {
     };
   }, []);
 
-  // When current note changes, load its text and saved anchor
+  // ── Editor session (which note is open, and its text) ──────────────────
+  /** Note id the editor session was initialized for (null = no note open). */
+  const sessionNoteIdRef = useRef<number | null>(null);
+  /** The body the editor was last loaded with. While `text` still equals it the
+   *  user has not edited, so an incoming body refresh may be adopted. */
+  const loadedTextRef = useRef('');
+
+  // Opening a note initializes the session — its text, its saved anchor, and
+  // the tab it deserves (Edit for a new/empty note, Read for one with text).
+  //
+  // The Edit/Read tab is NEVER switched as a side effect of the note body
+  // changing. `saveNote` replaces the current-note object on every autosave
+  // (`setCurrentNote(prev => ({ ...prev, text, translation }))`), so keying the
+  // tab off `notes.currentNote` threw the user into Read mode ~2s after they
+  // stopped typing. The tab now changes only on an explicit action — tapping
+  // the Edit/Read tab, or Tokenize (web parity: apps/web's reader page sets
+  // `activeTab` only in its explicit handlers: select note → read, new note →
+  // edit, Tokenize → read).
   useEffect(() => {
-    setSavedFlash(false);
-    if (notes.currentNote) {
-      setText(notes.currentNote.text ?? '');
-      if (justCreatedRef.current) {
-        // Newly created — stay in edit mode, no anchor to restore
-        justCreatedRef.current = false;
-        setActiveTab('edit');
-        setInitialAnchor(null);
-      } else if (!notes.currentNote.text?.trim()) {
-        // Empty note — open in edit mode
-        setActiveTab('edit');
-        setInitialAnchor(null);
-      } else {
-        setActiveTab('read');
-        // Load saved anchor for this note
-        (async () => {
-          const anchor = notes.currentNoteId != null ? await getNoteAnchor(notes.currentNoteId) : null;
-          setInitialAnchor(anchor);
-        })();
-      }
+    const note = notes.currentNote;
+    const noteId = notes.currentNoteId;
+    if (!note || noteId == null) {
+      sessionNoteIdRef.current = null;
+      return;
     }
-  }, [notes.currentNote]);
+    const body = note.text ?? '';
+    const previousId = sessionNoteIdRef.current;
+
+    // An offline-created note is remapped from its temp (negative) id to the
+    // server id while it is open. Same note, same session — keep the tab and
+    // the user's in-progress text untouched. A remap is told apart from the
+    // user selecting a different note by the temp id leaving the notes list
+    // (the hook's remap subscriber replaces the id in the list) — picking
+    // another note leaves the temp note in the list.
+    const remapped = previousId != null && previousId < 0 && noteId >= 0
+      && !notes.notes.some(n => n.id === previousId);
+    if (remapped) {
+      log('[LP Mobile] notes reader: note id remapped, session kept', { from: previousId, to: noteId });
+      sessionNoteIdRef.current = noteId;
+      return;
+    }
+
+    if (previousId === noteId) {
+      // Body update for the note already open (autosave echo, sync, or server
+      // refresh) — adopt it only while the text is untouched, and never touch
+      // the tab. `body === loadedTextRef` is the common no-op case (the note
+      // object is replaced on every autosave), so nothing is logged for it.
+      if (body === loadedTextRef.current) return;
+      const unedited = text === loadedTextRef.current;
+      log('[LP Mobile] notes reader: open-note body update', {
+        noteId, chars: body.length, adopted: unedited,
+      });
+      if (unedited) {
+        loadedTextRef.current = body;
+        setText(body);
+      }
+      return;
+    }
+
+    // A different note is open — initialize the session.
+    sessionNoteIdRef.current = noteId;
+    loadedTextRef.current = body;
+    setSavedFlash(false);
+    setText(body);
+    const asEdit = justCreatedRef.current || !body.trim();
+    justCreatedRef.current = false;
+    setActiveTab(asEdit ? 'edit' : 'read');
+    if (asEdit) {
+      // New/empty note — nothing to restore a position in.
+      setInitialAnchor(null);
+    } else {
+      // Load saved anchor for this note
+      (async () => {
+        const anchor = await getNoteAnchor(noteId);
+        // The user may have opened another note while this was loading.
+        if (sessionNoteIdRef.current === noteId) setInitialAnchor(anchor);
+      })();
+    }
+    log('[LP Mobile] notes reader: editor session opened', {
+      noteId, tab: asEdit ? 'edit' : 'read', chars: body.length,
+    });
+  }, [notes.currentNote, notes.currentNoteId, notes.notes, text]);
 
   const handleAnchorChange = useCallback((anchor: string) => {
     if (notes.currentNoteId != null) {
@@ -151,6 +209,16 @@ export default function ReaderScreen() {
     setText(newText);
     autoSave(newText);
   };
+
+  /** The ONLY way the Edit/Read tab moves — an explicit user action (tapping a
+   *  tab, or Tokenize). Nothing else may switch it (see the editor-session
+   *  effect above). Logged so an implicit switch is visible in the logs. */
+  const handleTabChange = useCallback((tab: 'edit' | 'read', source: 'tab' | 'tokenize' | 'empty_state') => {
+    setActiveTab(prev => {
+      if (prev !== tab) log('[LP Mobile] notes reader: tab switched by user', { from: prev, to: tab, source });
+      return tab;
+    });
+  }, []);
 
   // Delete
   const handleDelete = (noteId: number) => {
@@ -360,7 +428,7 @@ export default function ReaderScreen() {
           {/* Tab bar + actions */}
           <View className="flex-row items-center border-b border-border px-4">
             <Pressable
-              onPress={() => setActiveTab('edit')}
+              onPress={() => handleTabChange('edit', 'tab')}
               className={`mr-4 flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'edit' ? 'border-primary' : 'border-transparent'}`}
             >
               <PenLine size={14} color={ICON_MUTED} />
@@ -369,7 +437,7 @@ export default function ReaderScreen() {
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => setActiveTab('read')}
+              onPress={() => handleTabChange('read', 'tab')}
               className={`flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'read' ? 'border-primary' : 'border-transparent'}`}
             >
               <BookOpen size={14} color={ICON_MUTED} />
@@ -425,7 +493,7 @@ export default function ReaderScreen() {
                   </Text>
                 </Button>
                 <Button
-                  onPress={() => setActiveTab('read')}
+                  onPress={() => handleTabChange('read', 'tokenize')}
                   disabled={!text.trim()}
                   variant="default"
                 >
@@ -484,7 +552,7 @@ export default function ReaderScreen() {
               <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
               <Text className="text-center text-sm leading-relaxed text-muted-foreground">{t('msg.reader_empty_state', { l2: l2Lang.name })}</Text>
               <Button
-                onPress={() => setActiveTab('edit')}
+                onPress={() => handleTabChange('edit', 'empty_state')}
                 variant="outline"
                 className="mt-4"
               >
