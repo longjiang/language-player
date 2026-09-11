@@ -40,6 +40,12 @@ Every reader page has three vertical zones stacked top to bottom:
 - Left side: icon + page title (editable for saved notes)
 - Right side: sidebar toggle button + optional actions (close, etc.)
 - The sidebar toggle button MUST be reachable at all times — it is the only way to dismiss the sidebar overlay on narrow screens
+- On the **Notes Reader's default screen** (no note open) the sidebar toggle
+  also carries the **`action.list_all_notes`** text label, on both
+  breakpoints: icon **and** label in the **same** control, so tapping either
+  opens/expands the notes list. The label is the only place the notes list is
+  announced now that the drop zone has no button of its own (see §"Notes Reader
+  Default Screen"). With a note open the toggle is icon-only again.
 - Does not show a language pair subtitle (removed as redundant)
 
 ### Zone 2: Content Area + Sidebar
@@ -238,12 +244,13 @@ mobile `apps/mobile/app/(tabs)/(reading)/index.tsx`:
     session (cleared on reload/restart — session-only, no data-model change).
   - **Paste** — creates a new note with the clipboard text; **Ctrl/Cmd-V**
     (web) does the same while no note is open
-  - **List All Notes** — opens the notes side panel (persistent panel on wide
-    screens, slide-in sheet on narrow). **Mobile** puts this button in its own
-    right-aligned row **above** the dotted drop area — the usual
-    sidebar-toggle position, matching the note-open screen's toggle — spaced
-    off the app header (`pt-4 pb-2`); **web** keeps it inline in the drop
-    zone's button row.
+  - **The notes list** — there is **no** button of its own in the drop zone.
+    The title bar's sidebar toggle carries the `action.list_all_notes` label on
+    this screen (see §"Zone 1: Title Bar") and opens the notes side panel
+    (persistent panel on wide screens, slide-in sheet on narrow). **Mobile**
+    additionally keeps a right-aligned button in its own row **above** the
+    dotted drop area — the usual sidebar-toggle position, matching the
+    note-open screen's toggle — spaced off the app header (`pt-4 pb-2`).
 
 ### Auto-restore vs. nav re-entry (web)
 
@@ -260,7 +267,11 @@ An **open note** has two tabs (the tabs exist only for an open note — see the
 default screen above):
 
 - **Edit** — a plain textarea for the note's text, with **Add Sample Text** and
-  **Tokenize** below it. Notes autosave while typing.
+  **Tokenize** below it. The textarea keeps a **margin around it** — it never
+  touches the window/panel edges — matching the web editor, which sits inside
+  the page's `px-4` with its own `p-4`. (Mobile adds the margin on a wrapper
+  `View`; it does not restyle the shared `Textarea`, whose contract keeps
+  padding/border/radius at the component.) Notes autosave while typing.
 - **Read** — the paginated, tokenized reader with translation (SPEC-087).
 
 The tab moves **only on an explicit user action**:
@@ -276,11 +287,48 @@ The tab moves **only on an explicit user action**:
 **Editing text never switches tabs.** Autosaving, note sync, or a server
 refresh may replace the open note's body underneath the editor, but that must
 not move the tab — the user leaves the editor only by tapping **Read** or
-**Tokenize**. (Web's reader page sets its `activeTab` only in explicit
-handlers: select note → read, new note → edit, Tokenize → read. Mobile tracks
-its open editor session by note id + the body it was loaded with, and adopts
-an incoming body only while the text is untouched —
+**Tokenize**. (Both apps decide the tab from the body they just loaded — a note
+with no text opens on Edit — and set it only in explicit handlers: select note
+→ read (edit when the body is empty), new note → edit, Tokenize / Read tab →
+read. Mobile tracks its open editor session by note id + the body it was loaded
+with, and adopts an incoming body only while the text is untouched —
 `apps/mobile/app/(tabs)/(reading)/index.tsx`.)
+
+### Auto-title from the first line (leaving the editor)
+
+Leaving the editor for the reader is also the moment an unwanted placeholder
+title is replaced by a real one:
+
+- **Trigger** — every Edit → Read switch: tapping the **Read** tab and
+  **Tokenize** alike. A note opened straight into Read is *not* auto-titled (no
+  switch happened). Web runs it in `handleTokenize` (the single exit from the
+  editor — `ReaderPanel` routes its Read tab through `onTokenize`), mobile in
+  `handleTabChange` off the critical path, so the tab switches immediately.
+- **Only for placeholders** — the title is replaced only while it still reads
+  as `msg.untitled_note` in the current interface language, the English
+  `Untitled`, or is empty. A title the user typed is never overwritten, and a
+  note with no text has nothing to derive from.
+- **The title** — the note's first **non-empty** line, with leading Markdown
+  heading (`#`…`######`) and quote (`>`) markers stripped.
+- **Trimmed to 10 tokens, not 10 words** — the line is tokenized first, and the
+  title keeps the first **10 word tokens** (tokens the lemmatizer resolved),
+  with a trailing `…` when the line continues. Counting tokens is what makes
+  the trim meaningful for L2s written without spaces: a 30-character Chinese
+  line is one whitespace "word" but dozens of tokens. Spaces and punctuation
+  between the kept tokens ride along, so the title is a plain slice of the line.
+- **Tokenizer** — the same pipeline that tokenizes the reader's blocks: web's
+  `/lemmatize-normalized/batch`, mobile's `lemmatizeText` (server-first, local
+  fallback — SPEC-018). If tokenization fails or is unavailable (offline,
+  server down), the line falls back to whitespace words; tokenizer output that
+  does not reconstruct the line is rejected rather than glued into one word.
+- **Same rules on both platforms** — the logic is shared
+  (`packages/utils/src/note-title.ts`), so a note gets the same title whichever
+  client it is opened in. The rename goes through the normal note-update path
+  (web `PATCH /user-notes/:id`, mobile `renameNote` with its optimistic update,
+  body-cache patch and offline sync queue).
+- **It is not a tab switch** — the tab moves because the user asked for Read;
+  the rename is a consequence of that explicit action, and it never moves the
+  tab back.
 
 ## Edge Cases
 
@@ -315,15 +363,39 @@ ReaderPage
 | Action | Result |
 |---|---|
 | Click sidebar toggle | Opens or closes the sidebar panel |
-| Select a note in sidebar | Loads that note in the reader |
+| Select a note in sidebar | Loads that note in the reader (Edit when its body is empty) |
 | Select a chapter in sidebar | Loads that chapter in the reader |
 | Click "New Note" | Creates a blank note, switches to edit tab |
-| Click "Tokenize" (or the Read tab) | Switches to the read tab — the only way in |
+| Click "Tokenize" (or the Read tab) | Switches to the read tab — the only way in — and auto-titles a note still titled "Untitled" from its first line (10 tokens max) |
 | Edit a note's text | Stays on the current tab (an autosave never switches tabs) |
-| Rename a note | Inline title editing via pencil icon (saved notes only) |
+| Rename a note | Inline title editing via pencil icon next to the title (saved notes only; both apps), or the sidebar's more-menu |
 | Close EPUB | Returns to upload screen |
 | Press arrow keys | Navigate pages in the reader |
 | Toggle translation checkbox | Show/hide translated text blocks |
+
+## Revision (2026-09-11) — Editor margin, title-bar notes label, empty-note tab, auto-title
+
+Four behaviors were requested and are now specified above:
+
+- **Auto-title from the first line** on every Edit → Read switch (§"Auto-title
+  from the first line (leaving the editor)") — new, and the only rule here that
+  changes a note's data. Implemented once in
+  `packages/utils/src/note-title.ts` (20 unit tests) and called by both apps.
+- **Opening an empty note lands on Edit** — the tab table has said so since the
+  tabs were specified, but **web** forced Read in both note-open paths
+  (`handleSelectNote` and the `?noteId` mount effect); that is fixed. The same
+  section's parenthetical ("web … select note → read") was the stale half of the
+  contradiction and is rewritten.
+- **Web: the "List All Notes" button is gone from the drop zone**; the title
+  bar's sidebar toggle carries the `action.list_all_notes` label on the default
+  screen instead (§"Zone 1: Title Bar", §"Notes Reader Default Screen"). Mobile
+  keeps its own right-aligned row above the drop area.
+- **The editor text area keeps a margin** on both platforms (§"Notes Reader:
+  the Edit and Read Tabs").
+
+Also recorded: **mobile now has the title-bar edit-title pencil** the spec's
+Interaction Summary already promised (it previously offered rename only from the
+notes sidebar's more-menu) — commit `207bcdea`.
 
 ## Revision (2026-09-11) — Explicit Edit/Read switching, mobile List All Notes row
 
