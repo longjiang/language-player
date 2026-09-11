@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-084
 - **Feature**: Port SPEC-033 (native text selection → dictionary popup) to `apps/mobile/`, matching `apps/web`
-- **Status**: in-progress (all 6 tasks implemented, commits `12cedf42`…`e827735a`; **revised 2026-09-07** — the native selection context menu is now the tooltip, per the SPEC-033 tooltip revision; native device verification pending — no build executed)
+- **Status**: in-progress (all 6 tasks implemented, commits `12cedf42`…`e827735a`; **revised 2026-09-07** — the native selection context menu is now the tooltip, per the SPEC-033 tooltip revision; **revised 2026-09-11** — a release that ends a selection gesture no longer also opens the token popup; native device verification pending — no build executed)
 - **Created**: 2026-08-18
 - **ROADMAP Phase**: Mobile parity — Reading / Media / Vocab
 - **Web ref**: SPEC-033 (`docs/specs/033-selection-actions.md`), web sources `apps/web/src/hooks/use-selection-popup.ts`, `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/components/dictionary-popup.tsx`, `apps/web/src/components/selection-tooltip.tsx`, shared `packages/utils/src/sentence.ts` (`sentenceContaining`), `packages/utils` `mergePhraseTokens` (already consumed by mobile)
@@ -12,6 +12,33 @@
 ## Revision 2026-09-07 — native context menu as the tooltip
 
 SPEC-033's tooltip revision applies to mobile via the **native selection context menu** (not a custom RN toolbar): long-press selects, the platform edit menu shows exactly **Copy / Read Aloud / Look Up** (no Select All, no other items), and the selection stays active so handles can be re-dragged. Copy is handled natively; Read Aloud / Look Up emit an `onSelectionAction` event the JS turns into speech / a popup open. `TokenizedText` no longer auto-opens the popup on a settle timer (the 2026-08-18 behavior is superseded). Menu labels are passed from JS so the native menu respects the app's i18n.
+
+## Revision 2026-09-11 — the release that ends a selection is not a token tap
+
+**Bug (iOS, reported):** selecting a **single character** showed the dictionary popup immediately instead of the native menu, while a multi-character selection behaved correctly.
+
+**Cause**, confirmed from device logs (Metro, `[LP Mobile]`):
+
+```
+SELECTION-TRACK start=47 end=48 len=1 t=…293
+POPUP-TRIGGER=tap word="马涧" index=28 sinceSelectionMs=721 lastSelection=47-48
+```
+
+The selection was created normally, and 721 ms later — on the finger **release** — a **token tap** fired. No `SELECTION-ACTION` line appears at all, so the native menu never fired "Look up": the popup came from the container's `UITapGestureRecognizer` (`handleTap` → `onTokenTap`), which opened the popup for the whole token `马涧` on top of the menu.
+
+Both platforms judge a tap by **movement alone**, with no upper bound on how long the finger may rest. Selecting one character is a stationary press-and-hold, so it satisfies *both* the paragraph view's selection long-press *and* the tap recognizer. Selecting several characters requires dragging a handle, which exceeds the tap's `allowableMovement` / `scaledTouchSlop` and fails the tap — which is why only the single-character case was reported. The same trap applies to any multi-character selection made without dragging (e.g. a word chosen by long-press alone), which the movement check never protected either.
+
+**Fix (both platforms):** the paragraph view ignores a release that *ended* a selection gesture. `RubyTextParagraphView` stamps the touch-down time (`TokenTapGesture.touchDownTime` on iOS, `MotionEvent.downTime` on Android) and stamps `textViewDidChangeSelection` / `onSelectionChanged` for every **non-collapsed** selection change; the tap is dropped when the selection on screen was created by the very touch now ending. Both halves of that condition are load-bearing:
+
+- **non-collapsed selection still active** — a tap that merely *dismisses* an existing selection collapses it (a collapsed change is never stamped), so it still counts as a tap and opens its token;
+- **selection stamped at/after this touch's down time** — any later, independent tap begins *after* the stamp, so tap-to-lookup is unaffected and still supersedes the selection (Task 4.4).
+
+The suppression logs to the native console; in Metro the fix is observable as the **absence** of `POPUP-TRIGGER=tap` after a `SELECTION-TRACK` line.
+
+| Platform | Commit | Verification |
+|---|---|---|
+| iOS (`RubyTextParagraphView.swift`) | `e803b44f` | cause confirmed from device logs; fix pending the same manual check on a dev build |
+| Android (`RubyTextParagraphView.kt`) | `21a9f6e8` | mechanism mirrored from the iOS evidence; **not** reproduced from Android logs — pending manual check |
 
 ## Overview
 
@@ -57,7 +84,8 @@ Key findings:
   1. `textView.isSelectable = true`; keep `isEditable = false`, `isScrollEnabled = false`.
   2. Set `textView.delegate = self`; implement `textViewDidChangeSelection` → emit new `onSelection` event `{ start, end }` (UTF-16 offsets into `textView.text` — readings excluded because they are `CTRubyAnnotation` attributes). Only emit when `start != end` (non-collapsed); JS applies the settle timer.
   3. **Clear mechanism**: collapse the native selection when the popup dismisses (web's `clear()` calls `removeAllRanges`). Add a JS-controlled prop (e.g. `clearSelection` nonce) or module function that sets `textView.selectedRange = NSRange(location: <end>, length: 0)`.
-  4. **Tap vs selection arbitration** (risk): with `isSelectable = true`, the `UITextView`'s internal gesture recognizers may claim single taps and starve the existing external `UITapGestureRecognizer`. Verify on device; if starved, coordinate via gesture delegates (`gestureRecognizer(_:shouldRecognizeSimultaneouslyWith:)`) or attach the tap recognizer to the `textView` and fail it while `selectedRange.length > 0`. Token taps must keep working.
+  4. **Tap vs selection arbitration** (risk — **now resolved, see the 2026-09-11 revision**): with `isSelectable = true`, the `UITextView`'s internal gesture recognizers may claim single taps and starve the existing external `UITapGestureRecognizer`. Verify on device; if starved, coordinate via gesture delegates (`gestureRecognizer(_:shouldRecognizeSimultaneouslyWith:)`) or attach the tap recognizer to the `textView` and fail it while `selectedRange.length > 0`. Token taps must keep working.
+     - **Outcome:** taps were not starved — the opposite happened. Tap and selection recognized *simultaneously* (the delegate returns `true`), so the stationary release that creates a one-character selection fired **both** the selection long-press and the token tap, and the popup covered the native menu. The fix keeps simultaneous recognition but drops the tap when the current selection was created by the touch that is now ending (a stricter form of "fail it while `selectedRange.length > 0`", which alone would create a dead zone: a tap that dismisses an existing selection would be swallowed). Mirrored on Android in `RubyTextParagraphView.kt` — see the 2026-09-11 revision.
   5. **Callout suppression**: implement `UITextViewDelegate.textView(_:editMenuForTextIn:suggestedActions:)` returning an empty menu (iOS 16+; RN 0.86's deployment target is 15.1, so gate with `#available` and fall back to a `canPerformAction` override). Selection handles remain; the Copy/Select-All menu disappears.
 - **Edge cases**: selection crossing a line break; RTL books (`isRtl`); rapid re-drag (continuous events — JS settles); zero-length drag (no event).
 - **Test**: manual on iOS dev build with a ja book — long-press selects, handles drag, `onSelection` offsets match `runs` boundaries, tap-to-lookup still works, no callout.
@@ -133,7 +161,7 @@ Key findings:
 
 ## Open Questions / Risks
 
-1. **iOS tap vs selection arbitration** (Task 1.4) — the highest-risk item; must be validated on device before the rest of the iOS work is considered done.
+1. **iOS tap vs selection arbitration** (Task 1.4) — the highest-risk item; **cause found and fixed 2026-09-11** (`e803b44f`, mirrored on Android in `21a9f6e8`). Taps were never starved: the release that ended a selection was *also* read as a tap, so a one-character selection opened the popup over the menu. Device re-verification pending — see the 2026-09-11 revision.
 2. **RN plain-path tap/select coexistence** (Task 4.6) — `selectable` Text swallowing nested `onPress` on either platform would force the "selection supersedes taps" compromise.
 3. **Android TextView in ScrollView** — long-press selection vs the reader's scroll gestures; standard Android behavior is workable but needs device QA (page-flip pan is a horizontal gesture, so conflict should be minimal).
 4. **Android callout suppression** (`setCustomSelectionActionModeCallback`) — verify the empty callback doesn't remove the selection handles on the target Android version range.
@@ -152,12 +180,15 @@ All six tasks are implemented and committed; `tsc --noEmit` (apps/mobile) and th
 | 4 — `TokenizedText` selectionDictionary + `lib/selection-map.ts` (+7 unit tests) | `f3b050e1` | — |
 | 5 — `DictionaryPopup` extractPhrases | `896358ed` | — |
 | 6 — enable in readers + subtitle transcripts | `e827735a` | — |
+| 2026-09-11 — selection-release guard (iOS) | `e803b44f` | Yes (Swift) |
+| 2026-09-11 — selection-release guard (Android parity) | `21a9f6e8` | Yes (Kotlin) |
+| 2026-09-11 — popup-trigger diagnostics (JS, temporary) | `37b8c84f` | — |
 
 **Notable implementation finding (vs spec draft):** this RN version's `Text` has no `onSelectionChange` (TextInput only), so the plain RN-Text path cannot host selection. `selectionDictionary` therefore routes word-replace / phonetics-off contexts through the native paragraph view as well (line box without the reading slot), making the paragraph view the single selection host on both platforms. Byeonggi remains suppressed in selection-enabled selectable paths so native offsets equal `displayTexts` + indent exactly.
 
 **Quick gloss (2026-08-22 change):** quick gloss is **no longer** suppressed in selection-enabled contexts. The native paragraph view (`RubyTextParagraphView` on iOS/Android) renders the gloss as a normal inline run, so its selectable string now contains the ` (‘def’) ` suffix. To keep drag-select offsets correct, `TokenizedText`'s selection map (`lib/selection-map.ts` consumer) reproduces that suffix byte-for-byte for saved, non-highlighted tokens. Consequence: the gloss chars are technically part of the selectable string, so a drag-select that spans a saved word may include the gloss snippet, and the sentence-context fallback for such a selection degrades to the whole block. This matches web's visual placement (inline after a saved word) but diverges from web's `select-none` gloss — mobile can't mark a sub-range of a single native text view as non-selectable. See the `selectionMap` useMemo in `apps/mobile/components/TokenizedText.tsx`.
 
-**Remaining device verification (see Test Plan):** iOS tap-vs-selection arbitration, callout suppression; Android span rendering parity + context-menu suppression; plain-path visual parity; `/extract-phrases` end-to-end; phrase retokenization after saving from a selection.
+**Remaining device verification (see Test Plan):** iOS tap-vs-selection arbitration (fix committed `e803b44f`, unverified), callout suppression; Android span rendering parity + context-menu suppression + the mirrored selection-release guard (`21a9f6e8`, unverified); plain-path visual parity; `/extract-phrases` end-to-end; phrase retokenization after saving from a selection.
 
 ## Test Plan
 
@@ -166,8 +197,11 @@ All six tasks are implemented and committed; `tsc --noEmit` (apps/mobile) and th
   | Context | iOS | Android |
   |---|---|---|
   | Ruby paragraph (ja book) | long-press select → native menu (Copy / Read Aloud / Look Up); Look Up → popup; tap still works; no Select All | same after Task 2 rewrite; no Select All |
+  | **Single-character selection** (2026-09-11 fix) | long-press ONE character → native menu only, NO dictionary popup; Look Up → popup; Read Aloud → speaks that character | same |
+  | **Tap after a selection** (no dead zone) | with a selection up, tap another word → its token popup opens and the selection clears | same |
   | Plain path (phonetics off) | select → popup | select → popup |
   | extractPhrases | Phrases cards + pronunciation | same |
   | Supersede | selection closes token popup & vice versa | same |
   | Save from selection | phrase retokenization highlights the saved phrase | same |
-- **Regression**: ruby rendering (readings position, line height, saved-word highlight) unchanged on both platforms; reader page-turn pan unaffected.
+- **Regression**: ruby rendering (readings position, line height, saved-word highlight) unchanged on both platforms; reader page-turn pan unaffected; plain tap-to-lookup on a word with no selection up unchanged.
+- **Log check for the 2026-09-11 fix** (Metro, `[LP Mobile]`): a single-character long-press emits `SELECTION-TRACK … len=1` and then **no** `POPUP-TRIGGER=tap` (and no `SELECTION-ACTION` unless the menu item is tapped). Before the fix the same gesture emitted `POPUP-TRIGGER=tap` with a small `sinceSelectionMs`. A genuine quick tap still emits `POPUP-TRIGGER=tap` with `sinceSelectionMs=none`.
