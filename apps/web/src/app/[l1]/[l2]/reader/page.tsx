@@ -114,7 +114,10 @@ export default function ReaderPage() {
       setLoading(true);
       apiClient.get<Note>(`/user-notes/${id}`)
         .then(note => {
-          setText(note.text || ''); setTranslation(note.translation || ''); setTitle(note.title || ''); setCurrentNoteId(id); setActiveTab('read');
+          setText(note.text || ''); setTranslation(note.translation || ''); setTitle(note.title || ''); setCurrentNoteId(id);
+          // Empty note → Edit (SPEC-009: "New Note, or opening an empty note →
+          // Opens on Edit"; mobile decides the same way in its session effect).
+          setActiveTab((note.text || '').trim() ? 'read' : 'edit');
           const saved = getNotePosition(id);
           setInitialLocation(saved != null ? { blockIndex: saved } : null);
         })
@@ -174,7 +177,10 @@ export default function ReaderPage() {
     try {
       const note = await apiClient.get<Note>(`/user-notes/${noteId}`);
       setText(note.text || ''); setTranslation(note.translation || ''); setTitle(note.title || '');
-      setCurrentNoteId(noteId); setDirty(false); setActiveTab('read');
+      setCurrentNoteId(noteId); setDirty(false);
+      // A note with no body has nothing to read — open it on Edit instead of
+      // dropping the user onto the reader's empty state (SPEC-009 tab table).
+      setActiveTab((note.text || '').trim() ? 'read' : 'edit');
       const saved = getNotePosition(noteId);
       setInitialLocation(saved != null ? { blockIndex: saved } : null);
       router.replace(`/${l1.code}/${l2.code}/reader?noteId=${noteId}`, { scroll: false });
