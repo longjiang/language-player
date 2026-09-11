@@ -69,8 +69,10 @@ function mimeFor(name: string): string {
 
 export default function ImageReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, updateDisplay, getL2, updateL2 } = useSettingsContext();
   const t = useT();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2Lang.code).display.translation;
   const router = useRouter();
   const { isMd } = useResponsive();
 
@@ -209,7 +211,7 @@ export default function ImageReaderScreen() {
     text: current?.md ?? '',
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: display.translation,
+    showTranslation,
     translationSplit: display.translationSplit,
     resetKey: current ? current.id : null,
     estimate: true,
@@ -399,10 +401,12 @@ export default function ImageReaderScreen() {
             measuring={pagination.measuring}
             l2Code={l2Lang.code}
             l1Code={l1Lang.code}
-            showTranslation={display.translation}
+            showTranslation={showTranslation}
             onToggleTranslation={() => {
-              const next = !display.translation;
-              updateDisplay({ translation: next });
+              const next = !showTranslation;
+              updateL2(l2Lang.code, {
+                display: { ...getL2(l2Lang.code).display, translation: next },
+              });
             }}
             showTextActions
             translationSideBySide={isMd}

@@ -51,7 +51,7 @@ interface SubtitleDisplayProps {
 export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, notes, highlightTerms, defaultLine, singleLine = false, singlelineTextScale = SINGLELINE_TEXT_SCALE, overlay = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
-  const { display, playback, tokenizedText } = useSettingsContext();
+  const { display, playback, tokenizedText, getL2 } = useSettingsContext();
   const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
   // SPEC-082 Task 1: the translation renders at `translationSize` × the L2
   // text size (clamped to [0.5, 1], default 0.8).
@@ -76,7 +76,8 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     [lines],
   );
 
-  const showTranslation = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2Lang.code).display.translation;
 
   // Per-line highlight form: the first highlight term present in each line.
   // Sent to /translate_array so the server bolds it in the translation

@@ -93,7 +93,9 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
 
 export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, search } = useSettingsContext();
+  const { getL2, search } = useSettingsContext();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(baseCode(l2Lang.code)).display.translation;
   const { isPro } = useSubscription();
   const t = useT();
   const router = useRouter();
@@ -507,7 +509,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     translationInput.lines,
     l1Lang.code,
     baseCode(l2Lang.code),
-    display.translation,
+    showTranslation,
     listFirstVisible,
     translationInput.forms,
   );
@@ -1162,7 +1164,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                     onSelect={() => selectFromList(videoIndex)}
                     segments={rowSegments[videoIndex] ?? []}
                     highlightTerms={highlightTerms}
-                    showTranslation={display.translation}
+                    showTranslation={showTranslation}
                     translationStart={translationInput.rowStarts[videoIndex] ?? 0}
                     translations={listTranslations}
                   />
