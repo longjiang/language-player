@@ -70,6 +70,15 @@ const SETTLE_MS = 600;
  *  the gap, and if the user flips again before this fires, no heavy render was
  *  ever started — so nothing from the pause leaks into the next flip streak. */
 const RENDER_COMMIT_MS = 1500;
+/** Base wait with NO measurement progress (a non-estimate reader stays on its
+ *  loading spinner until every block has reported its layout) before the
+ *  measurement is treated as stalled and recovered. Scaled by the block count
+ *  (see the watchdog's `stallMs`) so a large stream's first layout pass isn't
+ *  mistaken for a stall — progress events restart the timer, so this is only
+ *  ever a no-progress timeout. */
+const MEASURE_STALL_MS = 2000;
+/** How many times a stalled measurement may be recovered per block stream. */
+const MAX_MEASURE_STALL_RECOVERIES = 2;
 
 const TERMINAL_PUNCTUATION = /[。．.！？!?…"”』」"')\]]$/;
 
@@ -600,7 +609,12 @@ export function useEpubPagination({
     setTotalPagesEstimate(0);
     setMeasureStart(0);
     setMeasureEnd(0);
-    setMeasureNonce(0);
+    // Bump (never reset to 0): the nonce must stay monotonic so the measuring
+    // window's key always changes on a new stream. Resetting it could round-trip
+    // back to a key the reused measuring views already carry (note A and note B
+    // both ending on nonce 1), leaving blocks that kept their height with no
+    // re-report — the same permanent-hole hang the text reset guards against.
+    setMeasureNonce(n => n + 1);
     setMetricsVersion(0);
     setTokenCache({});
     setBlockTranslations({});
@@ -723,6 +737,14 @@ export function useEpubPagination({
   // ── Reset measurement state when text (chapter) changes ──
   useEffect(() => {
     paginationLog(`[Pagination] 🔁 text reset textLength=${text.length}`);
+    // Always visible (global channel, no env var): a text reset that lands
+    // AFTER the stream was already measured is the setup for the reused-window
+    // hole below — the line says how much had been measured when the heights
+    // were dropped, so a stalled reader can be traced to its wipe.
+    appLog(
+      `[Pagination] 🔁 text reset — dropping ${measuredBlockCount} measured heights`
+      + ` (wasMeasured=${hasMeasured} textLength=${text.length} nonce=${measureNonce}→${measureNonce + 1})`,
+    );
     setPageBreaks([]);
     setHasMeasured(false);
     setMeasuredBlockCount(0);
@@ -731,7 +753,16 @@ export function useEpubPagination({
     setTotalPagesEstimate(0);
     setMeasureStart(0);
     setMeasureEnd(0);
-    setMeasureNonce(0);
+    // BUMP (never reset to 0) the measuring-window nonce: the heights just
+    // cleared below have to be re-reported, and the hidden measuring views are
+    // keyed by this nonce. A content change that leaves the window key
+    // untouched REUSES the mounted measure views — React only re-fires
+    // onLayout where the layout actually changed — so a block whose height
+    // happens to match the previous stream's leaves a permanent hole in
+    // blockHeightsRef/blockMetricsRef and `hasMeasured` never becomes true:
+    // the reader sits on its loading spinner forever (until the reader is
+    // unmounted, e.g. by switching to the Edit tab and back).
+    setMeasureNonce(n => n + 1);
     setMetricsVersion(0);
     setTokenCache({});
     setVisibleIndices([]);
@@ -975,6 +1006,67 @@ export function useEpubPagination({
     setHasMeasured(true);
   }, [blocks, availableHeight, measuredBlockCount, estimate, hardStarts]);
 
+  // ── Measurement stall watchdog (non-estimate readers) ──
+  // Until every block has reported its layout, a non-estimate reader shows a
+  // loading spinner — there is no estimated page to fall back on. If a block
+  // never reports (an onLayout that never fired, a measuring view that was
+  // reused instead of remounted after the heights were dropped), that wait is
+  // unbounded and the reader looks frozen with no way out but leaving the
+  // screen. After MEASURE_STALL_MS with no progress at all, log the state —
+  // the missing block indices are the diagnosis — and force the hidden
+  // measuring window to remount so every block reports again. Bounded to
+  // MAX_MEASURE_STALL_RECOVERIES per block stream so a genuinely unmeasurable
+  // stream can't remount in a loop.
+  const stallRecoveriesRef = useRef(0);
+  const stallLoggedRef = useRef(false);
+  useEffect(() => {
+    stallRecoveriesRef.current = 0;
+    stallLoggedRef.current = false;
+  }, [blocks]);
+  useEffect(() => {
+    if (estimate || !blocks || blocks.length === 0 || hasMeasured) return;
+    // Larger streams need longer for their first layout pass; a progress event
+    // (measuredBlockCount) restarts this timer, so only a full stop counts.
+    const stallMs = MEASURE_STALL_MS + Math.min(8000, blocks.length * 5);
+    const armedAt = Date.now();
+    const timer = setTimeout(() => {
+      const missing: number[] = [];
+      for (let i = 0; i < blocks.length; i++) {
+        if (blockHeightsRef.current[i] == null || blockMetricsRef.current[i] == null) missing.push(i);
+      }
+      const missingKeys = missing.slice(0, 8).map(i => `${i}:${blocks[i]?.kind ?? '?'}`).join(',');
+      const report =
+        `measured=${measuredBlockCount}/${blocks.length} missing=${missing.length}`
+        + (missing.length > 0 ? ` [${missingKeys}${missing.length > 8 ? ',…' : ''}]` : '')
+        + ` heightsLen=${blockHeightsRef.current.length} metricsLen=${blockMetricsRef.current.length}`
+        + ` window=[${measureStart},${measureEnd}) measuredWindow=${measuredWindow} nonce=${measureNonce}`;
+      stallRecoveriesRef.current += 1;
+      if (stallRecoveriesRef.current > MAX_MEASURE_STALL_RECOVERIES) {
+        if (!stallLoggedRef.current) {
+          stallLoggedRef.current = true;
+          appLog(`[Pagination] 🛑 measurement still stalled after ${MAX_MEASURE_STALL_RECOVERIES} recoveries — ${report}`);
+        }
+        return;
+      }
+      appLog(
+        `[Pagination] ⚠️ measurement stalled — no block layout for ${Date.now() - armedAt}ms, forcing a measuring-window remount`
+        + ` (recovery ${stallRecoveriesRef.current}/${MAX_MEASURE_STALL_RECOVERIES}) ${report}`,
+      );
+      blockHeightsRef.current = [];
+      blockMetricsRef.current = [];
+      setMeasuredBlockCount(0);
+      waitingMissingRef.current = -1;
+      // Make sure the hidden measuring window is (a) mounted — it needs a
+      // non-zero measuredWindow — and (b) remounted, so every block re-reports.
+      setMeasuredWindow(w => Math.max(w, blocks.length));
+      setMeasureNonce(n => n + 1);
+    }, stallMs);
+    return () => clearTimeout(timer);
+  }, [
+    estimate, blocks, hasMeasured, measuredBlockCount,
+    measureStart, measureEnd, measuredWindow, measureNonce,
+  ]);
+
   // ── Lazy mode: when the real viewport / translation layout changes, keep the
   // current page visible (its boundaries are close) and refine exactly in the
   // background — never show a spinner. ──
@@ -1025,6 +1117,10 @@ export function useEpubPagination({
     setPageBreaks([]);
     blockHeightsRef.current = [];
     blockMetricsRef.current = [];
+    // Same reason as the text reset above: the heights were just dropped, so
+    // the hidden measuring window must remount to report them again — a reused
+    // measuring view only re-fires onLayout for blocks whose layout changed.
+    setMeasureNonce(n => n + 1);
   }, [estimate, blocks, showTranslation, translationSplit]);
 
   // Cancel a pending measurement rAF on unmount.
