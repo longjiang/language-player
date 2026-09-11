@@ -2,8 +2,8 @@
 
 ## Metadata
 - **Spec ID**: SPEC-089
-- **Feature**: PDF bookshelf entries (cover, thumbnails, AI page→markdown, TOC/thumbnails buttons) and the image reader (vision OCR) — web + mobile
-- **Status**: implemented (2026-08-25; web `dbc39d9d`, mobile `64745e95`, image `53cf12e1`)
+- **Feature**: PDF bookshelf entries (cover, thumbnails, AI page→markdown, TOC/thumbnails buttons) and the image reader (vision OCR) — **web implemented; mobile PDF reverted**
+- **Status**: **partially implemented — web only.** Web PDF support and the image reader are implemented (web `dbc39d9d`, image `53cf12e1`). **Mobile PDF support was reverted and does not exist**: it landed in `64745e95`, then was rolled back by `a563180a`, `79da12e0` (roll apps/mobile back to 3.4.0 to clear a Release black-screen) and `d53a6561` ("drop standalone PDF screen + its new i18n keys — match web (epub-embedded)"). Mobile now has **no PDF code, no PDF route, and no `EpubMeta.format` field** — the only occurrence of `pdf` in mobile app code is a comment in `apps/mobile/lib/parse-markdown.ts:125`. Mobile claims in the body below are **aspirational, not as-built**.
 - **ROADMAP Phase**: Phase 5 (Content Features) — Reading
 - **See also**: [SPEC-090 — Image Reader](090-image-reader.md), [EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [SPEC-087 — Paginated Reader](087-paginated-reader.md), [SPEC-085 — EBook Reader Interface](085-ebook-reader-interface.md)
 

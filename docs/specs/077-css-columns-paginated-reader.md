@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-077
 - **Feature**: One shared paginated reader panel for all web readers, using CSS multi-column layout for pagination and windowed loading of only the estimated previous/next few pages
-- **Status**: draft
+- **Status**: draft — **not implemented as specified.** The CSS multi-column engine described below does not exist: `apps/web/src/lib/block-stream.ts` and `apps/web/src/hooks/use-css-columns-pager.ts` were never created, and **no reader uses CSS columns** (the only occurrence of `break-inside` anywhere in `apps/web/src` is an unrelated `break-inside-avoid-column` in `inflection-table.tsx:187`). What shipped instead is the **measurement-based predecessor** — `apps/web/src/hooks/use-paginated-reader.ts`, whose own header documents it as this spec's predecessor. The component surface this spec plans (`apps/web/src/components/reader/paginated-reader.tsx`) **is** the one in use, so a future migration swaps only the hook internals, not the call sites.
 - **Created**: 2026-08-16
 - **ROADMAP Phase**: Phase 4 (Reading)
 - **See also**:
