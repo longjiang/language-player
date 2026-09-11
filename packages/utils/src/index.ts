@@ -140,6 +140,7 @@ export {
   spellBlankText,
   spellSurfaceInTokens,
   spellSurfaceInContext,
+  formatDefinitionList,
   bestScriptSimilarity,
   scoreSpellResult,
   SPELL_TEST_TOTAL_MS,

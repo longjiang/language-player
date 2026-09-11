@@ -1092,3 +1092,35 @@ export function buildSrsQuestionPrompt(input: {
     outputShape,
   ].filter(Boolean).join('\n');
 }
+
+// ── Card-front meaning aids (spell / scrabble) ────────────────────────────
+//
+// Spell and scrabble modes show the context translation *before* the answer is
+// submitted (SPEC-066), so the learner knows what the sentence means while
+// producing the written form. Two aids build on that: the quick gloss after the
+// blanked word (subject to the learner's quick-gloss setting), and one line of
+// dictionary definitions under the translation. Neither reveals the spelling or
+// the reading, so they are not the first-character/reading hints the scrabble
+// no-hint rule suppresses.
+
+/**
+ * An entry's definitions as one line for the spell/scrabble card front: each
+ * definition trimmed, empty entries dropped, and the list joined by a
+ * **script-appropriate semicolon** — fullwidth `；` for Chinese/Japanese/Korean
+ * L1s (the punctuation those scripts use) and ASCII `; ` otherwise.
+ *
+ * Returns `''` when there is nothing to show, so callers skip the element
+ * entirely rather than rendering an empty paragraph.
+ */
+export function formatDefinitionList(
+  definitions: readonly string[] | undefined | null,
+  l1Code: string,
+): string {
+  const list = (definitions ?? [])
+    .map((d) => (typeof d === 'string' ? d.trim() : ''))
+    .filter((d) => d.length > 0);
+  if (list.length === 0) return '';
+  const base = (l1Code.split('-')[0] ?? '').toLowerCase();
+  const separator = base === 'zh' || base === 'ja' || base === 'ko' ? '；' : '; ';
+  return list.join(separator);
+}
