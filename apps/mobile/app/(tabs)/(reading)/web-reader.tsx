@@ -282,6 +282,18 @@ export default function WebReaderScreen() {
                   handleMeasureBlock={pagination.handleMeasureBlock}
                   onVisibleBlocksChange={pagination.onVisibleBlocksChange}
                   contentWidth={pagination.contentWidth}
+                  // Measuring-window state (as the epub/image readers and the
+                  // tokenizer card pass it): this reader paginates from an
+                  // estimate, and the hidden window is what refines those
+                  // boundaries to an exact page count. Without the window
+                  // bounds PaginatedReader's defaults (-1/-1) never satisfy its
+                  // mount condition, so the refine silently never ran.
+                  measuredWindow={pagination.measuredWindow}
+                  measureStart={pagination.measureStart}
+                  measureEnd={pagination.measureEnd}
+                  measureNonce={pagination.measureNonce}
+                  flipping={pagination.flipping}
+                  measuring={pagination.measuring}
                   l2Code={l2Lang.code}
                   l1Code={l1Lang.code}
                   showTranslation={showTranslation}

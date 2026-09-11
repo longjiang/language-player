@@ -506,6 +506,30 @@ export function PaginatedReader({
   const loadingTokens = scrollMode ? false : (loadingTokensProp ?? false);
   const hasPrev = scrollMode ? false : (hasPrevProp ?? page > 0);
   const hasNext = scrollMode ? false : (hasNextProp ?? page < totalPages - 1);
+
+  // ── Guard: measuring, but no measuring-window state wired ──
+  // The hidden measuring window below is the only way blocks report their
+  // sizes, and its key is built from `measureStart`/`measureNonce`/
+  // `measureLineHeight` — all of which have constant defaults. A caller that
+  // paginates without an estimate (so it stays on the spinner until every
+  // block is measured) but forgets to pass the hook's measuring state mounts
+  // that window exactly once, and can never remount it: when a text change
+  // invalidates the measurements, React reuses the mounted views, onLayout only
+  // re-fires where the layout actually changed, and a block whose height
+  // matched the previous stream's leaves a hole the page-break wait never gets
+  // past. Log it loudly (global channel) so the missing wiring is not silent.
+  const measureWiringWarnedRef = useRef(false);
+  useEffect(() => {
+    if (measureWiringWarnedRef.current || scrollMode || blocks == null || hasMeasured) return;
+    if (measureNonce !== 0 || measureStart !== -1 || measureEnd !== -1 || measuredWindow !== 0) return;
+    measureWiringWarnedRef.current = true;
+    appLog(
+      '[Reader] ⚠️ measuring with no measuring-window state wired'
+      + ' (measureStart/measureEnd/measuredWindow/measureNonce are all defaults)'
+      + ' — pass them from useEpubPagination; a content change can otherwise'
+      + ' leave this reader on its loading spinner indefinitely',
+    );
+  }, [scrollMode, blocks, hasMeasured, measureNonce, measureStart, measureEnd, measuredWindow]);
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const { getL2, tokenizedText: tokenSettings, display, updateDisplay } = useSettingsContext();
