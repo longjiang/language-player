@@ -482,6 +482,12 @@ export default function ReaderPage() {
     </div>
   );
 
+  /** Default screen = nothing is loaded: no open note AND no text pushed in
+   *  from the extension / `?url=` / method-arg flows. Shared by the render
+   *  below and the title bar's sidebar toggle (the toggle carries the "List
+   *  All Notes" label only here — see SPEC-009 §"Notes Reader Default Screen"). */
+  const isDefaultScreen = currentNoteId == null && !loading && !text.trim();
+
   // ── Loaded-note screen (note open) ──
   const noteScreen = (
     <>
@@ -541,22 +547,33 @@ export default function ReaderPage() {
             </div>
           )}
         </div>
-        {/* Sidebar toggle — mobile: opens the slide-in sheet */}
+        {/* Sidebar toggle — mobile: opens the slide-in sheet. On the default
+            screen the toggle also carries the "List All Notes" label: the
+            notes list's discoverable entry point now that the drop zone has
+            no button of its own (SPEC-009 §"Notes Reader Default Screen"). */}
         <button
           onClick={() => setMobileSidebarOpen(true)}
-          className="lg:hidden flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          aria-label={t('action.show_sidebar')}
+          className="lg:hidden flex-shrink-0 flex items-center gap-1.5 rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          aria-label={isDefaultScreen ? undefined : t('action.show_sidebar')}
         >
           <PanelRight className="h-5 w-5" />
+          {isDefaultScreen && (
+            <span className="text-xs font-medium">{t('action.list_all_notes')}</span>
+          )}
         </button>
 
-        {/* Sidebar toggle — desktop: collapses the persistent panel */}
+        {/* Sidebar toggle — desktop: collapses the persistent panel (same
+            default-screen label as the mobile toggle above) */}
         <button
           onClick={() => setSidebarOpen(o => !o)}
-          className="hidden lg:flex flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="hidden lg:flex flex-shrink-0 items-center gap-1.5 rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+          aria-label={isDefaultScreen ? undefined : (sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar'))}
         >
           {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+          {isDefaultScreen && (
+            <span className="text-xs font-medium">{t('action.list_all_notes')}</span>
+          )}
         </button>
       </div>
 
@@ -565,7 +582,7 @@ export default function ReaderPage() {
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
           {/* Default screen only when truly nothing is loaded: no open note AND
               no text pushed in from the extension / ?url= / method-arg flows. */}
-          {currentNoteId == null && !loading && !text.trim() ? defaultScreen : noteScreen}
+          {isDefaultScreen ? defaultScreen : noteScreen}
         </div>
 
         {/* Sidebar — shared desktop panel + mobile sheet */}
