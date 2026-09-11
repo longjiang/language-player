@@ -135,7 +135,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tok
   const [fetchedIsGenerated, setFetchedIsGenerated] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const isSingleline = mode === 'singleline';
-  const showTranslation = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2Code).display.translation;
 
   useEffect(() => {
     if (initialLines) {

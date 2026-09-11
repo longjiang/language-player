@@ -99,9 +99,11 @@ export function ReaderPanel({
 }: ReaderPanelProps) {
   const t = useT();
   const router = useRouter();
-  const { display, tokenizedText, updateDisplay } = useSettingsContext();
+  const { display, tokenizedText, updateDisplay, getL2, updateL2 } = useSettingsContext();
   const glyphLang = useGlyphLang(l2.code);
-  const showTranslation = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const l2Settings = getL2(l2.code);
+  const showTranslation = l2Settings.display.translation;
   const textZoom = useTextScale();
 
   // Splitter live state. During a drag the row re-splits immediately via

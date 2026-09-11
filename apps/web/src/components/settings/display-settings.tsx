@@ -81,7 +81,7 @@ export function DisplaySettings() {
   }, [l2.code]);
 
   useEffect(() => {
-    if (!previewText || !display.translation) {
+    if (!previewText || !l2Settings.display.translation) {
       setPreviewTranslation('');
       return;
     }
@@ -90,7 +90,7 @@ export function DisplaySettings() {
       if (!cancelled) setPreviewTranslation(result);
     });
     return () => { cancelled = true; };
-  }, [previewText, l1.code, l2.code, display.translation]);
+  }, [previewText, l1.code, l2.code, l2Settings.display.translation]);
 
   const mountedRef = useRef(false);
   useEffect(() => {
@@ -172,8 +172,10 @@ export function DisplaySettings() {
           <ToggleRow
             label={t('label.show_translation')}
             description={t('msg.show_translation_desc')}
-            checked={display.translation}
-            onChange={v => updateDisplay({ translation: v })}
+            checked={l2Settings.display.translation}
+            onChange={v => updateL2(l2.code, {
+              display: { ...l2Settings.display, translation: v },
+            })}
           />
           <ToggleRow
             label={t('label.enable_popup_dictionary')}

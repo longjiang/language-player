@@ -132,7 +132,7 @@ export function TextActionMenu({
 }: TextActionMenuProps) {
   const t = useT();
   const { l1 } = useLanguage();
-  const { display, tokenizedText } = useSettingsContext();
+  const { getL2, tokenizedText } = useSettingsContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSideBySide, setIsSideBySide] = useState(false);
   /** "Ask AI" (the shared AiExplanation chat) open for this text block. */
@@ -144,10 +144,11 @@ export function TextActionMenu({
   const aligned = translationAligned ?? null;
   const hasTranslation = !!(translation || aligned);
   // The translation column must never reserve space when translation is off.
-  // Callers gate `translation`/`translationAligned` on display.translation, but
-  // guard here too so a stale/erroneously-passed translation can't render a
-  // blank column on wide screens (reported against the web readers).
-  const showTranslation = display.translation;
+  // Callers gate `translation`/`translationAligned` on the per-L2
+  // `display.translation`, but guard here too so a stale/erroneously-passed
+  // translation can't render a blank column on wide screens (reported against
+  // the web readers).
+  const showTranslation = getL2(l2Code).display.translation;
   const renderColumn = showTranslation && hasTranslation;
   // A side column renders either the real translation (`renderColumn`) or the
   // loading skeleton while a translation is in flight.

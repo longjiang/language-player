@@ -106,7 +106,7 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
 export function SubsSearchResults({ term, headTerm = '', embedded = false, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const { display, search } = useSettingsContext();
+  const { getL2, search } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
 
   // Full fetched result pool + the youtube_ids skipped for failed embeds.
@@ -823,7 +823,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   }, [filteredVideos, collapsedGroups, listRef]);
 
   const listFirstLineIndex = translationInput.rowStarts[listFirstVisible] ?? 0;
-  const listTranslationsEnabled = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const listTranslationsEnabled = getL2(l2.code).display.translation;
   const {
     translatedLines: listTranslations,
     loading: listTranslating,
@@ -862,7 +863,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           onSelect={() => selectFromList(i)}
           segments={rowSegments[i] ?? []}
           highlightTerms={highlightTerms}
-          showTranslation={display.translation}
+          showTranslation={listTranslationsEnabled}
           translationStart={translationInput.rowStarts[i] ?? 0}
           translations={listTranslations}
           translating={listTranslating}
@@ -870,7 +871,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         />
       );
     },
-    [currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
+    [currentIndex, selectFromList, rowSegments, highlightTerms, listTranslationsEnabled, translationInput, listTranslations, listTranslating, listFirstLineIndex],
   );
 
   // Group header bar: a tappable bar showing the group's title and its result

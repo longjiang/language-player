@@ -52,19 +52,29 @@ export function TokenizerLanguageCard({
   code,
   height,
   longSample,
+  showTranslationOverride,
 }: {
   code: string;
   /** Card height (px, from the page's window-aware layout). */
   height: number;
   /** Whether to show the long multi-paragraph sample (default short). */
   longSample: boolean;
+  /** Test-page PREVIEW override for the per-L2 translation setting. `undefined`
+   *  = follow this language's own `l2[code].display.translation` (the default,
+   *  and what every real surface does). The harness sets it so the calibration
+   *  view can be flipped across all languages at once without editing each
+   *  language's setting; it is deliberately NOT persisted. */
+  showTranslationOverride?: boolean;
 }) {
   const { l1 } = useLanguage();
-  const { display, tokenizedText, updateDisplay } = useSettingsContext();
+  const { display, tokenizedText, updateDisplay, getL2 } = useSettingsContext();
   const t = useT();
   const textZoom = useTextScale();
   const ref = useRef<HTMLDivElement>(null);
-  const showTranslation = display.translation;
+  // This card renders ONE language (`code`), so it follows that language's
+  // per-L2 translation setting — the tokenizer test page shows many L2s at
+  // once and each must reflect its own value.
+  const showTranslation = showTranslationOverride ?? getL2(code).display.translation;
 
   const [loaded, setLoaded] = useState(false);
   const [sample, setSample] = useState<{ text: string; title: string } | null>(null);
