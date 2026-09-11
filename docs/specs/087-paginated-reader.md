@@ -132,6 +132,7 @@ a fixed icon box. Both platforms compute the same footprint from
 
 - **Controls.** The reader shows: previous/next, the page counter, the translation toggle, and table-of-contents and search buttons (a chapter tree for books, a heading list for the notes/web reader — the TOC button is shown only when the text has headings), plus the current chapter name (books). An **Ask AI** button sits next to Search and opens the reader summary chat (see §7.1).
 - **Empty / pending states.** A load state (pulsing skeleton) shows while a page's words and translation are prepared, so the layout doesn't jump.
+- **The load state always resolves.** A reader may show its loading state only while work is actually in progress — no reader may sit on a spinner indefinitely. When the content changes underneath a reader that is still measuring (a note body arriving in stages, an edited chapter, a translation or size change), the previous stream's measurements are dropped **and** the measuring pass that produced them is invalidated, so every block reports its size again; a measurement that makes no progress at all is recovered automatically and logged. Leaving the screen must never be the only way out. (Readers that paginate from an estimate, like the book reader, are never blocked on measurement.)
 - **Notes.** The notes reader has a sidebar to create, rename, delete, and switch between notes.
 
 ### 7.1 Reader "Ask AI" summary chat
@@ -307,3 +308,17 @@ rendering, so a chip never interrupts the sentence around it (web:
 `MarkdownExplanation`; mobile: `AiExplanation`'s inline-quote renderer).
 Motivated by real responses where two inline chips broke one sentence into
 fragments (screenshot, 2026-09-04).
+
+## Revision (2026-09-11) — the load state must always resolve
+
+§7 gains a rule the implementation was violating: a reader may show its
+loading state only while work is actually in progress. The mobile notes
+reader (the pagination path that measures the whole stream, without
+estimates) could sit on that spinner forever when a note's body changed
+underneath it — the heights were dropped, but the hidden measuring views
+are keyed so that a content change *reuses* them, and React only re-fires
+`onLayout` where the layout actually changed, so a block whose height
+matched the previous stream's never re-reported and the page-break wait
+never completed. The fix drops a stream's measurements **and** invalidates
+the measuring pass that produced them; a measurement that makes no progress
+at all is recovered automatically and logged (`apps/mobile/hooks/use-epub-pagination.ts`).
