@@ -17,7 +17,7 @@ A monorepo consolidating three legacy codebases:
 Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there. Never commit the monorepo unless the these are ignored in `.gitignore`, and never register them as submodules, or Netlify deploy will fail.
 
 The **active development** happens in:
-- `apps/web/` — Next.js 14 (replaces Classic)
+- `apps/web/` — Next.js 16.3 App Router with React 19 (replaces Classic; see ADR-0025)
 - `apps/mobile/` — React Native/Expo 57, fresh port from Next.js per ADR-0010 (replaces legacy GO app at `apps/mobile-go-legacy/`)
 - `packages/shared/` — Shared types & constants
 - `packages/api-client/` — Shared API client
@@ -31,7 +31,7 @@ The **active development** happens in:
 
 3. **The Nuxt Classic app is the source of truth for features.** When implementing a feature in the Next.js app, FIRST read the corresponding Nuxt page/component/store to understand how it works, THEN implement it in Next.js using the shared packages.
 
-4. **Language state flows L1 → L2.** Every language-specific page lives under `/[l1]/[l2]/...`. The middleware reads these params, looks up language objects, and provides them via React Context.
+4. **Language state flows L1 → L2.** Every language-specific page lives under `/[l1]/[l2]/...`. The middleware (`apps/web/src/proxy.ts` — Next 16 renamed `middleware.ts` to `proxy.ts`) reads these params, looks up language objects, and provides them via React Context.
 
 5. **The backend is a Flask API** has a local dev URL and a production URL, which are noted in `apps/web/src/lib/api-url.ts`. All data goes through it. Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API. The reason is that we want to abstract the directus layer away from the web and mobile apps, so we can migrate to Directus 11 or another backend in the future without changing the clients.
 
@@ -389,7 +389,9 @@ Docs support `{$key}` syntax to reference CSV translation keys. When the page re
 nvm use 22 && node scripts/translate-doc.mjs packages/docs/content/<path>.md
 ```
 
-This resolves `{$key}` for all 31 locales, machine-translates the body via the Python `/translate` server (if running), and merges into `apps/web/src/data/docs-i18n/{locale}.json`. Requires Node ≥ 20 for translation; falls back to key-only resolution on older Node.
+This resolves `{$key}` and machine-translates the body via the Python `/translate` server (if running), merging into **`packages/docs/i18n/{locale}.json`**. That directory is the only docs-i18n output location — `apps/web/src/data/docs-i18n/` exists but is an **empty directory** and is not a merge target. Docs i18n currently covers **18 locales** (`packages/docs/i18n/*.json`: en, zh-Hans, zh-Hant, ar, de, es, fr, id, it, ja, ko, nl, pl, pt, ru, th, tr, vi), a subset of the app's 31 UI locales. Requires Node ≥ 20 for translation; falls back to key-only resolution on older Node.
+
+Mobile does not read `packages/docs/i18n/` at runtime — `scripts/build-docs-data.cjs` inlines every locale into `packages/shared/src/docs.ts` (a ~2.1 MB generated file) which mobile imports via the `@langplayer/shared` barrel. Web instead reads `packages/docs/i18n/*.json` from disk at request time. Regenerating that blob after editing docs is a separate manual step: the docs scripts have no npm-script wiring.
 
 ##### Dynamic Category Titles
 

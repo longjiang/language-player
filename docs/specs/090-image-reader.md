@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-090
 - **Feature**: Standalone image reader — OCR images via DeepSeek Vision into tokenized, interactive text (web + mobile)
-- **Status**: implemented (retroactive spec for the as-built feature; see SPEC-089 for the original PDF & Image Reader work)
+- **Status**: implemented on **web**; **mobile is partial** (retroactive spec for the as-built feature; see SPEC-089 for the original PDF & Image Reader work). The mobile route and vision pipeline exist, but two described pieces were never built — see the **Preview & zoom** and **Persistence** sections below.
 - **ROADMAP Phase**: Phase 5 (Content Features) — Reading
 - **See also**: [SPEC-089 — PDF & Image Reader](089-pdf-and-image-reader.md), [SPEC-083 — Unified Markdown](083-mobile-unified-markdown.md), [ARCH-013 — EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [ADR-0012](../adr/0012-custom-epub-parser-mobile.md), [ADR-0022](../adr/0022-epub-web-book-model-on-epubjs.md)
 
@@ -97,18 +97,16 @@ Clicking the current image thumbnail opens a **full-size preview**:
 
 - **Web**: Radix `Dialog` + a `ZoomableImage` — click toggles zoom (1× ↔ 2×),
   Ctrl+wheel / trackpad pinch zooms continuously, drag pans while zoomed.
-- **Mobile**: `Modal` + a `ZoomableImage` using `react-native-gesture-handler`
-  (`Gesture.Tap` + `Gesture.Pinch` + `Gesture.Pan`, `.runOnJS`), wrapped in a
-  `GestureHandlerRootView` for the modal window — tap toggles zoom, pinch
-  zooms, drag pans.
+- **Mobile**: **not built.** There is no `ZoomableImage` and no pinch-zoom component anywhere in `apps/mobile/components` or `apps/mobile/app`. A mobile full-size preview with tap/pinch/pan gestures was specified but never implemented, so mobile currently has no zoom on the loaded image.
 
 ## Persistence
 
-The gallery survives navigating away or a refresh/restart:
+The gallery survives navigating away or a refresh/restart — **on web only** (see the mobile note below):
 
 - **Web**: IndexedDB — `apps/web/src/lib/image-reader-store.ts`.
-- **Mobile**: a JSON file in the app documents —
-  `apps/mobile/lib/image-reader-store.ts`.
+- **Mobile**: **not persisted.** `apps/mobile/lib/image-reader-store.ts` does not exist; the mobile gallery lives in component `useState` (`apps/mobile/app/(tabs)/(reading)/image-reader.tsx:79–80`) and is **lost on restart**.
+
+The paragraph below describes the **web** store only; mobile has no equivalent, so the "survives a restart" behaviour does not hold there.
 
 It saves each image's base64 + OCR result + title and the current selection,
 and restores them on mount. Images without a stored result are re-OCR'd lazily.
