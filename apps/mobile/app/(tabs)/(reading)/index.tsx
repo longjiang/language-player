@@ -468,15 +468,22 @@ export default function ReaderScreen() {
           {/* Editor / Reader */}
           {activeTab === 'edit' && (
             <View className="flex-1">
-              <Textarea
-                className="flex-1"
-                placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
-                placeholderTextColor={ICON_MUTED}
-                value={text}
-                onChangeText={handleTextChange}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              {/* Margin around the editor text area, matching apps/web's notes
+                  editor (its page pads px-4 and the textarea pads p-4). The
+                  margin lives on this wrapper — `components/ui/input.tsx`
+                  keeps callsites to layout classes only, so the Textarea's own
+                  padding/border/radius stay stock. */}
+              <View className="flex-1 p-4">
+                <Textarea
+                  className="flex-1"
+                  placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
+                  placeholderTextColor={ICON_MUTED}
+                  value={text}
+                  onChangeText={handleTextChange}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
               <View className="flex-row gap-2 border-t border-border px-4 py-3">
                 <Button
                   onPress={handleAddSampleText}
