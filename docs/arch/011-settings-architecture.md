@@ -9,7 +9,7 @@
   [known issue](#known-issue-settings_v2-resets-to-default-debug-in-progress-2026-08-24)
   at the top of this page
 - **Created**: 2026-07-17
-- **Last updated**: 2026-09-02 (voice auto-selection note, ARCH-031)
+- **Last updated**: 2026-09-11 (per-L2 vs global table rewritten to the as-built schema)
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic (legacy, `settings_classic` only), GO (reference),
   Next.js Web (active, `settings_v2`), React Native Mobile (active,
@@ -131,24 +131,139 @@ This document analyzes how settings are stored, mutated, and synced across all t
 
 ### Per-L2 vs Global
 
-| Setting | Scope | Rationale |
-|---|---|---|
-| `theme`, `playbackSpeed`, `autoPause`, `karaokeMode`, `smoothScroll`, `transcriptMode` | **Global** | Video player behavior is independent of which language you're studying |
-| `translation`, `quickGloss`, `definition`, `zoom`, `serifFont` | **Global** | Display preferences are consistent across languages — if you want translations, you want them everywhere |
-| `quizMode`, `autoPronounce`, `disableAnnotation` | **Global** | Interaction preferences apply regardless of L2 |
-| `phonetics`, `traditional`, `phoneticsOnly`, `phoneticsForHardWordsOnly` | **Per-L2** | Phonetic needs differ by language (pinyin for zh, furigana for ja, none for en). `hardWords`: a word is "hard" if its `levels[].numeric` or `frequencyLevel` ≥ user's level, OR if the entry is cached but has neither — unknown words are treated as hard. Words not yet in cache are NOT shown (wait for async lookup). |
-| `voiceURI`, `speechRate` | **Per-L2** | TTS voice and speed are language-specific |
-| `tvShowFilter`, `categoryFilter` | **Per-L2** | Content filters are language-scoped |
-| `dailyNewLimit` | **Global** | The setting is one global number (set to 50 → 50 for every L2). But the new-card budget is ENFORCED per language — each L2's review deck gets its own `dailyNewLimit` cards/day, computed against that language's cards only. Russian having more cards never reduces Japanese's budget; the budgets don't share a pool |
-| `languagePair` (`{l1, l2, updatedAt}`) | **Global / cloud** | **Last-used L1/L2 pair**, written on every language change and read after login (any device) to land the learner back on the pair they last used instead of a fresh `/language-select`. Cross-device via `settings_v2` LWW. Absent on a brand-new account (user has never used Language Player). Mirrors Classic's `l2Settings[l2Code].l1` in the modern blob. |
+> **Rewritten 2026-09-11 to the as-built state.** The previous version of this
+> table was written against the *V2 design draft* and had drifted from the
+> shipped schema in three ways: it listed `definition` as global (it is
+> per-L2), it listed `autoPronounce` / `disableAnnotation` as global (neither
+> exists in V2), and it used the draft's `global.*` / `interaction.*` wrapper
+> names (the shipped blob is flat — see the structure below). Every row here is
+> verified against `packages/shared/src/types.ts` and the settings screens of
+> both apps.
+
+#### Structure as built
+
+The shipped `SettingsV2` has **no `global` wrapper**: global settings are
+top-level sections, and every per-language setting lives under `l2[code]`.
+
+```
+SettingsV2
+├── v: 2
+├── ts: string                                    ← single LWW timestamp (§Conflict Resolution)
+├── tokenizedText: TokenizedTextSettings          ← GLOBAL (Display tab)
+├── display: DisplaySettings                      ← GLOBAL (Display tab)
+├── playback: PlaybackSettings                    ← GLOBAL (Playback tab)
+├── review: ReviewSettings                        ← GLOBAL (Review tab)
+├── search: SearchSettings                        ← GLOBAL (Search tab)
+├── languagePair?: LastLanguagePair               ← GLOBAL / cloud
+└── l2: Record<string, L2Settings>                ← PER-LANGUAGE
+    └── { tokenSpan, display, speech, content }
+```
+
+#### Global settings (apply to every L2)
+
+| Setting | Path | Default | Where edited |
+|---|---|---|---|
+| Popup dictionary enabled | `tokenizedText.enabled` | `true` | Display (web + mobile) |
+| Text size | `tokenizedText.zoom` | `0` (0–7) | Display |
+| Font | `tokenizedText.typeFace` | `'default'` | Display |
+| Line height | `tokenizedText.leading` | `1.625` | Display |
+| Quiz mode | `tokenizedText.mode` | `'normal'` | Display |
+| Quick gloss (saved words) | `tokenizedText.quickGloss` | `true` | Display |
+| Translation size | `tokenizedText.translationSize` | `0.8` | Display |
+| Theme | `display.theme` | `'dark'` | Display |
+| Show translation | `display.translation` | `true` | Display |
+| L2 ↔ translation split | `display.translationSplit` | `0.6` | reader splitter drag (web); no settings control |
+| Playback speed | `playback.speed` | `1.0` | **no control in either app** |
+| Auto-pause | `playback.autoPause` | `false` | Playback |
+| Karaoke highlight | `playback.karaokeMode` | `true` | Playback |
+| Smooth scroll | `playback.smoothScroll` | `false` | Playback |
+| Collapsed video | `playback.collapsedVideo` | `false` | unused (web delegates to YouTube's controls) |
+| Captions display | `playback.transcriptMode` | `'transcript'` | Playback |
+| New cards per day | `review.dailyNewLimit` | `20` | Review |
+| Next day starts at | `review.dayStartHour` | `4` | Review |
+| Subs search breadth | `search.expandSubsSearch` | `false` | Search (Pro-gated) |
+| Last-used L1/L2 pair | `languagePair` | absent | written on every language change |
+
+**Why global:** display and interaction preferences are consistent across
+languages — if you want translations, you want them everywhere — and video
+player behavior is independent of which language you're studying. Classic's
+per-L2 model was overly granular (users rarely want a different `zoomLevel` per
+language).
+
+**`dailyNewLimit` is one global number, enforced per language.** Setting it to
+50 means 50 for every L2. But each L2's review deck gets its own budget
+computed against that language's cards only — Russian having more cards never
+reduces Japanese's budget; the budgets don't share a pool.
+
+**`languagePair`** (`{l1, l2, updatedAt}`) is the last-used L1/L2 pair, written
+on every language change and read after login (any device) to land the learner
+back on the pair they last used instead of a fresh `/language-select`.
+Cross-device via `settings_v2` LWW. Absent on a brand-new account (the user has
+never used Language Player). Mirrors Classic's `l2Settings[l2Code].l1`.
+
+#### Per-language settings (`l2[code]`)
+
+| Setting | Path | Default | Where edited |
+|---|---|---|---|
+| Phonetics display | `tokenSpan.phonetics.show` | `'ruby'` | Display |
+| Phonetics conditions | `tokenSpan.phonetics.conditions` | `'always'` | Display |
+| Interlinear gloss | `tokenSpan.definition.show` | `false` | Display |
+| Character set (zh) | `display.traditional` | `false` | Display (zh only) |
+| Hanja / hán tự (ko, vi) | `display.byeonggi` | `true` | Display (ko, vi only) |
+| TTS voice | `speech.voiceURI` | `null` (auto) | Speech |
+| TTS rate | `speech.rate` | `1.0` | Speech |
+| TV show filter | `content.tvShowFilter` | `null` | **no control, no writer** |
+| Category filter | `content.categoryFilter` | `null` | **no control, no writer** |
+
+**Why per-language:**
+
+- **Phonetics** — needs differ by language (pinyin for zh, furigana for ja, none
+  for en). `conditions: 'hardWords'` means a word is "hard" if its
+  `levels[].numeric` or `frequencyLevel` ≥ the user's level, OR the entry is
+  cached but has neither — unknown words are treated as hard. Words not yet in
+  cache are NOT counted (wait for the async bulk lookup).
+- **Interlinear gloss** — whether every word needs its definition inline is a
+  property of the language's difficulty for that learner, not of the app.
+- **Script variant** (`traditional`, `byeonggi`) — intrinsically per-language:
+  only zh has 简/繁, only ko/vi have hanja/hán tự. Both fields are ignored for
+  other languages, and the UI only renders the control for those codes.
+- **Speech** (`voiceURI`, `rate`) — voices are language-specific by
+  construction, and a user may prefer 0.75× for a difficult language (Japanese)
+  but 1.25× for a familiar one (Spanish).
+- **Content filters** (`tvShowFilter`, `categoryFilter`) — content is
+  language-scoped. These two are **schema-only today**: no screen writes them
+  (they are carried over from Classic's per-L2 design).
+
+#### Mobile-only, device-local (never synced to the account)
+
+These are **not** part of `settings_v2` — they live in device storage and are
+deliberately excluded from GET/PUT `/user-settings` and the sync outbox.
+
+| Setting | Storage | Scope | Where edited |
+|---|---|---|---|
+| Offline Mode (network kill switch) | SecureStore `lp_offline_mode` | **Global** (device-local) | Network — see SPEC-053 |
+| Offline dictionary packs | per-L2 SQLite file `dict_<l2>.db` (`-` → `_`, e.g. `dict_zh_Hans.db`) | **Per-language** (device-local) | Offline dictionaries — see SPEC-013 |
+
+Offline Mode is a per-device network control (it is explicitly documented as
+local-only in SPEC-053: it must not follow the account onto a device that has
+network, and a logged-out login screen must not be able to sync). Downloaded
+dictionary packs are per-language by file layout — each L2 has its own pack and
+its own download status.
+
+#### Historical keying, for contrast
 
 | App | Per-L2 Keying | Mechanism |
 |---|---|---|
 | **Classic** | ✅ Most display settings | `state.l2Settings[l2Code]` — nested object inside general settings |
 | **GO** | ❌ All flat | Single `SettingsState` object, no per-language nesting |
-| **Next.js Web** | ❌ All flat | Individual localStorage keys, no per-language awareness |
+| **Next.js Web (pre-V2)** | ❌ All flat | Individual localStorage keys, no per-language awareness |
+| **Web + Mobile (as built)** | ✅ The nine settings above | `l2[code]` — see [Current Implementation](#current-implementation-web--mobile-2026-08-24) |
 
-**V2 Design:** Moves display/interaction settings to global scope and keeps only truly language-specific settings per-L2. This is a deliberate simplification — Classic's per-L2 model was overly granular (users rarely want different `zoomLevel` per language).
+**V2 Design:** Moves display/interaction settings to global scope and keeps
+only truly language-specific settings per-L2. This was a deliberate
+simplification, applied to the *display* settings only — phonetics, script
+variant, definition and speech all stayed per-language because they are
+genuinely language-specific.
 
 ---
 
@@ -341,10 +456,37 @@ simply ignored for that utterance. Diagnostics via the `speech` log domain
 - `darkMode`/`theme` lives in `display.theme` on both apps; the V2 design
   sketched `global.theme` — the shipped `DisplaySettings.theme` is the
   canonical location.
+- **There is no `global` wrapper, and no `interaction` section.** The shipped
+  blob is flat: `tokenizedText`, `display`, `playback`, `review`, `search` are
+  top-level sections alongside `l2`. The design's `global.display` /
+  `global.interaction` grouping was dropped (2026-09-11 note).
+- **`definition` is per-L2, not global.** The design put it in
+  `global.display`; the shipped path is `l2[code].tokenSpan.definition.show`,
+  and both apps' Display screens write it through `updateL2`. Likewise the
+  `tokenizedText` section (as-built) did not exist in the design — `zoom`,
+  `quickGloss` and `mode`/quiz live there now, not in `global.display` /
+  `global.interaction`.
+- **`autoPronounce` and `disableAnnotation` do not exist in V2.** The design
+  carried them over from Classic; the shipped equivalent of `disableAnnotation`
+  is `tokenizedText.enabled`, and `autoPronounce` has no counterpart.
+- `playback.speed` is a schema field with **no control in either app** (it has
+  never been written since the V2 migration), and `l2[code].content`
+  (`tvShowFilter`, `categoryFilter`) has no control and no writer.
 
 ---
 
 ## V2 Data Structure Design (Next.js Migration Target)
+
+> **Historical design record — superseded by the as-built schema.** The
+> migration is complete: see
+> [Current Implementation](#current-implementation-web--mobile-2026-08-24) for
+> what shipped, and
+> [Per-L2 vs Global](#per-l2-vs-global) for the verified scope of every
+> setting. The structure and type sketches below are kept as the design
+> rationale, **not** as a description of the code — in particular the
+> `global.*` / `interaction.*` wrapper and the placement of `definition`,
+> `zoom`, `quickGloss` and quiz mode do not match the shipped types
+> (the differences are listed in the "Not implemented" list above).
 
 ### Design Goals
 
