@@ -197,9 +197,11 @@ export function PaginatedReader({
   renderMeasureBlock,
 }: PaginatedReaderProps) {
   const t = useT();
-  const { display, tokenizedText, updateDisplay } = useSettingsContext();
+  const { display, tokenizedText, updateDisplay, getL2, updateL2 } = useSettingsContext();
   const glyphLang = useGlyphLang(l2.code);
-  const showTranslation = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`), so the
+  // in-reader toggle below writes this language's value, not a shared one.
+  const showTranslation = getL2(l2.code).display.translation;
   // Every paginated reader uses the shared horizontal geometry — the text
   // column is padded by the L2 leading on both sides and clamped to the
   // content container width (CONTENT_CONTAINER_WIDTH) with auto margins, so
@@ -670,7 +672,9 @@ export function PaginatedReader({
           <span className="text-xs">{t('action.translation')}</span>
           <Switch
             checked={showTranslation}
-            onCheckedChange={(checked) => updateDisplay({ translation: checked })}
+            onCheckedChange={(checked) => updateL2(l2.code, {
+              display: { ...getL2(l2.code).display, translation: checked },
+            })}
             className="shrink-0"
           />
         </label>

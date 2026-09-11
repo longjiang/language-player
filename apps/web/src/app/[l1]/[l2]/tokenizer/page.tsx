@@ -28,12 +28,21 @@ const tokenizerTestOrder = (() => {
 })();
 
 export default function TokenizerPage() {
-  const { tokenizedText, updateTokenizedText, display, updateDisplay } = useSettingsContext();
+  const { tokenizedText, updateTokenizedText } = useSettingsContext();
   const t = useT();
   const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
 
   // ── Settings hidden behind a toggle ──
   const [showSettings, setShowSettings] = useState(false);
+
+  // ── Translation preview override ──
+  // Translation lines are per-L2 (`l2[code].display.translation`), and this
+  // page renders MANY languages at once — each card follows its own language's
+  // setting. This toggle is therefore a local, unpersisted PREVIEW: it flips
+  // every card at once so the calibration view can be compared with and
+  // without translations without editing 20 languages' settings. `null` =
+  // follow each language's own value.
+  const [translationPreview, setTranslationPreview] = useState<boolean | null>(null);
 
   // ── Long / short sample toggle, persisted across refreshes ──
   const [longSample, setLongSample] = useState(false);
@@ -106,8 +115,8 @@ export default function TokenizerPage() {
           <ToggleRow
             label={t('label.show_translation')}
             description={t('msg.show_translation_desc')}
-            checked={display.translation}
-            onChange={(v) => updateDisplay({ translation: v })}
+            checked={translationPreview ?? true}
+            onChange={(v) => setTranslationPreview(v)}
           />
           <ToggleRow
             label={t('setting.long_sample_text')}
@@ -121,7 +130,7 @@ export default function TokenizerPage() {
           Two columns at the mobile-parity 768px breakpoint (`md:`). ── */}
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {tokenizerTestOrder.map((code) => (
-          <TokenizerLanguageCard key={code} code={code} height={cardHeight} longSample={longSample} />
+          <TokenizerLanguageCard key={code} code={code} height={cardHeight} longSample={longSample} showTranslationOverride={translationPreview ?? undefined} />
         ))}
       </div>
     </div>

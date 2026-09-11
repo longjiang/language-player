@@ -127,7 +127,8 @@ export function EpubReaderPanel({
   onPageChange,
 }: EpubReaderPanelProps) {
   const { display, getL2, tokenizedText, updateDisplay } = useSettingsContext();
-  const showTranslation = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2.code).display.translation;
   // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
   // factor. Applied to blocks so headings keep their relative sizes.
   const textZoom = useTextScale();

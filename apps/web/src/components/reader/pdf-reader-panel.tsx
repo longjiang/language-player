@@ -61,8 +61,9 @@ export function PdfReaderPanel({
   onClose: () => void;
 }) {
   const t = useT();
-  const { display, tokenizedText, updateDisplay } = useSettingsContext();
-  const showTranslation = display.translation;
+  const { display, tokenizedText, updateDisplay, getL2 } = useSettingsContext();
+  // Translation lines are PER-L2 (`l2[code].display.translation`).
+  const showTranslation = getL2(l2.code).display.translation;
   const textZoom = useTextScale();
   const readerLeading = readerLeadingPx(tokenizedText.zoom, tokenizedText.leading ?? READER_DEFAULT_LEADING);
 

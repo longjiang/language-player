@@ -92,9 +92,11 @@ export function ReaderTextBlock({
   l2Code,
   l1Code,
 }: ReaderTextBlockProps) {
-  const { display, tokenizedText } = useSettingsContext();
+  const { getL2, tokenizedText } = useSettingsContext();
   const textZoom = useTextScale();
-  const showTranslation = display.translation;
+  // Translation lines are PER-L2 (`l2[code].display.translation`) — this block
+  // knows its own L2 via the `l2Code` prop, so it reads that language's value.
+  const showTranslation = getL2(l2Code).display.translation;
   const Tag = blockTag(block);
   const formats = extraFormats?.length ? [...block.formats, ...extraFormats] : block.formats;
   const translation = showTranslation ? (rctx.translation ?? null) : null;
