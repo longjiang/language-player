@@ -145,6 +145,11 @@ export interface TokenizedTextProps {
    *  (e.g. the SRS spell-mode context, "highlighted term as blank"). The blank
    *  width matches the token's text length. Defaults to false. */
   blankHighlighted?: boolean;
+  /** When true, the quick gloss still renders after a blanked highlighted token
+   *  (SRS spell/scrabble card front — the blank hides the spelling, not the
+   *  meaning). Ignored unless the learner's quick-gloss setting is on. Defaults
+   *  to false, so quiz blanks keep hiding their gloss. */
+  quickGlossOnBlank?: boolean;
   /** When true, renders the L2 token text bold (AI explanation spans). */
   bold?: boolean;
   /** Extra multiplier on top of the user's zoom setting. Defaults to 1 (user
@@ -221,7 +226,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx, notes }: TokenizedTextProps) {
+function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, quickGlossOnBlank = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx, notes }: TokenizedTextProps) {
   const t = useT();
   // SPEC-093: when a notes map is supplied, strip `[n]` markers from the text
   // so the lemmatizer never sees bracket junk. The clean text is what gets
@@ -1546,7 +1551,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               // includes the gloss run, so the selection map (selectionMap below)
               // reproduces it byte-for-byte to keep drag-select offsets correct.
               // Byeonggi stays suppressed in selection contexts (see showByeonggi).
-              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && (!isHighlighted || quickGlossOnBlank);
               const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
@@ -1817,7 +1822,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText && !suppressSelectionDecorations;
               const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
-              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && (!isHighlighted || quickGlossOnBlank);
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;

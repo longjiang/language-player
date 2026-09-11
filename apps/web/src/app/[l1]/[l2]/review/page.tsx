@@ -1937,7 +1937,12 @@ export default function ReviewPage() {
                 highlightForms={highlightForms}
                 highlightEntryIds={targetHighlightEntryIds}
                 phoneticsOnHighlight={showDefinition}
-                quickGlossOnHighlight={showDefinition}
+                // Spell/scrabble modes ask for the written form, not the meaning:
+                // the context translation is already shown pre-test by design, so
+                // the target's quick gloss joins it (behind the learner's
+                // quick-gloss setting) instead of waiting for the reveal.
+                quickGlossOnHighlight={showDefinition || isSpellLike}
+                quickGlossOnBlank={isSpellLike}
                 blankHighlighted={isSpellLike && !spellSubmitted}
                 context={{
                   youtube_id: wordCtx.youtube_id,
