@@ -2030,6 +2030,11 @@ export default function ReviewScreen() {
                   ))}
                   highlightEntryIds={[savedWord.id]}
                   phoneticsOnHighlight={showTabs}
+                  // Spell/scrabble ask for the written form, not the meaning: the
+                  // context translation is already shown pre-test by design, so the
+                  // target's quick gloss joins it (behind the learner's quick-gloss
+                  // setting) instead of waiting for the reveal.
+                  quickGlossOnBlank={isSpellLike}
                   blankHighlighted={isSpellLike && !spellSubmitted}
                 />
               </TextActionMenu>

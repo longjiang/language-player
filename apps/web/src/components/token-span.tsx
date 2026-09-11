@@ -127,6 +127,12 @@ export interface TokenSpanProps {
    *  (SRS spell-mode "highlighted term as blank"). Ignored when not
    *  highlighted. Defaults to false. */
   blankHighlighted?: boolean;
+  /** When true, the quick gloss still renders after a BLANKED highlighted token
+   *  (SRS spell/scrabble card front). The blank hides the spelling and reading,
+   *  not the meaning: the learner is asked for the written form, and the context
+   *  translation is already shown by design in those modes. Defaults to false,
+   *  so a quiz blank (mode 'quiz') keeps hiding its gloss. */
+  quickGlossOnBlank?: boolean;
   /** When true, skip Chinese script conversion for this token and render the
    *  source text as-is. Set by TokenizedText when the L2 source's dominant
    *  script already matches the user's preference (ADR-0019), so OpenCC's
@@ -165,6 +171,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
   blankHighlighted = false,
+  quickGlossOnBlank = false,
   skipScriptConversion = false,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
@@ -599,7 +606,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const wordWithGloss = (
     <>
       {annotatedWord}
-      {quickGlossDef && !blankWord && (
+      {quickGlossDef && (!blankWord || quickGlossOnBlank) && (
         <QuickGloss def={quickGlossDef} needsTrailingSpace={nextTokenIsSeparator !== true} lang={quickGlossLang} />
       )}
     </>

@@ -175,6 +175,11 @@ export interface TokenizedTextProps {
    *  (e.g. the SRS spell-mode context, "highlighted term as blank"). The blank
    *  width matches the token's text length. Defaults to false. */
   blankHighlighted?: boolean;
+  /** When true, the quick gloss still renders after a blanked highlighted token
+   *  (SRS spell/scrabble card front — the blank hides the spelling, not the
+   *  meaning). Ignored unless the learner's quick-gloss setting is on. Defaults
+   *  to false, so quiz blanks keep hiding their gloss. */
+  quickGlossOnBlank?: boolean;
   /** When false, phonetics/furigana are suppressed entirely. Used by AI
    *  explanations so L2 spans render plain. Defaults to true — the user's
    *  setting applies. */
@@ -232,6 +237,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   textColor,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
+  quickGlossOnBlank = false,
   blankHighlighted = false,
   phonetics,
   mode: modeOverride,
@@ -1064,6 +1070,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               savedWordId={savedWordIdForToken(token)}
               isHighlighted={tokenMatchesHighlight(token)}
               blankHighlighted={blankHighlighted}
+              quickGlossOnBlank={quickGlossOnBlank}
               nextTokenIsSeparator={nextTokenIsSeparator}
               onClick={(rect, el) => handleTokenClick(token, rect, el)}
               onHoverChange={onTokenHover && tokenRanges
