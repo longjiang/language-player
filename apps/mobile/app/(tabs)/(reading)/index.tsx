@@ -524,6 +524,23 @@ export default function ReaderScreen() {
                 handleMeasureBlock={pagination.handleMeasureBlock}
                 onVisibleBlocksChange={pagination.onVisibleBlocksChange}
                 contentWidth={pagination.contentWidth}
+                // Measuring-window state (as every other PaginatedReader caller
+                // passes it — image/epub reader, tokenizer card). The notes
+                // reader is the one NON-estimate caller: it stays on its
+                // loading spinner until every block has reported a layout, so
+                // it must let PaginatedReader remount the hidden measuring
+                // window whenever the hook invalidates the measurements
+                // (`measureNonce`). Without these, the window kept its key
+                // across note/text changes, React only re-fires onLayout where
+                // the layout actually changed, and a block whose height matched
+                // the previous stream's left a permanent hole — the reader sat
+                // on the spinner forever until the screen was remounted.
+                measuredWindow={pagination.measuredWindow}
+                measureStart={pagination.measureStart}
+                measureEnd={pagination.measureEnd}
+                measureNonce={pagination.measureNonce}
+                flipping={pagination.flipping}
+                measuring={pagination.measuring}
                 l2Code={l2Lang.code}
                 l1Code={l1Lang.code}
                 showTranslation={showTranslation}
