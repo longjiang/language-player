@@ -316,9 +316,22 @@ loading state only while work is actually in progress. The mobile notes
 reader (the pagination path that measures the whole stream, without
 estimates) could sit on that spinner forever when a note's body changed
 underneath it — the heights were dropped, but the hidden measuring views
-are keyed so that a content change *reuses* them, and React only re-fires
-`onLayout` where the layout actually changed, so a block whose height
-matched the previous stream's never re-reported and the page-break wait
-never completed. The fix drops a stream's measurements **and** invalidates
-the measuring pass that produced them; a measurement that makes no progress
-at all is recovered automatically and logged (`apps/mobile/hooks/use-epub-pagination.ts`).
+are keyed by the measuring state (`measureStart`/`measureNonce`), so when a
+content change leaves that key unchanged React *reuses* them, only re-fires
+`onLayout` where the layout actually changed, and a block whose height
+matched the previous stream's never re-reported: the page-break wait never
+completed. The fix drops a stream's measurements **and** invalidates the
+measuring pass that produced them; a measurement that makes no progress at
+all is recovered automatically and logged
+(`apps/mobile/hooks/use-epub-pagination.ts`).
+
+**Contract for a `PaginatedReader` caller.** The pagination hook's measuring
+state is not optional plumbing: pass `measuredWindow` / `measureStart` /
+`measureEnd` / `measureNonce` / `flipping` / `measuring` through to the
+reader. With the component's defaults the measuring window mounts once and
+can never be remounted, so a caller that needs an exact measurement (one
+that paginates without an estimate) hangs on its spinner the first time the
+content changes, and a caller that paginates from an estimate never refines
+its page breaks. The mobile notes reader and web reader had both omitted
+them; `PaginatedReader` now logs when it is asked to measure with every
+measuring-window prop still defaulted.
