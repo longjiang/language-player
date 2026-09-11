@@ -7,11 +7,12 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@langplayer/shared';
 import { fetchReaderPage, htmlToMarkdown } from '@langplayer/shared';
+import { autoNoteTitle } from '@langplayer/utils';
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import {
   Loader2, FileText, PenLine,
   PanelRightClose, PanelRight,
@@ -338,6 +339,19 @@ export default function ReaderPage() {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [text, title, translation, currentNoteId, dirty, session, t]);
 
+  // Batch lemmatizer — the reader's block tokenizer. It also tokenizes the
+  // note's first line for the auto title below (same pipeline, same L2), which
+  // is what makes a CJK title count words instead of characters.
+  const handleLemmatize = useCallback(async (texts: string[]) => {
+    const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, l2: l2.code }),
+    });
+    const data = res.ok ? await res.json() : null;
+    return data?.results ?? [];
+  }, [l2.code]);
+
   // Flush save now
   const saveNow = useCallback(async () => {
     if (!currentNoteId || !dirty || !session) return;
@@ -349,7 +363,45 @@ export default function ReaderPage() {
     } catch { /* ignore */ }
   }, [currentNoteId, dirty, session, text, title, translation, t]);
 
-  const handleTokenize = useCallback(async () => { await saveNow(); setActiveTab('read'); }, [saveNow]);
+  /**
+   * Auto-title (SPEC-009 §"Notes Reader: auto-title from the first line").
+   * Leaving the editor for the reader is the moment a note that still reads
+   * "Untitled" takes its title from the first line of its text — at most 10
+   * tokens, ellipsis-trimmed. A title the user typed is never touched (the
+   * helper decides), and a tokenizer failure degrades to whitespace words
+   * rather than leaving the note untitled.
+   */
+  const autoTitleNote = useCallback(async () => {
+    if (currentNoteId == null) return;
+    const next = await autoNoteTitle({
+      text,
+      currentTitle: title,
+      untitledLabel: t('msg.untitled_note'),
+      tokenize: async (line) => (await handleLemmatize([line]))[0] ?? null,
+    });
+    if (!next) return;
+    log('[LP Web] notes reader: auto-titling the note from its first line', {
+      noteId: currentNoteId, title: next,
+    });
+    setTitle(next);
+    setNotes(prev => prev.map(n => n.id === currentNoteId ? { ...n, title: next } : n));
+    try {
+      await apiClient.patch(`/user-notes/${currentNoteId}`, { title: next });
+    } catch (e: any) {
+      // The note stays renamed locally; the next autosave retries the title.
+      // non-info-level: unexpected request failure — the stack separates a
+      // server/auth problem from a payload bug.
+      logwarn(`[LP Web] notes reader: auto-title save failed noteId=${currentNoteId}`, e?.message ?? e);
+    }
+  }, [currentNoteId, text, title, t, handleLemmatize]);
+
+  // The Read tab and the Tokenize button both land here — the only way out of
+  // the editor (ReaderPanel routes its Read tab through onTokenize).
+  const handleTokenize = useCallback(async () => {
+    await saveNow();
+    await autoTitleNote();
+    setActiveTab('read');
+  }, [saveNow, autoTitleNote]);
 
   // Persist the reading position (block index) whenever the visible page's
   // start block changes, so a refresh / navigation returns to the same spot.
@@ -358,16 +410,6 @@ export default function ReaderPage() {
       saveNotePosition(currentNoteId, loc.blockIndex);
     }
   }, [currentNoteId]);
-
-  const handleLemmatize = useCallback(async (texts: string[]) => {
-    const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts, l2: l2.code }),
-    });
-    const data = res.ok ? await res.json() : null;
-    return data?.results ?? [];
-  }, [l2.code]);
 
   const handlePageTranslate = useCallback(async (texts: string[]) => {
     setTranslating(true);
