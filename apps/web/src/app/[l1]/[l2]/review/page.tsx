@@ -30,6 +30,7 @@ import {
   spellHintInfo,
   spellBlankText,
   spellSurfaceInContext,
+  formatDefinitionList,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
@@ -1444,7 +1445,9 @@ export default function ReviewPage() {
   // reveals a card and their L1 is not English, fetch the L1-translated
   // entry so they see definitions in their language.
   useEffect(() => {
-    if (!showDefinition || l1.code === 'en') return;
+    // Also runs for spell/scrabble cards before the reveal: their card front
+    // shows the entry's definitions, which must be in the learner's L1.
+    if ((!showDefinition && !isSpellLike) || l1.code === 'en') return;
     const card = cards[currentIndex];
     if (!card) return;
     const sw = card.word;
@@ -1496,7 +1499,7 @@ export default function ReviewPage() {
       if (!cancelled) setL1Entry(null);
     })();
     return () => { cancelled = true; };
-  }, [showDefinition, currentIndex, cards, l1.code, l2Code, l1Entry?.id, currentEntry?.id]);
+  }, [showDefinition, isSpellLike, currentIndex, cards, l1.code, l2Code, l1Entry?.id, currentEntry?.id]);
 
   // ── Resolve the exact saved entry before showing the back side ──
   // The batch lookup caches curated entries by text; a saved LLM-generated
@@ -1809,6 +1812,15 @@ export default function ReviewPage() {
   // Prefer the L1-translated entry (fetched on reveal for non-English users)
   // over the cached English-only entry from batch lookup.
   const entry = l1Entry ?? fallbackEntry ?? currentCard.entry;
+
+  /** One-line meaning aid for the spell/scrabble card front (SPEC-066): the
+   *  entry's definitions, semicolon-joined, shown under the context translation
+   *  (also shown pre-test in those modes by design). Suppressed when L1 == L2 —
+   *  the rephrase guard above exists so the target word never appears, and a
+   *  definition written in the target language would break that. */
+  const definitionLine = isSpellLike && !sameLangRephrase
+    ? formatDefinitionList(entry?.definitions, l1.code)
+    : '';
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
   /** Muted first-character hint for the spell-mode input (reading or answer),
@@ -1954,7 +1966,8 @@ export default function ReviewPage() {
               <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
             {showContextTranslation && (
-              sameLangRephrase ? (
+              <>
+              {sameLangRephrase ? (
                 contextTranslating && !contextTranslation ? (
                   <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
                 ) : contextTranslation ? (
@@ -2000,7 +2013,16 @@ export default function ReviewPage() {
                     )
                   )}
                 </>
-              )
+              )}
+              {definitionLine && (
+                <p
+                  className="mt-1 leading-relaxed text-muted-foreground"
+                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
+                >
+                  {definitionLine}
+                </p>
+              )}
+              </>
             )}
           </div>
         )}

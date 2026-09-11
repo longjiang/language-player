@@ -33,6 +33,7 @@ import {
   spellHintInfo,
   spellBlankText,
   spellSurfaceInContext,
+  formatDefinitionList,
   scrabbleAnswerText,
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
@@ -1635,7 +1636,9 @@ export default function ReviewScreen() {
   // The batched lookup returns English-only definitions for speed; on reveal,
   // fetch the L1-translated entry so the card back shows the user's language.
   useEffect(() => {
-    if (!showTabs || l1Lang.code === 'en') return;
+    // Also runs for spell/scrabble cards before the reveal: their card front
+    // shows the entry's definitions, which must be in the learner's L1.
+    if ((!showTabs && !isSpellLike) || l1Lang.code === 'en') return;
     const card = cards[currentIndex];
     if (!card) return;
     const sw = card.word;
@@ -1682,7 +1685,7 @@ export default function ReviewScreen() {
       if (!cancelled) setL1Entry(null);
     })();
     return () => { cancelled = true; };
-  }, [showTabs, currentIndex, cards, l1Lang.code, l2Code, l1Entry?.id]);
+  }, [showTabs, isSpellLike, currentIndex, cards, l1Lang.code, l2Code, l1Entry?.id]);
 
   // ── Pre-tokenize + pre-lookup the next 3 cards' context sentence(s) ──
   const preWarmInstances = useMemo(() => {
@@ -1878,6 +1881,14 @@ export default function ReviewScreen() {
   const currentCardState = fsrs.getCardState(currentCard.srs);
 
   const entry = l1Entry ?? fallbackEntry ?? currentEntry;
+  /** One-line meaning aid for the spell/scrabble card front (SPEC-066): the
+   *  entry's definitions, semicolon-joined, shown under the context translation
+   *  (which those modes already show pre-test). Suppressed when L1 == L2 — the
+   *  rephrase guard above exists so the target word never appears, and a
+   *  definition written in the target language would break that. */
+  const definitionLine = isSpellLike && !sameLangRephrase
+    ? formatDefinitionList(entry?.definitions, l1Lang.code)
+    : '';
   // The context sentence the spell answer is blanked from (resolved the same
   // way handleSpellSubmit does — latest instance context, else card context).
   const rawInstances = (currentCard.word as any).instances as Array<{ context: SavedWordContext }> | undefined;
@@ -2042,7 +2053,8 @@ export default function ReviewScreen() {
                 <SavedWordSource context={displayInstance.context} date={displayInstance.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
               </View>
               {showContextTranslation && (
-                sameLangRephrase ? (
+                <>
+                {sameLangRephrase ? (
                   contextTranslation ? (
                     // Same-language spell mode: a contextual rephrasing of the
                     // target word (server ensures the word itself never
@@ -2063,7 +2075,13 @@ export default function ReviewScreen() {
                       <ReviewTranslationMarkdown text={contextTranslation ?? ''} />
                     )}
                   </View>
-                ) : null
+                ) : null}
+                {definitionLine ? (
+                  <Text className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {definitionLine}
+                  </Text>
+                ) : null}
+                </>
               )}
             </View>
           )}
