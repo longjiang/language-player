@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   BlankSelectionStore,
   TaskResponseStore,
@@ -8,6 +8,8 @@ import {
   type PersistedTaskState,
   type Task,
 } from '@langplayer/textbooks';
+import { expandAcceptedVariants } from '@langplayer/textbooks';
+import { toTraditional } from '@/lib/chinese-script';
 import { log } from '@/lib/logger';
 
 export interface TextbookTaskContextValue {
@@ -81,17 +83,41 @@ interface TextbookTaskProviderProps {
  * multi-second JS-thread block.
  */
 export function TextbookTaskProvider({ task, book, children }: TextbookTaskProviderProps) {
+  // A student may type either script: a traditional form of the answer has to count.
+  // OpenCC is lazy-loaded, so the expansion is asynchronous and starts from the
+  // unexpanded task — an L2 with no script pair never triggers the load at all.
+  const [prepared, setPrepared] = useState<Task>(task);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (book.l2 !== 'zh') {
+      setPrepared(task);
+      return;
+    }
+    void expandAcceptedVariants(task, toTraditional)
+      .then((expanded) => {
+        if (!cancelled) setPrepared(expanded);
+      })
+      .catch((err) => {
+        log('[LP Web] Textbook: script-variant expansion failed', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [task, book.l2]);
+
   const value = useMemo<TextbookTaskContextValue>(() => {
     const store = new TaskResponseStore({
-      task,
+      task: prepared,
       contentVersion: book.contentVersion,
-      load: () => loadPersistedTask(task.id),
+      load: () => loadPersistedTask(prepared.id),
       save: savePersistedTask,
     });
-    return { task, book, store, selection: new BlankSelectionStore() };
-    // Rebuild only when the task itself changes — not on every render.
+    // Responses are persisted on every change, so rebuilding once when the expansion
+    // lands re-reads them rather than losing them.
+    return { task: prepared, book, store, selection: new BlankSelectionStore() };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task, book.contentVersion]);
+  }, [prepared, book.contentVersion]);
 
   return <TextbookTaskContext.Provider value={value}>{children}</TextbookTaskContext.Provider>;
 }

@@ -543,7 +543,7 @@ Normalization rules:
 
 1. Trim whitespace; strip surrounding punctuation and full-width/half-width variants.
 2. Accept listed alternates in `accept[]`.
-3. Accept traditional/simplified equivalence — a student typing 車 for 车 must be correct. **Not implemented.** The helpers originally named here, `scriptVariants` / `bestScriptSimilarity`, do not handle Chinese at all: `scriptVariants` returns `[text]` unchanged for `zh`, and its own comment says Chinese conversion belongs app-side via OpenCC. The mechanism is `expandAcceptedVariants(task, convert)`, which takes a caller-supplied converter and has **no caller yet** — the fix is to pass the apps' existing OpenCC conversion at the call site. See [Known Gaps](#known-gaps-against-this-spec).
+3. Accept traditional/simplified equivalence — a student typing 車 for 车 must be correct. Each app expands `accept[]` with its lazy-loaded OpenCC converter when a task's L2 is `zh` (`expandAcceptedVariants`), so the comparison stays a pure string check. The srs-test-mode helpers originally named here, `scriptVariants` / `bestScriptSimilarity`, do not handle Chinese at all — `scriptVariants` returns `[text]` unchanged for `zh` — which is why this expands the answer instead.
 4. Choice blanks compare option identity, not free text.
 
 Reusable pure-TS helpers (platform-agnostic, already shared by both apps):
@@ -551,12 +551,13 @@ Reusable pure-TS helpers (platform-agnostic, already shared by both apps):
 | Need | Helper | Lives in |
 |---|---|---|
 | Score correct/total/time → rating band | `scoreTestResult` (`:108`) | `packages/utils/src/srs-test-mode.ts` |
-| Traditional/simplified acceptance | `expandAcceptedVariants` — pure, takes a converter; **no caller yet** | `packages/textbooks/src/grading.ts` |
+| Traditional/simplified acceptance | `expandAcceptedVariants` — pure, takes a converter; both apps pass OpenCC's `toTraditional` | `packages/textbooks/src/grading.ts` |
 | Cloze text derivation | `spellBlankText`, `spellSurfaceInContext` | `packages/utils/src/srs-test-mode.ts` |
 | Boxed per-character entry for dictation | spell-mode box sizing driven by `expectedLength` | `packages/utils/src/srs-test-mode.ts` |
 
-`expandAcceptedVariants` is the one helper that had to be written rather than reused:
-the srs-test-mode pair it replaced does not handle Chinese (see normalization rule 3).
+`expandAcceptedVariants` had to be written rather than reused: the srs-test-mode pair it
+replaces does not handle Chinese (see normalization rule 3). It is called once per task,
+in each app's task provider, before the response store is built.
 
 `scoreTestResult` is reused for its scoring shape, not to connect textbook results to the review deck — **textbook performance does not feed SRS** (see Non-Goals).
 
@@ -755,7 +756,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 ### Shared logic (`packages/textbooks`, pure TS)
 
 - **Schema + types** — task/blank/bank/stimulus types, plus the validator (`validateBook`) and the loader map. **Not** a YAML→JSON compiler: see [Task Schema](#task-schema) for why content is TypeScript.
-- **`gradeTask(task, responses)`** — normalisation and alternate acceptance. Script-variant matching (traditional ↔ simplified) is *not* in here — it is `expandAcceptedVariants`, which takes an app-supplied converter and currently has no caller. See [Known Gaps](#known-gaps-against-this-spec).
+- **`gradeTask(task, responses)`** — normalisation and alternate acceptance. Script-variant matching is *not* in here: `expandAcceptedVariants` runs first, in the app, and adds the converted form to each blank's `accept[]` so grading itself stays a pure string comparison (and works offline, which matters on mobile).
 - **Task store** — per-task, per-blank response state with subscribe/select, so blank components re-render independently of the token tree.
 - **Attempt persistence** — per-task attempts in local storage (ADR-0044). Not a cross-task **progress store**: nothing aggregates completion, so the picker and TOC show no progress (see [Known Gaps](#known-gaps-against-this-spec)).
 - **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`, plus the shared default base URL constant.
@@ -1015,21 +1016,7 @@ cells tokenizing independently, each flashing on its own schedule.
 The fix is the one the spec describes: `TaskShell` batches the task's passages through
 `/lemmatize-normalized/batch` and withholds the skeleton until they resolve.
 
-**2. Traditional/simplified answer acceptance is not wired.**
-
-The Grading section and the helper table claim `scriptVariants` / `bestScriptSimilarity`
-make 車 acceptable for 车. Two things are wrong:
-
-- Those helpers **do not handle Chinese.** `scriptVariants` returns `[text]` unchanged
-  for `zh`; its own comment says Chinese conversion lives app-side via OpenCC. The
-  original claim was simply mistaken about the helper.
-- `expandAcceptedVariants` was written to accept an app-supplied converter, and
-  **nothing calls it.** No caller passes one.
-
-So a student typing a traditional form is marked wrong today. The wiring needed is a
-converter (the apps already have OpenCC available) passed at the call site.
-
-**3. The mock-app file checks are not implemented.**
+**2. The mock-app file checks are not implemented.**
 
 Of the four mock-app checks this spec specifies, only the content-side one exists (goals
 reference real blanks, ids are unique, no `goal` blank is orphaned). The other four —
@@ -1044,7 +1031,7 @@ goal's correct answer changes while the content key keeps the old one, and nothi
 notice. The fix is a script or test with filesystem access, kept separate from the pure
 validator rather than merged into it.
 
-**4. `InlineImageSlot` does not exist.**
+**3. `InlineImageSlot` does not exist.**
 
 B ➎ and ➏ are authored without it. Their 插图 slots are `choose` blanks over a
 `pictureSet`, so the student taps the slot and then the picture — the same interaction
@@ -1053,13 +1040,13 @@ shows a letter chip rather than the illustration itself, where the booklet print
 picture in the gap. The component inventory marks it **not built**, and it is
 deliberately absent from the stimulus kinds table, which lists only kinds that exist.
 
-**5. There is no progress store.**
+**4. There is no progress store.**
 
 Listed under shared logic. `TaskResponseStore` persists per-task responses and attempts,
 but nothing aggregates completion across tasks, so neither the picker nor the TOC shows
 any indication of what has been attempted or completed.
 
-**6. D ➐ asks the student to record audio, and the app cannot.**
+**5. D ➐ asks the student to record audio, and the app cannot.**
 
 The task is authored as its instruction, the draft from ➏ rendered by `RecallCard`, and
 a self-check box for what the student wants to improve. The recording itself is out of

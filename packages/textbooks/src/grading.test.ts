@@ -225,3 +225,48 @@ describe('multi-select blanks (B ➌)', () => {
     expect(isBlankCorrect(single, '商务座、一等座')).toBe(false);
   });
 });
+
+describe('script-variant expansion (gap 2)', () => {
+  // The wiring lives in each app's task provider; this pins the contract they rely
+  // on, including that it is a no-op when the converter returns the answer unchanged.
+  const task = (blanks: Record<string, BlankSpec>): Task => ({
+    id: 'tblt-hsk4.u06.E.t1',
+    number: '➊',
+    instructions: 'x',
+    body: [{ kind: 'numberedBlanks', ids: Object.keys(blanks) }],
+    blanks,
+  });
+
+  it('adds the converted form to accept[]', () => {
+    const t = task({ b1: { id: 'b1', kind: 'type', answer: '车' } });
+    const expanded = expandAcceptedVariants(t, (a) => (a === '车' ? '車' : a)) as Task;
+    expect(expanded.blanks!.b1!.accept).toEqual(['車']);
+  });
+
+  it('leaves the original answer alone', () => {
+    const t = task({ b1: { id: 'b1', kind: 'type', answer: '车' } });
+    const expanded = expandAcceptedVariants(t, (a) => (a === '车' ? '車' : a)) as Task;
+    expect(expanded.blanks!.b1!.answer).toBe('车');
+  });
+
+  it('does not duplicate a variant already listed', () => {
+    const t = task({ b1: { id: 'b1', kind: 'type', answer: '车', accept: ['車'] } });
+    const expanded = expandAcceptedVariants(t, (a) => (a === '车' ? '車' : a)) as Task;
+    expect(expanded.blanks!.b1!.accept).toEqual(['車']);
+  });
+
+  it('does not add an entry when the converter changes nothing', () => {
+    // What an already-simplified answer looks like, and what a non-Chinese L2 gets.
+    const t = task({ b1: { id: 'b1', kind: 'type', answer: '车' } });
+    const expanded = expandAcceptedVariants(t, (a) => a) as Task;
+    expect(expanded.blanks!.b1!.accept).toBeUndefined();
+  });
+
+  it('then accepts the traditional form when grading', () => {
+    const t = task({ b1: { id: 'b1', kind: 'type', answer: '车' } });
+    const expanded = expandAcceptedVariants(t, (a) => (a === '车' ? '車' : a)) as Task;
+    expect(isBlankCorrect(expanded.blanks!.b1!, '车')).toBe(true);
+    expect(isBlankCorrect(expanded.blanks!.b1!, '車')).toBe(true);
+    expect(isBlankCorrect(expanded.blanks!.b1!, '東')).toBe(false);
+  });
+});
