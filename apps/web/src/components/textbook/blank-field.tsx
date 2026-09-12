@@ -4,6 +4,7 @@ import React, { useCallback, useSyncExternalStore } from 'react';
 import { indexToCircled, type BlankSpec } from '@langplayer/textbooks';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
+import { InlineImageSlot } from './inline-image-slot';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -95,7 +96,14 @@ export function BlankField({ blank }: { blank: BlankSpec }) {
     );
   }
 
-  // ── Choose from a bank or picture set ──
+  // A blank answering from a picture set is an illustration slot in the passage, not a
+  // letter chip — the booklet prints a box there, and the finished article should read
+  // as the finished page.
+  if (blank.optionSet) {
+    return <InlineImageSlot blank={blank} value={value} />;
+  }
+
+  // ── Choose from a bank ──
   return (
     <span className="mx-0.5 inline-flex items-baseline gap-1.5 align-baseline">
       <button

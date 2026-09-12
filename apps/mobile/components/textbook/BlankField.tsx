@@ -4,6 +4,7 @@ import { indexToCircled, type BlankSpec } from '@langplayer/textbooks';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { InlineImageSlot } from './InlineImageSlot';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -85,6 +86,12 @@ export function BlankField({ blank }: { blank: BlankSpec }) {
         )}
       </View>
     );
+  }
+
+  // A blank answering from a picture set is an illustration slot in the passage, not a
+  // letter chip — the booklet prints a box there.
+  if (blank.optionSet) {
+    return <InlineImageSlot blank={blank} value={value} />;
   }
 
   // ── Choose from a bank ──
