@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import {
   BlankSelectionStore,
   TaskResponseStore,
@@ -34,6 +41,30 @@ export function useTextbookTask(): TextbookTaskContextValue | null {
 }
 
 export const TEXTBOOK_STORAGE_PREFIX = 'lp:textbook:';
+
+/** A store that never notifies — used only to ask React whether hydration is done. */
+const neverChanges = () => () => {};
+
+/**
+ * Whether the browser is past hydration.
+ *
+ * `false` for the server render *and* for the client's hydration render, `true`
+ * immediately afterwards — and `true` on the very first render of a client-side
+ * navigation, where there is no server HTML to disagree with, so resuming a task
+ * shows the saved answers at once rather than flashing an empty task.
+ *
+ * `useSyncExternalStore` is what draws that line safely rather than by hand: React
+ * renders hydration with the server snapshot and then re-renders with the client one,
+ * instead of failing the hydration. This is the hook ADR-0044's save/restore has to go
+ * through, because the state it restores exists on the device and not on the server.
+ */
+function usePastHydration(): boolean {
+  return useSyncExternalStore(
+    neverChanges,
+    () => true,
+    () => false,
+  );
+}
 
 /**
  * Read a saved attempt from localStorage.
@@ -83,6 +114,8 @@ interface TextbookTaskProviderProps {
  * multi-second JS-thread block.
  */
 export function TextbookTaskProvider({ task, book, children }: TextbookTaskProviderProps) {
+  const pastHydration = usePastHydration();
+
   // A student may type either script: a traditional form of the answer has to count.
   // OpenCC is lazy-loaded, so the expansion is asynchronous and starts from the
   // unexpanded task — an L2 with no script pair never triggers the load at all.
@@ -110,14 +143,25 @@ export function TextbookTaskProvider({ task, book, children }: TextbookTaskProvi
     const store = new TaskResponseStore({
       task: prepared,
       contentVersion: book.contentVersion,
-      load: () => loadPersistedTask(prepared.id),
-      save: savePersistedTask,
+      // ADR-0044 keeps the attempt on the device, so it can only be read in the
+      // browser — and reading it *during* render is what broke hydration: the server
+      // has no localStorage and painted an unanswered task, while the client's
+      // hydration render already had the saved answers, so React threw the tree away
+      // with "Hydration failed because the server rendered text didn't match the
+      // client" (A ➋'s ② came back as `?`, then appeared as `E`). Until hydration is
+      // past, the store starts empty — which is exactly what the server rendered —
+      // and adopts the saved attempt on the render that follows it.
+      load: () => (pastHydration ? loadPersistedTask(prepared.id) : null),
+      // Nothing is written before the attempt is adopted: the store holds no state of
+      // its own yet, so persisting it would overwrite the saved attempt with an empty
+      // one — the whole task's answers, not just the blank being typed.
+      save: pastHydration ? savePersistedTask : undefined,
     });
     // Responses are persisted on every change, so rebuilding once when the expansion
     // lands re-reads them rather than losing them.
     return { task: prepared, book, store, selection: new BlankSelectionStore() };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prepared, book.contentVersion]);
+  }, [prepared, book.contentVersion, pastHydration]);
 
   return <TextbookTaskContext.Provider value={value}>{children}</TextbookTaskContext.Provider>;
 }

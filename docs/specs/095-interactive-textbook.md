@@ -1016,6 +1016,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 - **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
+- **Resuming vs. first paint**: on web the task page is server-rendered, and ADR-0044's saved attempt exists only in the browser. So the HTML always shows an **unanswered** task, and the store adopts the saved attempt immediately after hydration — reading device storage while rendering made the first client render disagree with the server's HTML, which React answers by discarding the whole tree (the mismatch A ➋ shipped with: the server's `?` re-rendered as the saved `E`). Nothing is persisted before the attempt is adopted, so an empty store can never overwrite a saved one. A client-side navigation has no server HTML to disagree with and restores the saved answers on the first render.
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
 - **Autoplay blocked**: audio requires an explicit tap; never autoplay.
 - **Edge cases**: audio-less task with `type: listening` (validator flag); a `choose` blank whose bank has one remaining option; `given` blanks excluded from scoring; a task with zero blanks (pure `freeWrite`); a `mockApp` with no goals (pure stimulus — showing a submit/completion affordance would be wrong); a `mockApp` whose bridge major version the frame cannot speak (refuse, fall back to the image); a very long passage (continuous scroll — no pagination, see Non-Goals).
@@ -1160,6 +1161,19 @@ by a test pressing the control the widget actually renders — the task row (A �
 (A ➋), a table row (A ➌) and a passage (A ➍). All four fail against the old wiring. The
 URLs themselves are live (above), so what remains unconfirmed is one step: that a browser
 in front of a person produces sound.
+
+**Hydration is now verified in a real browser, both ways round.** A saved attempt in
+`localStorage` is the precondition — the server has no access to it — so a task the
+student had answered loaded as an unanswered page and the client's first render already
+had the answers. React reported `Hydration failed because the server rendered text didn't
+match the client` and discarded the tree; regenerating it is also what produced the
+`Encountered a script tag while rendering React component` warning that appeared with it,
+since the recovery render recreates Next's inline flight-data scripts. Measured in
+headless Chromium: with a saved attempt seeded, that page reported 1 hydration failure and
+1 script-tag warning before the fix and **0 and 0** after, with the answers still restored
+(② E, ③ D, ④ E, ⑤ B, ⑥ G, ⑦ F). A ➊/➌/➍ are clean in the same harness, and the
+server-render-then-hydrate path is covered by `task-provider.test.tsx` rather than by
+inspection.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame and the
