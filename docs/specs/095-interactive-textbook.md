@@ -325,6 +325,15 @@ are a numbered set — always appears in the same position without each author p
 playing produces answers to the wrong question, so playback is owned by one provider per
 task and shared by every control on the page.
 
+**The provider resolves every level, not just `task.audio[]`.** Because a recording can be
+declared anywhere, "the audio of this task" is the union of all four levels, and the
+provider is given the task rather than a list so a control cannot offer it a key it has no
+URL for. Both clients derive that set from `audioTracksIn(task)` in `packages/textbooks`,
+which is also what `assetKeysIn` walks — one definition of where a recording can live, so
+the validator and the players cannot disagree about which ones exist. A ➋ is the case
+that matters: it is typed `listening`, has **no** `task.audio[]` at all, and all seven of
+its recordings hang off its blanks.
+
 **Never autoplays.** A browser blocks it anyway, and a task that starts speaking the
 moment it opens is hostile in a classroom.
 
@@ -848,7 +857,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskTypeIcon` | A task's `type` as an icon (`Headphones`/`BookOpen`/`MessagesSquare`/`PenLine`) with the localized type name as its accessible label |
 | `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
-| `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time |
+| `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
 | `InlineTrackButton` | The compact play/pause control an item renders beside itself. Renders nothing when the item has no recording, so a widget can place it unconditionally |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
@@ -1139,8 +1148,21 @@ asks for berths that are *not* 候补, so `sleeper` (the 铺 badge) and `sleeper
 (what the question asks) are now separate fields; Z281 and K1275 show the badge with
 waitlisted berths and so do not answer the question.
 
+**Audio playback was the one thing nothing had ever started.** The measurement pass
+above never pressed a play control, and the first report of it — A ➋'s buttons producing
+no sound — found why: playback is owned by one provider per task, and that provider was
+handed `task.audio[]` alone. A key declared on a blank, a table row or a passage had no
+URL, so the effect returned before reaching `play()`, while the control still flipped to
+its "playing" state and read as a dead button rather than a broken one. A ➊, the only
+task with a task-level row, was the only task that could play anything. Both clients now
+derive their track set from `audioTracksIn(task)`, and each declaration level is covered
+by a test pressing the control the widget actually renders — the task row (A ➊), a blank
+(A ➋), a table row (A ➌) and a passage (A ➍). All four fail against the old wiring. The
+URLs themselves are live (above), so what remains unconfirmed is one step: that a browser
+in front of a person produces sound.
+
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame and the
-native ruby path are unchecked — and web audio playback, which the measurement pass
-never started.
+native ruby path are unchecked — and, on web, that playback is audible rather than merely
+dispatched to a media element.
 
