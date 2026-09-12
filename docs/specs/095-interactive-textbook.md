@@ -346,6 +346,12 @@ would invite picking, which is not the exercise — and a control wrapped around
 that word's tap away from the dictionary, because a token's tap stops at the token. The words
 are tokenized in both shapes; the pool is L2 the student may not know.
 
+**A ➍'s summaries print no question numerals either.** The workbook numbers each summary's
+blanks ①–④, but the answer key is addressed by `keyLabel` (`2.1`, `3.1`, …) *because* those
+numerals restart in every item, so the numeral told the student nothing about which answer was
+expected — and the blank itself already shows where the answer goes. They are dropped from the
+text; the blanks are untouched.
+
 `allowReuse` is a property of the pool, so it is set per pool and only where the key reuses a
 word **within one pool** — 随处 twice in A ➍ (1), 摇 twice in (4). A word printed in two
 summaries' pools (趟, in (2) and (4)) is the reason those pools are per summary at all: one
@@ -561,7 +567,13 @@ open is instant; a line the backend echoes back is rendered untranslated rather 
 
 A typed blank with a length hint and accepted alternates. `expectedLength` is set
 **only** where the workbook prints one box per character (dictation, E ➊/➋);
-elsewhere it defaults to `answer.length` (see Schema rules #4):
+elsewhere it defaults to `answer.length` (see Schema rules #4).
+
+**That length is where the blank starts, not where it ends.** A `type` blank grows with what
+has been typed, because a wrong answer is usually *longer* than the right one — A ➍'s blanks
+are two or three characters — and a fixed width clipped it mid-word, so the student could not
+read back what they had written. It never shrinks below the printed width, or the sentence
+would reflow as they typed. (Dictation is unaffected: its boxes are fixed by definition.)
 
 ```ts
 b2: { id: 'b2', kind: 'type', answer: '商务座', accept: ['商务座'], expectedLength: 3 },

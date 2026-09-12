@@ -176,3 +176,24 @@ describe('transcriptsIn', () => {
     expect(map.get('a/r.mp3')).toEqual([{ text: '第二' }]);
   });
 });
+
+/**
+ * A ➍'s summaries print no question numerals.
+ *
+ * The workbook numbers each summary's blanks ①–④, but the answer key is addressed by
+ * `keyLabel` (`2.1`, `3.1`, …) because the numerals restart in every item — so printing them
+ * told the student nothing about which answer the key expected, and the blanks are visible
+ * where they are. The numerals were noise in the middle of the sentence being read.
+ */
+describe('A ➍’s passages', () => {
+  it('carry no circled numerals, only their blanks', () => {
+    const t = findTask(tbltHsk4, 'tblt-hsk4.u06.A.t4')!;
+    for (const stimulus of t.body) {
+      if (stimulus.kind !== 'passage') continue;
+      expect(stimulus.text).not.toMatch(/[①②③④⑤⑥⑦⑧⑨]/);
+    }
+    // The blanks themselves are all still there, and still addressed by label.
+    const marked = t.body.flatMap((s) => (s.kind === 'passage' ? [s.text] : [])).join('');
+    expect(marked.match(/\{\{b\d+\}\}/g)).toHaveLength(17);
+  });
+});

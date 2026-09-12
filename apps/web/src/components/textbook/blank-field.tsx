@@ -84,10 +84,14 @@ export function BlankField({
 
   // ── Typed entry ──
   if (blank.kind === 'type') {
-    // Boxed width comes from expectedLength, which defaults to the answer
-    // length. It is set explicitly only for dictation, where the workbook
-    // prints one box per expected character.
+    // The printed length is where the blank *starts*, not where it ends: it comes from
+    // expectedLength, which defaults to the answer length and is set explicitly only for
+    // dictation, where the workbook prints one box per expected character.
     const chars = Math.max(2, blank.expectedLength ?? blank.answer.length);
+    // …and it grows with what has been typed. A fixed width clipped a longer answer
+    // mid-word — the student could not read back what they had written, and a wrong answer
+    // being longer than the right one is the normal case, not the exception.
+    const width = `${Math.max(chars, value.length) + 1}ch`;
     return (
       <span className="mx-0.5 inline-flex items-baseline gap-1.5 align-baseline">
         <input
@@ -95,7 +99,7 @@ export function BlankField({
           value={value}
           onChange={(e) => ctx!.store.setValue(blank.id, e.target.value)}
           aria-label={label}
-          style={{ width: `${chars + 1}ch` }}
+          style={{ width }}
           className={`rounded-sm border-0 border-b-2 bg-transparent px-1 text-center text-foreground outline-none focus:border-primary ${
             verdictClass ?? 'border-muted-foreground/60'
           }`}
