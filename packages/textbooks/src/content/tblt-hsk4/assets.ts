@@ -11,8 +11,10 @@
  * upload with no rename step — the key IS the source filename, prefixed by book
  * and unit so one host can serve many books.
  *
- * Picture images are named `<lesson><task>-<letter>.png` and are extracted from
- * the workbook PDF.
+ * Picture images are named `<lesson><task>-<letter>.<ext>` and are extracted
+ * from the workbook PDF. The extension follows whichever encoding is actually
+ * smaller for that image: photographs and shaded illustrations come out JPEG
+ * (PNG ran 5-7x larger on every one of them), and the flat vector map stays PNG.
  */
 
 const BOOK = 'tblt-hsk4';
@@ -73,21 +75,21 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   audio('六E ➋ ②.mp3'),
   audio('六E ➋ ③.mp3'),
   audio('六E ➌.mp3'),
-  image('e1-a.png'),
-  image('e1-b.png'),
-  image('e1-c.png'),
-  image('e1-d.png'),
-  image('e1-e.png'),
-  image('e2-a.png'),
-  image('e2-b.png'),
-  image('e2-c.png'),
-  image('e2-d.png'),
+  image('e1-a.jpg'),
+  image('e1-b.jpg'),
+  image('e1-c.jpg'),
+  image('e1-d.jpg'),
+  image('e1-e.jpg'),
+  image('e2-a.jpg'),
+  image('e2-b.jpg'),
+  image('e2-c.jpg'),
+  image('e2-d.jpg'),
 
   // ── Lesson D ➏ — the note-taking recording ──
   audio('六D ➍.mp3'),
 
   // ── Lesson B ➍ — the workbook screenshot shown if the mock frame fails ──
-  image('b4-fallback.png'),
+  image('b4-fallback.jpg'),
 
   // ── Pictures, lesson A ➊ — the map and the ten scenic spots (A–J) ──
   // The map is a flat-colour graphic, so PNG; the spots are photographs, so
@@ -106,33 +108,33 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   image('a1-sight-j.jpg'),
 
   // ── Pictures, lesson A ➋ (A–G) ──
-  image('a2-a.png'),
-  image('a2-b.png'),
-  image('a2-c.png'),
-  image('a2-d.png'),
-  image('a2-e.png'),
-  image('a2-f.png'),
-  image('a2-g.png'),
+  image('a2-a.jpg'),
+  image('a2-b.jpg'),
+  image('a2-c.jpg'),
+  image('a2-d.jpg'),
+  image('a2-e.jpg'),
+  image('a2-f.jpg'),
+  image('a2-g.jpg'),
 
   // ── Pictures, lesson A ➌ — transport (A–E) and places (a–e) ──
-  image('a3-transport-a.png'),
-  image('a3-transport-b.png'),
-  image('a3-transport-c.png'),
-  image('a3-transport-d.png'),
-  image('a3-transport-e.png'),
-  image('a3-place-a.png'),
-  image('a3-place-b.png'),
-  image('a3-place-c.png'),
-  image('a3-place-d.png'),
-  image('a3-place-e.png'),
+  image('a3-transport-a.jpg'),
+  image('a3-transport-b.jpg'),
+  image('a3-transport-c.jpg'),
+  image('a3-transport-d.jpg'),
+  image('a3-transport-e.jpg'),
+  image('a3-place-a.jpg'),
+  image('a3-place-b.jpg'),
+  image('a3-place-c.jpg'),
+  image('a3-place-d.jpg'),
+  image('a3-place-e.jpg'),
 
   // ── Pictures, lesson C ➊ (A–D) and ➋ (A–D) ──
-  image('c1-a.png'),
-  image('c1-b.png'),
-  image('c1-c.png'),
-  image('c1-d.png'),
-  image('c2-a.png'),
-  image('c2-b.png'),
-  image('c2-c.png'),
-  image('c2-d.png'),
+  image('c1-a.jpg'),
+  image('c1-b.jpg'),
+  image('c1-c.jpg'),
+  image('c1-d.jpg'),
+  image('c2-a.jpg'),
+  image('c2-b.jpg'),
+  image('c2-c.jpg'),
+  image('c2-d.jpg'),
 ];

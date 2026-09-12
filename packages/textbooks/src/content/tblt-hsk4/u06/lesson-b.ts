@@ -110,7 +110,7 @@ export const lessonB: LessonMeta = {
         {
           kind: 'mockApp',
           app: 'railway-12306',
-          fallbackImage: 'tblt-hsk4/u06/b4-fallback.png',
+          fallbackImage: 'tblt-hsk4/u06/b4-fallback.jpg',
           goals: [
             { id: 'fastest', blankId: 'b1', prompt: '哪次列车最快？' },
             { id: 'cheapest', blankId: 'b2', prompt: '哪次列车最便宜？' },
