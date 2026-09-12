@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
+import { inlineBankIds } from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './BlankChoice';
 import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
@@ -102,9 +103,15 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 
       {children}
 
-      {banks.map((bank) => (
-        <WordBank key={bank.id} bank={bank} />
-      ))}
+      {/* Only the pools nothing prints inline. A passage that names a bank prints it under
+          itself — A ➍'s summaries each carry their own three words — and printing it here as
+          well would put the same pool on the page twice, where the second copy reads as a
+          second, different pool. */}
+      {banks
+        .filter((bank) => !inlineBankIds(task).has(bank.id))
+        .map((bank) => (
+          <WordBank key={bank.id} bank={bank} />
+        ))}
 
       <View className="flex-row flex-wrap items-center gap-3">
         <Pressable
@@ -179,6 +186,11 @@ export function TaskStimulus() {
                   <AudioPlayer tracks={stimulus.audio} />
                 )}
                 <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
+                {/* The passage's own option pool, at the end of the item it belongs to. */}
+                {(stimulus.banks ?? []).map((bankId) => {
+                  const bank = (ctx.task.banks ?? []).find((b) => b.id === bankId);
+                  return bank ? <WordBank key={bankId} bank={bank} /> : null;
+                })}
               </View>
             );
           case 'recall':
