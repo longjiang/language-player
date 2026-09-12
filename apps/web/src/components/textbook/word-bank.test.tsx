@@ -3,7 +3,7 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { findTask, loadBook, type BookMeta, type Task } from '@langplayer/textbooks';
-import { TextbookTaskProvider } from './task-provider';
+import { TextbookTaskProvider, useTextbookTask } from './task-provider';
 import { TaskAudioProvider } from './task-audio';
 import { TaskStimulus } from './task-shell';
 import { BlankChoiceProvider } from './blank-choice';
@@ -105,5 +105,78 @@ describe('A ➍’s option pools', () => {
     }
     // …and the words themselves are tokenized, which is what makes them look-up-able.
     expect(pools()[0]![0]!.querySelector('[data-tokenized]')?.textContent).toBe('舒服');
+  });
+});
+
+/**
+ * Striking out a used word.
+ *
+ * The strike means "you have placed this", so it is not suppressed by `allowReuse` — A ➍ (4)
+ * uses 摇 twice and its pool has three words, which is exactly where a student needs to see
+ * what they have already used. What must not count is a `given` blank: A ➍ (1) is the printed
+ * worked example, pre-filled in the store, so counting its answers would strike its whole pool
+ * before the student had done anything.
+ */
+function Writer({ blankId, value }: { blankId: string; value: string }) {
+  const ctx = useTextbookTask()!;
+  return (
+    <button type="button" aria-label="write" onClick={() => ctx.store.setValue(blankId, value)}>
+      write
+    </button>
+  );
+}
+
+const chipFor = (word: string) =>
+  pools()
+    .flat()
+    .find((option) => option.textContent?.startsWith(word))!;
+
+describe('a used option', () => {
+  it('is struck out even where allowReuse is true', async () => {
+    const { book, task: t } = await taskA4();
+    // (4)'s pool is 趟、摇、快 with reuse allowed (摇 answers two blanks).
+    expect(t.banks!.find((b) => b.id === 'a4-4')!.allowReuse).toBe(true);
+    render(
+      <TextbookTaskProvider task={t} book={book}>
+        <TaskAudioProvider task={t}>
+          <BlankChoiceProvider>
+            <TaskStimulus />
+            <Writer blankId="b11" value="趟" />
+          </BlankChoiceProvider>
+        </TaskAudioProvider>
+      </TextbookTaskProvider>,
+    );
+    await act(async () => {});
+
+    expect(chipFor('趟').className).not.toContain('line-through');
+
+    await act(async () => {
+      document.querySelector('button[aria-label="write"]')!.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
+    });
+
+    expect(chipFor('趟').className).toContain('line-through');
+    // Still there and still usable — reuse is allowed, the strike is information.
+    expect(chipFor('趟').textContent).toContain('趟');
+  });
+
+  it('does not count the workbook’s own worked-example answers', async () => {
+    const { book, task: t } = await taskA4();
+    // (1)'s four blanks are all `given`, so the store holds 随处、坡路、舒服 from the start.
+    render(
+      <TextbookTaskProvider task={t} book={book}>
+        <TaskAudioProvider task={t}>
+          <BlankChoiceProvider>
+            <TaskStimulus />
+          </BlankChoiceProvider>
+        </TaskAudioProvider>
+      </TextbookTaskProvider>,
+    );
+    await act(async () => {});
+
+    for (const word of ['舒服', '随处', '坡路']) {
+      expect(chipFor(word).className).not.toContain('line-through');
+    }
   });
 });

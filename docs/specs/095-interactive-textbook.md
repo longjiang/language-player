@@ -357,6 +357,23 @@ word **within one pool** — 随处 twice in A ➍ (1), 摇 twice in (4). A word
 summaries' pools (趟, in (2) and (4)) is the reason those pools are per summary at all: one
 shared pool would have had to list it once and reuse it across items.
 
+**A used option is struck out, and `allowReuse` does not suppress it.** The strike means *you
+have placed this word*, which is what a student working down a summary needs to see — and it
+has to survive reuse, since (4) uses 摇 twice and its pool holds three words. `allowReuse`
+describes the *key* (may this word answer twice?); it never meant the word had not been used. A
+struck option is still tappable and still selectable.
+
+**`given` blanks do not count as used.** Their answers are pre-filled in the store, so counting
+them would strike out A ➍ (1)'s whole pool — the printed worked example — before the student
+had done anything. "Used" is what the student has put somewhere.
+
+**An option's content is bottom-aligned within its chip.** A ruby reading enlarges the line box
+and pushes the base glyph down, so without it a pool whose readings arrive at different times
+shows characters at different heights — measured at 7px in A ➍, where a reading-less 快 sat
+above 趟 and 摇. Pinning the content to the chip's inner bottom puts the shared baseline at a
+fixed offset and lets the reading grow upward; because the row stretches every chip to its
+tallest, each one also reserves the reading space for the others.
+
 ### Audio
 
 A recording can be declared at three levels, depending on what it belongs to. All three
@@ -1019,7 +1036,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
-| `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Dims consumed options when `allowReuse` is false |
+| `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Struck out once the student has placed a word, and bottom-aligned so a reading never moves a glyph |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
 | `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them |
 | `BlankChoiceProvider` / `useBlankChoice` | The task's picture-choice dialog and its opener. One dialog per task; a blank calls `open(blankId)` |
@@ -1280,7 +1297,12 @@ The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
 
-**The option pools are verified in a browser and by test.** In the browser, A ➍'s pool renders
+**The pools are verified in a browser for all four behaviours.** Words are struck as they are
+placed and not before — including on A ➍ (1), whose four `given` answers are in the store from
+the first render and strike nothing — with `allowReuse: true` on (4) making no difference to
+that. Removing one reading by hand reproduces the reported state and the three glyphs still sit
+at 297..317, where they were 290..310 before the alignment fix. **The option pools are also
+verified by test.** In the browser, A ➍'s pool renders
 as text rather than as buttons (a `DIV` per option, no control), and its words are tokenized:
 tapping 舒 in the pool opens the dictionary on 舒服 [shū fú]. C ➍'s `choose`-backed pool still
 renders as buttons with `aria-pressed` and keeps the "Please select an option" hint, so the two
