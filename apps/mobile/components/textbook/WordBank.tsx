@@ -19,8 +19,7 @@ const OPTION_FONT_SIZE = 14;
  *
  * - **Picked** (`choose` blanks): tapping an option fills the currently selected blank, as
  *   the printed workbook's banks work. The letter or word *is* the answer, so the options
- *   have to be controls. When `allowReuse` is false, options already used are dimmed; that
- *   is a per-bank flag rather than a global rule (B ➊'s key genuinely reuses `a`).
+ *   have to be controls.
  * - **A reference list** (`type` blanks): the student writes the answer, so the pool is text
  *   to read rather than a row of controls — A ➍ prints three words under each summary and the
  *   student types them in. Buttons there would invite picking, which is not the exercise, and
@@ -28,6 +27,16 @@ const OPTION_FONT_SIZE = 14;
  *
  * The words are tokenized in both shapes: they are L2 the student may not know, and looking
  * one up is what the pool is for.
+ *
+ * **A word the student has used is struck out, whatever `allowReuse` says.** The strike means
+ * "you have placed this", which is what a student working down a summary needs to see — and it
+ * has to survive reuse: A ➍ (4) uses 摇 twice, so the second use has to still be findable in a
+ * pool of three words. `allowReuse` describes the answer key (may this word appear twice?); it
+ * does not mean the word has not been used. An option is still pressable when struck.
+ *
+ * `given` blanks do not count as used: their answers are pre-filled in the store, so counting
+ * them would strike out A ➍ (1)'s entire pool — the printed worked example — before the student
+ * has done anything.
  */
 export function WordBank({ bank }: { bank: Bank }) {
   const t = useT();
@@ -37,7 +46,11 @@ export function WordBank({ bank }: { bank: Bank }) {
   const resolve = createAssetResolver(ASSET_BASE_URL);
 
   const picked = ctx ? bankIsPicked(ctx.task, bank.id) : true;
-  const usedValues = new Set(Object.values(responses).filter(Boolean));
+  const usedValues = new Set(
+    Object.entries(responses)
+      .filter(([id, value]) => value && ctx?.task.blanks?.[id]?.kind !== 'given')
+      .map(([, value]) => value),
+  );
   // For a multi-select blank the options already picked are shown as chosen rather
   // than consumed, so a second tap unpicks them.
   const chosenValues = new Set(
@@ -52,11 +65,17 @@ export function WordBank({ bank }: { bank: Bank }) {
       <View className="flex-row flex-wrap gap-2">
         {bank.items.map((item) => {
           const chosen = chosenValues.has(item);
-          const consumed = !chosen && !bank.allowReuse && usedValues.has(item);
+          const consumed = !chosen && usedValues.has(item);
           const label = bank.optionLabels?.[item];
           const image = bank.optionImages?.[item];
 
-          const skin = `items-center gap-1 overflow-hidden rounded-md border ${
+          // `justify-end`, not the default: a ruby reading enlarges the line box and pushes
+          // the base glyph down, so without it a pool shows options whose characters sit at
+          // different heights depending on whether their reading has arrived. Pinning the
+          // content to the bottom puts the shared baseline at a fixed offset and lets the
+          // reading grow upward, which is what makes every chip reserve the reading space for
+          // the others — the row stretches each chip to the tallest.
+          const skin = `items-center justify-end gap-1 overflow-hidden rounded-md border ${
             image ? 'w-32 pb-1.5' : 'px-3 py-1.5'
           } ${
             chosen
