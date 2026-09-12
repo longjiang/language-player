@@ -97,9 +97,13 @@ describe('TOC tree', () => {
   it('keeps the ids a route needs', async () => {
     const book = (await loadBook('tblt-hsk4'))!;
     const tree = buildTocTree(book);
-    const lesson = tree.units[0]!.lessons[0]!;
-    expect(lesson.id).toBe('B');
-    expect(lesson.tasks.map((t) => t.id)).toContain('tblt-hsk4.u06.B.t2');
+    const lessonIds = tree.units[0]!.lessons.map((l) => l.id);
+    // Lessons come out in workbook order, not alphabetically by accident.
+    expect(lessonIds).toEqual(['A', 'B', 'C']);
+    const allTaskIds = tree.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks.map((t) => t.id)));
+    expect(allTaskIds).toContain('tblt-hsk4.u06.A.t2');
+    expect(allTaskIds).toContain('tblt-hsk4.u06.B.t2');
+    expect(allTaskIds).toContain('tblt-hsk4.u06.C.t4');
     expect(tree.contentVersion).toBe(book.contentVersion);
   });
 });

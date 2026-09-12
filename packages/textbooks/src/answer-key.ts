@@ -46,21 +46,31 @@ const MULTI_ANSWER_SPLIT_RE = /[、,，]/;
 /**
  * Parse a raw answer-key line into items.
  *
- * Tolerates the punctuation the key actually uses (`;`, `；`, `。`, `.`) and
- * both full-width and half-width forms.
+ * The printed key uses two shapes, and both must survive:
  *
- * @param raw — e.g. `② C; ③ D; ④ E; ⑤ B; ⑥ G; ⑦ F.`
+ *   ② 新; ③ 免费Wi-Fi; ④ 充电口。          — circled question numerals (B ➋)
+ *   2. 金敏俊: B、c; 3. 奥利维亚: D, a。     — row numbers plus a name label (A ➌)
+ *   (4) 运营时刻 ......... [ C ]           — a labelled row with a bracketed answer (D ➋)
+ *
+ * Tolerates the punctuation the key actually uses (`;`, `；`, `。`, `.`) in both
+ * full-width and half-width forms.
+ *
+ * @param raw — one task's key line(s), verbatim from the printed key.
  */
 export function parseAnswerKey(raw: string): AnswerKeyItem[] {
-  const items: AnswerKeyItem[] = [];
-  if (!raw) return items;
+  if (!raw) return [];
 
-  // Split on the circled numerals themselves so the answer text can contain
-  // any punctuation without needing heavier parsing.
+  // Normalise the row-number forms into circled numerals so there is exactly
+  // one index syntax downstream: `2.` / `2、` / `(2)` → ②.
+  const withCircled = raw
+    .replace(/[(（]\s*(\d{1,2})\s*[)）]/g, (_m, n) => indexToCircled(Number(n)))
+    .replace(/(^|[;；。.\s])(\d{1,2})\s*[.、)）]/g, (_m, pre, n) => `${pre}${indexToCircled(Number(n))}`);
+
+  const items: AnswerKeyItem[] = [];
   const segments: Array<{ index: number; text: string }> = [];
   let current: { index: number; text: string } | null = null;
 
-  for (const ch of raw) {
+  for (const ch of withCircled) {
     const index = circledToIndex(ch);
     if (index !== null) {
       if (current) segments.push(current);
@@ -72,9 +82,20 @@ export function parseAnswerKey(raw: string): AnswerKeyItem[] {
   if (current) segments.push(current);
 
   for (const seg of segments) {
-    const answers = seg.text
+    // Drop a leading `<name>:` / `<label> .......` prefix. A ➌ labels each row
+    // with a person's name and D ➋ with a section title; neither is an answer.
+    let body = seg.text;
+    const colon = body.search(/[:：]/);
+    if (colon !== -1) body = body.slice(colon + 1);
+    body = body.replace(/[.．…_·]{2,}/g, ' ');
+
+    // A bracketed answer (`[ C ]`) is the D ➋ shape; unwrap before splitting.
+    const bracketed = body.match(/[[［]\s*([^\]］]+?)\s*[\]］]/);
+    if (bracketed) body = bracketed[1]!;
+
+    const answers = body
       .split(MULTI_ANSWER_SPLIT_RE)
-      .map((part) => part.replace(/^[\s;；:：.。]+|[\s;；:：.。]+$/g, '').trim())
+      .map((part) => part.replace(/^[\s;；:：.。\[\]［］]+|[\s;；:：.。\[\]［］]+$/g, '').trim())
       .filter(Boolean);
     if (answers.length) items.push({ index: seg.index, answers });
   }

@@ -22,7 +22,16 @@ export type BlankKind = 'given' | 'choose' | 'type';
 /** A bank of options that `choose` blanks draw from. */
 export interface Bank {
   id: string;
+  /**
+   * The values a blank may answer with.
+   *
+   * Often these ARE the printed options (B ➋: `快`), but B ➊ prints each option
+   * as a letter plus a description (`a 高速动车组列车`) while the blank records
+   * only the letter — hence `optionLabels`.
+   */
   items: string[];
+  /** Optional description shown beside a value, keyed by that value. */
+  optionLabels?: Record<string, string>;
   /**
    * Whether an option may be used by more than one blank. Defaults to false.
    *
@@ -56,8 +65,83 @@ export interface BlankSpec {
    * (E ➊ / ➋), where the workbook prints one visible box per character.
    */
   expectedLength?: number;
-  /** Id of a `Bank` this blank draws options from. Required for `choose`. */
+  /**
+   * Id of a `Bank` this blank draws options from. Required for `choose` blanks
+   * answered with text.
+   */
   bank?: string;
+  /**
+   * Id of a `pictureSet` stimulus this blank draws options from. Used instead of
+   * `bank` when the options are labelled pictures: the blank's answer is the
+   * option's letter, and the validator checks it against the set's letters.
+   */
+  optionSet?: string;
+  /**
+   * Which answer-key item this blank is checked against.
+   *
+   * Defaults to the blank's own numeric id (`b3` → item ③). It matters when a
+   * **single** key item covers several blanks: A ➌'s key reads
+   * `2. 金敏俊: B、c`, i.e. one row giving both the "how" and the "where" answer,
+   * so both of that row's blanks cite item 2.
+   */
+  keyIndex?: number;
+}
+
+/** One labelled picture option in a `pictureSet`. */
+export interface PictureOption {
+  /** Option letter as printed, e.g. `A` — this is what a blank answers with. */
+  letter: string;
+  /** Caption under the picture. */
+  label: string;
+  /** Relative asset key. */
+  image: string;
+}
+
+/** A lettered grid of pictures that blanks reference by letter. */
+export interface PictureSetStimulus {
+  kind: 'pictureSet';
+  id: string;
+  items: PictureOption[];
+}
+
+/** One spoken line of a dialogue. */
+export interface DialogueLine {
+  /** Speaker label as printed (e.g. 售票员); omitted for narration. */
+  speaker?: string;
+  /** L2 text, may carry `{{bN}}` markers. */
+  text: string;
+}
+
+/** Speaker-labelled lines carrying inline blanks. */
+export interface DialogueStimulus {
+  kind: 'dialogue';
+  id?: string;
+  lines: DialogueLine[];
+}
+
+/**
+ * A simple table.
+ *
+ * Cells are L2 text and may carry `{{bN}}` markers, so a table can hold blanks
+ * without needing its own blank mechanism — B ➊ puts a blank in the 车型 column.
+ */
+export interface DataTableStimulus {
+  kind: 'dataTable';
+  id?: string;
+  columns: string[];
+  rows: string[][];
+}
+
+/**
+ * A numbered row of blanks, printed as `① ___ ② ___ ③ ___`.
+ *
+ * The picture-set tasks (A ➋, C ➊, C ➋) have no passage: the student listens and
+ * answers a run of numbered slots. Each blank renders with its workbook index,
+ * which is also how the answer key refers to it.
+ */
+export interface NumberedBlanksStimulus {
+  kind: 'numberedBlanks';
+  ids: string[];
 }
 
 /** A running L2 passage carrying inline `{{bN}}` blank markers. */
@@ -66,7 +150,12 @@ export interface PassageStimulus {
   text: string;
 }
 
-export type Stimulus = PassageStimulus;
+export type Stimulus =
+  | PassageStimulus
+  | DialogueStimulus
+  | PictureSetStimulus
+  | DataTableStimulus
+  | NumberedBlanksStimulus;
 
 /** Audio track attached to a task. */
 export interface AudioTrack {
@@ -134,6 +223,48 @@ export interface BookMeta {
    */
   contentVersion: number;
   units: UnitMeta[];
+}
+
+/**
+ * Every L2 string in a task that needs rendering (and therefore tokenization).
+ *
+ * A single source of truth for "where can a `{{bN}}` marker live", so the
+ * validator, the tokenizer warm-up and the renderers cannot disagree about which
+ * fields are text.
+ */
+export function textsIn(task: Task): string[] {
+  const out: string[] = [];
+  if (task.instructions) out.push(task.instructions);
+  for (const stimulus of task.body) {
+    switch (stimulus.kind) {
+      case 'passage':
+        out.push(stimulus.text);
+        break;
+      case 'dialogue':
+        for (const line of stimulus.lines) if (line.text) out.push(line.text);
+        break;
+      case 'dataTable':
+        out.push(...stimulus.columns);
+        for (const row of stimulus.rows) out.push(...row);
+        break;
+      case 'pictureSet':
+        for (const item of stimulus.items) if (item.label) out.push(item.label);
+        break;
+      case 'numberedBlanks':
+        // No text of its own: the blanks render from their specs.
+        break;
+    }
+  }
+  return out;
+}
+
+/** Every `pictureSet` in a task, keyed by set id. */
+export function pictureSetsIn(task: Task): Map<string, PictureSetStimulus> {
+  const map = new Map<string, PictureSetStimulus>();
+  for (const stimulus of task.body) {
+    if (stimulus.kind === 'pictureSet') map.set(stimulus.id, stimulus);
+  }
+  return map;
 }
 
 // ─── Responses and grading ───────────────────────────────────────────────

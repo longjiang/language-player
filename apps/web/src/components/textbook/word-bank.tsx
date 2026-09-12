@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useCallback, useSyncExternalStore } from 'react';
+import React from 'react';
 import type { Bank } from '@langplayer/textbooks';
-import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
+import { useBlankPicker } from './blank-picker';
 
 /**
  * The option pool a `choose` blank draws from.
@@ -17,33 +17,10 @@ import { useT } from '@/hooks/use-t';
  * letter `a`, so it is data, not an assumption.
  */
 export function WordBank({ bank }: { bank: Bank }) {
-  const ctx = useTextbookTask();
   const t = useT();
-
-  const selected = useSyncExternalStore(
-    ctx!.selection.subscribe,
-    useCallback(() => ctx!.selection.get(), [ctx]),
-    useCallback(() => ctx!.selection.get(), [ctx]),
-  );
-
-  const responses = useSyncExternalStore(
-    ctx!.store.subscribe,
-    useCallback(() => ctx!.store.getResponsesSnapshot(), [ctx]),
-    useCallback(() => ctx!.store.getResponsesSnapshot(), [ctx]),
-  );
+  const { selected, pick, responses } = useBlankPicker();
 
   const usedValues = new Set(Object.values(responses).filter(Boolean));
-
-  const pick = (item: string) => {
-    if (selected) {
-      ctx!.store.setValue(selected, item);
-      // Move straight to the next empty blank so a run of answers is one tap each.
-      const blanks = Object.values(ctx!.task.blanks ?? {}).filter((b) => b.kind !== 'given');
-      const at = blanks.findIndex((b) => b.id === selected);
-      const after = blanks.slice(at + 1).find((b) => !(responses[b.id] ?? '').trim());
-      ctx!.selection.set(after?.id ?? null);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -61,7 +38,14 @@ export function WordBank({ bank }: { bank: Bank }) {
                   : 'bg-card text-foreground hover:bg-muted'
               }`}
             >
-              {item}
+              {bank.optionLabels?.[item] ? (
+                <span>
+                  <span className="mr-1.5 font-semibold text-primary">{item}</span>
+                  {bank.optionLabels[item]}
+                </span>
+              ) : (
+                item
+              )}
             </button>
           );
         })}

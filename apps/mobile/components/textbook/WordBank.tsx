@@ -1,8 +1,8 @@
-import React, { useCallback, useSyncExternalStore } from 'react';
+import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { Bank } from '@langplayer/textbooks';
-import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
+import { useBlankPicker } from './blank-picker';
 
 /**
  * The option pool a `choose` blank draws from.
@@ -15,32 +15,10 @@ import { useT } from '@/hooks/use-t';
  * letter `a`, so this is data, not an assumption.
  */
 export function WordBank({ bank }: { bank: Bank }) {
-  const ctx = useTextbookTask();
   const t = useT();
-
-  const selected = useSyncExternalStore(
-    ctx!.selection.subscribe,
-    useCallback(() => ctx!.selection.get(), [ctx]),
-    useCallback(() => ctx!.selection.get(), [ctx]),
-  );
-
-  const responses = useSyncExternalStore(
-    ctx!.store.subscribe,
-    useCallback(() => ctx!.store.getResponsesSnapshot(), [ctx]),
-    useCallback(() => ctx!.store.getResponsesSnapshot(), [ctx]),
-  );
+  const { selected, pick, responses } = useBlankPicker();
 
   const usedValues = new Set(Object.values(responses).filter(Boolean));
-
-  const pick = (item: string) => {
-    if (!selected) return;
-    ctx!.store.setValue(selected, item);
-    // Move straight to the next empty blank so a run of answers is one tap each.
-    const blanks = Object.values(ctx!.task.blanks ?? {}).filter((b) => b.kind !== 'given');
-    const at = blanks.findIndex((b) => b.id === selected);
-    const after = blanks.slice(at + 1).find((b) => !(responses[b.id] ?? '').trim());
-    ctx!.selection.set(after?.id ?? null);
-  };
 
   return (
     <View className="gap-2">
@@ -59,7 +37,14 @@ export function WordBank({ bank }: { bank: Bank }) {
               <Text
                 className={`text-sm ${consumed ? 'text-muted-foreground line-through' : 'text-foreground'}`}
               >
-                {item}
+                {bank.optionLabels?.[item] ? (
+                  <>
+                    <Text className="font-semibold text-primary">{item} </Text>
+                    {bank.optionLabels[item]}
+                  </>
+                ) : (
+                  item
+                )}
               </Text>
             </Pressable>
           );

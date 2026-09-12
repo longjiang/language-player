@@ -7,6 +7,7 @@
  * (ADR-0003: share logic, not views).
  */
 
+export { pictureSetsIn, textsIn } from './types';
 export type {
   AudioTrack,
   Bank,
@@ -15,8 +16,14 @@ export type {
   BlankResult,
   BlankSpec,
   BookMeta,
+  DataTableStimulus,
+  DialogueLine,
+  DialogueStimulus,
   LessonMeta,
+  NumberedBlanksStimulus,
   PassageStimulus,
+  PictureOption,
+  PictureSetStimulus,
   Stimulus,
   Task,
   TaskResult,
@@ -67,3 +74,7 @@ export {
   TEXTBOOK_CATALOGUE,
 } from './loaders';
 export type { BookSummary, TocLesson, TocTask, TocTree, TocUnit } from './loaders';
+
+// Content (the pilot book). Exported so an authoring/publish script and the
+// tests can reach the manifest without importing a deep path.
+export { TBLT_HSK4_ASSET_KEYS } from './content/tblt-hsk4/assets';
