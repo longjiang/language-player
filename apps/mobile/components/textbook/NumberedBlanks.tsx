@@ -29,10 +29,12 @@ export function NumberedBlanks({ ids }: { ids: string[] }) {
         const n = Number(id.replace(/^b/, ''));
         return (
           <View key={id} className="flex-row items-center gap-1.5">
-            <InlineTrackButton tracks={blank.audio} />
+            {/* The numeral comes first, then how to hear the item, then the answer: a
+                student reads which question it is, plays it, and answers it. */}
             <Text className="text-sm text-muted-foreground">
               {indexToCircled(Number.isFinite(n) ? n : index + 1)}
             </Text>
+            <InlineTrackButton tracks={blank.audio} />
             <BlankField blank={blank} variant="cell" />
           </View>
         );
