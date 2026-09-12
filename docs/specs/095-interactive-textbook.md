@@ -1055,22 +1055,6 @@ shows a letter chip rather than the illustration itself, where the booklet print
 picture in the gap. The component inventory marks it **not built**, and it is
 deliberately absent from the stimulus kinds table, which lists only kinds that exist.
 
-**4. D ➐ asks the student to record audio, and the app cannot.**
-
-The task is authored as its instruction, the draft from ➏ rendered by `RecallCard`, and
-a self-check box for what the student wants to improve. The recording itself is out of
-band: it needs a microphone and somewhere to put the audio, and neither app captures or
-uploads audio today. This is the only task of the twenty-five whose core activity the
-app cannot host.
-
-Related, and deliberate rather than a defect: C ➌'s three comprehension questions and
-D ➐'s self-check are `free` blanks, so they are saved and never marked. C ➌'s key prints
-model sentences rather than answers — any wording carrying the same information is
-correct — so grading them as strings would mark right answers wrong. Five tasks are
-ungraded by design (C ➌, D ➎, D ➏, D ➐, E ➍), which is what `free` is for; what does not
-exist is a way to *show* a model answer after submit, so those tasks give no feedback at
-all. That is the gap.
-
 ### Verified, not assumed
 
 Stated so the gaps are not read as a general disclaimer: the answer key is
@@ -1080,6 +1064,9 @@ references is declared in the manifest and present on disk; 1016 tests pass and 
 clean for web, mobile, textbooks and utils. The 85 keys published during the pilot were
 each verified returning HTTP 200 from the shared host, including percent-encoded
 workbook audio filenames.
+
+A task with nothing to grade (D ➎ ➏ ➐, E ➍) now reports *Saved* rather than `0 / 0`, so
+self-completed work is not presented as a failure.
 
 The most significant thing that has **not** been verified is anything visual — no page
 of this feature has been rendered in a browser or simulator. Types, content validation

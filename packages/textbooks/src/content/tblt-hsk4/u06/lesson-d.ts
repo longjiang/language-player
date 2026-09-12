@@ -288,12 +288,12 @@ export const lessonD: LessonMeta = {
       number: '➐',
       type: 'conversation',
       sourcePage: 20,
-      // Recording itself is outside the app: it needs a microphone and somewhere to
-      // put the audio, and neither app has that. The task is therefore the
-      // instruction, the draft to read from, and a self-check the student fills in
-      // afterwards — see SPEC-095's Known Gaps.
+      // The student does the speaking themselves and completes the task here: neither
+      // app captures audio, and requiring a recording would make the task impossible to
+      // finish. What the app can do is put the draft in front of them and keep their
+      // own assessment of it.
       instructions:
-        '按照你写的草稿，录一段介绍自己城市的公共交通的音频。录完以后，回听一遍，在下面写下你想改进的地方。',
+        '看着 ➏ 写的草稿，自己说一遍。说完以后想一想：哪一部分说得不太顺？还想补充什么？写在下面，这个任务就算完成了。',
       body: [
         {
           kind: 'recall',
