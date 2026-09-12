@@ -4,6 +4,7 @@ import {
   expandAcceptedVariants,
   gradeTask,
   isBlankCorrect,
+  isBlankScoreable,
   normalizeAnswer,
 } from './grading';
 import type { BlankSpec, Task } from './types';
@@ -147,5 +148,41 @@ describe('expandAcceptedVariants', () => {
     const t = task({ blanks: { b1: blank({ answer: '车' }) } });
     const expanded = await expandAcceptedVariants(t, async () => '車');
     expect(isBlankCorrect(expanded.blanks!.b1!, '車')).toBe(true);
+  });
+});
+
+describe('ungraded blanks', () => {
+  const t = task({
+    blanks: {
+      b1: { id: 'b1', kind: 'given', answer: '快' },
+      b2: { id: 'b2', kind: 'type', answer: '新' },
+      b3: { id: 'b3', kind: 'free', answer: '' },
+    },
+  });
+
+  it('reports free text as unscoreable', () => {
+    expect(isBlankScoreable({ id: 'b3', kind: 'free', answer: '' })).toBe(false);
+    expect(isBlankScoreable({ id: 'b2', kind: 'type', answer: '新' })).toBe(true);
+  });
+
+  it('never counts free text toward the score', () => {
+    const result = gradeTask(t, { b2: '新', b3: '我写了一些笔记' });
+    expect(result.scoreableCount).toBe(1);
+    expect(result.correctCount).toBe(1);
+    expect(result.complete).toBe(true);
+  });
+
+  it('treats written free text as satisfied, and empty as not', () => {
+    expect(isBlankCorrect({ id: 'b3', kind: 'free', answer: '' }, '笔记')).toBe(true);
+    expect(isBlankCorrect({ id: 'b3', kind: 'free', answer: '' }, '   ')).toBe(false);
+    expect(isBlankCorrect({ id: 'b3', kind: 'free', answer: '' }, '')).toBe(false);
+  });
+
+  it('cannot complete a task that is only free writing', () => {
+    // There is nothing scoreable, so there is nothing to be right about.
+    const freeOnly = task({ blanks: { b1: { id: 'b1', kind: 'free', answer: '' } } });
+    const result = gradeTask(freeOnly, { b1: '一段话' });
+    expect(result.scoreableCount).toBe(0);
+    expect(result.complete).toBe(false);
   });
 });

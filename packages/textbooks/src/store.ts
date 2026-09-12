@@ -16,7 +16,7 @@
  * "try again" is lossless.
  */
 
-import { gradeTask } from './grading';
+import { gradeTask, isBlankScoreable } from './grading';
 import type { Task, TaskResult } from './types';
 
 /** A single recorded attempt. Append-only; re-answering voids the previous one. */
@@ -135,12 +135,12 @@ export class TaskResponseStore {
   /** Count of blanks the student has answered (excluding `given`). */
   getAnsweredCount = (): number =>
     Object.values(this.task.blanks ?? {}).filter(
-      (b) => b.kind !== 'given' && (this.responses[b.id] ?? '').trim().length > 0,
+      (b) => isBlankScoreable(b) && (this.responses[b.id] ?? '').trim().length > 0,
     ).length;
 
   /** Count of blanks that count toward the score. */
   getScoreableCount = (): number =>
-    Object.values(this.task.blanks ?? {}).filter((b) => b.kind !== 'given').length;
+    Object.values(this.task.blanks ?? {}).filter(isBlankScoreable).length;
 
   // ── Writes ──
 

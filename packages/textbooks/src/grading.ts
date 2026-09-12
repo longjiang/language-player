@@ -58,9 +58,21 @@ export function acceptedAnswers(blank: BlankSpec): string[] {
   return out;
 }
 
+/**
+ * Whether a blank counts toward the score.
+ *
+ * `given` is a worked example and `free` is ungraded prose (notes, free writing):
+ * both are shown and recorded, neither is scored.
+ */
+export function isBlankScoreable(blank: BlankSpec): boolean {
+  return blank.kind !== 'given' && blank.kind !== 'free';
+}
+
 /** Grade one blank. `given` blanks are always correct (they are pre-filled). */
 export function isBlankCorrect(blank: BlankSpec, value: string | undefined): boolean {
   if (blank.kind === 'given') return true;
+  // Free text has no correct answer, so it is never wrong.
+  if (blank.kind === 'free') return (value ?? '').trim().length > 0;
   const normalized = normalizeAnswer(value ?? '');
   if (!normalized) return false;
   return acceptedAnswers(blank).includes(normalized);
@@ -78,8 +90,7 @@ export function gradeTask(task: Task, responses: BlankResponse[] | Record<string
 
   for (const blank of Object.values(task.blanks ?? {})) {
     const correct = isBlankCorrect(blank, byId[blank.id]);
-    // `given` blanks are worked examples: shown, not scored.
-    const scoreable = blank.kind !== 'given';
+    const scoreable = isBlankScoreable(blank);
     if (scoreable) {
       scoreableCount += 1;
       if (correct) correctCount += 1;

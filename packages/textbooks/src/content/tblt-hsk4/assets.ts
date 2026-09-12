@@ -64,6 +64,28 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   // ➍ is the transcript-following task for the ➌ recording, so it reuses it.
   audio('六C ➌.mp3'),
 
+  // ── Lesson E — dictation recordings and their vocabulary pictures ──
+  audio('六E ➊ ①.mp3'),
+  audio('六E ➊ ②.mp3'),
+  audio('六E ➊ ③.mp3'),
+  audio('六E ➊ ④.mp3'),
+  audio('六E ➋ ①.mp3'),
+  audio('六E ➋ ②.mp3'),
+  audio('六E ➋ ③.mp3'),
+  audio('六E ➌.mp3'),
+  image('e1-a.png'),
+  image('e1-b.png'),
+  image('e1-c.png'),
+  image('e1-d.png'),
+  image('e1-e.png'),
+  image('e2-a.png'),
+  image('e2-b.png'),
+  image('e2-c.png'),
+  image('e2-d.png'),
+
+  // ── Lesson D ➏ — the note-taking recording ──
+  audio('六D ➍.mp3'),
+
   // ── Lesson B ➍ — the workbook screenshot shown if the mock frame fails ──
   image('b4-fallback.png'),
 
