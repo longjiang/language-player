@@ -2,6 +2,7 @@
 
 import React, { useCallback, useSyncExternalStore } from 'react';
 import { indexToCircled, type BlankSpec } from '@langplayer/textbooks';
+import { glyphEms } from '@langplayer/utils';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { InlineImageSlot } from './inline-image-slot';
@@ -91,7 +92,12 @@ export function BlankField({
     // …and it grows with what has been typed. A fixed width clipped a longer answer
     // mid-word — the student could not read back what they had written, and a wrong answer
     // being longer than the right one is the normal case, not the exception.
-    const width = `${Math.max(chars, value.length) + 1}ch`;
+    //
+    // Measured in **em**, not `ch`: `1ch` is the width of the font's `0`, about half an em,
+    // while a CJK glyph is a full em — so a two-character answer (一般) needed ~2em and was
+    // given 3ch ≈ 1.5em, which cut the second character in half. `em` is also the input's own
+    // font size, so the blank keeps its proportion at any text scale.
+    const width = `calc(${Math.max(chars, glyphEms(value))}em + 1.25rem)`;
     return (
       <span className="mx-0.5 inline-flex items-baseline gap-1.5 align-baseline">
         <input

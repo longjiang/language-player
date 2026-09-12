@@ -31,6 +31,7 @@ export type { KeyValueStorage, SettingsDiagEvent } from './settings-diagnostics'
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
 export { levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
+export { glyphEms, isWideGlyph } from './glyph-width';
 export {
   cleanPronunciation,
   formatPronunciation,

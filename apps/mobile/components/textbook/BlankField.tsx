@@ -1,6 +1,7 @@
 import React, { useCallback, useSyncExternalStore } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { indexToCircled, type BlankSpec } from '@langplayer/textbooks';
+import { glyphEms } from '@langplayer/utils';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
@@ -22,6 +23,9 @@ function blankLabel(blank: BlankSpec): string {
  * tree — which on this platform is the difference between a responsive task and
  * a frozen one.
  */
+/** The field's own type scale (`text-base`), one em of it per full-width glyph. */
+const FIELD_FONT_SIZE = 16;
+
 export function BlankField({
   blank,
   variant = 'slot',
@@ -76,6 +80,11 @@ export function BlankField({
     // length; it is set explicitly only for dictation, where the workbook
     // prints one box per expected character.
     const chars = Math.max(2, blank.expectedLength ?? blank.answer.length);
+    // Wide enough for what is typed, measured the same way on both platforms: a CJK glyph is
+    // a full em and everything else about half (`glyphEms`). This was `chars * 14`, which
+    // under-sized a 16px glyph — and RN sizes a text field to its content, so on a platform
+    // where it did not, the answer's last character would be hidden exactly as it was on web.
+    const typed = Math.max(chars, glyphEms(value)) * FIELD_FONT_SIZE;
     return (
       <View className="mx-0.5 mb-0.5 flex-row items-center">
         <TextInput
@@ -86,7 +95,7 @@ export function BlankField({
           autoCapitalize="none"
           autoCorrect={false}
           style={[
-            { minWidth: chars * 14 + 16, borderBottomWidth: 2, borderBottomColor: ICON_PRIMARY },
+            { minWidth: typed + 16, borderBottomWidth: 2, borderBottomColor: ICON_PRIMARY },
             verdictStyle ?? {},
           ]}
           className="px-1 text-center text-base text-foreground"
