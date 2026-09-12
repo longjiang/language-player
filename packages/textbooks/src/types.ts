@@ -239,6 +239,18 @@ export interface PassageStimulus {
   text: string;
   /** The block's own recording, if it has one. */
   audio?: AudioTrack[];
+  /**
+   * Option pools printed at the **end of this passage**, by bank id.
+   *
+   * Where a bank is printed is a property of the exercise, not of the bank: A ➍ gives each
+   * of its five summaries its own three-word pool, printed under that summary, so the words
+   * are beside the blanks they fill instead of in one list at the foot of the task. A bank
+   * no passage names stays task-level and renders below the stimulus (`TaskShell`).
+   *
+   * This is placement only. A blank still names its own bank (`BlankSpec.bank`), which is
+   * what grading, the answer-key check and the pick behaviour read.
+   */
+  banks?: string[];
 }
 
 /** One interactive slot on an image, positioned as a percentage of the image. */
@@ -600,6 +612,38 @@ export function audioTracksIn(task: Task): AudioTrack[] {
     if (!byKey.has(track.key)) byKey.set(track.key, track);
   }
   return [...byKey.values()];
+}
+
+/**
+ * Bank ids a passage prints at its end, so the task-level renderer can skip them.
+ *
+ * A bank rendered inline is not also rendered below the task: the same pool twice on one
+ * page invites the student to treat the second copy as a different pool.
+ */
+export function inlineBankIds(task: Task): Set<string> {
+  const ids = new Set<string>();
+  for (const stimulus of task.body) {
+    if (stimulus.kind === 'passage') {
+      for (const id of stimulus.banks ?? []) ids.add(id);
+    }
+  }
+  return ids;
+}
+
+/**
+ * Whether a bank is answered by **picking** its options, or is a reference list to type from.
+ *
+ * Both exist, and the difference is the blank kind rather than a flag: a `choose` blank has
+ * no other way to answer, so its options must be tappable; a `type` blank is typed, so its
+ * bank is the pool of words to type — A ➍ prints three words under each summary and the
+ * student writes them in. Rendering the second kind as buttons would both invite picking
+ * (which the exercise does not want) and stop its words being tappable for the dictionary,
+ * because a token's tap does not reach the button around it.
+ */
+export function bankIsPicked(task: Task, bankId: string): boolean {
+  return Object.values(task.blanks ?? {}).some(
+    (blank) => blank.bank === bankId && blank.kind === 'choose',
+  );
 }
 
 /** Every task in a book, in reading order. The walk `allTasks` also uses. */

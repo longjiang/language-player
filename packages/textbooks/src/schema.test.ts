@@ -576,3 +576,62 @@ describe('transcripts', () => {
     expect(validateBook(bookMeta).filter((i) => i.message.includes('two different transcripts'))).toEqual([]);
   });
 });
+
+describe('typed blanks and the pool they draw from', () => {
+  const typed = (over: Partial<Task> = {}) =>
+    base({
+      body: [{ kind: 'passage', text: '比较{{b1}}。', banks: ['pool'] }],
+      blanks: { b1: { id: 'b1', kind: 'type', answer: '舒服', bank: 'pool' } },
+      banks: [{ id: 'pool', items: ['舒服', '随处'] }],
+      ...over,
+    });
+
+  it('accepts a typed blank whose answer is one of the pool’s words', () => {
+    expect(errorsOf(validateTask(typed()))).toEqual([]);
+  });
+
+  it('rejects a typed blank whose answer is not in its pool', () => {
+    // The student can only write what the pool in front of them offers. This is the rule
+    // that caught A ➍ (5) ① answering 要 against a pool that printed 差不多.
+    const issues = validateTask(typed({ blanks: { b1: { id: 'b1', kind: 'type', answer: '要', bank: 'pool' } } }));
+    expect(errorsOf(issues).join()).toContain('is not in bank "pool"');
+  });
+
+  it('rejects a typed blank naming a pool that does not exist', () => {
+    const issues = validateTask(typed({ banks: [] }));
+    expect(errorsOf(issues).join()).toContain('references missing bank "pool"');
+  });
+
+  it('rejects a passage printing a pool that does not exist', () => {
+    const issues = validateTask(typed({ body: [{ kind: 'passage', text: '比较{{b1}}。', banks: ['nope'] }] }));
+    expect(errorsOf(issues).join()).toContain('prints missing bank "nope"');
+  });
+
+  it('warns when options are printed away from the blanks they answer', () => {
+    const issues = validateTask(
+      typed({
+        body: [
+          { kind: 'passage', text: '比较{{b1}}。', banks: ['pool'] },
+          { kind: 'passage', text: '再说{{b2}}。' },
+        ],
+        blanks: {
+          b1: { id: 'b1', kind: 'type', answer: '舒服', bank: 'pool' },
+          b2: { id: 'b2', kind: 'type', answer: '随处', bank: 'pool' },
+        },
+      }),
+    );
+    const warnings = issues.filter((i) => i.level === 'warning').map((i) => i.message).join();
+    expect(warnings).toContain('where its options are not shown');
+  });
+
+  it('does not warn when a pool is printed with the blanks it answers', () => {
+    const issues = validateTask(
+      typed({
+        blanks: { b1: { id: 'b1', kind: 'type', answer: '舒服', bank: 'pool' } },
+      }),
+    );
+    expect(issues.filter((i) => i.level === 'warning').map((i) => i.message).join()).not.toContain(
+      'not shown',
+    );
+  });
+});
