@@ -30,19 +30,20 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
           <TrackControls track={rows[0]!} size="md" />
         </View>
       ) : (
-        <View className="flex-row flex-wrap gap-2">
+        <View className="flex-row flex-wrap gap-x-3 gap-y-2">
           {rows.map((track, index) => (
-            // Each track is its own pill: A ➊'s nine recordings each say something
-            // different, so "the transcript" is only meaningful per recording, and the
-            // numeral printed in the play segment is how the student matches one to the
-            // city they are answering. A recording with no transcript gets a one-segment
-            // pill rather than a disabled button.
-            <TrackControls
-              key={track.key}
-              track={track}
-              numeral={indexToCircled(index + 1)}
-              size="md"
-            />
+            // Each track reads exactly as a numbered item does — the numeral, then a pill
+            // whose play segment is a play button — because A ➊'s nine recordings are nine
+            // questions, and a student who has met ②'s row on any other task should not have
+            // to learn that here the number itself is the button. The numeral is decoration:
+            // it is the pill's accessible name that carries the track.
+            //
+            // A recording with no transcript gets a one-segment pill rather than a disabled
+            // button.
+            <View key={track.key} className="flex-row items-center gap-1.5">
+              <Text className="text-sm text-muted-foreground">{indexToCircled(index + 1)}</Text>
+              <TrackControls track={track} size="md" />
+            </View>
           ))}
         </View>
       )}

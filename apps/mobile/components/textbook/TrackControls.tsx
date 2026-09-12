@@ -16,10 +16,11 @@ import { useTaskTranscripts, useTranscriptDialog } from './TranscriptDialog';
  * can do with it. The seam is a hairline divider rather than a gap, so a row of them (A ➊
  * has nine) stays quiet.
  *
- * `numeral` is the audio row's case, where the play segment prints the track's `①` so the
- * student can match it to the question. An item's own control prints the play/pause glyph
- * instead, because the numeral is already beside it (`NumberedBlanks` prints the item's
- * number first, then this pill — a student reads the question, then how to hear it).
+ * It is always the same pill, in the same two segments, wherever a recording is offered:
+ * the item's own control beside a numbered slot, and each track of a task's audio row both
+ * read as `② [▶|▤]`. The numeral is printed by the caller, outside the pill, rather than
+ * inside the play segment — a circled number does not read as "play", and a student who has
+ * met `② [▶|▤]` on one task should not have to learn a different control on the next.
  *
  * A recording with no transcript gets a one-segment pill: the transcript segment is absent
  * rather than disabled, so the affordance never promises text that is not there.
@@ -32,12 +33,9 @@ const SEGMENT = {
 
 export function TrackControls({
   track,
-  numeral,
   size = 'sm',
 }: {
   track: AudioTrack;
-  /** Print the item's circled numeral in the play segment instead of a play/pause glyph. */
-  numeral?: string;
   size?: keyof typeof SEGMENT;
 }) {
   const t = useT();
@@ -66,15 +64,9 @@ export function TrackControls({
           playing ? 'bg-primary' : 'bg-background'
         } ${broken ? 'opacity-40' : ''}`}
       >
-        {numeral ? (
-          <Text className={`${s.glyph} ${playing ? 'text-primary-foreground' : 'text-foreground'}`}>
-            {numeral}
-          </Text>
-        ) : (
-          <Text className={`${s.glyph} ${playing ? 'text-primary-foreground' : 'text-foreground'}`}>
-            {playing ? '❚❚' : '▶'}
-          </Text>
-        )}
+        <Text className={`${s.glyph} ${playing ? 'text-primary-foreground' : 'text-foreground'}`}>
+          {playing ? '❚❚' : '▶'}
+        </Text>
       </Pressable>
 
       {transcript && (

@@ -8,6 +8,7 @@ import { TaskAudioProvider } from './task-audio';
 import { TranscriptDialogProvider } from './transcript-dialog';
 import { InlineTrackButton } from './inline-track-button';
 import { NumberedBlanks } from './numbered-blanks';
+import { AudioPlayer } from './audio-player';
 
 /**
  * The transcript button and its dialog (SPEC-095 §Transcript).
@@ -213,5 +214,31 @@ describe('the control’s shape', () => {
     await renderTask(t, book, <InlineTrackButton tracks={t.blanks!.b1!.audio} />);
     const play = document.querySelector('button[aria-pressed]')!;
     expect(play.parentElement!.querySelectorAll('button')).toHaveLength(1);
+  });
+});
+
+/**
+ * A task's own audio row (A ➊ has nine recordings). It reads exactly like a numbered item
+ * row — `① [▶|▤]` — because the nine tracks are nine questions, and the number used to be
+ * the play button: a circled numeral does not read as "play".
+ */
+describe('a task’s audio row', () => {
+  it('prints each track’s number outside a pill whose play segment is a play button', async () => {
+    const { book, task: t } = await task('tblt-hsk4.u06.A.t1');
+    await renderTask(t, book, <AudioPlayer tracks={t.audio!} />);
+
+    const row = document.querySelector('section .flex-wrap')!;
+    expect(row.children).toHaveLength(t.audio!.length);
+
+    const first = row.children[0]!;
+    const numeral = first.firstElementChild!;
+    const pill = first.lastElementChild!;
+
+    expect(numeral.textContent).toBe('①');
+    // Decoration: the pill's accessible name carries the track, the number does not.
+    expect(numeral.getAttribute('aria-hidden')).toBe('true');
+    expect(pill.querySelectorAll('button')).toHaveLength(2);
+    expect(pill.querySelector('button')!.getAttribute('aria-label')).toBe('上海');
+    expect(pill.querySelector('button[aria-label="title.transcript"]')).not.toBeNull();
   });
 });
