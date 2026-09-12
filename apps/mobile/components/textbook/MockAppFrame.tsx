@@ -15,7 +15,10 @@ import {
   isAppToHostMessage,
   isBlankCorrect,
   mockAppHref,
+  PICK_SEPARATOR,
+  pickValues,
   protocolCompatible,
+  type BlankSpec,
   type MockAppStimulus,
 } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
@@ -71,8 +74,8 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const [note, setNote] = useState<'incorrect' | null>(null);
   /** The transient "Correct" acknowledgement — RN has no toast, so it is a pill. */
   const [flash, setFlash] = useState(false);
-  /** Every goal the app has reported, which is "the student performed this task". */
-  const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
+  /** What the app has selected for each task, as it is toggled. The blank follows it. */
+  const [selections, setSelections] = useState<Record<string, string[]>>({});
   const [helpMode, setHelpMode] = useState(false);
   const [popup, setPopup] = useState<{
     word: string;
@@ -155,25 +158,32 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
             context: data.payload.sentence,
           });
           break;
+        case 'selection': {
+          // The app reports what is *selected*; the host grades it. Writing the blank here
+          // is what makes the store the one answer: Submit, the final grade and the restore
+          // on the next visit all read it.
+          const link = stimulus.goals.find((g) => g.id === data.payload.goalId);
+          if (!link) {
+            log('[LP Mobile] MockApp: unknown goal id', data.payload.goalId);
+            break;
+          }
+          setSelections((byGoal) => ({ ...byGoal, [link.id]: data.payload.picks }));
+          ctx.store.setValue(link.blankId, data.payload.picks.join(PICK_SEPARATOR));
+          break;
+        }
         case 'progress':
-          // Only ever added to. Closing the panel unmounts its WebView, so reopening
-          // starts a fresh app that reports `done: []` — and replacing the set with
-          // that empty list would take the student back to task ① on a task they have
-          // already finished.
-          setDoneGoalIds((ids) => [...new Set([...ids, ...data.payload.done])]);
+          // The app's own view of which goals its selections satisfy (ADR-0045 §3). The
+          // panel grades from the store instead, so this is accepted and not acted on.
           break;
         case 'complete': {
-          // The host grades, not the app: a buggy app cannot mark itself correct.
+          // Kept for an app that reports a goal without a selection model — it writes the
+          // same blank a selection would.
           const link = stimulus.goals.find((g) => g.id === data.payload.goalId);
           if (!link) {
             log('[LP Mobile] MockApp: unknown goal id', data.payload.goalId);
             break;
           }
           ctx.store.setValue(link.blankId, data.payload.answer);
-          // The app sends `complete` and then `progress`. Marking the goal here
-          // too means the question's own marker does not depend on the second
-          // message arriving.
-          setDoneGoalIds((ids) => (ids.includes(link.id) ? ids : [...ids, link.id]));
           break;
         }
         case 'resize':
@@ -200,33 +210,42 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const currentCorrect = current ? correctGoalIds.includes(current.id) : false;
   const isLast = currentIndex === questions.length - 1;
 
+  const blankIdFor = (goalId: string | undefined) =>
+    stimulus.goals.find((g) => g.id === goalId)?.blankId;
+
+  /**
+   * Whether what the student selected for this task is the expected answer.
+   *
+   * `isBlankCorrect` answers "does this count toward the score", and a `given` worked example
+   * always does: it is pre-filled and excluded from scoring. That is the wrong question for a
+   * step the student has to perform — ①'s answer is printed nowhere they can see, so every
+   * selection would pass and a student who ticked the wrong train would be congratulated.
+   * Relabelled for this comparison only; the answer key and the set rule stay the blank's own.
+   */
+  const selectionIsRight = (blank: BlankSpec, picks: string[]) =>
+    isBlankCorrect(
+      blank.kind === 'given' ? { ...blank, kind: 'goal' } : blank,
+      picks.join(PICK_SEPARATOR),
+    );
+
   /**
    * Submit one task.
    *
-   * Two authorities have to agree, and neither is sufficient alone:
+   * The student's **selection is the answer**, and the content grades it — the same
+   * comparison the final grade uses. So a task can be submitted wrong, which is the point:
+   * an empty selection, a single train where the task asks for all of them, or a train the
+   * task does not name all read as incorrect.
    *
-   * - **The app reports the task done.** Its goals are acceptance predicates over its own
-   *   dataset (ADR-0045), so this is the evidence that the student actually performed the
-   *   task rather than arriving at the right words some other way — and it is what makes
-   *   an early Submit mean something. Without it, Submit on the first task would pass
-   *   before the student had tapped anything.
-   * - **The content says the answer is the expected one**, via `isBlankCorrect`, which is
-   *   the same comparison the final grade uses. A `given` first task is always correct
-   *   once the app reports it — it is a worked example and not scored.
-   *
-   * So submitting before the task is done reports "incorrect", which is the reachable
-   * wrong path; the app ignores a tap it does not accept, so a half-picked set task is
-   * simply not done yet.
+   * Submitting nothing is refused by its own rule: `given` is *always* correct by
+   * definition, so the blank cannot say whether the student did anything — the selection can.
    */
   const submitTask = () => {
     if (!current) return;
     const goal = stimulus.goals.find((g) => g.id === current.id);
     const blank = goal ? ctx.task.blanks?.[goal.blankId] : undefined;
-    const performed = doneGoalIds.includes(current.id);
+    const picks = selections[current.id] ?? [];
     const correct =
-      Boolean(blank && goal) &&
-      performed &&
-      isBlankCorrect(blank!, ctx.store.getValue(goal!.blankId));
+      Boolean(blank && goal) && picks.length > 0 && selectionIsRight(blank!, picks);
 
     if (!correct) {
       setNote('incorrect');
@@ -246,6 +265,25 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     setNote(null);
     setCursor(index);
   };
+
+  /**
+   * Keep the app on the task the panel is showing, and holding that task's selection.
+   *
+   * The app cannot know either on its own — the tasks live in the content and the answers in
+   * the store — so every move is announced. A task the student has already answered comes
+   * back with its picks; one they have not reached arrives empty, which is what stops a
+   * selection following them from task to task. A `given` worked example is excluded: its
+   * answer is pre-filled for the final grade, not selected by the student.
+   */
+  const sendFocus = useCallback(
+    (goalId: string | undefined, blankId: string | undefined) => {
+      if (!goalId || !blankId) return;
+      const blank = ctx.task.blanks?.[blankId];
+      const picks = blank && blank.kind !== 'given' ? pickValues(ctx.store.getValue(blankId)) : [];
+      send({ v: 1, type: 'focus', payload: { goalId, picks } });
+    },
+    [send, ctx.store, ctx.task],
+  );
 
   const nextTask = () => {
     const next = nextIndexFrom(currentIndex);
@@ -302,58 +340,33 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
    * followable if the student is told which one they are on. The prompts come from the
    * content, which is also what each reported goal is graded against.
    */
-  const header = current && (
-    <View className="flex-row items-start gap-2 border-b border-border pb-3">
-      <View className="flex-1">
-        {/*
-          Dimmed rather than struck through while it is being worked on: `TokenizedText`'s
-          memo comparator is a hand-written allow-list (SPEC-095, The Mobile Re-render
-          Boundary), so a text-style prop added for a cosmetic mark would have to be
-          threaded through it — and a prop left out of it renders stale values in silence.
-        */}
-        <Dialog.Title className="text-sm font-normal leading-relaxed text-foreground">
-          <TokenizedText text={current.prompt} l2Code={l2Lang.code} />
-        </Dialog.Title>
-      </View>
-      {/*
-        The paginator replaces the task's circled numeral: which task this is, and how to
-        reach the others. Back is always available — reviewing a task you have done is not
-        a mistake — while forward waits for a correct Submit, so the six are worked in
-        order.
-      */}
-      <View className="flex-row shrink-0 items-center gap-1">
-        <Pressable
-          onPress={() => goTo(Math.max(0, currentIndex - 1))}
-          disabled={currentIndex === 0}
-          accessibilityRole="button"
-          accessibilityLabel={t('action.previous')}
-          className={`rounded-md p-1 ${currentIndex === 0 ? 'opacity-40' : ''}`}
-        >
-          <ChevronLeft size={18} color={ICON_MUTED} />
-        </Pressable>
-        <Text className="min-w-9 text-center text-xs text-muted-foreground">
-          {currentIndex + 1} / {questions.length}
-        </Text>
-        <Pressable
-          onPress={nextTask}
-          disabled={!currentCorrect || isLast}
-          accessibilityRole="button"
-          accessibilityLabel={t('action.next')}
-          className={`rounded-md p-1 ${!currentCorrect || isLast ? 'opacity-40' : ''}`}
-        >
-          <ChevronRight size={18} color={ICON_MUTED} />
-        </Pressable>
-        <Pressable
-          onPress={() => setOpen(false)}
-          accessibilityRole="button"
-          accessibilityLabel={t('action.close')}
-          className="ml-0.5 rounded-md p-1.5"
-        >
-          <X size={16} color={ICON_MUTED} />
-        </Pressable>
-      </View>
+  /**
+   * The top bar is the close affordance and nothing else.
+   *
+   * The task and its paginator moved down to the bar that resolves it: reading what is
+   * asked, moving between tasks and submitting are one activity, and they were split across
+   * the panel's two ends. No rule under it either — it separates nothing now.
+   */
+  const topBar = (
+    <View className="flex-row justify-end">
+      <Pressable
+        onPress={() => setOpen(false)}
+        accessibilityRole="button"
+        accessibilityLabel={t('action.close')}
+        className="rounded-md p-1.5"
+      >
+        <X size={16} color={ICON_MUTED} />
+      </Pressable>
     </View>
   );
+
+  const title = current ? (
+    <View className="flex-1">
+      <Dialog.Title className="text-sm font-normal leading-relaxed text-foreground">
+        <TokenizedText text={current.prompt} l2Code={l2Lang.code} />
+      </Dialog.Title>
+    </View>
+  ) : null;
 
   const appPane = (
     <View className="flex-1 overflow-hidden rounded-lg border border-border bg-card">
@@ -396,8 +409,9 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
             onLoadEnd={() => {
               // `init` is delivered by injecting script, which needs a live document:
               // the mount-time send races this WebView coming up, so re-announce on
-              // load, as web does. `init` is idempotent.
+              // load, as web does. `init` is idempotent, and so is `focus`.
               sendInit();
+              sendFocus(current?.id, currentBlankId);
               // A frame that loads but never says 'ready' is broken; give it a beat
               // rather than leaving the student on a spinner.
               setTimeout(() => {
@@ -419,8 +433,44 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
    * become tappable), so the label was noise next to the two controls it shares the row
    * with. It keeps its accessible name.
    */
-  const toolbar = (
-    <View className="flex-row flex-wrap items-center gap-2 border-t border-border pt-3">
+  const bottomBar = (
+    <View className="gap-2 border-t border-border pt-3">
+      {current && (
+        <View className="flex-row items-start gap-2">
+          {title}
+          {/*
+            The paginator replaces the task's circled numeral: which task this is, and how to
+            reach the others. Back is always available — reviewing a task you have done is not
+            a mistake — while forward waits for a correct Submit, so the six are worked in
+            order.
+          */}
+          <View className="flex-row shrink-0 items-center gap-1">
+            <Pressable
+              onPress={() => goTo(Math.max(0, currentIndex - 1))}
+              disabled={currentIndex === 0}
+              accessibilityRole="button"
+              accessibilityLabel={t('action.previous')}
+              className={`rounded-md p-1 ${currentIndex === 0 ? 'opacity-40' : ''}`}
+            >
+              <ChevronLeft size={18} color={ICON_MUTED} />
+            </Pressable>
+            <Text className="min-w-9 text-center text-xs text-muted-foreground">
+              {currentIndex + 1} / {questions.length}
+            </Text>
+            <Pressable
+              onPress={nextTask}
+              disabled={!currentCorrect || isLast}
+              accessibilityRole="button"
+              accessibilityLabel={t('action.next')}
+              className={`rounded-md p-1 ${!currentCorrect || isLast ? 'opacity-40' : ''}`}
+            >
+              <ChevronRight size={18} color={ICON_MUTED} />
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      <View className="flex-row flex-wrap items-center gap-2">
       <Pressable
         onPress={toggleHelp}
         accessibilityRole="button"
@@ -478,10 +528,17 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           </Pressable>
         )}
       </View>
+      </View>
     </View>
   );
 
   /** The app itself is only mounted here, so it cannot load before the host listens. */
+  const currentBlankId = blankIdFor(current?.id);
+  useEffect(() => {
+    if (open) sendFocus(current?.id, currentBlankId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, current?.id, currentBlankId]);
+
   const panel = (
     <View className="flex-1 gap-3">
       {/* RN has no toast stack, so the "Correct" acknowledgement is a pill over the panel
@@ -493,9 +550,9 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           </Text>
         </View>
       )}
-      {header}
+      {topBar}
       {appPane}
-      {toolbar}
+      {bottomBar}
     </View>
   );
 
