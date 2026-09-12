@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BlankSelectionStore,
@@ -7,6 +7,8 @@ import {
   type PersistedTaskState,
   type Task,
 } from '@langplayer/textbooks';
+import { expandAcceptedVariants } from '@langplayer/textbooks';
+import { toTraditional } from '@/lib/chinese-script';
 import { log } from '@/lib/logger';
 
 export interface TextbookTaskContextValue {
@@ -84,17 +86,41 @@ export function TextbookTaskProvider({
   initialState,
   children,
 }: TextbookTaskProviderProps) {
+  // A student may type either script: a traditional form of the answer has to count.
+  // OpenCC is lazy-loaded, so the expansion is asynchronous and starts from the
+  // unexpanded task — an L2 with no script pair never triggers the load at all.
+  const [prepared, setPrepared] = useState<Task>(task);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (book.l2 !== 'zh') {
+      setPrepared(task);
+      return;
+    }
+    void expandAcceptedVariants(task, toTraditional)
+      .then((expanded) => {
+        if (!cancelled) setPrepared(expanded);
+      })
+      .catch((err) => {
+        log('[LP Mobile] Textbook: script-variant expansion failed', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [task, book.l2]);
+
   const value = useMemo<TextbookTaskContextValue>(() => {
     const store = new TaskResponseStore({
-      task,
+      task: prepared,
       contentVersion: book.contentVersion,
       load: () => initialState ?? null,
       save: savePersistedTask,
     });
-    return { task, book, store, selection: new BlankSelectionStore() };
-    // Rebuild only when the task itself changes — never on a re-render.
+    // The caller-supplied initial state is reused on rebuild, so responses the
+    // student already typed survive the expansion landing.
+    return { task: prepared, book, store, selection: new BlankSelectionStore() };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task, book.contentVersion]);
+  }, [prepared, book.contentVersion]);
 
   return (
     <TextbookTaskContext.Provider value={value}>{children}</TextbookTaskContext.Provider>
