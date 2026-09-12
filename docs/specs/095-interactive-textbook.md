@@ -102,29 +102,119 @@ Every task is one or more **stimulus** blocks plus a **response** surface.
 
 ### Stimulus kinds
 
+These are the members of the `Stimulus` union in `packages/textbooks/src/types.ts`. A task's `body` is an ordered list of them, rendered in that order by `TaskShell`.
+
 | Kind | Used by | Notes |
 |---|---|---|
-| `audio` | A ➊–➍, B, D, E | one or more tracks; each track may bind to a blank or a question |
-| `passage` | A ➍, B ➋, C, D ➊ | running L2 text carrying inline blanks |
-| `dialogue` | C, D | speaker-labelled lines carrying inline blanks |
-| `pictureSet` | A ➋, A ➌, B ➎, E | lettered image grid the blanks reference by letter |
+| `passage` | A ➍, B ➋, C ➍, E ➌ | running L2 text carrying inline `{{bN}}` blanks |
+| `dialogue` | C ➍, D | speaker-labelled lines carrying inline blanks |
+| `pictureSet` | A ➊, A ➋, A ➌, C ➊, C ➋, E ➊, E ➋ | lettered image grid the blanks reference by letter |
 | `imageMap` | A ➊ | image with positioned pins, each pin holding a blank |
-| `dataTable` | A ➌, B ➊, B ➋, B ➌ | tabular data, cells optionally blank |
+| `dataTable` | A ➌, B ➊, B ➋ | tabular data; cells are L2 text and may carry blanks |
+| `numberedBlanks` | A ➊, A ➋, C ➊, C ➋ | a `① ___ ② ___` row, for tasks with no passage |
 | `mockApp` | B ➍ | a self-contained HTML mock app, referenced by id; owns its own UI and goals (see below) |
-| `inlineImageSlot` | B ➎, B ➏ | an inline image placeholder inside a passage, filled by assigning a letter |
+| `dictation` | E ➊, E ➋ | numbered items typed into boxed per-character fields |
+| `freeWrite` | E ➍ | an open writing surface |
+| `noteCards` | D ➏ | titled note fields |
+
+**Audio is not a stimulus kind.** Tracks are a task-level `audio: AudioTrack[]`, rendered once at the top of every task that has them, so its position is identical across tasks rather than something each author places. `AudioTrack` is `{ key, label? }`.
+
+There is **no** `inlineImageSlot`: B ➎ / ➏ need one (an in-passage image placeholder assigned a letter) and are not yet authored — see [Known Gaps](#known-gaps-against-this-spec).
 
 ### Response kinds
 
+Two surfaces answer a task: inline **blanks**, and the free-text fields behind `freeWrite` / `noteCards`.
+
 | Kind | Notes |
 |---|---|
-| `blank:choose` | pick one option from a bank, a picture set, or an inline option list |
-| `blank:type` | typed entry, optionally boxed by `expectedLength` |
-| `blank:given` | worked example; pre-filled and non-editable |
-| `freeWrite` | open writing surface, ungraded |
+| `given` | worked example; pre-filled, non-editable, **not scored** |
+| `choose` | pick one option — from a `Bank`, or from a `pictureSet` via `optionSet` |
+| `type` | typed entry, boxed by `expectedLength` where the workbook prints boxes |
+| `goal` | answered **inside a mock app**, never by a blank widget; the app reports an answer the host grades |
+| `free` | free prose (notes, free writing); **recorded but never scored**, and needs no `answer` |
 
 ## Task Schema
 
-Content is authored as YAML (diffable, reviewable, validator-friendly) and compiled to typed JSON. A restricted inline marker `{{bN}}` places a blank at an exact character offset in the text.
+A restricted inline marker `{{bN}}` places a blank at an exact character offset in the text.
+
+> ### As built: content is TypeScript, not YAML
+>
+> This spec originally called for content authored as YAML and compiled to typed
+> JSON, with example paths under `packages/textbooks/content/`. **That is not what
+> shipped.** Content is TypeScript modules under
+> `packages/textbooks/src/content/`, there is no YAML parser, and there is no
+> compiler — the YAML blocks below are kept as the original design proposal, and
+> the as-built shape follows them.
+>
+> **Why the change.** Four reasons, in order of weight:
+>
+> 1. **No build step, so no generated artefact.** YAML needs parse → validate →
+>    compile, and the output has to live somewhere. This repo already has the
+>    cautionary example: `packages/shared/src/docs.ts` is a 2.1 MB tracked
+>    generated file, and the "Do not bundle content as a generated TS module"
+>    section below exists because of it. TS modules *are* the typed data.
+> 2. **Errors surface earlier.** A missing `id` or a bad `kind` is an editor
+>    squiggle and a CI type error. With YAML the first line of defence is runtime
+>    validation, which only runs if something remembers to run it.
+> 3. **It matches the house pattern.** `packages/shared/src/sample-content/` is
+>    exactly "one TS module per key behind a lazy loader map", which this imitates.
+> 4. **Both apps consume it directly** through that loader. A YAML route needs
+>    either build-time generation or a YAML parser shipped to both bundles.
+>
+> **What it costs.** Prose legibility. Chinese passages in TS need string
+> concatenation to wrap, which is noisier than a YAML block scalar, and a
+> curriculum designer without a TypeScript editor would struggle. The spec's YAML
+> was aiming at exactly that reader.
+>
+> **When to revisit.** Move to YAML when either a second book lands or a
+> non-engineer starts authoring — not on principle. The migration is cheap because
+> the model is already format-agnostic: `types.ts`, `schema.ts`, `grading.ts` and
+> every widget are unchanged by it, because only the *authoring surface* moves. It
+> would need a `content:build` script plus a CI check that regeneration is a no-op,
+> so that the generated module cannot drift from its source.
+>
+> **Read the YAML below as intent, and this as the shape.** The as-built
+> differences a reader needs:
+>
+> - `banks` is an **array** keyed by an `id` field, not a map — `banks: [{ id, items, optionLabels? }]`. `optionLabels` carries the description B ➊ prints beside a letter (`a 高速动车组列车`) while the blank records only the letter.
+> - `audio` is `[{ key, label? }]`, not an array of strings.
+> - Asset keys are `<book>/<unit>/<original filename>` — e.g. `tblt-hsk4/u06/六A ➊ 上海.mp3` — so publishing is an upload with no rename step. Images are `<lesson><task>-<letter>.<ext>`, e.g. `tblt-hsk4/u06/a2-c.jpg`.
+> - Blanks carry two more fields than shown: `optionSet` (options come from a `pictureSet` rather than a `Bank`), `keyIndex` / `keyLabel` (which answer-key item to check against, needed when one key item covers several blanks, as in A ➌).
+
+```ts
+// packages/textbooks/src/content/tblt-hsk4/u06/lesson-b.ts — as built
+export const lessonB: LessonMeta = {
+  id: 'B',
+  letter: 'B',
+  title: '开票一秒就空了',
+  canDo: '能看懂关于交通出行内容的一般性介绍或短文故事。',
+  tasks: [
+    {
+      id: 'tblt-hsk4.u06.B.t2',
+      number: '➋',
+      type: 'reading',
+      sourcePage: 7,
+      instructions: '看看上面的信息，然后用给出的选项在（　）中填入合适的词。',
+      body: [
+        { kind: 'dataTable', id: 't2-compare', columns: ['', '和谐号', '复兴号'], rows: [/* … */] },
+        {
+          kind: 'passage',
+          text: '和谐号和复兴号的主要区别是，复兴号比较{{b1}}，比较{{b2}}，而且比较舒适。',
+        },
+      ],
+      blanks: {
+        b1: { id: 'b1', kind: 'given', answer: '快' },
+        b2: { id: 'b2', kind: 'choose', answer: '新', bank: 'w1' },
+      },
+      banks: [{ id: 'w1', items: ['快', '免费Wi-Fi', '充电口', '新'], allowReuse: false }],
+      // Kept verbatim from the printed key so the validator can prove agreement.
+      answerKeyRaw: '② 新; ③ 免费Wi-Fi; ④ 充电口。',
+    },
+  ],
+};
+```
+
+The original YAML proposal, for comparison:
 
 ```yaml
 # packages/textbooks/content/tblt-hsk4/u06/lesson-a.yaml
@@ -294,7 +384,7 @@ This is a direct consequence of tokenizing at runtime and it is easy to get wron
 
 ## Grading
 
-The answer key is machine-structured and already states which blanks exist in which task (e.g. `B课 ➊: ③ f; ④ c; ⑤ a; ⑥ d.`). It is ingested into the `answer` field of each blank, and its omissions are how `given` blanks are detected.
+The answer key is machine-structured and already states which blanks exist in which task (e.g. `B课 ➊: ③ f; ④ c; ⑤ e; ⑥ d.`). It is ingested into the `answer` field of each blank, and its omissions are how `given` blanks are detected.
 
 Grading runs **locally on submit** (no server round-trip required to show correctness).
 
@@ -481,18 +571,18 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 
 ### Shared logic (`packages/textbooks`, pure TS)
 
-- **Schema + types** — task/blank/bank/stimulus types, and the YAML → JSON compiler.
-- **`gradeTask(task, responses)`** — normalisation, alternate acceptance, script-variant matching.
+- **Schema + types** — task/blank/bank/stimulus types, plus the validator (`validateBook`) and the loader map. **Not** a YAML→JSON compiler: see [Task Schema](#task-schema) for why content is TypeScript.
+- **`gradeTask(task, responses)`** — normalisation and alternate acceptance. Script-variant matching (traditional ↔ simplified) is *not* in here — it is `expandAcceptedVariants`, which takes an app-supplied converter and currently has no caller. See [Known Gaps](#known-gaps-against-this-spec).
 - **Task store** — per-task, per-blank response state with subscribe/select, so blank components re-render independently of the token tree.
-- **Progress store** — local persistence of attempts (ADR-0044).
-- **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`.
+- **Attempt persistence** — per-task attempts in local storage (ADR-0044). Not a cross-task **progress store**: nothing aggregates completion, so the picker and TOC show no progress (see [Known Gaps](#known-gaps-against-this-spec)).
+- **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`, plus the shared default base URL constant.
 
 ### Views (paired)
 
 | Component | Responsibility |
 |---|---|
 | `TextbookPicker` | Entry screen: choose a textbook (single item today) |
-| `TaskToc` | Docs-style collapsible TOC of units → lessons → tasks; current lesson expanded |
+| `TextbookToc` *(spec originally said `TaskToc`)* | Docs-style collapsible TOC of units → lessons → tasks; current lesson expanded |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ L1 translation when enabled), submit/reveal, result banner — the consistency anchor |
 | `AudioPlayer` | Task audio: play/pause, scrub, replay, per-track selection |
 | `BlankField` | The inline blank: `given` / `choose` / `type`, sized by `expectedLength` |
@@ -501,7 +591,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | Host frame + bridge for a self-contained mock-app HTML file (see below) |
-| `InlineImageSlot` | In-passage image placeholder assigned a letter |
+| `InlineImageSlot` — **not built** | In-passage image placeholder assigned a letter. Needed by B ➎ / ➏, which are not authored; see [Known Gaps](#known-gaps-against-this-spec) |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `DictationField` | Boxed per-character entry for dictation tasks |
 | `FreeWrite` | Ungraded writing surface |
@@ -512,7 +602,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 
 - **`SpellCharInput`** already exists on **both** platforms (`apps/web/src/components/review/spell-char-input.tsx`, `apps/mobile/components/review/SpellCharInput.tsx`) and is exactly the boxed per-character control the dictation tasks need. Its props include `expectedLength` (drives box count), `firstCharPlaceholder` (type-over hint for the first box), `value`/`onChange`/`onSubmit`, and `disabled`. It is deliberately IME-safe: one real text field whose value is distributed one character per box, so pinyin composition is never broken. `DictationField` wraps it.
 - **`scoreTestResult`** and the other pure helpers in `packages/utils/src/srs-test-mode.ts` (see Grading).
-- **`TokenizedText`** itself, for all L2 text, with the `blank` format ranges.
+- **`TokenizedText`** itself, for all L2 text, carrying the inline blank seam (marker + offset, not a `FormatRange` — see Inline Blanks).
 
 ## The Mock App Stimulus
 
@@ -630,7 +720,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 1. Student opens **Study → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
 2. Student picks a task → task JSON loads and asset URLs resolve. `TaskShell` requests tokens for the task's passages (`/lemmatize-normalized/batch`) and holds the skeleton until they arrive.
-3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText` with `blank` format ranges. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
+3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
    - **Mock-app tasks** — the app owns its own state; `TaskShell` renders goal progress from the app's `progress` messages and the host chrome (help mode, hint) forwards over the bridge.
@@ -651,18 +741,29 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 > **Implementation status.** Phases 0–3 are implemented. Unit 6 lessons A–E are
 > authored; the workbook's remaining tasks for lessons B (➎/➏), C (➌) and D (➊–➎)
-> are not yet transcribed. Media is not published, so picture sets and the mock-app
-> fallback render their graceful fallbacks; the manifest lists every key that must
-> be uploaded. Mobile audio and the mobile mock-app frame are unverified on a
-> device.
+> are not yet transcribed.
+>
+> **Media is published and live.** All 85 keys for the authored tasks — 39 audio and
+> 46 images — are staged in the server data folder and uploaded to the shared host;
+> every one was verified returning HTTP 200, including the percent-encoded workbook
+> audio filenames. `ASSET_BASE_URL` already points there, so no further step was
+> needed once the bytes landed.
+>
+> **Not yet verified:** nothing in this feature has been rendered in a browser or a
+> simulator. Types, content validation and asset delivery are checked; pixels and
+> audio playback are not. Mobile audio and the mobile mock-app frame specifically
+> need a device or simulator.
+>
+> **Behavioural gaps remain** — see [Known Gaps Against This Spec](#known-gaps-against-this-spec)
+> at the end, which lists what the spec claims but the code does not yet do.
 
-- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section) and **L2 tokenized instructions** with the optional L1 translation; the **`Vocab` → `Study` rename** plus the `Tasks` nav entry on both platforms, `TextbookPicker` and `TaskToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
+- **Phase 0 — the spine.** Content schema + validator; `packages/textbooks` (types, task store, grading, asset resolver); the inline blank seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section) and **L2 tokenized instructions** with the optional L1 translation; the **`Vocab` → `Study` rename** plus the `Tasks` nav entry on both platforms, `TextbookPicker` and `TaskToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
 - **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), then `MockAppFrame` + `mock-app-runtime.js` + a "hello world" mock app to prove the per-app floor (B ➍).
 - **Phase 3 — writing lesson.** `DictationField` (wrapping `SpellCharInput`), `FreeWrite`, note-capture.
 - **Deferred**: free-form **conversation** production and its scoring. Note that dialogue *cloze* (lesson C) is not deferred — it is the same blank primitive over a `dialogue` stimulus and lands in Phase 1.
 
-Audio is a from-scratch build on both platforms: there is no audio-file playback path today (web's `playAudio` in `use-speech.ts` is dead code with no callsite, mobile has no `playAudio` at all, Flask has no audio route, and there are zero audio files in either app). Mobile also needs an audio dependency added — `expo-av`/`expo-audio` are not currently installed.
+Audio was a from-scratch build: there was no audio-file playback path on either platform (web's `playAudio` in `use-speech.ts` is dead code with no callsite, mobile had no `playAudio` at all, Flask has no audio route, and there were zero audio files in either app). The web player is new. **Mobile deliberately did not add a dependency**: it plays through `expo-video`, which was already a dependency and already linked natively, avoiding a new development build. `expo-audio` is the better long-term home for audio-only playback; switching to it is a small, contained change (see `AudioPlayer.tsx`).
 
 ## Dependencies
 
@@ -691,3 +792,109 @@ All six questions this spec opened with were settled on 2026-09-11. Recorded her
 
 1. **Mock app accessibility.** ADR-0045 leaves keyboard and assistive-technology behaviour unspecified for a mock app rendered inside a frame. It will have to be specified per app rather than inherited from the host.
 2. **Second-textbook picker behaviour.** The picker is currently a single-item screen. Its shape once a second book exists (level grouping via the existing `SCALES` registry, ordering, licensing) is unaddressed.
+
+## Known Gaps Against This Spec
+
+This section exists because an audit of the implementation against the text above found
+discrepancies, and a spec that quietly promises behaviour the code does not have is
+worse than one that admits what is missing. Everything here is **known and
+deliberate-to-record**, not an oversight list.
+
+### Functional gaps — the spec claims behaviour that is not implemented
+
+These are behavioural, not documentary. The feature works; these specific promises do not hold.
+
+**1. `TaskShell` does not own tokenization, and does not hold until tokens arrive.**
+
+The spec asserts parent-owned tokenization with a hold-until-ready skeleton in four
+places (the Tokenization section, the subsection titled *"Render the passage only once
+its tokens have arrived"*, Data Flow step 2, and States → Loading). Neither is
+implemented: `TaskShell` contains no tokenization call at all.
+
+Tokenization *does* happen — each `TokenizedText` self-tokenizes through
+`enqueueLemmatize` when no `tokens` prop is supplied — so this is an architecture
+mismatch with a user-visible symptom, not a missing feature. While loading,
+`TokenizedText` renders `highlightPlainText(text, formats)`, which is the text with
+its `{{bN}}` markers stripped (`tokenized-text.tsx:1012`), so **a passage briefly
+renders with no blanks and the blanks then pop in.** B ➊ is the worst case: six table
+cells tokenizing independently, each flashing on its own schedule.
+
+The fix is the one the spec describes: `TaskShell` batches the task's passages through
+`/lemmatize-normalized/batch` and withholds the skeleton until they resolve.
+
+**2. Traditional/simplified answer acceptance is not wired.**
+
+The Grading section and the helper table claim `scriptVariants` / `bestScriptSimilarity`
+make 車 acceptable for 车. Two things are wrong:
+
+- Those helpers **do not handle Chinese.** `scriptVariants` returns `[text]` unchanged
+  for `zh`; its own comment says Chinese conversion lives app-side via OpenCC. The
+  original claim was simply mistaken about the helper.
+- `expandAcceptedVariants` was written to accept an app-supplied converter, and
+  **nothing calls it.** No caller passes one.
+
+So a student typing a traditional form is marked wrong today. The wiring needed is a
+converter (the apps already have OpenCC available) passed at the call site.
+
+**3. `mockApp` content validation is a fraction of what this spec lists.**
+
+Authoring-Time Validation names four checks for mock apps. The validator implements
+**one**: that each goal references an existing blank, that goal ids are unique, and that
+no `goal` blank is orphaned. Absent:
+
+- that `/mock-apps/<id>/index.html` exists (a TS package cannot see it);
+- that the app's declared expected answers agree with the content answer key;
+- that the app defines the required hooks and speaks a compatible bridge version;
+- the third-party library allowlist.
+
+The Mock App section already concedes that a build cannot execute an app's JS, which
+contradicts the validation list — the list was written before that constraint was
+understood. The honest resolution is to move these to a **separate check that can read
+`apps/web/public/mock-apps/`** (a script or a test with filesystem access) rather than
+to delete them, since each catches a real drift.
+
+**4. `InlineImageSlot` does not exist.**
+
+Named in the stimulus kinds table and the component inventory, and required by B ➎ /
+➏ — which are not authored. It is the one planned component with no implementation. The
+stimulus kinds table above now marks it absent rather than listing it as a kind.
+
+**5. `AudioPlayer` has no scrub and no replay.**
+
+The component table lists "play/pause, scrub, replay, per-track selection". Shipped:
+play/pause and per-track selection, with a display-only progress bar. There is no
+seek control and no replay button (only a track change resets position to 0). For
+listening tasks — A ➋, B, C ➊, E — replay is the most-used control in the workbook's
+own instructions ("listen again"), so this is a genuine usability gap, not a nicety.
+
+**6. There is no progress store.**
+
+Listed under shared logic. `TaskResponseStore` persists per-task responses and attempts,
+but nothing aggregates completion across tasks, so neither the picker nor the TOC shows
+any indication of what has been attempted or completed.
+
+### Specification drift — the text described a different artefact
+
+Resolved by rewriting the affected sections above, recorded here for continuity:
+
+| Claim | Reality |
+|---|---|
+| Content authored as YAML, compiled to typed JSON | TypeScript modules, no parser, no compiler — justification under [Task Schema](#task-schema) |
+| Stimulus kinds include `audio` and `inlineImageSlot` | `audio` is a task-level field; `inlineImageSlot` is unbuilt. Four shipped kinds (`numberedBlanks`, `dictation`, `freeWrite`, `noteCards`) were missing from the table |
+| Blank kinds are `choose` / `type` / `given` | Also `goal` (answered inside a mock app) and `free` (ungraded prose). Schema rule #1's "every blank has an `answer` or is `given`" has a documented exception: `free` needs neither |
+| `banks` is a map; `audio` is an array of strings; keys are `u06/B/t2.mp3` | `banks` is an array with `id`; `audio` is `{ key, label? }[]`; keys are `tblt-hsk4/u06/<original filename>` so publishing needs no rename |
+| Web routes: `tasks/{layout,page}.tsx` + `[bookId]/[unitId]/[lessonId]/[taskId]`; mobile: `tasks.tsx` + `[unitId]/[lessonId]/[taskId].tsx` | Web puts the TOC in `tasks/[bookId]/layout.tsx` with a `[bookId]/page.tsx` empty state; mobile is `tasks/index.tsx` → `tasks/[bookId]/index.tsx` → `tasks/[bookId]/[unitId]/[lessonId]/[taskId].tsx` |
+| Component `TaskToc` | Shipped as `TextbookToc`. `NoteCards` (inside `free-write.tsx`), `NumberedBlanks` and the shared `blank-picker` hook shipped but were never listed |
+| The `blank` **format-range** seam in `TokenizedText` | The decision to use FormatRange was abandoned; the shipped seam is marker-extraction plus offset interleave. Corrected throughout, since the original wording survived in three places |
+
+### Verified, not assumed
+
+Stated so the gaps are not read as a general disclaimer: the answer key is
+machine-checked against every authored answer; all 85 asset keys were verified
+returning HTTP 200 from the shared host, including percent-encoded workbook audio
+filenames; 994 tests pass and `tsc` is clean for web, mobile, textbooks and utils.
+
+The most significant thing that has **not** been verified is anything visual — no page
+of this feature has been rendered in a browser or simulator. Types, content validation
+and asset delivery are checked; pixels and audio playback are not.
+
