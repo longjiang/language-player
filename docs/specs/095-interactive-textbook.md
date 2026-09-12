@@ -1310,14 +1310,26 @@ references is declared in the manifest and present on disk; the test suite passe
 pilot were each verified returning HTTP 200 from the shared host, including
 percent-encoded workbook audio filenames.
 
-**That claim was never re-checked as the unit grew, and it no longer holds.** A HEAD
-request over all 107 declared keys finds **14 missing** — B ➌'s eight seat photographs
-(`b3-g41-*`, `b3-k1275-*`) and B ➎'s six illustrations (`b5-illustration-*`). All 14
-exist in the local `zerotohero-server-data/interactive-textbook/` folder and were never
-uploaded, so publishing the unit is still the one `rsync` step documented under
-[Where media lives](#where-media-lives-and-the-one-step-to-publish-it). Nothing broke
-loudly, because a missing picture degrades to a labelled tile with an inline retry —
-which is the designed behaviour, and also why this went unnoticed.
+**That claim was never re-checked as the unit grew, and for a while it did not hold.** A HEAD
+request over all 107 declared keys found **14 missing** — B ➌'s eight seat photographs
+(`b3-g41-*`, `b3-k1275-*`) and B ➎'s six illustrations (`b5-illustration-*`). All 14 existed in
+the local `zerotohero-server-data/interactive-textbook/` folder and had never been uploaded: an
+author added the images and the content that references them, and the publish step under
+[Where media lives](#where-media-lives-and-the-one-step-to-publish-it) was simply not run.
+
+**Published 2026-09-12.** The documented `rsync` was run — its dry run listed exactly those 14
+files and *no* `>f` lines, so nothing already live was touched — and the sweep now returns
+**107 / 107 HTTP 200**, with sampled `GET`s returning `image/jpeg` at byte counts matching the
+local files.
+
+The lesson is not the upload but the silence. Nothing broke loudly, because a missing picture
+degrades to a labelled tile with an inline retry — the designed behaviour, and the reason this
+survived a spec section that said the opposite, a measured web pass, and the user report that
+finally surfaced it (*"all images in B ➌ are broken"*). The manifest test proves content and
+manifest agree, but nothing checks the **host**, so a declared-but-unpublished key stays
+invisible until someone looks at the page. A checker (`HEAD` every declared key, non-zero exit
+on a miss) would have caught it in the publish step itself; it is not built, so treating the
+sweep as part of publishing remains a manual habit.
 
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
