@@ -7,7 +7,14 @@
  * (ADR-0003: share logic, not views).
  */
 
-export { audioTracksIn, pictureSetsIn, recordingsIn, textsIn } from './types';
+export {
+  audioTracksIn,
+  pictureSetsIn,
+  recordingsIn,
+  tasksIn,
+  textsIn,
+  transcriptsIn,
+} from './types';
 export { TASK_TYPES, taskTypeKey } from './task-types';
 export {
   isAppToHostMessage,
@@ -48,6 +55,7 @@ export type {
   ImageMapStimulus,
   RecallStimulus,
   RecordingRef,
+  TranscriptLine,
   LessonMeta,
   MockAppGoalLink,
   MockAppStimulus,

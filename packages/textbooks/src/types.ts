@@ -367,6 +367,21 @@ export type Stimulus =
   | FreeWriteStimulus
   | NoteCardsStimulus;
 
+/**
+ * One line of a recording's transcript.
+ *
+ * Split by speaker because that is how the printed transcript is laid out and how a
+ * conversation reads: `男`/`女` in A ➊, the speaker's name in A ➌, the announcement's
+ * setting in A ➋ (车站广播 / 车内广播 / 扶梯安全提示). A line with no `speaker` is a
+ * paragraph of continuous speech — an article read aloud, a monologue.
+ */
+export interface TranscriptLine {
+  /** Who is speaking, where the recording distinguishes it. */
+  speaker?: string;
+  /** What they say. Plain L2 text — no `{{bN}}` blanks. */
+  text: string;
+}
+
 /** Audio track attached to a task. */
 export interface AudioTrack {
   /** Relative asset key, resolved through the asset resolver. */
@@ -381,6 +396,20 @@ export interface AudioTrack {
    * an accessible name.
    */
   label?: string;
+  /**
+   * What the recording says, line by line — shown on demand, never on the page.
+   *
+   * A transcript belongs to the **recording**, not to the item that plays it: A ➍
+   * replays A ➌'s five recordings and D ➌/➍ replay D ➋'s, so it is declared once
+   * wherever that recording is first used and found by key from anywhere in the book
+   * (`transcriptsIn`). Declaring it twice with different text is a validator error
+   * rather than a silent winner.
+   *
+   * Read-only text: it is what was said, so it carries no `{{bN}}` blanks (the
+   * validator rejects them) and is rendered through the same tokenized path as any
+   * other L2 text, which is what makes its words tappable.
+   */
+  transcript?: TranscriptLine[];
 }
 
 /** A single task (one numbered activity in a lesson). */
@@ -571,6 +600,35 @@ export function audioTracksIn(task: Task): AudioTrack[] {
     if (!byKey.has(track.key)) byKey.set(track.key, track);
   }
   return [...byKey.values()];
+}
+
+/** Every task in a book, in reading order. The walk `allTasks` also uses. */
+export function tasksIn(book: BookMeta): Task[] {
+  return book.units.flatMap((unit) => unit.lessons.flatMap((lesson) => lesson.tasks));
+}
+
+/**
+ * Every recording's transcript in a book, by asset key.
+ *
+ * **By key, across the whole book, and deliberately not per task.** A transcript
+ * belongs to the recording: A ➍ replays A ➌'s five files, D ➌ and D ➍ replay D ➋'s,
+ * and B ➏ replays B ➎'s — five tasks that would otherwise have to repeat the same
+ * text verbatim, drifting the moment one copy is edited. Keying the index to the
+ * recording means it is written once, where that recording is first used, and every
+ * control that plays the file can offer it.
+ *
+ * First declaration wins, as in `audioTracksIn`; `validateBook` reports the case
+ * where two tasks declare the same key with different text, because that is an
+ * authoring mistake rather than a preference.
+ */
+export function transcriptsIn(book: BookMeta): Map<string, TranscriptLine[]> {
+  const byKey = new Map<string, TranscriptLine[]>();
+  for (const task of tasksIn(book)) {
+    for (const { track } of recordingsIn(task)) {
+      if (track.transcript?.length && !byKey.has(track.key)) byKey.set(track.key, track.transcript);
+    }
+  }
+  return byKey;
 }
 
 export function textsIn(task: Task): string[] {

@@ -508,3 +508,71 @@ describe('recall stimuli (D ➐)', () => {
     expect(issues.some((i) => i.message.includes('Recall stimulus points at'))).toBe(true);
   });
 });
+
+describe('transcripts', () => {
+  const withTranscript = (transcript: { speaker?: string; text: string }[]) =>
+    base({
+      audio: [{ key: 'a/one.mp3', transcript }],
+      blanks: {},
+      body: [{ kind: 'audio', tracks: [{ key: 'a/one.mp3' }] }],
+    });
+
+  it('accepts a transcript on a recording', () => {
+    const issues = validateTask(
+      withTranscript([{ speaker: '男', text: '西安是我的老家。' }, { text: '然后是正文。' }]),
+      { assetKeys: new Set(['a/one.mp3']) },
+    );
+    expect(errorsOf(issues)).toEqual([]);
+  });
+
+  it('rejects a blank marker inside a transcript', () => {
+    // The dialog renders read-only text, so a marker there is a blank nothing renders —
+    // and the recording does not have a hole in it where the student hears a word.
+    const issues = validateTask(withTranscript([{ text: '下了飞机以后{{b1}}，' }]));
+    expect(errorsOf(issues).join()).toContain('A transcript is read-only text');
+  });
+
+  it('rejects an empty transcript line', () => {
+    const issues = validateTask(withTranscript([{ speaker: '男', text: '   ' }]));
+    expect(errorsOf(issues).join()).toContain('is empty');
+  });
+
+  it('rejects one recording carrying two different transcripts across the book', () => {
+    // The index is keyed by recording, so the second declaration would be ignored —
+    // silently showing one task's text for another's recording.
+    const one = base({
+      id: 'tblt-hsk4.u06.D.t2',
+      audio: [{ key: 'a/shared.mp3', transcript: [{ text: '第一版' }] }],
+      blanks: {},
+      body: [{ kind: 'audio', tracks: [{ key: 'a/shared.mp3' }] }],
+    });
+    const two = { ...one, id: 'tblt-hsk4.u06.D.t3', audio: [{ key: 'a/shared.mp3', transcript: [{ text: '第二版' }] }] };
+    const bookMeta: BookMeta = {
+      id: 'tblt-hsk4',
+      title: 'T',
+      l2: 'zh',
+      contentVersion: 1,
+      units: [{ id: 'u06', number: 6, title: 'U6', lessons: [{ id: 'D', letter: 'D', title: 'D', tasks: [one, two] }] }],
+    };
+    const issues = validateBook(bookMeta);
+    expect(issues.some((i) => i.message.includes('two different transcripts'))).toBe(true);
+  });
+
+  it('accepts the same transcript declared twice for one recording', () => {
+    const one = base({
+      id: 'tblt-hsk4.u06.D.t2',
+      audio: [{ key: 'a/shared.mp3', transcript: [{ text: '同一版' }] }],
+      blanks: {},
+      body: [{ kind: 'audio', tracks: [{ key: 'a/shared.mp3' }] }],
+    });
+    const two = { ...one, id: 'tblt-hsk4.u06.D.t3' };
+    const bookMeta: BookMeta = {
+      id: 'tblt-hsk4',
+      title: 'T',
+      l2: 'zh',
+      contentVersion: 1,
+      units: [{ id: 'u06', number: 6, title: 'U6', lessons: [{ id: 'D', letter: 'D', title: 'D', tasks: [one, two] }] }],
+    };
+    expect(validateBook(bookMeta).filter((i) => i.message.includes('two different transcripts'))).toEqual([]);
+  });
+});

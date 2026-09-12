@@ -11,7 +11,7 @@
 import { extractBlankMarkers } from '@langplayer/utils';
 import { answersForKeyIndex, answersForKeyLabel } from './answer-key';
 import { normalizeAnswer } from './grading';
-import { assetKeysIn, pictureSetsIn, textsIn } from './types';
+import { assetKeysIn, pictureSetsIn, recordingsIn, tasksIn, textsIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
 
 export type IssueLevel = 'error' | 'warning';
@@ -289,6 +289,28 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     }
   }
 
+  // ── Transcripts ──
+  // A transcript is what the recording says, so it is read-only: a blank in it would
+  // be a blank no widget renders (the transcript opens in a dialog, not in the task),
+  // and the text the student hears is not the text with holes in it.
+  for (const { track, where } of recordingsIn(task)) {
+    for (const line of track.transcript ?? []) {
+      if (!line.text?.trim()) {
+        add('error', `A transcript line on the recording "${track.key}" (${where}) is empty.`);
+        continue;
+      }
+      const markers = extractBlankMarkers(line.text).markers;
+      if (markers.length > 0) {
+        add(
+          'error',
+          `Transcript of "${track.key}" (${where}) contains the blank marker(s) ${markers
+            .map((m) => m.id)
+            .join(', ')}. A transcript is read-only text and carries no blanks.`,
+        );
+      }
+    }
+  }
+
   // ── Answer key agreement ──
   if (task.answerKeyRaw) {
     for (const blank of Object.values(blanks)) {
@@ -396,6 +418,30 @@ export function validateBook(book: BookMeta, options?: ValidationOptions): Valid
           }
           seenBlankIds.add(scoped);
         }
+      }
+    }
+  }
+
+  // ── Transcripts agree, key by key ──
+  // A transcript is indexed by recording, so the SAME file used by two tasks must carry
+  // the same text: whichever task is read first would otherwise silently decide what
+  // every control playing that file shows. (D ➋/➌/➍ and A ➌/➍ all replay one file.)
+  const transcriptOwner = new Map<string, { text: string; taskId: string }>();
+  for (const task of tasksIn(book)) {
+    for (const { track } of recordingsIn(task)) {
+      const text = JSON.stringify(track.transcript ?? []);
+      if (!track.transcript?.length) continue;
+      const seen = transcriptOwner.get(track.key);
+      if (!seen) {
+        transcriptOwner.set(track.key, { text, taskId: task.id });
+        continue;
+      }
+      if (seen.text !== text) {
+        issues.push({
+          level: 'error',
+          taskId: task.id,
+          message: `Recording "${track.key}" has two different transcripts — declared in ${seen.taskId} and in ${task.id}. One recording has one transcript; declare it once.`,
+        });
       }
     }
   }
