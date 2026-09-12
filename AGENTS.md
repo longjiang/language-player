@@ -199,7 +199,7 @@ const t = useT();
 
 To add a new translatable key:
 
-1. Create a JSON payload file with the key + English text + all 31 locale translations. All locales **must** be present (all-or-nothing — the script rejects partial data). **Use your own multilingual knowledge to supply the translations — do NOT call external translation APIs for this step.**
+1. Create a JSON payload file with the key + English text + all 18 locale translations. All locales **must** be present (all-or-nothing — the script rejects partial data). **Use your own multilingual knowledge to supply the translations — do NOT call external translation APIs for this step.**
 
 ```json
 {
@@ -207,31 +207,18 @@ To add a new translatable key:
   "en": "English text here",
   "zh-Hans": "...",
   "zh-Hant": "...",
-  "af": "...",
   "ar": "...",
-  "ca": "...",
   "de": "...",
-  "el": "...",
   "es": "...",
-  "fi": "...",
   "fr": "...",
-  "ga": "...",
-  "hi": "...",
-  "hr": "...",
-  "hu": "...",
   "id": "...",
   "it": "...",
   "ja": "...",
   "ko": "...",
   "nl": "...",
-  "no": "...",
   "pl": "...",
   "pt": "...",
-  "ro": "...",
   "ru": "...",
-  "sr": "...",
-  "sv": "...",
-  "sw": "...",
   "th": "...",
   "tr": "...",
   "vi": "..."
@@ -264,8 +251,10 @@ node scripts/batch-translate.mjs --locale=fr
 
 **ICU MessageFormat** — Strings with `{n, plural, one {...} other {...}}` must preserve ICU keywords (`one`, `other`, `plural`, `#`) exactly. Do NOT translate these keywords. Use `scripts/translate-icu.mjs` as a reference for manual ICU translations.
 
-**Full locale list** (31 locales, CSV column order):
-`en`, `zh-Hans`, `zh-Hant`, `af`, `ar`, `ca`, `de`, `el`, `es`, `fi`, `fr`, `ga`, `hi`, `hr`, `hu`, `id`, `it`, `ja`, `ko`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sr`, `sv`, `sw`, `th`, `tr`, `vi`
+**Full locale list** (18 locales, CSV column order):
+`en`, `zh-Hans`, `zh-Hant`, `ar`, `de`, `es`, `fr`, `id`, `it`, `ja`, `ko`, `nl`, `pl`, `pt`, `ru`, `th`, `tr`, `vi`
+
+This matches `SUPPORTED_L1S` in `packages/shared/src/constants.ts` exactly, in the same order — 18 interface languages, not 31. Verify with a payload before adding a key: `translations.csv` rows are exactly 19 columns (1 key + 18 locales).
 
 Before translating, always check if `translations.csv` already has the same or very similar key that can do the same job. If so, modify your key new key to reuse it instead of creating a new key.
 
@@ -284,7 +273,7 @@ _en/locales/en/messages.json:  "translating"  ← flat key, NO dots
                            │
 generate-locales.js CSV_LOOKUP:  'translating': 'subtitle.translating'
                            │
-translations.csv:        subtitle.translating → "Translating…" (31 locales)
+translations.csv:        subtitle.translating → "Translating…" (18 locales)
 ```
 
 **When adding a new string to the extension, you MUST use a flat key name. Never use a dotted CSV key directly in `t()` or `chrome.i18n.getMessage()`.**
@@ -310,7 +299,7 @@ Without this, Chrome **rejects the entire extension** at load time: `"Variable $
 
 1. **Check if CSV already has the string** → Map it via CSV_LOOKUP (no new MANUAL entry needed)
 2. **Check if CSV has a close-enough string** → Use CSV_LOOKUP with the closest match (e.g., `actions` → `action.more`)
-3. **Extension-specific string?** → Add to `en/messages.json` (flat key) + `MANUAL` object in `generate-locales.js` (all 30 non-English locales)
+3. **Extension-specific string?** → Add to `en/messages.json` (flat key) + `MANUAL` object in `generate-locales.js` (all 17 non-English locales)
 4. **Can it be a visual indicator?** → Use CSS spinner/icon, eliminate the key entirely
 
 ```bash
@@ -389,7 +378,7 @@ Docs support `{$key}` syntax to reference CSV translation keys. When the page re
 nvm use 22 && node scripts/translate-doc.mjs packages/docs/content/<path>.md
 ```
 
-This resolves `{$key}` and machine-translates the body via the Python `/translate` server (if running), merging into **`packages/docs/i18n/{locale}.json`**. That directory is the only docs-i18n output location — `apps/web/src/data/docs-i18n/` exists but is an **empty directory** and is not a merge target. Docs i18n currently covers **18 locales** (`packages/docs/i18n/*.json`: en, zh-Hans, zh-Hant, ar, de, es, fr, id, it, ja, ko, nl, pl, pt, ru, th, tr, vi), a subset of the app's 31 UI locales. Requires Node ≥ 20 for translation; falls back to key-only resolution on older Node.
+This resolves `{$key}` and machine-translates the body via the Python `/translate` server (if running), merging into **`packages/docs/i18n/{locale}.json`**. That directory is the only docs-i18n output location — `apps/web/src/data/docs-i18n/` exists but is an **empty directory** and is not a merge target. Docs i18n currently covers **18 locales** (`packages/docs/i18n/*.json`: en, zh-Hans, zh-Hant, ar, de, es, fr, id, it, ja, ko, nl, pl, pt, ru, th, tr, vi) — the same 18 as `SUPPORTED_L1S` and `translations.csv`, not a subset of a larger set. Requires Node ≥ 20 for translation; falls back to key-only resolution on older Node.
 
 Mobile does not read `packages/docs/i18n/` at runtime — `scripts/build-docs-data.cjs` inlines every locale into `packages/shared/src/docs.ts` (a ~2.1 MB generated file) which mobile imports via the `@langplayer/shared` barrel. Web instead reads `packages/docs/i18n/*.json` from disk at request time. Regenerating that blob after editing docs is a separate manual step: the docs scripts have no npm-script wiring.
 
