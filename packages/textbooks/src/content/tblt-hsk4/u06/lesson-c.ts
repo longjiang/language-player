@@ -40,10 +40,69 @@ export const lessonC: LessonMeta = {
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3' }] },
-        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ②.mp3' }] },
-        b3: { id: 'b3', kind: 'choose', answer: 'B', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ③.mp3' }] },
-        b4: { id: 'b4', kind: 'choose', answer: 'D', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ④.mp3' }] },
+        // Transcripts are the booklet's, one per recording; the speaker is the voice
+        // heard (广播 for the announcement, otherwise 女/男 as the booklet marks them).
+        b1: {
+          id: 'b1',
+          kind: 'given',
+          answer: 'A',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3',
+              transcript: [
+                { speaker: '广播', text: '各位乘客，您好。欢迎您乘坐和谐号动车组列车。下一站，无锡站。' },
+              ],
+            },
+          ],
+        },
+        b2: {
+          id: 'b2',
+          kind: 'choose',
+          answer: 'C',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➊ ②.mp3',
+              transcript: [
+                { speaker: '女', text: '不好意思，需要补一张去杭州的票。' },
+                { speaker: '男', text: '到杭州站是吗？身份证看一下。' },
+              ],
+            },
+          ],
+        },
+        b3: {
+          id: 'b3',
+          kind: 'choose',
+          answer: 'B',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➊ ③.mp3',
+              transcript: [
+                { speaker: '男', text: '你好，用护照进站可以吗？' },
+                { speaker: '女', text: '可以。你到中间那台闸机口，可以刷护照。' },
+              ],
+            },
+          ],
+        },
+        b4: {
+          id: 'b4',
+          kind: 'choose',
+          answer: 'D',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➊ ④.mp3',
+              transcript: [
+                { speaker: '男1', text: '你好，我从西安过来的，现在要换乘去南京，应该怎么走啊？' },
+                { speaker: '男2', text: '南京吗？几点的？' },
+                { speaker: '男1', text: '2:45的。' },
+                { speaker: '男2', text: '去5A。' },
+                { speaker: '男1', text: '好的，谢谢啊。' },
+              ],
+            },
+          ],
+        },
       },
       answerKeyRaw: '② C; ③ B; ④ D。',
     },
@@ -67,10 +126,73 @@ export const lessonC: LessonMeta = {
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ①.mp3' }] },
-        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ②.mp3' }] },
-        b3: { id: 'b3', kind: 'choose', answer: 'B', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ③.mp3' }] },
-        b4: { id: 'b4', kind: 'choose', answer: 'D', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ④.mp3' }] },
+        // The booklet prints each of these as one run-on paragraph with the speakers
+        // embedded; the transcript splits it back into turns, which is how the same
+        // booklet prints its other conversations.
+        b1: {
+          id: 'b1',
+          kind: 'given',
+          answer: 'A',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➋ ①.mp3',
+              transcript: [
+                { speaker: '女', text: '你好，一共是47元。' },
+                { speaker: '男', text: '支付宝可以吗？' },
+                { speaker: '女', text: '可以，我扫你付款码。' },
+                { speaker: 'POS', text: '支付到账47元。' },
+              ],
+            },
+          ],
+        },
+        b2: {
+          id: 'b2',
+          kind: 'choose',
+          answer: 'C',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➋ ②.mp3',
+              transcript: [
+                { speaker: '女1', text: '女士，您的美式好了。' },
+                { speaker: '女2', text: '啊，谢谢。微信支付可以吗？' },
+                { speaker: '女1', text: '嗯，我扫你支付码。' },
+              ],
+            },
+          ],
+        },
+        b3: {
+          id: 'b3',
+          kind: 'choose',
+          answer: 'B',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➋ ③.mp3',
+              transcript: [
+                { speaker: '男1', text: '来两个煎饼。' },
+                { speaker: '男2', text: '好。5块。' },
+                { speaker: '男1', text: '给你10块。' },
+                { speaker: '男2', text: '嗯，给你找5块。' },
+              ],
+            },
+          ],
+        },
+        b4: {
+          id: 'b4',
+          kind: 'choose',
+          answer: 'D',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六C ➋ ④.mp3',
+              transcript: [
+                { speaker: '男', text: '你好，这边可以刷信用卡吗？' },
+                { speaker: '女', text: '可以，请用这边自助收银。' },
+              ],
+            },
+          ],
+        },
       },
       answerKeyRaw: '② C; ③ B; ④ D。',
     },
@@ -82,7 +204,53 @@ export const lessonC: LessonMeta = {
       instructions:
         '听听一段在高铁扬州东站的一位旅客和售票窗口工作人员的对话。听的时候请注意：',
       // The recording ➍ shows the transcript of.
-      audio: [{ key: 'tblt-hsk4/u06/六C ➌.mp3' }],
+      //
+      // The transcript is that printed dialogue, with ➍'s blanks filled in from their
+      // bank (`要不`, `我看一下`, `等一下`, `那就`) and the workbook's brackets around them
+      // dropped — so the student reading along hears the words the speakers actually
+      // say rather than the four the exercise removes. The workbook prints the two
+      // stage directions (（拿出护照）, （"哔"的一声…）) inside the same dialogue, and they
+      // are kept: this is the page ➍ prints, not a re-transcription of the audio.
+      audio: [
+        {
+          key: 'tblt-hsk4/u06/六C ➌.mp3',
+          transcript: [
+            { speaker: '乘客', text: '你好，买一张去上海的商务票。' },
+            { speaker: '售票员', text: '今天的吗？' },
+            { speaker: '乘客', text: '今天，尽快的。' },
+            {
+              speaker: '售票员',
+              text:
+                '最近到上海的是下午2点29的。但是这班车没有商务座，只有一等座。' +
+                '下一班2点56的这班车有商务座。',
+            },
+            { speaker: '乘客', text: '可以。那2点56的。' },
+            {
+              speaker: '售票员',
+              text:
+                '2点56的，好的……你要不买那个吧，买3点13的吧，这班车快一点，' +
+                '比那一趟2点56的车早一点到。',
+            },
+            { speaker: '乘客', text: '价格一样吗？' },
+            {
+              speaker: '售票员',
+              text:
+                '价格啊，我看一下啊……2点56商务座503。等一下我看看这趟车，还有没有商务座……' +
+                '没有商务座了，3点13的没有商务座了。那就2点56的这班车，可以有商务座。',
+            },
+            { speaker: '乘客', text: '行。' },
+            {
+              speaker: '售票员',
+              text: '好的。那就给你买今天下午2点56这一班，扬州东站到上海站的，一张商务座，票价503，行吗？',
+            },
+            { speaker: '乘客', text: '行。' },
+            { speaker: '售票员', text: '身份证。' },
+            { speaker: '乘客', text: '（拿出护照）这是我护照……支付宝可以吗？' },
+            { speaker: '售票员', text: '好，我扫你付款码。（“哔”的一声，付款完成。工作人员给票。）' },
+            { speaker: '乘客', text: '好，谢谢。' },
+          ],
+        },
+      ],
       body: [
         {
           kind: 'passage',
