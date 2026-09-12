@@ -54,6 +54,13 @@ export function DataTable({ table }: { table: DataTableStimulus }) {
                   */}
                   <span className="flex items-center gap-2">
                     {c === 0 && <InlineTrackButton tracks={row.audio} />}
+                    {/* The row's glyph, if it has one: decoration beside the text rather than
+                        text itself, so the cell stays pure vocabulary the student can tap. */}
+                    {c === 0 && row.icon ? (
+                      <span aria-hidden className="shrink-0 text-base leading-none">
+                        {row.icon}
+                      </span>
+                    ) : null}
                     {row.cells[c] ? (
                       // A ➌'s blanks answer from picture sets and the workbook prints them as
                       // small letter blanks, so the cell variant is what belongs in a cell.

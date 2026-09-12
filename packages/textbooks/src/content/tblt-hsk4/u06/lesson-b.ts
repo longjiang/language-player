@@ -24,13 +24,16 @@ export const lessonB: LessonMeta = {
           kind: 'dataTable',
           id: 't1-trains',
           columns: ['车次和读法', '车型', '路线', '时速'],
+          // Each row is marked with the emoji for the kind of train its letter stands for, so
+          // the letter-to-type correspondence the instructions point at is visible before the
+          // student reads the pool: 高 🚄, 动 and 城 🚅, 直 🚈, 特 and 快 🚃.
           rows: [
-            { cells: ['G815 “高815”', '{{b1}}', '北京南 → 宁波', '250-350km'] },
-            { cells: ['D17 “动17”', '{{b2}}', '北京 → 杭州', '160-250km'] },
-            { cells: ['C2131 “城2131”', '{{b3}}', '北京南 → 天津西', '160-300km'] },
-            { cells: ['Z281 “直281”', '{{b4}}', '包头 → 杭州', '160km'] },
-            { cells: ['T109 “特109”', '{{b5}}', '北京 → 上海', '140km'] },
-            { cells: ['K1275 “快1275”', '{{b6}}', '包头 → 温州', '120km'] },
+            { icon: '🚄', cells: ['G815 “高815”', '{{b1}}', '北京南 → 宁波', '250-350km'] },
+            { icon: '🚅', cells: ['D17 “动17”', '{{b2}}', '北京 → 杭州', '160-250km'] },
+            { icon: '🚅', cells: ['C2131 “城2131”', '{{b3}}', '北京南 → 天津西', '160-300km'] },
+            { icon: '🚈', cells: ['Z281 “直281”', '{{b4}}', '包头 → 杭州', '160km'] },
+            { icon: '🚃', cells: ['T109 “特109”', '{{b5}}', '北京 → 上海', '140km'] },
+            { icon: '🚃', cells: ['K1275 “快1275”', '{{b6}}', '包头 → 温州', '120km'] },
           ],
         },
       ],
