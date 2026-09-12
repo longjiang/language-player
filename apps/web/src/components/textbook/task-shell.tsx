@@ -10,6 +10,7 @@ import { WordBank } from './word-bank';
 import { BlankChoiceProvider } from './blank-choice';
 import { AudioPlayer } from './audio-player';
 import { TaskAudioProvider } from './task-audio';
+import { TranscriptDialogProvider } from './transcript-dialog';
 import { RecallCard } from './recall-card';
 import { PictureSet } from './picture-set';
 import { DataTable } from './data-table';
@@ -77,8 +78,10 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
     <TaskAudioProvider task={task}>
     {/* One picture-choice dialog for the whole task: a blank opens it, and it is
         rendered here rather than by each blank so thirty blanks are not thirty
-        dialogs. */}
+        dialogs. The transcript dialog is the same shape for the same reason — one per
+        task, opened by whichever audio control carries the recording. */}
     <BlankChoiceProvider>
+    <TranscriptDialogProvider>
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-1 pb-16">
       <header className="flex items-start gap-3">
         <span
@@ -163,6 +166,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         {book.title}
       </p>
     </article>
+    </TranscriptDialogProvider>
     </BlankChoiceProvider>
     </TaskAudioProvider>
   );

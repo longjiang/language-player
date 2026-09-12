@@ -6,6 +6,7 @@ import { indexToCircled } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './task-audio';
 import { RetryIcon } from './retry-icon';
+import { TranscriptButton } from './transcript-dialog';
 
 /**
  * The task's audio row.
@@ -43,28 +44,34 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
             label={rows[0]!.label ?? t('action.speak')}
             onClick={() => audio.toggle(rows[0]!.key)}
           />
+          <TranscriptButton track={rows[0]!} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" />
           <Transport />
         </div>
       ) : (
         <>
           <div className="flex flex-wrap gap-2">
             {rows.map((track, index) => (
-              <button
-                key={track.key}
-                type="button"
-                onClick={() => audio.toggle(track.key)}
-                // The label is the accessible name, never visible text: in the
-                // dictation tasks it is the answer.
-                aria-label={track.label ?? `track ${index + 1}`}
-                aria-pressed={audio.activeKey === track.key}
-                className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
-                  audio.activeKey === track.key
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background text-foreground hover:bg-muted'
-                }`}
-              >
-                {indexToCircled(index + 1)}
-              </button>
+              // Each track keeps its own transcript button: A ➊'s nine recordings each
+              // say something different, so "the transcript" is only meaningful per
+              // recording. It is absent where a recording has no transcript.
+              <span key={track.key} className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => audio.toggle(track.key)}
+                  // The label is the accessible name, never visible text: in the
+                  // dictation tasks it is the answer.
+                  aria-label={track.label ?? `track ${index + 1}`}
+                  aria-pressed={audio.activeKey === track.key}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
+                    audio.activeKey === track.key
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {indexToCircled(index + 1)}
+                </button>
+                <TranscriptButton track={track} />
+              </span>
             ))}
           </div>
           <Transport />
