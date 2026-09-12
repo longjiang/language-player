@@ -474,6 +474,8 @@ export const lessonA: LessonMeta = {
         {
           kind: 'passage',
           audio: [{ key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷' }],
+          // This summary's own pool, printed under it.
+          banks: ['a4-1'],
           text:
             '（1）李婷婷觉得共享单车比较方便，因为可以①（{{b1}}）借，②（{{b2}}）还，' +
             '去哪儿都可以，特别自由。上次她去卢沟桥就是骑自行车去的。虽然是有点远，要四十多分钟，' +
@@ -482,6 +484,8 @@ export const lessonA: LessonMeta = {
         {
           kind: 'passage',
           audio: [{ key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3', label: '金敏俊' }],
+          // This summary's own pool, printed under it.
+          banks: ['a4-2'],
           text:
             '（2）金敏俊经常从他老家首尔坐飞机去日本。仁川机场每天都有好多去日本的航班。' +
             '①（{{b5}}）东京②（{{b6}}）大阪，都能直达。不管去北海道，去冲绳，' +
@@ -490,6 +494,8 @@ export const lessonA: LessonMeta = {
         {
           kind: 'passage',
           audio: [{ key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚' }],
+          // This summary's own pool, printed under it.
+          banks: ['a4-3'],
           text:
             '（3）奥利维亚在西安留学的时候，去哪里都骑电动车，因为便宜，而且方便。' +
             '上次她去汉阳陵就是骑电动车去的。①（{{b8}}）也可以坐地铁去，②（{{b9}}）地铁不能直接到景点门口。' +
@@ -498,6 +504,8 @@ export const lessonA: LessonMeta = {
         {
           kind: 'passage',
           audio: [{ key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3', label: '陈灵' }],
+          // This summary's own pool, printed under it.
+          banks: ['a4-4'],
           text:
             '（4）陈灵是越南顺化人。去年她从老家坐大巴去了一①（{{b11}}）河内，是可以睡觉的那种。' +
             '陈灵说，大巴上的床很舒服，出发以后一路②（{{b12}}）着③（{{b13}}）着就睡着了。' +
@@ -506,6 +514,8 @@ export const lessonA: LessonMeta = {
         {
           kind: 'passage',
           audio: [{ key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3', label: '朴书妍' }],
+          // This summary's own pool, printed under it.
+          banks: ['a4-5'],
           text:
             '（5）朴书妍说她从老家首尔去哪儿都坐出租车，出远门也是。上次她从首尔去爱宝乐园，' +
             '就是坐出租车去的。路程①（{{b15}}）要1个小时，所以②（{{b16}}）是贵了点。' +
@@ -520,34 +530,43 @@ export const lessonA: LessonMeta = {
         b4: { id: 'b4', kind: 'given', answer: '舒服' },
         // The key numbers these by sub-item, so each blank names its group and
         // position — a flat index cannot express ① occurring in every group.
-        b5: { id: 'b5', kind: 'type', answer: '不管', bank: 'a4-words', keyLabel: '2.1' },
-        b6: { id: 'b6', kind: 'type', answer: '还是', bank: 'a4-words', keyLabel: '2.2' },
-        b7: { id: 'b7', kind: 'type', answer: '趟', bank: 'a4-words', keyLabel: '2.3' },
-        b8: { id: 'b8', kind: 'type', answer: '虽然', bank: 'a4-words', keyLabel: '3.1' },
-        b9: { id: 'b9', kind: 'type', answer: '但是', bank: 'a4-words', keyLabel: '3.2' },
-        b10: { id: 'b10', kind: 'type', answer: '一般', bank: 'a4-words', keyLabel: '3.3' },
-        b11: { id: 'b11', kind: 'type', answer: '趟', bank: 'a4-words', keyLabel: '4.1' },
-        b12: { id: 'b12', kind: 'type', answer: '摇', bank: 'a4-words', keyLabel: '4.2' },
-        b13: { id: 'b13', kind: 'type', answer: '摇', bank: 'a4-words', keyLabel: '4.3' },
-        b14: { id: 'b14', kind: 'type', answer: '快', bank: 'a4-words', keyLabel: '4.4' },
-        b15: { id: 'b15', kind: 'type', answer: '要', bank: 'a4-words', keyLabel: '5.1' },
-        b16: { id: 'b16', kind: 'type', answer: '确实', bank: 'a4-words', keyLabel: '5.2' },
-        b17: { id: 'b17', kind: 'type', answer: '安心', bank: 'a4-words', keyLabel: '5.3' },
+        b5: { id: 'b5', kind: 'type', answer: '不管', bank: 'a4-2', keyLabel: '2.1' },
+        b6: { id: 'b6', kind: 'type', answer: '还是', bank: 'a4-2', keyLabel: '2.2' },
+        b7: { id: 'b7', kind: 'type', answer: '趟', bank: 'a4-2', keyLabel: '2.3' },
+        b8: { id: 'b8', kind: 'type', answer: '虽然', bank: 'a4-3', keyLabel: '3.1' },
+        b9: { id: 'b9', kind: 'type', answer: '但是', bank: 'a4-3', keyLabel: '3.2' },
+        b10: { id: 'b10', kind: 'type', answer: '一般', bank: 'a4-3', keyLabel: '3.3' },
+        b11: { id: 'b11', kind: 'type', answer: '趟', bank: 'a4-4', keyLabel: '4.1' },
+        b12: { id: 'b12', kind: 'type', answer: '摇', bank: 'a4-4', keyLabel: '4.2' },
+        b13: { id: 'b13', kind: 'type', answer: '摇', bank: 'a4-4', keyLabel: '4.3' },
+        b14: { id: 'b14', kind: 'type', answer: '快', bank: 'a4-4', keyLabel: '4.4' },
+        b15: { id: 'b15', kind: 'type', answer: '差不多', bank: 'a4-5', keyLabel: '5.1' },
+        b16: { id: 'b16', kind: 'type', answer: '确实', bank: 'a4-5', keyLabel: '5.2' },
+        b17: { id: 'b17', kind: 'type', answer: '安心', bank: 'a4-5', keyLabel: '5.3' },
       },
+      // One pool per summary, as the booklet prints them: the words are beside the blanks
+      // they fill rather than in a single list at the foot of the task, and the student
+      // works one summary at a time. 趟 is printed in both (2)'s and (4)'s pool because
+      // each summary is answered on its own — which is also why this is not one shared
+      // bank: a shared pool would have had to contain 趟 once and reuse it across items.
+      //
+      // Reuse is on only where the key reuses a word *within* one summary: 随处 twice in
+      // (1) and 摇 twice in (4). Elsewhere every word is used once, so `allowReuse: false`
+      // lets a used word read as used.
       banks: [
-        {
-          // One combined bank for the whole task, as decided. Reuse is on: 随处 is
-          // needed twice, and 趟 and 摇 each appear twice.
-          id: 'a4-words',
-          items: [
-            '舒服', '随处', '坡路', '还是', '不管', '趟', '一般', '但是',
-            '虽然', '摇', '快', '确实', '安心', '差不多',
-          ],
-          allowReuse: true,
-        },
+        { id: 'a4-1', items: ['舒服', '随处', '坡路'], allowReuse: true },
+        { id: 'a4-2', items: ['不管', '还是', '趟'] },
+        { id: 'a4-3', items: ['虽然', '但是', '一般'] },
+        { id: 'a4-4', items: ['趟', '摇', '快'], allowReuse: true },
+        { id: 'a4-5', items: ['确实', '安心', '差不多'] },
       ],
+      // (5) ① is the booklet's own misprint: it prints 要, but the blank sits *before* the
+      // printed 要 (路程①（　）要1个小时) and the pool under (5) is 确实、安心、差不多, so the
+      // word that goes in the blank is 差不多 — 路程差不多要1个小时. Printing 要 as the answer
+      // would read 路程要要1个小时, and would ask for a word the student's own pool does not
+      // contain. The key line is corrected here rather than carried verbatim.
       answerKeyRaw:
-        '(2) ① 不管；② 还是；③ 趟；(3) ① 虽然；② 但是；③ 一般；(4) ① 趟；② 摇；③ 摇；④ 快；(5) ① 要；② 确实；③ 安心。',
+        '(2) ① 不管；② 还是；③ 趟；(3) ① 虽然；② 但是；③ 一般；(4) ① 趟；② 摇；③ 摇；④ 快；(5) ① 差不多；② 确实；③ 安心。',
     },
   ],
 };

@@ -9,6 +9,8 @@
 
 export {
   audioTracksIn,
+  bankIsPicked,
+  inlineBankIds,
   pictureSetsIn,
   recordingsIn,
   tasksIn,

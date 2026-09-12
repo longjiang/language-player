@@ -11,7 +11,7 @@
 import { extractBlankMarkers } from '@langplayer/utils';
 import { answersForKeyIndex, answersForKeyLabel } from './answer-key';
 import { normalizeAnswer } from './grading';
-import { assetKeysIn, pictureSetsIn, recordingsIn, tasksIn, textsIn } from './types';
+import { assetKeysIn, inlineBankIds, pictureSetsIn, recordingsIn, tasksIn, textsIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
 
 export type IssueLevel = 'error' | 'warning';
@@ -123,6 +123,23 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
         }
       }
     }
+    // A typed blank may name the pool it draws from too, and the same rule applies: the
+    // answer has to be one of the words printed there, or the student cannot produce it
+    // from the bank in front of them. (A ➍'s (5) answered 要 against a pool that printed
+    // 差不多 — the blank sits before 要, so 要 is the printed word and 差不多 is the answer;
+    // nothing checked it while only `choose` blanks were compared with their bank.)
+    if (blank.kind === 'type' && blank.bank) {
+      const bank = banks.get(blank.bank);
+      if (!bank) {
+        add('error', `Typed blank "${key}" references missing bank "${blank.bank}".`, key);
+      } else if (!bank.items.includes(blank.answer)) {
+        add(
+          'error',
+          `Typed blank "${key}" answer "${blank.answer}" is not in bank "${bank.id}" (${bank.items.join('、')}).`,
+          key,
+        );
+      }
+    }
     if (blank.kind === 'given' && blank.bank) {
       add('warning', `Given blank "${key}" declares a bank but is not answered.`, key);
     }
@@ -169,9 +186,47 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
       .map((b) => b.bank)
       .filter((id): id is string => Boolean(id)),
   );
+  // A bank printed under a passage counts as referenced even when no blank draws on it:
+  // A ➍'s (1) is the printed worked example, so its three words appear in the text as
+  // answers and the pool is there for the student to check them against.
+  const printedBanks = inlineBankIds(task);
   for (const bank of banks.values()) {
     if (bank.items.length === 0) add('error', `Bank "${bank.id}" is empty.`);
-    if (!referencedBanks.has(bank.id)) add('warning', `Bank "${bank.id}" is never referenced by a blank.`);
+    if (!referencedBanks.has(bank.id) && !printedBanks.has(bank.id)) {
+      add(
+        'warning',
+        `Bank "${bank.id}" is neither drawn on by a blank nor printed with a passage.`,
+      );
+    }
+  }
+
+  // ── Where a bank is printed ──
+  // A passage that names a bank prints it under itself. The pool must exist, and it should
+  // be the pool its own blanks use: options printed under item (3) that item (5) needs are
+  // options the student cannot see while answering (5).
+  const blankOwners = new Map<string, string[]>();
+  for (const [id, blank] of Object.entries(blanks)) {
+    if (!blank.bank) continue;
+    blankOwners.set(blank.bank, [...(blankOwners.get(blank.bank) ?? []), id]);
+  }
+  for (const [index, stimulus] of task.body.entries()) {
+    if (stimulus.kind !== 'passage') continue;
+    const here = new Set(
+      extractBlankMarkers(stimulus.text).markers.map((marker) => marker.id),
+    );
+    for (const bankId of stimulus.banks ?? []) {
+      if (!banks.has(bankId)) {
+        add('error', `Passage ${index + 1} prints missing bank "${bankId}".`);
+        continue;
+      }
+      const elsewhere = (blankOwners.get(bankId) ?? []).filter((id) => !here.has(id));
+      if (elsewhere.length > 0) {
+        add(
+          'warning',
+          `Bank "${bankId}" is printed at the end of passage ${index + 1} but also answers ${elsewhere.join(', ')} elsewhere, where its options are not shown.`,
+        );
+      }
+    }
   }
 
   // ── Image maps ──
