@@ -33,6 +33,13 @@ interface TaskAudioValue {
   activeKey: string | null;
   failed: Set<string>;
   toggle: (key: string) => void;
+  /** Nudge the active track, and restart it — RN has no range input, so the
+   *  transport is steppers rather than a scrub bar. */
+  seekBy: (delta: number) => void;
+  replay: () => void;
+  /** Position and length, for the elapsed-time readout. */
+  currentTime: number;
+  duration: number;
 }
 
 const TaskAudioContext = createContext<TaskAudioValue | null>(null);
@@ -57,6 +64,7 @@ export function TaskAudioProvider({
 
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [failed, setFailed] = useState<Set<string>>(new Set());
+  const [position, setPosition] = useState({ currentTime: 0, duration: 0 });
 
   // Source follows the active track; `null` loads nothing until a tap.
   const source = activeKey ? { uri: urls.get(activeKey) ?? '' } : null;
@@ -78,6 +86,35 @@ export function TaskAudioProvider({
     }
   }, [activeKey, player]);
 
+  // `expo-video`'s player reports progress through its own event emitter rather than
+  // a DOM element, so position is polled while something is playing.
+  useEffect(() => {
+    if (activeKey === null) {
+      setPosition({ currentTime: 0, duration: 0 });
+      return;
+    }
+    const id = setInterval(() => {
+      const d = player.duration ?? 0;
+      setPosition({ currentTime: player.currentTime ?? 0, duration: Number.isFinite(d) ? d : 0 });
+    }, 250);
+    return () => clearInterval(id);
+  }, [activeKey, player]);
+
+  const seekBy = useCallback(
+    (delta: number) => {
+      const d = player.duration ?? 0;
+      const next = Math.max(0, Math.min(d || Number.MAX_SAFE_INTEGER, (player.currentTime ?? 0) + delta));
+      player.currentTime = next;
+      setPosition((p) => ({ ...p, currentTime: next }));
+    },
+    [player],
+  );
+
+  const replay = useCallback(() => {
+    player.currentTime = 0;
+    setPosition((p) => ({ ...p, currentTime: 0 }));
+  }, [player]);
+
   const toggle = useCallback(
     (key: string) => {
       if (activeKey === key) {
@@ -95,7 +132,18 @@ export function TaskAudioProvider({
     [activeKey, player],
   );
 
-  const value = useMemo<TaskAudioValue>(() => ({ activeKey, failed, toggle }), [activeKey, failed, toggle]);
+  const value = useMemo<TaskAudioValue>(
+    () => ({
+      activeKey,
+      failed,
+      toggle,
+      seekBy,
+      replay,
+      currentTime: position.currentTime,
+      duration: position.duration,
+    }),
+    [activeKey, failed, toggle, seekBy, replay, position],
+  );
 
   return <TaskAudioContext.Provider value={value}>{children}</TaskAudioContext.Provider>;
 }

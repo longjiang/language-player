@@ -71,7 +71,65 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
         </View>
       )}
 
+      <Transport />
+
       {failed && <Text className="text-xs text-muted-foreground">{t('msg.failed_to_load_url')}</Text>}
     </View>
   );
+}
+
+/**
+ * Elapsed time, ±10s steppers and replay for the active track.
+ *
+ * Steppers rather than a scrub bar: React Native has no range input, and adding a
+ * slider dependency for this would be a new native module. Ten seconds is the step
+ * that matters — the workbook's listening items are a sentence or two, so one tap
+ * back is a re-listen.
+ */
+function Transport() {
+  const t = useT();
+  const audio = useTaskAudio();
+  const active = audio?.activeKey != null;
+  const { currentTime, duration } = {
+    currentTime: audio?.currentTime ?? 0,
+    duration: audio?.duration ?? 0,
+  };
+
+  const step = (label: string, delta: number) => (
+    <Pressable
+      key={label}
+      onPress={() => audio?.seekBy(delta)}
+      disabled={!active}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className={`h-7 rounded-full border border-border bg-background px-2 ${active ? '' : 'opacity-40'}`}
+    >
+      <Text className="text-[10px] text-foreground">{label}</Text>
+    </Pressable>
+  );
+
+  return (
+    <View className="flex-row items-center gap-2">
+      {step('−10s', -10)}
+      <Text className="text-xs tabular-nums text-muted-foreground">
+        {formatTime(currentTime)} / {formatTime(duration)}
+      </Text>
+      {step('+10s', 10)}
+      <Pressable
+        onPress={() => audio?.replay()}
+        disabled={!active}
+        accessibilityRole="button"
+        accessibilityLabel={t('action.replay')}
+        className={`h-7 rounded-full border border-border bg-background px-2 ${active ? '' : 'opacity-40'}`}
+      >
+        <Text className="text-[10px] text-foreground">{t('action.replay')}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0:00';
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 }
