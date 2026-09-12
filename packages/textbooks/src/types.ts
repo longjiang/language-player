@@ -471,16 +471,66 @@ export interface AssetRef {
 
 export function assetKeysIn(task: Task): AssetRef[] {
   const found: AssetRef[] = [];
-  const tracks = (list: { key: string }[] | undefined, where: string) => {
+  const tracks = (list: AudioTrack[] | undefined, where: string) => {
     for (const track of list ?? []) found.push({ key: track.key, where });
   };
 
-  tracks(task.audio, 'task audio');
+  // The recordings come from the shared walk, so a new declaration point is added
+  // once and both the manifest check and the players see it.
+  found.push(...recordingsIn(task).map(({ track, where }) => ({ key: track.key, where })));
+
   for (const bank of task.banks ?? []) {
     for (const [value, image] of Object.entries(bank.optionImages ?? {})) {
       found.push({ key: image, where: `bank ${bank.id} option ${value}` });
     }
   }
+
+  for (const stimulus of task.body) {
+    switch (stimulus.kind) {
+      case 'imageMap':
+        if (stimulus.image) found.push({ key: stimulus.image, where: 'imageMap image' });
+        break;
+      case 'pictureSet':
+        for (const item of stimulus.items) {
+          if (item.image) found.push({ key: item.image, where: `pictureSet ${item.letter}` });
+        }
+        break;
+      case 'mockApp':
+        if (stimulus.fallbackImage) {
+          found.push({ key: stimulus.fallbackImage, where: 'mockApp fallback' });
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  return found;
+}
+
+/** One recording and where it was declared. */
+export interface RecordingRef {
+  track: AudioTrack;
+  where: string;
+}
+
+/**
+ * Every recording a task declares, wherever it sits — the task, a blank, a table
+ * row, a block or a map pin.
+ *
+ * A task's recordings are NOT all in `task.audio[]`: only A ➊ and the odd
+ * whole-task recording live there, while A ➋'s seven items hang off their blanks,
+ * A ➌'s off its table rows and A ➍'s off its passages. Anything that has to know
+ * the whole set — the manifest check, and the playback provider that resolves a
+ * key to a URL — must ask here rather than read `task.audio`, which is how the
+ * inline play controls came to offer tracks nothing could resolve.
+ */
+export function recordingsIn(task: Task): RecordingRef[] {
+  const found: RecordingRef[] = [];
+  const tracks = (list: AudioTrack[] | undefined, where: string) => {
+    for (const track of list ?? []) found.push({ track, where });
+  };
+
+  tracks(task.audio, 'task audio');
   for (const [id, blank] of Object.entries(task.blanks ?? {})) {
     tracks(blank.audio, `blank ${id}`);
   }
@@ -498,24 +548,29 @@ export function assetKeysIn(task: Task): AssetRef[] {
         stimulus.rows.forEach((row, i) => tracks(row.audio, `dataTable row ${i + 1}`));
         break;
       case 'imageMap':
-        if (stimulus.image) found.push({ key: stimulus.image, where: 'imageMap image' });
         stimulus.pins.forEach((pin) => tracks(pin.audio, `imageMap pin ${pin.blankId}`));
-        break;
-      case 'pictureSet':
-        for (const item of stimulus.items) {
-          if (item.image) found.push({ key: item.image, where: `pictureSet ${item.letter}` });
-        }
-        break;
-      case 'mockApp':
-        if (stimulus.fallbackImage) {
-          found.push({ key: stimulus.fallbackImage, where: 'mockApp fallback' });
-        }
         break;
       default:
         break;
     }
   }
   return found;
+}
+
+/**
+ * A task's recordings as a flat list, de-duplicated by key.
+ *
+ * The playback provider resolves every control's key against this, so a control
+ * that plays a track it was handed cannot be handed a key the provider has never
+ * heard of. Keys repeat by design — A ➍ replays A ➌'s five recordings on its five
+ * passages — and one key is one URL, so the first declaration's label wins.
+ */
+export function audioTracksIn(task: Task): AudioTrack[] {
+  const byKey = new Map<string, AudioTrack>();
+  for (const { track } of recordingsIn(task)) {
+    if (!byKey.has(track.key)) byKey.set(track.key, track);
+  }
+  return [...byKey.values()];
 }
 
 export function textsIn(task: Task): string[] {
