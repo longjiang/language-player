@@ -175,6 +175,16 @@ is the caller that decides: `BlankField`'s `variant` prop, and `TokenizedText`'s
 `blankVariant` pass-through for blanks that live inside a cell or a passage. Both
 variants open the same dialog.
 
+**A tile's caption is tokenized, and sits outside the pick button.** The captions are the
+exercise's own vocabulary — `请到检票口检票`, `请在安全白线内通行`, `请紧握扶手` — so a student has
+to be able to tap a word and read what it means, which is the same tokenized path as any
+other L2 text (readings above the characters, the word tappable into the dictionary). That
+is why the tile is not one button: a token inside it would take a single tap for two
+actions — look the word up *and* answer with that picture. The picture picks, the caption
+teaches, and the button still carries the full caption as its accessible name, so nothing
+is lost to a screen reader. The caption is tokenized with `inline`, so it inherits the
+tile's own type scale and tokenizing it does not resize the grid.
+
 Four details that are easy to get wrong:
 
 - **One dialog per task, not per blank.** `BlankChoiceProvider` renders it beside the
@@ -941,7 +951,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
 | `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
-| `PictureOptionTile` | One picture as a pickable tile (picture, letter, label, inline retry). Shared by the bank and by the dialog so the fallback cannot drift between them |
+| `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them |
 | `BlankChoiceProvider` / `useBlankChoice` | The task's picture-choice dialog and its opener. One dialog per task; a blank calls `open(blankId)` |
 | `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
@@ -1199,6 +1209,15 @@ which is the designed behaviour, and also why this went unnoticed.
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**The caption is verified as a look-up in a browser**, on both surfaces the tile appears
+in — the bank grid and the choice dialog: tapping a word opens the dictionary with the
+token's entry, the answer does not change, and the popup stays interactive inside the
+modal (its controls are hit-testable, so a nested Radix layer is not swallowing pointer
+events); tapping the picture still fills the blank with its letter and closes the dialog.
+`picture-option-tile.test.tsx` covers the same split without a browser: the caption is
+tokenized, it is not inside the pick button, tapping it does not call `onPick`, and the
+picture still does.
 
 **The picture-choice flow is verified in a browser, on both printings**: tapping a map
 cell opens the dialog, picking fills the letter and closes it, tapping the given letter
