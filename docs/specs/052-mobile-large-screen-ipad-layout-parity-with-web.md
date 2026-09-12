@@ -207,6 +207,7 @@ was fixed by making dialog mode size to content.
 | Subtitle-search video list | bottom sheet | centered dialog (`max-w-lg`, capped height) |
 | Dictionary popup | bottom sheet | **top-anchored dialog** — fixed top (`insets.top + 64`), grows downward only, capped height |
 | WebView sheet | bottom sheet | centered dialog (`max-w-2xl`, capped height) |
+| Textbook mini app panel (SPEC-095) | bottom sheet | centered dialog (`max-w-2xl`) |
 | Context menu | bottom sheet | centered dialog (`max-w-sm`) |
 | Right sidebar / hamburger drawer | drawer / sheet (nav only) | persistent sidebar / removed |
 
