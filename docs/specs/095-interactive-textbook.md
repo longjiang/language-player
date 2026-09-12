@@ -1160,6 +1160,33 @@ test that recognises `/.well-known/apple-app-site-association` — a public file
 at all. `static-file-path.test.ts` walks `public/` and fails on any file the predicate does not
 recognise, so a new mock app, or a new directory beside it, cannot go unserved in silence.
 
+### The frame is rendered after mount, not in the server HTML
+
+A frame in the server HTML starts loading while the client bundle is still arriving, and a mock
+app announces itself the moment it has run — so its entire handshake can be over before the host
+exists to hear it. **Measured on B ➍'s own page:** the app posted `ready`, its first `progress`
+and its first `resize` at **1161 ms**; the host's first `message` listener was attached at
+**1272 ms**. All three went to nobody. `ready` is never re-sent, so `status` stayed `'loading'`
+for good — and because the `load` handler was attached during hydration, after a `load` that had
+already fired, the four-second grace timer never started either, so a frame that never said
+`ready` did not degrade to its fallback as designed.
+
+The symptom was not a missing app but a **half-alive** one: the screen rendered, the `Help` and
+`Hint` buttons did nothing useful, the counter read `1 / 6`, and the student could not tell what
+was being asked. The `1 / 6` is the tell — it came from a *later* `progress`, posted on a click
+after the listener existed, while the initial `progress` that would have said `0 / 6` was lost
+with `ready`.
+
+`MockAppFrame` on web therefore renders its frame **after mount**, so the frame's first byte
+lands after the component's effects and both the listener and the `load` handler exist before
+the app can speak. `init` follows from the frame's `load` rather than from the host's mount,
+since it cannot be delivered to a frame that is not there yet; on mobile, where `init` is an
+injected script that needs a live document, it goes out on `onLoadEnd` for the same reason.
+Verified in the page afterwards: listener at **545 ms**, all three messages at **957 ms**.
+
+`mock-app-frame.test.tsx` asserts the frame is absent from the server HTML, which is the
+invariant that keeps this from coming back.
+
 ### Three layers, and which one grows
 
 | Layer | Lives in | Grows per new app? |
@@ -1192,6 +1219,13 @@ Versioned and transport-agnostic, so the same protocol rides web `postMessage` a
 
 `MockAppFrame` refuses a mismatched major version. This message set is the entire host surface.
 
+**`ready` is sent once, by the app, when it has mounted** — so the host has to exist first, which
+is why the frame is rendered after mount and why `init` is sent on the frame's `load` rather than
+on the host's mount (see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-not-in-the-server-html)).
+`init` is idempotent: it may be sent more than once, and an app re-entering help mode because of
+it is harmless. Nothing in this set relies on the app re-announcing itself, so there is no
+version bump here.
+
 ### Goals: one artifact for hint, evaluation and progress
 
 Each app declares its **goals**, and a goal is an acceptance predicate over its own dataset rather than a hardcoded correct answer:
@@ -1217,6 +1251,32 @@ From that single declaration the runtime derives all three shared behaviours:
 This covers both shapes uniformly. A single-goal sequenced app (the ATM: card → PIN → amount → take cash) is an ordered goal list whose acceptance conditions encode the sequencing. And B ➍'s six questions become six goals — a better design than modelling them as blanks in `TaskShell`, because the student answers them *against the app* rather than transcribing from a screenshot.
 
 A mock app may also be a **pure stimulus with no goals** (a reference screen with nothing to do). `complete` is therefore optional, and such an app reports only tokens and lookups.
+
+### The questions are the host's, the screen is the app's
+
+**A mock app renders its own screen and no questions at all.** B ➍'s HTML is a 12306 result list
+and nothing else: no question text, no progress, no chrome. The six questions are the host's, and
+they print from `stimulus.goals[].prompt` — the content's copy, in the app's own goal order,
+numbered ①–⑥ with `indexToCircled` and rendered through `TokenizedText` like every other piece of
+L2 exercise text, so a word in a question is as look-up-able as a word in an instruction.
+
+The content is the source rather than the `ready` payload that also carries the prompts, and for
+the same reason grading reads it: the printed question and the graded answer then cannot drift.
+Each answered goal is marked — struck out on web, which is this feature's existing mark for "you
+have placed this" in the option pools, and dimmed beside a check on mobile, because
+`TokenizedText`'s memo comparator is a hand-written allow-list and a text-style prop added for a
+cosmetic mark would have to be threaded through it.
+
+**This was missing, and it broke the task without breaking anything visibly.** `goal.prompt` was
+rendered only inside the `status === 'failed'` branch — the fallback that turns the goals into
+typed inputs — so a *working* mock app showed the student a 12306 screen, a `1 / 6` counter, and
+no questions whatsoever. The feature looked alive and asked nothing. `MockAppFrame`'s own doc
+comment says the host "owns the frame, the bridge, and the three shared affordances — help mode,
+hint, and grading"; the fourth thing it owns is the question itself, and that one had no owner.
+
+A goal is marked done by **either** message that reports it. The app posts `complete` and then
+`progress`, and the host used to learn "this goal is done" only from the second — the same
+message the handshake race described above could eat.
 
 ### Help mode
 
