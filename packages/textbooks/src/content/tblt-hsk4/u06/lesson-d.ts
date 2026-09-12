@@ -25,37 +25,105 @@ export const lessonD: LessonMeta = {
         {
           // One recording per paragraph, declared on the block it belongs to, so a
           // student plays each paragraph where they read it.
+          //
+          // Each paragraph also carries the transcript of its own recording: the
+          // paragraph text with its blank filled back in from the bank (`充值`, `青年旅店`,
+          // `直接`, `复杂`, `准时`, `安检`, `售票机`, `排队`, `大屏幕`), because the recording reads
+          // the finished sentence rather than the workbook's version with a hole in it. The
+          // passage below is the exercise; this is what is said. Only ➊'s recordings have
+          // the booklet's text — the rest of this lesson's transcripts are those the page
+          // itself prints.
           kind: 'passage',
-          audio: [{ key: 'tblt-hsk4/u06/六D ➊ 1.mp3' }],
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六D ➊ 1.mp3',
+              transcript: [
+                {
+                  text:
+                    '现在好多地方的公共交通都需要先办卡，然后给里面充值。但是充得太多，钱剩下来了也挺浪费。',
+                },
+              ],
+            },
+          ],
           text:
             '现在好多地方的公共交通都需要先办卡，然后给里面（{{b1}}）。但是充得太多，钱剩下来了也挺浪费。',
         },
         {
           kind: 'passage',
-          audio: [{ key: 'tblt-hsk4/u06/六D ➊ 2.mp3' }],
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六D ➊ 2.mp3',
+              transcript: [
+                {
+                  text:
+                    '在国外旅游，与其住酒店，还是住青年旅店更好。既省钱，还能多交朋友。',
+                },
+              ],
+            },
+          ],
           text: '在国外旅游，与其住酒店，还是住（{{b2}}）更好。既省钱，还能多交朋友。',
         },
         {
           kind: 'passage',
-          audio: [{ key: 'tblt-hsk4/u06/六D ➊ 3.mp3' }],
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六D ➊ 3.mp3',
+              transcript: [
+                {
+                  text:
+                    '在伦敦，不管坐公交车还是地铁，都可以直接用信用卡碰一下支付。',
+                },
+              ],
+            },
+          ],
           text: '在伦敦，不管坐公交车还是地铁，都可以（{{b3}}）用信用卡碰一下支付。',
         },
         {
           kind: 'passage',
-          audio: [{ key: 'tblt-hsk4/u06/六D ➊ 4.mp3' }],
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六D ➊ 4.mp3',
+              transcript: [
+                {
+                  text:
+                    '我去过一次东京。那儿的地铁和电车，哎呀，太复杂了！完全不明白，一不小心就坐错。不过，日本的列车确实很准时，而且不需要安检，可以直接上车。',
+                },
+              ],
+            },
+          ],
           text:
             '我去过一次东京。那儿的地铁和电车，哎呀，太（{{b4}}）了！完全不明白，一不小心就坐错。' +
             '不过，日本的列车确实很（{{b5}}），而且不需要（{{b6}}），可以直接上车。',
         },
         {
           kind: 'passage',
-          audio: [{ key: 'tblt-hsk4/u06/六D ➊ 5.mp3' }],
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六D ➊ 5.mp3',
+              transcript: [
+                {
+                  text:
+                    '本来想用售票机买票，但是发现只能用身份证，不能用护照，所以还是得去人工窗口排队。真麻烦啊。',
+                },
+              ],
+            },
+          ],
           text:
             '本来想用（{{b7}}）买票，但是发现只能用身份证，不能用护照，所以还是得去人工窗口（{{b8}}）。真麻烦啊。',
         },
         {
           kind: 'passage',
-          audio: [{ key: 'tblt-hsk4/u06/六D ➊ 6.mp3' }],
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六D ➊ 6.mp3',
+              transcript: [
+                {
+                  text:
+                    '在日本，坐电车之前一定要先看好车站的大屏幕，看清楚出发的时间、方向、和站台号码。',
+                },
+              ],
+            },
+          ],
           text: '在日本，坐电车之前一定要先看好车站的（{{b9}}），看清楚出发的时间、方向、和站台号码。',
         },
       ],
@@ -99,7 +167,41 @@ export const lessonD: LessonMeta = {
       sourcePage: 17,
       instructions:
         '听一段介绍温哥华的公共交通的成段表达录音，然后按照录音中说明的顺序，在（　）中填入数字1～5。接着根据录音的内容在［　］里填入A～E中最合适的描述。',
-      audio: [{ key: 'tblt-hsk4/u06/六D ➋.mp3' }],
+      audio: [
+        {
+          key: 'tblt-hsk4/u06/六D ➋.mp3',
+          transcript: [
+            {
+              text:
+                '你酒店在哪儿？……哦，那容易。下了飞机以后直接上Canada Line，也就是温哥华的……' +
+                '可以说是"地铁"吧。然后你一直坐到头，在最后一站，就是Waterfront站下车。' +
+                'Gastown就在车站旁边。温哥华的"地铁"叫SkyTrain，一共就三条线：一条蓝的Expo Line，' +
+                '一条黄的Millenium Line，还有一条浅蓝色的Canada Line。' +
+                '反正你走之前用地图APP查下路线，跟着走就行了。',
+            },
+            {
+              text:
+                '然后就是票。你可以办个Compass卡，然后给里面充值。Compass卡的话，' +
+                'SkyTrain站的售票机就可以买。现金、刷卡都可以。充值的时候也用售票机充，' +
+                '也可以随时在网上充。或者不用Compass卡，你进站的时候可以直接用你信用卡碰一下就可以。' +
+                '不过就是，直接用信用卡的话会贵那么一点。',
+            },
+            {
+              text:
+                '有的站比较复杂，有好几个站台。你在站台等车的时候要仔细看屏幕，' +
+                '确定车走的方向跟你地图APP说的一样，不要坐错了。车的话，基本上每几分钟来一班，' +
+                '特别方便。最后一班车大概是凌晨1点左右。',
+            },
+            {
+              text:
+                '嗯，我想想还有什么要告诉你的……哦对了，SkyTrain是按照区域收费的。' +
+                '整个温哥华分成三个区。如果你只在一个区域坐车，就比较便宜；' +
+                '如果要经过好几个区域就会比较贵。不过，晚上6点半以后，还有周末，' +
+                '去哪儿都算一个区域，所以晚上和周末会比较便宜。',
+            },
+          ],
+        },
+      ],
       body: [
         {
           kind: 'dataTable',
@@ -152,7 +254,9 @@ export const lessonD: LessonMeta = {
       type: 'listening',
       sourcePage: 18,
       instructions: '再听一遍 ➋ 的录音，然后在（　）中填入适当的词语。',
-      // Replays ➋'s recording, the same way C ➍ replays C ➌'s.
+      // Replays ➋'s recording, the same way C ➍ replays C ➌'s — and like there, the
+      // transcript stays declared on the recording's first use rather than being
+      // repeated: one recording has one transcript, and the book indexes it by key.
       audio: [{ key: 'tblt-hsk4/u06/六D ➋.mp3' }],
       body: [
         {
@@ -204,6 +308,9 @@ export const lessonD: LessonMeta = {
       body: [
         {
           // Shadowing: the transcript and nothing to answer, so there are no blanks.
+          // This text is also ➋'s transcript — the booklet prints it here, on the page
+          // that reads along with the recording, which is why ➋'s audio row carries the
+          // same four paragraphs.
           kind: 'passage',
           text:
             '你酒店在哪儿？……哦，那容易。下了飞机以后直接上Canada Line，也就是温哥华的……' +
@@ -231,6 +338,10 @@ export const lessonD: LessonMeta = {
       type: 'writing',
       sourcePage: 19,
       instructions: '讲话的人主要都说了些什么？按照下面列出的话题，把讲话内容写成笔记。',
+      // No transcript: 六D ➍.mp3 is a second recording of the same talk (this task asks
+      // for the same five topics), and the page prints the text of ➋'s version only. A
+      // transcript nobody can check against a source would be a guess, so this recording
+      // offers none rather than ➋'s text under ➍'s audio.
       audio: [{ key: 'tblt-hsk4/u06/六D ➍.mp3' }],
       body: [
         {
