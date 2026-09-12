@@ -30,6 +30,14 @@ interface TaskAudioValue {
   activeKey: string | null;
   /** 0–1 for the active track. */
   progress: number;
+  /** Position and length in seconds, for the scrub control. 0 until metadata loads. */
+  currentTime: number;
+  duration: number;
+  /** Jump to an absolute position, or nudge by a delta, on the active track. */
+  seekTo: (seconds: number) => void;
+  seekBy: (delta: number) => void;
+  /** Restart the active track from the beginning. */
+  replay: () => void;
   /** Keys whose load failed, so their control can show as unavailable. */
   failed: Set<string>;
   /** Play this track, or pause it if it is already playing. */
@@ -55,6 +63,8 @@ export function TaskAudioProvider({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [failed, setFailed] = useState<Set<string>>(new Set());
 
   const urls = useMemo(() => {
@@ -86,6 +96,8 @@ export function TaskAudioProvider({
       el.src = url;
       el.currentTime = 0;
       setProgress(0);
+      setCurrentTime(0);
+      setDuration(0);
     }
     // A rejected play() (autoplay policy, missing file) must not break the task.
     void el.play().catch((err) => {
@@ -99,11 +111,45 @@ export function TaskAudioProvider({
     setActiveKey((current) => (current === key ? null : key));
   }, []);
 
+  // Seeking is the control listening tasks live by: the workbook's own instructions
+  // say 再听一遍, and a student who mishears one word should not have to sit through the
+  // whole recording again.
+  const seekTo = useCallback((seconds: number) => {
+    const el = audioRef.current;
+    if (!el) return;
+    const max = Number.isFinite(el.duration) ? el.duration : 0;
+    el.currentTime = Math.max(0, Math.min(max, seconds));
+    setCurrentTime(el.currentTime);
+    setProgress(max ? el.currentTime / max : 0);
+  }, []);
+
+  const seekBy = useCallback(
+    (delta: number) => {
+      const el = audioRef.current;
+      if (!el) return;
+      seekTo(el.currentTime + delta);
+    },
+    [seekTo],
+  );
+
+  const replay = useCallback(() => seekTo(0), [seekTo]);
+
   const labelFor = useCallback((track: AudioTrack) => track.label ?? '', []);
 
   const value = useMemo<TaskAudioValue>(
-    () => ({ activeKey, progress, failed, toggle, labelFor }),
-    [activeKey, progress, failed, toggle, labelFor],
+    () => ({
+      activeKey,
+      progress,
+      currentTime,
+      duration,
+      seekTo,
+      seekBy,
+      replay,
+      failed,
+      toggle,
+      labelFor,
+    }),
+    [activeKey, progress, currentTime, duration, seekTo, seekBy, replay, failed, toggle, labelFor],
   );
 
   return (
@@ -113,6 +159,11 @@ export function TaskAudioProvider({
         onTimeUpdate={(e) => {
           const el = e.currentTarget;
           setProgress(el.duration ? el.currentTime / el.duration : 0);
+          setCurrentTime(el.currentTime);
+        }}
+        onLoadedMetadata={(e) => {
+          const el = e.currentTarget;
+          setDuration(Number.isFinite(el.duration) ? el.duration : 0);
         }}
         onEnded={() => setActiveKey(null)}
         onError={() => {

@@ -771,7 +771,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TextbookToc` | Docs-style collapsible TOC of units → lessons → tasks; current lesson expanded |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time |
-| `AudioPlayer` | The task-level audio row: play/pause, per-track selection, progress display. **No scrub and no replay** — see [Known Gaps](#known-gaps-against-this-spec) |
+| `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
 | `InlineTrackButton` | The compact play/pause control an item renders beside itself. Renders nothing when the item has no recording, so a widget can place it unconditionally |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
@@ -1053,21 +1053,13 @@ shows a letter chip rather than the illustration itself, where the booklet print
 picture in the gap. The component inventory marks it **not built**, and it is
 deliberately absent from the stimulus kinds table, which lists only kinds that exist.
 
-**5. `AudioPlayer` has no scrub and no replay.**
-
-Shipped: play/pause, per-track selection and a progress bar that displays position but
-cannot be dragged. There is no seek control and no replay button — only switching track
-resets position to 0. For listening tasks (A ➋, B, C ➊, E) replay is the most-used
-control in the workbook's own instructions ("再听一遍"), so this is a usability gap
-rather than a nicety.
-
-**6. There is no progress store.**
+**5. There is no progress store.**
 
 Listed under shared logic. `TaskResponseStore` persists per-task responses and attempts,
 but nothing aggregates completion across tasks, so neither the picker nor the TOC shows
 any indication of what has been attempted or completed.
 
-**7. A failed stimulus has no inline retry.**
+**6. A failed stimulus has no inline retry.**
 
 The Error state specifies that a broken asset "must never block the exercise", and it
 does not — pictures degrade to a labelled placeholder, and a mock app that fails to
@@ -1081,7 +1073,7 @@ retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failur
 already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
 `failed` state).
 
-**8. D ➐ asks the student to record audio, and the app cannot.**
+**7. D ➐ asks the student to record audio, and the app cannot.**
 
 The task is authored as its instruction, the draft from ➏ rendered by `RecallCard`, and
 a self-check box for what the student wants to improve. The recording itself is out of

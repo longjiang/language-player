@@ -42,7 +42,7 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
             label={rows[0]!.label ?? t('action.speak')}
             onClick={() => audio.toggle(rows[0]!.key)}
           />
-          <ProgressBar value={audio.activeKey === rows[0]!.key ? audio.progress : 0} />
+          <Transport />
         </div>
       ) : (
         <>
@@ -66,7 +66,7 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
               </button>
             ))}
           </div>
-          <ProgressBar value={audio.activeKey !== null ? audio.progress : 0} />
+          <Transport />
         </>
       )}
 
@@ -106,13 +106,53 @@ export function PlayButton({
   );
 }
 
-function ProgressBar({ value }: { value: number }) {
+/**
+ * Scrub bar, elapsed time and replay for whichever track is playing.
+ *
+ * An `<input type="range">` rather than a styled div: it gives keyboard seeking,
+ * the platform's own touch behaviour, and a screen-reader value for free. Disabled
+ * until a track is active, since there is nothing to seek.
+ */
+function Transport() {
+  const t = useT();
+  const audio = useTaskAudio();
+  const active = audio?.activeKey != null;
+  const duration = audio?.duration ?? 0;
+
   return (
-    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-      <div
-        className="h-full rounded-full bg-primary transition-[width] duration-150"
-        style={{ width: `${Math.min(100, Math.max(0, value * 100))}%` }}
+    <div className="flex flex-1 items-center gap-2">
+      <input
+        type="range"
+        min={0}
+        max={duration || 0}
+        step={0.1}
+        value={active ? (audio?.currentTime ?? 0) : 0}
+        disabled={!active || duration === 0}
+        onChange={(e) => audio?.seekTo(Number(e.target.value))}
+        aria-label={t('a11y.click_to_seek')}
+        className="h-1.5 flex-1 accent-primary disabled:opacity-50"
       />
+      <span className="w-20 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+        {formatTime(active ? (audio?.currentTime ?? 0) : 0)} / {formatTime(duration)}
+      </span>
+      <button
+        type="button"
+        onClick={() => audio?.replay()}
+        disabled={!active}
+        aria-label={t('action.replay')}
+        title={t('action.replay')}
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-muted disabled:opacity-40"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
+          <path d="M6 2.2V0.6L2.8 3l3.2 2.4V3.8a3 3 0 1 1-3 3.4H1.8A4.2 4.2 0 1 0 6 2.2z" fill="currentColor" />
+        </svg>
+      </button>
     </div>
   );
+}
+
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0:00';
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 }
