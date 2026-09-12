@@ -214,19 +214,27 @@ export const lessonB: LessonMeta = {
       type: 'reading',
       sourcePage: 9,
       instructions:
-        '这个周末，你想从北京坐高铁去杭州玩。参照下面“铁路12306”APP 的截图，回答问题。',
+        '这个周末，你想从北京坐高铁去杭州玩。打开“铁路12306”的模拟App，完成提示的6个任务。',
       body: [
         {
           kind: 'mockApp',
           app: 'railway-12306',
           fallbackImage: 'tblt-hsk4/u06/b4-fallback.jpg',
+          // The prompts are what the app dialog's header shows, one at a time, which is
+          // why they are imperatives rather than questions: each names the thing to do
+          // in the app, and the doing is the answer. ① is the workbook's worked example
+          // — hence 例 — and its blank is `given`, so it is asked but not scored.
           goals: [
-            { id: 'fastest', blankId: 'b1', prompt: '哪次列车最快？' },
-            { id: 'cheapest', blankId: 'b2', prompt: '哪次列车最便宜？' },
-            { id: 'fuxing', blankId: 'b3', prompt: '哪些列车是“复兴号”？' },
-            { id: 'sold-out', blankId: 'b4', prompt: '哪次列车的票已经卖完了（售罄）？' },
-            { id: 'business', blankId: 'b5', prompt: '哪些列车有商务座（不包括候补）？' },
-            { id: 'sleeper', blankId: 'b6', prompt: '哪次列车有卧铺票（一等卧、二等卧、硬卧、软卧等，但不包括候补）？' },
+            { id: 'fastest', blankId: 'b1', prompt: '例：选择最快的车次。' },
+            { id: 'cheapest', blankId: 'b2', prompt: '选择最便宜的车次。' },
+            { id: 'fuxing', blankId: 'b3', prompt: '选择所有“复兴号”车次。（提示：注意“复兴号”标志）' },
+            { id: 'sold-out', blankId: 'b4', prompt: '选择票已经卖完了（售罄）的车次。' },
+            { id: 'business', blankId: 'b5', prompt: '选择所有有商务座票的车次（不包括候补）。' },
+            {
+              id: 'sleeper',
+              blankId: 'b6',
+              prompt: '选择所有现在有卧铺票的车次（一等卧、二等卧、硬卧、软卧等，不包括候补）。',
+            },
           ],
         },
       ],
