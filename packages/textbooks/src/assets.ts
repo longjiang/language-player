@@ -8,6 +8,22 @@
  */
 
 /**
+ * Where textbook media is published.
+ *
+ * One definition, in one place, because the two apps previously drifted: web
+ * defaulted to a local path nothing served and mobile pointed at
+ * `/data/textbook` rather than the folder that actually exists. Each app still
+ * exports its own `ASSET_BASE_URL` (ADR-0043) and reads its own env override —
+ * but neither re-types this URL.
+ *
+ * This directory is the shared host's `data/` root; its siblings are served at
+ * `data/char-stroke-svgs/` and `data/word-images/`
+ * (`zerotohero-nuxt/lib/utils/servers.js:38-39`).
+ */
+export const DEFAULT_TEXTBOOK_ASSET_BASE_URL =
+  'https://server.chinesezerotohero.com/data/interactive-textbook';
+
+/**
  * Join an asset key onto a base URL.
  *
  * - An already-absolute key (`https://…`, `data:…`) is returned untouched, so

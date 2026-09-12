@@ -90,7 +90,12 @@ export type {
   TaskStoreOptions,
 } from './store';
 
-export { assetKeySet, createAssetResolver, resolveAssetKey } from './assets';
+export {
+  assetKeySet,
+  createAssetResolver,
+  DEFAULT_TEXTBOOK_ASSET_BASE_URL,
+  resolveAssetKey,
+} from './assets';
 export type { AssetManifest, AssetResolver } from './assets';
 
 export {
