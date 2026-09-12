@@ -7,6 +7,7 @@ import { TextbookTaskProvider } from './task-provider';
 import { TaskAudioProvider } from './task-audio';
 import { TranscriptDialogProvider } from './transcript-dialog';
 import { InlineTrackButton } from './inline-track-button';
+import { NumberedBlanks } from './numbered-blanks';
 
 /**
  * The transcript button and its dialog (SPEC-095 §Transcript).
@@ -165,5 +166,52 @@ describe('a task that replays another task’s recording', () => {
     await renderTask(t, book, <InlineTrackButton tracks={passage.audio} />);
     await openTranscript();
     expect(document.querySelector('[role="dialog"]')!.textContent).toContain('卢沟桥');
+  });
+});
+
+/**
+ * The layout the control imposes on its widgets: play and transcript read as ONE control,
+ * and an item prints its number before it. Both are the kind of thing a later refactor
+ * undoes silently, and both are cheap to state.
+ */
+describe('the control’s shape', () => {
+  it('prints an item’s number before its control, then the blank', async () => {
+    const { book, task: t } = await task('tblt-hsk4.u06.A.t2');
+    // The blank widget is not what is under test here — its own position in the row is.
+    vi.doMock('./blank-field', () => ({
+      BlankField: ({ blank }: { blank: { id: string } }) => <span data-blank={blank.id} />,
+    }));
+    await renderTask(t, book, <NumberedBlanks ids={['b1', 'b2']} />);
+
+    const row = document.querySelector('ol li')!;
+    const order = [...row.children].map((child) =>
+      child.tagName === 'SPAN' && child.textContent?.includes('①')
+        ? 'number'
+        : child.querySelector('button')
+          ? 'control'
+          : 'blank',
+    );
+    expect(order).toEqual(['number', 'control', 'blank']);
+  });
+
+  it('puts play and transcript in one pill rather than two loose buttons', async () => {
+    const { book, task: t } = await task('tblt-hsk4.u06.A.t2');
+    await renderTask(t, book, <InlineTrackButton tracks={t.blanks!.b2!.audio} />);
+
+    const transcript = transcriptButton()!;
+    const play = document.querySelector('button[aria-pressed]')!;
+    const pill = play.parentElement!;
+
+    expect(pill).toBe(transcript.parentElement);
+    expect(pill.className).toContain('rounded-full');
+    expect(pill.className).toContain('border');
+    expect(pill.className).toContain('divide-x');
+  });
+
+  it('gives a recording with no transcript a one-segment pill, not a gap', async () => {
+    const { book, task: t } = await task('tblt-hsk4.u06.E.t1');
+    await renderTask(t, book, <InlineTrackButton tracks={t.blanks!.b1!.audio} />);
+    const play = document.querySelector('button[aria-pressed]')!;
+    expect(play.parentElement!.querySelectorAll('button')).toHaveLength(1);
   });
 });

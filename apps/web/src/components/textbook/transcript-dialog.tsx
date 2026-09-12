@@ -1,8 +1,7 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { FileText } from 'lucide-react';
-import { transcriptsIn, type AudioTrack, type TranscriptLine } from '@langplayer/textbooks';
+import { transcriptsIn, type TranscriptLine } from '@langplayer/textbooks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
@@ -60,36 +59,6 @@ export function useTaskTranscripts(): Map<string, TranscriptLine[]> {
   const ctx = useTextbookTask();
   const book = ctx?.book;
   return useMemo(() => (book ? transcriptsIn(book) : new Map<string, TranscriptLine[]>()), [book]);
-}
-
-/**
- * The play control's transcript button.
- *
- * Renders nothing when the recording has no transcript — E ➊/➋ are dictation, where the
- * recording says the answer, and one D recording has no printed text — so a widget can
- * place it unconditionally beside its play control.
- */
-export function TranscriptButton({ track, className }: { track: AudioTrack; className?: string }) {
-  const t = useT();
-  const dialog = useTranscriptDialog();
-  const transcripts = useTaskTranscripts();
-
-  if (!dialog || !transcripts.has(track.key)) return null;
-
-  return (
-    <button
-      type="button"
-      onClick={() => dialog.open(track.key)}
-      aria-label={t('title.transcript')}
-      title={t('title.transcript')}
-      className={
-        className ??
-        'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
-      }
-    >
-      <FileText size={13} aria-hidden />
-    </button>
-  );
 }
 
 export function TranscriptDialogProvider({ children }: { children: React.ReactNode }) {
