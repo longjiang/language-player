@@ -6,6 +6,7 @@ import {
   v2RedirectPath,
   type LanguagePair,
 } from '@/lib/classic-route-redirect';
+import { isStaticFileRequest } from '@/lib/static-file-path';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/password-reset'];
 const GUEST_NAV_LIMIT = 3;
@@ -56,15 +57,17 @@ export default function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow static assets, auth API, public API routes, and OG image
+  // Allow static files, auth API, public API routes, and OG image.
+  // `isStaticFileRequest` is what keeps a file in `public/` from being read as
+  // an `[l1]/[l2]` pair further down — see `lib/static-file-path.ts`.
   if (
+    isStaticFileRequest(pathname) ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/videos') ||
     pathname.startsWith('/api/channels') ||
     pathname.startsWith('/og') ||
-    pathname.startsWith('/favicon') ||
-    /\.(ico|png|jpg|jpeg|svg|css|js)$/.test(pathname)
+    pathname.startsWith('/favicon')
   ) {
     // Set NEXT_LOCALE so i18n works on these pages
     const l1Cookie = req.cookies.get('l1');
