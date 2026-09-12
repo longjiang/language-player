@@ -64,6 +64,8 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   );
 
   const banks = task.banks ?? [];
+  /** A mock app submits itself, from its own panel — see the controls below. */
+  const hasMockApp = (task.body ?? []).some((s) => s.kind === 'mockApp');
   const hasBlanks = Object.keys(task.blanks ?? {}).length > 0;
   // Nothing to grade: every blank is a worked example or ungraded prose.
   const hasNothingToScore = !Object.values(task.blanks ?? {}).some(
@@ -113,23 +115,30 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           <WordBank key={bank.id} bank={bank} />
         ))}
 
-      <View className="flex-row flex-wrap items-center gap-3">
-        <Pressable
-          onPress={() => ctx.store.submit()}
-          disabled={hasBlanks && !anyAnswer}
-          accessibilityRole="button"
-          className={`rounded-md bg-primary px-4 py-2 ${hasBlanks && !anyAnswer ? 'opacity-50' : ''}`}
-        >
-          <Text className="text-sm font-medium text-primary-foreground">{t('review.submit')}</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => ctx.store.reset()}
-          accessibilityRole="button"
-          className="rounded-md border border-border px-4 py-2"
-        >
-          <Text className="text-sm text-foreground">{t('action.try_again')}</Text>
-        </Pressable>
-      </View>
+      {/* A mock-app task submits from inside its own panel — one task at a time, with
+          feedback at each step, and All Done! as the resolution that grades the task and
+          records the attempt. Two submit controls for one task would be one too many, and
+          the panel's is the one that knows which task is being answered. The result banner
+          below still reports the outcome. */}
+      {!hasMockApp && (
+        <View className="flex-row flex-wrap items-center gap-3">
+          <Pressable
+            onPress={() => ctx.store.submit()}
+            disabled={hasBlanks && !anyAnswer}
+            accessibilityRole="button"
+            className={`rounded-md bg-primary px-4 py-2 ${hasBlanks && !anyAnswer ? 'opacity-50' : ''}`}
+          >
+            <Text className="text-sm font-medium text-primary-foreground">{t('review.submit')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => ctx.store.reset()}
+            accessibilityRole="button"
+            className="rounded-md border border-border px-4 py-2"
+          >
+            <Text className="text-sm text-foreground">{t('action.try_again')}</Text>
+          </Pressable>
+        </View>
+      )}
 
       {submitted && result && (
         <View
