@@ -3,6 +3,7 @@ import { assertValid, validateBook, validateTask } from './schema';
 import { tbltHsk4 } from './content/tblt-hsk4/book';
 import { TBLT_HSK4_ASSET_KEYS } from './content/tblt-hsk4/assets';
 import { allTasks } from './loaders';
+import { assetKeysIn } from './types';
 import type { Task } from './types';
 
 const base = (over: Partial<Task> = {}): Task => ({
@@ -153,19 +154,14 @@ describe('asset manifest', () => {
   });
 
   it('declares no asset that nothing references', () => {
+    // Uses the same walk as the validator, so a new declaration point cannot make
+    // the two disagree.
     const referenced = new Set<string>();
     for (const task of allTasks(tbltHsk4)) {
-      for (const track of task.audio ?? []) referenced.add(track.key);
-      for (const stimulus of task.body) {
-        if (stimulus.kind === 'pictureSet') {
-          for (const item of stimulus.items) if (item.image) referenced.add(item.image);
-        }
-        if (stimulus.kind === 'imageMap' && stimulus.image) referenced.add(stimulus.image);
-        if (stimulus.kind === 'mockApp' && stimulus.fallbackImage) {
-          referenced.add(stimulus.fallbackImage);
-        }
-      }
+      for (const ref of assetKeysIn(task)) referenced.add(ref.key);
     }
+    // The manifest lists what tasks need; files staged for tasks not yet authored
+    // are declared separately and deliberately not required to be referenced.
     const unused = TBLT_HSK4_ASSET_KEYS.filter((key) => !referenced.has(key));
     expect(unused).toEqual([]);
   });
@@ -376,73 +372,78 @@ describe('ungraded and dictation stimuli', () => {
   });
 });
 
-describe('audio track anchors', () => {
-  it('accepts an anchor naming a real blank', () => {
-    const t = base({ audio: [{ key: 'a.mp3', blankId: 'b1' }] });
-    expect(errorsOf(validateTask(t))).toEqual([]);
-  });
+describe('item audio', () => {
+  const withAudio = (over: Partial<Task>) =>
+    base({ audio: [{ key: 'tblt-hsk4/u06/row.mp3' }], ...over });
 
-  it('rejects an anchor naming a blank the task does not have', () => {
-    // A typo here is a play control that silently never renders.
-    const t = base({ audio: [{ key: 'a.mp3', blankId: 'b9' }] });
-    expect(errorsOf(validateTask(t)).join()).toContain('which this task does not have');
-  });
-
-  it('rejects two tracks anchored to the same blank', () => {
+  it('accepts a recording declared on a blank that is its own item', () => {
+    // A numbered slot (or a dictation item) is one blank, so the blank is the item.
     const t = base({
-      audio: [
-        { key: 'a.mp3', blankId: 'b1' },
-        { key: 'b.mp3', blankId: 'b1' },
-      ],
+      audio: undefined,
+      body: [{ kind: 'numberedBlanks', ids: ['b1'] }],
+      blanks: { b1: { id: 'b1', kind: 'type', answer: '新', audio: [{ key: 'a.mp3' }] } },
     });
-    expect(errorsOf(validateTask(t)).join()).toContain('ambiguous');
+    expect(errorsOf(validateTask(t, { assetKeys: ['a.mp3'] }))).toEqual([]);
   });
 
-  it('rejects an anchor on a goal blank, which the mock app owns', () => {
+  it('rejects a recording on a blank that lives in a passage', () => {
+    // The block owns the recording there; a per-blank control has nowhere to sit.
+    const t = withAudio({
+      audio: undefined,
+      blanks: { b1: { id: 'b1', kind: 'type', answer: '新', audio: [{ key: 'a.mp3' }] } },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('the block owns the recording');
+  });
+
+  it('rejects a recording on a blank inside a dialogue line', () => {
     const t = base({
-      audio: [{ key: 'a.mp3', blankId: 'b1' }],
-      body: [{ kind: 'mockApp', app: 'x', goals: [{ id: 'g', prompt: 'p', blankId: 'b1' }] }],
-      blanks: { b1: { id: 'b1', kind: 'goal', answer: 'x' } },
+      body: [{ kind: 'dialogue', lines: [{ speaker: '甲', text: '{{b1}}' }] }],
+      blanks: { b1: { id: 'b1', kind: 'type', answer: '新', audio: [{ key: 'a.mp3' }] } },
     });
-    expect(errorsOf(validateTask(t)).join()).toContain('answered inside the mock app');
+    expect(errorsOf(validateTask(t)).join()).toContain('the block owns the recording');
   });
 
-  it('rejects an anchor on a free blank, which is not a numbered item', () => {
+  it('checks a recording declared on a table row against the manifest', () => {
     const t = base({
-      audio: [{ key: 'a.mp3', blankId: 'b1' }],
-      blanks: { b1: { id: 'b1', kind: 'free', answer: '' } },
+      audio: undefined,
+      body: [{ kind: 'dataTable', columns: ['a'], rows: [{ cells: ['{{b1}}'], audio: [{ key: 'x.mp3' }] }] }],
     });
-    expect(errorsOf(validateTask(t)).join()).toContain('not a numbered item');
+    expect(errorsOf(validateTask(t, { assetKeys: ['other.mp3'] })).join()).toContain('dataTable row 1');
   });
 
-  it('leaves unanchored tracks valid, so task-level audio still works', () => {
-    const t = base({ audio: [{ key: 'a.mp3' }, { key: 'b.mp3', label: '上海' }] });
-    expect(errorsOf(validateTask(t))).toEqual([]);
+  it('checks a recording declared on an audio block against the manifest', () => {
+    const t = base({ audio: undefined, body: [{ kind: 'audio', tracks: [{ key: 'x.mp3' }] }] });
+    expect(errorsOf(validateTask(t, { assetKeys: ['other.mp3'] })).join()).toContain('audio block');
+  });
+
+  it('checks a recording declared on a passage block against the manifest', () => {
+    const t = base({
+      audio: undefined,
+      body: [{ kind: 'passage', text: '{{b1}}', audio: [{ key: 'x.mp3' }] }],
+    });
+    expect(errorsOf(validateTask(t, { assetKeys: ['other.mp3'] })).join()).toContain('passage block');
   });
 });
 
-describe('authored content anchors', () => {
-  it('every anchored track in unit 6 names a blank that exists', () => {
-    // The validator already enforces this per task; this asserts the SHIPPED content
-    // passes it, so a bad anchor cannot land without a test noticing.
-    for (const task of allTasks(tbltHsk4)) {
-      const anchors = (task.audio ?? []).filter((t) => t.blankId);
-      for (const track of anchors) {
-        expect(task.blanks?.[track.blankId!], `${task.id} -> ${track.blankId}`).toBeDefined();
-      }
-    }
+describe('authored item audio', () => {
+  it('binds the item-per-recording tasks and leaves A ➊ task-level', () => {
+    const byId = new Map(allTasks(tbltHsk4).map((t) => [t.id, t]));
+    // A ➌: five speakers, each recording on their row.
+    const a3 = byId.get('tblt-hsk4.u06.A.t3')!;
+    const table = a3.body.find((b) => b.kind === 'dataTable') as { rows: { audio?: unknown[] }[] };
+    expect(table.rows.length).toBe(5);
+    expect(table.rows.every((r) => (r.audio?.length ?? 0) === 1)).toBe(true);
+    // A ➊: nine tracks on the task, none on an item.
+    const a1 = byId.get('tblt-hsk4.u06.A.t1')!;
+    expect(a1.audio?.length).toBe(9);
+    expect(a1.body.some((b) => 'audio' in b && b.audio)).toBe(false);
   });
 
-  it('binds the item-per-track tasks and leaves A ➊ task-level', () => {
+  it('moves A ➋ and the dictation recordings onto their blanks', () => {
     const byId = new Map(allTasks(tbltHsk4).map((t) => [t.id, t]));
-    // A ➌: five speakers, each anchored to the first blank of their row.
-    const a3 = byId.get('tblt-hsk4.u06.A.t3')!;
-    expect((a3.audio ?? []).filter((t) => t.blankId).map((t) => t.blankId)).toEqual([
-      'b1', 'b3', 'b5', 'b7', 'b9',
-    ]);
-    // A ➊: nine tracks on map pins, deliberately unanchored.
-    const a1 = byId.get('tblt-hsk4.u06.A.t1')!;
-    expect((a1.audio ?? []).length).toBe(9);
-    expect((a1.audio ?? []).every((t) => !t.blankId)).toBe(true);
+    const a2 = byId.get('tblt-hsk4.u06.A.t2')!;
+    expect(a2.audio).toBeUndefined();
+    const keyed = Object.values(a2.blanks!).filter((b) => b.audio?.length);
+    expect(keyed.map((b) => b.id)).toEqual(['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7']);
   });
 });

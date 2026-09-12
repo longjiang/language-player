@@ -18,12 +18,6 @@ export const lessonC: LessonMeta = {
       type: 'listening',
       sourcePage: 13,
       instructions: '听录音，选择最合适的图片：',
-      audio: [
-        { key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3', blankId: 'b1' },
-        { key: 'tblt-hsk4/u06/六C ➊ ②.mp3', blankId: 'b2' },
-        { key: 'tblt-hsk4/u06/六C ➊ ③.mp3', blankId: 'b3' },
-        { key: 'tblt-hsk4/u06/六C ➊ ④.mp3', blankId: 'b4' },
-      ],
       body: [
         {
           kind: 'pictureSet',
@@ -46,10 +40,10 @@ export const lessonC: LessonMeta = {
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
-        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1' },
-        b3: { id: 'b3', kind: 'choose', answer: 'B', optionSet: 'ps1' },
-        b4: { id: 'b4', kind: 'choose', answer: 'D', optionSet: 'ps1' },
+        b1: { id: 'b1', kind: 'given', answer: 'A', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3' }] },
+        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ②.mp3' }] },
+        b3: { id: 'b3', kind: 'choose', answer: 'B', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ③.mp3' }] },
+        b4: { id: 'b4', kind: 'choose', answer: 'D', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➊ ④.mp3' }] },
       },
       answerKeyRaw: '② C; ③ B; ④ D。',
     },
@@ -59,12 +53,6 @@ export const lessonC: LessonMeta = {
       type: 'listening',
       sourcePage: 13,
       instructions: '听录音，选择最合适的图片：',
-      audio: [
-        { key: 'tblt-hsk4/u06/六C ➋ ①.mp3', blankId: 'b1' },
-        { key: 'tblt-hsk4/u06/六C ➋ ②.mp3', blankId: 'b2' },
-        { key: 'tblt-hsk4/u06/六C ➋ ③.mp3', blankId: 'b3' },
-        { key: 'tblt-hsk4/u06/六C ➋ ④.mp3', blankId: 'b4' },
-      ],
       body: [
         {
           kind: 'pictureSet',
@@ -79,10 +67,10 @@ export const lessonC: LessonMeta = {
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
-        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1' },
-        b3: { id: 'b3', kind: 'choose', answer: 'B', optionSet: 'ps1' },
-        b4: { id: 'b4', kind: 'choose', answer: 'D', optionSet: 'ps1' },
+        b1: { id: 'b1', kind: 'given', answer: 'A', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ①.mp3' }] },
+        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ②.mp3' }] },
+        b3: { id: 'b3', kind: 'choose', answer: 'B', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ③.mp3' }] },
+        b4: { id: 'b4', kind: 'choose', answer: 'D', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六C ➋ ④.mp3' }] },
       },
       answerKeyRaw: '② C; ③ B; ④ D。',
     },

@@ -48,8 +48,8 @@ export function DictationField({ blankId }: { blankId: string }) {
 /**
  * A dictation stimulus: numbered items, each a boxed field.
  *
- * Each item's recording is played from a control beside it — E ➊/➋ anchor one track
- * per item — so a student hears the word and types it without leaving the row.
+ * Each item's recording is played from a control beside it — E ➊/➋ declare one per
+ * item — so a student hears the word and types it without leaving the row.
  */
 export function Dictation({ ids }: { ids: string[] }) {
   const ctx = useTextbookTask();
@@ -57,7 +57,7 @@ export function Dictation({ ids }: { ids: string[] }) {
     <View className="gap-3">
       {ids.map((id) => (
         <View key={id} className="flex-row items-center gap-2">
-          <InlineTrackButton blankId={id} tracks={ctx?.task.audio} />
+          <InlineTrackButton tracks={ctx?.task.blanks?.[id]?.audio} />
           <DictationField blankId={id} />
         </View>
       ))}

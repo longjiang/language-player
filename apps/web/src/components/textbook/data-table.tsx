@@ -2,10 +2,8 @@
 
 import React from 'react';
 import type { DataTableStimulus } from '@langplayer/textbooks';
-import { blankIdsIn } from '@langplayer/utils';
 import { useLanguage } from '@/providers/language-provider';
 import { TokenizedText } from '@/components/tokenized-text';
-import { useTextbookTask } from './task-provider';
 import { InlineTrackButton } from './inline-track-button';
 
 /**
@@ -27,8 +25,6 @@ import { InlineTrackButton } from './inline-track-button';
  */
 export function DataTable({ table }: { table: DataTableStimulus }) {
   const { l2 } = useLanguage();
-  const ctx = useTextbookTask();
-  const tracks = ctx?.task.audio;
 
   return (
     <div className="overflow-x-auto">
@@ -46,9 +42,7 @@ export function DataTable({ table }: { table: DataTableStimulus }) {
           </tr>
         </thead>
         <tbody>
-          {table.rows.map((row, r) => {
-            const rowBlankIds = row.flatMap((cell) => (cell ? blankIdsIn(cell) : []));
-            return (
+          {table.rows.map((row, r) => (
             <tr key={r}>
               {table.columns.map((_, c) => (
                 <td key={c} className="border border-border px-3 py-2 align-middle text-foreground">
@@ -59,14 +53,13 @@ export function DataTable({ table }: { table: DataTableStimulus }) {
                     must take the flex path on both platforms.
                   */}
                   <span className="flex items-center gap-2">
-                    {c === 0 && <InlineTrackButton blankIds={rowBlankIds} tracks={tracks} />}
-                    {row[c] ? <TokenizedText text={row[c]!} l2Code={l2.code} /> : null}
+                    {c === 0 && <InlineTrackButton tracks={row.audio} />}
+                    {row.cells[c] ? <TokenizedText text={row.cells[c]!} l2Code={l2.code} /> : null}
                   </span>
                 </td>
               ))}
             </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
     </div>

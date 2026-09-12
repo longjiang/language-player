@@ -99,15 +99,6 @@ export const lessonA: LessonMeta = {
         '听一听在一些乘坐公共交通工具时经常听到的广播。这些广播说了什么？请选择最合适的图片。',
       // ① is pre-filled with A in the workbook, which is why the answer key
       // starts at ②.
-      audio: [
-        { key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3', blankId: 'b1' },
-        { key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3', blankId: 'b2' },
-        { key: 'tblt-hsk4/u06/六A ➋ ③ 地铁广播.mp3', blankId: 'b3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ④ 行李转盘.mp3', blankId: 'b4' },
-        { key: 'tblt-hsk4/u06/六A ➋ ⑤ 安全白线.mp3', blankId: 'b5' },
-        { key: 'tblt-hsk4/u06/六A ➋ ⑥ 请紧握扶手.mp3', blankId: 'b6' },
-        { key: 'tblt-hsk4/u06/六A ➋ ⑦ 登机口登机.mp3', blankId: 'b7' },
-      ],
       body: [
         {
           kind: 'pictureSet',
@@ -125,13 +116,13 @@ export const lessonA: LessonMeta = {
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
-        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1' },
-        b3: { id: 'b3', kind: 'choose', answer: 'D', optionSet: 'ps1' },
-        b4: { id: 'b4', kind: 'choose', answer: 'E', optionSet: 'ps1' },
-        b5: { id: 'b5', kind: 'choose', answer: 'B', optionSet: 'ps1' },
-        b6: { id: 'b6', kind: 'choose', answer: 'G', optionSet: 'ps1' },
-        b7: { id: 'b7', kind: 'choose', answer: 'F', optionSet: 'ps1' },
+        b1: { id: 'b1', kind: 'given', answer: 'A', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3' }] },
+        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3' }] },
+        b3: { id: 'b3', kind: 'choose', answer: 'D', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ③ 地铁广播.mp3' }] },
+        b4: { id: 'b4', kind: 'choose', answer: 'E', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ④ 行李转盘.mp3' }] },
+        b5: { id: 'b5', kind: 'choose', answer: 'B', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ⑤ 安全白线.mp3' }] },
+        b6: { id: 'b6', kind: 'choose', answer: 'G', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ⑥ 请紧握扶手.mp3' }] },
+        b7: { id: 'b7', kind: 'choose', answer: 'F', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ⑦ 登机口登机.mp3' }] },
       },
       answerKeyRaw: '② C; ③ D; ④ E; ⑤ B; ⑥ G; ⑦ F。',
     },
@@ -141,24 +132,17 @@ export const lessonA: LessonMeta = {
       type: 'listening',
       sourcePage: 4,
       instructions: '几个朋友介绍自己都去了哪里，怎么去的。听录音，完成下面的表格。',
-      audio: [
-        { key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷', blankId: 'b1' },
-        { key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3', label: '金敏俊', blankId: 'b3' },
-        { key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚', blankId: 'b5' },
-        { key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3', label: '陈灵', blankId: 'b7' },
-        { key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3', label: '朴书妍', blankId: 'b9' },
-      ],
       body: [
         {
           kind: 'dataTable',
           id: 't3-table',
           columns: ['', '怎么去的', '去了哪里'],
           rows: [
-            ['李婷婷', '{{b1}}', '{{b2}}'],
-            ['金敏俊', '{{b3}}', '{{b4}}'],
-            ['奥利维亚', '{{b5}}', '{{b6}}'],
-            ['陈灵', '{{b7}}', '{{b8}}'],
-            ['朴书妍', '{{b9}}', '{{b10}}'],
+            { cells: ['李婷婷', '{{b1}}', '{{b2}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3' }] },
+            { cells: ['金敏俊', '{{b3}}', '{{b4}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3' }] },
+            { cells: ['奥利维亚', '{{b5}}', '{{b6}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3' }] },
+            { cells: ['陈灵', '{{b7}}', '{{b8}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3' }] },
+            { cells: ['朴书妍', '{{b9}}', '{{b10}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3' }] },
           ],
         },
         {

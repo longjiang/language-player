@@ -18,12 +18,6 @@ export const lessonE: LessonMeta = {
       type: 'writing',
       sourcePage: 21,
       instructions: '学习以下的词汇，然后听录音，写下听到的内容。',
-      audio: [
-        { key: 'tblt-hsk4/u06/六E ➊ ①.mp3', blankId: 'b1' },
-        { key: 'tblt-hsk4/u06/六E ➊ ②.mp3', blankId: 'b2' },
-        { key: 'tblt-hsk4/u06/六E ➊ ③.mp3', blankId: 'b3' },
-        { key: 'tblt-hsk4/u06/六E ➊ ④.mp3', blankId: 'b4' },
-      ],
       body: [
         {
           kind: 'pictureSet',
@@ -42,10 +36,10 @@ export const lessonE: LessonMeta = {
         // Dictation, so `expectedLength` is the workbook's printed box count —
         // the one place it is set explicitly rather than defaulting to the
         // answer length. Punctuation is not boxed, so it is excluded.
-        b1: { id: 'b1', kind: 'type', answer: '我需要在北京转机。', expectedLength: 8 },
-        b2: { id: 'b2', kind: 'type', answer: '博物馆门票多少钱？', expectedLength: 8 },
-        b3: { id: 'b3', kind: 'type', answer: '十字路口站着一个交警。', expectedLength: 10 },
-        b4: { id: 'b4', kind: 'type', answer: '路上有加油站吗？', expectedLength: 7 },
+        b1: { id: 'b1', kind: 'type', answer: '我需要在北京转机。', expectedLength: 8, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ①.mp3' }] },
+        b2: { id: 'b2', kind: 'type', answer: '博物馆门票多少钱？', expectedLength: 8, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ②.mp3' }] },
+        b3: { id: 'b3', kind: 'type', answer: '十字路口站着一个交警。', expectedLength: 10, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ③.mp3' }] },
+        b4: { id: 'b4', kind: 'type', answer: '路上有加油站吗？', expectedLength: 7, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ④.mp3' }] },
       },
       answerKeyRaw:
         '① 我需要在北京转机。② 博物馆门票多少钱？③ 十字路口站着一个交警。④ 路上有加油站吗？',
@@ -56,11 +50,6 @@ export const lessonE: LessonMeta = {
       type: 'writing',
       sourcePage: 21,
       instructions: '学习以下的词汇，然后听录音，写下听到的内容。',
-      audio: [
-        { key: 'tblt-hsk4/u06/六E ➋ ①.mp3', blankId: 'b1' },
-        { key: 'tblt-hsk4/u06/六E ➋ ②.mp3', blankId: 'b2' },
-        { key: 'tblt-hsk4/u06/六E ➋ ③.mp3', blankId: 'b3' },
-      ],
       body: [
         {
           kind: 'pictureSet',
@@ -75,9 +64,9 @@ export const lessonE: LessonMeta = {
         { kind: 'dictation', ids: ['b1', 'b2', 'b3'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'type', answer: '这里不能停车。', expectedLength: 6 },
-        b2: { id: 'b2', kind: 'type', answer: '停车场还有车位了？', expectedLength: 8 },
-        b3: { id: 'b3', kind: 'type', answer: '现在车速多少？', expectedLength: 6 },
+        b1: { id: 'b1', kind: 'type', answer: '这里不能停车。', expectedLength: 6, audio: [{ key: 'tblt-hsk4/u06/六E ➋ ①.mp3' }] },
+        b2: { id: 'b2', kind: 'type', answer: '停车场还有车位了？', expectedLength: 8, audio: [{ key: 'tblt-hsk4/u06/六E ➋ ②.mp3' }] },
+        b3: { id: 'b3', kind: 'type', answer: '现在车速多少？', expectedLength: 6, audio: [{ key: 'tblt-hsk4/u06/六E ➋ ③.mp3' }] },
       },
       answerKeyRaw: '① 这里不能停车。② 停车场还有车位了？③ 现在车速多少？',
     },

@@ -14,9 +14,9 @@ import { InlineTrackButton } from './inline-track-button';
  * printed because it is how the workbook and the answer key both refer to the
  * question.
  *
- * When a task binds a track to a slot (`AudioTrack.blankId`), its play control is
- * rendered here, immediately before the numeral, so each item is heard where it is
- * answered rather than from a row of buttons at the top of the task.
+ * A slot that carries its own recording renders its play control here, immediately
+ * before the numeral, so each item is heard where it is answered rather than from a
+ * row of buttons at the top of the task.
  */
 export function NumberedBlanks({ ids }: { ids: string[] }) {
   const ctx = useTextbookTask();
@@ -30,7 +30,7 @@ export function NumberedBlanks({ ids }: { ids: string[] }) {
         const n = Number(id.replace(/^b/, ''));
         return (
           <li key={id} className="flex items-center gap-1.5">
-            <InlineTrackButton blankId={id} tracks={ctx?.task.audio} />
+            <InlineTrackButton tracks={blank.audio} />
             <span className="text-sm text-muted-foreground" aria-hidden>
               {indexToCircled(Number.isFinite(n) ? n : index + 1)}
             </span>

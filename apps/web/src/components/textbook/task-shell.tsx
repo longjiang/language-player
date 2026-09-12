@@ -154,8 +154,23 @@ export function TaskStimulus() {
       {ctx.task.body.map((stimulus, i) => {
         if (stimulus.kind === 'passage') {
           return (
-            <div key={i} className="text-lg leading-loose text-foreground">
-              <TokenizedText text={stimulus.text} l2Code={l2.code} />
+            <div key={i} className="flex flex-col gap-2">
+              {stimulus.audio && stimulus.audio.length > 0 && (
+                <AudioPlayer tracks={stimulus.audio} />
+              )}
+              <div className="text-lg leading-loose text-foreground">
+                <TokenizedText text={stimulus.text} l2Code={l2.code} />
+              </div>
+            </div>
+          );
+        }
+        if (stimulus.kind === 'audio') {
+          return (
+            <div key={i} className="flex flex-col gap-2">
+              {stimulus.label && (
+                <p className="text-sm font-medium text-foreground">{stimulus.label}</p>
+              )}
+              <AudioPlayer tracks={stimulus.tracks} />
             </div>
           );
         }

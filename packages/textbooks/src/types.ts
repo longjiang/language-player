@@ -92,6 +92,15 @@ export interface BlankSpec {
    */
   expectedLength?: number;
   /**
+   * The blank's own recording.
+   *
+   * A numbered slot (A ➋, C ➊/➋) and a dictation item (E ➊/➋) are each one blank, so
+   * the blank is the item and declares its recording. A blank inside a `passage` or
+   * `dialogue` must NOT carry audio — there the block owns it, and the validator
+   * rejects the combination.
+   */
+  audio?: AudioTrack[];
+  /**
    * Id of a `Bank` this blank draws options from. Required for `choose` blanks
    * answered with text.
    */
@@ -150,6 +159,20 @@ export interface DialogueStimulus {
   kind: 'dialogue';
   id?: string;
   lines: DialogueLine[];
+  /** The block's own recording, if it has one. */
+  audio?: AudioTrack[];
+}
+
+/**
+ * One table row.
+ *
+ * A row is an *item*: A ➌ puts one speaker's recording on their row, and the row's
+ * two blanks answer to it. `cells` are L2 text and may carry `{{bN}}` markers.
+ */
+export interface TableRow {
+  cells: string[];
+  /** The row's own recording, if it has one. */
+  audio?: AudioTrack[];
 }
 
 /**
@@ -162,7 +185,7 @@ export interface DataTableStimulus {
   kind: 'dataTable';
   id?: string;
   columns: string[];
-  rows: string[][];
+  rows: TableRow[];
 }
 
 /**
@@ -177,10 +200,18 @@ export interface NumberedBlanksStimulus {
   ids: string[];
 }
 
-/** A running L2 passage carrying inline `{{bN}}` blank markers. */
+/**
+ * A running L2 passage carrying inline `{{bN}}` blank markers.
+ *
+ * One passage is one *item*, which is what lets D ➊ carry a recording per
+ * paragraph: its six paragraphs are six passages, each with its own `audio`, rather
+ * than one text needing paragraph structure inside it.
+ */
 export interface PassageStimulus {
   kind: 'passage';
   text: string;
+  /** The block's own recording, if it has one. */
+  audio?: AudioTrack[];
 }
 
 /** One interactive slot on an image, positioned as a percentage of the image. */
@@ -191,6 +222,8 @@ export interface ImageMapPin {
   x: number;
   /** Vertical position, 0–100 (% of image height). */
   y: number;
+  /** The pin's own recording, if it has one. */
+  audio?: AudioTrack[];
 }
 
 /**
@@ -262,7 +295,19 @@ export interface NoteCardsStimulus {
   cards: Array<{ blankId: string; title: string }>;
 }
 
+/**
+ * Recordings placed ad-hoc in the body, for audio that belongs to neither the task
+ * nor an item. Rendered where it is declared.
+ */
+export interface AudioStimulus {
+  kind: 'audio';
+  /** Optional heading above the controls, e.g. the text a long recording covers. */
+  label?: string;
+  tracks: AudioTrack[];
+}
+
 export type Stimulus =
+  | AudioStimulus
   | PassageStimulus
   | DialogueStimulus
   | PictureSetStimulus
@@ -288,21 +333,6 @@ export interface AudioTrack {
    * an accessible name.
    */
   label?: string;
-  /**
-   * The blank this track accompanies, when it belongs to one item rather than to
-   * the task as a whole.
-   *
-   * The widget rendering that blank places the play control with its item — a
-   * table row (A ➌), a numbered slot (A ➋, C ➊/➋) or a dictation item (E ➊/➋) —
-   * so the student never has to match a track to a row by counting. A track with
-   * no `blankId` stays in the task's audio row at the top, which is right for A ➊:
-   * its nine tracks belong to map pins, where nine inline controls would crowd the
-   * map, and the recordings name their city anyway.
-   *
-   * For an item spanning several blanks, anchor to the first (A ➌ anchors each
-   * speaker's track to that row's first blank).
-   */
-  blankId?: string;
 }
 
 /** A single task (one numbered activity in a lesson). */
@@ -376,6 +406,65 @@ export interface BookMeta {
  * validator, the tokenizer warm-up and the renderers cannot disagree about which
  * fields are text.
  */
+/**
+ * Every asset key a task references, wherever it is declared.
+ *
+ * Recordings can sit on the task, on a blank, on a table row, on a block or in an
+ * `audio` block; images on a picture set, a map or a mock app's fallback. Anything
+ * that checks content against the manifest must walk all of those, so the walk
+ * lives here rather than being repeated — the validator and its test previously had
+ * separate copies and disagreed as soon as an item-level recording was added.
+ */
+export interface AssetRef {
+  key: string;
+  /** Where it was declared, so a validator message can point at the right place. */
+  where: string;
+}
+
+export function assetKeysIn(task: Task): AssetRef[] {
+  const found: AssetRef[] = [];
+  const tracks = (list: { key: string }[] | undefined, where: string) => {
+    for (const track of list ?? []) found.push({ key: track.key, where });
+  };
+
+  tracks(task.audio, 'task audio');
+  for (const [id, blank] of Object.entries(task.blanks ?? {})) {
+    tracks(blank.audio, `blank ${id}`);
+  }
+
+  for (const stimulus of task.body) {
+    switch (stimulus.kind) {
+      case 'audio':
+        tracks(stimulus.tracks, 'audio block');
+        break;
+      case 'passage':
+      case 'dialogue':
+        tracks(stimulus.audio, `${stimulus.kind} block`);
+        break;
+      case 'dataTable':
+        stimulus.rows.forEach((row, i) => tracks(row.audio, `dataTable row ${i + 1}`));
+        break;
+      case 'imageMap':
+        if (stimulus.image) found.push({ key: stimulus.image, where: 'imageMap image' });
+        stimulus.pins.forEach((pin) => tracks(pin.audio, `imageMap pin ${pin.blankId}`));
+        break;
+      case 'pictureSet':
+        for (const item of stimulus.items) {
+          if (item.image) found.push({ key: item.image, where: `pictureSet ${item.letter}` });
+        }
+        break;
+      case 'mockApp':
+        if (stimulus.fallbackImage) {
+          found.push({ key: stimulus.fallbackImage, where: 'mockApp fallback' });
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  return found;
+}
+
 export function textsIn(task: Task): string[] {
   const out: string[] = [];
   if (task.instructions) out.push(task.instructions);
@@ -389,7 +478,7 @@ export function textsIn(task: Task): string[] {
         break;
       case 'dataTable':
         out.push(...stimulus.columns);
-        for (const row of stimulus.rows) out.push(...row);
+        for (const row of stimulus.rows) out.push(...row.cells);
         break;
       case 'pictureSet':
         for (const item of stimulus.items) if (item.label) out.push(item.label);
