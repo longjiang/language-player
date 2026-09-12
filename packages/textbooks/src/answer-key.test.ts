@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answersForKeyIndex, circledToIndex, indexToCircled, parseAnswerKey } from './answer-key';
+import { answersForKeyIndex, answersForKeyLabel, circledToIndex, indexToCircled, parseAnswerKey, parseGroupedAnswerKey } from './answer-key';
 
 describe('circled numerals', () => {
   it('maps a numeral to its 1-based index', () => {
@@ -127,5 +127,29 @@ describe('illustration-slot keys (B ➎)', () => {
   it('leaves other key forms untouched', () => {
     expect(parseAnswerKey('② 新；③ 免费Wi-Fi；④ 充电口。').map((i) => i.index)).toEqual([2, 3, 4]);
     expect(parseAnswerKey('2. 金敏俊: B、c; 3. 奥利维亚: D, a。').map((i) => i.index)).toEqual([2, 3]);
+  });
+});
+
+describe('grouped keys (A ➍)', () => {
+  const RAW =
+    '(2) ① 不管；② 还是；③ 趟；(3) ① 虽然；② 但是；③ 一般；(4) ① 趟；② 摇；③ 摇；④ 快；(5) ① 要；② 确实；③ 安心。';
+
+  it('addresses each sub-item positionally', () => {
+    // ① restarts in every group, so a flat index would collide across them.
+    const grouped = parseGroupedAnswerKey(RAW);
+    expect(grouped.get('2.1')).toEqual(['不管']);
+    expect(grouped.get('2.3')).toEqual(['趟']);
+    expect(grouped.get('4.3')).toEqual(['摇']);
+    expect(grouped.get('5.3')).toEqual(['安心']);
+  });
+
+  it('resolves a grouped label through answersForKeyLabel', () => {
+    expect(answersForKeyLabel(RAW, '3.2')).toEqual(['但是']);
+    expect(answersForKeyLabel(RAW, '4.1')).toEqual(['趟']);
+    expect(answersForKeyLabel(RAW, '9.9')).toEqual([]);
+  });
+
+  it('does not swallow the flat forms', () => {
+    expect(answersForKeyLabel('北京：C；成都：D。', '北京')).toEqual(['C']);
   });
 });

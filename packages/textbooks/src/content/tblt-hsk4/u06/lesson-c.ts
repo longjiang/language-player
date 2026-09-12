@@ -75,6 +75,35 @@ export const lessonC: LessonMeta = {
       answerKeyRaw: '② C; ③ B; ④ D。',
     },
     {
+      id: 'tblt-hsk4.u06.C.t3',
+      number: '➌',
+      type: 'listening',
+      sourcePage: 13,
+      instructions:
+        '听听一段在高铁扬州东站的一位旅客和售票窗口工作人员的对话。听的时候请注意：',
+      // The recording ➍ shows the transcript of.
+      audio: [{ key: 'tblt-hsk4/u06/六C ➌.mp3' }],
+      body: [
+        {
+          kind: 'passage',
+          text:
+            '① 乘客想买什么样的票？（{{b1}}）\n\n' +
+            '② 售票员一开始给出了什么建议？（{{b2}}）\n\n' +
+            '③ 最后乘客买了几点的票？（{{b3}}）',
+        },
+      ],
+      blanks: {
+        // Comprehension answers, not exact strings: the key prints model sentences
+        // (乘客想买今天、尽快的去上海的商务座票。) and any wording that carries the same
+        // information is right, so these are recorded and not scored.
+        b1: { id: 'b1', kind: 'free', answer: '' },
+        b2: { id: 'b2', kind: 'free', answer: '' },
+        b3: { id: 'b3', kind: 'free', answer: '' },
+      },
+      answerKeyRaw:
+        '乘客想买今天、尽快的去上海的商务座票。售票员建议买3:13的快一点的票。最后乘客买了2:56的票。',
+    },
+    {
       id: 'tblt-hsk4.u06.C.t4',
       number: '➍',
       type: 'conversation',
