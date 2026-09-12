@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useVideoPlayer } from 'expo-video';
-import { createAssetResolver, type AudioTrack } from '@langplayer/textbooks';
+import { audioTracksIn, createAssetResolver, type Task } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { log } from '@/lib/logger';
 
@@ -22,11 +22,20 @@ import { log } from '@/lib/logger';
  * new development build. `expo-audio` is the better long-term home for audio-only
  * playback; this is the path that works without a rebuild.
  *
- * ⚠️ Not verified on a device or simulator. If audio does not start, the likely cause
- * is that `expo-video` expects a mounted `VideoView` for playback; the fix is local
- * to this file (mount a zero-height `VideoView` bound to `player`).
+ * ⚠️ Not verified on a device or simulator: no screen of this feature has been
+ * rendered in a simulator, so nothing here has been heard. The earlier note that
+ * `expo-video` might need a mounted `VideoView` does not hold — the installed
+ * version activates the audio session from the player's own playing state
+ * (`VideoPlayer.onIsPlayingChanged` → `VideoManager.setAppropriateAudioSessionOrWarn`,
+ * category `.playback`), and a view is only the video surface.
  *
  * Never autoplays.
+ *
+ * It takes the **task**, not a list of tracks: a task's recordings are declared at
+ * four levels (task, blank, table row, block), and a provider handed only
+ * `task.audio[]` resolved nothing for A ➋'s seven item recordings — every inline
+ * control toggled to "playing" and stayed silent. The set is derived here from
+ * `audioTracksIn` so a control cannot offer a track the player has never heard of.
  */
 
 interface TaskAudioValue {
@@ -49,18 +58,18 @@ export function useTaskAudio(): TaskAudioValue | null {
 }
 
 export function TaskAudioProvider({
-  tracks,
+  task,
   children,
 }: {
-  tracks: AudioTrack[];
+  task: Task;
   children: React.ReactNode;
 }) {
   const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
   const urls = useMemo(() => {
     const map = new Map<string, string>();
-    for (const track of tracks) map.set(track.key, resolve(track.key));
+    for (const track of audioTracksIn(task)) map.set(track.key, resolve(track.key));
     return map;
-  }, [tracks, resolve]);
+  }, [task, resolve]);
 
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [failed, setFailed] = useState<Set<string>>(new Set());
@@ -77,6 +86,12 @@ export function TaskAudioProvider({
       player.pause();
       return;
     }
+    if (!urls.has(activeKey)) {
+      // A control playing a key the provider cannot resolve is a wiring defect, not a
+      // broken file — it used to be a silent no-op that looked like a dead button.
+      log('[LP Mobile] Textbook: no URL for track', activeKey, `(${urls.size} track(s) known)`);
+      return;
+    }
     try {
       player.play();
     } catch (err) {
@@ -84,7 +99,21 @@ export function TaskAudioProvider({
       setFailed((f) => new Set(f).add(activeKey));
       setActiveKey(null);
     }
-  }, [activeKey, player]);
+  }, [activeKey, player, urls]);
+
+  // A finished track clears the selection, exactly as web's `onEnded` does, and
+  // rewinds. Without it the control stays in its "playing" state and a second tap is
+  // a no-op — the player is sitting at the end, and an ended AVPlayer does not
+  // restart on `play()` the way an HTML `<audio>` element does, so the button looks
+  // dead again, one tap later.
+  useEffect(() => {
+    const ended = player.addListener('playToEnd', () => {
+      player.currentTime = 0;
+      setActiveKey(null);
+      setPosition({ currentTime: 0, duration: 0 });
+    });
+    return () => ended.remove();
+  }, [player]);
 
   // `expo-video`'s player reports progress through its own event emitter rather than
   // a DOM element, so position is polled while something is playing.
