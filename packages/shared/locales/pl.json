@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "Multimedia",
         "reading": "Czytanie",
-        "vocab": "Słownictwo"
+        "study": "Nauka"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "Polecane lektury",
         "sync_status": "Stan synchronizacji",
         "tags": "Tagi",
+        "tasks": "Zadania",
         "textbook_appearances": "Wystąpienia w podręczniku",
         "tokenized_result": "Wynik tokenizacji",
         "tokenizer_test": "Test tokenizacji",

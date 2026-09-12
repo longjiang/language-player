@@ -1169,7 +1169,7 @@
     "nav": {
         "media": "媒體",
         "reading": "閱讀",
-        "vocab": "詞彙"
+        "study": "學習"
     },
     "option": {
         "app_store": "App Store",
@@ -1539,6 +1539,7 @@
         "suggested_reading": "推薦閱讀",
         "sync_status": "同步狀態",
         "tags": "標籤",
+        "tasks": "任務",
         "tokenized_result": "分詞結果",
         "transcript": "逐字稿",
         "trial": "試用",

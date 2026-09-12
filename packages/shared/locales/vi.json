@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "Media",
         "reading": "Đọc",
-        "vocab": "Từ vựng"
+        "study": "Học tập"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "Gợi ý đọc",
         "sync_status": "Trạng thái đồng bộ",
         "tags": "Thẻ",
+        "tasks": "Bài tập",
         "textbook_appearances": "Xuất hiện trong sách giáo khoa",
         "tokenized_result": "Kết quả phân tách từ",
         "tokenizer_test": "Kiểm tra Tokenizer",

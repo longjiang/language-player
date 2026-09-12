@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "メディア",
         "reading": "読書",
-        "vocab": "語彙"
+        "study": "学習"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "おすすめの読み物",
         "sync_status": "同期ステータス",
         "tags": "タグ",
+        "tasks": "タスク",
         "textbook_appearances": "教科書での登場",
         "tokenized_result": "トークン化結果",
         "tokenizer_test": "トークナイザーテスト",

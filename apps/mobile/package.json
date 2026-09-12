@@ -17,6 +17,7 @@
     "@langplayer/api-client": "*",
     "@langplayer/docs": "*",
     "@langplayer/shared": "*",
+    "@langplayer/textbooks": "*",
     "@langplayer/utils": "*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "^12.0.1",

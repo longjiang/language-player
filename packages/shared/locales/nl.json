@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "Media",
         "reading": "Lezen",
-        "vocab": "Woordenschat"
+        "study": "Studeren"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "Aanbevolen leesvoer",
         "sync_status": "Synchronisatiestatus",
         "tags": "Tags",
+        "tasks": "Taken",
         "textbook_appearances": "Tekstboekverschijningen",
         "tokenized_result": "Getokeniseerd resultaat",
         "tokenizer_test": "Tokenizer Test",

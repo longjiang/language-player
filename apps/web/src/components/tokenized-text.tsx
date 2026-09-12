@@ -39,9 +39,11 @@ import {
   splitPhraseTokens,
   tokenMatchesAnyForm,
   tokenMatchesAnyTerm,
-  extractNoteMarkers,
+  extractInlineMarkers,
 } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
+import { BlankField } from './textbook/blank-field';
+import { useTextbookTask } from './textbook/task-provider';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup, type TextSelectionInfo } from '@/hooks/use-selection-popup';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
@@ -252,25 +254,42 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   notes,
 }) => {
   const { l1 } = useLanguage();
-  // SPEC-093: when a notes map is supplied, strip `[n]` markers from the text
-  // so the lemmatizer never sees bracket junk. The clean text is what gets
-  // tokenized, measured, and rendered; each marker becomes an inline badge
-  // (see renderItems + render loop below).
-  const noteContext = useMemo(
-    () => (notes?.length ? extractNoteMarkers(rawText) : { cleanText: rawText, markers: [] }),
-    [rawText, notes],
+  // SPEC-093 / SPEC-095: strip inline markers from the text *before*
+  // tokenization so the lemmatizer never sees marker junk, recording each one's
+  // char offset in the clean text. Each marker then becomes an inline element
+  // at exactly that offset (see renderItems + render loop below).
+  //
+  // Notes (`[n]`, opt-in via the `notes` prop) and textbook blanks (`{{bN}}`,
+  // opt-in via a task context) are extracted in a SINGLE pass. Running the two
+  // extractors in sequence would leave the first one's offsets stale as soon as
+  // a marker of the other kind preceded it.
+  const textbook = useTextbookTask();
+  const wantBlanks = textbook !== null;
+  const inlineContext = useMemo(
+    () =>
+      extractInlineMarkers(rawText, {
+        notes: Boolean(notes?.length),
+        blanks: wantBlanks,
+      }),
+    [rawText, notes, wantBlanks],
   );
   const noteById = useMemo(
     () => new Map((notes ?? []).map((n) => [n.id, n])),
     [notes],
   );
   const noteMarkers = useMemo<SubtitleNoteMarker[]>(
-    () => noteContext.markers.map((m) => ({ id: m.id, index: m.index, note: noteById.get(m.id)?.note ?? '' })),
-    [noteContext.markers, noteById],
+    () =>
+      inlineContext.noteMarkers.map((m) => ({
+        id: m.id,
+        index: m.index,
+        note: noteById.get(m.id)?.note ?? '',
+      })),
+    [inlineContext.noteMarkers, noteById],
   );
+  const blankMarkers = inlineContext.blankMarkers;
   // All downstream logic (tokenization, offsets, sentence context, karaoke,
   // selection, format mapping) operates on the clean text.
-  const text = noteContext.cleanText;
+  const text = inlineContext.cleanText;
   const { savedWords } = useSavedWordsContext();
   // SPEC-080: tag L2 content with a glyph-safe `lang` and its matching `dir`
   // so CJK renders with the correct regional glyph variants.
@@ -540,33 +559,57 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     });
   }, [displayTokens, text, onTokenHover]);
 
-  // Interleave note badges into the render order by the char offset each
-  // marker occupies in the clean text (which is exactly what displayTokens
-  // concatenate back to). Each badge is drawn at the token boundary where its
-  // `[n]` marker was stripped from — before the token that follows it, or at
-  // the line end. Mirrors the inline-image mechanism (SPEC-087) but for notes.
+  // Interleave inline elements (note badges and textbook blanks) into the
+  // render order by the char offset each marker occupies in the clean text
+  // (which is exactly what displayTokens concatenate back to). Each element is
+  // drawn at the token boundary where its marker was stripped from — before the
+  // token that follows it, or at the line end. Mirrors the inline-image
+  // mechanism (SPEC-087).
   const renderItems = useMemo(() => {
-    if (noteMarkers.length === 0) {
+    type Item =
+      | { kind: 'token'; tokenIndex: number }
+      | { kind: 'note'; marker: SubtitleNoteMarker }
+      | { kind: 'blank'; blankId: string };
+
+    if (noteMarkers.length === 0 && blankMarkers.length === 0) {
       return displayTokens.map((_, i) => ({ kind: 'token' as const, tokenIndex: i }));
     }
-    const markers = [...noteMarkers].sort((a, b) => a.index - b.index);
-    const items: Array<{ kind: 'token'; tokenIndex: number } | { kind: 'note'; marker: SubtitleNoteMarker }> = [];
+
+    // Two independent marker streams, merged in offset order.
+    const notes = [...noteMarkers].sort((a, b) => a.index - b.index);
+    const blanks = [...blankMarkers].sort((a, b) => a.index - b.index);
+    const items: Item[] = [];
     let pos = 0;
-    let mi = 0;
-    for (let ti = 0; ti < displayTokens.length; ti++) {
-      while (mi < markers.length && markers[mi]!.index <= pos) {
-        items.push({ kind: 'note', marker: markers[mi]! });
-        mi++;
+    let ni = 0;
+    let bi = 0;
+
+    const flushUpTo = (limit: number) => {
+      for (;;) {
+        const note = notes[ni];
+        const blank = blanks[bi];
+        const noteReady = note !== undefined && note.index <= limit;
+        const blankReady = blank !== undefined && blank.index <= limit;
+        if (!noteReady && !blankReady) return;
+        // At the same offset the note wins, matching the previous behaviour
+        // where notes were the only interleaved kind.
+        if (noteReady && (!blankReady || note!.index <= blank!.index)) {
+          items.push({ kind: 'note', marker: note! });
+          ni++;
+        } else {
+          items.push({ kind: 'blank', blankId: blank!.id });
+          bi++;
+        }
       }
+    };
+
+    for (let ti = 0; ti < displayTokens.length; ti++) {
+      flushUpTo(pos);
       items.push({ kind: 'token', tokenIndex: ti });
       pos += displayTokens[ti]!.text.length;
     }
-    while (mi < markers.length) {
-      items.push({ kind: 'note', marker: markers[mi]! });
-      mi++;
-    }
+    flushUpTo(Number.POSITIVE_INFINITY);
     return items;
-  }, [displayTokens, noteMarkers]);
+  }, [displayTokens, noteMarkers, blankMarkers]);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
@@ -1017,6 +1060,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
                 }}
               />
             );
+          }
+          // ── Textbook blank (SPEC-095): render the interactive blank where its
+          // `{{bN}}` marker was stripped from the clean text. Rendered as a
+          // sibling of TokenSpan, so the words on either side stay tappable for
+          // the dictionary. ──
+          if (item.kind === 'blank') {
+            const blank = textbook?.task.blanks?.[item.blankId];
+            // A marker with no matching blank spec renders nothing rather than
+            // throwing; the content validator is what catches that case.
+            if (!blank) return null;
+            return <BlankField key={`blank-${item.blankId}`} blank={blank} />;
           }
           const i = item.tokenIndex;
           const token = displayTokens[i]!;

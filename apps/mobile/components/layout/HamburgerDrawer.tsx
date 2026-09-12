@@ -7,10 +7,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
-import {
-  Compass, Tv, Clapperboard, Upload,
-  FileText, BookMarked, RotateCcw, Globe, BookOpen, ImageIcon,
-} from 'lucide-react-native';
+import { BookMarked, BookOpen, Clapperboard, ClipboardCheck, Compass, FileText, Globe, ImageIcon, RotateCcw, Tv, Upload } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SIDEBAR_EDGE_MARGIN } from '@/components/ui/sidebar';
 
@@ -44,10 +41,11 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'Vocab',
+    label: 'Study',
     links: [
       { key: 'title.dictionary', href: '/(tabs)/(vocab)' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review' },
+      { key: 'title.tasks', href: '/(tabs)/(vocab)/tasks' },
     ],
   },
 ];
@@ -57,6 +55,7 @@ const NAV_ICONS: Record<string, React.JSX.Element> = {
   '(media)': <Compass size={16} color={ICON_COLOR} />,
   '(reading)': <FileText size={16} color={ICON_COLOR} />,
   '(vocab)': <BookMarked size={16} color={ICON_COLOR} />,
+  tasks: <ClipboardCheck size={16} color={ICON_COLOR} />,
   explore: <Compass size={16} color={ICON_COLOR} />,
   'live-tv': <Tv size={16} color={ICON_COLOR} />,
   'tv-shows': <Clapperboard size={16} color={ICON_COLOR} />,

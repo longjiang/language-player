@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "Medya",
         "reading": "Okuma",
-        "vocab": "Kelime"
+        "study": "Çalışma"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "Önerilen okuma",
         "sync_status": "Eşitleme durumu",
         "tags": "Etiketler",
+        "tasks": "Görevler",
         "textbook_appearances": "Ders Kitabı Görünümleri",
         "tokenized_result": "Tokenleştirilmiş Sonuç",
         "tokenizer_test": "Tokenizer Testi",

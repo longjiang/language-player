@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "Медиа",
         "reading": "Чтение",
-        "vocab": "Словарь"
+        "study": "Учёба"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "Рекомендуемое чтение",
         "sync_status": "Статус синхронизации",
         "tags": "Теги",
+        "tasks": "Задания",
         "textbook_appearances": "Появления в учебниках",
         "tokenized_result": "Результат токенизации",
         "tokenizer_test": "Тест токенизатора",

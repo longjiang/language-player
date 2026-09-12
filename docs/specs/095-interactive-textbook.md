@@ -215,11 +215,27 @@ This is the core technical decision of the feature.
 
 ### Decision
 
-Extend the existing `FormatRange` union with a `blank` type carrying a `blankId`, mirroring the `image` mechanism, and render it through the same `renderItems` interleave.
+Extract both marker kinds in a **single pass** (`extractInlineMarkers`) and
+render blanks through the same `renderItems` interleave as note badges.
+
+> **As built.** The original plan here was to extend the `FormatRange` union with
+> a `blank` type mirroring the inline-`image` mechanism. Implementation showed
+> that is the wrong seam: `FormatRange` exists for *styling ranges computed by
+> the markdown parser*, whereas `{{bN}}` is an inline marker whose position is
+> only known by scanning the text. The notes mechanism (strip markers, record
+> offsets, interleave) is the right shape and is what shipped.
+>
+> The one-pass detail matters: `extractNoteMarkers` and `extractBlankMarkers`
+> each compute offsets in their own cleaned text, so running them in sequence
+> leaves the first one's offsets stale as soon as a marker of the other kind
+> precedes it. `extractInlineMarkers` scans once and records each offset against
+> the output being built, so both sets are valid in the same final string.
 
 - Marker syntax `{{bN}}` is stripped from the text before tokenization, exactly as `[n]` is today. The lemmatizer only ever sees clean text.
+- Extraction is opt-in per kind: notes via the `notes` prop, blanks via a task context. Outside a textbook task, `TokenizedText` behaves exactly as before.
 - The blank renders as a **sibling of** `TokenSpan`, never inside it. Adjacent tokens therefore remain dictionary-clickable — a student stuck on a blank can tap 舒适 for its definition without losing their answers.
-- A char-offset reconstruction guard already exists: format mapping bails out (`return null`) when `Σ token.text.length !== text.length`, so formatting can never corrupt token alignment. The blank mechanism must respect the same invariant.
+- A char-offset reconstruction guard already exists: format mapping bails out (`return null`) when `Σ token.text.length !== text.length`, so formatting can never corrupt token alignment. The blank mechanism respects the same invariant.
+- On mobile the native single-attributed-string paragraph path cannot host an interactive inline widget, so a passage containing blanks is forced onto the JS flex path — the same fallback note badges already trigger — and the plain `inline` path renders blanks read-only.
 
 ### Why not a wrapper component that splits the text
 
@@ -238,6 +254,8 @@ Two consequences are mandatory for this feature:
 
 1. **Blank state must not be a prop on `TokenizedText`.** If each keystroke changed a prop, the comparator would either re-render the whole token tree (unusable) or, if the prop were omitted from the comparator, silently render stale values — a student would type and see nothing, with no error.
 2. **`renderItems` carries only a stable `blankId`.** The token tree is a pure function of the task schema, which never changes during an attempt. Each blank component subscribes to its own slice of a per-task store (`useSyncExternalStore` on web, equivalent on mobile) and re-renders alone.
+
+**As built:** no new prop was added, so `tokenizedTextPropsEqual` was not touched. The task is read through a context whose value is created once per task, which is safe precisely because it never changes identity during an attempt — a context read bypasses the comparator, so an unstable value would re-render every token tree on every keystroke.
 
 Any future prop added to `TokenizedText` for this feature **must** be added to `tokenizedTextPropsEqual`, and compared by stable reference only.
 
@@ -337,9 +355,28 @@ Both mobile surfaces need the change — they are two presentations of the same 
 
 ### Translation keys
 
-- **Group labels are currently hardcoded English** (`label: 'Vocab'`), not translation keys — the only such strings in the nav; link labels use `title.*` keys. Renaming to `Study` is therefore a literal string change, unless the label is keyed at the same time.
-- `translations.csv` already contains **three unused keys whose English value is `Vocab`** — `label.vocab`, `nav.vocab`, `title.vocab` — and none is referenced anywhere in the app. Rather than adding a fourth, rename one of them in place to `title.study` with the English value `Study`, and use it for the group label.
-- `Tasks` has **no existing key** (nothing in the CSV has that English value, and there is no near-miss `Practice`/`Exercises`/`Activities` key to reuse), so `title.tasks` is genuinely new and needs all **18 locales**.
+The group label is **not** just a display string — it is used as a translation
+key suffix:
+
+```tsx
+t(`nav.${group.label.toLowerCase()}` as any)   // header.tsx, NavBar.tsx, HamburgerDrawer.tsx
+```
+
+So renaming the group to `Study` requires a `nav.study` key to exist, or the nav
+renders an unresolved key. This is what actually had to change:
+
+- **`nav.vocab` → `nav.study`** (English value `Study`, all 18 locales), because
+  the derived lookup is `nav.<label>`. `nav.vocab` was **not** a dead key: it is
+  listed in `scripts/find-dead-keys.mjs`'s `MUST_BE_ALIVE` set for exactly this
+  reason, and that list was updated with the rename.
+- **`title.tasks` is genuinely new** — nothing in the CSV has the English value
+  `Tasks` and there is no near-miss `Practice`/`Exercises`/`Activities` key to
+  reuse — so it was added with all 18 locales.
+- Two other `Vocab` keys (`title.vocab`, `label.vocab`) remain genuinely unused;
+  they were left alone rather than folded into this change.
+
+**Do not assume a nav label change is cosmetic.** The label, the key, and the
+`MUST_BE_ALIVE` list must move together.
 
 ### Mobile route group: keep `(vocab)`
 
