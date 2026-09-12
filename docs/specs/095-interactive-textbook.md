@@ -318,7 +318,16 @@ The pattern to imitate is `packages/shared/src/sample-content/loaders.ts`, which
 
 ## Navigation and Information Architecture
 
-The feature is reached from a **new top-level `Interact` category** in the app menu, containing a **Tasks** item. `Interact` sits alongside the existing `Media`, `Reading` and `Vocab` groups (`apps/web/src/components/layout/header.tsx:25–49`).
+The feature is reached from a **new fourth top-level nav group, `Interact`**, containing a **Tasks** item.
+
+The existing top-level groups are `Media`, `Reading` and `Vocab` — three of them — so `Interact` is the **fourth**, not a fifth. (Mobile's `(me)` group is reached from the avatar menu and is not a nav group.) The group is added in the same shape as the existing three on both platforms:
+
+| Platform | Where groups are declared |
+|---|---|
+| Web | `apps/web/src/components/layout/header.tsx:25–49` |
+| Mobile | `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, MD/tablet dropdown) and `apps/mobile/components/layout/HamburgerDrawer.tsx` (phones) |
+
+Both mobile surfaces need the group — they are two presentations of the same list, and a group added to only one would be unreachable on the other form factor. Each also needs an icon entry (`sf` SF Symbol in `NavBar.tsx`, `NAV_ICONS` in both files), and the new route group must be registered as a `Stack.Screen` in `apps/mobile/app/(tabs)/_layout.tsx`, which currently lists `(media)`, `(reading)`, `(vocab)` and `(me)`.
 
 Screens:
 
@@ -354,8 +363,9 @@ apps/mobile/app/(tabs)/(interact)/tasks.tsx                       # textbook pic
 apps/mobile/app/(tabs)/(interact)/tasks/[unitId]/[lessonId]/[taskId].tsx
 ```
 
-- Register each screen in the group's `_layout.tsx` and mirror the `Interact` group in `apps/mobile/components/layout/NavBar.tsx` and `HamburgerDrawer.tsx` (the drawer groups are the analogue of the web header groups).
-- Whether `Interact` also becomes a fifth bottom tab or stays a drawer-only group is a mobile UI decision, not an architectural one — see Open Questions.
+- Register each screen in the group's `_layout.tsx`, and add `(interact)` as a `Stack.Screen` in `apps/mobile/app/(tabs)/_layout.tsx` alongside `(media)`, `(reading)`, `(vocab)` and `(me)`.
+- Add the `Interact` group to **both** `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, tablets/MD) and `HamburgerDrawer.tsx` (phones), with an `sf` symbol and a `NAV_ICONS` entry in each.
+- **Not a bottom tab.** The mobile app has no bottom tab bar: `apps/mobile/app/(tabs)/_layout.tsx` renders a `Stack` despite the directory name, and navigation is the top `Header` plus those two menus. `Interact` follows the existing pattern rather than introducing a new navigation shell.
 
 ### Initial L2 scope
 
@@ -562,12 +572,11 @@ All six questions this spec opened with were settled on 2026-09-11. Recorded her
 | Instructions language | L2, rendered as **tokenized text**; L1 translation below, gated by the per-L2 `display.translation` setting | Instructions |
 | Does textbook performance feed SRS? | **No** — a product decision, not phasing | Non-Goals, Grading |
 | Attempt recording scope | **Local only** for now; no server-side exercise table or sync | Non-Goals, ADR-0044 |
-| Multi-book catalogue | Reached from a new **`Interact` > `Tasks`** menu category; pick a textbook, then a docs-style collapsible TOC of units → lessons → tasks, side-by-side with the task | Navigation and Information Architecture |
+| Multi-book catalogue | Reached from a new **`Interact` > `Tasks`** nav group — the **fourth** top-level group after Media, Reading and Vocab, added to the existing nav on both platforms (not a bottom tab). Then a textbook picker, then a docs-style collapsible TOC of units → lessons → tasks, side-by-side with the task | Navigation and Information Architecture |
 | `expectedLength` semantics | Circled numerals are **question indices** for answer-key lookup, **not** length hints. `expectedLength` defaults to `answer.length` and is set explicitly only for dictation (E ➊/➋), where the workbook prints one box per character | Schema rules #4 |
 | Pagination | **Not needed** — long passages render as one scrolling block | Non-Goals |
 
 ## Open Questions
 
-1. **Mobile shell for `Interact`.** Whether the mobile `Interact` category becomes a fifth bottom tab or stays a drawer-only group is a UI decision, not architectural (`apps/mobile/components/layout/NavBar.tsx`, `HamburgerDrawer.tsx`).
-2. **Mock app accessibility.** ADR-0045 leaves keyboard and assistive-technology behaviour unspecified for a mock app rendered inside a frame. It will have to be specified per app rather than inherited from the host.
-3. **Second-textbook picker behaviour.** The picker is currently a single-item screen. Its shape once a second book exists (level grouping via the existing `SCALES` registry, ordering, licensing) is unaddressed.
+1. **Mock app accessibility.** ADR-0045 leaves keyboard and assistive-technology behaviour unspecified for a mock app rendered inside a frame. It will have to be specified per app rather than inherited from the host.
+2. **Second-textbook picker behaviour.** The picker is currently a single-item screen. Its shape once a second book exists (level grouping via the existing `SCALES` registry, ordering, licensing) is unaddressed.
