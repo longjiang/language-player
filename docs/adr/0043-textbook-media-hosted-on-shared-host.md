@@ -30,11 +30,23 @@ So the project already runs a working keys-and-files asset host. The decision is
 
 **Serve textbook media from the existing PHP shared host, addressed through a single `ASSET_BASE_URL` constant in each app.** No new object store or CDN is introduced.
 
-1. **One constant per app, mirroring `PYTHON_API_URL`.** Add `apps/web/src/lib/asset-url.ts` and the mobile equivalent exporting `ASSET_BASE_URL`, read from `NEXT_PUBLIC_ASSET_URL` / `EXPO_PUBLIC_ASSET_URL` with a production default of the shared host and a local-dev override. Content code never constructs a host itself.
-2. **Content stores relative keys, never URLs.** A task references `u06/B/t2.mp3`, not an absolute URL. The client resolves `key` → `ASSET_BASE_URL + key` through one shared resolver in `packages/textbooks`, which also owns any URL escaping.
-3. **Content-addressed, immutable filenames.** Media is uploaded under a name containing a content hash (e.g. `t2.<hash>.mp3`), so a file's bytes can never change under a fixed URL. That makes long-lived immutable caching safe and lets re-authored content coexist with cached clients.
-4. **Publish through a one-shot `offload`-style step, not by hand.** An authoring script uploads a unit's media to the host and writes an asset manifest the validator checks against (SPEC-095 requires that every referenced key exists).
-5. **Do not bundle textbook media into the mobile binary.** Adding each image to `apps/mobile/lib/reader-assets.ts`'s `BUNDLED_IMAGES` map (currently one entry) does not scale; mobile fetches from `ASSET_BASE_URL` and caches locally, the way EPUB and dictionary downloads already do.
+1. **One constant per app, mirroring `PYTHON_API_URL`.** Add `apps/web/src/lib/asset-url.ts` and the mobile equivalent exporting `ASSET_BASE_URL`, read from `NEXT_PUBLIC_ASSET_URL` / `EXPO_PUBLIC_ASSET_URL`. The default is the shared host **in development and production alike**:
+   `https://server.chinesezerotohero.com/data/interactive-textbook`.
+   Media lives on the server, so a local-path default would look configured while
+   silently serving nothing; the env var is the override for offline work. Content
+   code never constructs a host itself. The URL literal is defined once in
+   `packages/textbooks/src/assets.ts` and imported by both apps, because the two
+   apps drifted when each typed its own.
+2. **Media is published by uploading the folder.** Local
+   `<Dropbox>/…/zerotohero-server-data/interactive-textbook/` mirrors
+   `dh_5rvnrz@server.chinesezerotohero.com:/home/dh_5rvnrz/zerotohero-server-data/interactive-textbook`,
+   which is the host's `data/` root and therefore public at `/data/`. Keys mirror
+   the on-disk layout (`<book>/<unit>/<file>`), so `rsync` is the whole publish
+   step — no rename, no manifest-driven copy.
+3. **Content stores relative keys, never URLs.** A task references `u06/B/t2.mp3`, not an absolute URL. The client resolves `key` → `ASSET_BASE_URL + key` through one shared resolver in `packages/textbooks`, which also owns any URL escaping.
+4. **Content-addressed, immutable filenames.** Media is uploaded under a name containing a content hash (e.g. `t2.<hash>.mp3`), so a file's bytes can never change under a fixed URL. That makes long-lived immutable caching safe and lets re-authored content coexist with cached clients.
+5. **Publish through a one-shot `offload`-style step, not by hand.** An authoring script uploads a unit's media to the host and writes an asset manifest the validator checks against (SPEC-095 requires that every referenced key exists).
+6. **Do not bundle textbook media into the mobile binary.** Adding each image to `apps/mobile/lib/reader-assets.ts`'s `BUNDLED_IMAGES` map (currently one entry) does not scale; mobile fetches from `ASSET_BASE_URL` and caches locally, the way EPUB and dictionary downloads already do.
 
 Because (1) and (2) hold, migrating to a real CDN or object store later is a **one-constant change plus a re-upload** — no content edits and no client code changes.
 
