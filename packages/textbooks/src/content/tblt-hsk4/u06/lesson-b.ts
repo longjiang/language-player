@@ -107,23 +107,49 @@ export const lessonB: LessonMeta = {
       number: '➌',
       type: 'reading',
       sourcePage: 8,
-      instructions: '北京南站到杭州东站的G41（读"高四十一"）次列车，车程4小时28分。北京丰台站到杭州站的K1275（读"快一二七五"）次列车，车程21小时1分，有卧铺，适合睡觉。比较一下两次列车的不同座位，回答下面的问题。',
+      instructions: '比较一下两次列车的不同座位，回答下面的问题。',
       body: [
         {
+          // Each table is introduced by its own line, so the train it describes is named
+          // beside it rather than in one instruction covering both.
+          kind: 'passage',
+          text: '北京南站到杭州东站的G41（读“高四十一”）次列车，车程4小时28分。以下是不同座位的价格：',
+        },
+        {
           // Seat classes and their prices. The bank items below are these exact
-          // strings, so a pick can be checked against the table it came from.
+          // strings, so a pick can be checked against the table it came from, and the
+          // photographs the workbook prints above each class are the column headings:
+          // a picture per column, with the class name captioned under it.
           kind: 'dataTable',
           id: 'g41',
           columns: ['G41', '无座', '二等座', '一等座', '商务座'],
+          columnImages: [
+            '',
+            'tblt-hsk4/u06/b3-g41-wuzuo.jpg',
+            'tblt-hsk4/u06/b3-g41-erdengzuo.jpg',
+            'tblt-hsk4/u06/b3-g41-yidengzuo.jpg',
+            'tblt-hsk4/u06/b3-g41-shangwuzuo.jpg',
+          ],
           rows: [
             { cells: ['每排座位数', '—', '每排5座', '每排4座', '每排3座'] },
             { cells: ['价格', '673元', '673元', '1076元', '2354元'] },
           ],
         },
         {
+          kind: 'passage',
+          text: '北京丰台站到杭州站的K1275（读“快一二七五”）次列车，车程21小时1分，有卧铺，适合睡觉。以下是不同座位的价格：',
+        },
+        {
           kind: 'dataTable',
           id: 'k1275',
           columns: ['K1275', '无座', '硬座', '硬卧', '软卧'],
+          columnImages: [
+            '',
+            'tblt-hsk4/u06/b3-k1275-wuzuo.jpg',
+            'tblt-hsk4/u06/b3-k1275-yingzuo.jpg',
+            'tblt-hsk4/u06/b3-k1275-yingwo.jpg',
+            'tblt-hsk4/u06/b3-k1275-ruanwo.jpg',
+          ],
           rows: [{ cells: ['价格', '189.5元', '189.5元', '322.5元', '504.5元'] }],
         },
         {
@@ -152,6 +178,10 @@ export const lessonB: LessonMeta = {
         {
           id: 'g41-seats',
           items: ['无座', '二等座', '一等座', '商务座'],
+          // Answered at the blank in a dialog, not from a pool: the classes are printed in the
+          // table above, with their photographs, so a second tappable copy below the task only
+          // puts the options a screen away from the question.
+          choicesInDialog: true,
           // The workbook prints 无座（站着）; the answer is the class alone.
           optionLabels: { 无座: '（站着）' },
           // The class photographs printed above the table, so the student picks the
@@ -167,6 +197,7 @@ export const lessonB: LessonMeta = {
           id: 'k1275-seats',
           items: ['无座', '硬座', '硬卧', '软卧'],
           optionLabels: { 无座: '（站着）' },
+          choicesInDialog: true,
           optionImages: {
             无座: 'tblt-hsk4/u06/b3-k1275-wuzuo.jpg',
             硬座: 'tblt-hsk4/u06/b3-k1275-yingzuo.jpg',

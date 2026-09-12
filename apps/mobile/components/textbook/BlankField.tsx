@@ -1,12 +1,13 @@
 import React, { useCallback, useSyncExternalStore } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { indexToCircled, type BlankSpec } from '@langplayer/textbooks';
+import { bankInDialog, indexToCircled, type BlankSpec } from '@langplayer/textbooks';
 import { glyphEms } from '@langplayer/utils';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { InlineImageSlot } from './InlineImageSlot';
 import { PictureBlankCell } from './PictureBlankCell';
+import { useBlankChoice } from './BlankChoice';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -40,6 +41,11 @@ export function BlankField({
 }) {
   const ctx = useTextbookTask();
   const t = useT();
+  // A bank the content offers in the dialog (B ➌'s seat classes) is answered *at the blank*: the
+  // tap opens the options rather than arming a pool beside the task. Declared with the other
+  // hooks, since a hook cannot be called after an early return.
+  const inDialog = Boolean(blank.bank && bankInDialog(ctx!.task, blank.bank));
+  const choice = useBlankChoice();
 
   const getValue = useCallback(() => ctx!.store.getValue(blank.id), [ctx, blank.id]);
   const value = useSyncExternalStore(ctx!.store.subscribe, getValue, getValue);
@@ -122,18 +128,26 @@ export function BlankField({
   }
 
   // ── Choose from a bank ──
-  // Tapping a bank blank always SELECTS it. It never clears and never deselects: a filled
-  // blank is re-answered by picking another option (which replaces it), and a blank a stray
-  // second tap had deselected would silently swallow the next option tap. Re-tapping the same
-  // blank is therefore a no-op rather than a toggle.
-  const handleChoose = () => ctx!.selection.set(blank.id);
+  // Tapping a bank blank always SELECTS it (unless the content offers the bank in the dialog,
+  // handled below). It never clears and never deselects: a filled blank is re-answered by picking
+  // another option, and a blank a stray second tap had deselected would silently swallow the next
+  // option tap. Re-tapping the same blank is a no-op rather than a toggle.
+  const handleChoose = () => {
+    if (inDialog) {
+      choice?.open(blank.id);
+      return;
+    }
+    ctx!.selection.set(blank.id);
+  };
 
   return (
     <View className="mx-0.5 mb-0.5 flex-row items-center">
       <Pressable
         onPress={handleChoose}
         accessibilityRole="button"
-        accessibilityLabel={label}
+        // A dialog blank's name says what tapping it does; a pool blank's is the question number,
+        // which is how the workbook and the key refer to it.
+        accessibilityLabel={inDialog ? `${label} ${value || t('msg.please_select_option')}` : label}
         className={`rounded px-1.5 py-0.5 ${
           blankResult
             ? blankResult.correct

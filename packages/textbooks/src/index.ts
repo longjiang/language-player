@@ -9,7 +9,10 @@
 
 export {
   audioTracksIn,
+  bankChoiceOptions,
+  bankInDialog,
   bankIsPicked,
+  dialogBankIds,
   inlineBankIds,
   pictureSetsIn,
   recordingsIn,

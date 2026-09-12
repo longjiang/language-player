@@ -67,6 +67,20 @@ export interface Bank {
    * letter `a` for both ① and ⑤.
    */
   allowReuse?: boolean;
+  /**
+   * Offer these options **in the dialog at the blank**, instead of as a pool beside the task.
+   *
+   * B ➌ is why this exists. Its options are four seat classes, each with a photograph, and the
+   * question is asked at a blank inside a sentence ("G41的哪种座位最便宜？"). A pool at the foot
+   * of the task puts the photographs a screen away from the question — and the same photographs
+   * are already printed in the table above, so a second tappable copy adds nothing. In the
+   * dialog the student answers at the blank, from the classes the table shows, and a blank whose
+   * answer is a *set* (K1275's two sleeping berths) can be picked in one go and confirmed.
+   *
+   * A bank offered this way is **not** rendered as a pool, and its blanks are all `choose` (the
+   * validator enforces that — a typed blank cannot be picked from a dialog).
+   */
+  choicesInDialog?: boolean;
 }
 
 /**
@@ -223,6 +237,17 @@ export interface DataTableStimulus {
   kind: 'dataTable';
   id?: string;
   columns: string[];
+  /**
+   * A picture for a column, printed above its name — one asset key per entry in `columns`,
+   * with `''` where a column has none.
+   *
+   * The workbook prints B ➌'s seat photographs this way: a photograph per seat class, with the
+   * class name captioned under it, and the price rows below. The pictures are the column
+   * headings, not a row of their own, which is why they live here rather than in `rows` — and
+   * they are decoration, so they render as plain images and never as tappable options
+   * (`Bank.optionImages` is what the dialog offers).
+   */
+  columnImages?: string[];
   rows: TableRow[];
 }
 
@@ -639,6 +664,46 @@ export function inlineBankIds(task: Task): Set<string> {
     }
   }
   return ids;
+}
+
+/**
+ * Whether a bank's options are offered in the dialog at the blank rather than as a pool.
+ *
+ * A dialog bank is deliberately *not* rendered as a pool beside the task, so this is also what
+ * tells the task-level renderer to skip it — see `Bank.choicesInDialog`.
+ */
+export function bankInDialog(task: Task, bankId: string): boolean {
+  const bank = (task.banks ?? []).find((b) => b.id === bankId);
+  return Boolean(bank?.choicesInDialog);
+}
+
+/** Bank ids offered in a dialog by some blank, so the pool renderer can skip them. */
+export function dialogBankIds(task: Task): Set<string> {
+  const ids = new Set<string>();
+  for (const blank of Object.values(task.blanks ?? {})) {
+    if (blank.bank && bankInDialog(task, blank.bank)) ids.add(blank.bank);
+  }
+  return ids;
+}
+
+/**
+ * A bank's options as dialog tiles: the item is what the blank records, and its label and picture
+ * are how the student recognises it — `无座` printed as `无座（站着）` beside its photograph.
+ *
+ * The item doubles as the tile's "letter", because that is what a tile is keyed by; for a bank
+ * the item *is* the answer, unlike a `pictureSet` where the letter is a marker for a picture.
+ */
+export function bankChoiceOptions(bank: Bank): { letter: string; label: string; image?: string }[] {
+  return bank.items.map((item) => {
+    const label = bank.optionLabels?.[item] ?? '';
+    return {
+      // A tile prints the letter in bold beside its label, so an item whose label merely repeats
+      // it (二等座 and no other wording) keeps an empty label rather than printing itself twice.
+      letter: item,
+      label: label === item ? '' : label,
+      image: bank.optionImages?.[item],
+    };
+  });
 }
 
 /**

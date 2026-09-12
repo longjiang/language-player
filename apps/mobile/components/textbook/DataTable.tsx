@@ -1,6 +1,7 @@
-import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import type { DataTableStimulus } from '@langplayer/textbooks';
+import React, { useMemo } from 'react';
+import { Image, ScrollView, Text, View } from 'react-native';
+import { createAssetResolver, type DataTableStimulus } from '@langplayer/textbooks';
+import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { TokenizedText } from '@/components/TokenizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { InlineTrackButton } from './InlineTrackButton';
@@ -18,22 +19,42 @@ import { InlineTrackButton } from './InlineTrackButton';
  *
  * A row that carries `audio` renders its play control in the first cell, beside the
  * row's label — which is where the recording is heard and answered (A ➌).
+ *
+ * **Headings are tokenized too**, and may carry a picture above them (`columnImages`): a heading
+ * in this table is content — B ➌'s are the seat classes the questions ask about — so it renders
+ * through the same path as a cell, and the workbook's seat photographs are the column headings
+ * with the class captioned under each one. The pictures are plain images; the dialog at the blank
+ * is where a class is chosen.
  */
 export function DataTable({ table }: { table: DataTableStimulus }) {
   const { l2Lang } = useLanguage();
+  const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <View className="rounded-lg border border-border">
         <View className="flex-row bg-muted/40">
-          {table.columns.map((column, i) => (
-            <View
-              key={i}
-              className="min-w-[92px] flex-1 border-r border-border px-2 py-2 last:border-r-0"
-            >
-              <Text className="text-sm font-medium text-foreground">{column}</Text>
-            </View>
-          ))}
+          {table.columns.map((column, i) => {
+            const picture = table.columnImages?.[i];
+            return (
+              <View
+                key={i}
+                className="min-w-[92px] flex-1 border-r border-border px-2 py-2 last:border-r-0"
+              >
+                {picture ? (
+                  <Image
+                    source={{ uri: resolve(picture) }}
+                    resizeMode="cover"
+                    className="mb-1.5 h-24 w-full rounded"
+                    accessibilityIgnoresInvertColors
+                  />
+                ) : null}
+                {column ? (
+                  <TokenizedText text={column} l2Code={l2Lang.code} inline inlineFontSize={14} />
+                ) : null}
+              </View>
+            );
+          })}
         </View>
 
         {table.rows.map((row, r) => (

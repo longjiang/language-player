@@ -635,3 +635,44 @@ describe('typed blanks and the pool they draw from', () => {
     );
   });
 });
+
+describe('banks offered in a dialog', () => {
+  const dialogTask = (over: Partial<Task> = {}) =>
+    base({
+      body: [{ kind: 'passage', text: '比较{{b1}}。', banks: ['seats'] }],
+      blanks: { b1: { id: 'b1', kind: 'choose', answer: '无座', bank: 'seats' } },
+      banks: [{ id: 'seats', items: ['无座', '商务座'], choicesInDialog: true }],
+      ...over,
+    });
+
+  it('accepts a dialog bank whose blanks are chosen', () => {
+    expect(errorsOf(validateTask(dialogTask()))).toEqual([]);
+  });
+
+  it('rejects a typed blank drawing on a dialog bank', () => {
+    // A typed blank has nowhere to put a pick, so its options cannot live in a dialog.
+    const issues = validateTask(
+      dialogTask({ blanks: { b1: { id: 'b1', kind: 'type', answer: '无座', bank: 'seats' } } }),
+    );
+    expect(errorsOf(issues).join()).toContain('only a choose blank can be picked from one');
+  });
+});
+
+describe('column pictures', () => {
+  const table = (columnImages?: string[]) =>
+    base({
+      body: [{ kind: 'dataTable', columns: ['A', 'B'], columnImages, rows: [{ cells: ['x', 'y'] }] }],
+      blanks: {},
+    });
+
+  it('accepts one picture per column', () => {
+    const options = { assetKeys: new Set(['a/one.jpg']) };
+    expect(errorsOf(validateTask(table(['a/one.jpg', '']), options))).toEqual([]);
+  });
+
+  it('rejects a picture count that does not match the columns', () => {
+    // Positional, so a short or long array silently misplaces the pictures.
+    const issues = validateTask(table(['a/one.jpg']));
+    expect(errorsOf(issues).join()).toContain('1 column pictures for 2 columns');
+  });
+});
