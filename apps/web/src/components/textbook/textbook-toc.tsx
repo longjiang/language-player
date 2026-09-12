@@ -1,10 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
-import { taskHref, type TocTree } from '@langplayer/textbooks';
+import {
+  bookProgress,
+  taskHref,
+  type BookProgress,
+  type LessonProgress,
+  type TaskProgress,
+  type TocTree,
+} from '@langplayer/textbooks';
+import { loadPersistedTask } from './task-provider';
 
 interface TextbookTocProps {
   tree: TocTree;
@@ -23,6 +31,30 @@ interface TextbookTocProps {
  */
 export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
   const pathname = usePathname();
+  // Progress is derived from the same local state the tasks write (ADR-0044). It is
+  // recomputed when the route changes, which is when a student could next see it —
+  // this layout persists across task navigations.
+  const [progress, setProgress] = useState<BookProgress | null>(null);
+  useEffect(() => {
+    const states = new Map(
+      tree.units
+        .flatMap((u) => u.lessons.flatMap((l) => l.tasks))
+        .map((task) => [task.id, loadPersistedTask(task.id)] as const),
+    );
+    setProgress(bookProgress(tree, states));
+  }, [tree, pathname]);
+
+  const lessonProgress = useMemo(() => {
+    const map = new Map<string, LessonProgress>();
+    const tasks = new Map<string, TaskProgress>();
+    for (const unit of progress?.units ?? []) {
+      for (const lesson of unit.lessons) {
+        map.set(`${unit.unitId}/${lesson.lessonId}`, lesson);
+        for (const task of lesson.tasks) tasks.set(task.taskId, task);
+      }
+    }
+    return { lessons: map, tasks };
+  }, [progress]);
   // The active task is read from the URL so this can live in the layout, which
   // does not receive the child route's params.
   const currentTaskId = tree.units
@@ -78,6 +110,7 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
               <div className="ml-3 flex flex-col">
                 {unit.lessons.map((lesson) => {
                   const lessonOpen = isLessonOpen(unit.id, lesson.id);
+                  const lessonStat = lessonProgress.lessons.get(`${unit.id}/${lesson.id}`);
                   return (
                     <div key={lesson.id}>
                       <button
@@ -95,9 +128,14 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
                           size={14}
                           className={`shrink-0 text-muted-foreground transition-transform ${lessonOpen ? '' : '-rotate-90'}`}
                         />
-                        <span>
+                        <span className="flex-1">
                           {lesson.letter}. {lesson.title}
                         </span>
+                        {lessonStat && lessonStat.attempted > 0 && (
+                          <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                            {lessonStat.complete}/{lessonStat.total}
+                          </span>
+                        )}
                       </button>
 
                       {lessonOpen && (
@@ -120,6 +158,7 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
                                   {task.type && (
                                     <span className="text-xs opacity-70">{task.type}</span>
                                   )}
+                                  <TaskMark progress={lessonProgress.tasks.get(task.id)} />
                                 </Link>
                               </li>
                             );
@@ -135,5 +174,31 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
         );
       })}
     </nav>
+  );
+}
+
+/**
+ * A task's state in the TOC: a tick once it is fully correct, a dot once attempted,
+ * nothing otherwise. Attempted-but-not-complete is deliberately distinguishable —
+ * "I tried this" is the thing a student wants to find again.
+ */
+function TaskMark({ progress }: { progress?: TaskProgress }) {
+  if (!progress?.attempted) return null;
+  return (
+    <span
+      className="ml-auto shrink-0 text-xs"
+      title={progress.complete ? 'complete' : 'attempted'}
+      aria-label={progress.complete ? 'complete' : 'attempted'}
+    >
+      {progress.complete ? (
+        <span className="text-primary" aria-hidden>
+          ✓
+        </span>
+      ) : (
+        <span className="text-muted-foreground" aria-hidden>
+          •
+        </span>
+      )}
+    </span>
   );
 }

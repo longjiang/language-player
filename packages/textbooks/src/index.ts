@@ -116,3 +116,13 @@ export type { BookSummary, TocLesson, TocTask, TocTree, TocUnit } from './loader
 // Content (the pilot book). Exported so an authoring/publish script and the
 // tests can reach the manifest without importing a deep path.
 export { TBLT_HSK4_ASSET_KEYS } from './content/tblt-hsk4/assets';
+
+export { bookProgress, progressForId, summarizeProgress, taskProgress } from './progress';
+export type {
+  BookProgress,
+  LessonProgress,
+  ProgressSummary,
+  ProgressTree,
+  TaskProgress,
+  UnitProgress,
+} from './progress';

@@ -18,6 +18,13 @@ export interface BookSummary {
   title: string;
   /** Target language the book teaches. */
   l2: string;
+  /**
+   * How many tasks the book has.
+   *
+   * Carried here so the picker can show progress without loading a book's content —
+   * it renders before any task is opened. A test asserts it matches the book.
+   */
+  taskCount: number;
 }
 
 /**
@@ -25,7 +32,7 @@ export interface BookSummary {
  * the picker is a single-item list.
  */
 export const TEXTBOOK_CATALOGUE: BookSummary[] = [
-  { id: 'tblt-hsk4', title: 'Tasks for Life in China (HSK 4)', l2: 'zh' },
+  { id: 'tblt-hsk4', title: 'Tasks for Life in China (HSK 4)', l2: 'zh', taskCount: 25 },
 ];
 
 type BookModule = { book: BookMeta };
