@@ -525,11 +525,24 @@ Consequences to accept:
 - This costs little in practice, because a task already needs the network for its audio and images (ADR-0043). The textbook is **online-first by construction** — tokenization is not the only thing that would fail offline.
 - A task's passage is short (a few sentences), so it resolves in a single batch flush rather than a per-line storm.
 
-### Render the passage only once its tokens have arrived
+### No text surface renders before its own tokens have arrived
 
-This is a direct consequence of tokenizing at runtime and it is easy to get wrong. While `TokenizedText` is tokenizing it returns **plain text** — and that text already has the `{{bN}}` markers stripped. So rendering the passage before tokens land shows the passage with **no blanks at all**, and the blanks then pop in. It does not show placeholders.
+A passage that carries blanks must not render early. `TokenizedText`'s loading fallback is
+the text with its `{{bN}}` markers stripped, so a cloze passage would appear as running
+text with no gaps and the blanks would then pop in — the words shift under the student
+mid-sentence. So a `TokenizedText` that has blanks holds the space with a skeleton and
+renders once, complete. Text *without* blanks keeps the plain fallback, which is what the
+readers rely on while paging: there the text is complete and only the readings are
+missing.
 
-`TaskShell` therefore fetches the task's tokens and renders the passage only once they are available, showing the task skeleton until then. The transition is skeleton → complete passage, never skeleton → blankless passage → blanks.
+**This does not require a parent-owned tokenizer.** One `TaskShell` authority that
+enumerates every text in a task would have to know what each widget renders — the
+passages, the dialogue lines, every table cell, the note-card titles — so adding a widget
+with text would mean changing the shell. Each surface already decides when it is ready,
+and `enqueueLemmatize` has a shared cache keyed by `${l2Code}:${text}` with a 60 ms flush,
+so a task's texts are coalesced into one round-trip regardless of who asks. Holding each
+surface independently therefore gets the same result — no text before its tokens — without
+the coupling.
 
 ## Grading
 
@@ -591,7 +604,7 @@ with filesystem access:
 - a `mockApp` app that does not declare the id the content references;
 - a `mockApp` app missing the goals the content links to, or declaring goals no blank can grade (both directions, with a positive control on the parse);
 - a `mockApp` app loading a runtime whose major version the frame cannot speak, or a third-party library that is not on the pinned allowlist;
-- a `mockApp` app whose declared expected answers disagree with the task's answers — **written, and currently failing**: see [Known Gaps](#known-gaps-against-this-spec).
+- a `mockApp` app whose declared expected answers disagree with the task's answers — the app derives them from its own dataset with the same predicates its goals use, so an edit that changes an answer without the content following fails here. It found two real defects on its first run (see below).
 
 ## Assets
 
@@ -914,7 +927,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 ## Data Flow
 
 1. Student opens **Study → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
-2. Student picks a task → task data loads and asset URLs resolve. `TaskShell` requests tokens for the task's passages (`/lemmatize-normalized/batch`) and holds the skeleton until they arrive — **not yet built**, see [Known Gaps](#known-gaps-against-this-spec).
+2. Student picks a task → task data loads and asset URLs resolve. Each text surface requests its own tokens through the batched queue and holds a skeleton until they arrive, so a passage with blanks never renders without them.
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
@@ -923,7 +936,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## States
 
-- **Loading**: task skeleton from when the task is selected until its tokens resolve. The passage is deliberately **not** rendered before then — see "Render the passage only once its tokens have arrived" above.
+- **Loading**: each text surface holds a skeleton until its own tokens resolve. A passage with blanks is deliberately **not** rendered before then — see "No text surface renders before its own tokens have arrived" above.
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
 - **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
@@ -999,53 +1012,14 @@ These are all behavioural: the feature works, but these specific promises do not
 yet. Each is stated with its cause and the shape of the fix, so the work is scoped
 rather than merely noted.
 
-**1. `TaskShell` does not own tokenization, and does not hold until tokens arrive.**
+**1. Mobile still renders a passage with blanks before its tokens arrive.**
 
-The spec asserts parent-owned tokenization with a hold-until-ready skeleton in four
-places (the Tokenization section, the subsection titled *"Render the passage only once
-its tokens have arrived"*, Data Flow step 2, and States → Loading). Neither is
-implemented: `TaskShell` contains no tokenization call at all.
-
-Tokenization *does* happen — each `TokenizedText` self-tokenizes through
-`enqueueLemmatize` when no `tokens` prop is supplied — so this is an architecture
-mismatch with a user-visible symptom, not a missing feature. While loading,
-`TokenizedText` renders `highlightPlainText(text, formats)`, which is the text with
-its `{{bN}}` markers stripped (`tokenized-text.tsx:1012`), so **a passage briefly
-renders with no blanks and the blanks then pop in.** B ➊ is the worst case: six table
-cells tokenizing independently, each flashing on its own schedule.
-
-The fix is the one the spec describes: `TaskShell` batches the task's passages through
-`/lemmatize-normalized/batch` and withholds the skeleton until they resolve.
-
-**2. The mock app's dataset disagrees with the answer key, and one check documents it.**
-
-Four of the five mock-app file checks the spec lists are now enforced by
-`mock-app-files.test.ts`, which runs with filesystem access that `validateBook` cannot
-have: the app's HTML exists where the frame requests it, it declares the id the content
-references, it loads a runtime whose major version the frame speaks, and it declares
-exactly the goals the content links to — the last with a positive control, because the
-first version of that check matched nothing and passed.
-
-The fifth — the app's declared answers agreeing with the content's — is written and
-**currently fails**, which is the check doing its job on its first run. railway-12306's
-dataset disagrees with the printed key on two goals:
-
-- G871 is flagged 复兴号, but its row in the screenshot carries no 复兴号 tag (verified at
-  high resolution). The key lists G875, G49, D17 and D11 instead, and **D11 is missing
-  from the dataset entirely**.
-- The sleeper goal asks for sleepers that are **not** 候补. Z281 and K1275 show a 铺 badge
-  that is waitlisted, so the key counts neither, but the dataset has one `sleeper` flag
-  serving both the badge and the answer.
-
-Fixing it means re-deriving the dataset from the two screenshots with separate
-"has sleepers" (for the badge) and "sleepers available" (for the goal) flags. The test is
-marked `it.fails` so the suite stays honest rather than green-by-omission: it asserts the
-defect still exists and fails loudly if the marker is removed without fixing the data.
-
-The content side of this was wrong too, and is fixed: B ➍'s three multi-match goals
-stored one train with the rest in `accept[]`, which would have marked a student who
-picked only one of the four 复兴号 correct. They are now sets (`multiple: true`), and the
-key comparison joins the key's separate entries before comparing.
+Web holds a blank-carrying passage behind a skeleton, so the blanks never pop in there.
+Mobile does not yet: its plain fallback is deliberately pitch-matched to the tokenized
+render (a documented fix for the size and line-height jump when tokens land), and gating
+it on "has blanks" means touching a file whose memoisation is load-bearing — a token tree
+re-render there is a documented multi-second JS-thread block. The change is small but it
+belongs on a device with a profiler, not blind.
 
 ### Verified, not assumed
 
@@ -1057,8 +1031,17 @@ clean for web, mobile, textbooks and utils. The 85 keys published during the pil
 each verified returning HTTP 200 from the shared host, including percent-encoded
 workbook audio filenames.
 
-A task with nothing to grade (D ➎ ➏ ➐, E ➍) now reports *Saved* rather than `0 / 0`, so
-self-completed work is not presented as a failure.
+A task with nothing to grade (D ➎ ➏ ➐, E ➍) reports *Saved* rather than `0 / 0`, so
+self-completed work is not presented as a failure. D ➐ is completed by the student: they
+say the draft aloud themselves and write what to improve, since neither app captures
+audio.
+
+The mock-app answer check found two real defects the moment it ran, both now fixed: G871
+was flagged 复兴号 though its row carries no such tag, and D11 was missing from the
+dataset entirely. The sleeper question also needed a fact the dataset did not model — it
+asks for berths that are *not* 候补, so `sleeper` (the 铺 badge) and `sleeperAvailable`
+(what the question asks) are now separate fields; Z281 and K1275 show the badge with
+waitlisted berths and so do not answer the question.
 
 The most significant thing that has **not** been verified is anything visual — no page
 of this feature has been rendered in a browser or simulator. Types, content validation

@@ -1009,7 +1009,32 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     );
   }
 
+  // Roughly the height the passage will take, so the layout does not jump when the
+  // tokens land: a CJK line holds about 22 characters at the task's text size.
+  const skeletonLines = Math.max(1, Math.min(8, Math.ceil(text.length / 22)));
+
   if (loading) {
+    // A passage that carries blanks must not render early: the plain fallback is the
+    // text with its `{{bN}}` markers stripped, so the blanks would pop in afterwards and
+    // the words would shift under the student mid-sentence. A skeleton holds the place
+    // instead, and the passage arrives once, complete.
+    //
+    // Text without blanks keeps the plain render, which is what the readers rely on
+    // while paging — there the text is complete and only the readings are missing.
+    if (blankMarkers.length > 0) {
+      return (
+        <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`flex flex-col gap-2 ${cjkWrapClass}`}>
+          {Array.from({ length: skeletonLines }).map((_, i) => (
+            <span
+              key={i}
+              aria-hidden
+              className={`block h-4 animate-pulse rounded bg-muted ${i === skeletonLines - 1 ? 'w-2/3' : 'w-full'}`}
+            />
+          ))}
+          <span className="sr-only">{text}</span>
+        </span>
+      );
+    }
     return (
       <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${textColor ?? 'text-muted-foreground'} animate-pulse ${fontClass} ${cjkWrapClass}`} style={textStyle}>
         {highlightPlainText(text, formats)}
