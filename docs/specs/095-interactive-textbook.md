@@ -426,11 +426,18 @@ give the exercise away.
 
 ### Transcript
 
-Every audio control carries a **transcript button** beside its play button, and pressing
-it opens what that recording says — speaker-labelled lines of tokenized L2 text, with an
-L1 translation under each line when the per-L2 `display.translation` setting is on. It is
-the workbook's own Audio Transcript booklet, made reachable from the recording it belongs
-to instead of from a separate page.
+Every audio control is a **segmented pill**: play/pause on the left, and — when the
+recording has one — a transcript segment on the right that opens what it says, as
+speaker-labelled lines of tokenized L2 text, with an L1 translation under each line when
+the per-L2 `display.translation` setting is on. It is the workbook's own Audio Transcript
+booklet, made reachable from the recording it belongs to instead of from a separate page.
+
+**One recording, one control.** Play and transcript are two segments of one pill rather
+than two controls standing side by side: they act on the same recording, and in a numbered
+row (A ➋ prints `① [▶|▤] [ A ]`, with the numeral first so it reads question → how to hear
+it → answer) loose icons crowd the blanks they sit between. In the audio row each pill
+prints its track's `①` in the play segment, which is how a student matches a recording to
+the question they are answering.
 
 ```ts
 interface TranscriptLine {
@@ -926,9 +933,9 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
-| `InlineTrackButton` | The compact play/pause control an item renders beside itself, with its transcript button. Renders nothing when the item has no recording, so a widget can place it unconditionally |
+| `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. `numeral` prints the track's `①` in the play segment for the audio row, where the number is how a student matches a recording to a question; an item's own pill prints the play/pause glyph, because its number is already printed in front of it. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
+| `InlineTrackButton` | The seam a widget places for an item's own recording: `TrackControls`, or nothing at all when the item has no recording |
 | `TranscriptDialogProvider` / `useTranscriptDialog` | The task's transcript dialog and its opener. One dialog per task; a play control calls `open(key)`. Resolves transcripts through `transcriptsIn(book)`, so a task that replays another task's recording still offers its text |
-| `TranscriptButton` | The transcript control beside a play button. Renders nothing when that recording has no transcript |
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
@@ -1255,11 +1262,13 @@ it belongs to. `scripts`-free one-off derivation aside, nothing was transcribed 
 `validateBook` reports no errors over the unit — every transcript is non-empty, carries no
 blank marker, and no recording carries two different transcripts.
 
-The web dialog is covered by `transcript-dialog.test.tsx`, which asserts the transcript
-reaches the DOM through `TokenizedText` rather than as a string (a blob would pass a text
-assertion and still not be the feature), that a conversation keeps its speakers, that a
-translation arrives in **one** request for the whole transcript, and that the button is
-absent for E ➊'s dictation recordings and for 六D ➍.mp3.
+The web dialog and control are covered by `transcript-dialog.test.tsx`, which asserts the
+transcript reaches the DOM through `TokenizedText` rather than as a string (a blob would
+pass a text assertion and still not be the feature), that a conversation keeps its
+speakers, that a translation arrives in **one** request for the whole transcript, that the
+transcript segment is absent for E ➊'s dictation recordings and for 六D ➍.mp3, that play
+and transcript share the one pill rather than standing loose, and that a numbered row
+prints number → control → blank.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame and the
