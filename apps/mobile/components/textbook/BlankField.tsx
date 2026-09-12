@@ -148,7 +148,11 @@ export function BlankField({
         // A dialog blank's name says what tapping it does; a pool blank's is the question number,
         // which is how the workbook and the key refer to it.
         accessibilityLabel={inDialog ? `${label} ${value || t('msg.please_select_option')}` : label}
-        className={`rounded px-1.5 py-0.5 ${
+        // `min-h-[24px]` is not decoration: the pressable holds an empty `Text` until it is
+        // answered, and an empty text box has no height — so the whole tap target was the border
+        // under it. 24px matches the picture-cell blank, so every kind of blank is tappable over
+        // the same area.
+        className={`min-h-[24px] justify-center rounded px-1.5 py-0.5 ${
           blankResult
             ? blankResult.correct
               ? 'bg-green-500/20'
