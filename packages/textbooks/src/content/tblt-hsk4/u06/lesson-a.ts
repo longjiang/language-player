@@ -22,16 +22,56 @@ export const lessonA: LessonMeta = {
       // The nine cities the recording actually names. 拉萨 has no spoken item —
       // it is answered by elimination (and by geography: 布达拉宫 is in Lhasa),
       // which is how the workbook intends it.
+      //
+      // Each keeps the transcript the workbook's Audio Transcript booklet prints for
+      // it — one line per city, so ➒ transcripts for nine files, in city order here
+      // and in the booklet's own order there (which is not this one).
       audio: [
-        { key: 'tblt-hsk4/u06/六A ➊ 上海.mp3', label: '上海' },
-        { key: 'tblt-hsk4/u06/六A ➊ 北京.mp3', label: '北京' },
-        { key: 'tblt-hsk4/u06/六A ➊ 哈尔滨.mp3', label: '哈尔滨' },
-        { key: 'tblt-hsk4/u06/六A ➊ 成都.mp3', label: '成都' },
-        { key: 'tblt-hsk4/u06/六A ➊ 新疆.mp3', label: '吐鲁番' },
-        { key: 'tblt-hsk4/u06/六A ➊ 杭州.mp3', label: '杭州' },
-        { key: 'tblt-hsk4/u06/六A ➊ 桂林.mp3', label: '桂林' },
-        { key: 'tblt-hsk4/u06/六A ➊ 苏州.mp3', label: '苏州' },
-        { key: 'tblt-hsk4/u06/六A ➊ 西安.mp3', label: '西安' },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 上海.mp3',
+          label: '上海',
+          transcript: [{ speaker: '男', text: '不能不去上海啊。必须要跟上海电视塔一起拍一张照啊。' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 北京.mp3',
+          label: '北京',
+          transcript: [{ speaker: '女', text: '当然是北京啊！这辈子，不去一次长城，那多遗憾啊。' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 哈尔滨.mp3',
+          label: '哈尔滨',
+          transcript: [{ speaker: '女', text: '冬天你去过哈尔滨没？哈尔滨的冰雕很值得一看。' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 成都.mp3',
+          label: '成都',
+          transcript: [{ speaker: '女', text: '一定要去成都！大熊猫太可爱了。' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 新疆.mp3',
+          label: '吐鲁番',
+          transcript: [{ speaker: '男', text: '新疆特别好玩，而且新疆的吐鲁番有特别好吃的葡萄。' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 杭州.mp3',
+          label: '杭州',
+          transcript: [{ speaker: '女', text: '还没去过杭州吧？西湖的景色可美了。' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 桂林.mp3',
+          label: '桂林',
+          transcript: [{ speaker: '男', text: '来我们桂林看看吧。‘桂林山水甲天下’嘛！' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 苏州.mp3',
+          label: '苏州',
+          transcript: [{ speaker: '男', text: '推荐你去苏州。苏州的园林可是世界遗产啊！' }],
+        },
+        {
+          key: 'tblt-hsk4/u06/六A ➊ 西安.mp3',
+          label: '西安',
+          transcript: [{ speaker: '男', text: '西安是我的老家，我希望大家都能来西安看看这里的兵马俑。' }],
+        },
       ],
       body: [
         {
@@ -105,6 +145,12 @@ export const lessonA: LessonMeta = {
         '听一听在一些乘坐公共交通工具时经常听到的广播。这些广播说了什么？请选择最合适的图片。',
       // ① is pre-filled with A in the workbook, which is why the answer key
       // starts at ②.
+      //
+      // Transcripts are the booklet's, one per announcement. The speaker is where each
+      // one is heard — 车站广播, 车内广播, 地铁广播, 机场广播, 扶梯安全提示 — which is
+      // the distinction the task is about, so it belongs in the transcript rather than
+      // in the text. The booklet numbers them 1.–7.; that numbering is the item index
+      // the page already prints as ①, so it is not repeated in the text.
       body: [
         {
           kind: 'pictureSet',
@@ -122,13 +168,124 @@ export const lessonA: LessonMeta = {
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7'] },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3' }] },
-        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3' }] },
-        b3: { id: 'b3', kind: 'choose', answer: 'D', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ③ 地铁广播.mp3' }] },
-        b4: { id: 'b4', kind: 'choose', answer: 'E', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ④ 行李转盘.mp3' }] },
-        b5: { id: 'b5', kind: 'choose', answer: 'B', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ⑤ 安全白线.mp3' }] },
-        b6: { id: 'b6', kind: 'choose', answer: 'G', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ⑥ 请紧握扶手.mp3' }] },
-        b7: { id: 'b7', kind: 'choose', answer: 'F', optionSet: 'ps1', audio: [{ key: 'tblt-hsk4/u06/六A ➋ ⑦ 登机口登机.mp3' }] },
+        b1: {
+          id: 'b1',
+          kind: 'given',
+          answer: 'A',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3',
+              transcript: [
+                {
+                  speaker: '车站广播',
+                  text: '旅客们，请注意，高7007次列车开始检票。有乘坐高7007次列车的旅客，请到2B检票口。',
+                },
+              ],
+            },
+          ],
+        },
+        b2: {
+          id: 'b2',
+          kind: 'choose',
+          answer: 'C',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3',
+              transcript: [
+                {
+                  speaker: '车内广播',
+                  text:
+                    '欢迎您乘坐复兴号动车组列车。本次列车全列禁烟。请不要在车厢内和厕所内吸烟。' +
+                    '列车环境关系每一位旅客的出行体验，需要大家共同营造和维护。',
+                },
+              ],
+            },
+          ],
+        },
+        b3: {
+          id: 'b3',
+          kind: 'choose',
+          answer: 'D',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ③ 地铁广播.mp3',
+              transcript: [
+                {
+                  speaker: '地铁广播',
+                  text: '乘客们，列车马上就要进站了。本次列车终点站——康文路。请乘客们有序候车。',
+                },
+              ],
+            },
+          ],
+        },
+        b4: {
+          id: 'b4',
+          kind: 'choose',
+          answer: 'E',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ④ 行李转盘.mp3',
+              transcript: [
+                {
+                  speaker: '机场广播',
+                  text:
+                    '乘坐美国航空公司 AA127，中国南方航空公司 CZ4620 航班，从达拉斯到达本站的旅客请注意：' +
+                    '请前往第 28 号行李转盘提取行李。谢谢。',
+                },
+              ],
+            },
+          ],
+        },
+        b5: {
+          id: 'b5',
+          kind: 'choose',
+          answer: 'B',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ⑤ 安全白线.mp3',
+              transcript: [
+                { speaker: '车站广播', text: '狭长地带，请在安全白线内有序通行，注意安全。' },
+              ],
+            },
+          ],
+        },
+        b6: {
+          id: 'b6',
+          kind: 'choose',
+          answer: 'G',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ⑥ 请紧握扶手.mp3',
+              transcript: [
+                { speaker: '扶梯安全提示', text: '请紧握扶手，不要倚靠电梯，注意脚下安全。' },
+              ],
+            },
+          ],
+        },
+        b7: {
+          id: 'b7',
+          kind: 'choose',
+          answer: 'F',
+          optionSet: 'ps1',
+          audio: [
+            {
+              key: 'tblt-hsk4/u06/六A ➋ ⑦ 登机口登机.mp3',
+              transcript: [
+                {
+                  speaker: '机场广播',
+                  text:
+                    '乘坐加拿大航空公司 AC026（中国国际航空公司 CA7455）次航班前往温哥华的旅客，' +
+                    '请注意。请前往 D87 号登机口登机，谢谢。',
+                },
+              ],
+            },
+          ],
+        },
       },
       answerKeyRaw: '② C; ③ D; ④ E; ⑤ B; ⑥ G; ⑦ F。',
     },
@@ -143,12 +300,126 @@ export const lessonA: LessonMeta = {
           kind: 'dataTable',
           id: 't3-table',
           columns: ['', '怎么去的', '去了哪里'],
+          // Each row's recording carries the booklet's transcript for that speaker: a
+          // short interview, so the lines alternate between the speaker and 听者.
+          // Declared here rather than in ➍, which replays the same five files — a
+          // transcript belongs to the recording, and the book indexes it by key.
           rows: [
-            { cells: ['李婷婷', '{{b1}}', '{{b2}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3' }] },
-            { cells: ['金敏俊', '{{b3}}', '{{b4}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3' }] },
-            { cells: ['奥利维亚', '{{b5}}', '{{b6}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3' }] },
-            { cells: ['陈灵', '{{b7}}', '{{b8}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3' }] },
-            { cells: ['朴书妍', '{{b9}}', '{{b10}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3' }] },
+            {
+              cells: ['李婷婷', '{{b1}}', '{{b2}}'],
+              audio: [
+                {
+                  key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3',
+                  transcript: [
+                    {
+                      speaker: '李婷婷',
+                      text:
+                        '在北京还是共享单车比较方便，因为共享单车可以随处借，随处还，去哪儿都可以，特别自由。' +
+                        '上次我去卢沟桥就是骑自行车去的。',
+                    },
+                    { speaker: '听者', text: '骑自行车去卢沟桥啊？那不是很远？' },
+                    {
+                      speaker: '李婷婷',
+                      text: '嗯……是有点远，大概四十多分钟吧。不过坡路不多，骑着很舒服。',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              cells: ['金敏俊', '{{b3}}', '{{b4}}'],
+              audio: [
+                {
+                  key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3',
+                  transcript: [
+                    {
+                      speaker: '金敏俊',
+                      text:
+                        '我经常从我老家首尔坐飞机去日本。仁川机场每天都有好多去日本的航班。' +
+                        '不管东京还是大阪，都能直达。',
+                    },
+                    { speaker: '听者', text: '啊，日本全国都可以啊？' },
+                    {
+                      speaker: '金敏俊',
+                      text:
+                        '嗯，不管去北海道，去冲绳，还是去什么别的地方，一趟航班就能到，特别方便。' +
+                        '所以我没事就老去日本旅游。',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              cells: ['奥利维亚', '{{b5}}', '{{b6}}'],
+              audio: [
+                {
+                  key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3',
+                  transcript: [
+                    {
+                      speaker: '奥利维亚',
+                      text:
+                        '我在西安留学的时候，去哪里都骑电动车，因为便宜，而且方便。' +
+                        '记得有次我去汉阳陵，就是骑电动车去的。',
+                    },
+                    { speaker: '听者', text: '那么远啊，地铁不行吗？' },
+                    {
+                      speaker: '奥利维亚',
+                      text:
+                        '嗯……地铁也可以，但是不能直接到景点门口。' +
+                        '一般这种偏僻一点的地方我都是骑电动车去的。',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              cells: ['陈灵', '{{b7}}', '{{b8}}'],
+              audio: [
+                {
+                  key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3',
+                  transcript: [
+                    {
+                      speaker: '陈灵',
+                      text:
+                        '我是越南顺化人。去年我从老家坐大巴去了一趟河内。我是坐那种可以睡觉的大巴去的，' +
+                        '真的很舒服。',
+                    },
+                    { speaker: '听者', text: '啊？大巴上真的能睡着吗？' },
+                    {
+                      speaker: '陈灵',
+                      text:
+                        '真的可以，大巴上的床可舒服了。出发以后一路摇着摇着就睡着了。' +
+                        '第二天醒来的时候已经快到河内了，特别方便。',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              cells: ['朴书妍', '{{b9}}', '{{b10}}'],
+              audio: [
+                {
+                  key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3',
+                  transcript: [
+                    {
+                      speaker: '朴书妍',
+                      text:
+                        '我在我老家首尔去哪儿都坐出租车，出远门也是。上次我从首尔去爱宝乐园，' +
+                        '就是坐出租车去的。',
+                    },
+                    { speaker: '听者', text: '爱宝乐园？那离首尔很远吧？' },
+                    { speaker: '朴书妍', text: '嗯，差不多1个小时。' },
+                    { speaker: '听者', text: '1小时出租车，那很贵吧？' },
+                    {
+                      speaker: '朴书妍',
+                      text:
+                        '嗯，确实是贵了点。但是出租车还是方便。记得那天下大雨。' +
+                        '那样的天气，还是出租车安心。',
+                    },
+                  ],
+                },
+              ],
+            },
           ],
         },
         {
