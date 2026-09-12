@@ -18,23 +18,36 @@
  *     mount(root, data) { ... },
  *   });
  *
- * A goal is satisfied by a tap on an element it accepts. Add `all: true` for a goal
- * that asks the student to select a *set* — "选择所有复兴号车次": the goal then
- * completes only once every element its `candidates` names has been tapped, and it
- * reports those picks joined by `join` (default `、`, the separator a `multiple`
- * blank stores its picks with — see PICK_SEPARATOR in `@langplayer/textbooks`).
+ * **Selecting is the interaction.** A tap on an element selects it and another tap
+ * unselects it, which is what the host needs to grade a student who changed their mind —
+ * so the app reports the *selection*, never a verdict. Every toggle posts `selection`
+ * with the picks for the task being asked, and the host grades them against the content.
+ *
+ * Selection is **per goal**, and the host says which goal is being asked with `focus` —
+ * it owns the task list, and it is the one that knows what the student has already
+ * answered. Coming back to a task restores the picks that `focus` carries.
+ *
+ * A goal is still *satisfied* when its selection is exactly what `candidates` names, and
+ * that is what `progress` and `complete` report: a goal that names one element is met by
+ * selecting it, and a goal declaring `all: true` ("选择所有复兴号车次") by selecting every
+ * one of them. `join` (default `、`, the separator a `multiple` blank stores picks with —
+ * see PICK_SEPARATOR in `@langplayer/textbooks`) is how those picks are reported.
  */
 (function () {
   'use strict';
 
   var VERSION = 1;
-  var selected = null; // currently highlighted hint element
+  /** The element the hint is currently outlining, if any. */
+  var hintedElement = null;
   var helpMode = false;
   var tokenMap = {}; // text -> tokens, filled by the host
   var spec = null;
   var doneGoals = {};
-  /** goalId -> the values picked so far, for a goal that selects a set. */
-  var picked = {};
+  /** goalId -> the values selected for that goal. One entry per task, so moving between
+   *  tasks neither leaks a selection nor loses one the host hands back. */
+  var selected = {};
+  /** The goal whose task the student is on, as the host said with `focus`. */
+  var focused = null;
   var rootEl = null;
 
   function post(message) {
@@ -73,91 +86,123 @@
     return String(value === null || value === undefined ? '' : value).trim();
   }
 
-  /** The elements a goal still wants: the candidates it names, minus what is picked. */
-  function outstandingPicks(goal) {
-    var candidates = [];
+  function goalById(id) {
+    var goals = goalList();
+    for (var i = 0; i < goals.length; i++) if (goals[i].id === id) return goals[i];
+    return null;
+  }
+
+  function goalCandidates(goal) {
+    if (!goal) return [];
     try {
-      candidates = (goal.candidates ? goal.candidates(spec.data) : []) || [];
+      return (goal.candidates ? goal.candidates(spec.data) : []) || [];
     } catch (e) {
-      candidates = [];
+      return [];
     }
-    if (!goal.all) return candidates;
-    var values = picked[goal.id] || [];
-    return candidates.filter(function (el) {
+  }
+
+  function picksFor(goalId) {
+    return selected[goalId] || (selected[goalId] = []);
+  }
+
+  /** The elements a goal still wants: the candidates it names, minus what is selected. */
+  function outstandingPicks(goal) {
+    var values = picksFor(goal.id);
+    return goalCandidates(goal).filter(function (el) {
       return values.indexOf(valueOf(goal, el)) === -1;
     });
   }
 
-  function markPicked(el) {
-    // The app's own `.done` class, so a pick is visible where it was made.
-    if (el && el.classList) el.classList.add('done');
-  }
-
-  function completeGoal(goal, answer) {
-    doneGoals[goal.id] = true;
-    post({ type: 'complete', payload: { goalId: goal.id, answer: String(answer || '').trim() } });
-    reportProgress();
+  /**
+   * Draw the selection for the focused goal.
+   *
+   * Only that goal's is drawn: the other selections belong to tasks the student is not on,
+   * and showing them together would say every task shares one selection.
+   */
+  function paintSelection() {
+    if (!rootEl) return;
+    var goal = focused ? goalById(focused) : null;
+    var values = focused ? picksFor(focused) : [];
+    var targets = rootEl.querySelectorAll('[data-mock-target]');
+    for (var i = 0; i < targets.length; i++) {
+      var el = targets[i];
+      var value = goal ? valueOf(goal, el) : '';
+      if (value && values.indexOf(value) !== -1) el.classList.add('selected');
+      else el.classList.remove('selected');
+    }
     reportHeight();
-    clearHint();
   }
 
   /**
-   * Try to satisfy goals from a user interaction with `el`.
+   * Is this goal satisfied by what is selected for it?
    *
-   * **Every** goal the element satisfies is credited, not just the first unmet one.
-   * A tap can answer more than one question — G49 is the fastest train *and* a 复兴号 —
-   * and crediting only the first meant a set goal silently lost that member: the tap
-   * went to the single-answer goal, `outstandingPicks` still listed G49, and no amount
-   * of tapping the rest could ever complete the set.
+   * Exactly its candidates: selecting an element the goal does not name leaves it
+   * unsatisfied, which is what lets a wrong selection be graded wrong rather than merely
+   * called incomplete.
    */
-  function evaluate(el) {
-    var remaining = unmetGoals();
-    var credited = false;
-    for (var i = 0; i < remaining.length; i++) {
-      var goal = remaining[i];
-      var ok = false;
-      try {
-        ok = goal.accept ? !!goal.accept(el, spec.data) : false;
-      } catch (e) {
-        ok = false;
-      }
-      if (!ok) continue;
-      credited = true;
-
-      var value = valueOf(goal, el);
-
-      if (goal.all) {
-        // A set is picked one element at a time, so the goal is not satisfied by the
-        // first tap the way a single-answer goal is. Reporting `complete` here would
-        // hand the host one train for a question whose answer is four — which is
-        // exactly what a `multiple` blank is graded against.
-        var values = picked[goal.id] || (picked[goal.id] = []);
-        if (value && values.indexOf(value) === -1) values.push(value);
-        if (outstandingPicks(goal).length) {
-          // Mid-set: the pick is real, the goal is not met yet.
-          reportProgress();
-          continue;
-        }
-        completeGoal(goal, values.join(goal.join || '、'));
-        continue;
-      }
-
-      completeGoal(goal, value);
+  function isSatisfied(goal) {
+    var values = picksFor(goal.id);
+    if (!values.length) return false;
+    var candidates = goalCandidates(goal);
+    if (!candidates.length) return false;
+    var wanted = candidates.map(function (el) { return valueOf(goal, el); });
+    if (wanted.length !== values.length) return false;
+    for (var i = 0; i < values.length; i++) {
+      if (wanted.indexOf(values[i]) === -1) return false;
     }
-    if (credited) {
-      markPicked(el);
-      reportHeight();
+    return true;
+  }
+
+  function answerFor(goal) {
+    return picksFor(goal.id).join(goal.join || '、');
+  }
+
+  function syncGoal(goal) {
+    var satisfied = isSatisfied(goal);
+    var wasDone = !!doneGoals[goal.id];
+    if (satisfied && !wasDone) {
+      doneGoals[goal.id] = true;
+      post({ type: 'complete', payload: { goalId: goal.id, answer: answerFor(goal) } });
+    } else if (!satisfied && wasDone) {
+      // Unselecting can take a goal back out of "done", and the host has to hear that or
+      // it would keep the answer the student just withdrew.
+      delete doneGoals[goal.id];
     }
-    return credited;
+    reportProgress();
+  }
+
+  /**
+   * Toggle `el` in the selection for the focused goal, and tell the host.
+   *
+   * Nothing here decides whether the answer is right — the content does, when the student
+   * submits. What the app decides is only what is selected, and a tap on *anything* the
+   * focused goal can name toggles it, including a tap the goal would not accept: that is
+   * exactly the selection the host has to be able to mark wrong.
+   */
+  function toggleSelection(el) {
+    var goal = focused ? goalById(focused) : null;
+    if (!goal) return false;
+    var value = valueOf(goal, el);
+    if (!value) return false;
+    var values = picksFor(goal.id);
+    var at = values.indexOf(value);
+    if (at === -1) values.push(value);
+    else values.splice(at, 1);
+
+    paintSelection();
+    post({ type: 'selection', payload: { goalId: goal.id, picks: values.slice() } });
+    syncGoal(goal);
+    clearHint();
+    return true;
   }
 
   // ── Hint ───────────────────────────────────────────────────────────────
 
   function clearHint() {
-    if (selected && selected.classList) {
-      selected.classList.remove('mock-hint');
+    if (hintedElement && hintedElement.classList) {
+      hintedElement.classList.remove('mock-hint');
     }
-    selected = null;
+    hintedElement = null;
   }
 
   /**
@@ -169,9 +214,11 @@
    */
   function showHint() {
     clearHint();
-    var remaining = unmetGoals();
-    if (!remaining.length) return;
-    var goal = remaining[0];
+    // The task the student is on, when the host has said which that is — hinting the first
+    // unmet goal instead would point at a task two screens away. Falls back to that order
+    // for an app hosted without `focus`.
+    var goal = (focused && goalById(focused)) || unmetGoals()[0];
+    if (!goal) return;
     // Several candidates are legitimate ("any train with a sleeper", and a set goal
     // has several by definition), so highlight them all rather than pretending there
     // is one right answer. A set goal only points at what is still missing.
@@ -180,13 +227,15 @@
       var el = candidates[i];
       if (el && el.classList) el.classList.add('mock-hint');
     }
-    selected = candidates[0] || null;
+    hintedElement = candidates[0] || null;
   }
 
   // ── Help mode ──────────────────────────────────────────────────────────
 
   var TOKEN_ATTR = 'data-mock-token';
   var SKIP_ATTR = 'data-no-tokenize';
+  /** Set on the app's root while lookups are armed; the app styles it. */
+  var LOOKUP_CLASS = 'mock-lookup';
 
   /** Text nodes eligible for tokenization, in document order. */
   function tokenizableNodes() {
@@ -217,6 +266,10 @@
   }
 
   function enterHelpMode() {
+    // Tell the app's stylesheet that lookups are armed, so it can darken the screen: the
+    // student has to be able to tell "tap a word to look it up" from "tap a train to select
+    // it" without reading a button's state.
+    if (rootEl && rootEl.classList) rootEl.classList.add(LOOKUP_CLASS);
     var nodes = tokenizableNodes();
     var texts = [];
     for (var i = 0; i < nodes.length; i++) {
@@ -277,6 +330,7 @@
 
   function exitHelpMode() {
     if (!rootEl) return;
+    if (rootEl.classList) rootEl.classList.remove(LOOKUP_CLASS);
     var spans = rootEl.querySelectorAll('[' + TOKEN_ATTR + ']');
     for (var i = 0; i < spans.length; i++) {
       var span = spans[i];
@@ -314,6 +368,14 @@
         helpMode = !!(msg.payload && msg.payload.helpMode);
         if (helpMode) enterHelpMode();
         break;
+      case 'focus':
+        // Which task is being asked, and what is already selected for it. The picks come
+        // from the host's store, so a task the student answered shows its answer back.
+        focused = (msg.payload && msg.payload.goalId) || null;
+        if (focused) selected[focused] = ((msg.payload && msg.payload.picks) || []).slice();
+        clearHint();
+        paintSelection();
+        break;
       case 'help-mode':
         var on = !!(msg.payload && msg.payload.on);
         if (on === helpMode) break;
@@ -330,8 +392,9 @@
       case 'reset':
         clearHint();
         doneGoals = {};
-        picked = {};
+        selected = {};
         if (spec && spec.reset) spec.reset(spec.data);
+        paintSelection();
         reportProgress();
         break;
       default:
@@ -345,9 +408,12 @@
     var el = event.target;
     while (el && el !== rootEl) {
       if (el.getAttribute && el.getAttribute('data-mock-target') !== null) {
-        evaluate(el);
+        toggleSelection(el);
         return;
       }
+      // A lookup token is a span inside the row: in normal mode tapping it must not select
+      // the row it sits in.
+      if (el.getAttribute && el.getAttribute(TOKEN_ATTR) !== null) return;
       el = el.parentNode;
     }
   }
@@ -385,12 +451,22 @@
       }
     },
 
-    /** Exposed so an app can report a goal it satisfied programmatically. */
+    /** Exposed so an app can report a goal it satisfied without a selection. */
     complete: function (goalId, answer) {
       if (!goalId) return;
       doneGoals[goalId] = true;
       post({ type: 'complete', payload: { goalId: goalId, answer: String(answer || '') } });
       reportProgress();
+    },
+
+    /** Exposed so an app can select something itself (a restored attempt, say). */
+    select: function (goalId, picks) {
+      if (!goalId) return;
+      selected[goalId] = (picks || []).slice();
+      paintSelection();
+      post({ type: 'selection', payload: { goalId: goalId, picks: selected[goalId].slice() } });
+      var goal = goalById(goalId);
+      if (goal) syncGoal(goal);
     },
   };
 

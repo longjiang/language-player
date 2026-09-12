@@ -49,6 +49,24 @@ export interface ResetMessage {
   type: 'reset';
 }
 
+/**
+ * Which task is being asked, and what is already selected for it.
+ *
+ * The app cannot know this on its own: the tasks live in the content, and the student moves
+ * between them in the host's panel. It also carries the selection so the app can draw it —
+ * coming back to a task the student already answered shows what they answered with, and a
+ * task they have not reached shows nothing.
+ */
+export interface FocusMessage {
+  v: number;
+  type: 'focus';
+  payload: {
+    goalId: string;
+    /** Selections already stored for this goal, in the order they were made. */
+    picks: string[];
+  };
+}
+
 /** Reply to `tokenize`, keyed by the exact string the app asked about. */
 export interface TokensMessage {
   v: number;
@@ -60,6 +78,7 @@ export interface TokensMessage {
 
 export type HostToAppMessage =
   | InitMessage
+  | FocusMessage
   | HelpModeMessage
   | HintMessage
   | ResetMessage
@@ -110,10 +129,24 @@ export interface ResizeMessage {
   payload: { height: number };
 }
 
+/**
+ * What the student has selected for the task they are on.
+ *
+ * The app reports the selection, not a verdict: an app cannot know what the content asks for,
+ * and it is the host that grades. This is what makes selecting and unselecting a real
+ * interaction — the host is told about both, and the blank follows.
+ */
+export interface SelectionMessage {
+  v: number;
+  type: 'selection';
+  payload: { goalId: string; picks: string[] };
+}
+
 export type AppToHostMessage =
   | ReadyMessage
   | TokenizeRequestMessage
   | LookupMessage
+  | SelectionMessage
   | ProgressMessage
   | CompleteMessage
   | ResizeMessage;
@@ -124,6 +157,7 @@ const APP_TO_HOST_TYPES = new Set<AppToHostMessage['type']>([
   'ready',
   'tokenize',
   'lookup',
+  'selection',
   'progress',
   'complete',
   'resize',
@@ -155,6 +189,12 @@ export function isAppToHostMessage(value: unknown): value is AppToHostMessage {
         Boolean(payload.rect) &&
         typeof (payload.rect as { x?: unknown }).x === 'number' &&
         typeof (payload.rect as { y?: unknown }).y === 'number'
+      );
+    case 'selection':
+      return (
+        typeof payload.goalId === 'string' &&
+        Array.isArray(payload.picks) &&
+        payload.picks.every((p) => typeof p === 'string')
       );
     case 'progress':
       return Array.isArray(payload.done) && typeof payload.total === 'number';

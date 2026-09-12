@@ -68,8 +68,40 @@
       .seat .none { color: #c3ccd6; }
       .empty { padding: 28px 12px; margin: 8px 10px; text-align: center; color: #98a6b5; font-size: 13px; background: #fff; border-radius: 8px; }
       .mock-hint { outline: 3px solid #f59e0b; outline-offset: -3px; }
-      .done { background: #eaf7ee; }
+      /* A selected row. Ours, not the real app's: 12306 has no selection because a tap
+         there opens the train. */
+      .train.selected { background: #e8f2ff; box-shadow: inset 3px 0 0 #2f7ee0; }
       .note { padding: 6px 12px 16px; color: #98a6b5; font-size: 12px; }
+
+      /*
+       * Lookup mode — the runtime puts `mock-lookup` on the root while lookups are armed.
+       * The screen goes dark and the words go white, so "tap a word to look it up" cannot
+       * be confused with "tap a train to select it" without reading a button's state. The
+       * seat and status colours stay on, in lighter shades, because they are what the two
+       * 候补 tasks turn on and a monochrome screen would hide them.
+       */
+      .mock-lookup { background: #14181d; }
+      .mock-lookup .top { background: #0f1216; }
+      .mock-lookup .date.on { background: #2a3138; color: #fff; }
+      .mock-lookup .checks, .mock-lookup .stations, .mock-lookup .train { background: #1b2026; }
+      .mock-lookup .train:hover { background: #212832; }
+      .mock-lookup .train.selected { background: #232c36; box-shadow: inset 3px 0 0 #7cb8ff; }
+      .mock-lookup .chip { border-color: #38414a; color: #e8edf2; }
+      .mock-lookup .box { border-color: #4a5560; }
+      .mock-lookup .time, .mock-lookup .no, .mock-lookup .station, .mock-lookup .seat,
+      .mock-lookup .dur, .mock-lookup .check, .mock-lookup .sort, .mock-lookup .note,
+      .mock-lookup .empty { color: #fff; }
+      .mock-lookup .empty { background: #1b2026; }
+      .mock-lookup .stop { color: #14181d; }
+      .mock-lookup .tick { background: #4a4030; color: #ffe9a8; }
+      .mock-lookup .tag { background: #33302c; color: #ffca7a; }
+      .mock-lookup .seats { border-top-color: #2a3138; }
+      .mock-lookup .seat .ok { color: #6ee7a8; }
+      .mock-lookup .seat .wait { color: #7cb8ff; }
+      .mock-lookup .seat .none { color: #94a3b1; }
+      .mock-lookup .price { color: #ff9d7a; }
+      .mock-lookup .price.gone { color: #94a3b1; }
+      .mock-lookup .train.soldout .time, .mock-lookup .train.soldout .no { color: #94a3b1; }
     </style>
   </head>
   <body>
@@ -397,7 +429,7 @@
           });
         },
         reset() {
-          document.querySelectorAll('.train').forEach(function (el) { el.classList.remove('done'); });
+          document.querySelectorAll('.train').forEach(function (el) { el.classList.remove('selected'); });
           filters = { hsr: false, slow: false, fuxing: false, byDep: false };
           renderChecks();
           render();

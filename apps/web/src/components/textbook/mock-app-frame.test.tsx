@@ -27,7 +27,7 @@ vi.mock('@/components/tokenized-text', () => ({
 const toastSuccess = vi.fn();
 vi.mock('sonner', () => ({ toast: { success: (m: string) => toastSuccess(m) } }));
 
-/** The task store, so a test can see what Submit and All Done! actually did. */
+/** The task store, so a test can see what a selection wrote and what All Done! graded. */
 let store: any;
 function StoreProbe() {
   store = useTextbookTask()!.store;
@@ -57,7 +57,8 @@ async function click(el: Element) {
   });
 }
 
-const header = () => document.querySelector('[role="dialog"]')?.textContent ?? '';
+const panel = () => document.querySelector('[role="dialog"]');
+const header = () => panel()?.textContent ?? '';
 const button = (label: string) =>
   [...document.querySelectorAll('button')].find((b) => (b.textContent || '').includes(label));
 const named = (label: string) => document.querySelector(`button[aria-label="${label}"]`);
@@ -82,9 +83,9 @@ function fromApp(type: string, payload: Record<string, unknown> = {}) {
   });
 }
 
-/** Do a task in the app, the way the real one reports it. */
-function doTask(goalId: string, answer: string) {
-  fromApp('complete', { goalId, answer });
+/** Selecting in the app: the host is told what is ticked, and writes it into the blank. */
+function select(goalId: string, picks: string[]) {
+  fromApp('selection', { goalId, picks });
 }
 
 const PROMPTS = [
@@ -120,25 +121,31 @@ describe('the launch button', () => {
   });
 });
 
-/**
- * The panel asks one task at a time and resolves one at a time: the student does the task
- * in the app, presses Submit, and is told whether that task is done.
- */
-describe('submitting one task', () => {
-  it('opens on the first task, with the app in it and a paginator', async () => {
+describe('the panel', () => {
+  it('puts the close button alone on top, and the task above the controls', async () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
+    const close = named('action.close')!;
+    const frame = document.querySelector('iframe')!;
+    const title = panel()!.querySelector('h2')!;
+
+    // Document order is the layout: close, then the app, then the task and its controls.
+    expect(close.compareDocumentPosition(frame) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(frame.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The top bar has no rule under it any more — it separates nothing.
+    expect((panel()!.firstElementChild as HTMLElement).className).not.toContain('border-b');
     expect(header()).toContain(PROMPTS[0]);
     expect(header()).toContain('1 / 6');
-    expect(document.querySelector('iframe')).toBeTruthy();
-    expect(button('review.submit')).toBeTruthy();
-    // Back has nowhere to go yet; forward waits for a correct Submit.
-    expect((named('action.previous') as HTMLButtonElement).disabled).toBe(true);
-    expect((named('action.next') as HTMLButtonElement).disabled).toBe(true);
   });
+});
 
-  it('says Incorrect when the task has not been done, and stays on Submit', async () => {
+/**
+ * Selecting is the interaction: a tap selects, another unselects, and the selection *is*
+ * the answer — the host writes it into the blank and the content grades it on Submit.
+ */
+describe('submitting one task', () => {
+  it('says Incorrect when nothing is selected, and stays on Submit', async () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
@@ -150,32 +157,116 @@ describe('submitting one task', () => {
     expect(button('action.next')).toBeUndefined();
   });
 
-  it('is still Incorrect when the stored answer is not the expected one', async () => {
+  it('says Incorrect for a selection the task does not name', async () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    // The app reporting a goal is not enough on its own: the content judges the answer.
-    store.setValue('b2', 'G871');
-    doTask('cheapest', 'G871');
+    // D17 is a real train and a real selection — just not the fastest one.
+    select('fastest', ['D17']);
     await click(button('review.submit')!);
 
     expect(header()).toContain('review.answer_incorrect');
     expect(toastSuccess).not.toHaveBeenCalled();
   });
 
-  it('toasts Correct once the app reports the task, and offers Next', async () => {
+  it('writes the selection into the blank, and clears it on unselect', async () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    doTask('fastest', 'G49');
-    expect((named('action.next') as HTMLButtonElement).disabled).toBe(true);
+    select('fastest', ['G49', 'D17']);
+    expect(store.getValue('b1')).toBe('G49'); // ① is `given`: pre-filled and not writable
 
+    // ② is a real blank, so a selection and its removal are both visible there.
+    select('cheapest', ['K1275', 'D11']);
+    expect(store.getValue('b2')).toBe('K1275、D11');
+    select('cheapest', ['D11']);
+    expect(store.getValue('b2')).toBe('D11');
+    select('cheapest', []);
+    expect(store.getValue('b2')).toBe('');
+  });
+
+  it('toasts Correct once the selection is the expected answer, and offers Next', async () => {
+    const { book, task, stimulus } = await b4();
+    await open(book, task, stimulus);
+
+    select('fastest', ['G49']);
     await click(button('review.submit')!);
 
     expect(toastSuccess).toHaveBeenCalledWith('review.answer_correct');
     expect(header()).not.toContain('review.answer_incorrect');
     expect(button('action.next')).toBeTruthy();
     expect((named('action.next') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('takes a set task only as a whole set', async () => {
+    const { book, task, stimulus } = await b4();
+    await open(book, task, stimulus);
+
+    // Onto task ③, which asks for every 复兴号.
+    select('fastest', ['G49']);
+    await click(button('review.submit')!);
+    await click(button('action.next')!);
+    select('cheapest', ['K1275']);
+    await click(button('review.submit')!);
+    await click(button('action.next')!);
+    expect(header()).toContain(PROMPTS[2]);
+
+    select('fuxing', ['G875', 'G49']);
+    await click(button('review.submit')!);
+    expect(header()).toContain('review.answer_incorrect');
+
+    select('fuxing', ['G875', 'G49', 'D17', 'D11']);
+    await click(button('review.submit')!);
+    expect(header()).not.toContain('review.answer_incorrect');
+    expect(button('action.next')).toBeTruthy();
+  });
+});
+
+describe('telling the app which task it is on', () => {
+  /** The host's own messages to the frame, which is where `focus` goes. */
+  function captureFocus() {
+    const el = document.querySelector('iframe')!;
+    const sent: any[] = [];
+    (el.contentWindow as unknown as { postMessage: (m: unknown) => void }).postMessage = (m) =>
+      sent.push(m);
+    return sent;
+  }
+
+  it('carries the task and its stored picks, so a task comes back as it was answered', async () => {
+    const { book, task, stimulus } = await b4();
+    await open(book, task, stimulus);
+
+    select('fastest', ['G49']);
+    await click(button('review.submit')!);
+    await click(button('action.next')!);
+    select('cheapest', ['K1275']);
+
+    const sent = captureFocus();
+    await click(named('action.previous')!);
+    const focus = sent.filter((m) => m && m.type === 'focus');
+
+    expect(focus.length).toBeGreaterThan(0);
+    // ① is a `given` worked example: its answer is pre-filled for the final grade, but it is
+    // not the student's selection, so nothing is restored and they still do the example.
+    expect(focus.at(-1).payload).toEqual({ goalId: 'fastest', picks: [] });
+  });
+
+  it('hands back what was answered for a task the student returns to', async () => {
+    const { book, task, stimulus } = await b4();
+    await open(book, task, stimulus);
+
+    select('fastest', ['G49']);
+    await click(button('review.submit')!);
+    await click(button('action.next')!);
+    select('cheapest', ['K1275']);
+    await click(button('review.submit')!);
+    await click(button('action.next')!);
+
+    const sent = captureFocus();
+    await click(named('action.previous')!);
+    const focus = sent.filter((m) => m && m.type === 'focus');
+
+    expect(focus.at(-1).payload).toEqual({ goalId: 'cheapest', picks: ['K1275'] });
   });
 });
 
@@ -184,18 +275,16 @@ describe('the paginator', () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    doTask('fastest', 'G49');
+    select('fastest', ['G49']);
     await click(button('review.submit')!);
     await click(button('action.next')!);
 
     expect(header()).toContain(PROMPTS[1]);
     expect(header()).toContain('2 / 6');
-    // A fresh task starts unanswered.
     expect(button('review.submit')).toBeTruthy();
 
     await click(named('action.previous')!);
     expect(header()).toContain(PROMPTS[0]);
-    // and a task already answered offers Next, not Submit.
     expect(button('action.next')).toBeTruthy();
   });
 
@@ -203,10 +292,10 @@ describe('the paginator', () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    doTask('fastest', 'G49');
+    select('fastest', ['G49']);
     await click(button('review.submit')!);
     await click(button('action.next')!);
-    doTask('cheapest', 'K1275');
+    select('cheapest', ['K1275']);
     await click(button('review.submit')!);
     // Back to 1, then forward: 2 is done, so Next must land on 3.
     await click(named('action.previous')!);
@@ -217,26 +306,27 @@ describe('the paginator', () => {
 });
 
 describe('the last task', () => {
+  const firstFive: [string, string[]][] = [
+    ['fastest', ['G49']],
+    ['cheapest', ['K1275']],
+    ['fuxing', ['G875', 'G49', 'D17', 'D11']],
+    ['sold-out', ['Z281']],
+    ['business', ['G871', 'G875']],
+  ];
+
   it('turns Submit into All Done!, which grades the task and closes the panel', async () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    const firstFive: [string, string][] = [
-      ['fastest', 'G49'],
-      ['cheapest', 'K1275'],
-      ['fuxing', 'G875、G49、D17、D11'],
-      ['sold-out', 'Z281'],
-      ['business', 'G871、G875'],
-    ];
-    for (const [goalId, answer] of firstFive) {
-      doTask(goalId, answer);
+    for (const [goalId, picks] of firstFive) {
+      select(goalId, picks);
       await click(button('review.submit')!);
       await click(button('action.next')!);
     }
     expect(header()).toContain(PROMPTS[5]);
     expect(button('review.submit')).toBeTruthy();
 
-    doTask('sleeper', 'D17、D11');
+    select('sleeper', ['D17', 'D11']);
     await click(button('review.submit')!);
     expect(button('msg.all_done')).toBeTruthy();
 
@@ -246,7 +336,6 @@ describe('the last task', () => {
     expect(store.isSubmitted()).toBe(true);
     expect(store.getResult()?.complete).toBe(true);
     expect(store.getResult()?.correctCount).toBe(5);
-    // and the panel is out of the way so the result banner can be read.
     expect(header()).toBe('');
   });
 
@@ -254,7 +343,7 @@ describe('the last task', () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    doTask('fastest', 'G49');
+    select('fastest', ['G49']);
     await click(button('review.submit')!);
 
     expect(button('action.next')).toBeTruthy();
@@ -269,7 +358,6 @@ describe('the toolbar', () => {
 
     const dictionary = named('label.enable_popup_dictionary')!;
     expect(dictionary.querySelector('svg')).toBeTruthy();
-    // Icon-only: the label lives in the accessible name, not in the row.
     expect(dictionary.textContent).toBe('');
 
     const hint = button('action.hint')!;
@@ -284,9 +372,9 @@ describe('the container', () => {
     wide = false;
     try {
       await open(book, task, stimulus);
-      const panel = document.querySelector('[role="dialog"]')!;
-      expect(panel.className).toContain('bottom-0');
-      expect(panel.className).not.toContain('-translate-y-1/2');
+      const el = panel()!;
+      expect(el.className).toContain('bottom-0');
+      expect(el.className).not.toContain('-translate-y-1/2');
     } finally {
       wide = true;
     }
@@ -296,16 +384,16 @@ describe('the container', () => {
     const { book, task, stimulus } = await b4();
     await open(book, task, stimulus);
 
-    doTask('fastest', 'G49');
+    select('fastest', ['G49']);
     await click(button('review.submit')!);
     await click(button('action.next')!);
     expect(header()).toContain(PROMPTS[1]);
 
     await click(named('action.close')!);
     await click(button('action.launch_mini_app')!);
-    // The app restarts and reports done: [], which must not undo the progress.
-    fromApp('progress', { done: [], total: 6 });
 
     expect(header()).toContain(PROMPTS[1]);
+    // The reopened task arrives holding what was answered for it.
+    expect(store.getValue('b1')).toBe('G49');
   });
 });
