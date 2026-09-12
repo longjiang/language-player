@@ -10,6 +10,7 @@
  * the shared barrel, which is exactly the shape textbook content must avoid.
  */
 
+import { tasksIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
 
 /** A book's shape without loading its tasks — enough to render the picker. */
@@ -163,7 +164,7 @@ export function taskHref(l1: string, l2: string, taskId: string): string {
 
 /** Every task in the book, in reading order. */
 export function allTasks(book: BookMeta): Task[] {
-  return book.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks));
+  return tasksIn(book);
 }
 
 /**

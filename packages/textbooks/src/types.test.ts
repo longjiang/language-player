@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { assetKeysIn, audioTracksIn, recordingsIn } from './types';
-import type { Task } from './types';
+import { assetKeysIn, audioTracksIn, recordingsIn, transcriptsIn } from './types';
+import type { BookMeta, Task, TranscriptLine } from './types';
 import { tbltHsk4 } from './content/tblt-hsk4/book';
 import { findTask } from './loaders';
 
@@ -110,5 +110,69 @@ describe('assetKeysIn', () => {
     expect(keys).toContain('a/map.png');
     expect(keys).toContain('a/pic.png');
     expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
+/**
+ * A transcript belongs to the recording, not to the task that plays it, so the index
+ * is keyed by asset key and built from the whole book (SPEC-095 §Transcript).
+ */
+describe('transcriptsIn', () => {
+  const book = (tasks: Task[]): BookMeta => ({
+    id: 'b',
+    title: 'B',
+    l2: 'zh',
+    contentVersion: 1,
+    units: [{ id: 'u1', number: 6, title: 'U1', lessons: [{ id: 'A', letter: 'A', title: 'A', tasks }] }],
+  });
+
+  const withTranscript = (taskId: string, key: string, transcript: TranscriptLine[]): Task => ({
+    id: taskId,
+    number: '➊',
+    sourcePage: 1,
+    instructions: '听录音',
+    audio: [{ key, transcript }],
+    body: [{ kind: 'audio', tracks: [{ key }] }],
+    blanks: {},
+  });
+
+  it('finds a recording’s transcript from a task that only replays it', () => {
+    // A ➍ replays A ➌'s files; the text is declared once, under A ➌.
+    const replay: Task = {
+      id: 'b.u1.A.t2',
+      number: '➋',
+      sourcePage: 2,
+      instructions: '再听一遍',
+      body: [{ kind: 'passage', text: '文字', audio: [{ key: 'a/one.mp3' }] }],
+      blanks: {},
+    };
+    const map = transcriptsIn(
+      book([withTranscript('b.u1.A.t1', 'a/one.mp3', [{ speaker: '男', text: '西安是我的老家。' }]), replay]),
+    );
+    expect(map.get('a/one.mp3')).toEqual([{ speaker: '男', text: '西安是我的老家。' }]);
+  });
+
+  it('ignores a recording that has no transcript, so its control offers none', () => {
+    const map = transcriptsIn(book([withTranscript('b.u1.A.t1', 'a/one.mp3', [])]));
+    expect(map.has('a/one.mp3')).toBe(false);
+  });
+
+  it('keeps a transcript declared on any of the four levels', () => {
+    const onBlank: Task = {
+      id: 'b.u1.A.t1',
+      number: '➊',
+      sourcePage: 1,
+      instructions: '听',
+      body: [{ kind: 'numberedBlanks', ids: ['b1'] }],
+      blanks: { b1: { id: 'b1', kind: 'type', answer: 'x', audio: [{ key: 'a/b.mp3', transcript: [{ text: '第一' }] }] } },
+    };
+    const onRow: Task = {
+      ...onBlank,
+      body: [{ kind: 'dataTable', columns: ['a'], rows: [{ cells: ['x'], audio: [{ key: 'a/r.mp3', transcript: [{ text: '第二' }] }] }] }],
+      blanks: {},
+    };
+    const map = transcriptsIn(book([onBlank, onRow]));
+    expect(map.get('a/b.mp3')).toEqual([{ text: '第一' }]);
+    expect(map.get('a/r.mp3')).toEqual([{ text: '第二' }]);
   });
 });
