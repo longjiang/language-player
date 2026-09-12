@@ -137,7 +137,16 @@ export interface BlankSpec {
    * `2. 金敏俊: B、c`, i.e. one row giving both the "how" and the "where" answer,
    * so both of that row's blanks cite item 2.
    */
-  keyIndex?: number;
+  /**
+   * The key item to check against; `null` means the key has no item for this blank.
+   *
+   * D ➋ asks the student to number five topics in the recording's order *and* match
+   * each to a description. The key's row numbers give the order and its bracketed
+   * letters the descriptions, so the description blanks look their item up by
+   * `keyIndex` while the order blanks opt out with `null` — otherwise each order
+   * blank would be compared against the description of the row it sits in.
+   */
+  keyIndex?: number | null;
   /**
    * Which label-keyed answer-key item this blank is checked against.
    *

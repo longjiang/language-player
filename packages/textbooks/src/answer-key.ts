@@ -124,6 +124,43 @@ export function parseAnswerKey(raw: string): AnswerKeyItem[] {
   return items;
 }
 
+/**
+ * Parse a **grouped** answer key into `"<group>.<position>"` labels.
+ *
+ * A ➍ prints five numbered sub-items, each with its own ①②③, and the key mirrors
+ * that:
+ *
+ *   (2) ① 不管；② 还是；③ 趟；(3) ① 虽然；② 但是；③ 一般；…
+ *
+ * The inner circles restart per group, so a flat index cannot express this — `①`
+ * occurs four times — and the blanks address their answers positionally instead:
+ * `keyLabel: '2.1'` is group 2's first answer. Kept as its own function because the
+ * shape is genuinely different from the three flat ones.
+ */
+export function parseGroupedAnswerKey(raw: string): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  if (!raw) return out;
+
+  // Split on the parenthesised group numbers, keeping the number with its body.
+  const parts = raw.split(/[(（]\s*(\d{1,2})\s*[)）]/);
+  for (let i = 1; i < parts.length; i += 2) {
+    const group = parts[i]!;
+    const body = parts[i + 1] ?? '';
+    // Within a group the answers are delimited by their own circled numerals.
+    let position = 0;
+    for (const chunk of body.split(/[①②③④⑤⑥⑦⑧⑨⑩]/)) {
+      const answers = chunk
+        .split(MULTI_ANSWER_SPLIT_RE)
+        .map((part) => part.replace(/^[\s;；:：.。\[\]［］]+|[\s;；:：.。\[\]［］]+$/g, '').trim())
+        .filter(Boolean);
+      if (!answers.length) continue;
+      position += 1;
+      out.set(`${group}.${position}`, answers);
+    }
+  }
+  return out;
+}
+
 /** Look up one item's accepted answers by question index. */
 export function answersForKeyIndex(raw: string, index: number): string[] {
   return parseAnswerKey(raw).find((item) => item.index === index)?.answers ?? [];
@@ -164,5 +201,9 @@ export function parseLabelledAnswerKey(raw: string): Map<string, string[]> {
 
 /** Answers for one label-keyed item. */
 export function answersForKeyLabel(raw: string, label: string): string[] {
+  // A grouped label (`2.1`) addresses a sub-item's own item, which the flat label
+  // shape cannot express.
+  if (/^\d+\.\d+$/.test(label)) return parseGroupedAnswerKey(raw).get(label) ?? [];
+
   return parseLabelledAnswerKey(raw).get(label) ?? [];
 }

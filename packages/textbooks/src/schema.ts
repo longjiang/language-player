@@ -58,7 +58,9 @@ function markerIdsIn(task: Task): string[] {
 }
 
 /** The key item a blank is checked against: explicit `keyIndex`, else its id. */
-function keyIndexFor(blankId: string, keyIndex?: number): number | null {
+function keyIndexFor(blankId: string, keyIndex?: number | null): number | null {
+  // `null` is an explicit opt-out: the key says nothing about this blank.
+  if (keyIndex === null) return null;
   if (keyIndex !== undefined) return keyIndex;
   const n = Number(blankId.replace(/^b/, ''));
   return Number.isFinite(n) ? n : null;

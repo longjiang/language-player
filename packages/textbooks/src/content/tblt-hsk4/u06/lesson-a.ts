@@ -185,5 +185,92 @@ export const lessonA: LessonMeta = {
       },
       answerKeyRaw: '2. 金敏俊: B、c; 3. 奥利维亚: D, a; 4. 陈灵: C, d; 5. 朴书妍: A, e。',
     },
+        {
+      id: 'tblt-hsk4.u06.A.t4',
+      number: '➍',
+      type: 'listening',
+      sourcePage: 4,
+      instructions: '现在总结一下他们的谈话内容，在（　）中写下适当的词语。',
+      // The same five friends as ➌, so this replays ➌'s recordings — one per
+      // sub-item, declared on the passage it belongs to.
+      body: [
+        {
+          kind: 'passage',
+          audio: [{ key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷' }],
+          text:
+            '（1）李婷婷觉得共享单车比较方便，因为可以①（{{b1}}）借，②（{{b2}}）还，' +
+            '去哪儿都可以，特别自由。上次她去卢沟桥就是骑自行车去的。虽然是有点远，要四十多分钟，' +
+            '但③（{{b3}}）不多，骑着很④（{{b4}}）。她从通县回家也是骑回去的。',
+        },
+        {
+          kind: 'passage',
+          audio: [{ key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3', label: '金敏俊' }],
+          text:
+            '（2）金敏俊经常从他老家首尔坐飞机去日本。仁川机场每天都有好多去日本的航班。' +
+            '①（{{b5}}）东京②（{{b6}}）大阪，都能直达。不管去北海道，去冲绳，' +
+            '还是日本什么别的地方，一③（{{b7}}）航班就到，特别方便，所以他没事就老去日本旅游。',
+        },
+        {
+          kind: 'passage',
+          audio: [{ key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚' }],
+          text:
+            '（3）奥利维亚在西安留学的时候，去哪里都骑电动车，因为便宜，而且方便。' +
+            '上次她去汉阳陵就是骑电动车去的。①（{{b8}}）也可以坐地铁去，②（{{b9}}）地铁不能直接到景点门口。' +
+            '③（{{b10}}）这种偏僻一点的地方她都是骑电动车去。',
+        },
+        {
+          kind: 'passage',
+          audio: [{ key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3', label: '陈灵' }],
+          text:
+            '（4）陈灵是越南顺化人。去年她从老家坐大巴去了一①（{{b11}}）河内，是可以睡觉的那种。' +
+            '陈灵说，大巴上的床很舒服，出发以后一路②（{{b12}}）着③（{{b13}}）着就睡着了。' +
+            '她第二天醒来的时候已经④（{{b14}}）到河内了，所以觉得特别方便。',
+        },
+        {
+          kind: 'passage',
+          audio: [{ key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3', label: '朴书妍' }],
+          text:
+            '（5）朴书妍说她从老家首尔去哪儿都坐出租车，出远门也是。上次她从首尔去爱宝乐园，' +
+            '就是坐出租车去的。路程①（{{b15}}）要1个小时，所以②（{{b16}}）是贵了点。' +
+            '但是她觉得出租车还是方便。她说那天下大雨，像那样的天气，她还是觉得坐出租车③（{{b17}}）。',
+        },
       ],
+      blanks: {
+        // (1) is the worked example the booklet prints in full.
+        b1: { id: 'b1', kind: 'given', answer: '随处' },
+        b2: { id: 'b2', kind: 'given', answer: '随处' },
+        b3: { id: 'b3', kind: 'given', answer: '坡路' },
+        b4: { id: 'b4', kind: 'given', answer: '舒服' },
+        // The key numbers these by sub-item, so each blank names its group and
+        // position — a flat index cannot express ① occurring in every group.
+        b5: { id: 'b5', kind: 'type', answer: '不管', bank: 'a4-words', keyLabel: '2.1' },
+        b6: { id: 'b6', kind: 'type', answer: '还是', bank: 'a4-words', keyLabel: '2.2' },
+        b7: { id: 'b7', kind: 'type', answer: '趟', bank: 'a4-words', keyLabel: '2.3' },
+        b8: { id: 'b8', kind: 'type', answer: '虽然', bank: 'a4-words', keyLabel: '3.1' },
+        b9: { id: 'b9', kind: 'type', answer: '但是', bank: 'a4-words', keyLabel: '3.2' },
+        b10: { id: 'b10', kind: 'type', answer: '一般', bank: 'a4-words', keyLabel: '3.3' },
+        b11: { id: 'b11', kind: 'type', answer: '趟', bank: 'a4-words', keyLabel: '4.1' },
+        b12: { id: 'b12', kind: 'type', answer: '摇', bank: 'a4-words', keyLabel: '4.2' },
+        b13: { id: 'b13', kind: 'type', answer: '摇', bank: 'a4-words', keyLabel: '4.3' },
+        b14: { id: 'b14', kind: 'type', answer: '快', bank: 'a4-words', keyLabel: '4.4' },
+        b15: { id: 'b15', kind: 'type', answer: '要', bank: 'a4-words', keyLabel: '5.1' },
+        b16: { id: 'b16', kind: 'type', answer: '确实', bank: 'a4-words', keyLabel: '5.2' },
+        b17: { id: 'b17', kind: 'type', answer: '安心', bank: 'a4-words', keyLabel: '5.3' },
+      },
+      banks: [
+        {
+          // One combined bank for the whole task, as decided. Reuse is on: 随处 is
+          // needed twice, and 趟 and 摇 each appear twice.
+          id: 'a4-words',
+          items: [
+            '舒服', '随处', '坡路', '还是', '不管', '趟', '一般', '但是',
+            '虽然', '摇', '快', '确实', '安心', '差不多',
+          ],
+          allowReuse: true,
+        },
+      ],
+      answerKeyRaw:
+        '(2) ① 不管；② 还是；③ 趟；(3) ① 虽然；② 但是；③ 一般；(4) ① 趟；② 摇；③ 摇；④ 快；(5) ① 要；② 确实；③ 安心。',
+    },
+  ],
 };

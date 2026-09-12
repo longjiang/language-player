@@ -54,6 +54,16 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   audio('六A ➌（4）河内.mp3'),
   audio('六A ➌（5）爱宝乐园.mp3'),
 
+  // ── Lesson D — one recording per paragraph (➊), the Vancouver monologue (➋,
+  //    replayed by ➌ and read along in ➍), and the note-taking task's ➍ ──
+  audio('六D ➊ 1.mp3'),
+  audio('六D ➊ 2.mp3'),
+  audio('六D ➊ 3.mp3'),
+  audio('六D ➊ 4.mp3'),
+  audio('六D ➊ 5.mp3'),
+  audio('六D ➊ 6.mp3'),
+  audio('六D ➋.mp3'),
+
   // ── Lesson B, task ➎ — the whole article read aloud (shared with ➏) ──
   audio('六B ➎ 开票一秒就空了.mp3'),
 
