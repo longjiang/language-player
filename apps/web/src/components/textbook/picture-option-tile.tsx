@@ -3,6 +3,8 @@
 import React, { useMemo, useState } from 'react';
 import { createAssetResolver, type PictureOption } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
+import { TokenizedText } from '@/components/tokenized-text';
+import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { RetryIcon } from './retry-icon';
 
@@ -16,6 +18,17 @@ import { RetryIcon } from './retry-icon';
  * degrades to a labelled tile that stays pickable, because the letter is the answer
  * either way, and carries an **inline retry** that re-requests just that image
  * (SPEC-095 §States).
+ *
+ * **The label is tokenized, and therefore sits outside the pick button.** These captions
+ * are the exercise's vocabulary — `请到检票口检票`, `请在安全白线内通行` — so a student has to
+ * be able to tap a word and read what it means. A token inside the button would fire both
+ * handlers on one tap: the dictionary would open *and* the letter would be picked, which
+ * changes the answer as a side effect of looking a word up. Splitting them keeps the two
+ * intentions apart — the picture picks, the caption teaches — and the button still carries
+ * the whole label as its accessible name, so nothing is lost to a screen reader.
+ *
+ * `TokenizedText` is `inline` here: a caption inherits the tile's own size instead of the
+ * reader's block-text scale, so tokenizing the caption does not resize the grid.
  */
 export function PictureOptionTile({
   item,
@@ -32,13 +45,14 @@ export function PictureOptionTile({
   className?: string;
 }) {
   const t = useT();
+  const { l2 } = useLanguage();
   const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
   const [broken, setBroken] = useState(false);
   // Bumping a token re-requests the image with a different query string, which is what
   // makes the browser fetch it again instead of serving the cached failure.
   const [retryToken, setRetryToken] = useState(0);
 
-  const url = resolve(item.image!);
+  const url = resolve(item.image);
   const src = retryToken === 0 ? url : `${url}${url.includes('?') ? '&' : '?'}retry=${retryToken}`;
 
   return (
@@ -59,35 +73,47 @@ export function PictureOptionTile({
           <RetryIcon />
         </button>
       )}
-      <button
-        type="button"
-        onClick={() => onPick(item.letter)}
-        disabled={disabled}
-        aria-pressed={selected}
-        aria-label={`${item.letter}. ${item.label}`}
-        className={`flex w-full flex-col gap-1.5 rounded-lg border p-2 text-left transition-colors ${
-          selected ? 'border-primary bg-primary/10' : 'border-border bg-card hover:bg-muted'
-        } ${disabled ? 'cursor-default opacity-90' : ''}`}
+
+      <div
+        className={`flex w-full flex-col gap-1.5 rounded-lg border p-2 transition-colors ${
+          selected ? 'border-primary bg-primary/10' : 'border-border bg-card'
+        } ${disabled ? 'opacity-90' : ''}`}
       >
-        <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded bg-muted/50">
-          {broken ? (
-            <span className="px-2 text-center text-xs text-muted-foreground">{item.label}</span>
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={src}
-              alt=""
-              loading="lazy"
-              onError={() => setBroken(true)}
-              className="h-full w-full object-cover"
-            />
-          )}
+        <button
+          type="button"
+          onClick={() => onPick(item.letter)}
+          disabled={disabled}
+          aria-pressed={selected}
+          aria-label={`${item.letter}. ${item.label}`}
+          className={`block w-full overflow-hidden rounded bg-muted/50 ${
+            disabled ? 'cursor-default' : 'cursor-pointer'
+          }`}
+        >
+          <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden">
+            {broken ? (
+              <span className="px-2 text-center text-xs text-muted-foreground">{item.label}</span>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={src}
+                alt=""
+                loading="lazy"
+                onError={() => setBroken(true)}
+                className="h-full w-full object-cover"
+              />
+            )}
+          </span>
+        </button>
+
+        <span className="flex flex-wrap items-baseline gap-x-1 text-sm text-foreground">
+          {/* The letter is part of the button's accessible name, so it is decoration
+              here rather than a second reading of it. */}
+          <span className="font-semibold text-primary" aria-hidden>
+            {item.letter}
+          </span>
+          <TokenizedText text={item.label} l2Code={l2.code} inline />
         </span>
-        <span className="text-sm text-foreground">
-          <span className="mr-1 font-semibold text-primary">{item.letter}</span>
-          {item.label}
-        </span>
-      </button>
+      </div>
     </div>
   );
 }
