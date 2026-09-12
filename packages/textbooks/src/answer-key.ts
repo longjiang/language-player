@@ -40,6 +40,25 @@ export interface AnswerKeyItem {
   answers: string[];
 }
 
+const CHINESE_NUMERALS: Record<string, number> = {
+  一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10,
+};
+
+/**
+ * `插图二 C` → `② C`, so the illustration slots join the one index syntax.
+ *
+ * B ➎'s key names the slots in Chinese words because the workbook prints them that
+ * way (插图一…六); its blank ids are `b1`…`b6` in the same order, so the index
+ * carries across unchanged.
+ */
+function normaliseChineseNumerals(raw: string): string {
+  return raw.replace(/插图([一二三四五六七八九十]+)/g, (_m, word: string) => {
+    // Only single characters occur; a compound (十一) would be an authoring error.
+    const n = word.length === 1 ? CHINESE_NUMERALS[word] : undefined;
+    return n === undefined ? _m : indexToCircled(n);
+  });
+}
+
 /** Answers separated by an ideographic comma, a normaliser, or an ASCII comma. */
 const MULTI_ANSWER_SPLIT_RE = /[、,，]/;
 
@@ -51,6 +70,7 @@ const MULTI_ANSWER_SPLIT_RE = /[、,，]/;
  *   ② 新; ③ 免费Wi-Fi; ④ 充电口。          — circled question numerals (B ➋)
  *   2. 金敏俊: B、c; 3. 奥利维亚: D, a。     — row numbers plus a name label (A ➌)
  *   (4) 运营时刻 ......... [ C ]           — a labelled row with a bracketed answer (D ➋)
+ *   插图二 C; 插图三 D; …                  — Chinese-numbered illustration slots (B ➎)
  *
  * Tolerates the punctuation the key actually uses (`;`, `；`, `。`, `.`) in both
  * full-width and half-width forms.
@@ -61,8 +81,9 @@ export function parseAnswerKey(raw: string): AnswerKeyItem[] {
   if (!raw) return [];
 
   // Normalise the row-number forms into circled numerals so there is exactly
-  // one index syntax downstream: `2.` / `2、` / `(2)` → ②.
-  const withCircled = raw
+  // one index syntax downstream: `2.` / `2、` / `(2)` → ②. The illustration slots
+  // are numbered in Chinese words rather than circles, so 插图二 is index 2.
+  const withCircled = normaliseChineseNumerals(raw)
     .replace(/[(（]\s*(\d{1,2})\s*[)）]/g, (_m, n) => indexToCircled(Number(n)))
     .replace(/(^|[;；。.\s])(\d{1,2})\s*[.、)）]/g, (_m, pre, n) => `${pre}${indexToCircled(Number(n))}`);
 

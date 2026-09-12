@@ -1,9 +1,9 @@
 /**
  * Lesson 六D — 那边的地铁好不好坐啊 (unit 6, lesson D).
  *
- * Note-taking task. Source: workbook pages 17 and 19. The listening tasks (➊–➌
- * and ➍/➎) are not authored yet; this lesson currently contributes the
- * note-capture task, which is the one Phase 3 needs.
+ * Note-taking task (➎, printed page 19), the one Phase 3 needs. The rest of the
+ * lesson — the listening tasks ➊–➍, the draft-writing ➏ and the record-yourself ➐ —
+ * is not authored yet.
  */
 
 import type { LessonMeta } from '../../../types';
@@ -15,8 +15,8 @@ export const lessonD: LessonMeta = {
   canDo: '能比较流利地介绍自己的出行情况。',
   tasks: [
     {
-      id: 'tblt-hsk4.u06.D.t6',
-      number: '➏',
+      id: 'tblt-hsk4.u06.D.t5',
+      number: '➎',
       type: 'writing',
       sourcePage: 19,
       instructions: '讲话的人主要都说了些什么？按照下面列出的话题，把讲话内容写成笔记。',

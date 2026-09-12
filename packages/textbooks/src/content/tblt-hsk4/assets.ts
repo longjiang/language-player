@@ -54,6 +54,9 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   audio('六A ➌（4）河内.mp3'),
   audio('六A ➌（5）爱宝乐园.mp3'),
 
+  // ── Lesson B, task ➎ — the whole article read aloud (shared with ➏) ──
+  audio('六B ➎ 开票一秒就空了.mp3'),
+
   // ── Lesson C — listening pictures and the booking dialogue ──
   audio('六C ➊ ① 下一站，无锡站.mp3'),
   audio('六C ➊ ②.mp3'),
@@ -90,6 +93,16 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
 
   // ── Lesson B ➍ — the workbook screenshot shown if the mock frame fails ──
   image('b4-fallback.jpg'),
+
+  // ── Pictures, lesson B ➎ — the six illustrations the student places ──
+  // Numbered as the workbook letters them: A calendar, B transfer, C passenger
+  // info, D waitlist, E scam, F unpaid ticket.
+  image('b5-illustration-a.jpg'),
+  image('b5-illustration-b.jpg'),
+  image('b5-illustration-c.jpg'),
+  image('b5-illustration-d.jpg'),
+  image('b5-illustration-e.jpg'),
+  image('b5-illustration-f.jpg'),
 
   // ── Pictures, lesson A ➊ — the map and the ten scenic spots (A–J) ──
   // The map is a flat-colour graphic, so PNG; the spots are photographs, so

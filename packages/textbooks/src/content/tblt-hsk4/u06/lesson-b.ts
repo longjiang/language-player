@@ -135,5 +135,83 @@ export const lessonB: LessonMeta = {
       },
       answerKeyRaw: '② K1275; ③ G875、G49、D17、D11; ④ Z281; ⑤ G871、G875; ⑥ D17、D11。',
     },
+    {
+      id: 'tblt-hsk4.u06.B.t5',
+      number: '➎',
+      type: 'reading',
+      sourcePage: 10,
+      instructions:
+        '读读下面这一篇社交平台上关于黄金周高铁"抢票"的文章。以下的插图，放在文章中的哪里最合适？在文章插图一～六中填入A~F。',
+      // One recording of the whole article, shared with B ➏.
+      audio: [{ key: 'tblt-hsk4/u06/六B ➎ 开票一秒就空了.mp3' }],
+      body: [
+        {
+          // The article, one block per paragraph group so each tip's illustration
+          // slot lands at the end of the tip it belongs to. The article's ①–⑦ text
+          // blanks belong to B ➏, so here they are printed as the workbook prints
+          // them, with ① and ③ showing their worked-example answers.
+          kind: 'passage',
+          text:
+            '"开票一秒就空了"——国庆抢高铁票抢到哭？' +
+            '\n\n自己试了试，这几个12306建议的办法真的有用！国庆成功抢到高铁票！' +
+            '\n\n#黄金周抢票好办法＃国庆抢票' +
+            '\n\n9月16日12306开始卖国庆假期高铁票。过去几年不少网友表示，国庆车票比演唱会门票还难抢，这件事很快就成了"热搜"。关于抢票难的情况，12306工作人员表示，国庆期间买票比较难，所以需要旅客做好准备。' +
+            '\n\n12306估计，今年国庆假期每天有2.19亿人使用铁路，10月1日人数最多。国庆假期突然很多人都要出门，探亲、旅游、学生回家等需要同时出现，让铁路压力很大。虽然铁路部门已想了办法，计划发出约1.3万列旅客列车，但（① A）。这种情况下，有些路线使用的人比较多，车票"秒光"。假期快到了，怎么才能提高抢票成功率呢？给大家以下几个建议，可以试一试。',
+        },
+        {
+          kind: 'passage',
+          text:
+            '1. 记准放票时间。预订车票的最早时间是发车前15天。假期第一日国庆节（10月1日）的车票9月17日可以预订，9月16日可以购买国庆前一天（9月30日工作日）的车票。假期最后一天（10月8日）的回家的车票会在9月24日开始卖。如果要确定买票的最早时间，可以打开12306"我的""起售时间"，输入出发站、随便选个日期就能查。确认了起售时间后就定好闹钟，（② ）。{{b1}}',
+        },
+        {
+          kind: 'passage',
+          text:
+            '2. 提前填好信息。在买票前可通过铁路12306APP提前填好信息，在火车票起售那一天就可以快速完成购买。卖票那一天要"快准狠"：提前2分钟进12306，把要订的车次看好，填好个人信息。有的网友表示，提前填好了个人信息，时间一到马上下拉更新，（③确定购买），一分多钟后就成功完成了付款。{{b2}}',
+        },
+        {
+          kind: 'passage',
+          text:
+            '3. 候补买票。如果没有第一时间抢到票也不用担心，可以通过12306APP"候补"功能，提出几个不同日期、车次、座位的候补订单，提高成功率。要使用"候补"功能，可以（④ ），加到购物车，点"下一步"，然后再加上更多候补车次、座位和日期。{{b3}}',
+        },
+        {
+          kind: 'passage',
+          text:
+            '4. 选择换乘。如果买不到直达的车票，还可选择买换乘车票。另外，可以先买短距离的车票，上车后再找车上的乘务员补票。有网友自己试过这种"（⑤ ）"的方式，发现能大大提高成功率，只是担心可能会没有位置坐，所以必须做好长时间站着的心理准备。{{b4}}',
+        },
+        {
+          kind: 'passage',
+          text:
+            '5. 买别人退了的票。开车前8天，是退票最多的时候；开车前48小时和24小时，12306会开始卖这些退了的车票；一般每天22时到23时也是退票最多的时候；开车前一天平台又会开始卖剩下的票，所以旅客可以在以上时间点试试抢票，也许可以成功买到票。另外，很多旅客订了票但一直没有支付，这些会在20分钟后自动取消，让其他需要的旅客可以订。所以如果多刷新，也许（⑥ ），增加成功率。{{b5}}',
+        },
+        {
+          kind: 'passage',
+          text:
+            '6. 不要选择别的平台买票。最后提醒旅客，只有铁路12306网站和APP才是中国铁路正式的火车票网络订票平台。因此，不要使用别的平台买车票。有不少APP或微信小程序说，"多付XX元钱就可以提高百分之XX的抢票成功率"。对此，12306服务人员提醒，"这些都是没用的，加再多钱也是一样的，不要再多付钱了"。另外，这些订票平台还有个人信息和资金的危险，所以（⑦ ）。{{b6}}',
+        },
+        {
+          kind: 'pictureSet',
+          id: 'illustrations',
+          items: [
+            { letter: 'A', label: '日历和闹钟（记准放票时间）', image: 'tblt-hsk4/u06/b5-illustration-a.jpg' },
+            { letter: 'B', label: '换乘（选择换乘）', image: 'tblt-hsk4/u06/b5-illustration-b.jpg' },
+            { letter: 'C', label: '乘客信息预填（提前填好信息）', image: 'tblt-hsk4/u06/b5-illustration-c.jpg' },
+            { letter: 'D', label: '候补车次表格（候补买票）', image: 'tblt-hsk4/u06/b5-illustration-d.jpg' },
+            { letter: 'E', label: '网络诈骗（不要选择别的平台）', image: 'tblt-hsk4/u06/b5-illustration-e.jpg' },
+            { letter: 'F', label: '未支付的车票（买别人退了的票）', image: 'tblt-hsk4/u06/b5-illustration-f.jpg' },
+          ],
+        },
+      ],
+      blanks: {
+        // 插图一 is printed with A as the worked example.
+        b1: { id: 'b1', kind: 'given', answer: 'A' },
+        b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'illustrations' },
+        b3: { id: 'b3', kind: 'choose', answer: 'D', optionSet: 'illustrations' },
+        b4: { id: 'b4', kind: 'choose', answer: 'B', optionSet: 'illustrations' },
+        b5: { id: 'b5', kind: 'choose', answer: 'F', optionSet: 'illustrations' },
+        b6: { id: 'b6', kind: 'choose', answer: 'E', optionSet: 'illustrations' },
+      },
+      // The key writes these as 插图二 C; … which `parseAnswerKey` reads as index 2.
+      answerKeyRaw: '插图二 C；插图三 D；插图四 B；插图五 F；插图六 E。',
+    },
   ],
 };
