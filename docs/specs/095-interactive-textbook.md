@@ -8,7 +8,7 @@
 - **Created**: 2026-09-11
 - **ROADMAP Phase**: Phase 5 (Content Features)
 - **Web ref**: `apps/web/src/app/[l1]/[l2]/tasks/` (new), `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/app/docs/doc-sidebar.tsx` (TOC pattern)
-- **Mobile ref**: `apps/mobile/app/(tabs)/(interact)/tasks.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
+- **Mobile ref**: `apps/mobile/app/(tabs)/(vocab)/tasks.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
 - **Source content**: `tmp/interactive-text/` (workbook PDF, answer key PDF, audio transcript PDF, 47 mp3)
 - **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
 
@@ -318,16 +318,34 @@ The pattern to imitate is `packages/shared/src/sample-content/loaders.ts`, which
 
 ## Navigation and Information Architecture
 
-The feature is reached from a **new fourth top-level nav group, `Interact`**, containing a **Tasks** item.
+The feature is reached from **`Study` > `Tasks`**, where `Study` is the existing top-level nav group **renamed** from `Vocab`, and `Tasks` is added **below `Review`**.
 
-The existing top-level groups are `Media`, `Reading` and `Vocab` — three of them — so `Interact` is the **fourth**, not a fifth. (Mobile's `(me)` group is reached from the avatar menu and is not a nav group.) The group is added in the same shape as the existing three on both platforms:
+So the nav change is two edits to an existing group, not a new group:
 
-| Platform | Where groups are declared |
+| Group | Before | After |
+|---|---|---|
+| Media | explore, live-tv, tv-shows, channels, local-media | unchanged |
+| Reading | reader, web-reader, epub, image-reader | unchanged |
+| **Study** (was `Vocab`) | dictionary, review | dictionary, review, **tasks** |
+
+| Platform | Where the groups are declared |
 |---|---|
 | Web | `apps/web/src/components/layout/header.tsx:25–49` |
 | Mobile | `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, MD/tablet dropdown) and `apps/mobile/components/layout/HamburgerDrawer.tsx` (phones) |
 
-Both mobile surfaces need the group — they are two presentations of the same list, and a group added to only one would be unreachable on the other form factor. Each also needs an icon entry (`sf` SF Symbol in `NavBar.tsx`, `NAV_ICONS` in both files), and the new route group must be registered as a `Stack.Screen` in `apps/mobile/app/(tabs)/_layout.tsx`, which currently lists `(media)`, `(reading)`, `(vocab)` and `(me)`.
+Both mobile surfaces need the change — they are two presentations of the same list, and a link added to only one would be unreachable on the other form factor. `Tasks` also needs an icon entry in each (`sf` SF Symbol in `NavBar.tsx`, `NAV_ICONS` in both files).
+
+### Translation keys
+
+- **Group labels are currently hardcoded English** (`label: 'Vocab'`), not translation keys — the only such strings in the nav; link labels use `title.*` keys. Renaming to `Study` is therefore a literal string change, unless the label is keyed at the same time.
+- `translations.csv` already contains **three unused keys whose English value is `Vocab`** — `label.vocab`, `nav.vocab`, `title.vocab` — and none is referenced anywhere in the app. Rather than adding a fourth, rename one of them in place to `title.study` with the English value `Study`, and use it for the group label.
+- `Tasks` has **no existing key** (nothing in the CSV has that English value, and there is no near-miss `Practice`/`Exercises`/`Activities` key to reuse), so `title.tasks` is genuinely new and needs all **18 locales**.
+
+### Mobile route group: keep `(vocab)`
+
+`Tasks` lives in the existing `(vocab)` route group rather than a new one, so **no new `Stack.Screen` is needed** in `apps/mobile/app/(tabs)/_layout.tsx`.
+
+The directory is **not** renamed to `(study)`: parenthesised route groups do not appear in URLs, so renaming it would be invisible to users while touching 22 references — including `apps/mobile/lib/web-url-mapper.ts`, which maps web path segments (`saved-words`, `review`, `dictionary`) onto this group and is the deep-link path (SPEC-069). Renaming the user-facing label without renaming the internal directory is the intended outcome, and any future `(study)` rename should be a separate, deliberate change.
 
 Screens:
 
@@ -351,21 +369,22 @@ apps/web/src/app/[l1]/[l2]/tasks/
 The route is `tasks` to match the menu item. It is a deliberate, small naming choice — if the menu item is renamed, the path should be renamed with it.
 
 - `[l1]`/`[l2]` are validated by `apps/web/src/app/[l1]/[l2]/layout.tsx:24–29`.
-- Add an `Interact` group with a `title.tasks` link in `apps/web/src/components/layout/header.tsx:25–49` (new CSV keys: `title.interact`, `title.tasks`).
+- Rename the `Vocab` group label to `Study` and add `{ key: 'title.tasks', href: 'tasks' }` below `review` in `apps/web/src/components/layout/header.tsx:25–49`.
 - Auth gating: add `tasks` to `AUTH_REQUIRED_SEGMENTS` in `apps/web/src/proxy.ts` if the pilot is Pro-only (ADR-0034); otherwise add it to `GUEST_NAV_FREE_SEGMENTS`.
 - Note: the `/learn/:rest*` and `/learning-path` patterns are currently redirect targets away from the web app (`apps/web/src/lib/classic-route-redirect.ts:296,356–357`), so this feature introduces its own `tasks` path and leaves those redirects untouched.
 
 ### Mobile
 
 ```
-apps/mobile/app/(tabs)/(interact)/_layout.tsx
-apps/mobile/app/(tabs)/(interact)/tasks.tsx                       # textbook picker + TOC
-apps/mobile/app/(tabs)/(interact)/tasks/[unitId]/[lessonId]/[taskId].tsx
+apps/mobile/app/(tabs)/(vocab)/_layout.tsx
+apps/mobile/app/(tabs)/(vocab)/tasks.tsx                        # textbook picker + TOC
+apps/mobile/app/(tabs)/(vocab)/tasks/[unitId]/[lessonId]/[taskId].tsx
 ```
 
-- Register each screen in the group's `_layout.tsx`, and add `(interact)` as a `Stack.Screen` in `apps/mobile/app/(tabs)/_layout.tsx` alongside `(media)`, `(reading)`, `(vocab)` and `(me)`.
-- Add the `Interact` group to **both** `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, tablets/MD) and `HamburgerDrawer.tsx` (phones), with an `sf` symbol and a `NAV_ICONS` entry in each.
-- **Not a bottom tab.** The mobile app has no bottom tab bar: `apps/mobile/app/(tabs)/_layout.tsx` renders a `Stack` despite the directory name, and navigation is the top `Header` plus those two menus. `Interact` follows the existing pattern rather than introducing a new navigation shell.
+- `Tasks` extends the existing `(vocab)` route group — **no new `Stack.Screen`** is required in `apps/mobile/app/(tabs)/_layout.tsx`, and the directory is **not** renamed (see "Mobile route group" above).
+- Register the new screens in `apps/mobile/app/(tabs)/(vocab)/_layout.tsx`.
+- Rename the group label to `Study` and add the `Tasks` link below `review` in **both** `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, tablets/MD) and `HamburgerDrawer.tsx` (phones), with an `sf` symbol and a `NAV_ICONS` entry in each.
+- **Not a bottom tab.** The mobile app has no bottom tab bar: `apps/mobile/app/(tabs)/_layout.tsx` renders a `Stack` despite the directory name, and navigation is the top `Header` plus those two menus. `Tasks` follows the existing pattern rather than introducing a new navigation shell.
 
 ### Initial L2 scope
 
@@ -524,7 +543,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## Data Flow
 
-1. Student opens **Interact → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
+1. Student opens **Study → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
 2. Student picks a task → task JSON loads and asset URLs resolve. `TaskShell` requests tokens for the task's passages (`/lemmatize-normalized/batch`) and holds the skeleton until they arrive.
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText` with `blank` format ranges. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
 4. Student responds. Two shapes, one store:
@@ -545,7 +564,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## Phasing
 
-- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section) and **L2 tokenized instructions** with the optional L1 translation; the `Interact` → `Tasks` nav entry plus `TextbookPicker` and `TaskToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
+- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section) and **L2 tokenized instructions** with the optional L1 translation; the **`Vocab` → `Study` rename** plus the `Tasks` nav entry on both platforms, `TextbookPicker` and `TaskToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
 - **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), then `MockAppFrame` + `mock-app-runtime.js` + a "hello world" mock app to prove the per-app floor (B ➍).
 - **Phase 3 — writing lesson.** `DictationField` (wrapping `SpellCharInput`), `FreeWrite`, note-capture.
@@ -572,7 +591,7 @@ All six questions this spec opened with were settled on 2026-09-11. Recorded her
 | Instructions language | L2, rendered as **tokenized text**; L1 translation below, gated by the per-L2 `display.translation` setting | Instructions |
 | Does textbook performance feed SRS? | **No** — a product decision, not phasing | Non-Goals, Grading |
 | Attempt recording scope | **Local only** for now; no server-side exercise table or sync | Non-Goals, ADR-0044 |
-| Multi-book catalogue | Reached from a new **`Interact` > `Tasks`** nav group — the **fourth** top-level group after Media, Reading and Vocab, added to the existing nav on both platforms (not a bottom tab). Then a textbook picker, then a docs-style collapsible TOC of units → lessons → tasks, side-by-side with the task | Navigation and Information Architecture |
+| Multi-book catalogue | Reached from **`Study` > `Tasks`**: the existing `Vocab` nav group is **renamed to `Study`** and `Tasks` is added **below `Review`** — no new top-level group, and not a bottom tab. Then a textbook picker, then a docs-style collapsible TOC of units → lessons → tasks, side-by-side with the task | Navigation and Information Architecture |
 | `expectedLength` semantics | Circled numerals are **question indices** for answer-key lookup, **not** length hints. `expectedLength` defaults to `answer.length` and is set explicitly only for dictation (E ➊/➋), where the workbook prints one box per character | Schema rules #4 |
 | Pagination | **Not needed** — long passages render as one scrolling block | Non-Goals |
 
