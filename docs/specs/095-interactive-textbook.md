@@ -147,10 +147,60 @@ Most stimulus kinds may also carry `audio` for their own recording — a `passag
 `dialogue`, a `dataTable` row, a map pin. See [Audio](#audio) for which level to use.
 
 There is **no** `inlineImageSlot` stimulus kind, and none is needed: a `choose` blank
-answering from a `pictureSet` renders as an illustration slot, showing the chosen picture
-in the box the booklet prints. The interaction is the one A ➊ already uses — tap the slot,
-then tap a picture — so this is a rendering variant of `BlankField`, not a kind of its
-own.
+answering from a `pictureSet` is *printed* in one of two shapes and *answered* the same
+way in both. It is a rendering variant of `BlankField`, not a kind of its own.
+
+### Picture choices
+
+**Tapping the blank opens a dialog of the set's pictures; tapping a picture fills the
+blank with that picture's letter.** The student answers at the blank, and the blank is
+the size the workbook prints for it — which is the whole point, because A ➊'s blanks sit
+in the map's `( )` brackets, where a 128×96 illustration box covered the map it was drawn
+on and left the printed bracket empty.
+
+This replaced a two-step flow — tap the blank to select it, scroll down to the picture
+bank, tap a picture — which asked the student to hold a blank in mind while travelling to
+a different part of the page to answer it. The bank below the task stays: it is the
+pictures themselves, and a student working through a listening task wants to look at them
+while listening. It still fills whichever blank is selected, so both routes go through
+`useBlankPicker` and neither is a special case.
+
+| Printing | Where | Renders as |
+|---|---|---|
+| `cell` | map pins (A ➊), numbered rows (A ➋, C ➊/➋), table cells (A ➌) | a compact rounded square in a faded primary tint, holding the letter — the shape the workbook prints (`( )`, `① ___`, an empty cell) |
+| `slot` | inside a running passage (B ➎/➏) | the illustration box the article prints, holding the chosen **picture**, so the finished article reads as the finished page |
+
+Which one applies is a property of *where the blank is printed*, not of the blank, so it
+is the caller that decides: `BlankField`'s `variant` prop, and `TokenizedText`'s
+`blankVariant` pass-through for blanks that live inside a cell or a passage. Both
+variants open the same dialog.
+
+Four details that are easy to get wrong:
+
+- **One dialog per task, not per blank.** `BlankChoiceProvider` renders it beside the
+  task; a task can carry thirty blanks, and thirty dialogs is thirty focus traps waiting
+  to be open at once.
+- **Opening the dialog also selects the blank.** That is what arms the picture bank, so
+  the two routes fill a blank through one code path — and it is why closing the dialog
+  does *not* clear the selection.
+- **Tapping the answer already given takes it back.** The dialog is now the only place a
+  mis-pick can be undone, because tapping the blank itself opens the dialog rather than
+  clearing it.
+- **A `multiple` blank keeps the dialog open** so a student can pick several; a
+  single-answer blank closes on the tap.
+
+Two consequences worth stating because they are what made the change correct rather than
+merely nicer:
+
+- **A worked example is not drawn on an image map.** 西安's `given` A is printed in the
+  map's bracket, so a pin for a `given` blank renders nothing on the image — drawing it
+  would double the letter. It still renders in the broken-map fallback list, where no map
+  is printed at all.
+- **A map pin is anchored to the printed bracket, not to the leader line's dot.** The
+  instructions tell the student to write in the bracket (`在城市旁边的（ ）中写下对应的景点`),
+  and the bracket is where a cell the size of the printed blank belongs. `validateTask`
+  now rejects a pin outside 0–100 on both axes, because such a control is clipped by the
+  frame's `overflow-hidden` and the blank silently becomes unanswerable.
 
 ### Response kinds
 
@@ -572,7 +622,8 @@ below fall either side of.
 - a task missing `sourcePage` (transcription provenance);
 - a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa;
 - a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to;
-- a `recall` pointing at a task the book does not have — a wrong id renders nothing at all, silently.
+- a `recall` pointing at a task the book does not have — a wrong id renders nothing at all, silently;
+- an `imageMap` pin outside 0–100 on either axis — the control would be clipped by the frame's `overflow-hidden` and the blank would silently stop being answerable.
 
 **Enforced by `mock-app-files.test.ts`** — these need to read
 `apps/web/public/mock-apps/`, which the pure validator cannot, so they live in a test
@@ -803,11 +854,14 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
 | `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
-| `PictureSet` | Lettered image grid referenced by blanks |
+| `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
+| `PictureOptionTile` | One picture as a pickable tile (picture, letter, label, inline retry). Shared by the bank and by the dialog so the fallback cannot drift between them |
+| `BlankChoiceProvider` / `useBlankChoice` | The task's picture-choice dialog and its opener. One dialog per task; a blank calls `open(blankId)` |
+| `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | Host frame + bridge for a self-contained mock-app HTML file (see below) |
-| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
+| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
 | `DictationField` | Boxed per-character entry for dictation tasks |
@@ -1045,9 +1099,26 @@ references is declared in the manifest and present on disk; the test suite passe
 pilot were each verified returning HTTP 200 from the shared host, including
 percent-encoded workbook audio filenames.
 
+**That claim was never re-checked as the unit grew, and it no longer holds.** A HEAD
+request over all 107 declared keys finds **14 missing** — B ➌'s eight seat photographs
+(`b3-g41-*`, `b3-k1275-*`) and B ➎'s six illustrations (`b5-illustration-*`). All 14
+exist in the local `zerotohero-server-data/interactive-textbook/` folder and were never
+uploaded, so publishing the unit is still the one `rsync` step documented under
+[Where media lives](#where-media-lives-and-the-one-step-to-publish-it). Nothing broke
+loudly, because a missing picture degrades to a labelled tile with an inline retry —
+which is the designed behaviour, and also why this went unnoticed.
+
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**The picture-choice flow is verified in a browser, on both printings**: tapping a map
+cell opens the dialog, picking fills the letter and closes it, tapping the given letter
+again clears it, the numbered rows and table cells render as compact cells, and an
+in-passage slot still shows its illustration once filled. The map anchors are verified
+against the image itself — the bracket glyphs were detected, the gap between them
+measured (all ten came out 71–79 image px, which is the printed spacing), and the cells
+then drawn onto the map to confirm each one lands in its bracket.
 
 **Rendering is verified by measurement, not by eye.** The web pass above reads
 `getBoundingClientRect`, `scrollWidth` and `clientWidth` per page rather than trusting a
