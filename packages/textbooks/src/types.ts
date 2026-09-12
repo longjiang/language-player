@@ -92,6 +92,15 @@ export interface BlankSpec {
    */
   expectedLength?: number;
   /**
+   * Whether more than one option may be picked.
+   *
+   * B ➌ asks which two K1275 seat classes allow sleep, so one blank has to accept a
+   * set. The response is stored as the picks joined by `、`, and grading compares the
+   * two sets rather than the strings — so the order the student taps in does not
+   * matter, and `accept[]` needs no permutations.
+   */
+  multiple?: boolean;
+  /**
    * The blank's own recording.
    *
    * A numbered slot (A ➋, C ➊/➋) and a dictation item (E ➊/➋) are each one blank, so

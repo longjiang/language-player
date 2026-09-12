@@ -186,3 +186,42 @@ describe('ungraded blanks', () => {
     expect(result.complete).toBe(false);
   });
 });
+
+describe('multi-select blanks (B ➌)', () => {
+  const multi = (over: Partial<BlankSpec> = {}): BlankSpec => ({
+    id: 'b3',
+    kind: 'choose',
+    answer: '硬卧、软卧',
+    bank: 'seats',
+    multiple: true,
+    ...over,
+  });
+
+  it('accepts the picks in any order', () => {
+    // The student may tap 软卧 first; the set is what matters, not the sequence.
+    expect(isBlankCorrect(multi(), '硬卧、软卧')).toBe(true);
+    expect(isBlankCorrect(multi(), '软卧、硬卧')).toBe(true);
+  });
+
+  it('accepts a comma instead of the ideographic comma', () => {
+    expect(isBlankCorrect(multi(), '硬卧,软卧')).toBe(true);
+  });
+
+  it('rejects a partial pick', () => {
+    expect(isBlankCorrect(multi(), '硬卧')).toBe(false);
+  });
+
+  it('rejects a wrong pick alongside a right one', () => {
+    expect(isBlankCorrect(multi(), '硬卧、硬座')).toBe(false);
+  });
+
+  it('rejects an extra pick', () => {
+    expect(isBlankCorrect(multi(), '硬卧、软卧、硬座')).toBe(false);
+  });
+
+  it('still compares single blanks as whole strings', () => {
+    const single: BlankSpec = { id: 'b2', kind: 'choose', answer: '商务座', bank: 'seats' };
+    expect(isBlankCorrect(single, '商务座')).toBe(true);
+    expect(isBlankCorrect(single, '商务座、一等座')).toBe(false);
+  });
+});

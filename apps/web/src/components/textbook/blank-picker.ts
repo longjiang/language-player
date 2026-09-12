@@ -40,6 +40,22 @@ export function useBlankPicker(): BlankPicker {
   const pick = useCallback(
     (value: string) => {
       if (!selected) return;
+      const blank = ctx!.task.blanks?.[selected];
+
+      // A multi-select blank stays selected and toggles picks, because the student
+      // is choosing a set rather than answering a run of slots.
+      if (blank?.multiple) {
+        const current = (responses[selected] ?? '')
+          .split(/[、,，]/)
+          .map((part) => part.trim())
+          .filter(Boolean);
+        const next = current.includes(value)
+          ? current.filter((v) => v !== value)
+          : [...current, value];
+        ctx!.store.setValue(selected, next.join('、'));
+        return;
+      }
+
       ctx!.store.setValue(selected, value);
       const blanks = Object.values(ctx!.task.blanks ?? {}).filter((b) => b.kind !== 'given');
       const at = blanks.findIndex((b) => b.id === selected);

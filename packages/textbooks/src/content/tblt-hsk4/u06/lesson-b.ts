@@ -100,6 +100,67 @@ export const lessonB: LessonMeta = {
       answerKeyRaw: '② 新; ③ 免费Wi-Fi; ④ 充电口。',
     },
     {
+      id: 'tblt-hsk4.u06.B.t3',
+      number: '➌',
+      type: 'reading',
+      sourcePage: 8,
+      instructions: '北京南站到杭州东站的G41（读"高四十一"）次列车，车程4小时28分。北京丰台站到杭州站的K1275（读"快一二七五"）次列车，车程21小时1分，有卧铺，适合睡觉。比较一下两次列车的不同座位，回答下面的问题。',
+      body: [
+        {
+          // Seat classes and their prices. The bank items below are these exact
+          // strings, so a pick can be checked against the table it came from.
+          kind: 'dataTable',
+          id: 'g41',
+          columns: ['G41', '无座', '二等座', '一等座', '商务座'],
+          rows: [
+            { cells: ['每排座位数', '—', '每排5座', '每排4座', '每排3座'] },
+            { cells: ['价格', '673元', '673元', '1076元', '2354元'] },
+          ],
+        },
+        {
+          kind: 'dataTable',
+          id: 'k1275',
+          columns: ['K1275', '无座', '硬座', '硬卧', '软卧'],
+          rows: [{ cells: ['价格', '189.5元', '189.5元', '322.5元', '504.5元'] }],
+        },
+        {
+          kind: 'passage',
+          text:
+            '① G41的哪种座位最便宜？（{{b1}}）\n\n② G41的哪种座位最舒服？（{{b2}}）\n\n③ K1275的哪两种座位可以睡觉？（{{b3}}）\n\n④ K1275的哪种座位最难受？（{{b4}}）',
+        },
+      ],
+      blanks: {
+        // The workbook prints the first answer as the worked example.
+        b1: { id: 'b1', kind: 'given', answer: '二等座、无座' },
+        b2: { id: 'b2', kind: 'choose', answer: '商务座', bank: 'g41-seats' },
+        // Two seats may be picked, in either order. `accept` carries the key's
+        // wording, which joins them with 和 rather than the pick separator.
+        b3: {
+          id: 'b3',
+          kind: 'choose',
+          answer: '硬卧、软卧',
+          accept: ['硬卧和软卧'],
+          bank: 'k1275-seats',
+          multiple: true,
+        },
+        b4: { id: 'b4', kind: 'choose', answer: '无座', bank: 'k1275-seats' },
+      },
+      banks: [
+        {
+          id: 'g41-seats',
+          items: ['无座', '二等座', '一等座', '商务座'],
+          // The workbook prints 无座（站着）; the answer is the class alone.
+          optionLabels: { 无座: '（站着）' },
+        },
+        {
+          id: 'k1275-seats',
+          items: ['无座', '硬座', '硬卧', '软卧'],
+          optionLabels: { 无座: '（站着）' },
+        },
+      ],
+      answerKeyRaw: '② 商务座；③ 硬卧和软卧；④ 无座。',
+    },
+    {
       id: 'tblt-hsk4.u06.B.t4',
       number: '➍',
       type: 'reading',

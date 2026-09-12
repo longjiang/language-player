@@ -19,19 +19,29 @@ export function WordBank({ bank }: { bank: Bank }) {
   const { selected, pick, responses } = useBlankPicker();
 
   const usedValues = new Set(Object.values(responses).filter(Boolean));
+  // For a multi-select blank the options already picked are shown as chosen rather
+  // than consumed, so a second tap unpicks them.
+  const picked = new Set(
+    (selected ? (responses[selected] ?? '') : '')
+      .split(/[、,，]/)
+      .map((part) => part.trim())
+      .filter(Boolean),
+  );
 
   return (
     <View className="gap-2">
       <View className="flex-row flex-wrap gap-2">
         {bank.items.map((item) => {
-          const consumed = !bank.allowReuse && usedValues.has(item);
+          const isPicked = picked.has(item);
+          const consumed = !isPicked && !bank.allowReuse && usedValues.has(item);
           return (
             <Pressable
               key={item}
               onPress={() => pick(item)}
               accessibilityRole="button"
-              className={`rounded-md border border-border px-3 py-1.5 ${
-                consumed ? 'bg-muted/40' : 'bg-card'
+              accessibilityState={{ selected: isPicked }}
+              className={`rounded-md border px-3 py-1.5 ${
+                isPicked ? 'border-primary bg-primary/10' : consumed ? 'border-border bg-muted/40' : 'border-border bg-card'
               }`}
             >
               <Text
