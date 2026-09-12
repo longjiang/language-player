@@ -7,6 +7,8 @@ import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { InlineImageSlot } from './inline-image-slot';
 import { PictureBlankCell } from './picture-blank-cell';
+import { useBlankChoice } from './blank-choice';
+import { bankInDialog } from '@langplayer/textbooks';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -51,6 +53,11 @@ export function BlankField({
   const getSelected = useCallback(() => ctx!.selection.get() === blank.id, [ctx, blank.id]);
   const isSelected = useSyncExternalStore(ctx!.selection.subscribe, getSelected, getSelected);
 
+  // A bank the content offers in the dialog (B ➌'s seat classes) is answered *at the blank*: the
+  // tap opens the options rather than arming a pool beside the task.
+  const inDialog = Boolean(blank.bank && bankInDialog(ctx!.task, blank.bank));
+  const choice = useBlankChoice();
+
   const blankResult = result?.blanks.find((b) => b.blankId === blank.id);
   const reveal = result && blankResult && !blankResult.correct ? blank.answer : null;
   const label = blankLabel(blank);
@@ -76,12 +83,18 @@ export function BlankField({
       : 'border-destructive bg-destructive/10'
     : null;
 
-  // Tapping a bank blank always SELECTS it. It never clears and never deselects: a filled
-  // blank is re-answered by picking another option (which replaces it), and a blank a stray
-  // second tap had deselected would silently swallow the next option tap — the student taps a
-  // word and nothing appears, with no sign that the blank was disarmed. Re-tapping the same
-  // blank is therefore a no-op rather than a toggle.
-  const handleChoose = () => ctx!.selection.set(blank.id);
+  // Tapping a bank blank always SELECTS it (unless it is a dialog blank, handled above). It never clears and never deselects: a
+  // filled blank is re-answered by picking another option (which replaces it), and a blank a
+  // stray second tap had deselected would silently swallow the next option tap — the student
+  // taps a word and nothing appears, with no sign that the blank was disarmed. Re-tapping the
+  // same blank is therefore a no-op rather than a toggle.
+  const handleChoose = () => {
+    if (inDialog) {
+      choice?.open(blank.id);
+      return;
+    }
+    ctx!.selection.set(blank.id);
+  };
 
   // ── Typed entry ──
   if (blank.kind === 'type') {
@@ -137,7 +150,9 @@ export function BlankField({
       <button
         type="button"
         onClick={handleChoose}
-        aria-label={label}
+        // A dialog blank's name says what tapping it does; a pool blank's is the question number,
+        // which is how the workbook and the key refer to it.
+        aria-label={inDialog ? `${label} ${value || t('msg.please_select_option')}` : label}
         className={`inline-flex min-w-[3em] items-center justify-center rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
           verdictClass ??
           (isSelected

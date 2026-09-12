@@ -49,6 +49,26 @@ describe('a table row with an icon', () => {
 
     // …and the row's own text is unchanged, letter first, as the instructions point at.
     const tokenized = [...document.querySelectorAll('[data-tokenized]')].map((n) => n.textContent);
-    expect(tokenized[0]).toBe('G815 “高815”');
+    expect(tokenized).toContain('G815 “高815”');
+  });
+
+  it('tokenizes the headings, which are content: the seat classes the questions ask about', async () => {
+    const book = await loadBook('tblt-hsk4');
+    const t = await taskB1();
+    const table = t.body.find((s) => s.kind === 'dataTable')!;
+
+    render(
+      <TextbookTaskProvider task={t} book={book!}>
+        <DataTable table={table} />
+      </TextbookTaskProvider>,
+    );
+
+    // A heading the student cannot look up is a word they have to guess at from a table.
+    const headings = [...document.querySelectorAll('th')].map((th) => ({
+      text: th.textContent,
+      tokenized: th.querySelectorAll('[data-tokenized]').length,
+    }));
+    expect(headings.map((h) => h.text)).toEqual(['车次和读法', '车型', '路线', '时速']);
+    expect(headings.every((h) => h.tokenized === 1)).toBe(true);
   });
 });

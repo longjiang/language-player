@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
-import { createAssetResolver, type PictureOption } from '@langplayer/textbooks';
+import { createAssetResolver } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { TokenizedText } from '@/components/TokenizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -37,7 +37,11 @@ export function PictureOptionTile({
   disabled,
   onPick,
 }: {
-  item: PictureOption;
+  /**
+   * The option as a tile shows it: `letter` is what a pick records — a `pictureSet`'s letter, or
+   * a bank's own item — and `image` is optional, because a bank's options may be words alone.
+   */
+  item: { letter: string; label: string; image?: string };
   /** The current answer names this option. */
   selected?: boolean;
   disabled?: boolean;
@@ -50,8 +54,12 @@ export function PictureOptionTile({
   // A different URI is what makes RN Image fetch again rather than reuse the failure.
   const [retryToken, setRetryToken] = useState(0);
 
-  const url = resolve(item.image);
+  // An option with no picture at all is not a failed load: it shows its label and offers no
+  // retry, because there is nothing to re-request.
+  const hasPicture = Boolean(item.image);
+  const url = item.image ? resolve(item.image) : '';
   const uri = retryToken === 0 ? url : `${url}${url.includes('?') ? '&' : '?'}retry=${retryToken}`;
+  const placeholder = broken || !hasPicture;
 
   return (
     <View className="relative">
@@ -65,24 +73,26 @@ export function PictureOptionTile({
           disabled={disabled}
           accessibilityRole="button"
           accessibilityState={{ selected: !!selected, disabled: !!disabled }}
-          accessibilityLabel={`${item.letter}. ${item.label}`}
+          accessibilityLabel={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
           className="w-full overflow-hidden rounded bg-muted/50"
         >
           <View className="aspect-[4/3] w-full items-center justify-center overflow-hidden">
-            {broken ? (
+            {placeholder ? (
               // RN allows a nested Pressable, so the retry lives with the fallback. The
               // tile stays pickable either way: the letter is the answer.
               <Pressable
                 onPress={() => {
+                  if (!hasPicture) return;
                   setBroken(false);
                   setRetryToken((n) => n + 1);
                 }}
-                accessibilityRole="button"
+                disabled={!hasPicture}
+                accessibilityRole={hasPicture ? 'button' : undefined}
                 accessibilityLabel={t('action.retry')}
                 className="items-center gap-1 px-2"
               >
                 <Text className="text-center text-xs text-muted-foreground">{item.label}</Text>
-                <Text className="text-xs text-primary">{t('action.retry')}</Text>
+                {hasPicture ? <Text className="text-xs text-primary">{t('action.retry')}</Text> : null}
               </Pressable>
             ) : (
               <Image

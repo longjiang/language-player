@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { createAssetResolver, type PictureOption } from '@langplayer/textbooks';
+import { createAssetResolver } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
@@ -37,7 +37,11 @@ export function PictureOptionTile({
   onPick,
   className,
 }: {
-  item: PictureOption;
+  /**
+   * The option as a tile shows it: `letter` is what a pick records — a `pictureSet`'s letter, or
+   * a bank's own item — and `image` is optional, because a bank's options may be words alone.
+   */
+  item: { letter: string; label: string; image?: string };
   /** The current answer names this option. */
   selected?: boolean;
   disabled?: boolean;
@@ -52,14 +56,18 @@ export function PictureOptionTile({
   // makes the browser fetch it again instead of serving the cached failure.
   const [retryToken, setRetryToken] = useState(0);
 
-  const url = resolve(item.image);
+  // An option with no picture at all is not a failed load: it shows its label and offers no
+  // retry, because there is nothing to re-request.
+  const hasPicture = Boolean(item.image);
+  const url = item.image ? resolve(item.image) : '';
   const src = retryToken === 0 ? url : `${url}${url.includes('?') ? '&' : '?'}retry=${retryToken}`;
+  const placeholder = broken || !hasPicture;
 
   return (
     <div className={className ?? 'relative'}>
       {/* The retry is a sibling of the tile, not a child: nesting a button inside one
           is invalid, and the tile must stay pickable even when its picture is missing. */}
-      {broken && (
+      {broken && hasPicture && (
         <button
           type="button"
           onClick={() => {
@@ -84,13 +92,13 @@ export function PictureOptionTile({
           onClick={() => onPick(item.letter)}
           disabled={disabled}
           aria-pressed={selected}
-          aria-label={`${item.letter}. ${item.label}`}
+          aria-label={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
           className={`block w-full overflow-hidden rounded bg-muted/50 ${
             disabled ? 'cursor-default' : 'cursor-pointer'
           }`}
         >
           <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden">
-            {broken ? (
+            {placeholder ? (
               <span className="px-2 text-center text-xs text-muted-foreground">{item.label}</span>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element

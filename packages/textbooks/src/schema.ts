@@ -200,6 +200,36 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     }
   }
 
+  // ── Banks offered in a dialog ──
+  // A dialog bank is picked at the blank, so every blank drawing on it has to be a `choose`
+  // blank: a typed blank has nowhere to put a pick.
+  for (const bank of banks.values()) {
+    if (!bank.choicesInDialog) continue;
+    for (const [id, blank] of Object.entries(blanks)) {
+      if (blank.bank === bank.id && blank.kind !== 'choose') {
+        add(
+          'error',
+          `Bank "${bank.id}" offers its options in a dialog, but blank "${id}" is "${blank.kind}" — only a choose blank can be picked from one.`,
+          id,
+        );
+      }
+    }
+  }
+
+  // ── Column pictures ──
+  // `columnImages` is positional, so a short array silently drops the last columns' pictures and
+  // a long one is ignored. Both are authoring mistakes that look like nothing on the page.
+  for (const stimulus of task.body) {
+    if (stimulus.kind !== 'dataTable') continue;
+    if (!stimulus.columnImages) continue;
+    if (stimulus.columnImages.length !== stimulus.columns.length) {
+      add(
+        'error',
+        `dataTable "${stimulus.id ?? '(unnamed)'}" has ${stimulus.columnImages.length} column pictures for ${stimulus.columns.length} columns.`,
+      );
+    }
+  }
+
   // ── Where a bank is printed ──
   // A passage that names a bank prints it under itself. The pool must exist, and it should
   // be the pool its own blanks use: options printed under item (3) that item (5) needs are

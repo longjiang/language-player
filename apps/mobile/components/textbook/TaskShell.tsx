@@ -7,7 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
-import { inlineBankIds } from '@langplayer/textbooks';
+import { dialogBankIds, inlineBankIds } from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './BlankChoice';
 import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
@@ -108,7 +108,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           well would put the same pool on the page twice, where the second copy reads as a
           second, different pool. */}
       {banks
-        .filter((bank) => !inlineBankIds(task).has(bank.id))
+        .filter((bank) => !inlineBankIds(task).has(bank.id) && !dialogBankIds(task).has(bank.id))
         .map((bank) => (
           <WordBank key={bank.id} bank={bank} />
         ))}

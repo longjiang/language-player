@@ -4,6 +4,8 @@ import React from 'react';
 import type { DataTableStimulus } from '@langplayer/textbooks';
 import { useLanguage } from '@/providers/language-provider';
 import { TokenizedText } from '@/components/tokenized-text';
+import { createAssetResolver } from '@langplayer/textbooks';
+import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { InlineTrackButton } from './inline-track-button';
 
 /**
@@ -22,23 +24,48 @@ import { InlineTrackButton } from './inline-track-button';
  * their row, so the button lands beside the name — which is where the audio is
  * heard and answered. `blankIdsIn` reads the row's `{{bN}}` markers, since a row is
  * plain strings and has no ids of its own.
+ *
+ * **Headings are tokenized too.** A heading in this table is content — B ➌'s are the seat classes
+ * the questions ask about (无座, 二等座, 商务卧), and B ➊'s first column names the train — so it
+ * renders through the same path as a cell: readable, and tappable into the dictionary. A heading
+ * the student cannot look up is a word they have to guess at from a table.
+ *
+ * **A column may carry a picture above its name** (`columnImages`), which is how the workbook
+ * prints B ➌'s seat photographs: a photograph per class with the class captioned under it. The
+ * pictures are plain images — the table is a reference, and the dialog at the blank is where a
+ * class is chosen.
  */
 export function DataTable({ table }: { table: DataTableStimulus }) {
   const { l2 } = useLanguage();
+  const resolve = createAssetResolver(ASSET_BASE_URL);
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
-            {table.columns.map((column, i) => (
-              <th
-                key={i}
-                className="border border-border bg-muted/40 px-3 py-2 text-left font-medium text-foreground"
-              >
-                {column}
-              </th>
-            ))}
+            {table.columns.map((column, i) => {
+              const picture = table.columnImages?.[i];
+              return (
+                <th
+                  key={i}
+                  className="border border-border bg-muted/40 px-3 py-2 text-left align-top font-medium text-foreground"
+                >
+                  {picture ? (
+                    <span className="mb-1.5 block overflow-hidden rounded">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={resolve(picture)}
+                        alt=""
+                        loading="lazy"
+                        className="h-24 w-full object-cover"
+                      />
+                    </span>
+                  ) : null}
+                  {column ? <TokenizedText text={column} l2Code={l2.code} inline /> : null}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

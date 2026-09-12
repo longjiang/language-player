@@ -32,7 +32,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **A ➍** | ➌'s five recordings, one per sub-item | 17 word blanks, 4 given | one pool per summary, printed under it |
 | **B ➊** | train comparison table | 4 letter blanks, 2 given | bank a–f with descriptions |
 | **B ➋** | comparison table + passage | 3 word blanks, 1 given | bank of 4 words |
-| **B ➌** | two price tables + seat photographs | 4 questions, 1 given; ③ takes two picks | two seat-class banks |
+| **B ➌** | two price tables, their seat photographs as column headings, one intro line each | 4 questions, 1 given; ③ takes two picks | two seat-class banks, offered in the dialog at the blank |
 | **B ➍** | the 12306 app as a mock app | 5 goals, 1 given | the app reports, the host grades |
 | **B ➎** | 小红书 article | 6 illustration slots, 1 given | picture set A–F |
 | **B ➏** | the same article | 6 text blanks, 1 given | statement bank A–G |
@@ -141,7 +141,7 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 | `dialogue` | C ➍ | speaker-labelled lines carrying inline blanks |
 | `pictureSet` | A ➊, A ➋, A ➌, B ➎, C ➊, C ➋, E ➊, E ➋ | lettered image grid the blanks reference by letter |
 | `imageMap` | A ➊ | image with positioned pins, each pin holding a blank |
-| `dataTable` | A ➌, B ➊, B ➋, B ➌, D ➋ | tabular data; cells are L2 text and may carry blanks, and a row may carry a decorative icon (`TableRow.icon`) drawn outside that text |
+| `dataTable` | A ➌, B ➊, B ➋, B ➌, D ➋ | tabular data; cells **and headings** are L2 text and may carry blanks, a column may carry a picture above its name (`columnImages`), and a row may carry a decorative icon (`TableRow.icon`) drawn outside that text |
 | `numberedBlanks` | A ➋, C ➊, C ➋ | a `① ___ ② ___` row, for tasks with no passage |
 | `mockApp` | B ➍ | a self-contained HTML mock app, referenced by id; owns its own UI and goals (see below) |
 | `dictation` | E ➊, E ➋ | numbered items typed into boxed per-character fields |
@@ -364,6 +364,36 @@ prefixed into it: a cell is L2 vocabulary where every token is a word the studen
 an emoji inside that stream becomes a token of its own — the lemmatizer returns it with an empty
 lemma list and its own glyph as the pronunciation, so it draws no reading, but tapping it opens
 the dictionary on 🚄. Keeping it out also keeps the tokenizer from ever seeing it.
+
+**A bank can be offered in the dialog at the blank instead of as a pool.** `Bank.choicesInDialog`
+is B ➌'s case: four seat classes, each with a photograph the table above already prints, asked
+about at a blank inside a sentence (*G41的哪种座位最便宜？*). A pool at the foot of the task puts
+the options a screen away from the question and prints the photographs a second time, tappably —
+so the bank is not rendered as a pool at all, and tapping the blank opens the classes. A tile
+reads as a picture set's does: the item in bold (无座) beside its label (（站着）) over its
+photograph, because a bank's item *is* the answer, unlike a picture set's letter.
+
+The dialog's rules are the picture choices' rules, with one addition:
+
+- **A single answer needs no button** — the tap commits it and closes the dialog, as it does for a
+  picture set.
+- **An answer that is a set takes several picks and a Confirm button.** Each tap writes its pick,
+  the dialog stays open so more can be added, and Confirm closes it: for *K1275的哪两种座位可以
+  睡觉？* two picks are the answer, and without a confirm there is no way to say "done". The
+  button is rendered only for a `multiple` blank, so the other tasks keep their one-tap flow.
+- **Every blank drawing on a dialog bank must be a `choose` blank** — the validator says so,
+  because a typed blank has nowhere to put a pick.
+
+**A table heading is content, and tokenized.** B ➌'s headings are the seat classes the questions
+ask about (无座, 二等座, 商务座) and B ➊'s first column names the train, so a heading renders
+through the same path as a cell: readable, tappable into the dictionary. A heading the student
+cannot look up is a word they have to guess at from the table.
+
+**A column may carry a picture above its name** (`DataTableStimulus.columnImages`, one entry per
+column, `''` where a column has none). That is how the workbook prints B ➌'s seat photographs: a
+photograph per class with the class captioned under it, and the price rows below. The pictures are
+plain images — the table is a reference, and the dialog at the blank is where a class is chosen —
+and they are positional, so the validator rejects a count that does not match the columns.
 
 **Tapping a blank always selects it.** It never clears and never deselects — for a bank blank
 that is the whole gesture, and a filled one is re-answered by picking another option rather than
@@ -1065,7 +1095,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Struck out once the student has placed a word, and bottom-aligned so a reading never moves a glyph |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
 | `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them |
-| `BlankChoiceProvider` / `useBlankChoice` | The task's picture-choice dialog and its opener. One dialog per task; a blank calls `open(blankId)` |
+| `BlankChoiceProvider` / `useBlankChoice` | The task's choice dialog and its opener: a `pictureSet`'s pictures, or a bank offered in the dialog (`Bank.choicesInDialog`). One dialog per task; a blank calls `open(blankId)` |
 | `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
@@ -1337,6 +1367,14 @@ of the 18 locales, so an icon without an accessible name cannot ship quietly.
 
 **B ➊'s emoji are verified by test** (`data-table.test.tsx`): the six glyphs render beside the
 cells, none of them inside a tokenized element, and the row's own text is still letter-first.
+
+**B ➌'s dialog flow is verified in a browser and by test.** In the browser: tapping ② opens the
+four classes with their photographs under the title *Please select an option.*; tapping 商务座
+closes the dialog and the blank reads 商务座; tapping ③ opens the same dialog for K1275, where two
+picks (硬卧, 软卧) leave it open and the blank reading 硬卧、软卧, and Confirm closes it with the
+answer intact. The tables render their photographs as column headings with the class tokenized
+under each, and B ➌ renders **no pool** below the task. `blank-choice.test.tsx` states the same
+without a browser, including that a single answer has no Confirm button.
 
 **The blank's own gestures are verified in a browser on B ➊**: a tap selects, a second tap keeps
 it selected, a filled blank survives a tap, filling from the pool leaves the selection on the
