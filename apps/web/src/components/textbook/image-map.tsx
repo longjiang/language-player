@@ -33,7 +33,7 @@ export function ImageMap({ map }: { map: ImageMapStimulus }) {
             if (!blank) return null;
             return (
               <li key={pin.blankId} className="flex items-center gap-1.5">
-                <BlankField blank={blank} />
+                <BlankField blank={blank} variant="cell" />
               </li>
             );
           })}
@@ -50,18 +50,28 @@ export function ImageMap({ map }: { map: ImageMapStimulus }) {
           {map.pins.map((pin) => {
             const blank = blanks[pin.blankId];
             if (!blank) return null;
+            // A worked example is already printed on the map — 西安 carries its A in
+            // the bracket — so drawing it again would double the letter. `given`
+            // blanks are not scored, so nothing is lost by leaving it to the image.
+            if (blank.kind === 'given') return null;
             return (
               <span
                 key={pin.blankId}
                 className="absolute -translate-x-1/2 -translate-y-1/2"
                 style={{
+                  // Both axes are the printed bracket's own centre (see the pins in
+                  // lesson-a.ts), and the cell is small enough that centring it there
+                  // never puts half of it outside the frame — the clamp that used to
+                  // shift the old 96px-tall illustration slot at the image's bottom
+                  // edge is gone, because it would now move the cell off the bracket.
                   left: `${pin.x}%`,
-                  // Pins sit at the image's edges (成都 is at 93%), so clamp the
-                  // centre so a blank is never rendered half outside the frame.
-                  top: `calc(${pin.y}% - ${pin.y > 88 ? 12 : 0}px)`,
+                  top: `${pin.y}%`,
                 }}
               >
-                <BlankField blank={blank} />
+                {/* The map prints the city name and its `( )` brackets, so the pin is a
+                    compact cell the letter goes into — not the 128x96 illustration box
+                    the passage variant draws, which would cover the map it sits on. */}
+                <BlankField blank={blank} variant="cell" />
               </span>
             );
           })}

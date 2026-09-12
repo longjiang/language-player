@@ -127,6 +127,14 @@ export interface TokenizedTextProps {
   /** Whether the token cache has finished loading. When false and tokenCache
    *  is provided, the component shows plain text without calling the API. */
   tokenCacheLoaded?: boolean;
+  /**
+   * How a `{{bN}}` blank answered from a pictureSet is printed (SPEC-095):
+   * `slot` is the illustration box a passage prints (B ➎/➏), `cell` the small
+   * tappable blank a map pin, numbered row or table cell prints (A ➊/➋/➌,
+   * C ➊/➋). The caller knows which printing the workbook used; both variants
+   * open the same picture-choice dialog.
+   */
+  blankVariant?: 'slot' | 'cell';
   /** When true, skip the lazy batch-lemmatize pipeline entirely — the parent
    *  (e.g. ReaderPanel) is the lemmatization authority and supplies tokens via
    *  the `tokens` prop. Prevents duplicate lemmatization of the same lines. */
@@ -227,6 +235,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokenCache,
   tokenCacheLoaded,
   deferTokenization = false,
+  blankVariant = 'slot',
   tokens: preloadedTokens,
   formats,
   href,
@@ -1070,7 +1079,13 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             // A marker with no matching blank spec renders nothing rather than
             // throwing; the content validator is what catches that case.
             if (!blank) return null;
-            return <BlankField key={`blank-${item.blankId}`} blank={blank} />;
+            return (
+                <BlankField
+                  key={`blank-${item.blankId}`}
+                  blank={blank}
+                  variant={blankVariant}
+                />
+              );
           }
           const i = item.tokenIndex;
           const token = displayTokens[i]!;

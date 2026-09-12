@@ -5,6 +5,7 @@ import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { InlineImageSlot } from './InlineImageSlot';
+import { PictureBlankCell } from './PictureBlankCell';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -21,7 +22,18 @@ function blankLabel(blank: BlankSpec): string {
  * tree — which on this platform is the difference between a responsive task and
  * a frozen one.
  */
-export function BlankField({ blank }: { blank: BlankSpec }) {
+export function BlankField({
+  blank,
+  variant = 'slot',
+}: {
+  blank: BlankSpec;
+  /**
+   * How a blank answered from a `pictureSet` is printed: `slot` is the illustration box
+   * a passage prints (B ➎/➏), `cell` the small tappable blank a map pin, numbered row
+   * or table cell prints (A ➊/➋/➌, C ➊/➋). Both open the same picture-choice dialog.
+   */
+  variant?: 'slot' | 'cell';
+}) {
   const ctx = useTextbookTask();
   const t = useT();
 
@@ -88,10 +100,16 @@ export function BlankField({ blank }: { blank: BlankSpec }) {
     );
   }
 
-  // A blank answering from a picture set is an illustration slot in the passage, not a
-  // letter chip — the booklet prints a box there.
+  // A blank answering from a picture set is filled by tapping it and choosing a
+  // picture, never by typing a letter. What the *shape* of that blank is depends on what
+  // the workbook printed: a box for an illustration inside a passage, or a small `( )` /
+  // `___` the answer's letter goes into.
   if (blank.optionSet) {
-    return <InlineImageSlot blank={blank} value={value} />;
+    return variant === 'cell' ? (
+      <PictureBlankCell blank={blank} value={value} result={blankResult} />
+    ) : (
+      <InlineImageSlot blank={blank} value={value} />
+    );
   }
 
   // ── Choose from a bank ──
