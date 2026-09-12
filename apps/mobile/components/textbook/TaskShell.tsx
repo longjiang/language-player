@@ -10,6 +10,7 @@ import { WordBank } from './WordBank';
 import { BlankChoiceProvider } from './BlankChoice';
 import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
+import { TranscriptDialogProvider } from './TranscriptDialog';
 import { RecallCard } from './RecallCard';
 import { PictureSet } from './PictureSet';
 import { DataTable } from './DataTable';
@@ -79,6 +80,9 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         rendered here rather than by each blank so thirty blanks are not thirty
         modals. */}
     <BlankChoiceProvider>
+    {/* The transcript dialog is the same shape as the picture choices for the same
+        reason: one per task, opened by whichever audio control carries the recording. */}
+    <TranscriptDialogProvider>
     <ScrollView contentContainerClassName="gap-5 pb-16" className="flex-1">
       <View className="flex-row items-start gap-3">
         <View className="mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -147,6 +151,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 
       <Text className="text-xs text-muted-foreground">{book.title}</Text>
     </ScrollView>
+    </TranscriptDialogProvider>
     </BlankChoiceProvider>
     </TaskAudioProvider>
   );
