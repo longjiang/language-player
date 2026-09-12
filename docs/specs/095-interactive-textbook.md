@@ -24,20 +24,40 @@ The first book is the HSK 4 TBLT course *Tasks for Life in China* (the workbook 
 
 The defining property of this content, and therefore of this feature, is that **the primary interaction is a blank embedded inside running L2 text**. Across the pilot unit every activity resolves to that one pattern, parameterised by where its options come from:
 
-| Lesson / Task | Stimulus | Response | Answer source |
+| Task | Stimulus | Response | Answer source |
 |---|---|---|---|
-| A ➊ | map of China (image) | ~9 blanks at city pins | lettered picture set A–J |
-| A ➋ | 7 audio broadcasts | blanks ①–⑦ | lettered picture set A–G |
-| A ➌ | photo sets + table | two blanks per row | picture sets A–E and a–e |
-| A ➍ | audio dialogue | inline blanks in a passage | parenthesised word bank |
-| B ➊ | table | letter blanks ③–⑥ | global bank a–f |
-| B ➋ | comparison table | inline blanks in a passage | global bank (4 words) |
-| B ➍ | **12306 app screens** | 6 questions ②–⑥ | typed answers |
-| B ➎ / ➏ | 小红书 article | inline `插图 ___` slots + blanks | picture set A–F, statement set A–G |
-| C | dialogue | inline blanks in dialogue | lettered set |
-| D ➊ / ➋ | audio | blanks + sequence numbers | bank A–I, compound |
-| E ➊ / ➋ | audio + picture bank | **boxed char-count dictation** | typed, N boxes |
-| E ➍ | model post | free writing | — |
+| **A ➊** | map of China | 10 blanks at city pins, 1 given | picture set A–J |
+| **A ➋** | 7 transport announcements | 7 numbered blanks, 1 given | picture set A–G |
+| **A ➌** | two 5-row tables (how they went, where they went) | 2 picture-letter blanks per row | picture sets A–E and a–e |
+| **A ➍** | ➌'s five recordings, one per sub-item | 17 word blanks, 4 given | one combined bank |
+| **B ➊** | train comparison table | 4 letter blanks, 2 given | bank a–f with descriptions |
+| **B ➋** | comparison table + passage | 3 word blanks, 1 given | bank of 4 words |
+| **B ➌** | two price tables + seat photographs | 4 questions, 1 given; ③ takes two picks | two seat-class banks |
+| **B ➍** | the 12306 app as a mock app | 5 goals, 1 given | the app reports, the host grades |
+| **B ➎** | 小红书 article | 6 illustration slots, 1 given | picture set A–F |
+| **B ➏** | the same article | 6 text blanks, 1 given | statement bank A–G |
+| **C ➊ / ➋** | 4 recordings + 4 photos | 3 numbered blanks each, 1 given | picture letters |
+| **C ➌** | the booking recording | 3 comprehension questions | free text (the key prints model sentences) |
+| **C ➍** | the same recording + its transcript | 4 word blanks, 1 given | bank A–E |
+| **D ➊** | 6 recordings, one per paragraph | 8 word blanks, 1 given | one combined bank A–I |
+| **D ➋** | the Vancouver recording | per topic, its order 1–5 **and** its description | number bank + description bank |
+| **D ➌** | the same recording | 11 typed blanks, 1 given | typed |
+| **D ➍** | the same recording + transcript | read along — no response | — |
+| **D ➎** | the same recording | 5 note cards, 1 printed as a worked example | free text |
+| **D ➏** | — | 5 note cards (a draft) | free text |
+| **D ➐** | ➏'s draft, recalled | 1 self-check note; the recording is out of band | — |
+| **E ➊ / ➋** | recordings + picture sets | boxed per-character dictation | typed, one box per character |
+| **E ➌** | a model social-media post | read it — no response | — |
+| **E ➍** | — | free writing (the model post is ➌'s) | — |
+
+Every answer above is cross-checked against the printed key, and 19 of the 25 tasks carry
+that key verbatim in `answerKeyRaw` — the validator proves the two agree blank by blank.
+
+The other six are the tasks the key has nothing to grade in: D ➍, D ➎, D ➏, D ➐, E ➌ and
+E ➍ are read-along, note-taking, drafting, self-check, reading a model and free writing.
+C ➌ is the interesting case — its key *does* print answers, as model sentences rather
+than fixed strings — so its three blanks are recorded and not scored rather than graded
+against wording the student has no reason to reproduce.
 
 Consequently the feature is **not** 60 bespoke activity components. It is **two primitives** — stimulus and response — composed per task, rendered inside a shared task shell so heterogeneous tasks feel like one product.
 
@@ -108,23 +128,28 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 
 | Kind | Used by | Notes |
 |---|---|---|
-| `passage` | A ➍, B ➋, C ➍, E ➌ | running L2 text carrying inline `{{bN}}` blanks |
-| `dialogue` | C ➍, D | speaker-labelled lines carrying inline blanks |
-| `pictureSet` | A ➊, A ➋, A ➌, C ➊, C ➋, E ➊, E ➋ | lettered image grid the blanks reference by letter |
+| Kind | Used by | Notes |
+|---|---|---|
+| `passage` | A ➍, B ➋, B ➌, B ➎, B ➏, C ➌, D ➊, D ➌, D ➍, E ➌ | running L2 text carrying inline `{{bN}}` blanks |
+| `dialogue` | C ➍ | speaker-labelled lines carrying inline blanks |
+| `pictureSet` | A ➊, A ➋, A ➌, B ➎, C ➊, C ➋, E ➊, E ➋ | lettered image grid the blanks reference by letter |
 | `imageMap` | A ➊ | image with positioned pins, each pin holding a blank |
-| `dataTable` | A ➌, B ➊, B ➋ | tabular data; cells are L2 text and may carry blanks |
-| `numberedBlanks` | A ➊, A ➋, C ➊, C ➋ | a `① ___ ② ___` row, for tasks with no passage |
+| `dataTable` | A ➌, B ➊, B ➋, B ➌, D ➋ | tabular data; cells are L2 text and may carry blanks |
+| `numberedBlanks` | A ➋, C ➊, C ➋ | a `① ___ ② ___` row, for tasks with no passage |
 | `mockApp` | B ➍ | a self-contained HTML mock app, referenced by id; owns its own UI and goals (see below) |
 | `dictation` | E ➊, E ➋ | numbered items typed into boxed per-character fields |
-| `freeWrite` | E ➍ | an open writing surface |
-| `noteCards` | D ➏ | titled note fields |
-| `audio` | — | ad-hoc placement of recordings; see [Audio](#audio) |
+| `freeWrite` | D ➐, E ➍ | an open writing surface |
+| `noteCards` | D ➎, D ➏ | titled note fields |
+| `audio` | — | ad-hoc placement of recordings; see [Audio](#audio). No task needs it yet: every recording so far belongs to a task, an item or a block |
 | `recall` | D ➐ | shows what the student wrote in an earlier task, read from the local store |
 
 Most stimulus kinds may also carry `audio` for their own recording — a `passage` block, a
 `dialogue`, a `dataTable` row, a map pin. See [Audio](#audio) for which level to use.
 
-There is **no** `inlineImageSlot`: B ➎ / ➏ need one (an in-passage image placeholder assigned a letter) and are not yet authored — see [Known Gaps](#known-gaps-against-this-spec).
+There is **no** `inlineImageSlot`. B ➎ / ➏ get the interaction from `choose` blanks over a
+`pictureSet` — the same tap-the-slot-then-tap-the-picture flow A ➊ uses — but the slot
+shows a letter chip where the booklet prints the illustration itself. See
+[Known Gaps](#known-gaps-against-this-spec).
 
 ### Response kinds
 
@@ -258,7 +283,7 @@ moment it opens is hostile in a classroom.
 |---|---|---|
 | A numbered slot, or a dictation item | `BlankSpec.audio` | A ➋, C ➊/➋, E ➊/➋ |
 | A table row | `TableRow.audio` | A ➌ |
-| A passage or dialogue block | `PassageStimulus.audio` / `DialogueStimulus.audio` | D ➊ |
+| A passage or dialogue block | `PassageStimulus.audio` / `DialogueStimulus.audio` | D ➊, A ➍ |
 | A map pin | `ImageMapPin.audio` | not used — A ➊ is task-level |
 
 `audio` is an array everywhere, so an item may carry more than one recording.
@@ -550,9 +575,11 @@ below fall either side of.
 - `expectedLength` inconsistent with `answer.length` where both are set;
 - any asset reference — text, picture, map image, or a recording declared at **any** level (task, item, row, block, or an `audio` block) — with no corresponding entry in the manifest;
 - a blank carrying `audio` that lives in a `passage` or `dialogue`, where the block owns the recording rather than the blank;
+- each pick of a `multiple` blank being an option of its bank, with the key compared as a set so `硬卧和软卧` and `硬卧、软卧` agree;
 - a task missing `sourcePage` (transcription provenance);
 - a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa;
-- a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to.
+- a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to;
+- a `recall` pointing at a task the book does not have — a wrong id renders nothing at all, silently.
 
 **Specified but not yet enforced** — these need to read `apps/web/public/mock-apps/`,
 so they belong in a check with filesystem access (a script or a test) rather than in
@@ -567,7 +594,7 @@ See [Known Gaps](#known-gaps-against-this-spec).
 
 ## Assets
 
-Binary media does **not** go in the repository. The pilot unit alone is ~29 MB (a 3.5 MB workbook PDF, 47 mp3 files, plus key and transcript PDFs); a book is ~6 units, and this platform expects many books and levels.
+Binary media does **not** go in the repository. The pilot unit alone is ~31 MB once extracted (25 MB of audio, 6 MB of images); a book is ~6 units, and this platform expects many books and levels.
 
 - Media is served from the existing PHP shared host behind a single **`ASSET_BASE_URL`** constant — see ADR-0043. No CDN or object-storage service exists in this project today, and none is being introduced here.
 - Content files store **relative asset keys** (`tblt-hsk4/u06/a1-map.png`), never absolute URLs, so the base can change without touching content.
@@ -607,7 +634,7 @@ The URL is defined **once**, as `DEFAULT_TEXTBOOK_ASSET_BASE_URL` in `packages/t
 
 The extension follows whichever encoding is actually smaller for that image, measured rather than assumed: **JPEG for pictures** (PNG came out 5–7× larger for all 45 picture assets, including the cartoon sets that look flat) and **PNG only for the flat vector map**.
 
-`assets.ts` in the book's content directory is the **authored** manifest of every key a task needs, and it is authored rather than derived precisely so that it *can* disagree with the content: a test asserts agreement **in both directions** — no content reference to an unpublished asset, and no declared asset that nothing references. Keys staged on disk but not yet declared are expected and fine (files for tasks not yet authored).
+`assets.ts` in the book's content directory is the **authored** manifest of every key a task needs, and it is authored rather than derived precisely so that it *can* disagree with the content: a test asserts agreement **in both directions** — no content reference to an unpublished asset, and no declared asset that nothing references. Every key a task references is declared, and the test also proves the reverse — that nothing is declared without a task using it.
 
 ### Do not bundle content as a generated TS module
 
@@ -732,6 +759,9 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 - **Task store** — per-task, per-blank response state with subscribe/select, so blank components re-render independently of the token tree.
 - **Attempt persistence** — per-task attempts in local storage (ADR-0044). Not a cross-task **progress store**: nothing aggregates completion, so the picker and TOC show no progress (see [Known Gaps](#known-gaps-against-this-spec)).
 - **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`, plus the shared default base URL constant.
+- **`assetKeysIn(task)`** — every asset key a task references, wherever it is declared (task, blank, table row, block, map pin, bank option, mock-app fallback), each with the location that declared it. The validator and the manifest test both call it, so a new declaration point cannot make the two disagree.
+- **Grading helpers** — `normalizeAnswer`, `acceptedAnswers`, `isBlankCorrect` (set comparison for `multiple`), `isBlankScoreable`, `expandAcceptedVariants`.
+- **Answer-key parsing** — `parseAnswerKey` for the three flat shapes, `parseGroupedAnswerKey` for A ➍'s nested one (its sub-items each restart at ①), and `parseLabelledAnswerKey` for A ➊'s label-keyed map.
 
 ### Views (paired)
 
@@ -750,7 +780,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | Host frame + bridge for a self-contained mock-app HTML file (see below) |
-| `InlineImageSlot` — **not built** | In-passage image placeholder assigned a letter. Needed by B ➎ / ➏, which are not authored; see [Known Gaps](#known-gaps-against-this-spec) |
+| `InlineImageSlot` — **not built** | In-passage image placeholder showing the chosen illustration. B ➎ / ➏ place their illustrations with `choose` blanks over a `pictureSet` instead, which shows a letter chip; see [Known Gaps](#known-gaps-against-this-spec) |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
 | `DictationField` | Boxed per-character entry for dictation tasks |
@@ -906,8 +936,8 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 > are authored** — A ➊–➍, B ➊–➏, C ➊–➍, D ➊–➐, E ➊–➍. Every answer is
 > cross-checked against the printed key, and `validateBook` reports no errors.
 >
-> **Media is published and live.** All 85 keys for the authored tasks — 39 audio and
-> 46 images — are staged in the server data folder and uploaded to the shared host;
+> **Media is published and live.** All 107 keys the content needs — 47 audio and
+> 60 images, 31 MB — are staged in the server data folder and uploaded to the shared host;
 > every one was verified returning HTTP 200, including the percent-encoded workbook
 > audio filenames. `ASSET_BASE_URL` already points there, so no further step was
 > needed once the bytes landed.
@@ -1059,19 +1089,23 @@ band: it needs a microphone and somewhere to put the audio, and neither app capt
 uploads audio today. This is the only task of the twenty-five whose core activity the
 app cannot host.
 
-Related, and deliberate rather than a defect: three tasks record answers they do not
-score. C ➌'s three comprehension questions and D ➐'s self-check are `free` blanks, so
-they are saved and never marked. C ➌'s key prints model sentences rather than answers —
-any wording carrying the same information is correct — so grading them as strings would
-mark right answers wrong. A "show the model answer after submit" affordance does not
-exist, so those tasks give no feedback.
+Related, and deliberate rather than a defect: C ➌'s three comprehension questions and
+D ➐'s self-check are `free` blanks, so they are saved and never marked. C ➌'s key prints
+model sentences rather than answers — any wording carrying the same information is
+correct — so grading them as strings would mark right answers wrong. Five tasks are
+ungraded by design (C ➌, D ➎, D ➏, D ➐, E ➍), which is what `free` is for; what does not
+exist is a way to *show* a model answer after submit, so those tasks give no feedback at
+all. That is the gap.
 
 ### Verified, not assumed
 
 Stated so the gaps are not read as a general disclaimer: the answer key is
-machine-checked against every authored answer; all 85 asset keys were verified
-returning HTTP 200 from the shared host, including percent-encoded workbook audio
-filenames; 994 tests pass and `tsc` is clean for web, mobile, textbooks and utils.
+machine-checked against every authored answer in the 19 tasks that have one;
+`validateBook` reports no errors over the whole unit; every asset key the content
+references is declared in the manifest and present on disk; 1016 tests pass and `tsc` is
+clean for web, mobile, textbooks and utils. The 85 keys published during the pilot were
+each verified returning HTTP 200 from the shared host, including percent-encoded
+workbook audio filenames.
 
 The most significant thing that has **not** been verified is anything visual — no page
 of this feature has been rendered in a browser or simulator. Types, content validation
