@@ -242,12 +242,11 @@ export const lessonB: LessonMeta = {
         // ① is pre-filled in the workbook, so the key starts at ②.
         b1: { id: 'b1', kind: 'given', answer: 'G49' },
         b2: { id: 'b2', kind: 'goal', answer: 'K1275' },
-        // Several trains answer this, so any of them satisfies the goal and all
-        // of them are accepted by grading. The validator additionally proves each
-        // accepted value is in the printed key.
-        // Three goals match several trains. They are sets, not one answer with
-        // alternatives: `accept` would mark a student who picked only one of the four
-        // 复兴号 correct.
+        // Three goals match several trains, and they are sets rather than one answer
+        // with alternatives: the app declares those goals `all`, so they complete only
+        // once every matching train has been selected and report the picks joined by
+        // 、. Grading compares picks as a set, order-insensitively, and the validator
+        // additionally proves each one is in the printed key.
         b3: { id: 'b3', kind: 'goal', answer: 'G875、G49、D17、D11', multiple: true },
         b4: { id: 'b4', kind: 'goal', answer: 'Z281' },
         b5: { id: 'b5', kind: 'goal', answer: 'G871、G875', multiple: true },

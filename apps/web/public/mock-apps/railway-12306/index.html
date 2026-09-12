@@ -144,6 +144,9 @@
           {
             id: 'fuxing',
             prompt: '选择所有“复兴号”车次。（提示：注意“复兴号”标志）',
+            // `all` — every 复兴号, not the first one tapped: the blank is a
+            // `multiple` set and grading compares the whole set.
+            all: true,
             candidates: () => elementsFor((s) => s.fuxing),
             accept: (el) => el.dataset.fuxing === 'true',
             answer: (el) => el.dataset.no,
@@ -158,6 +161,7 @@
           {
             id: 'business',
             prompt: '选择所有有商务座票的车次（不包括候补）。',
+            all: true,
             candidates: () => elementsFor((s) => s.business),
             accept: (el) => el.dataset.business === 'true',
             answer: (el) => el.dataset.no,
@@ -165,6 +169,7 @@
           {
             id: 'sleeper',
             prompt: '选择所有现在有卧铺票的车次（一等卧、二等卧、硬卧、软卧等，不包括候补）。',
+            all: true,
             candidates: () => elementsFor((s) => s.sleeperAvailable),
             accept: (el) => el.dataset.sleeperavailable === 'true',
             answer: (el) => el.dataset.no,

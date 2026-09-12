@@ -17,6 +17,12 @@
  *     goals: [{ id, prompt, accept: (el, data) => boolean }],
  *     mount(root, data) { ... },
  *   });
+ *
+ * A goal is satisfied by a tap on an element it accepts. Add `all: true` for a goal
+ * that asks the student to select a *set* — "选择所有复兴号车次": the goal then
+ * completes only once every element its `candidates` names has been tapped, and it
+ * reports those picks joined by `join` (default `、`, the separator a `multiple`
+ * blank stores its picks with — see PICK_SEPARATOR in `@langplayer/textbooks`).
  */
 (function () {
   'use strict';
@@ -27,6 +33,8 @@
   var tokenMap = {}; // text -> tokens, filled by the host
   var spec = null;
   var doneGoals = {};
+  /** goalId -> the values picked so far, for a goal that selects a set. */
+  var picked = {};
   var rootEl = null;
 
   function post(message) {
@@ -59,9 +67,52 @@
     });
   }
 
-  /** Try to satisfy a goal from a user interaction with `el`. */
+  /** What this element contributes to `goal`: the app's own `answer` for it. */
+  function valueOf(goal, el) {
+    var value = typeof goal.answer === 'function' ? goal.answer(el, spec.data) : (goal.answer || '');
+    return String(value === null || value === undefined ? '' : value).trim();
+  }
+
+  /** The elements a goal still wants: the candidates it names, minus what is picked. */
+  function outstandingPicks(goal) {
+    var candidates = [];
+    try {
+      candidates = (goal.candidates ? goal.candidates(spec.data) : []) || [];
+    } catch (e) {
+      candidates = [];
+    }
+    if (!goal.all) return candidates;
+    var values = picked[goal.id] || [];
+    return candidates.filter(function (el) {
+      return values.indexOf(valueOf(goal, el)) === -1;
+    });
+  }
+
+  function markPicked(el) {
+    // The app's own `.done` class, so a pick is visible where it was made.
+    if (el && el.classList) el.classList.add('done');
+  }
+
+  function completeGoal(goal, answer) {
+    doneGoals[goal.id] = true;
+    post({ type: 'complete', payload: { goalId: goal.id, answer: String(answer || '').trim() } });
+    reportProgress();
+    reportHeight();
+    clearHint();
+  }
+
+  /**
+   * Try to satisfy goals from a user interaction with `el`.
+   *
+   * **Every** goal the element satisfies is credited, not just the first unmet one.
+   * A tap can answer more than one question — G49 is the fastest train *and* a 复兴号 —
+   * and crediting only the first meant a set goal silently lost that member: the tap
+   * went to the single-answer goal, `outstandingPicks` still listed G49, and no amount
+   * of tapping the rest could ever complete the set.
+   */
   function evaluate(el) {
     var remaining = unmetGoals();
+    var credited = false;
     for (var i = 0; i < remaining.length; i++) {
       var goal = remaining[i];
       var ok = false;
@@ -71,15 +122,33 @@
         ok = false;
       }
       if (!ok) continue;
-      doneGoals[goal.id] = true;
-      var answer = typeof goal.answer === 'function' ? goal.answer(el, spec.data) : (goal.answer || '');
-      post({ type: 'complete', payload: { goalId: goal.id, answer: String(answer || '').trim() } });
-      reportProgress();
-      reportHeight();
-      clearHint();
-      return true;
+      credited = true;
+
+      var value = valueOf(goal, el);
+
+      if (goal.all) {
+        // A set is picked one element at a time, so the goal is not satisfied by the
+        // first tap the way a single-answer goal is. Reporting `complete` here would
+        // hand the host one train for a question whose answer is four — which is
+        // exactly what a `multiple` blank is graded against.
+        var values = picked[goal.id] || (picked[goal.id] = []);
+        if (value && values.indexOf(value) === -1) values.push(value);
+        if (outstandingPicks(goal).length) {
+          // Mid-set: the pick is real, the goal is not met yet.
+          reportProgress();
+          continue;
+        }
+        completeGoal(goal, values.join(goal.join || '、'));
+        continue;
+      }
+
+      completeGoal(goal, value);
     }
-    return false;
+    if (credited) {
+      markPicked(el);
+      reportHeight();
+    }
+    return credited;
   }
 
   // ── Hint ───────────────────────────────────────────────────────────────
@@ -103,14 +172,10 @@
     var remaining = unmetGoals();
     if (!remaining.length) return;
     var goal = remaining[0];
-    var candidates = [];
-    try {
-      candidates = (goal.candidates ? goal.candidates(spec.data) : []) || [];
-    } catch (e) {
-      candidates = [];
-    }
-    // Several candidates are legitimate ("any train with a sleeper"), so
-    // highlight them all rather than pretending there is one right answer.
+    // Several candidates are legitimate ("any train with a sleeper", and a set goal
+    // has several by definition), so highlight them all rather than pretending there
+    // is one right answer. A set goal only points at what is still missing.
+    var candidates = outstandingPicks(goal);
     for (var i = 0; i < candidates.length; i++) {
       var el = candidates[i];
       if (el && el.classList) el.classList.add('mock-hint');
@@ -265,6 +330,7 @@
       case 'reset':
         clearHint();
         doneGoals = {};
+        picked = {};
         if (spec && spec.reset) spec.reset(spec.data);
         reportProgress();
         break;
