@@ -72,8 +72,9 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   return (
     // The playback engine wraps the whole task, so the audio row at the top and the
     // inline controls inside the stimulus share one media element and only one
-    // track can play at a time.
-    <TaskAudioProvider tracks={task.audio ?? []}>
+    // track can play at a time. It is given the task, not `task.audio`, so an item's
+    // own recording (A ➋/➌/➍) resolves just as the task-level row's does.
+    <TaskAudioProvider task={task}>
     {/* One picture-choice dialog for the whole task: a blank opens it, and it is
         rendered here rather than by each blank so thirty blanks are not thirty
         dialogs. */}

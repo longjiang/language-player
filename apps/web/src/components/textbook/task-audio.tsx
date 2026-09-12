@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { AudioTrack } from '@langplayer/textbooks';
-import { createAssetResolver } from '@langplayer/textbooks';
+import type { AudioTrack, Task } from '@langplayer/textbooks';
+import { audioTracksIn, createAssetResolver } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { log } from '@/lib/logger';
 
@@ -23,6 +23,13 @@ import { log } from '@/lib/logger';
  *
  * Never autoplays: a browser blocks it anyway, and a task that starts speaking the
  * moment it opens is hostile in a classroom.
+ *
+ * It takes the **task**, not a list of tracks: a task's recordings are declared at
+ * four levels (task, blank, table row, block), and a provider handed only
+ * `task.audio[]` resolved nothing for A ➋'s seven item recordings — every inline
+ * control toggled to "playing" and stayed silent, because the key had no URL. The
+ * set is derived here from `audioTracksIn` so a control cannot offer a track the
+ * player has never heard of.
  */
 
 interface TaskAudioValue {
@@ -55,10 +62,10 @@ export function useTaskAudio(): TaskAudioValue | null {
 }
 
 export function TaskAudioProvider({
-  tracks,
+  task,
   children,
 }: {
-  tracks: AudioTrack[];
+  task: Task;
   children: React.ReactNode;
 }) {
   const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
@@ -71,9 +78,9 @@ export function TaskAudioProvider({
 
   const urls = useMemo(() => {
     const map = new Map<string, string>();
-    for (const track of tracks) map.set(track.key, resolve(track.key));
+    for (const track of audioTracksIn(task)) map.set(track.key, resolve(track.key));
     return map;
-  }, [tracks, resolve]);
+  }, [task, resolve]);
 
   // Stop playback when the task changes or unmounts.
   useEffect(() => {
@@ -92,7 +99,16 @@ export function TaskAudioProvider({
       return;
     }
     const url = urls.get(activeKey);
-    if (!url) return;
+    if (!url) {
+      // A control playing a key the provider cannot resolve is a wiring defect, not
+      // a broken file — it used to be a silent no-op that looked like a dead button.
+      log(
+        '[LP Web] Textbook: no URL for track',
+        activeKey,
+        `(${urls.size} track(s) known)`,
+      );
+      return;
+    }
     if (el.dataset.key !== activeKey) {
       el.dataset.key = activeKey;
       el.src = url;
