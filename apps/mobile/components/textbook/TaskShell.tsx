@@ -9,6 +9,7 @@ import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
 import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
+import { RecallCard } from './RecallCard';
 import { PictureSet } from './PictureSet';
 import { DataTable } from './DataTable';
 import { DialoguePassage } from './DialoguePassage';
@@ -156,6 +157,8 @@ export function TaskStimulus() {
                 <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
               </View>
             );
+          case 'recall':
+            return <RecallCard key={i} stimulus={stimulus} />;
           case 'audio':
             return (
               <View key={i} className="gap-2">

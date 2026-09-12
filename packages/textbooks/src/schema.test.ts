@@ -3,7 +3,7 @@ import { assertValid, validateBook, validateTask } from './schema';
 import { tbltHsk4 } from './content/tblt-hsk4/book';
 import { TBLT_HSK4_ASSET_KEYS } from './content/tblt-hsk4/assets';
 import { allTasks } from './loaders';
-import { assetKeysIn } from './types';
+import { assetKeysIn, BookMeta } from './types';
 import type { Task } from './types';
 
 const base = (over: Partial<Task> = {}): Task => ({
@@ -445,5 +445,46 @@ describe('authored item audio', () => {
     expect(a2.audio).toBeUndefined();
     const keyed = Object.values(a2.blanks!).filter((b) => b.audio?.length);
     expect(keyed.map((b) => b.id)).toEqual(['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7']);
+  });
+});
+
+describe('recall stimuli (D ➐)', () => {
+  const book = (taskId: string): BookMeta =>
+    ({
+      id: 'tblt-hsk4',
+      unit: undefined,
+      units: [
+        {
+          id: 'u06',
+          lessons: [
+            {
+              id: 'D',
+              letter: 'D',
+              title: 't',
+              canDo: 'c',
+              tasks: [
+                base({ id: 'tblt-hsk4.u06.D.t6' }),
+                base({
+                  id: 'tblt-hsk4.u06.D.t7',
+                  number: '➐',
+                  body: [{ kind: 'recall', taskId, items: [{ blankId: 'b1', title: '路线' }] }],
+                }),
+              ],
+            },
+          ],
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ],
+    }) as any;
+
+  it('accepts a recall that names a task in the same book', () => {
+    const issues = validateBook(book('tblt-hsk4.u06.D.t6'));
+    expect(issues.filter((i) => i.message.includes('Recall stimulus'))).toEqual([]);
+  });
+
+  it('rejects a recall pointing at a task that does not exist', () => {
+    // A wrong id renders nothing at all, silently, which is worth catching here.
+    const issues = validateBook(book('tblt-hsk4.u06.D.t9'));
+    expect(issues.some((i) => i.message.includes('Recall stimulus points at'))).toBe(true);
   });
 });

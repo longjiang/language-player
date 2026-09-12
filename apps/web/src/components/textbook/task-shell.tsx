@@ -9,6 +9,7 @@ import { useTextbookTask } from './task-provider';
 import { WordBank } from './word-bank';
 import { AudioPlayer } from './audio-player';
 import { TaskAudioProvider } from './task-audio';
+import { RecallCard } from './recall-card';
 import { PictureSet } from './picture-set';
 import { DataTable } from './data-table';
 import { DialoguePassage } from './dialogue-passage';
@@ -163,6 +164,9 @@ export function TaskStimulus() {
               </div>
             </div>
           );
+        }
+        if (stimulus.kind === 'recall') {
+          return <RecallCard key={i} stimulus={stimulus} />;
         }
         if (stimulus.kind === 'audio') {
           return (

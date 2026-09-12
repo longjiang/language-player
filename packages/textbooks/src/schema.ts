@@ -333,8 +333,24 @@ export function validateBook(book: BookMeta, options?: ValidationOptions): Valid
   const seenTasks = new Set<string>();
   const seenBlankIds = new Set<string>();
 
+  // A `recall` renders nothing at all if its target id is wrong, so check it against
+  // the book's own task list once that list is known.
+  const allTaskIds = new Set(
+    book.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks.map((t) => t.id))),
+  );
   for (const unit of book.units) {
     for (const lesson of unit.lessons) {
+      for (const task of lesson.tasks) {
+        for (const stimulus of task.body) {
+          if (stimulus.kind === 'recall' && !allTaskIds.has(stimulus.taskId)) {
+            issues.push({
+              level: 'error',
+              taskId: task.id,
+              message: `Recall stimulus points at "${stimulus.taskId}", which this book does not have.`,
+            });
+          }
+        }
+      }
       issues.push(...validateLesson(lesson, options));
       for (const task of lesson.tasks) {
         if (seenTasks.has(task.id)) {
