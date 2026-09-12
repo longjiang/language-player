@@ -375,3 +375,74 @@ describe('ungraded and dictation stimuli', () => {
     expect(errorsOf(validateTask(t))).toEqual([]);
   });
 });
+
+describe('audio track anchors', () => {
+  it('accepts an anchor naming a real blank', () => {
+    const t = base({ audio: [{ key: 'a.mp3', blankId: 'b1' }] });
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+
+  it('rejects an anchor naming a blank the task does not have', () => {
+    // A typo here is a play control that silently never renders.
+    const t = base({ audio: [{ key: 'a.mp3', blankId: 'b9' }] });
+    expect(errorsOf(validateTask(t)).join()).toContain('which this task does not have');
+  });
+
+  it('rejects two tracks anchored to the same blank', () => {
+    const t = base({
+      audio: [
+        { key: 'a.mp3', blankId: 'b1' },
+        { key: 'b.mp3', blankId: 'b1' },
+      ],
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('ambiguous');
+  });
+
+  it('rejects an anchor on a goal blank, which the mock app owns', () => {
+    const t = base({
+      audio: [{ key: 'a.mp3', blankId: 'b1' }],
+      body: [{ kind: 'mockApp', app: 'x', goals: [{ id: 'g', prompt: 'p', blankId: 'b1' }] }],
+      blanks: { b1: { id: 'b1', kind: 'goal', answer: 'x' } },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('answered inside the mock app');
+  });
+
+  it('rejects an anchor on a free blank, which is not a numbered item', () => {
+    const t = base({
+      audio: [{ key: 'a.mp3', blankId: 'b1' }],
+      blanks: { b1: { id: 'b1', kind: 'free', answer: '' } },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('not a numbered item');
+  });
+
+  it('leaves unanchored tracks valid, so task-level audio still works', () => {
+    const t = base({ audio: [{ key: 'a.mp3' }, { key: 'b.mp3', label: '上海' }] });
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+});
+
+describe('authored content anchors', () => {
+  it('every anchored track in unit 6 names a blank that exists', () => {
+    // The validator already enforces this per task; this asserts the SHIPPED content
+    // passes it, so a bad anchor cannot land without a test noticing.
+    for (const task of allTasks(tbltHsk4)) {
+      const anchors = (task.audio ?? []).filter((t) => t.blankId);
+      for (const track of anchors) {
+        expect(task.blanks?.[track.blankId!], `${task.id} -> ${track.blankId}`).toBeDefined();
+      }
+    }
+  });
+
+  it('binds the item-per-track tasks and leaves A ➊ task-level', () => {
+    const byId = new Map(allTasks(tbltHsk4).map((t) => [t.id, t]));
+    // A ➌: five speakers, each anchored to the first blank of their row.
+    const a3 = byId.get('tblt-hsk4.u06.A.t3')!;
+    expect((a3.audio ?? []).filter((t) => t.blankId).map((t) => t.blankId)).toEqual([
+      'b1', 'b3', 'b5', 'b7', 'b9',
+    ]);
+    // A ➊: nine tracks on map pins, deliberately unanchored.
+    const a1 = byId.get('tblt-hsk4.u06.A.t1')!;
+    expect((a1.audio ?? []).length).toBe(9);
+    expect((a1.audio ?? []).every((t) => !t.blankId)).toBe(true);
+  });
+});

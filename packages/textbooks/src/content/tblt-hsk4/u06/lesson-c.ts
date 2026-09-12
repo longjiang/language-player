@@ -19,10 +19,10 @@ export const lessonC: LessonMeta = {
       sourcePage: 13,
       instructions: '听录音，选择最合适的图片：',
       audio: [
-        { key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3' },
-        { key: 'tblt-hsk4/u06/六C ➊ ②.mp3' },
-        { key: 'tblt-hsk4/u06/六C ➊ ③.mp3' },
-        { key: 'tblt-hsk4/u06/六C ➊ ④.mp3' },
+        { key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3', blankId: 'b1' },
+        { key: 'tblt-hsk4/u06/六C ➊ ②.mp3', blankId: 'b2' },
+        { key: 'tblt-hsk4/u06/六C ➊ ③.mp3', blankId: 'b3' },
+        { key: 'tblt-hsk4/u06/六C ➊ ④.mp3', blankId: 'b4' },
       ],
       body: [
         {
@@ -41,7 +41,7 @@ export const lessonC: LessonMeta = {
               label: '西安去南京，需要在郑州换乘',
               image: 'tblt-hsk4/u06/c1-d.jpg',
             },
-          ],
+      ],
         },
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
@@ -60,10 +60,10 @@ export const lessonC: LessonMeta = {
       sourcePage: 13,
       instructions: '听录音，选择最合适的图片：',
       audio: [
-        { key: 'tblt-hsk4/u06/六C ➋ ①.mp3' },
-        { key: 'tblt-hsk4/u06/六C ➋ ②.mp3' },
-        { key: 'tblt-hsk4/u06/六C ➋ ③.mp3' },
-        { key: 'tblt-hsk4/u06/六C ➋ ④.mp3' },
+        { key: 'tblt-hsk4/u06/六C ➋ ①.mp3', blankId: 'b1' },
+        { key: 'tblt-hsk4/u06/六C ➋ ②.mp3', blankId: 'b2' },
+        { key: 'tblt-hsk4/u06/六C ➋ ③.mp3', blankId: 'b3' },
+        { key: 'tblt-hsk4/u06/六C ➋ ④.mp3', blankId: 'b4' },
       ],
       body: [
         {
@@ -74,7 +74,7 @@ export const lessonC: LessonMeta = {
             { letter: 'B', label: '用现金支付', image: 'tblt-hsk4/u06/c2-b.jpg' },
             { letter: 'C', label: '拿出“微信支付”付款码', image: 'tblt-hsk4/u06/c2-c.jpg' },
             { letter: 'D', label: '刷信用卡', image: 'tblt-hsk4/u06/c2-d.jpg' },
-          ],
+      ],
         },
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
@@ -137,7 +137,7 @@ export const lessonC: LessonMeta = {
               text: '好，我扫你付款码。（“哔”的一声，付款完成。工作人员给票。）',
             },
             { speaker: '乘客', text: '好，谢谢。' },
-          ],
+      ],
         },
       ],
       blanks: {
@@ -157,5 +157,5 @@ export const lessonC: LessonMeta = {
       ],
       answerKeyRaw: '② C; ③ D; ④ E; ⑤ B。',
     },
-  ],
+      ],
 };

@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './word-bank';
 import { AudioPlayer } from './audio-player';
+import { TaskAudioProvider } from './task-audio';
 import { PictureSet } from './picture-set';
 import { DataTable } from './data-table';
 import { DialoguePassage } from './dialogue-passage';
@@ -63,6 +64,10 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   const answersOnPage = Object.values(task.blanks ?? {}).filter((b) => b.kind !== 'given').length;
 
   return (
+    // The playback engine wraps the whole task, so the audio row at the top and the
+    // inline controls inside the stimulus share one media element and only one
+    // track can play at a time.
+    <TaskAudioProvider tracks={task.audio ?? []}>
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-1 pb-16">
       <header className="flex items-start gap-3">
         <span
@@ -83,7 +88,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         </div>
       </header>
 
-      {task.audio && task.audio.length > 0 && <AudioPlayer tracks={task.audio} />}
+      <AudioPlayer tracks={task.audio ?? []} />
 
       {children}
 
@@ -129,6 +134,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         {book.title}
       </p>
     </article>
+    </TaskAudioProvider>
   );
 }
 

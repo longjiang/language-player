@@ -19,10 +19,10 @@ export const lessonE: LessonMeta = {
       sourcePage: 21,
       instructions: '学习以下的词汇，然后听录音，写下听到的内容。',
       audio: [
-        { key: 'tblt-hsk4/u06/六E ➊ ①.mp3' },
-        { key: 'tblt-hsk4/u06/六E ➊ ②.mp3' },
-        { key: 'tblt-hsk4/u06/六E ➊ ③.mp3' },
-        { key: 'tblt-hsk4/u06/六E ➊ ④.mp3' },
+        { key: 'tblt-hsk4/u06/六E ➊ ①.mp3', blankId: 'b1' },
+        { key: 'tblt-hsk4/u06/六E ➊ ②.mp3', blankId: 'b2' },
+        { key: 'tblt-hsk4/u06/六E ➊ ③.mp3', blankId: 'b3' },
+        { key: 'tblt-hsk4/u06/六E ➊ ④.mp3', blankId: 'b4' },
       ],
       body: [
         {
@@ -34,7 +34,7 @@ export const lessonE: LessonMeta = {
             { letter: 'C', label: '十字路口', image: 'tblt-hsk4/u06/e1-c.jpg' },
             { letter: 'D', label: '交警', image: 'tblt-hsk4/u06/e1-d.jpg' },
             { letter: 'E', label: '加油站', image: 'tblt-hsk4/u06/e1-e.jpg' },
-          ],
+      ],
         },
         { kind: 'dictation', ids: ['b1', 'b2', 'b3', 'b4'] },
       ],
@@ -57,9 +57,9 @@ export const lessonE: LessonMeta = {
       sourcePage: 21,
       instructions: '学习以下的词汇，然后听录音，写下听到的内容。',
       audio: [
-        { key: 'tblt-hsk4/u06/六E ➋ ①.mp3' },
-        { key: 'tblt-hsk4/u06/六E ➋ ②.mp3' },
-        { key: 'tblt-hsk4/u06/六E ➋ ③.mp3' },
+        { key: 'tblt-hsk4/u06/六E ➋ ①.mp3', blankId: 'b1' },
+        { key: 'tblt-hsk4/u06/六E ➋ ②.mp3', blankId: 'b2' },
+        { key: 'tblt-hsk4/u06/六E ➋ ③.mp3', blankId: 'b3' },
       ],
       body: [
         {
@@ -70,7 +70,7 @@ export const lessonE: LessonMeta = {
             { letter: 'B', label: '停车场', image: 'tblt-hsk4/u06/e2-b.jpg' },
             { letter: 'C', label: '车位', image: 'tblt-hsk4/u06/e2-c.jpg' },
             { letter: 'D', label: '车速', image: 'tblt-hsk4/u06/e2-d.jpg' },
-          ],
+      ],
         },
         { kind: 'dictation', ids: ['b1', 'b2', 'b3'] },
       ],
@@ -116,5 +116,5 @@ export const lessonE: LessonMeta = {
         b1: { id: 'b1', kind: 'free', answer: '' },
       },
     },
-  ],
+      ],
 };

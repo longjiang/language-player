@@ -133,7 +133,7 @@ Two surfaces answer a task: inline **blanks**, and the free-text fields behind `
 | `choose` | pick one option — from a `Bank`, or from a `pictureSet` via `optionSet` |
 | `type` | typed entry, boxed by `expectedLength` where the workbook prints boxes |
 | `goal` | answered **inside a mock app**, never by a blank widget; the app reports an answer the host grades |
-| `free` | free prose (notes, free writing); **recorded but never scored**, and needs no `answer` |
+| `free` | free prose (notes, free writing); **recorded but never scored**. Carries `answer: ''` — the field is required for every kind, and "nothing to grade" is expressed by the kind, not by absence |
 
 ## Task Schema
 
@@ -258,13 +258,68 @@ audio: [
 human-readable text for the item a track belongs to — a city name in A ➊, a speaker in
 A ➌.
 
-**The circled numeral a student sees is derived from the track's position**, not from
-`label`: both players render `indexToCircled(index + 1)`. `label` is currently used only
-as the accessibility label. Two consequences, both recorded in
-[Known Gaps](#known-gaps-against-this-spec): `label` never reaches the screen, and the
-correspondence between a track and the item it belongs to is therefore positional and
-unvalidated — so reordering an `audio` array renumbers the tracks and silently breaks
-their alignment with the workbook's own numbering.
+**`label` is authoring metadata and is never rendered** — it becomes the control's
+accessible name and nothing else. In the dictation tasks it *is* the answer (`转机`,
+`门票`), so displaying it would give the exercise away.
+
+### `blankId`: binding a track to the item it belongs to
+
+A track that belongs to one item — a table row, a numbered slot, a dictation item —
+declares it with `blankId`. The widget rendering that blank places the play control
+with its item, so a student plays each recording where they answer it instead of
+counting `①`–`⑦` buttons at the top of the task against rows:
+
+```
+[▶] 李婷婷     E     b
+[▶] 金敏俊
+[▶] 奥利维亚
+[▶] 陈灵
+[▶] 朴书妍
+```
+
+```ts
+// A ➌ — five speakers, each anchored to the first blank of their row
+audio: [
+  { key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷',  blankId: 'b1' },
+  { key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3',   label: '金敏俊',  blankId: 'b3' },
+  { key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚', blankId: 'b5' },
+],
+```
+
+For an item spanning several blanks, anchor to the first: A ➌'s rows hold two blanks
+each (`b1`/`b2`), and each speaker's track anchors to the row's first. The widget asks
+`trackForAnyBlank` with every blank the item owns, so a container that knows only its
+blanks still finds the track.
+
+**A track with no `blankId` stays in the task's audio row at the top.** That is right
+for A ➊: its nine recordings belong to map pins, where nine inline controls would
+crowd a map that already carries ten blanks, and the recordings name their city aloud,
+so a button does not need to.
+
+| Task | Placement |
+|---|---|
+| A ➊ | task audio row — 9 tracks, one per city, all unanchored |
+| A ➋, C ➊, C ➋ | beside each numbered slot |
+| A ➌ | in each table row, beside the speaker |
+| E ➊, E ➋ | beside each dictation item |
+| B ➍ | none |
+
+Playback is owned by one provider per task and shared by both kinds of control, so
+**only one track can play at a time** — letting a student start item 4 while item 2 is
+still playing produces answers to the wrong question.
+
+The validator rejects an anchor naming a blank the task does not have, two tracks
+anchored to the same blank, and an anchor on a `goal` blank (answered inside a mock
+app) or a `free` blank (not a numbered item).
+
+The circled numeral in the task audio row is still derived from the track's **position**
+(`indexToCircled(index + 1)`).
+
+**History.** This was originally positional and unvalidated: A ➋'s seven tracks carried
+no anchors and relied on array order to line up with the workbook's ①–⑦, so reordering
+the array would have renumbered every track and silently broken the alignment. The
+original design also claimed each track "may bind to a blank", which no field
+implemented. `blankId` is that binding, added when the row-level control was built.
 
 ### Blank variants worth showing
 
@@ -317,7 +372,7 @@ upload with **no rename step**; images are `<lesson><task>-<letter>.<ext>`
 
 ### Schema rules
 
-1. **Every *scored* blank has a resolution.** Either an `answer`, or `kind: given`. The validator rejects a blank with neither — but `free` blanks are the documented exception: they are recorded and never scored, so they need no answer, and `given` blanks are excluded from scoring too. `goal` blanks are answered inside a mock app: they carry an answer for the host to grade, and the validator additionally requires each to be linked from a mock-app goal.
+1. **Every *scored* blank has a resolution.** Either a non-empty `answer`, or `kind: given`. `free` blanks are the documented exception — recorded and never scored, so an empty `answer` is correct for them — and `given` blanks are excluded from scoring too. `goal` blanks are answered inside a mock app: they carry an answer for the host to grade, and the validator additionally requires each to be linked from a mock-app goal.
 2. **`given` blanks are real.** The answer key deliberately omits blanks the workbook pre-fills (e.g. B ➊ prints `① a` and `② b` with no key entry). Modelled as `given` so the UI pre-fills them and the key parser does not report them missing.
 3. **`allowReuse` is per bank and defaults to `false`.** It is a task-level fact, not a global rule. When false, each platform's `WordBank` dims options already used elsewhere in the task, so a student can see what is left; when true, an option may be picked any number of times. Every bank in the pilot unit sets it to `false`, and B ➊ is the case that shows why the flag has to exist at all: its six options map to six distinct answers (`③ f; ④ c; ⑤ e; ⑥ d`, with ① and ② pre-filled as `given`), so a bank *could* legitimately need reuse in another task and the behaviour must not be hard-coded.
 4. **`expectedLength` defaults to `answer.length`.**
@@ -972,32 +1027,23 @@ retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failur
 already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
 `failed` state).
 
-**8. `AudioTrack.label` is never displayed, and track↔item alignment is unvalidated.**
+**8. `AudioTrack.label` is never displayed.**
 
-`AudioTrack` is `{ key, label? }`. Both players render `indexToCircled(index + 1)` for
-each track and pass `label` only to `accessibilityLabel`, so the labels authored across
-the unit — A ➊'s city names, A ➌'s speaker names — never reach the screen. A student
-sees ① ② ③ … regardless.
+`label` exists to identify a track in the content file and becomes the control's
+accessible name; nothing renders it, which is why the audio row shows `① ② ③` rather
+than the city or speaker names.
 
-Whether that is wrong depends on the task, which is why this is recorded rather than
-fixed: in A ➊ the labels name the city whose scenic spot is being asked for, so hiding
-them preserves the listening challenge; in A ➌ the speakers are named in the printed
-table in the same order, so numerals are sufficient but names would be friendlier.
+This is **correct for the dictation tasks**, where the label is the answer (`转机`,
+`门票`) — displaying it would give the exercise away — and harmless elsewhere: A ➊'s
+recordings name their city aloud, and A ➌'s speakers are printed in table order. So
+this is recorded as intended behaviour rather than a defect, and the earlier proposal to
+"show the label where it cannot leak" is withdrawn: the rule would have to be decided
+per task, for no gain.
 
-The sharper issue is what replaces the labels: the correspondence between a track and
-the item it belongs to is **positional**. A ➋'s seven tracks carry no labels at all and
-rely on array order to line up with the workbook's ①–⑦ and the answer key. Reordering
-that array would renumber every track and silently break the alignment, and nothing
-detects it — the validator does not check audio order or count against the blanks or
-numbered items a task declares.
-
-Two candidate fixes, needing a decision rather than a default:
-
-- **Bind tracks explicitly** — give `AudioTrack` an optional `blankId` (or `itemId`) and
-  label from it, so order stops carrying meaning and the validator can check that every
-  numbered item has a track and vice versa.
-- **Show `label` where it does not leak the answer** — display it for A ➌'s speakers and
-  keep numerals for A ➊, since the two tasks want opposite things from the same field.
+The position-based alignment that originally made this risky is **fixed** —
+`AudioTrack.blankId` now binds a track to its item, so reordering an `audio` array no
+longer silently renumbers it against the workbook, and the validator rejects an anchor
+that names no blank, a duplicate anchor, and an anchor on a `goal` or `free` blank.
 
 ### Verified, not assumed
 

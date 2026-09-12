@@ -246,6 +246,47 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     add('warning', 'Task is typed "listening" but has no audio.');
   }
 
+  // ── Track anchors ──
+  // `blankId` decides where a play control appears, so a bad anchor means a
+  // track that silently never renders, or two controls fighting over one row.
+  const anchored = new Map<string, string>();
+  for (const track of task.audio ?? []) {
+    if (!track.blankId) continue;
+    const blank = blanks[track.blankId];
+    if (!blank) {
+      add(
+        'error',
+        `Audio track "${track.key}" is anchored to blank "${track.blankId}", which this task does not have.`,
+        track.blankId,
+      );
+      continue;
+    }
+    if (blank.kind === 'goal') {
+      add(
+        'error',
+        `Audio track "${track.key}" is anchored to goal blank "${track.blankId}", which is answered inside the mock app and has no host-rendered item to attach to.`,
+        track.blankId,
+      );
+    }
+    if (blank.kind === 'free') {
+      add(
+        'error',
+        `Audio track "${track.key}" is anchored to free blank "${track.blankId}", which is not a numbered item.`,
+        track.blankId,
+      );
+    }
+    const previous = anchored.get(track.blankId);
+    if (previous) {
+      add(
+        'error',
+        `Two audio tracks are anchored to blank "${track.blankId}" ("${previous}" and "${track.key}"), so which control belongs to that item is ambiguous.`,
+        track.blankId,
+      );
+    } else {
+      anchored.set(track.blankId, track.key);
+    }
+  }
+
   // ── Answer key agreement ──
   if (task.answerKeyRaw) {
     for (const blank of Object.values(blanks)) {

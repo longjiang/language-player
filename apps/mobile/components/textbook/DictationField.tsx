@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { indexToCircled } from '@langplayer/textbooks';
 import { SpellCharInput } from '@/components/review/SpellCharInput';
 import { useTextbookTask } from './task-provider';
+import { InlineTrackButton } from './InlineTrackButton';
 import { useT } from '@/hooks/use-t';
 
 /**
@@ -44,11 +45,21 @@ export function DictationField({ blankId }: { blankId: string }) {
 }
 
 /** A dictation stimulus: numbered items, each a boxed field. */
+/**
+ * A dictation stimulus: numbered items, each a boxed field.
+ *
+ * Each item's recording is played from a control beside it — E ➊/➋ anchor one track
+ * per item — so a student hears the word and types it without leaving the row.
+ */
 export function Dictation({ ids }: { ids: string[] }) {
+  const ctx = useTextbookTask();
   return (
     <View className="gap-3">
       {ids.map((id) => (
-        <DictationField key={id} blankId={id} />
+        <View key={id} className="flex-row items-center gap-2">
+          <InlineTrackButton blankId={id} tracks={ctx?.task.audio} />
+          <DictationField blankId={id} />
+        </View>
       ))}
     </View>
   );

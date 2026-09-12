@@ -70,7 +70,7 @@ export const lessonA: LessonMeta = {
             { letter: 'H', label: '山水', image: 'tblt-hsk4/u06/a1-sight-h.jpg' },
             { letter: 'I', label: '电视塔', image: 'tblt-hsk4/u06/a1-sight-i.jpg' },
             { letter: 'J', label: '布达拉宫', image: 'tblt-hsk4/u06/a1-sight-j.jpg' },
-          ],
+      ],
         },
       ],
       blanks: {
@@ -100,13 +100,13 @@ export const lessonA: LessonMeta = {
       // ① is pre-filled with A in the workbook, which is why the answer key
       // starts at ②.
       audio: [
-        { key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ③ 地铁广播.mp3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ④ 行李转盘.mp3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ⑤ 安全白线.mp3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ⑥ 请紧握扶手.mp3' },
-        { key: 'tblt-hsk4/u06/六A ➋ ⑦ 登机口登机.mp3' },
+        { key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3', blankId: 'b1' },
+        { key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3', blankId: 'b2' },
+        { key: 'tblt-hsk4/u06/六A ➋ ③ 地铁广播.mp3', blankId: 'b3' },
+        { key: 'tblt-hsk4/u06/六A ➋ ④ 行李转盘.mp3', blankId: 'b4' },
+        { key: 'tblt-hsk4/u06/六A ➋ ⑤ 安全白线.mp3', blankId: 'b5' },
+        { key: 'tblt-hsk4/u06/六A ➋ ⑥ 请紧握扶手.mp3', blankId: 'b6' },
+        { key: 'tblt-hsk4/u06/六A ➋ ⑦ 登机口登机.mp3', blankId: 'b7' },
       ],
       body: [
         {
@@ -120,7 +120,7 @@ export const lessonA: LessonMeta = {
             { letter: 'E', label: '请前往行李转盘', image: 'tblt-hsk4/u06/a2-e.jpg' },
             { letter: 'F', label: '请前往登机口登机', image: 'tblt-hsk4/u06/a2-f.jpg' },
             { letter: 'G', label: '请紧握扶手', image: 'tblt-hsk4/u06/a2-g.jpg' },
-          ],
+      ],
         },
         { kind: 'numberedBlanks', ids: ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7'] },
       ],
@@ -142,11 +142,11 @@ export const lessonA: LessonMeta = {
       sourcePage: 4,
       instructions: '几个朋友介绍自己都去了哪里，怎么去的。听录音，完成下面的表格。',
       audio: [
-        { key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷' },
-        { key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3', label: '金敏俊' },
-        { key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚' },
-        { key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3', label: '陈灵' },
-        { key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3', label: '朴书妍' },
+        { key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷', blankId: 'b1' },
+        { key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3', label: '金敏俊', blankId: 'b3' },
+        { key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚', blankId: 'b5' },
+        { key: 'tblt-hsk4/u06/六A ➌（4）河内.mp3', label: '陈灵', blankId: 'b7' },
+        { key: 'tblt-hsk4/u06/六A ➌（5）爱宝乐园.mp3', label: '朴书妍', blankId: 'b9' },
       ],
       body: [
         {
@@ -170,7 +170,7 @@ export const lessonA: LessonMeta = {
             { letter: 'C', label: '大巴', image: 'tblt-hsk4/u06/a3-transport-c.jpg' },
             { letter: 'D', label: '电动车', image: 'tblt-hsk4/u06/a3-transport-d.jpg' },
             { letter: 'E', label: '共享单车（自行车）', image: 'tblt-hsk4/u06/a3-transport-e.jpg' },
-          ],
+      ],
         },
         {
           kind: 'pictureSet',
@@ -181,7 +181,7 @@ export const lessonA: LessonMeta = {
             { letter: 'c', label: '日本', image: 'tblt-hsk4/u06/a3-place-c.jpg' },
             { letter: 'd', label: '河内', image: 'tblt-hsk4/u06/a3-place-d.jpg' },
             { letter: 'e', label: '爱宝乐园', image: 'tblt-hsk4/u06/a3-place-e.jpg' },
-          ],
+      ],
         },
       ],
       blanks: {
@@ -201,5 +201,5 @@ export const lessonA: LessonMeta = {
       },
       answerKeyRaw: '2. 金敏俊: B、c; 3. 奥利维亚: D, a; 4. 陈灵: C, d; 5. 朴书妍: A, e。',
     },
-  ],
+      ],
 };
