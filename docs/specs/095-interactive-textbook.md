@@ -923,7 +923,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 - **Loading**: task skeleton from when the task is selected until its tokens resolve. The passage is deliberately **not** rendered before then — see "Render the passage only once its tokens have arrived" above.
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
-- **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus is specified but *not built* — see [Known Gaps](#known-gaps-against-this-spec). A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
+- **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
@@ -1059,21 +1059,7 @@ Listed under shared logic. `TaskResponseStore` persists per-task responses and a
 but nothing aggregates completion across tasks, so neither the picker nor the TOC shows
 any indication of what has been attempted or completed.
 
-**6. A failed stimulus has no inline retry.**
-
-The Error state specifies that a broken asset "must never block the exercise", and it
-does not — pictures degrade to a labelled placeholder, and a mock app that fails to
-load or never completes its `ready` handshake falls back to the workbook screenshot.
-What is missing is the **retry**: nothing lets a student re-attempt a stimulus that
-failed on a flaky connection short of reloading the page.
-
-This one was found while reconciling this document rather than in the first audit pass,
-which is a reminder that the audit was not exhaustive. The fix is small: surface a
-retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failure is
-already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
-`failed` state).
-
-**7. D ➐ asks the student to record audio, and the app cannot.**
+**6. D ➐ asks the student to record audio, and the app cannot.**
 
 The task is authored as its instruction, the draft from ➏ rendered by `RecallCard`, and
 a self-check box for what the student wants to improve. The recording itself is out of

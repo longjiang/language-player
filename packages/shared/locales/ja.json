@@ -848,6 +848,7 @@
         "already_have_account": "すでにアカウントをお持ちですか？",
         "already_lifetime": "すでに生涯アクセスをご利用です。購入は不要です。",
         "and_n_other_forms": "他{n}件の活用形",
+        "app_unavailable": "このインタラクティブアプリを読み込めませんでした。",
         "auto_renews": "{time}後に自動更新",
         "auto_renews_in": "{days}日後に自動更新",
         "buy_on_website": "ウェブサイトで購入",

@@ -848,6 +848,7 @@
         "already_have_account": "Already have an account?",
         "already_lifetime": "You already have Lifetime access. No purchase needed.",
         "and_n_other_forms": "and {n} other forms",
+        "app_unavailable": "This interactive app could not load.",
         "auto_renews": "Auto-renews in {time}.",
         "auto_renews_in": "Auto-renews in {days} days",
         "buy_on_website": "Buy on our website",

@@ -848,6 +848,7 @@
         "already_have_account": "이미 계정이 있으신가요?",
         "already_lifetime": "이미 평생 이용권이 있습니다. 구매할 필요가 없습니다.",
         "and_n_other_forms": "외 {n}개의 다른 형태",
+        "app_unavailable": "이 대화형 앱을 불러오지 못했습니다.",
         "auto_renews": "{time} 후 자동 갱신됩니다.",
         "auto_renews_in": "{days}일 후 자동 갱신",
         "buy_on_website": "웹사이트에서 구매하기",

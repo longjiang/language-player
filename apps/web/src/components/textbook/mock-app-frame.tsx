@@ -11,6 +11,7 @@ import {
 import { ASSET_BASE_URL, MOCK_APP_BASE_URL } from '@/lib/asset-url';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { RetryIcon } from './retry-icon';
 import { log } from '@/lib/logger';
 import { DictionaryPopup } from '@/components/dictionary-popup';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -35,6 +36,13 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
 
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
+  // Remounting the frame with a new key is the only reliable retry for an iframe
+  // that failed to load.
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => {
+    setAttempt((n) => n + 1);
+    setStatus('loading');
+  };
   const [goalCount, setGoalCount] = useState(stimulus.goals.length);
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
@@ -175,6 +183,15 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     // screenshot so the questions stay answerable.
     return (
       <div className="flex flex-col gap-2">
+        <p className="text-xs text-muted-foreground">{t('msg.app_unavailable')}</p>
+        <button
+          type="button"
+          onClick={retry}
+          className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
+        >
+          <RetryIcon />
+          {t('action.retry')}
+        </button>
         {stimulus.fallbackImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img

@@ -33,6 +33,11 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
 
   const webRef = useRef<WebView | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => {
+    setAttempt((n) => n + 1);
+    setStatus('loading');
+  };
   const [goalCount, setGoalCount] = useState(stimulus.goals.length);
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
@@ -150,6 +155,14 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     // screenshot so the questions stay answerable.
     return (
       <View className="gap-2">
+        <Text className="text-xs text-muted-foreground">{t('msg.app_unavailable')}</Text>
+        <Pressable
+          onPress={retry}
+          accessibilityRole="button"
+          className="self-start rounded-md border border-border bg-background px-2.5 py-1.5"
+        >
+          <Text className="text-xs text-foreground">{t('action.retry')}</Text>
+        </Pressable>
         {stimulus.fallbackImage && (
           <Image
             source={{ uri: resolveAsset(stimulus.fallbackImage) }}
@@ -209,6 +222,8 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           </View>
         )}
         <WebView
+          // Remounting with a new key is how a failed WebView is retried.
+          key={`${stimulus.app}:${attempt}`}
           ref={webRef}
           source={{ uri: mockAppHref(MOCK_APP_BASE_URL, stimulus.app) }}
           originWhitelist={['*']}
