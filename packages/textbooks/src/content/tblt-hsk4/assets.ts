@@ -90,17 +90,20 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   image('b4-fallback.png'),
 
   // ── Pictures, lesson A ➊ — the map and the ten scenic spots (A–J) ──
+  // The map is a flat-colour graphic, so PNG; the spots are photographs, so
+  // JPEG — a PNG of the same pixels is roughly six times the bytes for no
+  // visible gain, and this set will grow into the hundreds.
   image('a1-map.png'),
-  image('a1-sight-a.png'),
-  image('a1-sight-b.png'),
-  image('a1-sight-c.png'),
-  image('a1-sight-d.png'),
-  image('a1-sight-e.png'),
-  image('a1-sight-f.png'),
-  image('a1-sight-g.png'),
-  image('a1-sight-h.png'),
-  image('a1-sight-i.png'),
-  image('a1-sight-j.png'),
+  image('a1-sight-a.jpg'),
+  image('a1-sight-b.jpg'),
+  image('a1-sight-c.jpg'),
+  image('a1-sight-d.jpg'),
+  image('a1-sight-e.jpg'),
+  image('a1-sight-f.jpg'),
+  image('a1-sight-g.jpg'),
+  image('a1-sight-h.jpg'),
+  image('a1-sight-i.jpg'),
+  image('a1-sight-j.jpg'),
 
   // ── Pictures, lesson A ➋ (A–G) ──
   image('a2-a.png'),

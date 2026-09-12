@@ -71,3 +71,8 @@ tmp/
 scripts/lp-play-service-account.json
 .dev-builds/
 docs/to-do.md
+
+# Server data (Dropbox) — a symlink to zerotohero-server-data, which holds large
+# media that must not be committed (ADR-0043). The path itself is absolute and
+# machine-specific, so the link is ignored rather than tracked.
+zerotohero-server-data
