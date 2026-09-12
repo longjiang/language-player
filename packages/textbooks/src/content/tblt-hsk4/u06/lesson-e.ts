@@ -36,6 +36,12 @@ export const lessonE: LessonMeta = {
         // Dictation, so `expectedLength` is the workbook's printed box count —
         // the one place it is set explicitly rather than defaulting to the
         // answer length. Punctuation is not boxed, so it is excluded.
+        //
+        // No transcript on these recordings, deliberately: the recording says the
+        // sentence the student is asked to write, so a transcript button here would be
+        // an answer key with a play control beside it. The transcript is for a recording
+        // the student listens to for meaning, which is why the booklet has none for
+        // these either.
         b1: { id: 'b1', kind: 'type', answer: '我需要在北京转机。', expectedLength: 8, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ①.mp3' }] },
         b2: { id: 'b2', kind: 'type', answer: '博物馆门票多少钱？', expectedLength: 8, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ②.mp3' }] },
         b3: { id: 'b3', kind: 'type', answer: '十字路口站着一个交警。', expectedLength: 10, audio: [{ key: 'tblt-hsk4/u06/六E ➊ ③.mp3' }] },
@@ -76,7 +82,25 @@ export const lessonE: LessonMeta = {
       type: 'reading',
       sourcePage: 22,
       instructions: '看一段乘坐商务座去上海的经历的社交媒体范文。',
-      audio: [{ key: 'tblt-hsk4/u06/六E ➌.mp3' }],
+      // The transcript is the model post itself, which is what the recording reads.
+      audio: [
+        {
+          key: 'tblt-hsk4/u06/六E ➌.mp3',
+          transcript: [
+            {
+              text:
+                '这次去中国旅游，先去了扬州，然后去了上海。去上海这一程，我想试试商务座的高铁，' +
+                '因为从来没坐过。在扬州东站，我去售票窗口买票。等了很久，因为经常有人在我前头插队。' +
+                '这次发现中国插队的情况还是很普遍。如果不想有人插队，就必须和前面的人站得很近。' +
+                '在中国，好像人们都急急忙忙的，经常有人要挤到你前头去，这一点我很不适应。' +
+                '好在排到我时，我顺利买到了下一班的商务座车票。商务座有个好处，就是可以使用商务座' +
+                '休息区，里面不但有舒服的沙发，还有免费的咖啡和小点心。快要出发时，候车区的' +
+                '工作人员还会提醒你去检票口，非常周到。另外，你可以在其他人检票前，优先通过检票口' +
+                '进入站台，完全不用排队。',
+            },
+          ],
+        },
+      ],
       body: [
         {
           kind: 'passage',
