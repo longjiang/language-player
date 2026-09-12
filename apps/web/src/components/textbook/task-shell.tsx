@@ -7,6 +7,11 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './word-bank';
+import { AudioPlayer } from './audio-player';
+import { PictureSet } from './picture-set';
+import { DataTable } from './data-table';
+import { DialoguePassage } from './dialogue-passage';
+import { NumberedBlanks } from './numbered-blanks';
 
 /**
  * The frame every task renders inside.
@@ -66,6 +71,8 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           )}
         </div>
       </header>
+
+      {task.audio && task.audio.length > 0 && <AudioPlayer tracks={task.audio} />}
 
       {children}
 

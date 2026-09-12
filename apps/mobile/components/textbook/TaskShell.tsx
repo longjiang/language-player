@@ -6,6 +6,11 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
+import { AudioPlayer } from './AudioPlayer';
+import { PictureSet } from './PictureSet';
+import { DataTable } from './DataTable';
+import { DialoguePassage } from './DialoguePassage';
+import { NumberedBlanks } from './NumberedBlanks';
 
 /**
  * The frame every task renders inside.
@@ -62,6 +67,8 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         </View>
       </View>
 
+      {task.audio && task.audio.length > 0 && <AudioPlayer tracks={task.audio} />}
+
       {children}
 
       {banks.map((bank) => (
@@ -109,11 +116,11 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 }
 
 /**
- * Renders the task's stimulus blocks.
+ * Renders the task's stimulus blocks, in authored order.
  *
- * Phase 0 implements `passage`; the remaining kinds arrive with their widgets in
- * later phases, and an unimplemented kind renders nothing rather than throwing,
- * so a newer content file cannot break an older client outright.
+ * An unknown kind renders nothing rather than throwing, so a content file from a
+ * newer client cannot break an older one outright — the validator is what
+ * catches genuinely broken content.
  */
 export function TaskStimulus() {
   const ctx = useTextbookTask()!;
@@ -122,14 +129,24 @@ export function TaskStimulus() {
   return (
     <>
       {ctx.task.body.map((stimulus, i) => {
-        if (stimulus.kind === 'passage') {
-          return (
-            <View key={i}>
-              <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
-            </View>
-          );
+        switch (stimulus.kind) {
+          case 'passage':
+            return (
+              <View key={i}>
+                <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
+              </View>
+            );
+          case 'dialogue':
+            return <DialoguePassage key={i} dialogue={stimulus} />;
+          case 'dataTable':
+            return <DataTable key={i} table={stimulus} />;
+          case 'pictureSet':
+            return <PictureSet key={i} set={stimulus} />;
+          case 'numberedBlanks':
+            return <NumberedBlanks key={i} ids={stimulus.ids} />;
+          default:
+            return null;
         }
-        return null;
       })}
     </>
   );

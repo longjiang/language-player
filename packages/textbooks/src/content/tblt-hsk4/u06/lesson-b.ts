@@ -13,6 +13,58 @@ export const lessonB: LessonMeta = {
   canDo: '能看懂关于交通出行内容的一般性介绍或短文故事。',
   tasks: [
     {
+      id: 'tblt-hsk4.u06.B.t1',
+      number: '➊',
+      type: 'reading',
+      sourcePage: 6,
+      instructions:
+        '看下面的表格列出的不同车次，然后在“车型”列的空白处填入适当的选项。注意车次例子的第一个字母。',
+      instructionsL1:
+        'Look at the train numbers in the table, then fill each blank in the 车型 column with the right option. Note the first letter of each example train number.',
+      body: [
+        {
+          kind: 'dataTable',
+          id: 't1-trains',
+          columns: ['车次和读法', '车型', '路线', '时速'],
+          rows: [
+            ['G815 “高815”', '{{b1}}', '北京南 → 宁波', '250-350km'],
+            ['D17 “动17”', '{{b2}}', '北京 → 杭州', '160-250km'],
+            ['C2131 “城2131”', '{{b3}}', '北京南 → 天津西', '160-300km'],
+            ['Z281 “直281”', '{{b4}}', '包头 → 杭州', '160km'],
+            ['T109 “特109”', '{{b5}}', '北京 → 上海', '140km'],
+            ['K1275 “快1275”', '{{b6}}', '包头 → 温州', '120km'],
+          ],
+        },
+      ],
+      blanks: {
+        // Rows 1 and 2 are the worked examples the key omits.
+        b1: { id: 'b1', kind: 'given', answer: 'a' },
+        b2: { id: 'b2', kind: 'given', answer: 'b' },
+        b3: { id: 'b3', kind: 'choose', answer: 'f', bank: 'w1' },
+        b4: { id: 'b4', kind: 'choose', answer: 'c', bank: 'w1' },
+        b5: { id: 'b5', kind: 'choose', answer: 'e', bank: 'w1' },
+        b6: { id: 'b6', kind: 'choose', answer: 'd', bank: 'w1' },
+      },
+      banks: [
+        {
+          // The workbook prints each option as a letter plus its description;
+          // the blank records only the letter, so the descriptions are labels.
+          id: 'w1',
+          items: ['a', 'b', 'c', 'd', 'e', 'f'],
+          optionLabels: {
+            a: '高速动车组列车',
+            b: '动车组列车',
+            c: '直达特快列车',
+            d: '快速列车',
+            e: '特快列车',
+            f: '城际动车组列车',
+          },
+          allowReuse: false,
+        },
+      ],
+      answerKeyRaw: '③ f; ④ c; ⑤ e; ⑥ d。',
+    },
+    {
       id: 'tblt-hsk4.u06.B.t2',
       number: '➋',
       type: 'reading',
@@ -21,6 +73,17 @@ export const lessonB: LessonMeta = {
       instructionsL1:
         'Look at the information above, then fill each blank with the right word from the list.',
       body: [
+        {
+          kind: 'dataTable',
+          id: 't2-compare',
+          columns: ['', '和谐号', '复兴号'],
+          rows: [
+            ['行驶速度', '160 - 250km/h', '160 - 350km/h'],
+            ['制造开始', '2007年', '2015年'],
+            ['免费Wi-Fi网络', '✗', '✓'],
+            ['充电口', '✗', '✓'],
+          ],
+        },
         {
           kind: 'passage',
           text:
