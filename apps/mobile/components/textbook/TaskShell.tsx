@@ -13,6 +13,8 @@ import { DialoguePassage } from './DialoguePassage';
 import { NumberedBlanks } from './NumberedBlanks';
 import { ImageMap } from './ImageMap';
 import { MockAppFrame } from './MockAppFrame';
+import { Dictation } from './DictationField';
+import { FreeWrite, NoteCards } from './FreeWrite';
 
 /**
  * The frame every task renders inside.
@@ -150,6 +152,12 @@ export function TaskStimulus() {
             return <ImageMap key={i} map={stimulus} />;
           case 'mockApp':
             return <MockAppFrame key={i} stimulus={stimulus} />;
+          case 'dictation':
+            return <Dictation key={i} ids={stimulus.ids} />;
+          case 'freeWrite':
+            return <FreeWrite key={i} blankId={stimulus.blankId} rows={stimulus.rows} />;
+          case 'noteCards':
+            return <NoteCards key={i} cards={stimulus.cards} />;
           default:
             return null;
         }

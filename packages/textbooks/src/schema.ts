@@ -50,6 +50,9 @@ function markerIdsIn(task: Task): string[] {
     if (stimulus.kind === 'numberedBlanks') ids.push(...stimulus.ids);
     if (stimulus.kind === 'imageMap') ids.push(...stimulus.pins.map((pin) => pin.blankId));
     if (stimulus.kind === 'mockApp') ids.push(...stimulus.goals.map((goal) => goal.blankId));
+    if (stimulus.kind === 'dictation') ids.push(...stimulus.ids);
+    if (stimulus.kind === 'freeWrite') ids.push(stimulus.blankId);
+    if (stimulus.kind === 'noteCards') ids.push(...stimulus.cards.map((card) => card.blankId));
   }
   return ids;
 }
@@ -82,7 +85,8 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     if (key !== blank.id) {
       add('error', `Blank key "${key}" does not match its id "${blank.id}".`, key);
     }
-    if (!blank.answer?.trim()) {
+    // A `free` blank is ungraded prose, so it has no answer to require.
+    if (blank.kind !== 'free' && !blank.answer?.trim()) {
       add('error', `Blank "${key}" has no answer.`, key);
     }
     if (blank.kind === 'choose') {
@@ -112,6 +116,9 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     }
     if (blank.kind === 'given' && blank.bank) {
       add('warning', `Given blank "${key}" declares a bank but is not answered.`, key);
+    }
+    if (blank.kind === 'free' && blank.bank) {
+      add('error', `Free blank "${key}" cannot draw from a bank.`, key);
     }
     if (blank.kind === 'goal' && (blank.bank || blank.optionSet)) {
       add('error', `Goal blank "${key}" cannot draw from a bank or picture set.`, key);
@@ -242,7 +249,8 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
   // ── Answer key agreement ──
   if (task.answerKeyRaw) {
     for (const blank of Object.values(blanks)) {
-      if (blank.kind === 'given') continue; // the key deliberately omits worked examples
+      // The key omits worked examples and has nothing to say about free text.
+      if (blank.kind === 'given' || blank.kind === 'free') continue;
       const keyed = blank.keyLabel
         ? answersForKeyLabel(task.answerKeyRaw, blank.keyLabel)
         : (() => {

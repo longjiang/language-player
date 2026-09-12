@@ -28,7 +28,15 @@ export type BlankKind =
    * answer can be graded and cross-checked against the printed key like any
    * other blank. No `{{bN}}` marker or blank widget may reference it.
    */
-  | 'goal';
+  | 'goal'
+  /**
+   * Free text that is never graded — note-taking and free writing.
+   *
+   * Distinct from `type` because there is no correct answer: a `type` blank is
+   * scored against `answer`, a `free` blank is only recorded. It is excluded from
+   * the score exactly like `given`, and needs no answer-key entry.
+   */
+  | 'free';
 
 /** A bank of options that `choose` blanks draw from. */
 export interface Bank {
@@ -220,6 +228,33 @@ export interface MockAppStimulus {
   goals: MockAppGoalLink[];
 }
 
+/**
+ * Dictation: numbered items typed into boxed per-character fields.
+ *
+ * Modelled separately from `numberedBlanks` because the presentation differs —
+ * the workbook prints one visible box per expected character, and entry goes
+ * through an IME-safe segmented control rather than a plain input.
+ */
+export interface DictationStimulus {
+  kind: 'dictation';
+  ids: string[];
+}
+
+/** An open writing surface, never graded. */
+export interface FreeWriteStimulus {
+  kind: 'freeWrite';
+  /** The `free` blank holding the text. */
+  blankId: string;
+  rows?: number;
+}
+
+/** Note-taking into titled cards, never graded. */
+export interface NoteCardsStimulus {
+  kind: 'noteCards';
+  /** Each card is a titled `free` blank. */
+  cards: Array<{ blankId: string; title: string }>;
+}
+
 export type Stimulus =
   | PassageStimulus
   | DialogueStimulus
@@ -227,7 +262,10 @@ export type Stimulus =
   | DataTableStimulus
   | NumberedBlanksStimulus
   | ImageMapStimulus
-  | MockAppStimulus;
+  | MockAppStimulus
+  | DictationStimulus
+  | FreeWriteStimulus
+  | NoteCardsStimulus;
 
 /** Audio track attached to a task. */
 export interface AudioTrack {
@@ -325,6 +363,11 @@ export function textsIn(task: Task): string[] {
       case 'mockApp':
         // The app's own text is tokenized inside the frame, not from here.
         break;
+      case 'noteCards':
+        for (const card of stimulus.cards) if (card.title) out.push(card.title);
+        break;
+      case 'dictation':
+      case 'freeWrite':
       case 'numberedBlanks':
       case 'imageMap':
         // No text of their own: `numberedBlanks` renders blanks from their

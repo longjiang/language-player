@@ -40,12 +40,15 @@ export type {
   BookMeta,
   DataTableStimulus,
   DialogueLine,
+  DictationStimulus,
   DialogueStimulus,
+  FreeWriteStimulus,
   ImageMapPin,
   ImageMapStimulus,
   LessonMeta,
   MockAppGoalLink,
   MockAppStimulus,
+  NoteCardsStimulus,
   NumberedBlanksStimulus,
   PassageStimulus,
   PictureOption,
@@ -62,6 +65,7 @@ export {
   expandAcceptedVariants,
   gradeTask,
   isBlankCorrect,
+  isBlankScoreable,
   normalizeAnswer,
 } from './grading';
 

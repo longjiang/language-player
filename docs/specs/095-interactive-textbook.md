@@ -601,6 +601,13 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## Phasing
 
+> **Implementation status.** Phases 0–3 are implemented. Unit 6 lessons A–E are
+> authored; the workbook's remaining tasks for lessons B (➎/➏), C (➌) and D (➊–➎)
+> are not yet transcribed. Media is not published, so picture sets and the mock-app
+> fallback render their graceful fallbacks; the manifest lists every key that must
+> be uploaded. Mobile audio and the mobile mock-app frame are unverified on a
+> device.
+
 - **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section) and **L2 tokenized instructions** with the optional L1 translation; the **`Vocab` → `Study` rename** plus the `Tasks` nav entry on both platforms, `TextbookPicker` and `TaskToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
 - **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), then `MockAppFrame` + `mock-app-runtime.js` + a "hello world" mock app to prove the per-app floor (B ➍).

@@ -14,6 +14,8 @@ import { DialoguePassage } from './dialogue-passage';
 import { NumberedBlanks } from './numbered-blanks';
 import { ImageMap } from './image-map';
 import { MockAppFrame } from './mock-app-frame';
+import { Dictation } from './dictation-field';
+import { FreeWrite, NoteCards } from './free-write';
 
 /**
  * The frame every task renders inside.

@@ -40,6 +40,9 @@ export function BlankField({ blank }: { blank: BlankSpec }) {
   const reveal = result && blankResult && !blankResult.correct ? blank.answer : null;
   const label = blankLabel(blank);
 
+  // ── Answered inside a mock app, never by a blank widget ──
+  if (blank.kind === 'goal') return null;
+
   // ── Worked example: pre-filled by the workbook, not editable, not scored ──
   if (blank.kind === 'given') {
     return (

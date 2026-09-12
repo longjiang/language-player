@@ -345,3 +345,33 @@ describe('mock app goals', () => {
     expect(errorsOf(validateTask(t)).join()).toContain('"G999" disagrees with the key');
   });
 });
+
+describe('ungraded and dictation stimuli', () => {
+  it('accepts a free blank with no answer key entry', () => {
+    const t = base({
+      body: [{ kind: 'freeWrite', blankId: 'b1' }],
+      blanks: { b1: { id: 'b1', kind: 'free', answer: '' } },
+      answerKeyRaw: '',
+    });
+    // Free text has no answer to require, so nothing should complain.
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+
+  it('accepts a dictation stimulus whose ids reference type blanks', () => {
+    const t = base({
+      body: [{ kind: 'dictation', ids: ['b1'] }],
+      blanks: { b1: { id: 'b1', kind: 'type', answer: '我需要在北京转机', expectedLength: 8 } },
+      answerKeyRaw: '① 我需要在北京转机。',
+    });
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+
+  it('accepts note cards', () => {
+    const t = base({
+      body: [{ kind: 'noteCards', cards: [{ blankId: 'b1', title: '路线' }] }],
+      blanks: { b1: { id: 'b1', kind: 'free', answer: '' } },
+      answerKeyRaw: '',
+    });
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+});
