@@ -33,7 +33,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **B ➊** | train comparison table | 4 letter blanks, 2 given | bank a–f with descriptions |
 | **B ➋** | comparison table + passage | 3 word blanks, 1 given | bank of 4 words |
 | **B ➌** | two price tables, their seat photographs as column headings, one intro line each | 4 questions, 1 given; ③ takes two picks | two seat-class banks, offered in the dialog at the blank |
-| **B ➍** | the 12306 app as a mock app | 5 goals, 1 given | the app reports, the host grades |
+| **B ➍** | the 12306 app as a mock app, opened from a launch button into a panel | 6 tasks asked one at a time, ① given | the app reports, the host grades |
 | **B ➎** | 小红书 article | 6 illustration slots, 1 given | picture set A–F |
 | **B ➏** | the same article | 6 text blanks, 1 given | statement bank A–G |
 | **C ➊ / ➋** | 4 recordings + 4 photos | 3 numbered blanks each, 1 given | picture letters |
@@ -1110,7 +1110,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
-| `MockAppFrame` | Host frame + bridge for a self-contained mock-app HTML file (see below) |
+| `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (one task at a time, Next, All Done!, close), the sandboxed app, and a toolbar with help mode and hint (see below) |
 | `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
@@ -1160,7 +1160,7 @@ test that recognises `/.well-known/apple-app-site-association` — a public file
 at all. `static-file-path.test.ts` walks `public/` and fails on any file the predicate does not
 recognise, so a new mock app, or a new directory beside it, cannot go unserved in silence.
 
-### The frame is rendered after mount, not in the server HTML
+### The frame is rendered after mount, never in the server HTML
 
 A frame in the server HTML starts loading while the client bundle is still arriving, and a mock
 app announces itself the moment it has run — so its entire handshake can be over before the host
@@ -1172,17 +1172,25 @@ already fired, the four-second grace timer never started either, so a frame that
 `ready` did not degrade to its fallback as designed.
 
 The symptom was not a missing app but a **half-alive** one: the screen rendered, the `Help` and
-`Hint` buttons did nothing useful, the counter read `1 / 6`, and the student could not tell what
-was being asked. The `1 / 6` is the tell — it came from a *later* `progress`, posted on a click
-after the listener existed, while the initial `progress` that would have said `0 / 6` was lost
-with `ready`.
+`Hint` buttons did nothing useful, and the student could not tell what was being asked.
 
-`MockAppFrame` on web therefore renders its frame **after mount**, so the frame's first byte
-lands after the component's effects and both the listener and the `load` handler exist before
-the app can speak. `init` follows from the frame's `load` rather than from the host's mount,
-since it cannot be delivered to a frame that is not there yet; on mobile, where `init` is an
-injected script that needs a live document, it goes out on `onLoadEnd` for the same reason.
-Verified in the page afterwards: listener at **545 ms**, all three messages at **957 ms**.
+The panel is now the structural fix as well as the design: the frame exists **only while the
+panel is open**, which is after mount by construction, so the listener and the `load` handler
+always exist before the app can speak. `init` follows from the frame's `load` rather than from
+the host's mount, since it cannot be delivered to a frame that is not there yet; on mobile, where
+`init` is an injected script that needs a live document, it goes out on `onLoadEnd` for the same
+reason. Verified in the page after the change: listener at **545 ms**, all three messages at
+**957 ms**.
+
+Two consequences of the frame's being unmounted while the panel is closed:
+
+- **The app restarts on every open**, so its own picks start empty again. Anything the app has
+  already reported is held by the host, which is why `progress` is only ever *added to*: a fresh
+  app reports `done: []`, and replacing the set with that would take the student back to task ①
+  on a task they had finished. A set task that was half-picked when the panel closed is picked
+  again from the start.
+- **A failure is discovered inside the panel**, because that is the first moment the app loads.
+  The panel shows the failure where the app was, and closing it reveals the workbook fallback.
 
 `mock-app-frame.test.tsx` asserts the frame is absent from the server HTML, which is the
 invariant that keeps this from coming back.
@@ -1220,8 +1228,9 @@ Versioned and transport-agnostic, so the same protocol rides web `postMessage` a
 `MockAppFrame` refuses a mismatched major version. This message set is the entire host surface.
 
 **`ready` is sent once, by the app, when it has mounted** — so the host has to exist first, which
-is why the frame is rendered after mount and why `init` is sent on the frame's `load` rather than
-on the host's mount (see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-not-in-the-server-html)).
+is why the frame is mounted only inside the panel and why `init` is sent on the frame's `load`
+rather than on the host's mount
+(see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-never-in-the-server-html)).
 `init` is idempotent: it may be sent more than once, and an app re-entering help mode because of
 it is harmless. Nothing in this set relies on the app re-announcing itself, so there is no
 version bump here.
@@ -1235,8 +1244,9 @@ MockApp.define({
   id: 'railway-12306',
   data: { services: [ /* … */ ] },
   goals: [
-    { id:'fastest', prompt:'哪次列车最快？',   accept:(el, d) => el.dataset.no === fastest(d) },
-    { id:'sleeper', prompt:'哪次列车有卧铺？', accept:(el, d) => el.dataset.sleeper === 'true' },
+    { id:'fastest', prompt:'例：选择最快的车次。', accept:(el, d) => el.dataset.no === fastest(d) },
+    { id:'fuxing',  prompt:'选择所有“复兴号”车次。', all:true,
+      candidates:(d) => matching(d, (s) => s.fuxing), accept:(el) => el.dataset.fuxing === 'true' },
   ],
   mount(root, data) { /* render the app's own UI from data */ },
 });
@@ -1245,34 +1255,63 @@ MockApp.define({
 From that single declaration the runtime derives all three shared behaviours:
 
 - **Evaluation** — the task is complete when every goal is satisfied. Evaluation must run app-side, because only the app has the data.
-- **Progress** — `done / total`, reported to `TaskShell` for a progress indicator.
+- **Progress** — `done / total`, reported to the host.
 - **Hint** — highlight the candidate elements of the **first unmet goal**. This is why a completion path must exist for each answer: the hint is not a separate authored asset, it is the goal list read in order.
 
-This covers both shapes uniformly. A single-goal sequenced app (the ATM: card → PIN → amount → take cash) is an ordered goal list whose acceptance conditions encode the sequencing. And B ➍'s six questions become six goals — a better design than modelling them as blanks in `TaskShell`, because the student answers them *against the app* rather than transcribing from a screenshot.
+**`all: true` makes a goal a set, and three of B ➍'s six tasks need it.** 选择所有"复兴号"车次 asks for four
+trains, and the blank behind it is a `multiple` one, which grading compares as an exact set. A goal
+that completes on the first accepted tap cannot express that: the student taps one 复兴号, the goal
+is done, the host is handed one train, and the answer is marked wrong with no way to add the rest —
+the goal is already satisfied, so the other three taps go nowhere. With `all`, picks accumulate, the
+goal completes only once every element `candidates` names has been picked, and the answer is those
+picks joined by `、` — the separator a `multiple` blank stores with (`PICK_SEPARATOR`),
+overridable per goal with `join`. Picked rows take the app's own `.done` class, the hint for a set
+goal points only at what is still missing, and `reset` clears the picks with the goals.
+
+**One tap credits every goal it satisfies, not just the first unmet one.** G49 is both the fastest
+train and a 复兴号, so crediting only the first stole the tap: the set goal still listed G49 as
+missing and could never be completed however many of the others were tapped.
+
+This covers both shapes uniformly. A single-goal sequenced app (the ATM: card → PIN → amount → take cash) is an ordered goal list whose acceptance conditions encode the sequencing. And B ➍'s six tasks become six goals — a better design than modelling them as blanks in `TaskShell`, because the student answers them *against the app* rather than transcribing from a screenshot.
 
 A mock app may also be a **pure stimulus with no goals** (a reference screen with nothing to do). `complete` is therefore optional, and such an app reports only tokens and lookups.
 
-### The questions are the host's, the screen is the app's
+### The task is the host's, the screen is the app's
 
 **A mock app renders its own screen and no questions at all.** B ➍'s HTML is a 12306 result list
-and nothing else: no question text, no progress, no chrome. The six questions are the host's, and
-they print from `stimulus.goals[].prompt` — the content's copy, in the app's own goal order,
-numbered ①–⑥ with `indexToCircled` and rendered through `TokenizedText` like every other piece of
-L2 exercise text, so a word in a question is as look-up-able as a word in an instruction.
+and nothing else: no task text, no progress, no chrome. The tasks are the host's, and it asks them
+**one at a time in the panel's header**, from `stimulus.goals[].prompt` — the content's copy, in
+the app's own goal order, numbered ①–⑥ with `indexToCircled` and rendered through `TokenizedText`
+like every other piece of L2 exercise text, so a word in a task is as look-up-able as a word in an
+instruction.
 
 The content is the source rather than the `ready` payload that also carries the prompts, and for
-the same reason grading reads it: the printed question and the graded answer then cannot drift.
-Each answered goal is marked — struck out on web, which is this feature's existing mark for "you
-have placed this" in the option pools, and dimmed beside a check on mobile, because
-`TokenizedText`'s memo comparator is a hand-written allow-list and a text-style prop added for a
-cosmetic mark would have to be threaded through it.
+the same reason grading reads it: the asked task and the graded answer cannot drift. The header is
+the panel's title, so the accessible name of the panel is the task being asked.
+
+| Control | When | What it does |
+|---|---|---|
+| Number + prompt | always | The task the student is on. It does **not** advance by itself |
+| `{check} Next` | when the app reports this task done | Moves to the next task that is still unanswered, so it never lands on a finished one |
+| `{celebrate} All Done!` | when every task is done | Closes the panel, so the page's Submit can grade |
+| `{x}` close | always | Dismisses the panel (ADR-0042: the close affordance is always visible) |
+
+Auto-advancing was the alternative and was rejected: `Next` is the student's own signal that they
+have finished reading the screen, and a header that moves while they are still looking at it
+takes the task away mid-read.
+
+An answered task is marked — struck out on web, which is this feature's existing mark for "you
+have placed this" in the option pools, and dimmed on mobile, because `TokenizedText`'s memo
+comparator is a hand-written allow-list and a text-style prop added for a cosmetic mark would have
+to be threaded through it.
 
 **This was missing, and it broke the task without breaking anything visibly.** `goal.prompt` was
 rendered only inside the `status === 'failed'` branch — the fallback that turns the goals into
-typed inputs — so a *working* mock app showed the student a 12306 screen, a `1 / 6` counter, and
-no questions whatsoever. The feature looked alive and asked nothing. `MockAppFrame`'s own doc
-comment says the host "owns the frame, the bridge, and the three shared affordances — help mode,
-hint, and grading"; the fourth thing it owns is the question itself, and that one had no owner.
+typed inputs — so a *working* mock app showed the student a 12306 screen and no tasks whatsoever.
+The feature looked alive and asked nothing. The first fix printed all six as a list beside the
+app; **that list is what the panel's one-at-a-time header replaced**, because six tasks and one
+screen on a phone is a scrolling problem, and because a task that is not *being asked* is not
+being done.
 
 A goal is marked done by **either** message that reports it. The app posts `complete` and then
 `progress`, and the host used to learn "this goal is done" only from the second — the same
@@ -1326,17 +1365,18 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 1. Student opens **Study → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
 2. Student picks a task → task data loads and asset URLs resolve. Each text surface requests its own tokens through the batched queue and renders its plain-text fallback until they arrive.
-3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
+3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. A `mockApp` renders **only a launch button** here; the app itself mounts when the panel opens, and the host waits for its `ready` handshake there.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
-   - **Mock-app tasks** — the app owns its own state; `TaskShell` renders goal progress from the app's `progress` messages and the host chrome (help mode, hint) forwards over the bridge.
+   - **Mock-app tasks** — the app owns its own screen and state. The panel's header asks one task at a time, **Next** advances once the app reports that task done, and **All Done!** closes the panel when every task is; help mode and hint forward over the bridge from the panel's toolbar.
 5. The attempt resolves — by explicit submit for blank tasks, or by the app reporting `complete` for goal-based ones. `gradeTask` runs locally wherever there are blanks; the app's declared answers cover the goal case. Correct/incorrect is shown and the attempt is persisted locally (ADR-0044).
 
 ## States
 
 - **Loading**: each text surface shows its plain-text fallback until its own tokens resolve, then re-renders with readings and blanks — see [Tokenization](#tokenization-runtime-per-surface).
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
-- **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
+- **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` fails in the **panel**, because that is where it loads: the panel shows the notice and Retry where the app was, and closing it leaves the launch button replaced by its fallback image (the original workbook screenshot) and typed answers, so the task stays answerable without the app.
+- **A mock app's panel**: rendered only while open, so the app restarts on every open and anything it had picked is picked again — see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-never-in-the-server-html). Its container is a bottom sheet below 768 and a centered dialog at or above, per SPEC-052 and ADR-0042.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Transcript**: available on every control whose recording has one, at any time — before, during and after answering. The dialog shows the lines tokenized and translated per the student's own settings, and scrolls; a recording with no transcript shows no button at all, so the affordance never promises text that is not there.
