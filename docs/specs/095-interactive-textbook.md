@@ -29,7 +29,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **A ➊** | map of China | 10 blanks at city pins, 1 given | picture set A–J |
 | **A ➋** | 7 transport announcements | 7 numbered blanks, 1 given | picture set A–G |
 | **A ➌** | two 5-row tables (how they went, where they went) | 2 picture-letter blanks per row | picture sets A–E and a–e |
-| **A ➍** | ➌'s five recordings, one per sub-item | 17 word blanks, 4 given | one combined bank |
+| **A ➍** | ➌'s five recordings, one per sub-item | 17 word blanks, 4 given | one pool per summary, printed under it |
 | **B ➊** | train comparison table | 4 letter blanks, 2 given | bank a–f with descriptions |
 | **B ➋** | comparison table + passage | 3 word blanks, 1 given | bank of 4 words |
 | **B ➌** | two price tables + seat photographs | 4 questions, 1 given; ③ takes two picks | two seat-class banks |
@@ -52,6 +52,13 @@ The defining property of this content, and therefore of this feature, is that **
 
 Every answer above is cross-checked against the printed key, and 19 of the 25 tasks carry
 that key verbatim in `answerKeyRaw` — the validator proves the two agree blank by blank.
+
+**One key line is corrected rather than carried verbatim, and it is A ➍ (5) ①.** The booklet's
+key prints 要, but the blank sits *before* the printed 要 — 路程①（　）要1个小时, with a drawn rule at x 171.0–236.9 and 要 beginning at 236.9 — so 要 is part of the sentence
+and the word that goes in the blank is 差不多, which is also the only word of (5)'s pool that
+fits: reading 要 as the answer gives 路程要要1个小时 and asks for a word the pool does not
+print. It was invisible until a typed blank was checked against its pool (see [Banks](#banks)),
+because only `choose` blanks were compared with theirs.
 
 The other six are the tasks the key has nothing to grade in: D ➍, D ➎, D ➏, D ➐, E ➌ and
 E ➍ are read-along, note-taking, drafting, self-check, reading a model and free writing.
@@ -314,6 +321,35 @@ banks: [
   },
 ],
 ```
+
+**Where a pool is printed is a property of the exercise, not of the bank.** A bank no
+stimulus names is task-level and renders below the stimulus. A passage may name pools to
+print **at the end of itself** (`PassageStimulus.banks`), which is what A ➍ does: each of its
+five summaries carries its own three-word pool, so the words sit under the blanks they fill
+instead of in one list at the foot of the task. The words are read where they are used, and
+a summary's pool is small enough to take in at a glance. A bank printed inline is not printed
+again below the task — the same pool twice on one page reads as two different pools.
+
+This is **placement only**: a blank still names its own bank (`BlankSpec.bank`), which is what
+grading, the answer-key check and the pick behaviour read.
+
+**A pool is picked or typed, and the blank decides which.** Derived by `bankIsPicked`, not
+declared:
+
+| Drawn on by | The pool is | Rendered |
+|---|---|---|
+| a `choose` blank | the answer mechanism — the letter or word *is* the answer | buttons that fill the selected blank |
+| only `type` blanks | a reference list — the student writes the answer | plain options, not controls |
+
+A ➍ is the second kind: the student types the words into the blanks, so a row of buttons
+would invite picking, which is not the exercise — and a control wrapped around a word takes
+that word's tap away from the dictionary, because a token's tap stops at the token. The words
+are tokenized in both shapes; the pool is L2 the student may not know.
+
+`allowReuse` is a property of the pool, so it is set per pool and only where the key reuses a
+word **within one pool** — 随处 twice in A ➍ (1), 摇 twice in (4). A word printed in two
+summaries' pools (趟, in (2) and (4)) is the reason those pools are per summary at all: one
+shared pool would have had to list it once and reuse it across items.
 
 ### Audio
 
@@ -962,7 +998,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
-| `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
+| `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Dims consumed options when `allowReuse` is false |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
 | `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them |
 | `BlankChoiceProvider` / `useBlankChoice` | The task's picture-choice dialog and its opener. One dialog per task; a blank calls `open(blankId)` |
@@ -1222,6 +1258,15 @@ which is the designed behaviour, and also why this went unnoticed.
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**The option pools are verified in a browser and by test.** In the browser, A ➍'s pool renders
+as text rather than as buttons (a `DIV` per option, no control), and its words are tokenized:
+tapping 舒 in the pool opens the dictionary on 舒服 [shū fú]. C ➍'s `choose`-backed pool still
+renders as buttons with `aria-pressed` and keeps the "Please select an option" hint, so the two
+shapes coexist as intended. `word-bank.test.tsx` asserts against the real content that A ➍
+prints five three-word pools, that each sits inside the passage whose blanks it answers rather
+than in a list at the bottom, that the options are not controls, and that their words reach the
+DOM through `TokenizedText`.
 
 **Transport scoping is verified in a browser**: on A ➍, with all five players showing
 `0:00 / 0:00` and disabled, pressing the first passage's play button leaves the other four at

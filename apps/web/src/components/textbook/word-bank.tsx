@@ -1,32 +1,44 @@
 'use client';
 
 import React from 'react';
-import type { Bank } from '@langplayer/textbooks';
-import { createAssetResolver } from '@langplayer/textbooks';
+import { bankIsPicked, createAssetResolver, type Bank } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
+import { TokenizedText } from '@/components/tokenized-text';
+import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { useTextbookTask } from './task-provider';
 import { useBlankPicker } from './blank-picker';
 
 /**
- * The option pool a `choose` blank draws from.
+ * The option pool a blank draws from.
  *
- * Tapping an option fills the currently selected blank; tapping a blank in the
- * passage selects it. This mirrors the printed workbook, where the bank is
- * printed once and the blanks are numbered.
+ * Two shapes, and which one applies is a property of the **blank**, not of the bank:
  *
- * When `allowReuse` is false, options already used elsewhere are dimmed. That is
- * a per-bank flag rather than a global rule: the B ➊ key genuinely reuses the
- * letter `a`, so it is data, not an assumption.
+ * - **Picked** (`choose` blanks): tapping an option fills the currently selected blank, as
+ *   the printed workbook's banks work. The letter or word *is* the answer, so the options
+ *   have to be controls. When `allowReuse` is false, options already used are dimmed; that
+ *   is a per-bank flag rather than a global rule (B ➊'s key genuinely reuses `a`).
+ * - **A reference list** (`type` blanks): the student writes the answer, so the pool is text
+ *   to read rather than a row of buttons — A ➍ prints three words under each summary and the
+ *   student types them in. Buttons there would invite picking, which is not the exercise, and
+ *   would take the words' taps away from the dictionary, because a token's tap stops at the
+ *   token and never reaches the button around it.
+ *
+ * The words are tokenized in both shapes: they are L2 the student may not know, and looking
+ * one up is what the pool is for.
  */
 export function WordBank({ bank }: { bank: Bank }) {
   const t = useT();
+  const { l2 } = useLanguage();
+  const ctx = useTextbookTask();
   const { selected, pick, responses } = useBlankPicker();
   const resolve = createAssetResolver(ASSET_BASE_URL);
 
+  const picked = ctx ? bankIsPicked(ctx.task, bank.id) : true;
   const usedValues = new Set(Object.values(responses).filter(Boolean));
   // For a multi-select blank the options already picked are shown as chosen rather
   // than consumed, so a second tap unpicks them.
-  const picked = new Set(
+  const chosenValues = new Set(
     (selected ? (responses[selected] ?? '') : '')
       .split(/[、,，]/)
       .map((part) => part.trim())
@@ -37,45 +49,66 @@ export function WordBank({ bank }: { bank: Bank }) {
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
         {bank.items.map((item) => {
-          const isPicked = picked.has(item);
-          const consumed = !isPicked && !bank.allowReuse && usedValues.has(item);
+          const chosen = chosenValues.has(item);
+          const consumed = !chosen && !bank.allowReuse && usedValues.has(item);
+          const label = bank.optionLabels?.[item];
+          const image = bank.optionImages?.[item];
+
+          const skin = `flex flex-col items-center gap-1 overflow-hidden rounded-md border text-sm ${
+            image ? 'w-32 p-0 pb-1.5' : 'px-3 py-1.5'
+          } ${
+            chosen
+              ? 'border-primary bg-primary/10 text-foreground'
+              : consumed
+                ? 'border-border bg-muted/40 text-muted-foreground line-through'
+                : picked
+                  ? 'border-border bg-card text-foreground hover:bg-muted'
+                  : 'border-border bg-muted/30 text-foreground'
+          }`;
+
+          const body = (
+            <>
+              {image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolve(image)}
+                  alt=""
+                  className={`h-20 w-full object-cover ${consumed ? 'opacity-40' : ''}`}
+                />
+              )}
+              <span className={image ? 'flex items-baseline gap-1 px-1' : 'flex items-baseline gap-1'}>
+                {/* An option answered by a letter prints the letter; a typed pool is only its
+                    words, and a bare letter there would be content rather than a marker. */}
+                {label && <span className="font-semibold text-primary">{item}</span>}
+                <TokenizedText text={label ?? item} l2Code={l2.code} inline />
+              </span>
+            </>
+          );
+
+          // A reference list is not a control: no button, no tap target, so a tap on a word
+          // is the dictionary's and nothing else.
+          if (!picked) {
+            return (
+              <div key={item} className={skin}>
+                {body}
+              </div>
+            );
+          }
+
           return (
             <button
               key={item}
               type="button"
               onClick={() => pick(item)}
-              aria-pressed={isPicked}
-              className={`flex flex-col items-center gap-1 overflow-hidden rounded-md border text-sm transition-colors ${
-                bank.optionImages?.[item] ? 'w-32 p-0 pb-1.5' : 'px-3 py-1.5'
-              } ${
-                isPicked
-                  ? 'border-primary bg-primary/10 text-foreground'
-                  : consumed
-                    ? 'border-border bg-muted/40 text-muted-foreground line-through'
-                    : 'border-border bg-card text-foreground hover:bg-muted'
-              }`}
+              aria-pressed={chosen}
+              className={skin}
             >
-              {bank.optionImages?.[item] && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={resolve(bank.optionImages[item]!)}
-                  alt=""
-                  className={`h-20 w-full object-cover ${consumed ? 'opacity-40' : ''}`}
-                />
-              )}
-              {bank.optionLabels?.[item] ? (
-                <span className={bank.optionImages?.[item] ? 'px-1' : ''}>
-                  <span className="font-semibold text-primary">{item}</span>
-                  <span className="ml-1">{bank.optionLabels[item]}</span>
-                </span>
-              ) : (
-                <span className={bank.optionImages?.[item] ? 'px-1' : ''}>{item}</span>
-              )}
+              {body}
             </button>
           );
         })}
       </div>
-      {!selected && (
+      {picked && !selected && (
         <p className="text-xs text-muted-foreground">{t('msg.please_select_option')}</p>
       )}
     </div>

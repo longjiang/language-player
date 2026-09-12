@@ -1,31 +1,46 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import type { Bank } from '@langplayer/textbooks';
 import { Image } from 'react-native';
-import { createAssetResolver } from '@langplayer/textbooks';
+import { bankIsPicked, createAssetResolver, type Bank } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
+import { TokenizedText } from '@/components/TokenizedText';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { useTextbookTask } from './task-provider';
 import { useBlankPicker } from './blank-picker';
 
+/** The option's size, so an inline tokenized word keeps the bank's own type scale. */
+const OPTION_FONT_SIZE = 14;
+
 /**
- * The option pool a `choose` blank draws from.
+ * The option pool a blank draws from.
  *
- * Tapping an option fills the currently selected blank, mirroring the printed
- * workbook where the bank is printed once and the blanks are numbered.
+ * Two shapes, and which one applies is a property of the **blank**, not of the bank:
  *
- * When `allowReuse` is false, options already used elsewhere are dimmed. That is
- * a per-bank flag rather than a global rule: the B ➊ key genuinely reuses the
- * letter `a`, so this is data, not an assumption.
+ * - **Picked** (`choose` blanks): tapping an option fills the currently selected blank, as
+ *   the printed workbook's banks work. The letter or word *is* the answer, so the options
+ *   have to be controls. When `allowReuse` is false, options already used are dimmed; that
+ *   is a per-bank flag rather than a global rule (B ➊'s key genuinely reuses `a`).
+ * - **A reference list** (`type` blanks): the student writes the answer, so the pool is text
+ *   to read rather than a row of controls — A ➍ prints three words under each summary and the
+ *   student types them in. Buttons there would invite picking, which is not the exercise, and
+ *   a `Pressable` around a token takes the word's tap away from the dictionary.
+ *
+ * The words are tokenized in both shapes: they are L2 the student may not know, and looking
+ * one up is what the pool is for.
  */
 export function WordBank({ bank }: { bank: Bank }) {
   const t = useT();
+  const { l2Lang } = useLanguage();
+  const ctx = useTextbookTask();
   const { selected, pick, responses } = useBlankPicker();
   const resolve = createAssetResolver(ASSET_BASE_URL);
 
+  const picked = ctx ? bankIsPicked(ctx.task, bank.id) : true;
   const usedValues = new Set(Object.values(responses).filter(Boolean));
   // For a multi-select blank the options already picked are shown as chosen rather
   // than consumed, so a second tap unpicks them.
-  const picked = new Set(
+  const chosenValues = new Set(
     (selected ? (responses[selected] ?? '') : '')
       .split(/[、,，]/)
       .map((part) => part.trim())
@@ -36,45 +51,73 @@ export function WordBank({ bank }: { bank: Bank }) {
     <View className="gap-2">
       <View className="flex-row flex-wrap gap-2">
         {bank.items.map((item) => {
-          const isPicked = picked.has(item);
-          const consumed = !isPicked && !bank.allowReuse && usedValues.has(item);
-          return (
-            <Pressable
-              key={item}
-              onPress={() => pick(item)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isPicked }}
-              className={`items-center gap-1 overflow-hidden rounded-md border ${
-                bank.optionImages?.[item] ? 'w-32 pb-1.5' : 'px-3 py-1.5'
-              } ${
-                isPicked ? 'border-primary bg-primary/10' : consumed ? 'border-border bg-muted/40' : 'border-border bg-card'
-              }`}
-            >
-              {bank.optionImages?.[item] ? (
+          const chosen = chosenValues.has(item);
+          const consumed = !chosen && !bank.allowReuse && usedValues.has(item);
+          const label = bank.optionLabels?.[item];
+          const image = bank.optionImages?.[item];
+
+          const skin = `items-center gap-1 overflow-hidden rounded-md border ${
+            image ? 'w-32 pb-1.5' : 'px-3 py-1.5'
+          } ${
+            chosen
+              ? 'border-primary bg-primary/10'
+              : consumed
+                ? 'border-border bg-muted/40'
+                : picked
+                  ? 'border-border bg-card'
+                  : 'border-border bg-muted/30'
+          }`;
+
+          const body = (
+            <>
+              {image ? (
                 <Image
-                  source={{ uri: resolve(bank.optionImages[item]!) }}
+                  source={{ uri: resolve(image) }}
                   className="h-20 w-full rounded-t-md"
                   resizeMode="cover"
                   accessibilityIgnoresInvertColors
                 />
               ) : null}
-              <Text
-                className={`px-1 text-sm ${consumed ? 'text-muted-foreground line-through' : 'text-foreground'}`}
-              >
-                {bank.optionLabels?.[item] ? (
-                  <>
-                    <Text className="font-semibold text-primary">{item} </Text>
-                    {bank.optionLabels[item]}
-                  </>
-                ) : (
-                  item
-                )}
-              </Text>
+              <View className="flex-row flex-wrap items-baseline gap-x-1 px-1">
+                {/* An option answered by a letter prints the letter; a typed pool is only its
+                    words, and a bare letter there would be content rather than a marker. */}
+                {label ? <Text className="text-sm font-semibold text-primary">{item}</Text> : null}
+                <TokenizedText
+                  text={label ?? item}
+                  l2Code={l2Lang.code}
+                  inline
+                  inlineFontSize={OPTION_FONT_SIZE}
+                />
+              </View>
+            </>
+          );
+
+          // A reference list is not a control: no press target, so a tap on a word is the
+          // dictionary's and nothing else.
+          if (!picked) {
+            return (
+              <View key={item} className={skin}>
+                {body}
+              </View>
+            );
+          }
+
+          return (
+            <Pressable
+              key={item}
+              onPress={() => pick(item)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: chosen }}
+              className={skin}
+            >
+              {body}
             </Pressable>
           );
         })}
       </View>
-      {!selected && <Text className="text-xs text-muted-foreground">{t('msg.please_select_option')}</Text>}
+      {picked && !selected && (
+        <Text className="text-xs text-muted-foreground">{t('msg.please_select_option')}</Text>
+      )}
     </View>
   );
 }
