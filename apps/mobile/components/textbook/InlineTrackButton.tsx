@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import type { AudioTrack } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './TaskAudio';
+import { TranscriptButton } from './TranscriptDialog';
 
 /**
  * The play control an item renders beside itself (SPEC-095).
@@ -14,6 +15,9 @@ import { useTaskAudio } from './TaskAudio';
  *
  * The track's `label` becomes the accessible name and is never shown — in the
  * dictation tasks it is the answer.
+ *
+ * The transcript button beside it is the same control for the same reason: it belongs to
+ * this item's recording, and it is absent when that recording has no transcript.
  */
 export function InlineTrackButton({ tracks }: { tracks?: AudioTrack[] }) {
   const t = useT();
@@ -26,19 +30,22 @@ export function InlineTrackButton({ tracks }: { tracks?: AudioTrack[] }) {
   const broken = audio.failed.has(track.key);
 
   return (
-    <Pressable
-      onPress={() => audio.toggle(track.key)}
-      disabled={broken}
-      accessibilityRole="button"
-      accessibilityState={{ selected: playing, disabled: broken }}
-      accessibilityLabel={track.label ?? t('action.speak')}
-      className={`h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
-        playing ? 'border-primary bg-primary' : 'border-border bg-background'
-      } ${broken ? 'opacity-40' : ''}`}
-    >
-      <Text className={`text-[10px] ${playing ? 'text-primary-foreground' : 'text-foreground'}`}>
-        {playing ? '❚❚' : '▶'}
-      </Text>
-    </Pressable>
+    <View className="shrink-0 flex-row items-center gap-1">
+      <Pressable
+        onPress={() => audio.toggle(track.key)}
+        disabled={broken}
+        accessibilityRole="button"
+        accessibilityState={{ selected: playing, disabled: broken }}
+        accessibilityLabel={track.label ?? t('action.speak')}
+        className={`h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
+          playing ? 'border-primary bg-primary' : 'border-border bg-background'
+        } ${broken ? 'opacity-40' : ''}`}
+      >
+        <Text className={`text-[10px] ${playing ? 'text-primary-foreground' : 'text-foreground'}`}>
+          {playing ? '❚❚' : '▶'}
+        </Text>
+      </Pressable>
+      <TranscriptButton track={track} />
+    </View>
   );
 }
