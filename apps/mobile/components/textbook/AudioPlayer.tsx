@@ -48,7 +48,7 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
         </View>
       )}
 
-      <Transport />
+      <Transport trackKeys={rows.map((track) => track.key)} />
 
       {failed && <Text className="text-xs text-muted-foreground">{t('msg.failed_to_load_url')}</Text>}
     </View>
@@ -63,13 +63,17 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
  * that matters — the workbook's listening items are a sentence or two, so one tap
  * back is a re-listen.
  */
-function Transport() {
+function Transport({ trackKeys }: { trackKeys: string[] }) {
   const t = useT();
   const audio = useTaskAudio();
-  const active = audio?.activeKey != null;
+  // Scoped to THIS player's recordings: one provider owns the task's playback, so the
+  // position, duration and active key are task-wide, while a transport belongs to the
+  // recordings its own row offers. Unscoped, A ➍'s five players all showed the one
+  // playing track's position and all armed their steppers and replay against it.
+  const active = audio?.activeKey != null && trackKeys.includes(audio.activeKey);
   const { currentTime, duration } = {
-    currentTime: audio?.currentTime ?? 0,
-    duration: audio?.duration ?? 0,
+    currentTime: active ? (audio?.currentTime ?? 0) : 0,
+    duration: active ? (audio?.duration ?? 0) : 0,
   };
 
   const step = (label: string, delta: number) => (

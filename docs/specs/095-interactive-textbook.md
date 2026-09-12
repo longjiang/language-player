@@ -335,6 +335,14 @@ are a numbered set — always appears in the same position without each author p
 playing produces answers to the wrong question, so playback is owned by one provider per
 task and shared by every control on the page.
 
+**A transport belongs to the recordings its own row offers.** One provider means the active
+key, position and duration are task-wide, so each player scopes them to its own track keys:
+the progress bar, elapsed time, seek and replay respond only while *its* recording is the one
+playing. Without that scope A ➍ — five passages, five players — moved all five bars to the
+same position and armed all five replays the moment one was started, which misreports the
+other four and offers a control that would seek someone else's recording. A row that is not
+playing keeps an empty, disabled bar so the layout does not jump when one starts.
+
 **The provider resolves every level, not just `task.audio[]`.** Because a recording can be
 declared anywhere, "the audio of this task" is the union of all four levels, and the
 provider is given the task rather than a list so a control cannot offer it a key it has no
@@ -947,7 +955,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
-| `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
+| `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input). The transport is **scoped to this row's track keys**, so a page with several players shows progress only in the one playing |
 | `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. The same pill in every place a recording is offered — beside a numbered slot and in the task's audio row, both read `① [▶|▤]`, the numeral printed by the caller as decoration. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
 | `InlineTrackButton` | The seam a widget places for an item's own recording: `TrackControls`, or nothing at all when the item has no recording |
 | `TranscriptDialogProvider` / `useTranscriptDialog` | The task's transcript dialog and its opener. One dialog per task; a play control calls `open(key)`. Resolves transcripts through `transcriptsIn(book)`, so a task that replays another task's recording still offers its text |
@@ -1214,6 +1222,13 @@ which is the designed behaviour, and also why this went unnoticed.
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**Transport scoping is verified in a browser**: on A ➍, with all five players showing
+`0:00 / 0:00` and disabled, pressing the first passage's play button leaves the other four at
+`0:00 / 0:00` and disabled while the first runs `0:01 / 0:21` — measured by reading each
+player's range value, disabled flag and time label. Before the fix all five read the same
+position and duration. `audio-player.test.tsx` states the same thing without a browser, and
+fails against the unscoped transport.
 
 **The caption is verified as a look-up in a browser**, on both surfaces the tile appears
 in — the bank grid and the choice dialog: tapping a word opens the dictionary with the
