@@ -5,6 +5,7 @@ import type { AudioTrack } from '@langplayer/textbooks';
 import { indexToCircled } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './task-audio';
+import { RetryIcon } from './retry-icon';
 
 /**
  * The task's audio row.
@@ -70,7 +71,19 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
         </>
       )}
 
-      {failed && <p className="text-xs text-muted-foreground">{t('msg.failed_to_load_url')}</p>}
+      {failed && (
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
+          {t('msg.failed_to_load_url')}
+          <button
+            type="button"
+            onClick={() => rows.forEach((track) => audio.retry(track.key))}
+            className="inline-flex items-center gap-1 rounded border border-border px-2 py-0.5 text-foreground hover:bg-muted"
+          >
+            <RetryIcon />
+            {t('action.retry')}
+          </button>
+        </p>
+      )}
     </section>
   );
 }

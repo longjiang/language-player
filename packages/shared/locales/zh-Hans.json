@@ -834,6 +834,7 @@
         "already_have_account": "已有账户？",
         "already_lifetime": "您已拥有终身访问权限，无需购买。",
         "and_n_other_forms": "等{n}个其他形式",
+        "app_unavailable": "这个互动应用无法加载。",
         "auto_renews_in": "{days} 天后自动续订",
         "buy_on_website": "在我们的网站上购买",
         "cancel_existing_subscription_first": "您必须先取消现有订阅，才能购买新订阅。",

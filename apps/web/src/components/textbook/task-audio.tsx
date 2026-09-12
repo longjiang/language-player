@@ -38,6 +38,8 @@ interface TaskAudioValue {
   seekBy: (delta: number) => void;
   /** Restart the active track from the beginning. */
   replay: () => void;
+  /** Clear a load failure and try the track again. */
+  retry: (key: string) => void;
   /** Keys whose load failed, so their control can show as unavailable. */
   failed: Set<string>;
   /** Play this track, or pause it if it is already playing. */
@@ -134,6 +136,21 @@ export function TaskAudioProvider({
 
   const replay = useCallback(() => seekTo(0), [seekTo]);
 
+  // Clearing the failure and re-selecting the track re-runs the load effect, which
+  // is what actually retries; the element's cached key is dropped so the source is
+  // set again rather than skipped.
+  const retry = useCallback((key: string) => {
+    const el = audioRef.current;
+    if (el) delete el.dataset.key;
+    setFailed((f) => {
+      const next = new Set(f);
+      next.delete(key);
+      return next;
+    });
+    setActiveKey(null);
+    setTimeout(() => setActiveKey(key), 0);
+  }, []);
+
   const labelFor = useCallback((track: AudioTrack) => track.label ?? '', []);
 
   const value = useMemo<TaskAudioValue>(
@@ -145,11 +162,12 @@ export function TaskAudioProvider({
       seekTo,
       seekBy,
       replay,
+      retry,
       failed,
       toggle,
       labelFor,
     }),
-    [activeKey, progress, currentTime, duration, seekTo, seekBy, replay, failed, toggle, labelFor],
+    [activeKey, progress, currentTime, duration, seekTo, seekBy, replay, retry, failed, toggle, labelFor],
   );
 
   return (

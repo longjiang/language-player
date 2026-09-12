@@ -848,6 +848,7 @@
         "already_have_account": "Zaten hesabınız var mı?",
         "already_lifetime": "Zaten ömür boyu erişiminiz var. Satın almanıza gerek yok.",
         "and_n_other_forms": "ve {n} diğer biçim",
+        "app_unavailable": "Bu etkileşimli uygulama yüklenemedi.",
         "auto_renews": "{time} gün sonra otomatik yenilenir.",
         "auto_renews_in": "{days} gün içinde otomatik yenilenir",
         "buy_on_website": "Web sitemizden satın alın",

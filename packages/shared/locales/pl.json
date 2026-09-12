@@ -848,6 +848,7 @@
         "already_have_account": "Masz już konto?",
         "already_lifetime": "Masz już dożywotni dostęp. Zakup nie jest potrzebny.",
         "and_n_other_forms": "i {n} innych form",
+        "app_unavailable": "Nie udało się załadować tej interaktywnej aplikacji.",
         "auto_renews": "Automatyczne odnowienie za {time}.",
         "auto_renews_in": "Automatyczne odnowienie za {days} dni",
         "buy_on_website": "Kup na naszej stronie internetowej",

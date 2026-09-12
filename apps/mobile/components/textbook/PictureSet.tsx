@@ -20,6 +20,22 @@ export function PictureSet({ set }: { set: PictureSetStimulus }) {
   const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
   const { selected, pick, responses } = useBlankPicker();
   const [broken, setBroken] = useState<Record<string, boolean>>({});
+  // A different URI is what makes RN Image fetch again rather than reuse the failure.
+  const [retryTokens, setRetryTokens] = useState<Record<string, number>>({});
+
+  const retry = (letter: string) => {
+    setBroken((b) => {
+      const next = { ...b };
+      delete next[letter];
+      return next;
+    });
+    setRetryTokens((t) => ({ ...t, [letter]: (t[letter] ?? 0) + 1 }));
+  };
+
+  const imageUrl = (key: string, token: number) => {
+    const url = resolve(key);
+    return token === 0 ? url : `${url}${url.includes('?') ? '&' : '?'}retry=${token}`;
+  };
 
   const usedLetters = new Set(Object.values(responses).filter(Boolean));
 
@@ -41,12 +57,22 @@ export function PictureSet({ set }: { set: PictureSetStimulus }) {
             >
               <View className="aspect-[4/3] w-full items-center justify-center overflow-hidden rounded bg-muted/50">
                 {broken[item.letter] ? (
-                  <Text className="px-2 text-center text-xs text-muted-foreground">
-                    {item.label}
-                  </Text>
+                  // RN allows a nested Pressable, so the retry sits with the fallback.
+                  // The tile stays pickable: the letter is the answer either way.
+                  <Pressable
+                    onPress={() => retry(item.letter)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('action.retry')}
+                    className="items-center gap-1 px-2"
+                  >
+                    <Text className="text-center text-xs text-muted-foreground">
+                      {item.label}
+                    </Text>
+                    <Text className="text-xs text-primary">{t('action.retry')}</Text>
+                  </Pressable>
                 ) : (
                   <Image
-                    source={{ uri: resolve(item.image) }}
+                    source={{ uri: imageUrl(item.image, retryTokens[item.letter] ?? 0) }}
                     accessible={false}
                     resizeMode="cover"
                     style={{ width: '100%', height: '100%' }}

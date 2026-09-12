@@ -848,6 +848,7 @@
         "already_have_account": "هل لديك حساب بالفعل؟",
         "already_lifetime": "لديك بالفعل وصول مدى الحياة. لا حاجة للشراء.",
         "and_n_other_forms": "و{n} صيغ أخرى",
+        "app_unavailable": "تعذّر تحميل هذا التطبيق التفاعلي.",
         "auto_renews": "يتجدد تلقائيًا خلال {time}.",
         "auto_renews_in": "يتجدد تلقائيًا خلال {days} أيام",
         "buy_on_website": "اشترِ من موقعنا الإلكتروني",
