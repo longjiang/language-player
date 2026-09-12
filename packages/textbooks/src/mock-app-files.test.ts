@@ -130,20 +130,7 @@ describe('mock app files', () => {
         expect(goalIds(html).length).toBe(stimulus.goals.length);
       });
 
-      /*
-       * `it.fails` because this is a REAL defect the check was written to catch, found
-       * on its first run: railway-12306's dataset disagrees with the printed key on
-       * two goals. G871 is flagged 复兴号 although its row carries no 复兴号 tag, and
-       * D11 is missing from the dataset entirely. The sleeper goal needs a distinction
-       * the dataset does not have — the question asks for sleepers that are NOT 候补,
-       * and Z281 and K1275 show a 铺 badge that is waitlisted.
-       *
-       * Fixing it means re-deriving the dataset from the two screenshots with both a
-       * "has sleepers" flag for the badge and a "sleepers available" flag for the goal.
-       * Until then the marker documents the defect and fails loudly if someone removes
-       * it without fixing the data.
-       */
-      it.fails('declares answers the content agrees with', () => {
+      it('declares answers the content agrees with', () => {
         const defined = readDefine(html);
         expect(defined.id, 'the script never called MockApp.define with an id').toBe(stimulus.app);
         const expected = defined.expected;

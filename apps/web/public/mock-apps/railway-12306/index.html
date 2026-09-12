@@ -50,12 +50,20 @@
       // ── Dataset ────────────────────────────────────────────────────────────
       // Every question in the task is answered from these fields.
       const SERVICES = [
-        { no: 'G871', dep: '16:13', arr: '22:04', price: 630.5, fuxing: true, soldOut: false, business: true, sleeper: false, durationMin: 351 },
-        { no: 'G875', dep: '16:17', arr: '22:16', price: 608.5, fuxing: true, soldOut: false, business: true, sleeper: false, durationMin: 359 },
-        { no: 'G49', dep: '19:04', arr: '23:21', price: 662.5, fuxing: true, soldOut: false, business: false, sleeper: false, durationMin: 257 },
-        { no: 'D17', dep: '19:10', arr: '09:12', price: 403.5, fuxing: true, soldOut: false, business: false, sleeper: true, durationMin: 842 },
-        { no: 'Z281', dep: '19:21', arr: '10:36', price: 202.5, fuxing: false, soldOut: true, business: false, sleeper: true, durationMin: 915 },
-        { no: 'K1275', dep: '23:37', arr: '20:38', price: 189.5, fuxing: false, soldOut: false, business: false, sleeper: true, durationMin: 1261 },
+        /*
+         * `sleeper` is what the row shows a 铺 badge for; `sleeperAvailable` is what the
+         * sleeper question asks about. They are different facts: the question excludes
+         * 候补, and Z281 and K1275 show a badge whose berths are waitlisted, so they
+         * carry a badge but do not answer the question. Collapsing the two was how this
+         * dataset disagreed with the printed key.
+         */
+        { no: 'G871', dep: '16:13', arr: '22:04', price: 630.5, fuxing: false, soldOut: false, business: true, sleeper: false, sleeperAvailable: false, durationMin: 351 },
+        { no: 'G875', dep: '16:17', arr: '22:16', price: 608.5, fuxing: true, soldOut: false, business: true, sleeper: false, sleeperAvailable: false, durationMin: 359 },
+        { no: 'G49', dep: '19:04', arr: '23:21', price: 662.5, fuxing: true, soldOut: false, business: false, sleeper: false, sleeperAvailable: false, durationMin: 257 },
+        { no: 'D17', dep: '19:10', arr: '09:12', price: 403.5, fuxing: true, soldOut: false, business: false, sleeper: true, sleeperAvailable: true, durationMin: 842 },
+        { no: 'D11', dep: '21:22', arr: '11:20', price: 351, fuxing: true, soldOut: false, business: false, sleeper: true, sleeperAvailable: true, durationMin: 838 },
+        { no: 'Z281', dep: '19:21', arr: '10:36', price: 202.5, fuxing: false, soldOut: true, business: false, sleeper: true, sleeperAvailable: false, durationMin: 915 },
+        { no: 'K1275', dep: '23:37', arr: '20:38', price: 189.5, fuxing: false, soldOut: false, business: false, sleeper: true, sleeperAvailable: false, durationMin: 1261 },
       ];
 
       const min = (key) => SERVICES.filter((s) => !s.soldOut).reduce((a, b) => (a[key] < b[key] ? a : b));
@@ -82,6 +90,7 @@
           el.dataset.soldout = String(s.soldOut);
           el.dataset.business = String(s.business);
           el.dataset.sleeper = String(s.sleeper);
+          el.dataset.sleeperavailable = String(s.sleeperAvailable);
           el.innerHTML =
             '<div class="row1">' +
             '<span class="no">' + s.no + '</span>' +
@@ -115,7 +124,7 @@
           fuxing: matching((s) => s.fuxing).map((s) => s.no).join('、'),
           'sold-out': matching((s) => s.soldOut).map((s) => s.no).join('、'),
           business: matching((s) => s.business).map((s) => s.no).join('、'),
-          sleeper: matching((s) => s.sleeper).map((s) => s.no).join('、'),
+          sleeper: matching((s) => s.sleeperAvailable).map((s) => s.no).join('、'),
         },
         goals: [
           {
@@ -156,8 +165,8 @@
           {
             id: 'sleeper',
             prompt: '哪次列车有卧铺票（一等卧、二等卧、硬卧、软卧等，但不包括候补）？',
-            candidates: () => elementsFor((s) => s.sleeper),
-            accept: (el) => el.dataset.sleeper === 'true',
+            candidates: () => elementsFor((s) => s.sleeperAvailable),
+            accept: (el) => el.dataset.sleeperavailable === 'true',
             answer: (el) => el.dataset.no,
           },
         ],
