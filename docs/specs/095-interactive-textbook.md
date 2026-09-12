@@ -1046,21 +1046,6 @@ retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failur
 already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
 `failed` state).
 
-**8. Audio placement is not yet rebuilt to the model above.**
-
-Every other section describes what is implemented. This one does not: the code still
-binds tracks to blanks with `AudioTrack.blankId` — one field on a task-level array plus
-four lookup helpers, three validator rules and 27 content anchors — instead of declaring
-recordings on the task, the item or an `audio` block as specified here.
-
-That model works for A ➋, A ➌, C and E, but it fails D ➊, whose items are paragraphs:
-a `passage` block places no control, so six recordings bound to blanks inside running
-text would render nowhere at all, silently. Declaring the recording on the block removes
-the failure rather than validating against it.
-
-Rebuilding it is a replacement, not an extension: it deletes `blankId`, the helpers and
-the anchor rules, and adds `audio` to the item types plus the `audio` stimulus.
-
 ### Verified, not assumed
 
 Stated so the gaps are not read as a general disclaimer: the answer key is

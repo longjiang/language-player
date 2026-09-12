@@ -1,35 +1,24 @@
 import React from 'react';
 import { Pressable, Text } from 'react-native';
-import { trackForAnyBlank, trackForBlank } from '@langplayer/textbooks';
+import type { AudioTrack } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './TaskAudio';
 
 /**
- * A compact play/pause control for the item a track belongs to (SPEC-095).
+ * The play control an item renders beside itself (SPEC-095).
  *
- * Renders nothing when the task has no track for this item, so a widget can place
- * it unconditionally: only tasks that bind audio to an item show the control, and
- * every other task's layout is unchanged.
+ * Takes the item's OWN recordings — a row's, a numbered slot's, a passage block's —
+ * rather than looking anything up, so there is no correspondence to get wrong. It
+ * renders nothing when the item has no recording, so a widget can place it
+ * unconditionally.
  *
  * The track's `label` becomes the accessible name and is never shown — in the
  * dictation tasks it is the answer.
  */
-export function InlineTrackButton({
-  blankId,
-  blankIds,
-  tracks,
-}: {
-  /** The item's anchor blank. */
-  blankId?: string;
-  /** Every blank the item owns, when a track may be anchored to any of them. */
-  blankIds?: string[];
-  tracks: Parameters<typeof trackForBlank>[0];
-}) {
+export function InlineTrackButton({ tracks }: { tracks?: AudioTrack[] }) {
   const t = useT();
   const audio = useTaskAudio();
-  const track =
-    (blankId ? trackForBlank(tracks, blankId) : undefined) ??
-    (blankIds ? trackForAnyBlank(tracks, blankIds) : undefined);
+  const track = tracks?.[0];
 
   if (!track || !audio) return null;
 

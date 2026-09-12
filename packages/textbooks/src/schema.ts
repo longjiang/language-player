@@ -11,7 +11,7 @@
 import { extractBlankMarkers } from '@langplayer/utils';
 import { answersForKeyIndex, answersForKeyLabel } from './answer-key';
 import { normalizeAnswer } from './grading';
-import { pictureSetsIn, textsIn } from './types';
+import { assetKeysIn, pictureSetsIn, textsIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
 
 export type IssueLevel = 'error' | 'warning';
@@ -223,22 +223,14 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     }
   }
 
-  // ── Audio ──
+  // ── Assets ──
+  // One walk covers every place a key can be declared, so a new declaration point
+  // cannot silently escape the manifest check.
   const keys = assetKeySet(options);
   if (keys) {
-    for (const track of task.audio ?? []) {
-      if (!keys.has(track.key)) add('error', `Audio asset "${track.key}" is not in the asset manifest.`);
-    }
-    for (const set of pictureSets.values()) {
-      for (const item of set.items) {
-        if (item.image && !keys.has(item.image)) {
-          add('error', `pictureSet "${set.id}" image "${item.image}" is not in the asset manifest.`);
-        }
-      }
-    }
-    for (const stimulus of task.body) {
-      if (stimulus.kind === 'imageMap' && stimulus.image && !keys.has(stimulus.image)) {
-        add('error', `imageMap image "${stimulus.image}" is not in the asset manifest.`);
+    for (const { key, where } of assetKeysIn(task)) {
+      if (!keys.has(key)) {
+        add('error', `Asset "${key}" (${where}) is not in the asset manifest.`);
       }
     }
   }
@@ -246,44 +238,25 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     add('warning', 'Task is typed "listening" but has no audio.');
   }
 
-  // ── Track anchors ──
-  // `blankId` decides where a play control appears, so a bad anchor means a
-  // track that silently never renders, or two controls fighting over one row.
-  const anchored = new Map<string, string>();
-  for (const track of task.audio ?? []) {
-    if (!track.blankId) continue;
-    const blank = blanks[track.blankId];
-    if (!blank) {
+  // ── Item audio ──
+  // A recording declared inside a passage or dialogue is ambiguous: the block owns
+  // the recording, and a per-blank control inside running text has nowhere to sit.
+  const inlineBlockIds = new Set(
+    task.body.flatMap((stimulus) =>
+      stimulus.kind === 'passage'
+        ? extractBlankMarkers(stimulus.text).markers.map((m) => m.id)
+        : stimulus.kind === 'dialogue'
+          ? stimulus.lines.flatMap((l) => extractBlankMarkers(l.text).markers.map((m) => m.id))
+          : [],
+    ),
+  );
+  for (const [id, blank] of Object.entries(blanks)) {
+    if (blank.audio?.length && inlineBlockIds.has(id)) {
       add(
         'error',
-        `Audio track "${track.key}" is anchored to blank "${track.blankId}", which this task does not have.`,
-        track.blankId,
+        `Blank "${id}" carries audio but lives in a passage or dialogue, where the block owns the recording.`,
+        id,
       );
-      continue;
-    }
-    if (blank.kind === 'goal') {
-      add(
-        'error',
-        `Audio track "${track.key}" is anchored to goal blank "${track.blankId}", which is answered inside the mock app and has no host-rendered item to attach to.`,
-        track.blankId,
-      );
-    }
-    if (blank.kind === 'free') {
-      add(
-        'error',
-        `Audio track "${track.key}" is anchored to free blank "${track.blankId}", which is not a numbered item.`,
-        track.blankId,
-      );
-    }
-    const previous = anchored.get(track.blankId);
-    if (previous) {
-      add(
-        'error',
-        `Two audio tracks are anchored to blank "${track.blankId}" ("${previous}" and "${track.key}"), so which control belongs to that item is ambiguous.`,
-        track.blankId,
-      );
-    } else {
-      anchored.set(track.blankId, track.key);
     }
   }
 

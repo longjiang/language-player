@@ -1,25 +1,22 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { indexToCircled, unanchoredTracks, type AudioTrack } from '@langplayer/textbooks';
+import { indexToCircled, type AudioTrack } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './TaskAudio';
 
 /**
- * The task's audio row.
+ * A set of recordings, rendered as a row.
  *
- * Renders the tracks that belong to the task as a whole. Tracks bound to an item
- * (`AudioTrack.blankId`) are deliberately NOT listed here: their control belongs
- * beside that item, placed by whichever widget renders its blank, so a student reads
- * down a table and plays each row's recording in place instead of counting `①`-`⑦`
- * buttons against rows.
+ * Used for the task's own audio (`task.audio`) and for an `audio` block. Recordings
+ * declared on an item are NOT routed through here — the item renders its own control
+ * beside itself, so a student plays each row's recording where they answer it.
  *
- * The playback engine lives in `TaskAudioProvider`, so this component is only the
- * row's presentation.
+ * The playback engine lives in `TaskAudioProvider`, so this is only presentation.
  */
 export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
   const t = useT();
   const audio = useTaskAudio();
-  const rows = unanchoredTracks(tracks);
+  const rows = tracks ?? [];
 
   if (!audio || rows.length === 0) return null;
 

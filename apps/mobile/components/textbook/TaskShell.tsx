@@ -149,8 +149,20 @@ export function TaskStimulus() {
         switch (stimulus.kind) {
           case 'passage':
             return (
-              <View key={i}>
+              <View key={i} className="gap-2">
+                {stimulus.audio && stimulus.audio.length > 0 && (
+                  <AudioPlayer tracks={stimulus.audio} />
+                )}
                 <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
+              </View>
+            );
+          case 'audio':
+            return (
+              <View key={i} className="gap-2">
+                {stimulus.label ? (
+                  <Text className="text-sm font-medium text-foreground">{stimulus.label}</Text>
+                ) : null}
+                <AudioPlayer tracks={stimulus.tracks} />
               </View>
             );
           case 'dialogue':

@@ -63,7 +63,7 @@ export function Dictation({ ids }: { ids: string[] }) {
     <div className="flex flex-col gap-3">
       {ids.map((id) => (
         <div key={id} className="flex items-center gap-2">
-          <InlineTrackButton blankId={id} tracks={ctx?.task.audio} />
+          <InlineTrackButton tracks={ctx?.task.blanks?.[id]?.audio} />
           <DictationField blankId={id} />
         </div>
       ))}

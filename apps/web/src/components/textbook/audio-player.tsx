@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { AudioTrack } from '@langplayer/textbooks';
-import { indexToCircled, unanchoredTracks } from '@langplayer/textbooks';
+import { indexToCircled } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './task-audio';
 
@@ -21,7 +21,7 @@ import { useTaskAudio } from './task-audio';
 export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
   const t = useT();
   const audio = useTaskAudio();
-  const rows = unanchoredTracks(tracks);
+  const rows = tracks ?? [];
 
   if (!audio || rows.length === 0) return null;
 
