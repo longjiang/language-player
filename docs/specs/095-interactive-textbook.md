@@ -1214,18 +1214,26 @@ Versioned and transport-agnostic, so the same protocol rides web `postMessage` a
 ```js
 // host → app
 { v:1, type:'init',      payload:{ l2:'zh', l1:'en', helpMode:false } }
+{ v:1, type:'focus',     payload:{ goalId:'fuxing', picks:[ 'G875' ] } }
 { v:1, type:'help-mode', payload:{ on:true } }
 { v:1, type:'hint' } | { v:1, type:'reset' }
 { v:1, type:'tokens',    payload:{ map:{ '北京南':[ LemmatizedToken, … ] } } }   // reply to 'tokenize'
 
 // app → host
-{ v:1, type:'ready',    payload:{ app:'railway-12306', version:'1.0.0', goals:[ { id, prompt } ] } }
-{ v:1, type:'tokenize', payload:{ texts:[ '北京南', '二等座' ] } }
-{ v:1, type:'lookup',   payload:{ text, lemma, rect, sentence } }
-{ v:1, type:'progress', payload:{ done:[ 'cheapest' ], total: 6 } }
-{ v:1, type:'complete', payload:{ goalId:'fastest', answer:'G49' } }
-{ v:1, type:'resize',   payload:{ height: 640 } }
+{ v:1, type:'ready',     payload:{ app:'railway-12306', version:'1.0.0', goals:[ { id, prompt } ] } }
+{ v:1, type:'selection', payload:{ goalId:'fuxing', picks:[ 'G875', 'G49' ] } }
+{ v:1, type:'tokenize',  payload:{ texts:[ '北京南', '二等座' ] } }
+{ v:1, type:'lookup',    payload:{ text, lemma, rect, sentence } }
+{ v:1, type:'progress',  payload:{ done:[ 'cheapest' ], total: 6 } }
+{ v:1, type:'complete',  payload:{ goalId:'fastest', answer:'G49' } }
+{ v:1, type:'resize',    payload:{ height: 640 } }
 ```
+
+**`focus` and `selection` are what make selecting an interaction.** `focus` tells the app which
+task is being asked and what is already selected for it; `selection` reports a toggle. Neither
+carries a verdict: the app cannot know what the content expects, and the host is the one that
+grades. Both are additive to v1 — no existing message changed shape, and each side already
+ignores a message it does not know.
 
 `MockAppFrame` refuses a mismatched major version. This message set is the entire host surface.
 
@@ -1293,26 +1301,44 @@ the panel's title, so the accessible name of the panel is the task being asked.
 
 | Where | Control | When | What it does |
 |---|---|---|---|
-| Header | The task's prompt | always | The task the student is on, as the panel's title |
-| Header | `‹ 3 / 6 ›` | always | Goes back and forth between the six. Back always works; forward waits for a correct Submit |
-| Header | `{x}` close | always | Dismisses the panel (ADR-0042: the close affordance is always visible) |
-| Toolbar | `{dictionary}` toggle | always | Help mode, icon-only — its state is visible in the app itself (the words become tappable) |
-| Toolbar | `{bulb} Hint` | always | Highlights what the first unmet goal still wants |
-| Toolbar | `Submit` | while this task is unanswered | Resolves **this** task: correct raises a toast and turns the button into `Next ›`; otherwise a muted *Incorrect* appears beside it and the button stays `Submit` |
-| Toolbar | `Next ›` | once this task is correct, before the last | Moves to the next task that is still unanswered, so it never lands on a finished one |
-| Toolbar | `{celebrate} All Done!` | once the last task is correct | Grades the whole task, records the attempt, and closes the panel |
+| Top bar | `{x}` close | always | Dismisses the panel (ADR-0042: the close affordance is always visible). It is the only thing up there, and the bar has no rule under it |
+| Bottom bar | The task's prompt | always | The task the student is on, as the panel's title |
+| Bottom bar | `‹ 3 / 6 ›` | always | Goes back and forth between the six. Back always works; forward waits for a correct Submit |
+| Bottom bar | `{dictionary}` toggle | always | Help mode. Icon-only, and it **darkens the app** — see [Help mode](#help-mode) |
+| Bottom bar | `{bulb} Hint` | always | Highlights what the current task still wants |
+| Bottom bar | `Submit` | while this task is unanswered | Grades **the selection** against the content: correct raises a toast and turns the button into `Next ›`; otherwise a muted *Incorrect* appears beside it and the button stays `Submit` |
+| Bottom bar | `Next ›` | once this task is correct, before the last | Moves to the next task that is still unanswered, so it never lands on a finished one |
+| Bottom bar | `{celebrate} All Done!` | once the last task is correct | Grades the whole task, records the attempt, and closes the panel |
 
-**Correct takes two authorities agreeing**, and neither is enough alone. The app reporting the
-task (`complete`) is the evidence that the student performed it — without that, `Submit` on the
-worked example would pass before anything had been tapped. `isBlankCorrect` against the content
-is the same comparison the final grade uses — without that, the app's own word would be the
-grade. `given` ① is always correct once the app reports it: it is a worked example and is not
-scored.
+The task, the paginator and the controls share the bottom bar because reading what is asked,
+moving between tasks and submitting are one activity; the close control stays at the top, where
+a dismissal belongs and cannot be confused with progress.
 
-The reachable wrong path is therefore an early Submit: a task not yet done, or a set task only
-partly picked (the app reports a set goal only when the whole set is picked, so the blank is
-still empty). The app ignores a tap it does not accept, so a wrong pick reads as "not done",
-not as a wrong answer.
+**The selection is the answer.** A tap on a train selects it, a second tap unselects it, and the
+selected row is highlighted; every toggle is written into the linked blank as it happens. Submit
+grades that selection with the same `isBlankCorrect` the final grade uses, so a task can be
+submitted wrong — an empty selection, one train where the task asks for all of them, or a train
+the task does not name. The app never reports a verdict, so a wrong pick is now a real,
+submittable wrong answer rather than something the app silently ignores.
+
+**Selection is per task.** `focus` carries the picks, so moving on starts empty and coming back
+restores what was answered; a `given` worked example is excluded, because its answer is
+pre-filled in the store for the final grade and restoring it would open ① with its answer already
+ticked. That exclusion is what keeps ① a task the student performs.
+
+`given` is the one case where the stored blank cannot answer "did the student do anything": it is
+*always* correct by definition, being pre-filled and unscored. So the per-task check grades the
+selection against the blank's answer with the kind relabelled, while the final grade leaves `given`
+alone as before.
+
+**A wrong Submit is acknowledged, not toasts.** The correct path raises a toast; the wrong path
+leaves a muted *Incorrect* beside the button and keeps the button on Submit, so the student knows
+the press registered and that this task is not finished.
+
+Selecting a train the task does not name is a wrong answer, and so is submitting with nothing
+selected; both leave the button on `Submit`. Before the selection model this could not happen —
+the app only spoke when its own goal was satisfied, so every answer the host ever saw was a
+correct one and the wrong path existed only as an early press.
 
 Auto-advancing was the alternative and was rejected: advancing is the student's own signal that
 they have finished with this task, and a header that moves while they are still reading the screen
@@ -1323,8 +1349,8 @@ unanswered, `Next ›` once it is correct, `All Done!` on the last one — so th
 where the student is, and no separate mark is needed on the prompt. The earlier design marked an
 answered task on the prompt (struck out on web, dimmed on mobile, since `TokenizedText`'s memo
 comparator is a hand-written allow-list and a text-style prop added for a cosmetic mark would have
-to be threaded through it); the paginator's gated forward arrow and the button now carry that,
-which is why neither header marks anything.
+to be threaded through it); the paginator's gated forward arrow and the button carry that now,
+which is why the prompt is unmarked.
 
 **This was missing, and it broke the task without breaking anything visibly.** `goal.prompt` was
 rendered only inside the `status === 'failed'` branch — the fallback that turns the goals into
@@ -1341,6 +1367,13 @@ message the handshake race described above could eat.
 ### Help mode
 
 Help mode renders the app's words as tokenized text — **with lemmas but without ruby** — and tapping a token opens the same dictionary popup as everywhere else in the app.
+
+**It also darkens the app, and that is the point of it.** The runtime puts a `mock-lookup` class
+on the app's root while lookups are armed; the app turns every surface near-black and its text
+white, so "tap a word to look it up" cannot be confused with "tap a train to select it" without
+reading a button's state. Semantic colours stay — the seat statuses in lighter shades — because
+they are what the two 候补 tasks turn on, and a monochrome screen would hide them. An app that
+does not style the class simply gets no dark mode; nothing in the contract depends on it.
 
 The host remains the tokenization authority, consistent with the runtime-tokenization decision above. On entering help mode the app sends its tokenizable strings in one `tokenize` message; the host resolves them through the existing `/lemmatize-normalized/batch` pipeline plus `lemmatizeCache`, and returns a token map the runtime uses to wrap text nodes in spans.
 
@@ -1396,7 +1429,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. A `mockApp` renders **only a launch button** here; the app itself mounts when the panel opens, and the host waits for its `ready` handshake there.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
-   - **Mock-app tasks** — the app owns its own screen and state, and the panel's toolbar owns submission. The student does the task in the app, presses **Submit**, and is told whether that task is done; **Next ›** carries them to the next one, and **All Done!** on the last grades the task. Help mode and hint forward over the bridge from the same toolbar.
+   - **Mock-app tasks** — the app owns its own screen and reports the student's **selection**, which the host writes into the blank as it is toggled. The panel's bottom bar owns submission: **Submit** grades that selection and says whether this task is done, **Next ›** carries them to the next one, and **All Done!** on the last grades the task. Help mode, hint and the task's own `focus` forward over the bridge from the same bar.
 5. The attempt resolves — by the shell's Submit for blank and free-text tasks, or by the panel's **All Done!** for a mock-app task, which calls the same `store.submit()`. `gradeTask` runs locally either way, and the attempt is recorded locally (ADR-0044); the per-task Submits before that grade one blank and record nothing. Correct/incorrect is shown — a toast per task, and the result banner for the task as a whole.
 
 ## States
@@ -1404,7 +1437,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 - **Loading**: each text surface shows its plain-text fallback until its own tokens resolve, then re-renders with readings and blanks — see [Tokenization](#tokenization-runtime-per-surface).
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
 - **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` fails in the **panel**, because that is where it loads: the panel shows the notice and Retry where the app was, and closing it leaves the launch button replaced by its fallback image (the original workbook screenshot) and typed answers, so the task stays answerable without the app.
-- **A mock app's panel**: rendered only while open, so the app restarts on every open and anything it had picked is picked again — see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-never-in-the-server-html). Its container is a bottom sheet below 768 and a centered dialog at or above, per SPEC-052 and ADR-0042. The shell shows **no Submit and no Try again** for these tasks, because the panel resolves them one task at a time; the consequence, accepted deliberately, is that **a mock-app task cannot be reset** — the paginator and re-submitting are what going back means. Which tasks have been submitted correctly lives in the panel's own memory, so it survives closing and reopening the panel but not leaving the task.
+- **A mock app's panel**: rendered only while open, so the app restarts on every open — and what it comes back holding is the task's stored selection, which is what `focus` carries. Its container is a bottom sheet below 768 and a centered dialog at or above, per SPEC-052 and ADR-0042. The shell shows **no Submit and no Try again** for these tasks, because the panel resolves them one task at a time; the consequence, accepted deliberately, is that **a mock-app task cannot be reset** — the paginator and re-submitting are what going back means. Which tasks are correct lives in the panel's own memory, so it survives closing and reopening the panel but not leaving the task; the selections themselves survive everywhere, because they are in the store.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Transcript**: available on every control whose recording has one, at any time — before, during and after answering. The dialog shows the lines tokenized and translated per the student's own settings, and scrolls; a recording with no transcript shows no button at all, so the affordance never promises text that is not there.
