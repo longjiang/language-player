@@ -4,6 +4,7 @@ import React, { useCallback, useSyncExternalStore } from 'react';
 import { indexToCircled } from '@langplayer/textbooks';
 import { SpellCharInput } from '@/components/review/spell-char-input';
 import { useTextbookTask } from './task-provider';
+import { InlineTrackButton } from './inline-track-button';
 import { useT } from '@/hooks/use-t';
 
 /**
@@ -49,12 +50,22 @@ export function DictationField({ blankId }: { blankId: string }) {
   );
 }
 
-/** A dictation stimulus: numbered items, each a boxed field. */
+/**
+ * A dictation stimulus: numbered items, each a boxed field.
+ *
+ * Each item's recording is played from a control beside it — E ➊/➋ anchor one
+ * track per item — so a student hears the word and types it without leaving the
+ * row.
+ */
 export function Dictation({ ids }: { ids: string[] }) {
+  const ctx = useTextbookTask();
   return (
     <div className="flex flex-col gap-3">
       {ids.map((id) => (
-        <DictationField key={id} blankId={id} />
+        <div key={id} className="flex items-center gap-2">
+          <InlineTrackButton blankId={id} tracks={ctx?.task.audio} />
+          <DictationField blankId={id} />
+        </div>
       ))}
     </div>
   );

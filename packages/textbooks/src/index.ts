@@ -98,6 +98,8 @@ export {
 } from './assets';
 export type { AssetManifest, AssetResolver } from './assets';
 
+export { anchoredTracks, trackForAnyBlank, trackForBlank, unanchoredTracks } from './audio';
+
 export {
   adjacentTasks,
   allTasks,

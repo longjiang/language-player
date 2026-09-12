@@ -8,6 +8,7 @@ import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
 import { AudioPlayer } from './AudioPlayer';
+import { TaskAudioProvider } from './TaskAudio';
 import { PictureSet } from './PictureSet';
 import { DataTable } from './DataTable';
 import { DialoguePassage } from './DialoguePassage';
@@ -63,6 +64,10 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   const anyAnswer = Object.values(responses).some((v) => v.trim());
 
   return (
+    // The playback engine wraps the whole task, so the audio row at the top and the
+    // inline controls inside the stimulus share one player and only one track can
+    // play at a time.
+    <TaskAudioProvider tracks={task.audio ?? []}>
     <ScrollView contentContainerClassName="gap-5 pb-16" className="flex-1">
       <View className="flex-row items-start gap-3">
         <View className="mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -78,7 +83,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         </View>
       </View>
 
-      {task.audio && task.audio.length > 0 && <AudioPlayer tracks={task.audio} />}
+      <AudioPlayer tracks={task.audio ?? []} />
 
       {children}
 
@@ -123,6 +128,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 
       <Text className="text-xs text-muted-foreground">{book.title}</Text>
     </ScrollView>
+    </TaskAudioProvider>
   );
 }
 

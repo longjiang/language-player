@@ -70,11 +70,18 @@ export interface Bank {
 export interface BlankSpec {
   id: string;
   kind: BlankKind;
-  /** The correct answer. Required for every kind, including `given`. */
+  /**
+   * The correct answer. Required for every kind — `given` and `free` included, where
+   * it is an empty string, because "this blank has nothing to grade" is expressed by
+   * the kind rather than by the field's absence.
+   */
   answer: string;
   /**
-   * Additional accepted surface forms (e.g. alternate renderings). Matching is
-   * also script-variant aware, so 車 is accepted for 车.
+   * Additional accepted surface forms (e.g. alternate renderings).
+   *
+   * NOT yet script-variant aware: a traditional form is not automatically accepted
+   * for its simplified equivalent. `expandAcceptedVariants` exists for that but has
+   * no caller — see SPEC-095's Known Gaps.
    */
   accept?: string[];
   /**
@@ -271,8 +278,31 @@ export type Stimulus =
 export interface AudioTrack {
   /** Relative asset key, resolved through the asset resolver. */
   key: string;
-  /** Optional label (e.g. the item it belongs to). */
+  /**
+   * Authoring metadata for the item this track belongs to — a city name in A ➊, a
+   * speaker in A ➌, the target word in E ➊.
+   *
+   * **Never rendered.** In the dictation tasks the label *is* the answer
+   * (`转机`, `门票`), so showing it would give the exercise away; it exists so a
+   * reviewer can tell the tracks apart in the content file and so the control has
+   * an accessible name.
+   */
   label?: string;
+  /**
+   * The blank this track accompanies, when it belongs to one item rather than to
+   * the task as a whole.
+   *
+   * The widget rendering that blank places the play control with its item — a
+   * table row (A ➌), a numbered slot (A ➋, C ➊/➋) or a dictation item (E ➊/➋) —
+   * so the student never has to match a track to a row by counting. A track with
+   * no `blankId` stays in the task's audio row at the top, which is right for A ➊:
+   * its nine tracks belong to map pins, where nine inline controls would crowd the
+   * map, and the recordings name their city anyway.
+   *
+   * For an item spanning several blanks, anchor to the first (A ➌ anchors each
+   * speaker's track to that row's first blank).
+   */
+  blankId?: string;
 }
 
 /** A single task (one numbered activity in a lesson). */

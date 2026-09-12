@@ -1,109 +1,63 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import type { AudioTrack } from '@langplayer/textbooks';
-import { createAssetResolver } from '@langplayer/textbooks';
-import { ASSET_BASE_URL } from '@/lib/asset-url';
-import { indexToCircled } from '@langplayer/textbooks';
+import { indexToCircled, unanchoredTracks } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
+import { useTaskAudio } from './task-audio';
 
 /**
- * Task audio.
+ * The task's audio row.
  *
- * Deliberately plays ONE track at a time from a shared element: the workbook's
- * listening tasks are numbered items (① ② ③), and letting a student start item 4
- * while item 2 is still playing produces answers to the wrong question.
+ * Renders the tracks that belong to the task as a whole. Tracks bound to an item
+ * (`AudioTrack.blankId`) are deliberately NOT listed here: their control belongs
+ * beside that item, placed by whichever widget renders its blank, so a student
+ * reads down a table and plays each row's recording in place instead of counting
+ * `①`-`⑦` buttons against rows.
  *
- * Never autoplays — a browser blocks it anyway, and a task that starts speaking
- * the moment it opens is hostile in a classroom.
+ * The playback engine itself lives in `TaskAudioProvider`, so this component is
+ * only the row's presentation.
  */
 export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
   const t = useT();
-  const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [active, setActive] = useState<number | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [failed, setFailed] = useState<Record<number, boolean>>({});
+  const audio = useTaskAudio();
+  const rows = unanchoredTracks(tracks);
 
-  const urls = useMemo(() => tracks.map((track) => resolve(track.key)), [tracks, resolve]);
+  if (!audio || rows.length === 0) return null;
 
-  // Stop playback when the task changes or the component unmounts.
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-    };
-  }, []);
-
-  // Keep the element's source in step with the active track.
-  useEffect(() => {
-    const el = audioRef.current;
-    if (!el || active === null) return;
-    el.src = urls[active] ?? '';
-    el.currentTime = 0;
-    setProgress(0);
-    // A rejected play() (autoplay policy, missing file) must not break the task.
-    void el.play().catch(() => {
-      setFailed((f) => ({ ...f, [active]: true }));
-      setActive(null);
-    });
-  }, [active, urls]);
-
-  if (tracks.length === 0) return null;
-
-  const toggle = (index: number) => {
-    const el = audioRef.current;
-    if (active === index) {
-      el?.pause();
-      setActive(null);
-      return;
-    }
-    setActive(index);
-  };
-
-  const single = tracks.length === 1;
+  // One unanchored track gets the large control with a progress bar; a run of
+  // them gets the numbered compact row.
+  const single = rows.length === 1;
+  const failed = rows.some((track) => audio.failed.has(track.key));
 
   return (
     <section
       aria-label={t('label.subtitles')}
       className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3"
     >
-      <audio
-        ref={audioRef}
-        onTimeUpdate={(e) => {
-          const el = e.currentTarget;
-          setProgress(el.duration ? el.currentTime / el.duration : 0);
-        }}
-        onEnded={() => setActive(null)}
-        onError={() => {
-          if (active !== null) {
-            setFailed((f) => ({ ...f, [active]: true }));
-            setActive(null);
-          }
-        }}
-        className="hidden"
-      />
-
       {single ? (
         <div className="flex items-center gap-3">
           <PlayButton
-            playing={active === 0}
-            label={t('action.speak')}
-            onClick={() => toggle(0)}
+            playing={audio.activeKey === rows[0]!.key}
+            label={rows[0]!.label ?? t('action.speak')}
+            onClick={() => audio.toggle(rows[0]!.key)}
           />
-          <ProgressBar value={active === 0 ? progress : 0} />
+          <ProgressBar value={audio.activeKey === rows[0]!.key ? audio.progress : 0} />
         </div>
       ) : (
         <>
           <div className="flex flex-wrap gap-2">
-            {tracks.map((track, index) => (
+            {rows.map((track, index) => (
               <button
                 key={track.key}
                 type="button"
-                onClick={() => toggle(index)}
+                onClick={() => audio.toggle(track.key)}
+                // The label is the accessible name, never visible text: in the
+                // dictation tasks it is the answer.
                 aria-label={track.label ?? `track ${index + 1}`}
-                aria-pressed={active === index}
+                aria-pressed={audio.activeKey === track.key}
                 className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
-                  active === index
+                  audio.activeKey === track.key
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-background text-foreground hover:bg-muted'
                 }`}
@@ -112,18 +66,16 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
               </button>
             ))}
           </div>
-          <ProgressBar value={active !== null ? progress : 0} />
+          <ProgressBar value={audio.activeKey !== null ? audio.progress : 0} />
         </>
       )}
 
-      {Object.keys(failed).length > 0 && (
-        <p className="text-xs text-muted-foreground">{t('msg.failed_to_load_url')}</p>
-      )}
+      {failed && <p className="text-xs text-muted-foreground">{t('msg.failed_to_load_url')}</p>}
     </section>
   );
 }
 
-function PlayButton({
+export function PlayButton({
   playing,
   label,
   onClick,
