@@ -62,6 +62,10 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   );
 
   const banks = task.banks ?? [];
+  // Nothing to grade: every blank is a worked example or ungraded prose.
+  const hasNothingToScore = !Object.values(task.blanks ?? {}).some(
+    (b) => b.kind !== 'given' && b.kind !== 'free',
+  );
   const answersOnPage = Object.values(task.blanks ?? {}).filter((b) => b.kind !== 'given').length;
 
   return (
@@ -119,15 +123,25 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         <div
           role="status"
           className={`rounded-md border px-4 py-3 text-sm ${
-            result.complete
-              ? 'border-green-600 bg-green-500/10 text-foreground'
-              : 'border-destructive bg-destructive/10 text-foreground'
+            hasNothingToScore
+              ? 'border-border bg-muted/30 text-foreground'
+              : result.complete
+                ? 'border-green-600 bg-green-500/10 text-foreground'
+                : 'border-destructive bg-destructive/10 text-foreground'
           }`}
         >
-          {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
-          <span className="ml-2 text-muted-foreground">
-            {result.correctCount} / {result.scoreableCount}
-          </span>
+          {hasNothingToScore ? (
+            // A task with nothing to grade — note-taking, a draft, a self-check — is
+            // kept and never marked, so it must not report "0 / 0" as though it failed.
+            t('label.saved')
+          ) : (
+            <>
+              {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
+              <span className="ml-2 text-muted-foreground">
+                {result.correctCount} / {result.scoreableCount}
+              </span>
+            </>
+          )}
         </div>
       )}
 

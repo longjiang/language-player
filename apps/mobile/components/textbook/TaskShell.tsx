@@ -62,6 +62,10 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 
   const banks = task.banks ?? [];
   const hasBlanks = Object.keys(task.blanks ?? {}).length > 0;
+  // Nothing to grade: every blank is a worked example or ungraded prose.
+  const hasNothingToScore = !Object.values(task.blanks ?? {}).some(
+    (b) => b.kind !== 'given' && b.kind !== 'free',
+  );
   const anyAnswer = Object.values(responses).some((v) => v.trim());
 
   return (
@@ -118,11 +122,19 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           }`}
         >
           <Text className="text-sm text-foreground">
-            {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
-            <Text className="text-muted-foreground">
-              {'  '}
-              {result.correctCount} / {result.scoreableCount}
-            </Text>
+            {hasNothingToScore ? (
+              // Nothing to grade — note-taking, a draft, a self-check — so it must not
+              // report "0 / 0" as though the student failed.
+              t('label.saved')
+            ) : (
+              <>
+                {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
+                <Text className="text-muted-foreground">
+                  {'  '}
+                  {result.correctCount} / {result.scoreableCount}
+                </Text>
+              </>
+            )}
           </Text>
         </View>
       )}
