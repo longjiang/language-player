@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
+import { BlankChoiceProvider } from './BlankChoice';
 import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
 import { RecallCard } from './RecallCard';
@@ -73,6 +74,10 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
     // inline controls inside the stimulus share one player and only one track can
     // play at a time.
     <TaskAudioProvider tracks={task.audio ?? []}>
+    {/* One picture-choice dialog for the whole task: a blank opens it, and it is
+        rendered here rather than by each blank so thirty blanks are not thirty
+        modals. */}
+    <BlankChoiceProvider>
     <ScrollView contentContainerClassName="gap-5 pb-16" className="flex-1">
       <View className="flex-row items-start gap-3">
         <View className="mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -141,6 +146,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 
       <Text className="text-xs text-muted-foreground">{book.title}</Text>
     </ScrollView>
+    </BlankChoiceProvider>
     </TaskAudioProvider>
   );
 }

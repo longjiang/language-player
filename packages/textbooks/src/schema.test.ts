@@ -49,6 +49,26 @@ describe('validateTask', () => {
     expect(errorsOf(validateTask(t)).join()).toContain('Duplicate blank references');
   });
 
+  it('rejects an imageMap pin outside the image', () => {
+    // The control would be clipped by the frame's overflow-hidden, leaving a blank the
+    // student can never reach — and the task still renders, so nothing else reports it.
+    const t = base({
+      body: [{ kind: 'imageMap', id: 'm', image: 'tblt-hsk4/u06/a1-map.png', pins: [{ blankId: 'b1', x: 104, y: 12 }] }],
+      blanks: { b1: { id: 'b1', kind: 'choose', answer: 'B', optionSet: 'ps1' } },
+      answerKeyRaw: '① B。',
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('outside the image');
+  });
+
+  it('accepts an imageMap pin inside the image', () => {
+    const t = base({
+      body: [{ kind: 'imageMap', id: 'm', image: 'tblt-hsk4/u06/a1-map.png', pins: [{ blankId: 'b1', x: 32.5, y: 8.26 }] }],
+      blanks: { b1: { id: 'b1', kind: 'choose', answer: 'B', optionSet: 'ps1' } },
+      answerKeyRaw: '① B。',
+    });
+    expect(errorsOf(validateTask(t)).join()).not.toContain('outside the image');
+  });
+
   it('accepts a blank referenced only by numberedBlanks', () => {
     const t = base({
       body: [{ kind: 'numberedBlanks', ids: ['b1'] }],

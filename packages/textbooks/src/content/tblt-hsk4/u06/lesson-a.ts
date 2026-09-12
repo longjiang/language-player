@@ -39,21 +39,27 @@ export const lessonA: LessonMeta = {
           id: 't1-map',
           image: 'tblt-hsk4/u06/a1-map.png',
           alt: '中国地图',
-          // Positions are percentages of the image, sitting on the printed map
-          // dots — the point each city's connector line terminates at, so there
-          // is no ambiguity about which city a blank belongs to. Measured from
-          // the image rather than estimated.
+          // Positions are percentages of the image, sitting in the printed `（ ）`
+          // brackets beside each city name — which is where the instructions tell
+          // the student to write ("在城市旁边的（ ）中写下对应的景点") and where the
+          // answer's letter belongs. Not on the leader-line dots: a cell there
+          // would cover the map instead of filling the blank the workbook prints.
+          //
+          // Each was measured from the image by detecting the bracket pair and
+          // taking the middle of the gap between them (all ten gaps came out 71–79
+          // image px, which is the printed spacing), so the cell lands centred in
+          // the brackets rather than beside them.
           pins: [
-            { blankId: 'b1', x: 22.0, y: 32.4 }, // 吐鲁番
-            { blankId: 'b2', x: 69.8, y: 21.7 }, // 哈尔滨
-            { blankId: 'b3', x: 47.6, y: 53.5 }, // 西安 (given)
-            { blankId: 'b4', x: 57.9, y: 38.3 }, // 北京
-            { blankId: 'b5', x: 64.6, y: 58.8 }, // 苏州
-            { blankId: 'b6', x: 66.9, y: 58.8 }, // 上海
-            { blankId: 'b7', x: 64.6, y: 61.6 }, // 杭州
-            { blankId: 'b8', x: 23.0, y: 61.6 }, // 拉萨
-            { blankId: 'b9', x: 40.7, y: 61.6 }, // 成都
-            { blankId: 'b10', x: 50.0, y: 75.1 }, // 桂林
+            { blankId: 'b1', x: 32.5, y: 8.26 }, // 吐鲁番
+            { blankId: 'b2', x: 96.9, y: 8.26 }, // 哈尔滨
+            { blankId: 'b3', x: 50.7, y: 22.68 }, // 西安 (given — the map prints its A)
+            { blankId: 'b4', x: 93.6, y: 37.24 }, // 北京
+            { blankId: 'b5', x: 82.95, y: 50.44 }, // 苏州
+            { blankId: 'b6', x: 93.6, y: 61.27 }, // 上海
+            { blankId: 'b7', x: 84.7, y: 74.81 }, // 杭州
+            { blankId: 'b8', x: 26.1, y: 82.33 }, // 拉萨
+            { blankId: 'b9', x: 43.55, y: 96.95 }, // 成都
+            { blankId: 'b10', x: 71.1, y: 89.91 }, // 桂林
           ],
         },
         {

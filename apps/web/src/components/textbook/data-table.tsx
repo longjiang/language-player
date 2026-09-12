@@ -54,7 +54,11 @@ export function DataTable({ table }: { table: DataTableStimulus }) {
                   */}
                   <span className="flex items-center gap-2">
                     {c === 0 && <InlineTrackButton tracks={row.audio} />}
-                    {row.cells[c] ? <TokenizedText text={row.cells[c]!} l2Code={l2.code} /> : null}
+                    {row.cells[c] ? (
+                      // A ➌'s blanks answer from picture sets and the workbook prints them as
+                      // small letter blanks, so the cell variant is what belongs in a cell.
+                      <TokenizedText text={row.cells[c]!} l2Code={l2.code} blankVariant="cell" />
+                    ) : null}
                   </span>
                 </td>
               ))}

@@ -174,6 +174,26 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     if (!referencedBanks.has(bank.id)) add('warning', `Bank "${bank.id}" is never referenced by a blank.`);
   }
 
+  // ── Image maps ──
+  // A pin is a percentage of the image, and it is also the anchor of an interactive
+  // control: a coordinate outside 0–100 puts that control outside the picture, where
+  // the frame's `overflow-hidden` clips it and the blank becomes unreachable. The
+  // values are measured off the image rather than eyeballed, so a typo here is a
+  // plausible mistake — and a silent one, because the task still renders, minus one
+  // answerable blank.
+  for (const stimulus of task.body) {
+    if (stimulus.kind !== 'imageMap') continue;
+    for (const pin of stimulus.pins) {
+      if (pin.x < 0 || pin.x > 100 || pin.y < 0 || pin.y > 100) {
+        add(
+          'error',
+          `imageMap pin for blank "${pin.blankId}" is outside the image (x: ${pin.x}, y: ${pin.y}); a pin is a percentage of the image, 0–100.`,
+          pin.blankId,
+        );
+      }
+    }
+  }
+
   // ── Mock apps ──
   const goalBlanks = new Set(
     Object.values(blanks)

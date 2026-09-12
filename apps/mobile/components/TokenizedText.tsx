@@ -107,6 +107,14 @@ export interface TokenizedTextProps {
    *  (e.g. reader pagination) is the lemmatization authority and supplies
    *  tokens via the `tokens` prop once a block is near the viewport
    *  (SPEC-019 O2 lazy loading). */
+  /**
+   * How a `{{bN}}` blank answered from a pictureSet is printed (SPEC-095): `slot` is
+   * the illustration box a passage prints (B ➎/➏), `cell` the small tappable blank a
+   * map pin, numbered row or table cell prints (A ➊/➋/➌, C ➊/➋). The caller knows
+   * which printing the workbook used; both variants open the same picture-choice
+   * dialog.
+   */
+  blankVariant?: 'slot' | 'cell';
   deferTokenization?: boolean;
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end).
    *  When undefined, karaoke is off. */
@@ -228,7 +236,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, quickGlossOnBlank = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx, notes }: TokenizedTextProps) {
+function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, blankVariant = 'slot', karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, quickGlossOnBlank = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx, notes }: TokenizedTextProps) {
   const t = useT();
   // SPEC-093 / SPEC-095: strip inline markers from the text *before*
   // tokenization so the lemmatizer never sees marker junk, recording each
@@ -1512,7 +1520,13 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                 // A marker with no matching blank spec renders nothing rather
                 // than throwing; the content validator catches that case.
                 if (!blank) return null;
-                return <BlankField key={`blank-${item.blankId}`} blank={blank} />;
+                return (
+                  <BlankField
+                    key={`blank-${item.blankId}`}
+                    blank={blank}
+                    variant={blankVariant}
+                  />
+                );
               }
               // ── Note badge (SPEC-093): render the solid-circle marker where
               // a `[n]` note was stripped from the clean text. ──
@@ -2090,6 +2104,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.tokens === next.tokens &&
     prev.notes === next.notes &&
     prev.deferTokenization === next.deferTokenization &&
+    prev.blankVariant === next.blankVariant &&
     prev.karaokeProgress === next.karaokeProgress &&
     prev.karaokeDimOpacity === next.karaokeDimOpacity &&
     prev.leading === next.leading &&

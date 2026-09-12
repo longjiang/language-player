@@ -6,6 +6,7 @@ import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { useBlankPicker } from './blank-picker';
+import { useBlankChoice } from './blank-choice';
 
 /**
  * An in-passage illustration slot (SPEC-095).
@@ -15,14 +16,16 @@ import { useBlankPicker } from './blank-picker';
  * `pictureSet` renders as this instead of a letter chip: the box shows the illustration
  * once picked, so the article reads as the finished page rather than as a row of letters.
  *
- * The interaction is unchanged — tapping the box selects the blank, tapping a picture
- * fills it — which is why this is a rendering variant of `BlankField` and not a
- * stimulus kind of its own.
+ * Tapping the box opens the task's picture-choice dialog and picking a picture fills
+ * it, exactly as a compact `cell` blank does — the same blank kind answered the same
+ * way, in the two shapes the workbook prints it. This stays a rendering variant of
+ * `BlankField` rather than a stimulus kind of its own.
  */
 export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: string }) {
   const t = useT();
   const ctx = useTextbookTask();
-  const { selected, pick } = useBlankPicker();
+  const { selected } = useBlankPicker();
+  const choice = useBlankChoice();
   const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
 
   const set = blank.optionSet ? pictureSetsIn(ctx!.task).get(blank.optionSet) : undefined;
@@ -34,10 +37,10 @@ export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: str
       <button
         type="button"
         onClick={() => {
-          // Selecting the blank is what arms the next picture tap; tapping again clears
-          // the selection so a mis-tap is recoverable.
-          ctx!.selection.set(isSelected ? null : blank.id);
-          if (isSelected && value) ctx!.store.setValue(blank.id, '');
+          // Opening the choices also selects the blank, which is what arms the picture
+          // bank below the task; the dialog itself is where a pick is made and where an
+          // answer is taken back.
+          choice?.open(blank.id);
         }}
         // When filled, the picture's own label names it — that is content, not chrome.
         aria-label={item ? item.label : t('label.pick_illustration')}

@@ -5,6 +5,7 @@ import { indexToCircled, type BlankSpec } from '@langplayer/textbooks';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { InlineImageSlot } from './inline-image-slot';
+import { PictureBlankCell } from './picture-blank-cell';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -23,8 +24,20 @@ function blankLabel(blank: BlankSpec): string {
  * here cannot re-render the token tree around it. That matters most on mobile,
  * where re-rendering a passage's tokens is a documented multi-second JS-thread
  * block.
+ *
+ * `variant` decides how a blank answered from a `pictureSet` is printed, and it is
+ * the caller that knows which printing the workbook used: `slot` (the default) is the
+ * illustration box a passage prints, `cell` is the small tappable blank a map pin, a
+ * numbered row or a table cell prints. Both open the same picture-choice dialog; see
+ * `picture-blank-cell.tsx`.
  */
-export function BlankField({ blank }: { blank: BlankSpec }) {
+export function BlankField({
+  blank,
+  variant = 'slot',
+}: {
+  blank: BlankSpec;
+  variant?: 'slot' | 'cell';
+}) {
   const ctx = useTextbookTask();
   const t = useT();
 
@@ -96,11 +109,16 @@ export function BlankField({ blank }: { blank: BlankSpec }) {
     );
   }
 
-  // A blank answering from a picture set is an illustration slot in the passage, not a
-  // letter chip — the booklet prints a box there, and the finished article should read
-  // as the finished page.
+  // A blank answering from a picture set is filled by tapping it and choosing a
+  // picture, never by typing a letter. What the *shape* of that blank is depends on
+  // what the workbook printed: a box for an illustration inside a passage (B ➎/➏), or
+  // a small `( )` / `___` the answer's letter goes into (A ➊/➋/➌, C ➊/➋).
   if (blank.optionSet) {
-    return <InlineImageSlot blank={blank} value={value} />;
+    return variant === 'cell' ? (
+      <PictureBlankCell blank={blank} value={value} result={blankResult} />
+    ) : (
+      <InlineImageSlot blank={blank} value={value} />
+    );
   }
 
   // ── Choose from a bank ──

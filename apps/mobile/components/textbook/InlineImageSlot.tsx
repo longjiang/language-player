@@ -4,6 +4,7 @@ import { createAssetResolver, pictureSetsIn, type BlankSpec } from '@langplayer/
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
+import { useBlankChoice } from './BlankChoice';
 
 /**
  * An in-passage illustration slot (SPEC-095).
@@ -13,13 +14,15 @@ import { useTextbookTask } from './task-provider';
  * `pictureSet` renders as this instead of a letter chip: the box shows the illustration
  * once picked, so the article reads as the finished page.
  *
- * The interaction is unchanged — tapping the box selects the blank, tapping a picture in
- * the set fills it — which is why this is a rendering variant of `BlankField` rather
- * than a stimulus kind of its own.
+ * Tapping the box opens the task's picture-choice dialog and picking a picture fills
+ * it, exactly as a compact `cell` blank does — the same blank kind answered the same
+ * way, in the two shapes the workbook prints it. This stays a rendering variant of
+ * `BlankField` rather than a stimulus kind of its own.
  */
 export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: string }) {
   const t = useT();
   const ctx = useTextbookTask();
+  const choice = useBlankChoice();
   const resolve = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
 
   const set = blank.optionSet ? pictureSetsIn(ctx!.task).get(blank.optionSet) : undefined;
@@ -29,11 +32,10 @@ export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: str
   return (
     <Pressable
       onPress={() => {
-        // Selecting the blank arms the next picture tap; tapping again clears it, and
-        // clears the answer, so a mis-tap is recoverable.
-        const next = isSelected ? null : blank.id;
-        ctx!.selection.set(next);
-        if (next === null && value) ctx!.store.setValue(blank.id, '');
+        // Opening the choices also selects the blank, which is what arms the picture
+        // bank below the task; the dialog itself is where a pick is made and where an
+        // answer is taken back.
+        choice?.open(blank.id);
       }}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}

@@ -34,7 +34,7 @@ export function NumberedBlanks({ ids }: { ids: string[] }) {
             <span className="text-sm text-muted-foreground" aria-hidden>
               {indexToCircled(Number.isFinite(n) ? n : index + 1)}
             </span>
-            <BlankField blank={blank} />
+            <BlankField blank={blank} variant="cell" />
           </li>
         );
       })}
