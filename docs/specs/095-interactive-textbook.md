@@ -442,12 +442,17 @@ speaker-labelled lines of tokenized L2 text, with an L1 translation under each l
 the per-L2 `display.translation` setting is on. It is the workbook's own Audio Transcript
 booklet, made reachable from the recording it belongs to instead of from a separate page.
 
-**One recording, one control.** Play and transcript are two segments of one pill rather
-than two controls standing side by side: they act on the same recording, and in a numbered
-row (A ➋ prints `① [▶|▤] [ A ]`, with the numeral first so it reads question → how to hear
-it → answer) loose icons crowd the blanks they sit between. In the audio row each pill
-prints its track's `①` in the play segment, which is how a student matches a recording to
-the question they are answering.
+**One recording, one control, and the same one everywhere.** Play and transcript are two
+segments of one pill rather than two controls standing side by side: they act on the same
+recording, and in a numbered row (A ➋ prints `① [▶|▤] [ A ]`, with the numeral first so it
+reads question → how to hear it → answer) loose icons crowd the blanks they sit between.
+
+The **task's own audio row reads the same way** — `① [▶|▤] ② [▶|▤]` — with the number
+printed *outside* the pill rather than inside the play segment. A ➊'s nine recordings are
+nine questions, so the number is what the student matches to the one they are answering;
+but a circled numeral does not read as "play", and a row whose number *was* the button
+taught a different control from the one the numbered items use. The numeral is decoration
+in both places — the pill's accessible name carries the track.
 
 ```ts
 interface TranscriptLine {
@@ -943,7 +948,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
-| `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. `numeral` prints the track's `①` in the play segment for the audio row, where the number is how a student matches a recording to a question; an item's own pill prints the play/pause glyph, because its number is already printed in front of it. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
+| `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. The same pill in every place a recording is offered — beside a numbered slot and in the task's audio row, both read `① [▶|▤]`, the numeral printed by the caller as decoration. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
 | `InlineTrackButton` | The seam a widget places for an item's own recording: `TrackControls`, or nothing at all when the item has no recording |
 | `TranscriptDialogProvider` / `useTranscriptDialog` | The task's transcript dialog and its opener. One dialog per task; a play control calls `open(key)`. Resolves transcripts through `transcriptsIn(book)`, so a task that replays another task's recording still offers its text |
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
