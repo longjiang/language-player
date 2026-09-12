@@ -50,12 +50,17 @@ export function useCurrentTaskId(tree: TocTree, l1: string, l2: string): string 
   );
 }
 
-export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
+/**
+ * Per-task saved state for a whole book, rolled up through its own hierarchy
+ * (ADR-0044). Recomputed when the route changes, which is when a student could next
+ * see it — the layout that renders the TOC persists across task navigations, so
+ * nothing else would tell it that a task was just finished.
+ *
+ * Shared by the sidebar and the book's landing list: both show progress, and two
+ * copies of this effect would be two things to keep in step.
+ */
+export function useBookProgress(tree: TocTree): BookProgress | null {
   const pathname = usePathname();
-  const t = useT();
-  // Progress is derived from the same local state the tasks write (ADR-0044). It is
-  // recomputed when the route changes, which is when a student could next see it —
-  // this layout persists across task navigations.
   const [progress, setProgress] = useState<BookProgress | null>(null);
   useEffect(() => {
     const states = new Map(
@@ -65,18 +70,27 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
     );
     setProgress(bookProgress(tree, states));
   }, [tree, pathname]);
+  return progress;
+}
 
-  const lessonProgress = useMemo(() => {
-    const map = new Map<string, LessonProgress>();
+/** The same roll-up, indexed for lookup by lesson key and task id. */
+export function useProgressIndex(progress: BookProgress | null) {
+  return useMemo(() => {
+    const lessons = new Map<string, LessonProgress>();
     const tasks = new Map<string, TaskProgress>();
     for (const unit of progress?.units ?? []) {
       for (const lesson of unit.lessons) {
-        map.set(`${unit.unitId}/${lesson.lessonId}`, lesson);
+        lessons.set(`${unit.unitId}/${lesson.lessonId}`, lesson);
         for (const task of lesson.tasks) tasks.set(task.taskId, task);
       }
     }
-    return { lessons: map, tasks };
+    return { lessons, tasks };
   }, [progress]);
+}
+
+export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
+  const t = useT();
+  const lessonProgress = useProgressIndex(useBookProgress(tree));
   const currentTaskId = useCurrentTaskId(tree, l1, l2);
   const activeLessonKey = currentTaskId
     ? tree.units
@@ -205,8 +219,10 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
  * A task's state in the TOC: a tick once it is fully correct, a dot once attempted,
  * nothing otherwise. Attempted-but-not-complete is deliberately distinguishable —
  * "I tried this" is the thing a student wants to find again.
+ *
+ * Exported for the book's landing list, which shows the same marks.
  */
-function TaskMark({ progress }: { progress?: TaskProgress }) {
+export function TaskMark({ progress }: { progress?: TaskProgress }) {
   if (!progress?.attempted) return null;
   return (
     <span
