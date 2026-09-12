@@ -228,7 +228,10 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           break;
         }
         case 'resize':
-          setHeight(Math.max(220, Math.min(900, data.payload.height)));
+          // Capped so one pathological report cannot make the panel scroll forever; a
+          // seven-row result list is ~1200px, so 900 was clipping this app and giving it
+          // an inner scrollbar on top of the panel's.
+          setHeight(Math.max(220, Math.min(1600, data.payload.height)));
           break;
         default:
           break;

@@ -1132,6 +1132,8 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 
 B ➍ shows two screenshots of the Railway 12306 app and asks six questions derived entirely from the data visible in them (fastest train, cheapest, which are 复兴号, which are sold out, which have 商务座, which have sleepers). The natural interactive form of that task is not a screenshot at all: it is a **working mock of the 12306 app** the student filters, scrolls and taps.
 
+**The screen imitates the real app's result row, because the tasks are answered *from* the screen.** Departure and arrival times with their 始/终/过 station badges, the train number with its 静 or 铺 tick, the 复兴号 and 智能动车 tags, the **duration of the journey** under the number, the price with 起, and a row of seat classes each carrying its own status — 有票, a count of 张, 候补 or 无. A student who cannot see the duration cannot answer "which is fastest" except by guessing, and one who cannot see 候补 cannot tell why a train is excluded from a question that says so.
+
 The same applies to future books — a hotel booking flow, or an ATM task that has to mock up a physical cash dispenser. These UIs have almost nothing in common.
 
 A host-side declarative renderer is the wrong shape for that: its schema would accumulate a union of every app's UI and still need a bespoke escape hatch for the cash dispenser. Instead, **each mock app is a self-contained HTML file** (the "one-page app" model, authorable by an LLM), and the host provides only a frame and a bridge.
@@ -1373,6 +1375,13 @@ The host cannot verify a goal it cannot evaluate, so the cross-check happens at 
 
 ### Authoring and supply-chain rules
 
+- **A screen has to show the fact its task turns on, and it must not print the opposite.** ⑤ asks
+  for 商务座 *without* 候补 and ⑥ for 卧铺 the same way, so a train whose berths are waitlisted has
+  to print 候补 — and the one train the printed key excludes from ⑥ is excluded for exactly that
+  reason. This screen printed `有票` next to K1275's 硬卧/软卧, which left the task unanswerable from
+  the screen while the key still required the student to exclude it. The dataset now gives every
+  seat class its own status and **derives** the goal flags from those statuses, so what the student
+  reads and what the answer key holds cannot disagree.
 - Mock apps are **code, not media**, so ADR-0043 does not apply to the HTML itself: it is committed, reviewed and served same-origin. This matters because these files will largely be LLM-generated — executable code shipping inside the app must be reviewed source in git, never fetched from a mutable URL at runtime.
 - Media *inside* a mock app (photographs) still uses the asset host via `ASSET_BASE_URL`, but mock chrome and branding should prefer inline SVG/CSS so most apps remain genuinely one file.
 - Third-party libraries loaded via `<script>`/`<link>` tags are permitted but must be **allowlisted and pinned**, or vendored. Each remote tag is a supply-chain surface, a runtime dependency, and an origin the sandbox CSP must explicitly permit.

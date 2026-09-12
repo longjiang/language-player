@@ -7,103 +7,303 @@
     <style>
       /* Diegetic mock branding — deliberately not LP design tokens (ADR-0045). */
       :root { color-scheme: light; }
-      body { margin: 0; font: 14px/1.5 -apple-system, "PingFang SC", sans-serif; background: #e8eef5; }
-      #app { max-width: 420px; margin: 0 auto; background: #fff; min-height: 100vh; }
-      .top { background: #2b7fd4; color: #fff; padding: 10px 14px; }
-      .route { font-size: 16px; font-weight: 600; }
-      .filters { display: flex; gap: 6px; padding: 8px 10px; background: #f5f8fb; overflow-x: auto; }
-      .filter { border: 1px solid #cfdae6; background: #fff; color: #33506b; border-radius: 999px; padding: 4px 10px; font-size: 12px; white-space: nowrap; cursor: pointer; }
-      .filter.on { background: #2b7fd4; border-color: #2b7fd4; color: #fff; }
-      .train { padding: 10px 14px; border-bottom: 1px solid #eef2f6; cursor: pointer; }
-      .train:hover { background: #f7fafd; }
-      .row1 { display: flex; align-items: baseline; gap: 8px; }
-      .no { font-size: 17px; font-weight: 700; color: #1f3b57; }
-      .badge { font-size: 11px; color: #fff; background: #e2554f; border-radius: 3px; padding: 1px 4px; }
-      .badge.fuxing { background: #2b7fd4; }
-      .time { margin-left: auto; text-align: right; }
-      .price { color: #e2554f; font-weight: 700; }
-      .row2 { color: #5b7691; font-size: 12px; margin-top: 2px; }
-      .seats { color: #7b93a8; font-size: 12px; margin-top: 2px; }
-      .sold-out { color: #b6c3cf; }
+      body { margin: 0; font: 14px/1.5 -apple-system, "PingFang SC", sans-serif; background: #f2f4f7; }
+      #app { max-width: 430px; margin: 0 auto; min-height: 100vh; }
+
+      /* ── Header: the blue band with the route and the date strip ── */
+      .top { background: #2f7ee0; color: #fff; padding: 6px 12px 0; }
+      .topbar { display: flex; align-items: center; height: 36px; }
+      .back, .more { width: 34px; font-size: 19px; opacity: 0.9; }
+      .more { text-align: right; letter-spacing: 1px; }
+      .route { flex: 1; text-align: center; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; }
+      .dates { display: flex; gap: 4px; padding: 4px 0 8px; }
+      .date { flex: 1; text-align: center; border-radius: 6px; padding: 3px 0; }
+      .date .w { font-size: 11.5px; opacity: 0.88; }
+      .date .d { font-size: 13px; }
+      .date.on { background: #fff; color: #2f7ee0; }
+      .cal { flex: 0 0 40px; text-align: center; font-size: 10.5px; padding-top: 3px; }
+      .cal .ico { display: block; font-size: 15px; }
+
+      /* ── Filters and the station chips ── */
+      .checks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; background: #fff; padding: 9px 12px; color: #4a5b6d; font-size: 12.5px; }
+      .check { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+      .box { width: 13px; height: 13px; border: 1px solid #b9c4d0; border-radius: 2px; }
+      .check.on .box { background: #2f7ee0; border-color: #2f7ee0; color: #fff; font-size: 10px; line-height: 13px; text-align: center; }
+      .check.on .box::after { content: '✓'; }
+      .sort { margin-left: auto; color: #7b8b9c; }
+      .stations { display: flex; gap: 6px; overflow-x: auto; background: #fff; padding: 0 12px 10px; }
+      .chip { border: 1px solid #dde3ea; border-radius: 4px; padding: 4px 9px; font-size: 12.5px; color: #4a5b6d; white-space: nowrap; }
+
+      /* ── Train card ── */
+      .list { padding: 8px 10px; }
+      .train { background: #fff; border-radius: 8px; padding: 9px 12px 8px; margin-bottom: 8px; cursor: pointer; }
+      .train:hover { background: #fbfdff; }
+      .tags { display: flex; gap: 6px; margin-bottom: 5px; }
+      .tag { font-size: 11px; padding: 1px 5px; border-radius: 3px; color: #c2410c; background: #fff1e6; }
+      /* Four fixed-ish columns around a flexible middle one. The widths are tight on
+         purpose: the panel is narrower than a phone, and the middle column is where the
+         train number, its 静/铺 tick and the duration live — squeezed, they wrap. */
+      .main { display: flex; align-items: flex-start; gap: 4px; }
+      .end { flex: 0 0 68px; }
+      .time { font-size: 19px; font-weight: 600; color: #1f2d3d; line-height: 1.15; }
+      .station { font-size: 12px; color: #6b7c8f; margin-top: 1px; white-space: nowrap; }
+      .stop { display: inline-block; width: 13px; height: 13px; line-height: 13px; text-align: center; border-radius: 2px; color: #fff; font-size: 9.5px; margin-right: 2px; vertical-align: 1px; }
+      .stop.s { background: #f0a020; }
+      .stop.e { background: #1aa260; }
+      .stop.p { background: #3b82f6; }
+      .mid { flex: 1; min-width: 0; text-align: center; padding-top: 3px; }
+      .no { font-size: 17px; font-weight: 600; color: #1f2d3d; white-space: nowrap; }
+      .tick { display: inline-block; background: #f7e59a; color: #8a6d00; border-radius: 2px; font-size: 10px; padding: 0 2px; margin-left: 3px; vertical-align: 2px; }
+      .dur { font-size: 11.5px; color: #98a6b5; margin-top: 2px; white-space: nowrap; }
+      .dur .caret { font-size: 9px; }
+      .plus { font-size: 11px; color: #f97316; vertical-align: 3px; }
+      .price { flex: 0 0 68px; text-align: right; color: #f4511e; font-weight: 600; font-size: 15.5px; white-space: nowrap; }
+      .price .qi { font-size: 11px; font-weight: 400; }
+      .price.gone { color: #c3ccd6; font-size: 15px; font-weight: 400; }
+      .train.soldout .time, .train.soldout .no { color: #aab6c2; }
+      .seats { display: flex; flex-wrap: wrap; gap: 4px 12px; border-top: 1px solid #f0f3f7; margin-top: 8px; padding-top: 7px; font-size: 12px; color: #8b98a6; }
+      .seat b { font-weight: 400; margin-left: 2px; }
+      .seat .ok { color: #1aa260; }
+      .seat .wait { color: #2f7ee0; }
+      .seat .none { color: #c3ccd6; }
+      .empty { padding: 28px 12px; margin: 8px 10px; text-align: center; color: #98a6b5; font-size: 13px; background: #fff; border-radius: 8px; }
       .mock-hint { outline: 3px solid #f59e0b; outline-offset: -3px; }
       .done { background: #eaf7ee; }
-      .note { padding: 10px 14px; color: #7b93a8; font-size: 12px; }
+      .note { padding: 6px 12px 16px; color: #98a6b5; font-size: 12px; }
     </style>
   </head>
   <body>
     <!--
-      B ➍ — 铁路12306. The six questions are all derived from the same dataset the
-      screen renders, and each goal reads that dataset rather than hardcoding an
-      answer, so the screen and the expected answers cannot drift apart.
+      B ➍ — 铁路12306. The six tasks are all answered from the dataset this screen
+      renders, and each goal reads that dataset rather than hardcoding an answer, so the
+      screen and the expected answers cannot drift apart.
     -->
     <div id="app">
       <div class="top">
-        <div class="route">北京 ⇄ 杭州</div>
+        <div class="topbar">
+          <span class="back">‹</span>
+          <span class="route">北京 ⇄ 杭州</span>
+          <span class="more">•••</span>
+        </div>
+        <div class="dates" id="dates"></div>
       </div>
-      <div class="filters" id="filters"></div>
-      <div id="list"></div>
+      <div class="checks" id="checks"></div>
+      <div class="stations" id="stations"></div>
+      <div class="list" id="list"></div>
       <div class="note">提示：以上信息为模拟数据，仅供练习使用。</div>
     </div>
 
     <script src="/mock-apps/runtime.v1.js"></script>
     <script>
       // ── Dataset ────────────────────────────────────────────────────────────
-      // Every question in the task is answered from these fields.
-      const SERVICES = [
-        /*
-         * `sleeper` is what the row shows a 铺 badge for; `sleeperAvailable` is what the
-         * sleeper question asks about. They are different facts: the question excludes
-         * 候补, and Z281 and K1275 show a badge whose berths are waitlisted, so they
-         * carry a badge but do not answer the question. Collapsing the two was how this
-         * dataset disagreed with the printed key.
-         */
-        { no: 'G871', dep: '16:13', arr: '22:04', price: 630.5, fuxing: false, soldOut: false, business: true, sleeper: false, sleeperAvailable: false, durationMin: 351 },
-        { no: 'G875', dep: '16:17', arr: '22:16', price: 608.5, fuxing: true, soldOut: false, business: true, sleeper: false, sleeperAvailable: false, durationMin: 359 },
-        { no: 'G49', dep: '19:04', arr: '23:21', price: 662.5, fuxing: true, soldOut: false, business: false, sleeper: false, sleeperAvailable: false, durationMin: 257 },
-        { no: 'D17', dep: '19:10', arr: '09:12', price: 403.5, fuxing: true, soldOut: false, business: false, sleeper: true, sleeperAvailable: true, durationMin: 842 },
-        { no: 'D11', dep: '21:22', arr: '11:20', price: 351, fuxing: true, soldOut: false, business: false, sleeper: true, sleeperAvailable: true, durationMin: 838 },
-        { no: 'Z281', dep: '19:21', arr: '10:36', price: 202.5, fuxing: false, soldOut: true, business: false, sleeper: true, sleeperAvailable: false, durationMin: 915 },
-        { no: 'K1275', dep: '23:37', arr: '20:38', price: 189.5, fuxing: false, soldOut: false, business: false, sleeper: true, sleeperAvailable: false, durationMin: 1261 },
+      /*
+       * One row per train: the facts the six tasks are answered from, and the facts the
+       * screen prints.
+       *
+       * Seat classes carry their own status — 有票, a count of 张, 候补 or 无 — because
+       * that distinction *is* two of the tasks: ⑤ asks for 商务座 without 候补 and ⑥ for
+       * 卧铺 without 候补, so a train whose berths are waitlisted has to print 候补 rather
+       * than 有票. This screen printed 有票 for K1275, which is the one train the printed
+       * key excludes from ⑥ for exactly that reason.
+       *
+       * The goal flags are DERIVED from these classes rather than stored next to them, so
+       * what the student reads and what the answer key holds cannot disagree.
+       */
+      var SERVICES = [
+        { no: 'G871', dep: '16:13', arr: '22:04', from: '北京南', to: '杭州东', fromStop: '始', toStop: '终',
+          price: 630.5, durationMin: 351, fuxing: false, smart: false, soldOut: false,
+          seats: [['二等', '有票'], ['一等', '有票'], ['商务', '19张'], ['无座', '无']] },
+        { no: 'G875', dep: '16:17', arr: '22:16', from: '北京南', to: '杭州东', fromStop: '始', toStop: '过',
+          price: 608.5, durationMin: 359, fuxing: true, smart: true, soldOut: false,
+          seats: [['二等', '有票'], ['一等', '有票'], ['优选一等', '9张'], ['商务', '1张']] },
+        { no: 'G49', dep: '19:04', arr: '23:21', from: '北京南', to: '杭州东', fromStop: '始', toStop: '终',
+          price: 662.5, durationMin: 257, fuxing: true, smart: false, soldOut: false,
+          seats: [['二等', '有票'], ['一等', '20张'], ['商务', '候补'], ['无座', '无']] },
+        { no: 'D17', dep: '19:10', arr: '09:12', from: '北京', to: '杭州', fromStop: '始', toStop: '终',
+          price: 403.5, durationMin: 842, fuxing: true, smart: false, soldOut: false,
+          seats: [['二等', '有票'], ['二等卧', '有票'], ['一等卧', '有票'], ['无座', '有票']] },
+        { no: 'D11', dep: '21:22', arr: '11:20', from: '北京', to: '杭州', fromStop: '始', toStop: '过',
+          price: 351, durationMin: 838, fuxing: true, smart: false, soldOut: false,
+          seats: [['二等', '有票'], ['二等卧', '有票'], ['一等卧', '有票'], ['无座', '无']] },
+        { no: 'Z281', dep: '19:21', arr: '10:36', from: '北京丰台', to: '杭州', fromStop: '始', toStop: '终',
+          price: 202.5, durationMin: 915, fuxing: false, smart: false, soldOut: true,
+          seats: [['硬卧', '候补'], ['软卧', '候补'], ['无座', '无']] },
+        { no: 'K1275', dep: '23:37', arr: '20:38', from: '北京南', to: '杭州', fromStop: '始', toStop: '过',
+          price: 189.5, durationMin: 1261, fuxing: false, smart: false, soldOut: false,
+          seats: [['硬座', '有票'], ['硬卧', '候补'], ['软卧', '候补']] },
       ];
 
-      const min = (key) => SERVICES.filter((s) => !s.soldOut).reduce((a, b) => (a[key] < b[key] ? a : b));
-      const fastest = () => SERVICES.reduce((a, b) => (a.durationMin < b.durationMin ? a : b));
-      const cheapest = () => SERVICES.filter((s) => !s.soldOut).reduce((a, b) => (a.price < b.price ? a : b));
-      const matching = (pred) => SERVICES.filter(pred);
+      // ── Facts read off those classes ───────────────────────────────────────
+      var waitlisted = function (status) { return status === '候补'; };
+      var noSeat = function (status) { return status === '无'; };
+      var onSale = function (status) { return !waitlisted(status) && !noSeat(status); };
+      /** Seat classes by name, but only the ones actually on sale. */
+      var onSaleClasses = function (s, re) {
+        return s.seats.filter(function (seat) { return re.test(seat[0]) && onSale(seat[1]); });
+      };
+      /** 商务座 on sale. The task excludes 候补, so 候补 is not an answer. */
+      var hasBusiness = function (s) { return onSaleClasses(s, /商务/).length > 0; };
+      /** A 铺 badge — a different fact from a berth being on sale, which is the bug this
+       *  screen shipped: K1275 and Z281 carry berths whose tickets are waitlisted. */
+      var hasBerths = function (s) {
+        return s.seats.some(function (seat) { return /卧/.test(seat[0]); });
+      };
+      var hasBerthsOnSale = function (s) { return onSaleClasses(s, /卧/).length > 0; };
+
+      var min = function (key) { return SERVICES.filter(function (s) { return !s.soldOut; }).reduce(function (a, b) { return a[key] < b[key] ? a : b; }); };
+      var fastest = function () { return SERVICES.reduce(function (a, b) { return a.durationMin < b.durationMin ? a : b; }); };
+      var cheapest = function () { return SERVICES.filter(function (s) { return !s.soldOut; }).reduce(function (a, b) { return a.price < b.price ? a : b; }); };
+      var matching = function (pred) { return SERVICES.filter(pred); };
 
       /** Elements for the trains matching a predicate, for hinting. */
-      const elementsFor = (pred) =>
-        Array.from(document.querySelectorAll('[data-mock-target]')).filter((el) =>
-          pred(SERVICES.find((s) => s.no === el.dataset.no)),
+      var elementsFor = function (pred) {
+        return Array.from(document.querySelectorAll('[data-mock-target]')).filter(function (el) {
+          return pred(SERVICES.find(function (s) { return s.no === el.dataset.no; }));
+        });
+      };
+
+      // ── Filters ────────────────────────────────────────────────────────────
+      var filters = { hsr: false, slow: false, fuxing: false, byDep: false };
+      var FILTERS = [
+        ['hsr', '只看高铁/动车'],
+        ['slow', '只看普通车'],
+        ['fuxing', '只看复兴号'],
+        ['byDep', '从早到晚'],
+      ];
+
+      var shown = function () {
+        var out = SERVICES.filter(function (s) {
+          if (filters.hsr && !/^[GD]/.test(s.no)) return false;
+          if (filters.slow && !/^[ZK]/.test(s.no)) return false;
+          if (filters.fuxing && !s.fuxing) return false;
+          return true;
+        });
+        if (filters.byDep) {
+          out = out.slice().sort(function (a, b) { return a.dep < b.dep ? -1 : 1; });
+        }
+        return out;
+      };
+
+      // ── The screen ─────────────────────────────────────────────────────────
+      var DATES = [['周三', '06.03'], ['周四', '06.04'], ['周五', '06.05'], ['周六', '06.06'], ['周日', '06.07'], ['周一', '06.08']];
+      var STATIONS = ['北京', '杭州', '北京南', '北京丰台', '杭州东'];
+
+      var durationText = function (mins) {
+        var h = Math.floor(mins / 60);
+        var m = mins % 60;
+        return h + '小时' + (m ? m + '分' : '');
+      };
+      /** Overnight trains arrive the next day, which the real app marks +1. */
+      var arrivesNextDay = function (s) { return s.arr < s.dep; };
+      var stopBadge = function (kind) {
+        if (!kind) return '';
+        var cls = kind === '始' ? 's' : kind === '终' ? 'e' : 'p';
+        return '<span class="stop ' + cls + '">' + kind + '</span>';
+      };
+
+      function card(s) {
+        var tags = '';
+        if (s.fuxing) tags += '<span class="tag">复兴号</span>';
+        if (s.smart) tags += '<span class="tag">智能动车</span>';
+
+        var seats = s.seats.map(function (seat) {
+          var status = seat[1];
+          var cls = waitlisted(status) ? 'wait' : noSeat(status) ? 'none' : 'ok';
+          return '<span class="seat">' + seat[0] + '<b class="' + cls + '">' + status + '</b></span>';
+        }).join('');
+
+        var price = s.soldOut
+          ? '<div class="price gone">售罄</div>'
+          : '<div class="price">¥' + s.price.toFixed(1) + '<span class="qi">起</span></div>';
+
+        return (
+          (tags ? '<div class="tags">' + tags + '</div>' : '') +
+          '<div class="main">' +
+            '<div class="end">' +
+              '<div class="time">' + s.dep + '</div>' +
+              '<div class="station">' + stopBadge(s.fromStop) + s.from + '</div>' +
+            '</div>' +
+            '<div class="mid">' +
+              '<div class="no">' + s.no + '<span class="tick">' + (hasBerths(s) ? '铺' : '静') + '</span></div>' +
+              '<div class="dur">' + durationText(s.durationMin) + ' <span class="caret">▾</span></div>' +
+            '</div>' +
+            '<div class="end">' +
+              '<div class="time">' + s.arr + (arrivesNextDay(s) ? '<span class="plus">+1</span>' : '') + '</div>' +
+              '<div class="station">' + stopBadge(s.toStop) + s.to + '</div>' +
+            '</div>' +
+            price +
+          '</div>' +
+          '<div class="seats">' + seats + '</div>'
         );
+      }
+
+      function renderDates() {
+        var box = document.getElementById('dates');
+        box.innerHTML = '';
+        DATES.forEach(function (d, i) {
+          var el = document.createElement('div');
+          // Friday, the day the task's trip is on.
+          el.className = 'date' + (i === 2 ? ' on' : '');
+          el.innerHTML = '<div class="w">' + d[0] + '</div><div class="d">' + d[1] + '</div>';
+          box.appendChild(el);
+        });
+        var cal = document.createElement('div');
+        cal.className = 'cal';
+        cal.innerHTML = '<span class="ico">▤</span>日历';
+        box.appendChild(cal);
+      }
+
+      function renderStations() {
+        var box = document.getElementById('stations');
+        box.innerHTML = '';
+        STATIONS.forEach(function (name) {
+          var el = document.createElement('span');
+          el.className = 'chip';
+          el.textContent = name;
+          box.appendChild(el);
+        });
+      }
+
+      function renderChecks() {
+        var box = document.getElementById('checks');
+        box.innerHTML = '';
+        FILTERS.forEach(function (f) {
+          var el = document.createElement('span');
+          el.className = 'check' + (filters[f[0]] ? ' on' : '');
+          el.setAttribute('data-filter', f[0]);
+          el.innerHTML = '<span class="box"></span>' + f[1];
+          box.appendChild(el);
+        });
+        var sort = document.createElement('span');
+        sort.className = 'sort';
+        sort.textContent = '筛选 ▾';
+        box.appendChild(sort);
+      }
 
       function render() {
-        const list = document.getElementById('list');
+        var list = document.getElementById('list');
         list.innerHTML = '';
-        SERVICES.forEach((s) => {
-          const el = document.createElement('div');
-          el.className = 'train' + (s.soldOut ? ' sold-out' : '');
+        var rows = shown();
+        if (!rows.length) {
+          var empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = '没有符合条件的车次，请调整筛选条件。';
+          list.appendChild(empty);
+          return;
+        }
+        rows.forEach(function (s) {
+          var el = document.createElement('div');
+          el.className = 'train' + (s.soldOut ? ' soldout' : '');
           el.dataset.mockTarget = '';
           el.dataset.no = s.no;
           el.dataset.price = String(s.price);
+          el.dataset.duration = String(s.durationMin);
           el.dataset.fuxing = String(s.fuxing);
           el.dataset.soldout = String(s.soldOut);
-          el.dataset.business = String(s.business);
-          el.dataset.sleeper = String(s.sleeper);
-          el.dataset.sleeperavailable = String(s.sleeperAvailable);
-          el.innerHTML =
-            '<div class="row1">' +
-            '<span class="no">' + s.no + '</span>' +
-            (s.fuxing ? '<span class="badge fuxing">复兴号</span>' : '') +
-            (s.soldOut ? '<span class="badge">售罄</span>' : '') +
-            '<span class="time"><span class="price">¥' + s.price.toFixed(1) + '</span></span>' +
-            '</div>' +
-            '<div class="row2">' + s.dep + ' 北京 → ' + s.arr + ' 杭州</div>' +
-            '<div class="seats">' +
-            (s.business ? '商务座 ' : '') +
-            (s.sleeper ? (s.no === 'D17' ? '一等卧 二等卧 ' : '硬卧 软卧 ') : '') +
-            (s.soldOut ? '无票' : '有票') +
-            '</div>';
+          el.dataset.business = String(hasBusiness(s));
+          el.dataset.sleeper = String(hasBerths(s));
+          el.dataset.sleeperavailable = String(hasBerthsOnSale(s));
+          el.innerHTML = card(s);
           list.appendChild(el);
         });
       }
@@ -121,25 +321,25 @@
         expected: {
           fastest: fastest().no,
           cheapest: cheapest().no,
-          fuxing: matching((s) => s.fuxing).map((s) => s.no).join('、'),
-          'sold-out': matching((s) => s.soldOut).map((s) => s.no).join('、'),
-          business: matching((s) => s.business).map((s) => s.no).join('、'),
-          sleeper: matching((s) => s.sleeperAvailable).map((s) => s.no).join('、'),
+          fuxing: matching(function (s) { return s.fuxing; }).map(function (s) { return s.no; }).join('、'),
+          'sold-out': matching(function (s) { return s.soldOut; }).map(function (s) { return s.no; }).join('、'),
+          business: matching(hasBusiness).map(function (s) { return s.no; }).join('、'),
+          sleeper: matching(hasBerthsOnSale).map(function (s) { return s.no; }).join('、'),
         },
         goals: [
           {
             id: 'fastest',
             prompt: '例：选择最快的车次。',
-            candidates: () => elementsFor((s) => s === fastest()),
-            accept: (el) => el.dataset.no === fastest().no,
-            answer: (el) => el.dataset.no,
+            candidates: function () { return elementsFor(function (s) { return s === fastest(); }); },
+            accept: function (el) { return el.dataset.no === fastest().no; },
+            answer: function (el) { return el.dataset.no; },
           },
           {
             id: 'cheapest',
             prompt: '选择最便宜的车次。',
-            candidates: () => elementsFor((s) => s === cheapest()),
-            accept: (el) => el.dataset.no === cheapest().no,
-            answer: (el) => el.dataset.no,
+            candidates: function () { return elementsFor(function (s) { return s === cheapest(); }); },
+            accept: function (el) { return el.dataset.no === cheapest().no; },
+            answer: function (el) { return el.dataset.no; },
           },
           {
             id: 'fuxing',
@@ -147,51 +347,60 @@
             // `all` — every 复兴号, not the first one tapped: the blank is a
             // `multiple` set and grading compares the whole set.
             all: true,
-            candidates: () => elementsFor((s) => s.fuxing),
-            accept: (el) => el.dataset.fuxing === 'true',
-            answer: (el) => el.dataset.no,
+            candidates: function () { return elementsFor(function (s) { return s.fuxing; }); },
+            accept: function (el) { return el.dataset.fuxing === 'true'; },
+            answer: function (el) { return el.dataset.no; },
           },
           {
             id: 'sold-out',
             prompt: '选择票已经卖完了（售罄）的车次。',
-            candidates: () => elementsFor((s) => s.soldOut),
-            accept: (el) => el.dataset.soldout === 'true',
-            answer: (el) => el.dataset.no,
+            candidates: function () { return elementsFor(function (s) { return s.soldOut; }); },
+            accept: function (el) { return el.dataset.soldout === 'true'; },
+            answer: function (el) { return el.dataset.no; },
           },
           {
             id: 'business',
             prompt: '选择所有有商务座票的车次（不包括候补）。',
             all: true,
-            candidates: () => elementsFor((s) => s.business),
-            accept: (el) => el.dataset.business === 'true',
-            answer: (el) => el.dataset.no,
+            candidates: function () { return elementsFor(function (s) { return hasBusiness(s); }); },
+            accept: function (el) { return el.dataset.business === 'true'; },
+            answer: function (el) { return el.dataset.no; },
           },
           {
             id: 'sleeper',
             prompt: '选择所有现在有卧铺票的车次（一等卧、二等卧、硬卧、软卧等，不包括候补）。',
             all: true,
-            candidates: () => elementsFor((s) => s.sleeperAvailable),
-            accept: (el) => el.dataset.sleeperavailable === 'true',
-            answer: (el) => el.dataset.no,
+            candidates: function () { return elementsFor(function (s) { return hasBerthsOnSale(s); }); },
+            accept: function (el) { return el.dataset.sleeperavailable === 'true'; },
+            answer: function (el) { return el.dataset.no; },
           },
         ],
         mount(root) {
-          const filters = root.querySelector('#filters');
-          ['高铁/动车', '只看普通车', '只看复兴号', '从早到晚'].forEach((label) => {
-            const b = document.createElement('button');
-            b.className = 'filter';
-            b.textContent = label;
-            b.addEventListener('click', (e) => {
-              e.stopPropagation();
-              b.classList.toggle('on');
-            });
-            filters.appendChild(b);
-          });
+          renderDates();
+          renderStations();
+          renderChecks();
           render();
+          // The filters are the app's own state, not the task's: a train hidden by a
+          // filter simply is not on the screen, so it cannot be tapped either.
+          root.querySelector('#checks').addEventListener('click', function (event) {
+            var el = event.target;
+            while (el && el !== root) {
+              var key = el.getAttribute && el.getAttribute('data-filter');
+              if (key) {
+                filters[key] = !filters[key];
+                renderChecks();
+                render();
+                return;
+              }
+              el = el.parentNode;
+            }
+          });
         },
         reset() {
-          document.querySelectorAll('.train').forEach((el) => el.classList.remove('done'));
-          document.querySelectorAll('.filter.on').forEach((el) => el.classList.remove('on'));
+          document.querySelectorAll('.train').forEach(function (el) { el.classList.remove('done'); });
+          filters = { hsr: false, slow: false, fuxing: false, byDep: false };
+          renderChecks();
+          render();
         },
       });
     </script>
