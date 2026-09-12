@@ -151,11 +151,25 @@ export const lessonB: LessonMeta = {
           items: ['无座', '二等座', '一等座', '商务座'],
           // The workbook prints 无座（站着）; the answer is the class alone.
           optionLabels: { 无座: '（站着）' },
+          // The class photographs printed above the table, so the student picks the
+          // seat they can see. The blank still answers with the class name.
+          optionImages: {
+            无座: 'tblt-hsk4/u06/b3-g41-wuzuo.jpg',
+            二等座: 'tblt-hsk4/u06/b3-g41-erdengzuo.jpg',
+            一等座: 'tblt-hsk4/u06/b3-g41-yidengzuo.jpg',
+            商务座: 'tblt-hsk4/u06/b3-g41-shangwuzuo.jpg',
+          },
         },
         {
           id: 'k1275-seats',
           items: ['无座', '硬座', '硬卧', '软卧'],
           optionLabels: { 无座: '（站着）' },
+          optionImages: {
+            无座: 'tblt-hsk4/u06/b3-k1275-wuzuo.jpg',
+            硬座: 'tblt-hsk4/u06/b3-k1275-yingzuo.jpg',
+            硬卧: 'tblt-hsk4/u06/b3-k1275-yingwo.jpg',
+            软卧: 'tblt-hsk4/u06/b3-k1275-ruanwo.jpg',
+          },
         },
       ],
       answerKeyRaw: '② 商务座；③ 硬卧和软卧；④ 无座。',
