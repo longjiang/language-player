@@ -7,8 +7,8 @@
 - **Status**: draft
 - **Created**: 2026-09-11
 - **ROADMAP Phase**: Phase 5 (Content Features)
-- **Web ref**: `apps/web/src/app/[l1]/[l2]/textbook/` (new), `apps/web/src/components/tokenized-text.tsx`
-- **Mobile ref**: `apps/mobile/app/(tabs)/(reading)/textbook.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
+- **Web ref**: `apps/web/src/app/[l1]/[l2]/tasks/` (new), `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/app/docs/doc-sidebar.tsx` (TOC pattern)
+- **Mobile ref**: `apps/mobile/app/(tabs)/(interact)/tasks.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
 - **Source content**: `tmp/interactive-text/` (workbook PDF, answer key PDF, audio transcript PDF, 47 mp3)
 - **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
 
@@ -48,6 +48,16 @@ Consequently the feature is **not** 60 bespoke activity components. It is **two 
 - As a learner, I want my answers to survive closing the app, so I can stop mid-unit and resume.
 - As a learner, I want to see which blanks were right and wrong when I submit, so I can learn from the attempt.
 
+## Non-Goals
+
+Decided, not deferred — these are out of scope deliberately:
+
+- **Textbook performance does not feed SRS.** Completing tasks does not create review cards, and incorrect blanks are not auto-saved as words. This is a product decision, not a phasing one. `scoreTestResult` is reused only for its scoring shape.
+- **Exercise state is local only.** Answers, completion and attempt history live on the device (ADR-0044). There is no server-side exercise table, no sync, and no cross-device continuity — and none is planned here.
+- **No pagination.** Long reading passages (B ➎, E ➌) render as a single continuous scrolling block. The existing paginated reader (`apps/web/src/components/reader/paginated-reader.tsx`, SPEC-087) is **not** integrated, and its measuring-window contract is not a dependency of this feature.
+- **No free-form conversation production or scoring** (see Phasing).
+- **No authoring UI.** Content is authored as files in the repository and validated in CI; there is no CMS screen for it.
+
 ## Content Hierarchy and Identifiers
 
 Four levels, with stable, human-readable, sortable IDs:
@@ -62,7 +72,8 @@ book        tblt-hsk4                    Tasks for Life in China (HSK 4)
 - **Book ID**: short slug, e.g. `tblt-hsk4`.
 - **Unit**: zero-padded number, `u06`.
 - **Lesson**: single letter `A`–`E` (the workbook's own 六A–六E scheme).
-- **Task**: `t{n}` matching the workbook's circled numeral ➊ = `t1`.
+- **Task**: `t{n}` matching the workbook's task numeral ➊ = `t1`.
+- **Question**: within a task, the workbook's circled numerals ①②③ are question indices used to look answers up in the answer key. They are not lengths and not ids of anything else — a blank's id (`b1`) mirrors its question index.
 - **Blank**: `b{n}`, unique within a task; sub-items (e.g. `(2) ①`) are ordinary blanks.
 
 Canonical task key: `tblt-hsk4.u06.A.t4`.
@@ -172,10 +183,26 @@ A mock-app task references its app by id and declares no blank answers — the a
 1. **Every blank has a resolution.** Either an `answer`, or `kind: given`. The validator rejects a blank with neither.
 2. **`given` blanks are real.** The answer key deliberately omits blanks the workbook pre-fills (e.g. B ➊ prints `① a` and `② b` with no key entry). Modelled as `given` so the UI pre-fills them and the key parser does not report them missing.
 3. **`allowReuse` is per bank and defaults to `false`.** Do not assume each option is consumed once: in B ➊ the key reuses letter `a` for both ① and ⑤. It is a task-level fact, not a global rule.
-4. **`expectedLength`** defaults to `answer.length`. The workbook annotates some blanks with a small circled numeral that appears to indicate expected character count; that reading must be confirmed during authoring before any explicit hint value is trusted over the answer length.
+4. **`expectedLength` defaults to `answer.length`.**
+   This was originally read as being indicated by the small circled numerals the workbook prints above some blanks — **that reading was wrong.** Circled numerals (①②③) are **question indices**, matching the numbering in the answer key so a student can find the corresponding answer; they carry no length information. Blank ids align with them (`b1` ↔ ①) precisely because they share that indexing role.
+   The genuine length indicator is different and appears only in the dictation tasks (E ➊ / ➋), where the workbook prints one visible box per expected character. So `expectedLength` is set explicitly for dictation tasks and otherwise left to default to `answer.length`.
 5. **`accept[]`** lists additional correct surface forms (see Grading).
 6. **`sourcePage`** is mandatory where the task was transcribed from the workbook, so a reviewer can audit any task against the print original.
 7. **A `mockApp` stimulus carries no `data:` and no `blanks:`.** Its dataset, goals and expected answers live inside the app's HTML (see "The Mock App Stimulus"), and the validator cross-checks the answers the app declares against the task's expected answers.
+
+### Instructions
+
+Task instructions are **L2 text, rendered as tokenized text** — not plain strings. This is deliberate: instructions are the first thing a student reads, so they must carry ruby and must be tappable for a definition like any other L2 text.
+
+```yaml
+    instructions: 看看上面的信息，然后用给出的选项在（　）中填入合适的词。
+    instructionsL1: Look at the information above, then fill each blank with the right word from the list.
+```
+
+- The L2 instructions render through `TokenizedText`, so the student's phonetics/gloss settings apply as usual.
+- The **L1 translation renders as plain text directly below**, and only when translation is enabled. That is the per-L2 `display.translation` setting (`packages/shared/src/types.ts:1010`, per-L2 since 2026-09-11), not a textbook-specific toggle.
+- `instructionsL1` is authored, starting with English. Other L1 locales follow the existing docs translation path rather than being authored per locale.
+- Instructions live in the task, above the stimulus, in `TaskShell` — so every task type gets the same treatment.
 
 ## Inline Blanks Inside Tokenized Text
 
@@ -256,7 +283,7 @@ Reusable pure-TS helpers already in `packages/utils/src/srs-test-mode.ts` (platf
 | Cloze text derivation | `spellBlankText`, `spellSurfaceInContext` |
 | Character-count hint | spell-mode box sizing (`expectedLength`) |
 
-`scoreTestResult` is deliberately reused so a future "textbook results feed SRS" step maps onto ratings without inventing a second scoring scheme.
+`scoreTestResult` is reused for its scoring shape, not to connect textbook results to the review deck — **textbook performance does not feed SRS** (see Non-Goals).
 
 ## Authoring-Time Validation
 
@@ -289,31 +316,46 @@ Binary media does **not** go in the repository. The pilot unit alone is ~29 MB (
 
 The pattern to imitate is `packages/shared/src/sample-content/loaders.ts`, which keeps one module per language behind a `Record<ContentL2, () => Promise<{ default: SampleContent }>>` lazy loader map with a runtime completeness guard, so each entry is a separate chunk fetched on demand on web. Applied to textbooks the axis is the unit rather than the language: one module per unit, behind a loader map keyed by book and unit, so opening one unit does not download the whole book.
 
+## Navigation and Information Architecture
+
+The feature is reached from a **new top-level `Interact` category** in the app menu, containing a **Tasks** item. `Interact` sits alongside the existing `Media`, `Reading` and `Vocab` groups (`apps/web/src/components/layout/header.tsx:25–49`).
+
+Screens:
+
+1. **Textbook picker** — the entry screen. Only one textbook exists today, so this is a single-item list rather than a real choice; it exists now so a second book is a content change, not a navigation change.
+2. **Task TOC** — units → lessons → tasks. This mirrors the **docs UI**: `apps/web/src/app/docs/doc-sidebar.tsx` renders collapsible categories that are expanded when they contain the active child (`useState(!!hasActiveChild)`), with a chevron per group. Units and lessons are collapsible in exactly that way.
+3. **Task view** — the same TOC remains in the sidebar with the **current lesson expanded**; the selected task renders in the main pane. This is the docs layout, not a separate reading mode.
+
+So units and lessons are the two collapsible levels, and the task list is the leaf.
+
 ## Routes
 
 ### Web
 
 ```
-apps/web/src/app/[l1]/[l2]/textbook/
-├── layout.tsx                      # textbook chrome (lesson nav, progress)
-├── page.tsx                        # book → unit → lesson → task picker
-└── [unitId]/[lessonId]/[taskId]/page.tsx
+apps/web/src/app/[l1]/[l2]/tasks/
+├── layout.tsx                                    # TOC sidebar (docs-style) + main pane
+├── page.tsx                                      # textbook picker
+└── [bookId]/[unitId]/[lessonId]/[taskId]/page.tsx
 ```
 
+The route is `tasks` to match the menu item. It is a deliberate, small naming choice — if the menu item is renamed, the path should be renamed with it.
+
 - `[l1]`/`[l2]` are validated by `apps/web/src/app/[l1]/[l2]/layout.tsx:24–29`.
-- Register in the `Reading` group in `apps/web/src/components/layout/header.tsx:25–49`, with a new `title.textbook` key.
-- Auth gating: add `textbook` to `AUTH_REQUIRED_SEGMENTS` in `apps/web/src/proxy.ts` if the pilot is Pro-only (ADR-0034); otherwise add it to `GUEST_NAV_FREE_SEGMENTS`.
-- Note: the `/learn/:rest*` and `/learning-path` patterns are currently redirect targets away from the web app (`apps/web/src/lib/classic-route-redirect.ts:296,356–357`), so the textbook introduces its own `/textbook` path and leaves those redirects untouched.
+- Add an `Interact` group with a `title.tasks` link in `apps/web/src/components/layout/header.tsx:25–49` (new CSV keys: `title.interact`, `title.tasks`).
+- Auth gating: add `tasks` to `AUTH_REQUIRED_SEGMENTS` in `apps/web/src/proxy.ts` if the pilot is Pro-only (ADR-0034); otherwise add it to `GUEST_NAV_FREE_SEGMENTS`.
+- Note: the `/learn/:rest*` and `/learning-path` patterns are currently redirect targets away from the web app (`apps/web/src/lib/classic-route-redirect.ts:296,356–357`), so this feature introduces its own `tasks` path and leaves those redirects untouched.
 
 ### Mobile
 
 ```
-apps/mobile/app/(tabs)/(reading)/textbook.tsx
-apps/mobile/app/(tabs)/(reading)/textbook/[unitId]/[lessonId]/[taskId].tsx
+apps/mobile/app/(tabs)/(interact)/_layout.tsx
+apps/mobile/app/(tabs)/(interact)/tasks.tsx                       # textbook picker + TOC
+apps/mobile/app/(tabs)/(interact)/tasks/[unitId]/[lessonId]/[taskId].tsx
 ```
 
-- Register each screen in `apps/mobile/app/(tabs)/(reading)/_layout.tsx`.
-- Add the entry to `apps/mobile/components/layout/NavBar.tsx` and `HamburgerDrawer.tsx`.
+- Register each screen in the group's `_layout.tsx` and mirror the `Interact` group in `apps/mobile/components/layout/NavBar.tsx` and `HamburgerDrawer.tsx` (the drawer groups are the analogue of the web header groups).
+- Whether `Interact` also becomes a fifth bottom tab or stays a drawer-only group is a mobile UI decision, not an architectural one — see Open Questions.
 
 ### Initial L2 scope
 
@@ -335,8 +377,9 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 
 | Component | Responsibility |
 |---|---|
-| `TextbookShell` | Book/unit/lesson navigation and task picker |
-| `TaskShell` | Task number, type icon, audio, instructions, submit/reveal, result banner — the consistency anchor |
+| `TextbookPicker` | Entry screen: choose a textbook (single item today) |
+| `TaskToc` | Docs-style collapsible TOC of units → lessons → tasks; current lesson expanded |
+| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ L1 translation when enabled), submit/reveal, result banner — the consistency anchor |
 | `AudioPlayer` | Task audio: play/pause, scrub, replay, per-track selection |
 | `BlankField` | The inline blank: `given` / `choose` / `type`, sized by `expectedLength` |
 | `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
@@ -471,14 +514,13 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## Data Flow
 
-1. Student opens `/[l1]/[l2]/textbook` → book index loads (units → lessons → tasks).
+1. Student opens **Interact → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
 2. Student picks a task → task JSON loads and asset URLs resolve. `TaskShell` requests tokens for the task's passages (`/lemmatize-normalized/batch`) and holds the skeleton until they arrive.
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText` with `blank` format ranges. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
    - **Mock-app tasks** — the app owns its own state; `TaskShell` renders goal progress from the app's `progress` messages and the host chrome (help mode, hint) forwards over the bridge.
-5. The attempt resolves — by explicit submit for blank tasks, or by the app reporting `complete` for goal-based ones. `gradeTask` runs locally wherever there are blanks; the app's declared answers cover the goal case. Correct/incorrect is shown and the attempt is persisted (ADR-0044).
-6. Optional (not in this spec): incorrect blanks feed the SRS deck.
+5. The attempt resolves — by explicit submit for blank tasks, or by the app reporting `complete` for goal-based ones. `gradeTask` runs locally wherever there are blanks; the app's declared answers cover the goal case. Correct/incorrect is shown and the attempt is persisted locally (ADR-0044).
 
 ## States
 
@@ -489,11 +531,11 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
 - **Autoplay blocked**: audio requires an explicit tap; never autoplay.
-- **Edge cases**: audio-less task with `type: listening` (validator flag); a `choose` blank whose bank has one remaining option; `given` blanks excluded from scoring; a task with zero blanks (pure `freeWrite`); a `mockApp` with no goals (pure stimulus — showing a submit/completion affordance would be wrong); a `mockApp` whose bridge major version the frame cannot speak (refuse, fall back to the image); very long passages (chunked rendering / pagination reuse).
+- **Edge cases**: audio-less task with `type: listening` (validator flag); a `choose` blank whose bank has one remaining option; `given` blanks excluded from scoring; a task with zero blanks (pure `freeWrite`); a `mockApp` with no goals (pure stimulus — showing a submit/completion affordance would be wrong); a `mockApp` whose bridge major version the frame cannot speak (refuse, fall back to the image); a very long passage (continuous scroll — no pagination, see Non-Goals).
 
 ## Phasing
 
-- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section); answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
+- **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section) and **L2 tokenized instructions** with the optional L1 translation; the `Interact` → `Tasks` nav entry plus `TextbookPicker` and `TaskToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
 - **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), then `MockAppFrame` + `mock-app-runtime.js` + a "hello world" mock app to prove the per-app floor (B ➍).
 - **Phase 3 — writing lesson.** `DictationField` (wrapping `SpellCharInput`), `FreeWrite`, note-capture.
@@ -508,14 +550,24 @@ Audio is a from-scratch build on both platforms: there is no audio-file playback
 - **ADR-0041** — the `notes` inline seam this feature's `blank` seam mirrors.
 - **ADR-0045** — mock apps as sandboxed, self-contained HTML behind a frozen bridge; supplies the bridge contract, the sandbox and hosting rules, and the design-token carve-out.
 - **ADR-0003** — UI not shared between web and mobile.
-- **SPEC-066** — SRS review; source of the reusable pure grading/question helpers.
-- **ADR-0034** — Pro gating and the SRS daily cap, if textbook progress feeds review.
+- **SPEC-066** — SRS review; source of the reusable pure grading/question helpers. Note the reuse is one-directional: textbook results do not feed the deck (see Non-Goals).
+- **ADR-0034** — Pro gating, if the pilot textbook is Pro-only.
+
+## Resolved Decisions
+
+All six questions this spec opened with were settled on 2026-09-11. Recorded here so they are not re-litigated:
+
+| Question | Decision | Specified in |
+|---|---|---|
+| Instructions language | L2, rendered as **tokenized text**; L1 translation below, gated by the per-L2 `display.translation` setting | Instructions |
+| Does textbook performance feed SRS? | **No** — a product decision, not phasing | Non-Goals, Grading |
+| Attempt recording scope | **Local only** for now; no server-side exercise table or sync | Non-Goals, ADR-0044 |
+| Multi-book catalogue | Reached from a new **`Interact` > `Tasks`** menu category; pick a textbook, then a docs-style collapsible TOC of units → lessons → tasks, side-by-side with the task | Navigation and Information Architecture |
+| `expectedLength` semantics | Circled numerals are **question indices** for answer-key lookup, **not** length hints. `expectedLength` defaults to `answer.length` and is set explicitly only for dictation (E ➊/➋), where the workbook prints one box per character | Schema rules #4 |
+| Pagination | **Not needed** — long passages render as one scrolling block | Non-Goals |
 
 ## Open Questions
 
-1. **Instructions language.** Workbook instructions are L2 (Chinese). Should UI-level instructions be translated per L1 locale (via `translations.csv`), or remain L2 with the L2 text carrying ruby for support? Content-authored instructions are currently modelled as L2-only.
-2. **Does textbook performance feed SRS?** Incorrect blanks could become saved words or review cards. This is attractive but is deliberately not in this spec; it needs its own decision on attribution and on the daily-cap interaction (ADR-0034).
-3. **Attempt recording scope.** Answer-level history is greenfield — no answer/attempt/exercise table exists anywhere, and the only stored artefact today is a derived FSRS rating. ADR-0044 proposes the local-first model; whether answers ever sync server-side is left open.
-4. **Multi-book catalogue.** The content model supports many books; the picker, level targeting (via the existing `SCALES` registry), and licensing are not addressed here.
-5. **`expectedLength` semantics.** Confirm whether the workbook's small circled numerals above blanks are character-count hints before trusting them over `answer.length`.
-6. **Pagination.** Long reading passages (B ➎, E ➌) may need the existing paginated reader. Whether to integrate it in this spec or defer is unresolved.
+1. **Mobile shell for `Interact`.** Whether the mobile `Interact` category becomes a fifth bottom tab or stays a drawer-only group is a UI decision, not architectural (`apps/mobile/components/layout/NavBar.tsx`, `HamburgerDrawer.tsx`).
+2. **Mock app accessibility.** ADR-0045 leaves keyboard and assistive-technology behaviour unspecified for a mock app rendered inside a frame. It will have to be specified per app rather than inherited from the host.
+3. **Second-textbook picker behaviour.** The picker is currently a single-item screen. Its shape once a second book exists (level grouping via the existing `SCALES` registry, ordering, licensing) is unaddressed.

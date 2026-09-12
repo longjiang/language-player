@@ -1,4 +1,4 @@
-# ADR-0044 — Textbook exercise state is local-first, with an append-only attempt log in SRS's shape
+# ADR-0044 — Textbook exercise state is local-only, with an append-only attempt log in SRS's shape
 
 **Status:** Accepted (2026-09-11)
 
@@ -26,13 +26,15 @@ Two constraints shape the alternatives:
 
 ## Decision
 
-**Persist textbook exercise state locally first, in an append-only log modelled on `user_srs_review_log`, and defer any server-side table and sync.**
+**Persist textbook exercise state locally and only locally: an append-only log modelled on `user_srs_review_log`. No server-side table, endpoint or sync.**
+
+**Scope (2026-09-11): local only.** This is a decision, not a first phase. There is no plan to sync textbook answers server-side, so the append-only shape below is chosen for correctness and undo within a device, not as a stepping stone to a sync.
 
 1. **Responses are stored locally, keyed by canonical task and blank id** — `{ taskId, blankId }` — in a dedicated store separate from SRS. Web uses IndexedDB/localStorage; mobile uses AsyncStorage, matching the existing reading-progress precedent. Resume, completion, and result display all read from this store.
 2. **Attempts are recorded as an append-only log with void semantics**, mirroring `user_srs_review_log`: each entry carries an id, the task and blank, the submitted response, whether it was correct, and a timestamp; re-answering appends a new entry and **voids** the prior one rather than mutating it. This makes "try again" lossless and keeps the door open for a future server sync and analytics without a schema rewrite.
 3. **No new server table, endpoint, or sync entity in this spec.** Textbook responses do not join `SrsProgressStore`, the outbox, or the `/srs` routes. If server persistence is wanted later, it reuses the ADR-0040 outbox pattern and the same append-only + void + idempotency-key shape, and that is a separate decision.
 4. **The store is versioned against content.** Each task carries a content version; responses are stamped with it, and a response whose version no longer matches is treated as stale and dropped. Re-authoring a task must therefore bump its version — otherwise a student's saved answer silently becomes wrong or unmatchable.
-5. **Textbook progress does not feed SRS in this spec.** Incorrect blanks are not auto-added to the review deck. Routing wrong answers into SRS is attractive, but it needs its own decision about attribution (which word, which context) and about interaction with the free-tier daily cap.
+5. **Textbook progress does not feed SRS.** Incorrect blanks are not auto-added to the review deck, and completing tasks creates no review cards. This is a **product decision (2026-09-11), not a deferral** — it is recorded in SPEC-095's Non-Goals so it is not reopened as an obvious win. The two systems stay separate: SRS schedules words, the textbook records answers to authored tasks.
 6. **Pro gating, if applied, is content access — not a daily cap.** ADR-0034's cap exists to bound LLM cost per reviewed word; textbook tasks have pre-authored answers and cost nothing per attempt, so a cap would be a different mechanism for a different purpose and must not be borrowed by analogy.
 
 ## Consequences
