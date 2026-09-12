@@ -4,6 +4,7 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
 import { AudioPlayer } from './AudioPlayer';
@@ -27,13 +28,19 @@ import { FreeWrite, NoteCards } from './FreeWrite';
 export function TaskShell({ children }: { children?: React.ReactNode }) {
   const ctx = useTextbookTask()!;
   const { task, book } = ctx;
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const { getL2 } = useSettingsContext();
   const t = useT();
 
   // Per-L2 display setting, shared with the readers — not a textbook-specific
-  // toggle.
+  // toggle. When on, the L2 instructions get a machine translation underneath.
   const showTranslation = getL2(l2Lang.code).display.translation;
+  const instructionTranslation = useInstructionTranslation(
+    task.instructions,
+    l1Lang.code,
+    l2Lang.code,
+    showTranslation,
+  );
 
   const submitted = useSyncExternalStore(
     ctx.store.subscribe,
@@ -65,8 +72,8 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           {/* Instructions are L2 text rendered through TokenizedText, so they
               carry ruby and are tappable like any other L2 text. */}
           <TokenizedText text={task.instructions} l2Code={l2Lang.code} />
-          {showTranslation && task.instructionsL1 && (
-            <Text className="mt-1 text-sm text-muted-foreground">{task.instructionsL1}</Text>
+          {instructionTranslation && (
+            <Text className="mt-1 text-sm text-muted-foreground">{instructionTranslation}</Text>
           )}
         </View>
       </View>

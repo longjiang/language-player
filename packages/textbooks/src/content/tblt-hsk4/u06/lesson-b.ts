@@ -19,8 +19,6 @@ export const lessonB: LessonMeta = {
       sourcePage: 6,
       instructions:
         '看下面的表格列出的不同车次，然后在“车型”列的空白处填入适当的选项。注意车次例子的第一个字母。',
-      instructionsL1:
-        'Look at the train numbers in the table, then fill each blank in the 车型 column with the right option. Note the first letter of each example train number.',
       body: [
         {
           kind: 'dataTable',
@@ -70,8 +68,6 @@ export const lessonB: LessonMeta = {
       type: 'reading',
       sourcePage: 7,
       instructions: '看看上面的信息，然后用给出的选项在（　）中填入合适的词。',
-      instructionsL1:
-        'Look at the information above, then fill each blank with the right word from the list.',
       body: [
         {
           kind: 'dataTable',
@@ -110,8 +106,6 @@ export const lessonB: LessonMeta = {
       sourcePage: 9,
       instructions:
         '这个周末，你想从北京坐高铁去杭州玩。参照下面“铁路12306”APP 的截图，回答问题。',
-      instructionsL1:
-        'This weekend you want to take the high-speed train from Beijing to Hangzhou. Look at the 12306 app screen and answer the questions.',
       body: [
         {
           kind: 'mockApp',

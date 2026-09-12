@@ -93,6 +93,8 @@ export {
 export type { PendingSavedWordOp, SavedWordRowApi } from './saved-words-sync';
 export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine, parseNotes, extractNoteMarkers } from './subs-csv';
 export { extractBlankMarkers, blankIdsIn, hasBlankMarkers, extractInlineMarkers } from './blank-markers';
+export { clearTranslationCache, translateTexts } from './translate-client';
+export type { TranslateRequest } from './translate-client';
 export type { BlankMarker, ExtractBlanksResult, InlineMarkersResult } from './blank-markers';
 export { segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
 export {

@@ -20,8 +20,6 @@ export const lessonD: LessonMeta = {
       type: 'writing',
       sourcePage: 19,
       instructions: '讲话的人主要都说了些什么？按照下面列出的话题，把讲话内容写成笔记。',
-      instructionsL1:
-        'What did the speaker mainly talk about? Take notes on the topics listed below.',
       audio: [{ key: 'tblt-hsk4/u06/六D ➍.mp3' }],
       body: [
         {

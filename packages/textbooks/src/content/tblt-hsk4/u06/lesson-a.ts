@@ -19,8 +19,6 @@ export const lessonA: LessonMeta = {
       sourcePage: 2,
       instructions:
         '一些朋友用微信发来了一些语音消息，推荐我们去中国不同的地方旅游。请听一听，然后在城市旁边的（ ）中写下对应的景点。',
-      instructionsL1:
-        'Some friends sent voice messages recommending places to visit in China. Listen, then write the matching scenic spot in the brackets beside each city.',
       // The nine cities the recording actually names. 拉萨 has no spoken item —
       // it is answered by elimination (and by geography: 布达拉宫 is in Lhasa),
       // which is how the workbook intends it.
@@ -97,8 +95,6 @@ export const lessonA: LessonMeta = {
       sourcePage: 3,
       instructions:
         '听一听在一些乘坐公共交通工具时经常听到的广播。这些广播说了什么？请选择最合适的图片。',
-      instructionsL1:
-        'Listen to some announcements you often hear on public transport. What do they say? Choose the most suitable picture.',
       // ① is pre-filled with A in the workbook, which is why the answer key
       // starts at ②.
       audio: [
@@ -143,8 +139,6 @@ export const lessonA: LessonMeta = {
       type: 'listening',
       sourcePage: 4,
       instructions: '几个朋友介绍自己都去了哪里，怎么去的。听录音，完成下面的表格。',
-      instructionsL1:
-        'Several friends say where they went and how they got there. Listen and complete the table.',
       audio: [
         { key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷' },
         { key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3', label: '金敏俊' },

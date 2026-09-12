@@ -14,6 +14,7 @@ import { DialoguePassage } from './dialogue-passage';
 import { NumberedBlanks } from './numbered-blanks';
 import { ImageMap } from './image-map';
 import { MockAppFrame } from './mock-app-frame';
+import { useInstructionTranslation } from './use-instruction-translation';
 import { Dictation } from './dictation-field';
 import { FreeWrite, NoteCards } from './free-write';
 
@@ -28,13 +29,19 @@ import { FreeWrite, NoteCards } from './free-write';
 export function TaskShell({ children }: { children?: React.ReactNode }) {
   const ctx = useTextbookTask()!;
   const { task, book } = ctx;
-  const { l2 } = useLanguage();
+  const { l1, l2 } = useLanguage();
   const { getL2 } = useSettingsContext();
   const t = useT();
 
   // Per-L2 display setting, shared with the readers — not a textbook-specific
-  // toggle.
+  // toggle. When on, the L2 instructions get a machine translation underneath.
   const showTranslation = getL2(l2.code).display.translation;
+  const instructionTranslation = useInstructionTranslation(
+    task.instructions,
+    l1.code,
+    l2.code,
+    showTranslation,
+  );
 
   const submitted = useSyncExternalStore(
     ctx.store.subscribe,
@@ -70,8 +77,8 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           <div className="text-base text-foreground">
             <TokenizedText text={task.instructions} l2Code={l2.code} />
           </div>
-          {showTranslation && task.instructionsL1 && (
-            <p className="mt-1 text-sm text-muted-foreground">{task.instructionsL1}</p>
+          {instructionTranslation && (
+            <p className="mt-1 text-sm text-muted-foreground">{instructionTranslation}</p>
           )}
         </div>
       </header>
