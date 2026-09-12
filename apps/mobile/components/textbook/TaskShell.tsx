@@ -11,6 +11,8 @@ import { PictureSet } from './PictureSet';
 import { DataTable } from './DataTable';
 import { DialoguePassage } from './DialoguePassage';
 import { NumberedBlanks } from './NumberedBlanks';
+import { ImageMap } from './ImageMap';
+import { MockAppFrame } from './MockAppFrame';
 
 /**
  * The frame every task renders inside.
@@ -144,6 +146,10 @@ export function TaskStimulus() {
             return <PictureSet key={i} set={stimulus} />;
           case 'numberedBlanks':
             return <NumberedBlanks key={i} ids={stimulus.ids} />;
+          case 'imageMap':
+            return <ImageMap key={i} map={stimulus} />;
+          case 'mockApp':
+            return <MockAppFrame key={i} stimulus={stimulus} />;
           default:
             return null;
         }

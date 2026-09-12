@@ -17,7 +17,18 @@ export type TaskType = 'listening' | 'reading' | 'conversation' | 'writing';
  * `given` is a worked example the workbook pre-fills; the printed answer key
  * deliberately omits those, so they must be modelled rather than inferred.
  */
-export type BlankKind = 'given' | 'choose' | 'type';
+export type BlankKind =
+  | 'given'
+  | 'choose'
+  | 'type'
+  /**
+   * Answered *inside* a mock app, not by a blank widget.
+   *
+   * Its `answer`/`accept` are the expected values, so the mock app's reported
+   * answer can be graded and cross-checked against the printed key like any
+   * other blank. No `{{bN}}` marker or blank widget may reference it.
+   */
+  | 'goal';
 
 /** A bank of options that `choose` blanks draw from. */
 export interface Bank {
@@ -85,6 +96,13 @@ export interface BlankSpec {
    * so both of that row's blanks cite item 2.
    */
   keyIndex?: number;
+  /**
+   * Which label-keyed answer-key item this blank is checked against.
+   *
+   * A ➊'s key names the blanks rather than numbering them
+   * (`北京：C；成都：D；…`), because the blanks sit on a map next to city names.
+   */
+  keyLabel?: string;
 }
 
 /** One labelled picture option in a `pictureSet`. */
@@ -150,12 +168,66 @@ export interface PassageStimulus {
   text: string;
 }
 
+/** One interactive slot on an image, positioned as a percentage of the image. */
+export interface ImageMapPin {
+  /** The blank rendered at this position. */
+  blankId: string;
+  /** Horizontal position, 0–100 (% of image width). */
+  x: number;
+  /** Vertical position, 0–100 (% of image height). */
+  y: number;
+}
+
+/**
+ * An image with positioned blanks.
+ *
+ * The image itself carries the printed labels (A ➊'s map already shows each city
+ * name and its `( )`), so a pin only places the interactive blank over that slot
+ * rather than duplicating the text.
+ */
+export interface ImageMapStimulus {
+  kind: 'imageMap';
+  id?: string;
+  /** Relative asset key. */
+  image: string;
+  /** Displayed above the map, e.g. the picture bank the answers come from. */
+  alt?: string;
+  pins: ImageMapPin[];
+}
+
+/** Ties one mock-app goal to the blank holding its expected answer. */
+export interface MockAppGoalLink {
+  /** Goal id as the app declares it. */
+  id: string;
+  /** The `goal` blank holding the expected answer. */
+  blankId: string;
+  prompt?: string;
+}
+
+/**
+ * A self-contained HTML mock app in a sandboxed frame (ADR-0045).
+ *
+ * The host does not know the app's UI. It forwards help mode, hint and reset over
+ * the bridge, and grades the answers the app reports against the linked `goal`
+ * blanks.
+ */
+export interface MockAppStimulus {
+  kind: 'mockApp';
+  /** App id; its HTML lives at `<MOCK_APP_BASE_URL>/<app>/index.html`. */
+  app: string;
+  /** Workbook screenshot shown if the frame cannot load. */
+  fallbackImage?: string;
+  goals: MockAppGoalLink[];
+}
+
 export type Stimulus =
   | PassageStimulus
   | DialogueStimulus
   | PictureSetStimulus
   | DataTableStimulus
-  | NumberedBlanksStimulus;
+  | NumberedBlanksStimulus
+  | ImageMapStimulus
+  | MockAppStimulus;
 
 /** Audio track attached to a task. */
 export interface AudioTrack {
@@ -250,8 +322,13 @@ export function textsIn(task: Task): string[] {
       case 'pictureSet':
         for (const item of stimulus.items) if (item.label) out.push(item.label);
         break;
+      case 'mockApp':
+        // The app's own text is tokenized inside the frame, not from here.
+        break;
       case 'numberedBlanks':
-        // No text of its own: the blanks render from their specs.
+      case 'imageMap':
+        // No text of their own: `numberedBlanks` renders blanks from their
+        // specs, and an imageMap's labels are baked into the image.
         break;
     }
   }

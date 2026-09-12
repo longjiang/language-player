@@ -81,6 +81,7 @@
         "grant_admin": "Accorder les droits admin",
         "grant_subscription": "Accorder un abonnement",
         "hide_sidebar": "Masquer la barre latérale",
+        "hint": "Indice",
         "import": "Importer",
         "import_files": "Importer des fichiers",
         "inflection": "Flexion",

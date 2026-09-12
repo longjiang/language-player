@@ -13,6 +13,84 @@ export const lessonA: LessonMeta = {
   canDo: '能听懂日常交谈中关于交通出行的问题和介绍。',
   tasks: [
     {
+      id: 'tblt-hsk4.u06.A.t1',
+      number: '➊',
+      type: 'listening',
+      sourcePage: 2,
+      instructions:
+        '一些朋友用微信发来了一些语音消息，推荐我们去中国不同的地方旅游。请听一听，然后在城市旁边的（ ）中写下对应的景点。',
+      instructionsL1:
+        'Some friends sent voice messages recommending places to visit in China. Listen, then write the matching scenic spot in the brackets beside each city.',
+      // The nine cities the recording actually names. 拉萨 has no spoken item —
+      // it is answered by elimination (and by geography: 布达拉宫 is in Lhasa),
+      // which is how the workbook intends it.
+      audio: [
+        { key: 'tblt-hsk4/u06/六A ➊ 上海.mp3', label: '上海' },
+        { key: 'tblt-hsk4/u06/六A ➊ 北京.mp3', label: '北京' },
+        { key: 'tblt-hsk4/u06/六A ➊ 哈尔滨.mp3', label: '哈尔滨' },
+        { key: 'tblt-hsk4/u06/六A ➊ 成都.mp3', label: '成都' },
+        { key: 'tblt-hsk4/u06/六A ➊ 新疆.mp3', label: '吐鲁番' },
+        { key: 'tblt-hsk4/u06/六A ➊ 杭州.mp3', label: '杭州' },
+        { key: 'tblt-hsk4/u06/六A ➊ 桂林.mp3', label: '桂林' },
+        { key: 'tblt-hsk4/u06/六A ➊ 苏州.mp3', label: '苏州' },
+        { key: 'tblt-hsk4/u06/六A ➊ 西安.mp3', label: '西安' },
+      ],
+      body: [
+        {
+          kind: 'imageMap',
+          id: 't1-map',
+          image: 'tblt-hsk4/u06/a1-map.png',
+          alt: '中国地图',
+          // Positions are percentages of the image, placed over the printed
+          // "( )" beside each city name.
+          pins: [
+            { blankId: 'b1', x: 37.5, y: 18.0 }, // 吐鲁番
+            { blankId: 'b2', x: 78.1, y: 20.5 }, // 哈尔滨
+            { blankId: 'b3', x: 46.9, y: 32.0 }, // 西安 (given)
+            { blankId: 'b4', x: 78.1, y: 43.0 }, // 北京
+            { blankId: 'b5', x: 76.9, y: 53.5 }, // 苏州
+            { blankId: 'b6', x: 81.3, y: 62.0 }, // 上海
+            { blankId: 'b7', x: 84.4, y: 73.0 }, // 杭州
+            { blankId: 'b8', x: 28.1, y: 85.0 }, // 拉萨
+            { blankId: 'b9', x: 38.8, y: 93.0 }, // 成都
+            { blankId: 'b10', x: 65.6, y: 84.5 }, // 桂林
+          ],
+        },
+        {
+          kind: 'pictureSet',
+          id: 'sights',
+          items: [
+            { letter: 'A', label: '兵马俑', image: 'tblt-hsk4/u06/a1-sight-a.png' },
+            { letter: 'B', label: '葡萄', image: 'tblt-hsk4/u06/a1-sight-b.png' },
+            { letter: 'C', label: '长城', image: 'tblt-hsk4/u06/a1-sight-c.png' },
+            { letter: 'D', label: '大熊猫', image: 'tblt-hsk4/u06/a1-sight-d.png' },
+            { letter: 'E', label: '园林', image: 'tblt-hsk4/u06/a1-sight-e.png' },
+            { letter: 'F', label: '西湖', image: 'tblt-hsk4/u06/a1-sight-f.png' },
+            { letter: 'G', label: '冰雕', image: 'tblt-hsk4/u06/a1-sight-g.png' },
+            { letter: 'H', label: '山水', image: 'tblt-hsk4/u06/a1-sight-h.png' },
+            { letter: 'I', label: '电视塔', image: 'tblt-hsk4/u06/a1-sight-i.png' },
+            { letter: 'J', label: '布达拉宫', image: 'tblt-hsk4/u06/a1-sight-j.png' },
+          ],
+        },
+      ],
+      blanks: {
+        b1: { id: 'b1', kind: 'choose', answer: 'B', optionSet: 'sights', keyLabel: '吐鲁番' },
+        b2: { id: 'b2', kind: 'choose', answer: 'G', optionSet: 'sights', keyLabel: '哈尔滨' },
+        // 西安 is pre-filled with A in the workbook, which is why the key omits it.
+        b3: { id: 'b3', kind: 'given', answer: 'A', optionSet: 'sights' },
+        b4: { id: 'b4', kind: 'choose', answer: 'C', optionSet: 'sights', keyLabel: '北京' },
+        b5: { id: 'b5', kind: 'choose', answer: 'E', optionSet: 'sights', keyLabel: '苏州' },
+        b6: { id: 'b6', kind: 'choose', answer: 'I', optionSet: 'sights', keyLabel: '上海' },
+        b7: { id: 'b7', kind: 'choose', answer: 'F', optionSet: 'sights', keyLabel: '杭州' },
+        b8: { id: 'b8', kind: 'choose', answer: 'J', optionSet: 'sights', keyLabel: '拉萨' },
+        b9: { id: 'b9', kind: 'choose', answer: 'D', optionSet: 'sights', keyLabel: '成都' },
+        b10: { id: 'b10', kind: 'choose', answer: 'H', optionSet: 'sights', keyLabel: '桂林' },
+      },
+      // Label-keyed: the blanks sit beside city names, so the key names them.
+      answerKeyRaw:
+        '北京：C；成都：D；吐鲁番：B；拉萨：J；上海：I；杭州：F；苏州：E；哈尔滨：G；桂林：H。',
+    },
+    {
       id: 'tblt-hsk4.u06.A.t2',
       number: '➋',
       type: 'listening',

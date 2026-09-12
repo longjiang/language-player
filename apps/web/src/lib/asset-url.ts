@@ -21,3 +21,14 @@ const LOCAL_DEFAULT = '/textbook-assets';
 /** The base URL textbook media is resolved against. */
 export const ASSET_BASE_URL: string =
   (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_ASSET_URL) || LOCAL_DEFAULT;
+
+/**
+ * Base URL the mock app HTML is served from (SPEC-095, ADR-0045).
+ *
+ * Mock apps are code, not media, so they are NOT on the asset host: they live in
+ * this app's `public/mock-apps/` and are served same-origin, which keeps them
+ * reviewable in git and avoids a cross-origin surface. Only the frame's sandbox
+ * keeps them away from the host document.
+ */
+export const MOCK_APP_BASE_URL: string =
+  (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_MOCK_APP_URL) || '/mock-apps';

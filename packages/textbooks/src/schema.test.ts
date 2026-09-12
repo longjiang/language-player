@@ -160,6 +160,10 @@ describe('asset manifest', () => {
         if (stimulus.kind === 'pictureSet') {
           for (const item of stimulus.items) if (item.image) referenced.add(item.image);
         }
+        if (stimulus.kind === 'imageMap' && stimulus.image) referenced.add(stimulus.image);
+        if (stimulus.kind === 'mockApp' && stimulus.fallbackImage) {
+          referenced.add(stimulus.fallbackImage);
+        }
       }
     }
     const unused = TBLT_HSK4_ASSET_KEYS.filter((key) => !referenced.has(key));
@@ -244,5 +248,100 @@ describe('picture sets and shared key items', () => {
     });
     const warnings = validateTask(t).filter((i) => i.level === 'warning').map((i) => i.message);
     expect(warnings.join()).toContain('never referenced by a blank');
+  });
+});
+
+describe('mock app goals', () => {
+  const app = (over: Partial<Task> = {}): Task =>
+    base({
+      body: [
+        {
+          kind: 'mockApp',
+          app: 'railway-12306',
+          fallbackImage: 'x/fallback.png',
+          goals: [
+            { id: 'fastest', blankId: 'b1' },
+            { id: 'cheapest', blankId: 'b2' },
+          ],
+        },
+      ],
+      blanks: {
+        b1: { id: 'b1', kind: 'goal', answer: 'G49' },
+        b2: { id: 'b2', kind: 'goal', answer: 'K1275' },
+      },
+      answerKeyRaw: '① G49; ② K1275。',
+      ...over,
+    });
+
+  it('accepts goals linked to goal blanks', () => {
+    expect(errorsOf(validateTask(app()))).toEqual([]);
+  });
+
+  it('rejects a goal linking a blank that is not a goal blank', () => {
+    const t = app({
+      blanks: {
+        b1: { id: 'b1', kind: 'goal', answer: 'G49' },
+        b2: { id: 'b2', kind: 'type', answer: 'K1275' },
+      },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('must reference a goal or given blank');
+  });
+
+  it('allows a goal to link a worked example, which is demonstrated not scored', () => {
+    // The 12306 app naturally answers all six questions, but ① is pre-filled in
+    // the workbook — `given` already means exactly that.
+    const t = app({
+      blanks: {
+        b1: { id: 'b1', kind: 'given', answer: 'G49' },
+        b2: { id: 'b2', kind: 'goal', answer: 'K1275' },
+      },
+    });
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+
+  it('rejects a goal blank nothing links', () => {
+    const t = app({
+      body: [{ kind: 'mockApp', app: 'x', goals: [{ id: 'a', blankId: 'b1' }] }],
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('is not linked from any mockApp goal');
+  });
+
+  it('rejects a duplicate goal id', () => {
+    const t = app({
+      body: [
+        {
+          kind: 'mockApp',
+          app: 'x',
+          goals: [
+            { id: 'a', blankId: 'b1' },
+            { id: 'a', blankId: 'b2' },
+          ],
+        },
+      ],
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('declares goal "a" twice');
+  });
+
+  it('rejects a goal blank that draws from a bank', () => {
+    const t = app({
+      blanks: {
+        b1: { id: 'b1', kind: 'goal', answer: 'G49', bank: 'w1' },
+        b2: { id: 'b2', kind: 'goal', answer: 'K1275' },
+      },
+      banks: [{ id: 'w1', items: ['G49'] }],
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('cannot draw from a bank');
+  });
+
+  it('checks every accepted answer against the key, not only the primary one', () => {
+    // A goal satisfied by any of several trains must not accept a train the
+    // printed key does not list.
+    const t = app({
+      blanks: {
+        b1: { id: 'b1', kind: 'goal', answer: 'G49', accept: ['G999'] },
+        b2: { id: 'b2', kind: 'goal', answer: 'K1275' },
+      },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('"G999" disagrees with the key');
   });
 });

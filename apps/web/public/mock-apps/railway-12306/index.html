@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>铁路12306</title>
+    <style>
+      /* Diegetic mock branding — deliberately not LP design tokens (ADR-0045). */
+      :root { color-scheme: light; }
+      body { margin: 0; font: 14px/1.5 -apple-system, "PingFang SC", sans-serif; background: #e8eef5; }
+      #app { max-width: 420px; margin: 0 auto; background: #fff; min-height: 100vh; }
+      .top { background: #2b7fd4; color: #fff; padding: 10px 14px; }
+      .route { font-size: 16px; font-weight: 600; }
+      .filters { display: flex; gap: 6px; padding: 8px 10px; background: #f5f8fb; overflow-x: auto; }
+      .filter { border: 1px solid #cfdae6; background: #fff; color: #33506b; border-radius: 999px; padding: 4px 10px; font-size: 12px; white-space: nowrap; cursor: pointer; }
+      .filter.on { background: #2b7fd4; border-color: #2b7fd4; color: #fff; }
+      .train { padding: 10px 14px; border-bottom: 1px solid #eef2f6; cursor: pointer; }
+      .train:hover { background: #f7fafd; }
+      .row1 { display: flex; align-items: baseline; gap: 8px; }
+      .no { font-size: 17px; font-weight: 700; color: #1f3b57; }
+      .badge { font-size: 11px; color: #fff; background: #e2554f; border-radius: 3px; padding: 1px 4px; }
+      .badge.fuxing { background: #2b7fd4; }
+      .time { margin-left: auto; text-align: right; }
+      .price { color: #e2554f; font-weight: 700; }
+      .row2 { color: #5b7691; font-size: 12px; margin-top: 2px; }
+      .seats { color: #7b93a8; font-size: 12px; margin-top: 2px; }
+      .sold-out { color: #b6c3cf; }
+      .mock-hint { outline: 3px solid #f59e0b; outline-offset: -3px; }
+      .done { background: #eaf7ee; }
+      .note { padding: 10px 14px; color: #7b93a8; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      B ➍ — 铁路12306. The six questions are all derived from the same dataset the
+      screen renders, and each goal reads that dataset rather than hardcoding an
+      answer, so the screen and the expected answers cannot drift apart.
+    -->
+    <div id="app">
+      <div class="top">
+        <div class="route">北京 ⇄ 杭州</div>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div id="list"></div>
+      <div class="note">提示：以上信息为模拟数据，仅供练习使用。</div>
+    </div>
+
+    <script src="/mock-apps/runtime.v1.js"></script>
+    <script>
+      // ── Dataset ────────────────────────────────────────────────────────────
+      // Every question in the task is answered from these fields.
+      const SERVICES = [
+        { no: 'G871', dep: '16:13', arr: '22:04', price: 630.5, fuxing: true, soldOut: false, business: true, sleeper: false, durationMin: 351 },
+        { no: 'G875', dep: '16:17', arr: '22:16', price: 608.5, fuxing: true, soldOut: false, business: true, sleeper: false, durationMin: 359 },
+        { no: 'G49', dep: '19:04', arr: '23:21', price: 662.5, fuxing: true, soldOut: false, business: false, sleeper: false, durationMin: 257 },
+        { no: 'D17', dep: '19:10', arr: '09:12', price: 403.5, fuxing: true, soldOut: false, business: false, sleeper: true, durationMin: 842 },
+        { no: 'Z281', dep: '19:21', arr: '10:36', price: 202.5, fuxing: false, soldOut: true, business: false, sleeper: true, durationMin: 915 },
+        { no: 'K1275', dep: '23:37', arr: '20:38', price: 189.5, fuxing: false, soldOut: false, business: false, sleeper: true, durationMin: 1261 },
+      ];
+
+      const min = (key) => SERVICES.filter((s) => !s.soldOut).reduce((a, b) => (a[key] < b[key] ? a : b));
+      const fastest = () => SERVICES.reduce((a, b) => (a.durationMin < b.durationMin ? a : b));
+      const cheapest = () => SERVICES.filter((s) => !s.soldOut).reduce((a, b) => (a.price < b.price ? a : b));
+      const matching = (pred) => SERVICES.filter(pred);
+
+      /** Elements for the trains matching a predicate, for hinting. */
+      const elementsFor = (pred) =>
+        Array.from(document.querySelectorAll('[data-mock-target]')).filter((el) =>
+          pred(SERVICES.find((s) => s.no === el.dataset.no)),
+        );
+
+      function render() {
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        SERVICES.forEach((s) => {
+          const el = document.createElement('div');
+          el.className = 'train' + (s.soldOut ? ' sold-out' : '');
+          el.dataset.mockTarget = '';
+          el.dataset.no = s.no;
+          el.dataset.price = String(s.price);
+          el.dataset.fuxing = String(s.fuxing);
+          el.dataset.soldout = String(s.soldOut);
+          el.dataset.business = String(s.business);
+          el.dataset.sleeper = String(s.sleeper);
+          el.innerHTML =
+            '<div class="row1">' +
+            '<span class="no">' + s.no + '</span>' +
+            (s.fuxing ? '<span class="badge fuxing">复兴号</span>' : '') +
+            (s.soldOut ? '<span class="badge">售罄</span>' : '') +
+            '<span class="time"><span class="price">¥' + s.price.toFixed(1) + '</span></span>' +
+            '</div>' +
+            '<div class="row2">' + s.dep + ' 北京 → ' + s.arr + ' 杭州</div>' +
+            '<div class="seats">' +
+            (s.business ? '商务座 ' : '') +
+            (s.sleeper ? (s.no === 'D17' ? '一等卧 二等卧 ' : '硬卧 软卧 ') : '') +
+            (s.soldOut ? '无票' : '有票') +
+            '</div>';
+          list.appendChild(el);
+        });
+      }
+
+      MockApp.define({
+        id: 'railway-12306',
+        data: { services: SERVICES },
+        goals: [
+          {
+            id: 'fastest',
+            prompt: '哪次列车最快？',
+            candidates: () => elementsFor((s) => s === fastest()),
+            accept: (el) => el.dataset.no === fastest().no,
+            answer: (el) => el.dataset.no,
+          },
+          {
+            id: 'cheapest',
+            prompt: '哪次列车最便宜？',
+            candidates: () => elementsFor((s) => s === cheapest()),
+            accept: (el) => el.dataset.no === cheapest().no,
+            answer: (el) => el.dataset.no,
+          },
+          {
+            id: 'fuxing',
+            prompt: '哪些列车是“复兴号”？',
+            candidates: () => elementsFor((s) => s.fuxing),
+            accept: (el) => el.dataset.fuxing === 'true',
+            answer: (el) => el.dataset.no,
+          },
+          {
+            id: 'sold-out',
+            prompt: '哪次列车的票已经卖完了（售罄）？',
+            candidates: () => elementsFor((s) => s.soldOut),
+            accept: (el) => el.dataset.soldout === 'true',
+            answer: (el) => el.dataset.no,
+          },
+          {
+            id: 'business',
+            prompt: '哪些列车有商务座（不包括候补）？',
+            candidates: () => elementsFor((s) => s.business),
+            accept: (el) => el.dataset.business === 'true',
+            answer: (el) => el.dataset.no,
+          },
+          {
+            id: 'sleeper',
+            prompt: '哪次列车有卧铺票（一等卧、二等卧、硬卧、软卧等，但不包括候补）？',
+            candidates: () => elementsFor((s) => s.sleeper),
+            accept: (el) => el.dataset.sleeper === 'true',
+            answer: (el) => el.dataset.no,
+          },
+        ],
+        mount(root) {
+          const filters = root.querySelector('#filters');
+          ['高铁/动车', '只看普通车', '只看复兴号', '从早到晚'].forEach((label) => {
+            const b = document.createElement('button');
+            b.className = 'filter';
+            b.textContent = label;
+            b.addEventListener('click', (e) => {
+              e.stopPropagation();
+              b.classList.toggle('on');
+            });
+            filters.appendChild(b);
+          });
+          render();
+        },
+        reset() {
+          document.querySelectorAll('.train').forEach((el) => el.classList.remove('done'));
+          document.querySelectorAll('.filter.on').forEach((el) => el.classList.remove('on'));
+        },
+      });
+    </script>
+  </body>
+</html>
