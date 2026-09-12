@@ -337,10 +337,44 @@ A validator must run over every content file and fail on:
 Binary media does **not** go in the repository. The pilot unit alone is ~29 MB (a 3.5 MB workbook PDF, 47 mp3 files, plus key and transcript PDFs); a book is ~6 units, and this platform expects many books and levels.
 
 - Media is served from the existing PHP shared host behind a single **`ASSET_BASE_URL`** constant — see ADR-0043. No CDN or object-storage service exists in this project today, and none is being introduced here.
-- `ASSET_BASE_URL` defaults to the shared host in **both development and production**; there is no local-path default, because one pointing at a path nothing serves would render fallbacks while looking configured. Point `NEXT_PUBLIC_ASSET_URL` / `EXPO_PUBLIC_ASSET_URL` elsewhere to work offline. The URL is defined once, in `packages/textbooks/src/assets.ts`, so the two apps cannot drift — they previously did, with web defaulting to a local path and mobile to a folder that does not exist.
-- Content files store **relative asset keys** (`u06/B/t2.mp3`), never absolute URLs, so the base can change without touching content.
-- Stimulus images are extracted from the workbook PDF at 2–3× and re-encoded; audio is re-encoded once.
+- Content files store **relative asset keys** (`tblt-hsk4/u06/a1-map.png`), never absolute URLs, so the base can change without touching content.
 - The **vision** path already exists for pages whose content is embedded in images: `POST /vision` (`zerotohero-python-server/routes/core.py:124–150`), with `IMAGE_OCR_PROMPT` in `packages/shared/src/markdown/vision.ts` and a working caller for PDF pages (`apps/web/src/lib/pdf-book.ts:143 pdfPageToMarkdown`). Extraction reuses this rather than building new tooling.
+
+### Where media lives, and the one step to publish it
+
+```
+local:   <Dropbox>/Work/Language Player/zerotohero-server-data/interactive-textbook/
+server:  dh_5rvnrz@server.chinesezerotohero.com:/home/dh_5rvnrz/zerotohero-server-data/interactive-textbook
+public:  https://server.chinesezerotohero.com/data/interactive-textbook/
+```
+
+That directory is the shared host's `data/` root — its siblings are served at `data/char-stroke-svgs/` and `data/word-images/` (`zerotohero-nuxt/lib/utils/servers.js:38-39`) — so its contents are public under `/data/` unchanged.
+
+The layout mirrors the keys exactly: `<book>/<unit>/<file>`. Audio keys are the workbook's own filenames, so publishing is a straight upload with **no rename step**, and each key stays traceable to the file it came from.
+
+```bash
+rsync -avz --progress \
+  "$HOME/Dropbox/Work/Language Player/zerotohero-server-data/interactive-textbook/" \
+  dh_5rvnrz@server.chinesezerotohero.com:/home/dh_5rvnrz/zerotohero-server-data/interactive-textbook/
+```
+
+**Uploading is the only step.** `ASSET_BASE_URL` already points at the public URL, in **development and production alike** — there is no sync step, no symlink and no local copy to keep in step, so media goes live the moment the bytes land.
+
+There is deliberately **no local-path default.** One was tried and removed: it pointed at a path nothing served, which is worse than no default, because the app then looks configured while silently degrading to the placeholder fallbacks. For offline work, or to check a re-extraction before uploading, override it:
+
+```bash
+NEXT_PUBLIC_ASSET_URL=http://localhost:8000 npm run dev -w apps/web
+EXPO_PUBLIC_ASSET_URL=http://localhost:8000 npx expo start
+# from the folder above: python3.10 -m http.server 8000   (serves the keys unchanged)
+```
+
+The URL is defined **once**, as `DEFAULT_TEXTBOOK_ASSET_BASE_URL` in `packages/textbooks/src/assets.ts`; each app's `lib/asset-url.ts` only adds its own env read. ADR-0043's "one constant per app" is about the per-app export, which is unchanged — the point of sharing the value is that the two apps **did** drift once (web defaulted to a local path, mobile to a folder that does not exist), and a shared literal plus a test makes that impossible again.
+
+### Formats and manifest validation
+
+The extension follows whichever encoding is actually smaller for that image, measured rather than assumed: **JPEG for pictures** (PNG came out 5–7× larger for all 45 picture assets, including the cartoon sets that look flat) and **PNG only for the flat vector map**.
+
+`assets.ts` in the book's content directory is the **authored** manifest of every key a task needs, and it is authored rather than derived precisely so that it *can* disagree with the content: a test asserts agreement **in both directions** — no content reference to an unpublished asset, and no declared asset that nothing references. Keys staged on disk but not yet declared are expected and fine (files for tasks not yet authored).
 
 ### Do not bundle content as a generated TS module
 
