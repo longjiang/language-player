@@ -146,10 +146,11 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 Most stimulus kinds may also carry `audio` for their own recording — a `passage` block, a
 `dialogue`, a `dataTable` row, a map pin. See [Audio](#audio) for which level to use.
 
-There is **no** `inlineImageSlot`. B ➎ / ➏ get the interaction from `choose` blanks over a
-`pictureSet` — the same tap-the-slot-then-tap-the-picture flow A ➊ uses — but the slot
-shows a letter chip where the booklet prints the illustration itself. See
-[Known Gaps](#known-gaps-against-this-spec).
+There is **no** `inlineImageSlot` stimulus kind, and none is needed: a `choose` blank
+answering from a `pictureSet` renders as an illustration slot, showing the chosen picture
+in the box the booklet prints. The interaction is the one A ➊ already uses — tap the slot,
+then tap a picture — so this is a rendering variant of `BlankField`, not a kind of its
+own.
 
 ### Response kinds
 
@@ -781,7 +782,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | Host frame + bridge for a self-contained mock-app HTML file (see below) |
-| `InlineImageSlot` — **not built** | In-passage image placeholder showing the chosen illustration. B ➎ / ➏ place their illustrations with `choose` blanks over a `pictureSet` instead, which shows a letter chip; see [Known Gaps](#known-gaps-against-this-spec) |
+| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
 | `DictationField` | Boxed per-character entry for dictation tasks |
@@ -1045,15 +1046,6 @@ The content side of this was wrong too, and is fixed: B ➍'s three multi-match 
 stored one train with the rest in `accept[]`, which would have marked a student who
 picked only one of the four 复兴号 correct. They are now sets (`multiple: true`), and the
 key comparison joins the key's separate entries before comparing.
-
-**3. `InlineImageSlot` does not exist.**
-
-B ➎ and ➏ are authored without it. Their 插图 slots are `choose` blanks over a
-`pictureSet`, so the student taps the slot and then the picture — the same interaction
-A ➊ already uses for its lettered bank. What is missing is the presentation: the slot
-shows a letter chip rather than the illustration itself, where the booklet prints the
-picture in the gap. The component inventory marks it **not built**, and it is
-deliberately absent from the stimulus kinds table, which lists only kinds that exist.
 
 ### Verified, not assumed
 
