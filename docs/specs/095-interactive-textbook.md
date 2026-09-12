@@ -678,6 +678,29 @@ renders an unresolved key. This is what actually had to change:
 **Do not assume a nav label change is cosmetic.** The label, the key, and the
 `MUST_BE_ALIVE` list must move together.
 
+### Task labels and type icons
+
+A task row in the TOC is `Task ➊` plus an icon, and neither string is assembled
+from English parts:
+
+- **The task label is one ICU message**, `label.task_number` = `Task {number}`,
+  because word order differs by language (`任务 {number}`, `タスク {number}`,
+  `المهمة {number}`) and gluing a translated noun to a numeral would fix English
+  order for all 18 locales.
+- **The type is an icon, not text.** The workbook's type used to be printed as
+  its own value — `listening`, `reading` — so a Chinese TOC carried a column of
+  stray English. It renders as `Headphones` / `BookOpen` / `MessagesSquare` /
+  `PenLine` (lucide on web, lucide-native on mobile) with the type's name as the
+  accessible label: `title` + `sr-only` on web, `accessibilityLabel` on mobile.
+- The icon's name comes from `taskTypeKey(type)` in `packages/textbooks`, which
+  is literally `label.<type>` — so a fifth task type needs a CSV row and nothing
+  else. `label.reading` already existed and is reused; its `zh-Hans` and
+  `zh-Hant` cells were empty, so the icon would have had no name in the app's own
+  locale, and both were filled (阅读 / 閱讀).
+- `task-types.test.ts` reads `translations.csv` and fails when any type's key is
+  missing or empty in any locale — an unlabelled icon is invisible in a
+  screenshot, so it is a test failure instead.
+
 ### Mobile route group: keep `(vocab)`
 
 `Tasks` lives in the existing `(vocab)` route group rather than a new one, so **no new `Stack.Screen` is needed** in `apps/mobile/app/(tabs)/_layout.tsx`.
@@ -687,10 +710,16 @@ The directory is **not** renamed to `(study)`: parenthesised route groups do not
 Screens:
 
 1. **Textbook picker** — the entry screen. Only one textbook exists today, so this is a single-item list rather than a real choice; it exists now so a second book is a content change, not a navigation change.
-2. **Task TOC** — units → lessons → tasks. This mirrors the **docs UI**: `apps/web/src/app/docs/doc-sidebar.tsx` renders collapsible categories that are expanded when they contain the active child (`useState(!!hasActiveChild)`), with a chevron per group. Units and lessons are collapsible in exactly that way.
-3. **Task view** — the same TOC remains in the sidebar with the **current lesson expanded**; the selected task renders in the main pane. This is the docs layout, not a separate reading mode.
+2. **Task TOC** — units → lessons → tasks, and on web it is the page you land on when you open a book: **every level visible at once**, each lesson with its CAN-DO statement, each task a link labelled `Task ➊` with its type icon and its tick or dot. This mirrors the **docs index** (`apps/web/src/app/docs/page.tsx`), where `/docs` is the list and `/docs/<slug>` is the article with a sidebar. Units and lessons stay collapsible *in the sidebar* (below), where the tree is navigation rather than content.
+3. **Task view** — the TOC sits in a **sidebar on the right**, with the **current lesson expanded**; the selected task renders in the main pane. This is the docs layout, not a separate reading mode, and it mirrors `apps/web/src/app/docs/doc-sidebar.tsx` exactly: an off-canvas drawer opened by a toggle button below `xl`, dismissed by its backdrop or by choosing a task, and a sticky `w-56` column from `xl` up. On mobile the TOC is its own screen instead — a phone has no room for a persistent panel (see Mobile).
 
 So units and lessons are the two collapsible levels, and the task list is the leaf.
+
+**The sidebar is not rendered on the book's own list.** A list of units → lessons →
+tasks with the same tree in a second column beside it is the same information twice;
+the docs UI draws the line in the same place. The decision is derived from the URL
+(`useCurrentTaskId`), not passed down, because the sidebar lives in the `[bookId]`
+layout and a layout never receives the child route's params.
 
 ## Routes
 
@@ -701,15 +730,16 @@ apps/web/src/app/[l1]/[l2]/tasks/
 ├── layout.tsx                                                       # page padding only
 ├── page.tsx                                                         # textbook picker
 └── [bookId]/
-    ├── layout.tsx                                                   # TOC sidebar (docs-style) + main pane
-    ├── page.tsx                                                     # book overview / "pick a task" empty state
+    ├── layout.tsx                                                   # task in the main pane + TOC sidebar on the right
+    ├── page.tsx                                                     # the book's full TOC list (units → lessons → tasks)
     └── [unitId]/[lessonId]/[taskId]/page.tsx                        # the task
 ```
 
 The TOC lives on the `[bookId]` layout rather than the top `tasks` layout, because it
 needs the book to build the tree — and the picker at `tasks/page.tsx` must render
 **without** a sidebar. Putting it on the `tasks` layout would have shown the picker
-inside a TOC it has not chosen yet.
+inside a TOC it has not chosen yet. The same layout serves the book's own list, whose
+sidebar is suppressed (see Screens).
 
 The route is `tasks` to match the menu item. It is a deliberate, small naming choice — if the menu item is renamed, the path should be renamed with it.
 
@@ -761,7 +791,11 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | Component | Responsibility |
 |---|---|
 | `TextbookPicker` | Entry screen: choose a textbook (single item today) |
-| `TextbookToc` | Docs-style collapsible TOC of units → lessons → tasks; current lesson expanded |
+| `TextbookTocList` | The book's own page: the whole tree at once — units → lessons → tasks, each lesson's CAN-DO statement, each task's label, icon and progress mark. The docs-index pattern (`DocList`) |
+| `TextbookTocSidebar` | The docs-sidebar wrapper: sticky `w-56` column from `xl` up, off-canvas drawer with a toggle below it, rendered only on a task route |
+| `TextbookToc` | The tree itself: collapsible units → lessons → tasks, current lesson expanded |
+| `TaskTypeIcon` | A task's `type` as an icon (`Headphones`/`BookOpen`/`MessagesSquare`/`PenLine`) with the localized type name as its accessible label |
+| `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
@@ -935,10 +969,20 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 > audio filenames. `ASSET_BASE_URL` already points there, so no further step was
 > needed once the bytes landed.
 >
-> **Not yet verified:** nothing in this feature has been rendered in a browser or a
-> simulator. Types, content validation and asset delivery are checked; pixels and
-> audio playback are not. Mobile audio and the mobile mock-app frame specifically
-> need a device or simulator.
+> **Verified in a browser (web), 2026-09-12.** Web has now been rendered in Chromium
+> and measured, at 1024, 1280 and 1440px: A ➊ (map, 10 pins, 10-picture set), A ➍
+> (cloze), B ➌ (two price tables + two banks), B ➍ (mock app frame, `0 / 6` progress
+> and its hint control), C ➍ (dialogue), D ➋ (table), D ➏ (five note cards) and E ➊
+> (picture set + boxed per-character dictation) all render, with no element past its
+> column and no horizontal scroll on any page. That pass is what found the three web
+> defects this spec previously could not see: the stimulus renderer missing nine
+> kinds (A ➊ had no map), the instructions overflowing their container, and a
+> task page hard-loaded from a URL returning 500 because the speech hook touched the
+> Web Speech API during server rendering.
+>
+> **Still not verified:** mobile has **not** been rendered in a simulator — its audio,
+> its WebView mock app and its native ruby path need a device; and web's Ruby is
+> measured but its typography is a matter of taste.
 >
 > **No behavioural gaps remain** — see [Known Gaps Against This Spec](#known-gaps-against-this-spec).
 
@@ -970,7 +1014,7 @@ All six questions this spec opened with were settled on 2026-09-11. Recorded her
 | Instructions language | L2, rendered as **tokenized text**; L1 translation below, gated by the per-L2 `display.translation` setting | Instructions |
 | Does textbook performance feed SRS? | **No** — a product decision, not phasing | Non-Goals, Grading |
 | Attempt recording scope | **Local only** for now; no server-side exercise table or sync | Non-Goals, ADR-0044 |
-| Multi-book catalogue | Reached from **`Study` > `Tasks`**: the existing `Vocab` nav group is **renamed to `Study`** and `Tasks` is added **below `Review`** — no new top-level group, and not a bottom tab. Then a textbook picker, then a docs-style collapsible TOC of units → lessons → tasks, side-by-side with the task | Navigation and Information Architecture |
+| Multi-book catalogue | Reached from **`Study` > `Tasks`**: the existing `Vocab` nav group is **renamed to `Study`** and `Tasks` is added **below `Review`** — no new top-level group, and not a bottom tab. Then a textbook picker, then the book's own full TOC list; opening a task shows a docs-style collapsible TOC of units → lessons → tasks **on the right**, beside the task | Navigation and Information Architecture |
 | `expectedLength` semantics | Circled numerals are **question indices** for answer-key lookup, **not** length hints. `expectedLength` defaults to `answer.length` and is set explicitly only for dictation (E ➊/➋), where the workbook prints one box per character | Schema rules #4 |
 | Pagination | **Not needed** — long passages render as one scrolling block | Non-Goals |
 
@@ -996,10 +1040,21 @@ unsettled is in [Open Questions](#open-questions).
 Stated so the gaps are not read as a general disclaimer: the answer key is
 machine-checked against every authored answer in the 19 tasks that have one;
 `validateBook` reports no errors over the whole unit; every asset key the content
-references is declared in the manifest and present on disk; 1016 tests pass and `tsc` is
-clean for web, mobile, textbooks and utils. The 85 keys published during the pilot were
-each verified returning HTTP 200 from the shared host, including percent-encoded
-workbook audio filenames.
+references is declared in the manifest and present on disk; the test suite passes and
+`tsc` is clean for web, mobile, textbooks and utils. The 85 keys published during the
+pilot were each verified returning HTTP 200 from the shared host, including
+percent-encoded workbook audio filenames.
+
+The task type labels are verified the same way: `task-types.test.ts` reads
+`translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
+of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**Rendering is verified by measurement, not by eye.** The web pass above reads
+`getBoundingClientRect`, `scrollWidth` and `clientWidth` per page rather than trusting a
+screenshot: the overflow fix was accepted only when the overflowing-element count went
+from 10 to 0 on the reported page, and the same check was then run over eight more
+tasks at three viewport widths. The same harness is what produced the measurement
+behind ADR-0039's corrected note about an adjacent-ruby run being unbreakable.
 
 A task with nothing to grade (D ➎ ➏ ➐, E ➍) reports *Saved* rather than `0 / 0`, so
 self-completed work is not presented as a failure. D ➐ is completed by the student: they
@@ -1013,7 +1068,8 @@ asks for berths that are *not* 候补, so `sleeper` (the 铺 badge) and `sleeper
 (what the question asks) are now separate fields; Z281 and K1275 show the badge with
 waitlisted berths and so do not answer the question.
 
-The most significant thing that has **not** been verified is anything visual — no page
-of this feature has been rendered in a browser or simulator. Types, content validation
-and asset delivery are checked; pixels and audio playback are not.
+What has **not** been verified: any part of the mobile app — no screen of this feature
+has been rendered in a simulator, so mobile audio, the WebView mock-app frame and the
+native ruby path are unchecked — and web audio playback, which the measurement pass
+never started.
 

@@ -66,12 +66,25 @@ describe('task type labels', () => {
     // Columns 1.. are the locales; the first column is the key.
     expect(header.length).toBe(19);
     for (const type of TASK_TYPES) {
-      const row = rows.get(taskTypeKey(type));
-      expect(row, `missing translations.csv row for ${taskTypeKey(type)}`).toBeDefined();
-      expect(row!.length).toBe(19);
-      header.slice(1).forEach((locale, i) => {
-        expect(row![i + 1], `${taskTypeKey(type)} is empty for ${locale}`).toBeTruthy();
-      });
+      expectNonEmptyInEveryLocale(taskTypeKey(type));
     }
   });
+
+  /**
+   * The task row's own label — `Task {number}` — is one ICU message rather than a
+   * translated noun glued to a numeral, because word order differs by language. An
+   * empty cell would therefore render a bare `{number}` with no word at all.
+   */
+  it('labels a task row in all 18 locales', () => {
+    expectNonEmptyInEveryLocale('label.task_number');
+  });
 });
+
+function expectNonEmptyInEveryLocale(key: string) {
+  const row = rows.get(key);
+  expect(row, `missing translations.csv row for ${key}`).toBeDefined();
+  expect(row!.length).toBe(19);
+  header.slice(1).forEach((locale, i) => {
+    expect(row![i + 1], `${key} is empty for ${locale}`).toBeTruthy();
+  });
+}
