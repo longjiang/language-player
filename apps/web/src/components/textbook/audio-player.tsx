@@ -6,7 +6,7 @@ import { indexToCircled } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './task-audio';
 import { RetryIcon } from './retry-icon';
-import { TranscriptButton } from './transcript-dialog';
+import { TrackControls } from './track-controls';
 
 /**
  * The task's audio row.
@@ -39,39 +39,24 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
     >
       {single ? (
         <div className="flex items-center gap-3">
-          <PlayButton
-            playing={audio.activeKey === rows[0]!.key}
-            label={rows[0]!.label ?? t('action.speak')}
-            onClick={() => audio.toggle(rows[0]!.key)}
-          />
-          <TranscriptButton track={rows[0]!} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" />
+          <TrackControls track={rows[0]!} size="md" />
           <Transport />
         </div>
       ) : (
         <>
           <div className="flex flex-wrap gap-2">
             {rows.map((track, index) => (
-              // Each track keeps its own transcript button: A ➊'s nine recordings each
-              // say something different, so "the transcript" is only meaningful per
-              // recording. It is absent where a recording has no transcript.
-              <span key={track.key} className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => audio.toggle(track.key)}
-                  // The label is the accessible name, never visible text: in the
-                  // dictation tasks it is the answer.
-                  aria-label={track.label ?? `track ${index + 1}`}
-                  aria-pressed={audio.activeKey === track.key}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
-                    audio.activeKey === track.key
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-background text-foreground hover:bg-muted'
-                  }`}
-                >
-                  {indexToCircled(index + 1)}
-                </button>
-                <TranscriptButton track={track} />
-              </span>
+              // Each track is its own pill: A ➊'s nine recordings each say something
+              // different, so "the transcript" is only meaningful per recording, and the
+              // numeral printed in the play segment is how the student matches one to the
+              // city they are answering. A recording with no transcript gets a
+              // one-segment pill rather than a disabled button.
+              <TrackControls
+                key={track.key}
+                track={track}
+                numeral={indexToCircled(index + 1)}
+                size="md"
+              />
             ))}
           </div>
           <Transport />
@@ -92,37 +77,6 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
         </p>
       )}
     </section>
-  );
-}
-
-export function PlayButton({
-  playing,
-  label,
-  onClick,
-}: {
-  playing: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      aria-pressed={playing}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-    >
-      {playing ? (
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-          <rect x="1.5" y="1" width="3" height="10" fill="currentColor" />
-          <rect x="7.5" y="1" width="3" height="10" fill="currentColor" />
-        </svg>
-      ) : (
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-          <path d="M2 1l9 5-9 5z" fill="currentColor" />
-        </svg>
-      )}
-    </button>
   );
 }
 
