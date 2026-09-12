@@ -29,31 +29,43 @@ function renderBlank(t: Task, book: BookMeta, blankId: string) {
 const input = () => document.querySelector('input') as HTMLInputElement;
 
 describe('a typed blank', () => {
-  it('is as wide as the printed answer, and grows with what is typed', async () => {
+  it('sizes itself in ems, so a two-character answer fits', async () => {
     const { book, task: t } = await taskA4();
-    // b15's answer is 差不多 (3 characters), so the blank starts at 4ch.
+    // b8's answer is 虽然 (2 characters). Measured in `ch` — half an em each — this blank was
+    // 3ch ≈ 1.5em and the input cut the second character in half, which is the bug: a width
+    // computed per *character* has to be computed per *em*.
+    await renderBlank(t, book, 'b8');
+    expect(input().style.width).toBe('calc(2em + 1.25rem)');
+
+    await act(async () => {
+      fireEvent.change(input(), { target: { value: '一般' } });
+    });
+
+    expect(input().style.width).toBe('calc(2em + 1.25rem)');
+    expect(input().value).toBe('一般');
+  });
+
+  it('grows with what is typed, because a wrong answer is longer than the right one', async () => {
+    const { book, task: t } = await taskA4();
     await renderBlank(t, book, 'b15');
-    expect(input().style.width).toBe('4ch');
+    expect(input().style.width).toBe('calc(3em + 1.25rem)');
 
     await act(async () => {
       fireEvent.change(input(), { target: { value: '差不多吧' } });
     });
 
-    // A wrong answer is often longer than the right one; a fixed width clipped it
-    // mid-word and the student could not read back what they had written.
-    expect(input().style.width).toBe('5ch');
-    expect(input().value).toBe('差不多吧');
+    expect(input().style.width).toBe('calc(4em + 1.25rem)');
   });
 
-  it('keeps the printed width when the answer is shorter than it', async () => {
+  it('never shrinks below the printed width', async () => {
     const { book, task: t } = await taskA4();
-    // b11's answer is 趟 (1 character), but the blank still starts at the printed 2ch+1 —
-    // shrinking below the printed box would move the sentence as the student types.
+    // b11's answer is 趟 (one character), so the blank keeps the printed two-character floor —
+    // shrinking below it would move the sentence as the student types.
     await renderBlank(t, book, 'b11');
-    expect(input().style.width).toBe('3ch');
+    expect(input().style.width).toBe('calc(2em + 1.25rem)');
     await act(async () => {
       fireEvent.change(input(), { target: { value: '趟' } });
     });
-    expect(input().style.width).toBe('3ch');
+    expect(input().style.width).toBe('calc(2em + 1.25rem)');
   });
 });

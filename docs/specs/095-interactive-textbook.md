@@ -575,6 +575,15 @@ are two or three characters — and a fixed width clipped it mid-word, so the st
 read back what they had written. It never shrinks below the printed width, or the sentence
 would reflow as they typed. (Dictation is unaffected: its boxes are fixed by definition.)
 
+**Sized in ems, not `ch`.** `1ch` is the advance width of the font's `0` — about **half an em**
+— while a CJK glyph is a **full em**, so a blank printed for 一般 was given `3ch ≈ 1.5em` and
+the input's own overflow cut the second character in half. `glyphEms` (`packages/utils`) is the
+one measurement, shared by both clients: one em per full-width glyph (Han, kana, Hangul,
+fullwidth forms), half an em for everything else, always an over-estimate rather than a
+measurement, because a field that is slightly wide is harmless and one that is slightly narrow
+hides text. Web expresses the result in `em` + padding; mobile in px at the field's own type
+scale, since React Native takes numbers.
+
 ```ts
 b2: { id: 'b2', kind: 'type', answer: '商务座', accept: ['商务座'], expectedLength: 3 },
 ```
