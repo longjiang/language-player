@@ -102,3 +102,30 @@ describe('parseAnswerKey — row-number and label forms', () => {
     ]);
   });
 });
+
+describe('illustration-slot keys (B ➎)', () => {
+  // The key names these slots in Chinese words rather than circled numerals, so
+  // they must still land on the same index the blank ids use.
+  it('reads 插图二 C; 插图三 D; …', () => {
+    const items = parseAnswerKey('插图二 C；插图三 D；插图四 B；插图五 F；插图六 E。');
+    expect(items.map((i) => [i.index, i.answers])).toEqual([
+      [2, ['C']],
+      [3, ['D']],
+      [4, ['B']],
+      [5, ['F']],
+      [6, ['E']],
+    ]);
+  });
+
+  it('resolves each blank against its own slot', () => {
+    const raw = '插图二 C；插图三 D；插图四 B；插图五 F；插图六 E。';
+    expect(answersForKeyIndex(raw, 2)).toEqual(['C']);
+    expect(answersForKeyIndex(raw, 6)).toEqual(['E']);
+    expect(answersForKeyIndex(raw, 1)).toEqual([]);
+  });
+
+  it('leaves other key forms untouched', () => {
+    expect(parseAnswerKey('② 新；③ 免费Wi-Fi；④ 充电口。').map((i) => i.index)).toEqual([2, 3, 4]);
+    expect(parseAnswerKey('2. 金敏俊: B、c; 3. 奥利维亚: D, a。').map((i) => i.index)).toEqual([2, 3]);
+  });
+});

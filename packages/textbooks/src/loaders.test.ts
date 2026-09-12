@@ -105,7 +105,7 @@ describe('TOC tree', () => {
     expect(allTaskIds).toContain('tblt-hsk4.u06.B.t2');
     expect(allTaskIds).toContain('tblt-hsk4.u06.C.t4');
     expect(allTaskIds).toContain('tblt-hsk4.u06.E.t1');
-    expect(allTaskIds).toContain('tblt-hsk4.u06.D.t6');
+    expect(allTaskIds).toContain('tblt-hsk4.u06.D.t5');
     expect(tree.contentVersion).toBe(book.contentVersion);
   });
 });
