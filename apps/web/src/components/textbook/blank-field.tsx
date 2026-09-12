@@ -153,7 +153,11 @@ export function BlankField({
         // A dialog blank's name says what tapping it does; a pool blank's is the question number,
         // which is how the workbook and the key refer to it.
         aria-label={inDialog ? `${label} ${value || t('msg.please_select_option')}` : label}
-        className={`inline-flex min-w-[3em] items-center justify-center rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
+        // `min-h-6` is not decoration: the button is an empty `inline-flex` until it is answered,
+        // and an empty flex box has no content height — so the whole tap target was the 2px
+        // border, measured at 48×2. It matches the picture-cell blank's `h-6 min-w-9`, so every
+        // kind of blank is now tappable over the same area.
+        className={`inline-flex min-h-6 min-w-[3em] items-center justify-center rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
           verdictClass ??
           (isSelected
             ? 'border-primary bg-primary/10'

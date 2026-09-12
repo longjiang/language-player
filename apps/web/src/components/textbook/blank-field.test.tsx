@@ -158,10 +158,17 @@ describe('tapping a bank blank', () => {
     expect(selection()).toBe('b2');
   });
 
-  it('renders nothing inside an empty blank', async () => {
+  it('renders nothing inside an empty blank, and stays tappable', async () => {
     await renderBankBlank();
+    const button = document.querySelector('button[aria-label]') as HTMLElement;
     // The blank's own bottom border is the line to write on; the placeholder underscore that
     // used to sit inside it drew a second line just above the first.
-    expect((document.querySelector('button[aria-label]') as HTMLElement).textContent).toBe('');
+    expect(button.textContent).toBe('');
+
+    // …and empty has to stay tappable. An empty `inline-flex` box has no content height, so the
+    // whole target was the 2px border — measured 48×2 in the browser, against 48×24 now. The
+    // classes are asserted rather than a rect because jsdom does no layout.
+    expect(button.className).toContain('min-h-6');
+    expect(button.className).toContain('min-w-[3em]');
   });
 });

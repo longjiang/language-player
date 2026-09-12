@@ -653,6 +653,12 @@ are two or three characters — and a fixed width clipped it mid-word, so the st
 read back what they had written. It never shrinks below the printed width, or the sentence
 would reflow as they typed. (Dictation is unaffected: its boxes are fixed by definition.)
 
+**Every blank is tappable over the same area, empty or not.** The cell blank a map pin, a numbered
+row or a table cell prints is `h-6 min-w-9`; a bank blank is `min-h-6 min-w-[3em]`. The height was
+missing at first, and an empty `inline-flex` box has no content height — so until it was answered,
+the target was the 2px underline itself, measured at **48×2** in B ➌. A blank the student cannot
+hit is a question they cannot answer, and it looked like nothing on the page.
+
 **Sized in ems, not `ch`.** `1ch` is the advance width of the font's `0` — about **half an em**
 — while a CJK glyph is a **full em**, so a blank printed for 一般 was given `3ch ≈ 1.5em` and
 the input's own overflow cut the second character in half. `glyphEms` (`packages/utils`) is the
@@ -1372,6 +1378,11 @@ of the 18 locales, so an icon without an accessible name cannot ship quietly.
 
 **B ➊'s emoji are verified by test** (`data-table.test.tsx`): the six glyphs render beside the
 cells, none of them inside a tokenized element, and the row's own text is still letter-first.
+
+**Blank tap targets are measured in a browser**: B ➌'s unanswered blanks are **48×24**, and a
+filled one grows with its answer (60×28 for `商务座`), where before the fix every empty blank was
+48×2. `blank-field.test.tsx` asserts the classes that produce that height, since jsdom does no
+layout — the measurement above is what a browser is for.
 
 **Multi-pick highlighting is verified in a browser and by test.** In B ➌, picking 硬卧 leaves it
 with the primary border and tint; picking 软卧 as well leaves **both** highlighted and the blank
