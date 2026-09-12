@@ -1094,7 +1094,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TextbookToc` | The tree itself: collapsible units → lessons → tasks, current lesson expanded |
 | `TaskTypeIcon` | A task's `type` as an icon (`Headphones`/`BookOpen`/`MessagesSquare`/`PenLine`) with the localized type name as its accessible label |
 | `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
-| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
+| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. Both controls are **hidden for a mock-app task**, which submits from its own panel. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input). The transport is **scoped to this row's track keys**, so a page with several players shows progress only in the one playing |
 | `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. The same pill in every place a recording is offered — beside a numbered slot and in the task's audio row, both read `① [▶|▤]`, the numeral printed by the caller as decoration. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
@@ -1110,7 +1110,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
-| `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (one task at a time, Next, All Done!, close), the sandboxed app, and a toolbar with help mode and hint (see below) |
+| `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (prompt, paginator, close), the sandboxed app, and a toolbar with help mode, hint and the Submit that resolves the current task (see below) |
 | `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
@@ -1289,21 +1289,40 @@ The content is the source rather than the `ready` payload that also carries the 
 the same reason grading reads it: the asked task and the graded answer cannot drift. The header is
 the panel's title, so the accessible name of the panel is the task being asked.
 
-| Control | When | What it does |
-|---|---|---|
-| Number + prompt | always | The task the student is on. It does **not** advance by itself |
-| `{check} Next` | when the app reports this task done | Moves to the next task that is still unanswered, so it never lands on a finished one |
-| `{celebrate} All Done!` | when every task is done | Closes the panel, so the page's Submit can grade |
-| `{x}` close | always | Dismisses the panel (ADR-0042: the close affordance is always visible) |
+| Where | Control | When | What it does |
+|---|---|---|---|
+| Header | The task's prompt | always | The task the student is on, as the panel's title |
+| Header | `‹ 3 / 6 ›` | always | Goes back and forth between the six. Back always works; forward waits for a correct Submit |
+| Header | `{x}` close | always | Dismisses the panel (ADR-0042: the close affordance is always visible) |
+| Toolbar | `{dictionary}` toggle | always | Help mode, icon-only — its state is visible in the app itself (the words become tappable) |
+| Toolbar | `{bulb} Hint` | always | Highlights what the first unmet goal still wants |
+| Toolbar | `Submit` | while this task is unanswered | Resolves **this** task: correct raises a toast and turns the button into `Next ›`; otherwise a muted *Incorrect* appears beside it and the button stays `Submit` |
+| Toolbar | `Next ›` | once this task is correct, before the last | Moves to the next task that is still unanswered, so it never lands on a finished one |
+| Toolbar | `{celebrate} All Done!` | once the last task is correct | Grades the whole task, records the attempt, and closes the panel |
 
-Auto-advancing was the alternative and was rejected: `Next` is the student's own signal that they
-have finished reading the screen, and a header that moves while they are still looking at it
+**Correct takes two authorities agreeing**, and neither is enough alone. The app reporting the
+task (`complete`) is the evidence that the student performed it — without that, `Submit` on the
+worked example would pass before anything had been tapped. `isBlankCorrect` against the content
+is the same comparison the final grade uses — without that, the app's own word would be the
+grade. `given` ① is always correct once the app reports it: it is a worked example and is not
+scored.
+
+The reachable wrong path is therefore an early Submit: a task not yet done, or a set task only
+partly picked (the app reports a set goal only when the whole set is picked, so the blank is
+still empty). The app ignores a tap it does not accept, so a wrong pick reads as "not done",
+not as a wrong answer.
+
+Auto-advancing was the alternative and was rejected: advancing is the student's own signal that
+they have finished with this task, and a header that moves while they are still reading the screen
 takes the task away mid-read.
 
-An answered task is marked — struck out on web, which is this feature's existing mark for "you
-have placed this" in the option pools, and dimmed on mobile, because `TokenizedText`'s memo
+**A task is resolved by submitting it, and the button is the state.** `Submit` while it is
+unanswered, `Next ›` once it is correct, `All Done!` on the last one — so the control itself says
+where the student is, and no separate mark is needed on the prompt. The earlier design marked an
+answered task on the prompt (struck out on web, dimmed on mobile, since `TokenizedText`'s memo
 comparator is a hand-written allow-list and a text-style prop added for a cosmetic mark would have
-to be threaded through it.
+to be threaded through it); the paginator's gated forward arrow and the button now carry that,
+which is why neither header marks anything.
 
 **This was missing, and it broke the task without breaking anything visibly.** `goal.prompt` was
 rendered only inside the `status === 'failed'` branch — the fallback that turns the goals into
@@ -1368,15 +1387,15 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. A `mockApp` renders **only a launch button** here; the app itself mounts when the panel opens, and the host waits for its `ready` handshake there.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
-   - **Mock-app tasks** — the app owns its own screen and state. The panel's header asks one task at a time, **Next** advances once the app reports that task done, and **All Done!** closes the panel when every task is; help mode and hint forward over the bridge from the panel's toolbar.
-5. The attempt resolves — by explicit submit for blank tasks, or by the app reporting `complete` for goal-based ones. `gradeTask` runs locally wherever there are blanks; the app's declared answers cover the goal case. Correct/incorrect is shown and the attempt is persisted locally (ADR-0044).
+   - **Mock-app tasks** — the app owns its own screen and state, and the panel's toolbar owns submission. The student does the task in the app, presses **Submit**, and is told whether that task is done; **Next ›** carries them to the next one, and **All Done!** on the last grades the task. Help mode and hint forward over the bridge from the same toolbar.
+5. The attempt resolves — by the shell's Submit for blank and free-text tasks, or by the panel's **All Done!** for a mock-app task, which calls the same `store.submit()`. `gradeTask` runs locally either way, and the attempt is recorded locally (ADR-0044); the per-task Submits before that grade one blank and record nothing. Correct/incorrect is shown — a toast per task, and the result banner for the task as a whole.
 
 ## States
 
 - **Loading**: each text surface shows its plain-text fallback until its own tokens resolve, then re-renders with readings and blanks — see [Tokenization](#tokenization-runtime-per-surface).
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
 - **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` fails in the **panel**, because that is where it loads: the panel shows the notice and Retry where the app was, and closing it leaves the launch button replaced by its fallback image (the original workbook screenshot) and typed answers, so the task stays answerable without the app.
-- **A mock app's panel**: rendered only while open, so the app restarts on every open and anything it had picked is picked again — see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-never-in-the-server-html). Its container is a bottom sheet below 768 and a centered dialog at or above, per SPEC-052 and ADR-0042.
+- **A mock app's panel**: rendered only while open, so the app restarts on every open and anything it had picked is picked again — see [The frame is rendered after mount](#the-frame-is-rendered-after-mount-never-in-the-server-html). Its container is a bottom sheet below 768 and a centered dialog at or above, per SPEC-052 and ADR-0042. The shell shows **no Submit and no Try again** for these tasks, because the panel resolves them one task at a time; the consequence, accepted deliberately, is that **a mock-app task cannot be reset** — the paginator and re-submitting are what going back means. Which tasks have been submitted correctly lives in the panel's own memory, so it survives closing and reopening the panel but not leaving the task.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Transcript**: available on every control whose recording has one, at any time — before, during and after answering. The dialog shows the lines tokenized and translated per the student's own settings, and scrolls; a recording with no transcript shows no button at all, so the affordance never promises text that is not there.
