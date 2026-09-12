@@ -40,7 +40,7 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
       {single ? (
         <div className="flex items-center gap-3">
           <TrackControls track={rows[0]!} size="md" />
-          <Transport />
+          <Transport trackKeys={[rows[0]!.key]} />
         </div>
       ) : (
         <>
@@ -62,7 +62,7 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
               </span>
             ))}
           </div>
-          <Transport />
+          <Transport trackKeys={rows.map((track) => track.key)} />
         </>
       )}
 
@@ -84,17 +84,26 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
 }
 
 /**
- * Scrub bar, elapsed time and replay for whichever track is playing.
+ * Scrub bar, elapsed time and replay for **this player's own recordings**.
  *
  * An `<input type="range">` rather than a styled div: it gives keyboard seeking,
  * the platform's own touch behaviour, and a screen-reader value for free. Disabled
- * until a track is active, since there is nothing to seek.
+ * until one of its own tracks is the one playing, since there is nothing to seek.
+ *
+ * `trackKeys` is load-bearing, not a nicety. One provider owns the whole task's playback
+ * (only one recording may play at a time), so position, duration and the active key are
+ * task-wide — but a *transport* belongs to the recordings its own row offers. Without the
+ * scope, every transport on the page read the one playing track: A ➍ prints five players,
+ * and playing the first moved all five bars to 0:06 / 0:21 and armed all five replays,
+ * which both misreports the other four and offers a scrub bar that would seek somebody
+ * else's recording. The rows that are not playing keep an empty, disabled bar so the
+ * layout does not jump when one starts.
  */
-function Transport() {
+function Transport({ trackKeys }: { trackKeys: string[] }) {
   const t = useT();
   const audio = useTaskAudio();
-  const active = audio?.activeKey != null;
-  const duration = audio?.duration ?? 0;
+  const active = audio?.activeKey != null && trackKeys.includes(audio.activeKey);
+  const duration = active ? (audio?.duration ?? 0) : 0;
 
   return (
     <div className="flex flex-1 items-center gap-2">
