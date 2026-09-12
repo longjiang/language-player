@@ -31,6 +31,25 @@ interface TextbookTocProps {
  * collapsed by default and expanded when it contains the active item. Units and
  * lessons are the two collapsible levels; tasks are the leaves.
  */
+/**
+ * The task the current URL points at, or undefined on a route that is not a task.
+ *
+ * Read from the URL rather than from route params because the TOC lives in the
+ * `[bookId]` layout, which never receives the child route's params. Exported so the
+ * sidebar can ask the same question — whether this route is a task view at all.
+ */
+export function useCurrentTaskId(tree: TocTree, l1: string, l2: string): string | undefined {
+  const pathname = usePathname();
+  return useMemo(
+    () =>
+      tree.units
+        .flatMap((u) => u.lessons.flatMap((l) => l.tasks))
+        .map((task) => task.id)
+        .find((id) => pathname === taskHref(l1, l2, id)),
+    [tree, l1, l2, pathname],
+  );
+}
+
 export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
   const pathname = usePathname();
   const t = useT();
@@ -58,12 +77,7 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
     }
     return { lessons: map, tasks };
   }, [progress]);
-  // The active task is read from the URL so this can live in the layout, which
-  // does not receive the child route's params.
-  const currentTaskId = tree.units
-    .flatMap((u) => u.lessons.flatMap((l) => l.tasks))
-    .map((task) => task.id)
-    .find((id) => pathname === taskHref(l1, l2, id));
+  const currentTaskId = useCurrentTaskId(tree, l1, l2);
   const activeLessonKey = currentTaskId
     ? tree.units
         .flatMap((u) => u.lessons.map((l) => ({ unitId: u.id, lessonId: l.id, tasks: l.tasks })))

@@ -1,10 +1,18 @@
 import { notFound } from 'next/navigation';
 import { buildTocTree, loadBook } from '@langplayer/textbooks';
-import { TextbookToc } from '@/components/textbook/textbook-toc';
+import { TextbookTocSidebar } from '@/components/textbook/textbook-toc-sidebar';
 
 /**
- * The docs-style layout: the unit → lesson → task TOC in a sidebar, with the
- * selected task (or an empty state) in the main pane.
+ * The docs-style layout: the task in the main pane, the unit → lesson → task TOC
+ * in a collapsible sidebar on the right.
+ *
+ * The sidebar renders only on a task route. Opening a book shows its full TOC list
+ * as the page itself, and the docs UI — which this mirrors — does not repeat the
+ * list in a second column next to itself.
+ *
+ * The TOC lives here rather than on the top `tasks` layout because it needs the
+ * book to build the tree, and the picker at `tasks/page.tsx` must render without a
+ * sidebar: it has not chosen a book yet.
  */
 export default async function BookLayout(props: {
   children: React.ReactNode;
@@ -19,11 +27,9 @@ export default async function BookLayout(props: {
   const tree = buildTocTree(book);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 lg:flex-row">
-      <aside className="lg:w-64 lg:shrink-0">
-        <TextbookToc tree={tree} l1={l1} l2={l2} />
-      </aside>
-      <div className="min-w-0 flex-1">{props.children}</div>
+    <div className="mx-auto flex w-full max-w-6xl justify-center gap-8">
+      <div className="min-w-0 max-w-3xl flex-1">{props.children}</div>
+      <TextbookTocSidebar tree={tree} l1={l1} l2={l2} />
     </div>
   );
 }
