@@ -8,6 +8,10 @@
  */
 
 export {
+  PICK_SEPARATOR,
+  pickValues,
+} from './types';
+export {
   audioTracksIn,
   bankChoiceOptions,
   bankInDialog,

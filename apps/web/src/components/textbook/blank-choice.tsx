@@ -11,6 +11,7 @@ import React, {
 import {
   bankChoiceOptions,
   bankInDialog,
+  pickValues,
   pictureSetsIn,
   type PictureSetStimulus,
 } from '@langplayer/textbooks';
@@ -97,6 +98,12 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
   );
   const current = useSyncExternalStore(ctx.store.subscribe, getValue, getValue);
 
+  // Which options are chosen. A `multiple` blank stores its picks in ONE string (`硬卧、软卧`), so
+  // comparing that string to a single option highlights the first pick and then highlights nothing
+  // at all once a second is added — which is what a student picking two sleeping berths saw.
+  const chosen = useMemo(() => new Set(pickValues(current)), [current]);
+  const isChosen = (value: string) => (blank?.multiple ? chosen.has(value) : current === value);
+
   return (
     <BlankChoiceContext.Provider value={value}>
       {children}
@@ -123,7 +130,7 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
                 <PictureOptionTile
                   key={item.letter}
                   item={item}
-                  selected={current === item.letter}
+                  selected={isChosen(item.letter)}
                   onPick={(letter) => {
                     // A multi-select blank takes several picks, so the dialog stays open
                     // until the student closes it; a single answer closes on the tap.

@@ -117,3 +117,44 @@ describe('a blank answered from a dialog bank', () => {
     expect(confirm()).toBeUndefined();
   });
 });
+
+/**
+ * A multi-answer blank stores its picks in one string, so "is this option chosen?" cannot be a
+ * comparison of that string with an option: `硬卧、软卧` equals neither. With one pick the equality
+ * happened to hold, which is why the bug only appeared from the second pick onwards — the tiles
+ * then showed nothing chosen while the blank read both.
+ */
+describe('highlighting a multi-answer dialog blank', () => {
+  it('marks every pick, not just the first', async () => {
+    await renderBlanks();
+    await act(async () => blankButton('③').click());
+
+    const pressed = () =>
+      [...dialog()!.querySelectorAll('button[aria-label]')]
+        .filter((b) => b.getAttribute('aria-pressed') === 'true')
+        .map((b) => b.getAttribute('aria-label'));
+
+    expect(pressed()).toEqual([]);
+
+    await act(async () => tile('硬卧').click());
+    expect(pressed()).toEqual(['硬卧']);
+
+    await act(async () => tile('软卧').click());
+    expect(pressed()).toEqual(['硬卧', '软卧']);
+    expect(blankButton('③').textContent).toBe('硬卧、软卧');
+  });
+
+  it('un-marks a pick when it is tapped again', async () => {
+    await renderBlanks();
+    await act(async () => blankButton('③').click());
+    await act(async () => tile('硬卧').click());
+    await act(async () => tile('软卧').click());
+    await act(async () => tile('硬卧').click());
+
+    expect(blankButton('③').textContent).toBe('软卧');
+    const pressed = [...dialog()!.querySelectorAll('button[aria-pressed="true"]')].map((b) =>
+      b.getAttribute('aria-label'),
+    );
+    expect(pressed).toEqual(['软卧']);
+  });
+});

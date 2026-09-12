@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { bankIsPicked, createAssetResolver, type Bank } from '@langplayer/textbooks';
+import { bankIsPicked, createAssetResolver, pickValues, type Bank } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
@@ -51,12 +51,7 @@ export function WordBank({ bank }: { bank: Bank }) {
   );
   // For a multi-select blank the options already picked are shown as chosen rather
   // than consumed, so a second tap unpicks them.
-  const chosenValues = new Set(
-    (selected ? (responses[selected] ?? '') : '')
-      .split(/[、,，]/)
-      .map((part) => part.trim())
-      .filter(Boolean),
-  );
+  const chosenValues = new Set(pickValues(selected ? (responses[selected] ?? '') : ''));
 
   return (
     <div className="flex flex-col gap-2">
