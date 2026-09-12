@@ -68,6 +68,19 @@ export function isBlankScoreable(blank: BlankSpec): boolean {
   return blank.kind !== 'given' && blank.kind !== 'free';
 }
 
+/**
+ * Split a multi-select response into its picks.
+ *
+ * The UI joins picks with `、`; a student's own typing may use a comma, so all three
+ * separators are accepted.
+ */
+function picks(value: string): string[] {
+  return value
+    .split(/[、,，]/)
+    .map((part) => normalizeAnswer(part))
+    .filter(Boolean);
+}
+
 /** Grade one blank. `given` blanks are always correct (they are pre-filled). */
 export function isBlankCorrect(blank: BlankSpec, value: string | undefined): boolean {
   if (blank.kind === 'given') return true;
@@ -75,6 +88,14 @@ export function isBlankCorrect(blank: BlankSpec, value: string | undefined): boo
   if (blank.kind === 'free') return (value ?? '').trim().length > 0;
   const normalized = normalizeAnswer(value ?? '');
   if (!normalized) return false;
+  if (blank.multiple) {
+    // Order-insensitive set comparison: the student may tap 软卧 before 硬卧.
+    const given = picks(normalized).sort();
+    return acceptedAnswers(blank).some((answer) => {
+      const want = picks(answer).sort();
+      return want.length > 0 && want.length === given.length && want.every((p, i) => p === given[i]);
+    });
+  }
   return acceptedAnswers(blank).includes(normalized);
 }
 

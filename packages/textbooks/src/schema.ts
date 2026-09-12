@@ -97,6 +97,13 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
         const bank = banks.get(blank.bank);
         if (!bank) {
           add('error', `Choose blank "${key}" references missing bank "${blank.bank}".`, key);
+        } else if (blank.multiple) {
+          // Each pick must be an option; the answer as a whole is a set, not an item.
+          for (const pick of blank.answer.split(/[、,，]/).map((p) => p.trim()).filter(Boolean)) {
+            if (!bank.items.includes(pick)) {
+              add('error', `Blank "${key}" pick "${pick}" is not in bank "${bank.id}".`, key);
+            }
+          }
         } else if (!bank.items.includes(blank.answer)) {
           add('error', `Blank "${key}" answer "${blank.answer}" is not in bank "${bank.id}".`, key);
         }
@@ -281,8 +288,22 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
         continue;
       }
       const normalizedKeyed = keyed.map(normalizeAnswer);
+      const asSet = (value: string) =>
+        normalizeAnswer(value)
+          .split(/[、,，]|和|与/)
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .sort()
+          .join('|');
+      // Every accepted form is checked, not just the primary one: an `accept[]` entry
+      // that contradicts the key is an authoring mistake worth catching.
       for (const candidate of [blank.answer, ...(blank.accept ?? [])]) {
-        if (!normalizedKeyed.includes(normalizeAnswer(candidate))) {
+        // A multi-select blank may join its picks differently from the key — 硬卧和软卧
+        // against 硬卧、软卧 — so its picks are compared as a set.
+        const agrees = blank.multiple === true
+          ? normalizedKeyed.some((k) => asSet(k) === asSet(candidate))
+          : normalizedKeyed.includes(normalizeAnswer(candidate));
+        if (!agrees) {
           add(
             'error',
             `Blank "${blank.id}" answer "${candidate}" disagrees with the key (${keyed.join(' / ')}).`,
