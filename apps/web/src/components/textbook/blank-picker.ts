@@ -6,7 +6,7 @@ import { useTextbookTask } from './task-provider';
 export interface BlankPicker {
   /** The blank the next pick will fill, or null. */
   selected: string | null;
-  /** Fill the selected blank, then advance to the next empty one. */
+  /** Fill the selected blank. The selection stays where it is. */
   pick: (value: string) => void;
   /** Responses by blank id, for dimming already-used options. */
   responses: Record<string, string>;
@@ -15,12 +15,14 @@ export interface BlankPicker {
 /**
  * Shared "tap an option to fill the selected blank" behaviour.
  *
- * The word bank and the picture sets are the same interaction with different
- * affordances, so they share this rather than each re-implementing the
- * advance-to-next-empty step.
+ * The word bank and the picture sets are the same interaction with different affordances, so
+ * they share this rather than each filling in its own way.
  *
- * Advancing matters: the workbook's banks are printed once and used across
- * several blanks, so a student answers a run of them with one tap each.
+ * **The selection does not move after a fill.** It used to advance to the next empty blank,
+ * which answered a printed run of blanks with one tap each — but it also decided where the
+ * student was working: an option tapped to *correct* an earlier answer took them away from the
+ * blank they were on, and the blank they meant to change stayed as it was. The student picks
+ * the blank; filling it leaves them there.
  */
 export function useBlankPicker(): BlankPicker {
   const ctx = useTextbookTask();
@@ -57,10 +59,6 @@ export function useBlankPicker(): BlankPicker {
       }
 
       ctx!.store.setValue(selected, value);
-      const blanks = Object.values(ctx!.task.blanks ?? {}).filter((b) => b.kind !== 'given');
-      const at = blanks.findIndex((b) => b.id === selected);
-      const after = blanks.slice(at + 1).find((b) => !(responses[b.id] ?? '').trim());
-      ctx!.selection.set(after?.id ?? null);
     },
     [ctx, selected, responses],
   );
