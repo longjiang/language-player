@@ -7,6 +7,23 @@ import { log, logwarn } from '@/lib/logger';
 import { speechLogger } from '@/lib/logger';
 import { SPEECH_DEFAULTS, LANG_TO_SPEECH_TAG, pickBestVoice, type VoiceCandidate } from '@langplayer/shared';
 
+/**
+ * The Web Speech API exists only in a browser.
+ *
+ * Every entry point below is guarded by this, because the hook is reachable from
+ * server-rendered trees — `TokenizedText` calls `useSpeech()` unconditionally, and
+ * the textbook task view renders it on the server. An unguarded
+ * `speechSynthesis.getVoices()` during SSR throws
+ * `ReferenceError: speechSynthesis is not defined` and turns the whole page into a
+ * 500, which is exactly what happened to `/[l1]/[l2]/tasks/[bookId]/[unitId]/[lessonId]/[taskId]`
+ * on a hard load.
+ */
+function speechSynthesisOrNull(): SpeechSynthesis | null {
+  return typeof window !== 'undefined' && typeof window.speechSynthesis !== 'undefined'
+    ? window.speechSynthesis
+    : null;
+}
+
 /** Map a Web Speech API voice to the shared platform-agnostic candidate shape. */
 function toCandidate(v: SpeechSynthesisVoice): VoiceCandidate & { source: SpeechSynthesisVoice } {
   return {
@@ -39,15 +56,21 @@ export function useSpeech() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Re-render when voices arrive (first pickBestVoice call may see an empty list).
-  const [voicesReady, setVoicesReady] = useState(speechSynthesis.getVoices().length > 0);
+  // Server render: no speech API, so start from "not ready" and let the effect
+  // fill it in on the client.
+  const [voicesReady, setVoicesReady] = useState(
+    () => (speechSynthesisOrNull()?.getVoices().length ?? 0) > 0,
+  );
   useEffect(() => {
-    if (speechSynthesis.getVoices().length > 0) {
+    const synth = speechSynthesisOrNull();
+    if (!synth) return;
+    if (synth.getVoices().length > 0) {
       setVoicesReady(true);
       return;
     }
     const onVoicesChanged = () => setVoicesReady(true);
-    speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
-    return () => speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+    synth.addEventListener('voiceschanged', onVoicesChanged);
+    return () => synth.removeEventListener('voiceschanged', onVoicesChanged);
   }, []);
 
   const l2Settings = loaded && l2 ? getL2(l2.code) : null;
@@ -57,8 +80,10 @@ export function useSpeech() {
 
   /** Speak text using Web Speech API in the given L2 language. */
   const speak = useCallback((text: string, l2Code: string, fallbackRate?: number) => {
-    speechSynthesis.cancel();
-    const allVoices = speechSynthesis.getVoices();
+    const synth = speechSynthesisOrNull();
+    if (!synth) return;
+    synth.cancel();
+    const allVoices = synth.getVoices();
     const candidates = allVoices.map(toCandidate);
     const best = pickBestVoice(candidates, l2Code, voiceURI ?? undefined);
     if (!best) {
@@ -81,14 +106,14 @@ export function useSpeech() {
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
+    synth.speak(utterance);
     // voicesReady is only here to re-create `speak` once the voice list
     // arrives, so pickBestVoice can see it.
   }, [voiceURI, rate, voicesReady]);
 
   /** Play an audio file (e.g., Wiktionary OGG/MP3). */
   const playAudio = useCallback((url: string) => {
-    speechSynthesis.cancel();
+    speechSynthesisOrNull()?.cancel();
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -102,7 +127,7 @@ export function useSpeech() {
 
   /** Stop any ongoing speech/audio. */
   const stop = useCallback(() => {
-    speechSynthesis.cancel();
+    speechSynthesisOrNull()?.cancel();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -113,12 +138,12 @@ export function useSpeech() {
   /** Get available voices for a language. */
   const getVoicesForLang = useCallback((langCode: string): SpeechSynthesisVoice[] => {
     const prefix = `${langCode}-`;
-    return speechSynthesis.getVoices().filter(v => v.lang.startsWith(prefix));
+    return speechSynthesisOrNull()?.getVoices().filter(v => v.lang.startsWith(prefix)) ?? [];
   }, []);
 
   /** Get all available voices. */
   const getAllVoices = useCallback((): SpeechSynthesisVoice[] => {
-    return speechSynthesis.getVoices();
+    return speechSynthesisOrNull()?.getVoices() ?? [];
   }, []);
 
   /** Build a Wiktionary Commons audio URL from a filename. */
