@@ -3,13 +3,22 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createAssetResolver,
-  indexToCircled,
   isAppToHostMessage,
+  isBlankCorrect,
   mockAppHref,
   protocolCompatible,
   type MockAppStimulus,
 } from '@langplayer/textbooks';
-import { Check, ExternalLink, Languages, Lightbulb, PartyPopper, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Languages,
+  Lightbulb,
+  PartyPopper,
+  X,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { ASSET_BASE_URL, MOCK_APP_BASE_URL } from '@/lib/asset-url';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -75,8 +84,13 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     setStatus('loading');
   };
   const [open, setOpen] = useState(false);
-  /** Which task the header is on. It does not advance by itself: Next does that. */
+  /** Which task the header is on. */
   const [cursor, setCursor] = useState(0);
+  /** Tasks submitted correctly, in this sitting — what gates the way forward. */
+  const [correctGoalIds, setCorrectGoalIds] = useState<string[]>([]);
+  /** Set when a Submit found the task not done or not right; cleared on navigation. */
+  const [note, setNote] = useState<'incorrect' | null>(null);
+  /** Every goal the app has reported, which is "the student performed this task". */
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
   const [height, setHeight] = useState(420);
@@ -233,13 +247,64 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
 
   const currentIndex = Math.min(cursor, Math.max(0, questions.length - 1));
   const current = questions[currentIndex];
-  const allDone = questions.length > 0 && questions.every((goal) => doneGoalIds.includes(goal.id));
-  const currentDone = current ? doneGoalIds.includes(current.id) : false;
+  const currentCorrect = current ? correctGoalIds.includes(current.id) : false;
+  const isLast = currentIndex === questions.length - 1;
 
-  /** Next: the next task that is still unanswered, so it never lands on a struck one. */
-  const advance = () => {
-    const next = questions.findIndex((goal, i) => i > currentIndex && !doneGoalIds.includes(goal.id));
-    if (next >= 0) setCursor(next);
+  /**
+   * Submit one task.
+   *
+   * Two authorities have to agree, and neither is sufficient alone:
+   *
+   * - **The app reports the task done.** Its goals are acceptance predicates over its own
+   *   dataset (ADR-0045), so this is the evidence that the student actually performed the
+   *   task rather than arriving at the right words some other way — and it is what makes
+   *   an early Submit mean something. Without it, Submit on ① would pass before the
+   *   student had tapped anything.
+   * - **The content says the answer is the expected one**, via `isBlankCorrect`, which is
+   *   the same comparison the final grade uses. `given` ① is always correct once the app
+   *   reports it — it is a worked example and not scored.
+   *
+   * So submitting before the task is done reports "incorrect", which is the reachable
+   * wrong path; the app ignores a tap it does not accept, so a half-picked set task is
+   * simply not done yet.
+   */
+  const submitTask = () => {
+    if (!current) return;
+    const goal = stimulus.goals.find((g) => g.id === current.id);
+    const blank = goal ? ctx.task.blanks?.[goal.blankId] : undefined;
+    const performed = doneGoalIds.includes(current.id);
+    const correct =
+      Boolean(blank && goal) &&
+      performed &&
+      isBlankCorrect(blank!, ctx.store.getValue(goal!.blankId));
+
+    if (!correct) {
+      setNote('incorrect');
+      return;
+    }
+    setNote(null);
+    setCorrectGoalIds((ids) => (ids.includes(current.id) ? ids : [...ids, current.id]));
+    toast.success(t('review.answer_correct'));
+  };
+
+  /** The tasks still to do, from `from` forward — Next never lands on a finished one. */
+  const nextIndexFrom = (from: number) =>
+    questions.findIndex((goal, i) => i > from && !correctGoalIds.includes(goal.id));
+
+  const goTo = (index: number) => {
+    setNote(null);
+    setCursor(index);
+  };
+
+  const nextTask = () => {
+    const next = nextIndexFrom(currentIndex);
+    if (next >= 0) goTo(next);
+  };
+
+  /** All Done!: grade the whole task and record the attempt, which is what marks it done. */
+  const finishTask = () => {
+    ctx.store.submit();
+    setOpen(false);
   };
 
   if (status === 'failed' && !open) {
@@ -281,7 +346,6 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
 
   const header = current && (
     <div className="flex items-start gap-2 border-b border-border pb-3">
-      <span className="pt-0.5 text-sm text-muted-foreground">{indexToCircled(currentIndex + 1)}</span>
       {wide ? (
         <DialogTitle className="flex-1 text-sm leading-relaxed font-normal">
           <TokenizedText text={current.prompt} l2Code={l2.code} />
@@ -291,31 +355,39 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           <TokenizedText text={current.prompt} l2Code={l2.code} />
         </SheetTitle>
       )}
-      <div className="flex shrink-0 items-center gap-1.5">
-        {allDone ? (
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <PartyPopper className="h-3.5 w-3.5" aria-hidden />
-            {t('msg.all_done')}
-          </button>
-        ) : currentDone ? (
-          <button
-            type="button"
-            onClick={advance}
-            className="inline-flex items-center gap-1.5 rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10"
-          >
-            <Check className="h-3.5 w-3.5" aria-hidden />
-            {t('action.next')}
-          </button>
-        ) : null}
+      <div className="flex shrink-0 items-center gap-1">
+        {/*
+          The paginator replaces the task's circled numeral: which task this is, and how
+          to reach the others. Back is always available — reviewing a task you have done
+          is not a mistake — while forward waits for a correct Submit, so the six are
+          worked in order.
+        */}
+        <button
+          type="button"
+          onClick={() => goTo(Math.max(0, currentIndex - 1))}
+          disabled={currentIndex === 0}
+          aria-label={t('action.previous')}
+          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden />
+        </button>
+        <span className="min-w-9 text-center text-xs text-muted-foreground tabular-nums">
+          {currentIndex + 1} / {questions.length}
+        </span>
+        <button
+          type="button"
+          onClick={nextTask}
+          disabled={!currentCorrect || isLast}
+          aria-label={t('action.next')}
+          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
           aria-label={t('action.close')}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="ml-0.5 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
@@ -369,20 +441,28 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     </div>
   );
 
+  /**
+   * The toolbar, and the only control that resolves anything.
+   *
+   * Help mode is icon-only: it is a toggle whose state is visible in the app itself
+   * (words become tappable), so the label was noise next to the two controls it shares
+   * the row with. It keeps its accessible name.
+   */
   const toolbar = (
     <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
       <button
         type="button"
         onClick={toggleHelp}
         aria-pressed={helpMode}
-        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors ${
+        aria-label={t('label.enable_popup_dictionary')}
+        title={t('label.enable_popup_dictionary')}
+        className={`inline-flex items-center rounded-md border p-2 transition-colors ${
           helpMode
             ? 'border-primary bg-primary/10 text-primary'
             : 'border-border text-foreground hover:bg-muted'
         }`}
       >
-        <Languages className="h-3.5 w-3.5" aria-hidden />
-        {t('label.enable_popup_dictionary')}
+        <Languages className="h-4 w-4" aria-hidden />
       </button>
       <button
         type="button"
@@ -392,6 +472,44 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
         <Lightbulb className="h-3.5 w-3.5" aria-hidden />
         {t('action.hint')}
       </button>
+
+      {/* A wrong Submit is acknowledged without a toast: the button stays Submit, and the
+          student is told to keep working on this one. */}
+      {note === 'incorrect' && (
+        <span role="status" className="text-xs text-muted-foreground">
+          {t('review.answer_incorrect')}
+        </span>
+      )}
+
+      <div className="ml-auto">
+        {currentCorrect && !isLast ? (
+          <button
+            type="button"
+            onClick={nextTask}
+            className="inline-flex items-center gap-1.5 rounded-md border border-primary px-4 py-1.5 text-sm font-medium text-primary hover:bg-primary/10"
+          >
+            {t('action.next')}
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>
+        ) : currentCorrect && isLast ? (
+          <button
+            type="button"
+            onClick={finishTask}
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <PartyPopper className="h-4 w-4" aria-hidden />
+            {t('msg.all_done')}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={submitTask}
+            className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            {t('review.submit')}
+          </button>
+        )}
+      </div>
     </div>
   );
 

@@ -65,6 +65,8 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   );
 
   const banks = task.banks ?? [];
+  /** A mock app submits itself, from its own panel — see the controls below. */
+  const hasMockApp = (task.body ?? []).some((s) => s.kind === 'mockApp');
   // Nothing to grade: every blank is a worked example or ungraded prose.
   const hasNothingToScore = !Object.values(task.blanks ?? {}).some(
     (b) => b.kind !== 'given' && b.kind !== 'free',
@@ -125,23 +127,30 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           <WordBank key={bank.id} bank={bank} />
         ))}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={() => ctx.store.submit()}
-          disabled={answersOnPage > 0 && !Object.values(responses).some((v) => v.trim())}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {t('review.submit')}
-        </button>
-        <button
-          type="button"
-          onClick={() => ctx.store.reset()}
-          className="rounded-md border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
-        >
-          {t('action.try_again')}
-        </button>
-      </div>
+      {/* A mock-app task submits from inside its own panel — one task at a time, with
+          feedback at each step, and All Done! as the resolution that grades the task and
+          records the attempt. Two submit controls for one task would be one too many, and
+          the panel's is the one that knows which task is being answered. The result banner
+          below still reports the outcome. */}
+      {!hasMockApp && (
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => ctx.store.submit()}
+            disabled={answersOnPage > 0 && !Object.values(responses).some((v) => v.trim())}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {t('review.submit')}
+          </button>
+          <button
+            type="button"
+            onClick={() => ctx.store.reset()}
+            className="rounded-md border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+          >
+            {t('action.try_again')}
+          </button>
+        </div>
+      )}
 
       {submitted && result && (
         <div
