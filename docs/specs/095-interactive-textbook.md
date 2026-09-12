@@ -118,8 +118,10 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 | `dictation` | E ➊, E ➋ | numbered items typed into boxed per-character fields |
 | `freeWrite` | E ➍ | an open writing surface |
 | `noteCards` | D ➏ | titled note fields |
+| `audio` | — | ad-hoc placement of recordings; see [Audio](#audio) |
 
-**Audio is not a stimulus kind.** Tracks are a task-level `audio: AudioTrack[]`, rendered once at the top of every task that has them, so its position is identical across tasks rather than something each author places. `AudioTrack` is `{ key, label? }`.
+Most stimulus kinds may also carry `audio` for their own recording — a `passage` block, a
+`dialogue`, a `dataTable` row, a map pin. See [Audio](#audio) for which level to use.
 
 There is **no** `inlineImageSlot`: B ➎ / ➏ need one (an in-passage image placeholder assigned a letter) and are not yet authored — see [Known Gaps](#known-gaps-against-this-spec).
 
@@ -226,100 +228,115 @@ banks: [
 ],
 ```
 
-### Audio is an array on the task, not a stimulus block
+### Audio
 
-`audio` is a field on the `Task` (`Task.audio?: AudioTrack[]`), not a member of the
-`Stimulus` union, so it is not one of the ordered `body` blocks. `TaskShell` renders it
-once at the top, in the same place for every task, rather than each author positioning
-it among the stimulus and response.
+A recording can be declared at three levels, depending on what it belongs to. All three
+render through the same control, so a task that needs audio in one place and not another
+pays nothing for the others.
 
-**A task may have many tracks.** "Task-level" says *where* audio is declared, not how
-much of it there is:
-
-| Task | Tracks | Playback order is |
+| Level | Declared as | Rendered |
 |---|---|---|
-| A ➊ | 9 | one voice message per city |
-| A ➋ | 7 | one per workbook item ①–⑦ |
-| A ➌ | 5 | one per speaker |
-| C ➊ / C ➋ | 4 each | one per workbook item |
-| E ➊ / E ➋ | 4 and 3 | one per workbook item |
+| **Per task** | `task.audio[]` | the task's audio row, above the stimulus |
+| **Per item** | `audio` on the item | with that item, wherever it appears |
+| **Ad-hoc** | an `audio` stimulus in `body` | wherever it is placed in the reading order |
+
+`task.audio[]` is sugar for an `audio` block placed first: one rendering path, two ways
+to declare it. The field exists so the common case — a listening task whose recordings
+are a numbered set — always appears in the same position without each author placing it.
+
+**Only one track plays at a time.** Letting a student start item 4 while item 2 is still
+playing produces answers to the wrong question, so playback is owned by one provider per
+task and shared by every control on the page.
+
+**Never autoplays.** A browser blocks it anyway, and a task that starts speaking the
+moment it opens is hostile in a classroom.
+
+#### Per item
+
+| Item | Field | Example |
+|---|---|---|
+| A numbered slot, or a dictation item | `BlankSpec.audio` | A ➋, C ➊/➋, E ➊/➋ |
+| A table row | `TableRow.audio` | A ➌ |
+| A passage or dialogue block | `PassageStimulus.audio` / `DialogueStimulus.audio` | D ➊ |
+| A map pin | `ImageMapPin.audio` | not used — A ➊ is task-level |
+
+`audio` is an array everywhere, so an item may carry more than one recording.
+
+D ➊ is the case that shows why a block is an item: six paragraphs, six recordings, nine
+blanks, unevenly distributed (one, one, one, three, two, one). Each paragraph is its own
+`passage` block carrying its own recording, so no paragraph structure is needed inside a
+passage and no recording has to reference a blank:
 
 ```ts
-// A ➊ — nine tracks, one per city
+body: [
+  {
+    kind: 'passage',
+    audio: [{ key: 'tblt-hsk4/u06/六D ➊ 1.mp3' }],
+    text: '现在好多地方的公共交通都需要先办卡，然后给里面（{{b1}}）。但是充得太多，钱剩下来了也挺浪费。',
+  },
+  {
+    kind: 'passage',
+    audio: [{ key: 'tblt-hsk4/u06/六D ➊ 4.mp3' }],
+    text: '我去过一次东京。那儿的地铁和电车，哎呀，太（{{b4}}）了！完全不明白，一不小心就坐错。不过，日本的列车确实很（{{b5}}），而且不需要（{{b6}}），可以直接上车。',
+  },
+  // … four more
+]
+```
+
+A table row is an item in the same sense, so A ➌ puts the speaker's recording on their
+row. `rows` is therefore `TableRow[]`, not `string[][]`:
+
+```ts
+rows: [
+  { cells: ['李婷婷', '{{b1}}', '{{b2}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3' }] },
+  { cells: ['金敏俊', '{{b3}}', '{{b4}}'], audio: [{ key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3' }] },
+]
+```
+
+#### Per task
+
+A run of recordings for the task as a whole. A ➊ has nine, one per city, played from the
+row while the student works on the map — nine controls on the pins would crowd a map that
+already carries ten blanks, and the recordings name their city aloud, so a button needs no
+label to be unambiguous:
+
+```ts
 audio: [
-  { key: 'tblt-hsk4/u06/六A ➊ 上海.mp3',   label: '上海' },
-  { key: 'tblt-hsk4/u06/六A ➊ 北京.mp3',   label: '北京' },
-  { key: 'tblt-hsk4/u06/六A ➊ 哈尔滨.mp3', label: '哈尔滨' },
-  // …six more
+  { key: 'tblt-hsk4/u06/六A ➊ 上海.mp3', label: '上海' },
+  { key: 'tblt-hsk4/u06/六A ➊ 北京.mp3', label: '北京' },
+  // … seven more
 ],
 ```
 
-`AudioTrack` is `{ key, label? }`: `key` is the asset key and `label` is optional
-human-readable text for the item a track belongs to — a city name in A ➊, a speaker in
-A ➌.
+It is also the level for a single recording that covers a whole task: C ➍ replays C ➌'s
+audio, and B ➎ has one recording of its article read aloud.
 
-**`label` is authoring metadata and is never rendered** — it becomes the control's
-accessible name and nothing else. In the dictation tasks it *is* the answer (`转机`,
-`门票`), so displaying it would give the exercise away.
+#### Ad-hoc
 
-### `blankId`: binding a track to the item it belongs to
-
-A track that belongs to one item — a table row, a numbered slot, a dictation item —
-declares it with `blankId`. The widget rendering that blank places the play control
-with its item, so a student plays each recording where they answer it instead of
-counting `①`–`⑦` buttons at the top of the task against rows:
-
-```
-[▶] 李婷婷     E     b
-[▶] 金敏俊
-[▶] 奥利维亚
-[▶] 陈灵
-[▶] 朴书妍
-```
+For audio that belongs to neither the task nor an item, declare an `audio` block where it
+should appear:
 
 ```ts
-// A ➌ — five speakers, each anchored to the first blank of their row
-audio: [
-  { key: 'tblt-hsk4/u06/六A ➌（1）卢沟桥.mp3', label: '李婷婷',  blankId: 'b1' },
-  { key: 'tblt-hsk4/u06/六A ➌（2）日本.mp3',   label: '金敏俊',  blankId: 'b3' },
-  { key: 'tblt-hsk4/u06/六A ➌（3）汉阳陵.mp3', label: '奥利维亚', blankId: 'b5' },
-],
+{ kind: 'audio', label: '听录音，回答问题。', tracks: [{ key: 'tblt-hsk4/u06/…mp3' }] }
 ```
 
-For an item spanning several blanks, anchor to the first: A ➌'s rows hold two blanks
-each (`b1`/`b2`), and each speaker's track anchors to the row's first. The widget asks
-`trackForAnyBlank` with every blank the item owns, so a container that knows only its
-blanks still finds the track.
+`label` is optional and renders as a heading above the controls — useful when a recording
+covers a long text and needs naming.
 
-**A track with no `blankId` stays in the task's audio row at the top.** That is right
-for A ➊: its nine recordings belong to map pins, where nine inline controls would
-crowd a map that already carries ten blanks, and the recordings name their city aloud,
-so a button does not need to.
+#### `AudioTrack`
 
-| Task | Placement |
-|---|---|
-| A ➊ | task audio row — 9 tracks, one per city, all unanchored |
-| A ➋, C ➊, C ➋ | beside each numbered slot |
-| A ➌ | in each table row, beside the speaker |
-| E ➊, E ➋ | beside each dictation item |
-| B ➍ | none |
+```ts
+interface AudioTrack {
+  key: string;      // asset key
+  label?: string;   // authoring metadata; also the control's accessible name
+}
+```
 
-Playback is owned by one provider per task and shared by both kinds of control, so
-**only one track can play at a time** — letting a student start item 4 while item 2 is
-still playing produces answers to the wrong question.
-
-The validator rejects an anchor naming a blank the task does not have, two tracks
-anchored to the same blank, and an anchor on a `goal` blank (answered inside a mock
-app) or a `free` blank (not a numbered item).
-
-The circled numeral in the task audio row is still derived from the track's **position**
-(`indexToCircled(index + 1)`).
-
-**History.** This was originally positional and unvalidated: A ➋'s seven tracks carried
-no anchors and relied on array order to line up with the workbook's ①–⑦, so reordering
-the array would have renumbered every track and silently broken the alignment. The
-original design also claimed each track "may bind to a blank", which no field
-implemented. `blankId` is that binding, added when the row-level control was built.
+**`label` is never displayed as button text.** It identifies a track in the content file
+and becomes the accessible name; the audio row shows `① ② ③` from each track's position
+(`indexToCircled(index + 1)`) and an item's control is an icon. This is deliberate: in the
+dictation tasks the label *is* the answer (`转机`, `门票`, `选择`), so displaying it would
+give the exercise away.
 
 ### Blank variants worth showing
 
@@ -375,9 +392,8 @@ upload with **no rename step**; images are `<lesson><task>-<letter>.<ext>`
 1. **Every *scored* blank has a resolution.** Either a non-empty `answer`, or `kind: given`. `free` blanks are the documented exception — recorded and never scored, so an empty `answer` is correct for them — and `given` blanks are excluded from scoring too. `goal` blanks are answered inside a mock app: they carry an answer for the host to grade, and the validator additionally requires each to be linked from a mock-app goal.
 2. **`given` blanks are real.** The answer key deliberately omits blanks the workbook pre-fills (e.g. B ➊ prints `① a` and `② b` with no key entry). Modelled as `given` so the UI pre-fills them and the key parser does not report them missing.
 3. **`allowReuse` is per bank and defaults to `false`.** It is a task-level fact, not a global rule. When false, each platform's `WordBank` dims options already used elsewhere in the task, so a student can see what is left; when true, an option may be picked any number of times. Every bank in the pilot unit sets it to `false`, and B ➊ is the case that shows why the flag has to exist at all: its six options map to six distinct answers (`③ f; ④ c; ⑤ e; ⑥ d`, with ① and ② pre-filled as `given`), so a bank *could* legitimately need reuse in another task and the behaviour must not be hard-coded.
-4. **`expectedLength` defaults to `answer.length`.**
-   This was originally read as being indicated by the small circled numerals the workbook prints above some blanks — **that reading was wrong.** Circled numerals (①②③) are **question indices**, matching the numbering in the answer key so a student can find the corresponding answer; they carry no length information. Blank ids align with them (`b1` ↔ ①) precisely because they share that indexing role.
-   The genuine length indicator is different and appears only in the dictation tasks (E ➊ / ➋), where the workbook prints one visible box per expected character. So `expectedLength` is set explicitly for dictation tasks and otherwise left to default to `answer.length`.
+4. **`expectedLength` defaults to `answer.length`**, and is set explicitly only for the dictation tasks (E ➊ / ➋), where the workbook prints one box per expected character.
+   Circled numerals (①②③) are **question indices** — the numbering the answer key uses, so a student can find the corresponding answer — and carry no length information. Blank ids mirror them (`b1` ↔ ①) because they share that indexing role.
 5. **`accept[]`** lists additional correct surface forms (see Grading).
 6. **`sourcePage`** is mandatory where the task was transcribed from the workbook, so a reviewer can audit any task against the print original.
 7. **A `mockApp` stimulus carries no `data:` and no blank answers of its own.** Its dataset, goals and expected answers live inside the app's HTML (see [The Mock App Stimulus](#the-mock-app-stimulus)), and the intended cross-check is that the validator compares the answers the app declares against the content answer key — see [Known Gaps](#known-gaps-against-this-spec), because only the goal-to-blank linkage is implemented so far.
@@ -531,7 +547,8 @@ below fall either side of.
 - a `choose` blank referencing a `bank` or `optionSet` that does not exist;
 - a bank option never referenced, or a `choose` answer absent from its bank;
 - `expectedLength` inconsistent with `answer.length` where both are set;
-- an `audio` key, or any other asset reference, with no corresponding entry in the manifest;
+- any asset reference — text, picture, map image, or a recording declared at **any** level (task, item, row, block, or an `audio` block) — with no corresponding entry in the manifest;
+- a blank carrying `audio` that lives in a `passage` or `dialogue`, where the block owns the recording rather than the blank;
 - a task missing `sourcePage` (transcription provenance);
 - a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa;
 - a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to.
@@ -722,7 +739,9 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TextbookPicker` | Entry screen: choose a textbook (single item today) |
 | `TextbookToc` | Docs-style collapsible TOC of units → lessons → tasks; current lesson expanded |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
-| `AudioPlayer` | Task audio: play/pause, per-track selection, progress display. **No scrub and no replay** — see [Known Gaps](#known-gaps-against-this-spec) |
+| `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time |
+| `AudioPlayer` | The task-level audio row: play/pause, per-track selection, progress display. **No scrub and no replay** — see [Known Gaps](#known-gaps-against-this-spec) |
+| `InlineTrackButton` | The compact play/pause control an item renders beside itself. Renders nothing when the item has no recording, so a widget can place it unconditionally |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
 | `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
 | `PictureSet` | Lettered image grid referenced by blanks |
@@ -1027,23 +1046,20 @@ retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failur
 already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
 `failed` state).
 
-**8. `AudioTrack.label` is never displayed.**
+**8. Audio placement is not yet rebuilt to the model above.**
 
-`label` exists to identify a track in the content file and becomes the control's
-accessible name; nothing renders it, which is why the audio row shows `① ② ③` rather
-than the city or speaker names.
+Every other section describes what is implemented. This one does not: the code still
+binds tracks to blanks with `AudioTrack.blankId` — one field on a task-level array plus
+four lookup helpers, three validator rules and 27 content anchors — instead of declaring
+recordings on the task, the item or an `audio` block as specified here.
 
-This is **correct for the dictation tasks**, where the label is the answer (`转机`,
-`门票`) — displaying it would give the exercise away — and harmless elsewhere: A ➊'s
-recordings name their city aloud, and A ➌'s speakers are printed in table order. So
-this is recorded as intended behaviour rather than a defect, and the earlier proposal to
-"show the label where it cannot leak" is withdrawn: the rule would have to be decided
-per task, for no gain.
+That model works for A ➋, A ➌, C and E, but it fails D ➊, whose items are paragraphs:
+a `passage` block places no control, so six recordings bound to blanks inside running
+text would render nowhere at all, silently. Declaring the recording on the block removes
+the failure rather than validating against it.
 
-The position-based alignment that originally made this risky is **fixed** —
-`AudioTrack.blankId` now binds a track to its item, so reordering an `audio` array no
-longer silently renumbers it against the workbook, and the validator rejects an anchor
-that names no blank, a duplicate anchor, and an anchor on a `goal` or `free` blank.
+Rebuilding it is a replacement, not an extension: it deletes `blankId`, the helpers and
+the anchor rules, and adds `audio` to the item types plus the `audio` stimulus.
 
 ### Verified, not assumed
 
