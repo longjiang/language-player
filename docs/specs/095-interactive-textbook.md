@@ -141,7 +141,7 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 | `dialogue` | C ➍ | speaker-labelled lines carrying inline blanks |
 | `pictureSet` | A ➊, A ➋, A ➌, B ➎, C ➊, C ➋, E ➊, E ➋ | lettered image grid the blanks reference by letter |
 | `imageMap` | A ➊ | image with positioned pins, each pin holding a blank |
-| `dataTable` | A ➌, B ➊, B ➋, B ➌, D ➋ | tabular data; cells are L2 text and may carry blanks |
+| `dataTable` | A ➌, B ➊, B ➋, B ➌, D ➋ | tabular data; cells are L2 text and may carry blanks, and a row may carry a decorative icon (`TableRow.icon`) drawn outside that text |
 | `numberedBlanks` | A ➋, C ➊, C ➋ | a `① ___ ② ___` row, for tasks with no passage |
 | `mockApp` | B ➍ | a self-contained HTML mock app, referenced by id; owns its own UI and goals (see below) |
 | `dictation` | E ➊, E ➋ | numbered items typed into boxed per-character fields |
@@ -356,6 +356,14 @@ text; the blanks are untouched.
 word **within one pool** — 随处 twice in A ➍ (1), 摇 twice in (4). A word printed in two
 summaries' pools (趟, in (2) and (4)) is the reason those pools are per summary at all: one
 shared pool would have had to list it once and reuse it across items.
+
+**A row's emoji is decoration and stays out of the cell's text.** B ➊ marks each train with the
+emoji for the kind of train its letter stands for (高 🚄, 动/城 🚅, 直 🚈, 特/快 🚃), which is the
+correspondence the instructions point at. It is `TableRow.icon`, rendered beside the cell, not
+prefixed into it: a cell is L2 vocabulary where every token is a word the student can look up, and
+an emoji inside that stream becomes a token of its own — the lemmatizer returns it with an empty
+lemma list and its own glyph as the pronunciation, so it draws no reading, but tapping it opens
+the dictionary on 🚄. Keeping it out also keeps the tokenizer from ever seeing it.
 
 **Tapping a blank always selects it.** It never clears and never deselects — for a bank blank
 that is the whole gesture, and a filled one is re-answered by picking another option rather than
@@ -1314,6 +1322,9 @@ which is the designed behaviour, and also why this went unnoticed.
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**B ➊'s emoji are verified by test** (`data-table.test.tsx`): the six glyphs render beside the
+cells, none of them inside a tokenized element, and the row's own text is still letter-first.
 
 **The blank's own gestures are verified in a browser on B ➊**: a tap selects, a second tap keeps
 it selected, a filled blank survives a tap, filling from the pool leaves the selection on the

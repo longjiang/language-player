@@ -198,6 +198,17 @@ export interface DialogueStimulus {
  */
 export interface TableRow {
   cells: string[];
+  /**
+   * A glyph drawn before the row's first cell — B ➊'s train emoji (🚄 for 高, 🚅 for 动 and 城).
+   *
+   * **Decoration, not text.** It is rendered outside the tokenized cell on purpose: a cell is
+   * L2 vocabulary, where every token is a word the student can look up, and an emoji in that
+   * stream becomes a token of its own — the lemmatizer returns it with an empty lemma list and
+   * its own glyph as the pronunciation (so no reading is drawn above it), but tapping it still
+   * opens the dictionary on 🚄. It also keeps the row's own text as the only thing the
+   * tokenizer sees.
+   */
+  icon?: string;
   /** The row's own recording, if it has one. */
   audio?: AudioTrack[];
 }
