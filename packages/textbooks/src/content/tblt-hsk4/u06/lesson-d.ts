@@ -283,5 +283,39 @@ export const lessonD: LessonMeta = {
         b5: { id: 'b5', kind: 'free', answer: '' },
       },
     },
+    {
+      id: 'tblt-hsk4.u06.D.t7',
+      number: '➐',
+      type: 'conversation',
+      sourcePage: 20,
+      // Recording itself is outside the app: it needs a microphone and somewhere to
+      // put the audio, and neither app has that. The task is therefore the
+      // instruction, the draft to read from, and a self-check the student fills in
+      // afterwards — see SPEC-095's Known Gaps.
+      instructions:
+        '按照你写的草稿，录一段介绍自己城市的公共交通的音频。录完以后，回听一遍，在下面写下你想改进的地方。',
+      body: [
+        {
+          kind: 'recall',
+          taskId: 'tblt-hsk4.u06.D.t6',
+          title: '你在 ➏ 写的草稿',
+          items: [
+            { blankId: 'b1', title: '路线' },
+            { blankId: 'b2', title: '买票、支付' },
+            { blankId: 'b3', title: '站台等车' },
+            { blankId: 'b4', title: '运营时刻' },
+            { blankId: 'b5', title: '其它' },
+          ],
+        },
+        {
+          kind: 'freeWrite',
+          blankId: 'b1',
+          rows: 4,
+        },
+      ],
+      blanks: {
+        b1: { id: 'b1', kind: 'free', answer: '' },
+      },
+    },
   ],
 };

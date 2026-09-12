@@ -119,6 +119,7 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 | `freeWrite` | E ➍ | an open writing surface |
 | `noteCards` | D ➏ | titled note fields |
 | `audio` | — | ad-hoc placement of recordings; see [Audio](#audio) |
+| `recall` | D ➐ | shows what the student wrote in an earlier task, read from the local store |
 
 Most stimulus kinds may also carry `audio` for their own recording — a `passage` block, a
 `dialogue`, a `dataTable` row, a map pin. See [Audio](#audio) for which level to use.
@@ -742,6 +743,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time |
 | `AudioPlayer` | The task-level audio row: play/pause, per-track selection, progress display. **No scrub and no replay** — see [Known Gaps](#known-gaps-against-this-spec) |
 | `InlineTrackButton` | The compact play/pause control an item renders beside itself. Renders nothing when the item has no recording, so a widget can place it unconditionally |
+| `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
 | `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
 | `PictureSet` | Lettered image grid referenced by blanks |
@@ -900,9 +902,9 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## Phasing
 
-> **Implementation status.** Phases 0–3 are implemented. Unit 6 lessons A–E are
-> authored; the workbook's remaining tasks for lessons B (➎/➏), C (➌) and D (➊–➎)
-> are not yet transcribed.
+> **Implementation status.** Phases 0–3 are implemented, and **all 25 tasks of unit 6
+> are authored** — A ➊–➍, B ➊–➏, C ➊–➍, D ➊–➐, E ➊–➍. Every answer is
+> cross-checked against the printed key, and `validateBook` reports no errors.
 >
 > **Media is published and live.** All 85 keys for the authored tasks — 39 audio and
 > 46 images — are staged in the server data folder and uploaded to the shared host;
@@ -1014,8 +1016,11 @@ validator rather than merged into it.
 
 **4. `InlineImageSlot` does not exist.**
 
-Required by B ➎ / ➏, which are not authored, and it is the one planned component with
-no implementation at all. The component inventory marks it **not built**, and it is
+B ➎ and ➏ are authored without it. Their 插图 slots are `choose` blanks over a
+`pictureSet`, so the student taps the slot and then the picture — the same interaction
+A ➊ already uses for its lettered bank. What is missing is the presentation: the slot
+shows a letter chip rather than the illustration itself, where the booklet prints the
+picture in the gap. The component inventory marks it **not built**, and it is
 deliberately absent from the stimulus kinds table, which lists only kinds that exist.
 
 **5. `AudioPlayer` has no scrub and no replay.**
@@ -1045,6 +1050,21 @@ which is a reminder that the audit was not exhaustive. The fix is small: surface
 retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failure is
 already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
 `failed` state).
+
+**8. D ➐ asks the student to record audio, and the app cannot.**
+
+The task is authored as its instruction, the draft from ➏ rendered by `RecallCard`, and
+a self-check box for what the student wants to improve. The recording itself is out of
+band: it needs a microphone and somewhere to put the audio, and neither app captures or
+uploads audio today. This is the only task of the twenty-five whose core activity the
+app cannot host.
+
+Related, and deliberate rather than a defect: three tasks record answers they do not
+score. C ➌'s three comprehension questions and D ➐'s self-check are `free` blanks, so
+they are saved and never marked. C ➌'s key prints model sentences rather than answers —
+any wording carrying the same information is correct — so grading them as strings would
+mark right answers wrong. A "show the model answer after submit" affordance does not
+exist, so those tasks give no feedback.
 
 ### Verified, not assumed
 

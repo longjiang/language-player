@@ -323,6 +323,26 @@ export interface NoteCardsStimulus {
 }
 
 /**
+ * Shows what the student wrote in an earlier task.
+ *
+ * D ➐ asks them to record themselves reading the draft they wrote in ➏, so the draft
+ * has to be in front of them. Exercise state is local-only (ADR-0044), so this reads
+ * the saved responses for `taskId` rather than any server record.
+ *
+ * `items` names the blanks to show with the heading each should carry, rather than
+ * pulling headings from the referenced task's content: that would mean loading and
+ * interpreting another task's schema at render time, and the recall is clearer when
+ * the labels are stated where they are used.
+ */
+export interface RecallStimulus {
+  kind: 'recall';
+  /** The task whose saved answers are shown, e.g. `tblt-hsk4.u06.D.t6`. */
+  taskId: string;
+  title?: string;
+  items: Array<{ blankId: string; title: string }>;
+}
+
+/**
  * Recordings placed ad-hoc in the body, for audio that belongs to neither the task
  * nor an item. Rendered where it is declared.
  */
@@ -335,6 +355,7 @@ export interface AudioStimulus {
 
 export type Stimulus =
   | AudioStimulus
+  | RecallStimulus
   | PassageStimulus
   | DialogueStimulus
   | PictureSetStimulus

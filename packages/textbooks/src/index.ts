@@ -45,6 +45,7 @@ export type {
   FreeWriteStimulus,
   ImageMapPin,
   ImageMapStimulus,
+  RecallStimulus,
   LessonMeta,
   MockAppGoalLink,
   MockAppStimulus,
