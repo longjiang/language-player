@@ -6,17 +6,20 @@
  * addressed through this single constant. Content files store relative asset
  * keys, so changing host is a change to this value plus a re-upload.
  *
- * Set EXPO_PUBLIC_ASSET_URL to point at the published location:
- *   - Production (default): the shared host.
- *   - Dev: the local Flask/web origin, so `npm run dev` works with locally
- *     extracted media.
+ * The shared host is the DEFAULT, in development and production alike — the
+ * media lives on the server, so there is no local-path default. To serve assets
+ * locally instead (offline work, or after a re-extraction), set
+ * EXPO_PUBLIC_ASSET_URL to wherever they are served from.
+ *
+ * The URL itself lives in `@langplayer/textbooks` so the two apps cannot drift.
  *
  * Mirrors `api-url.ts` on both platforms: import this rather than reading
  * `process.env` at a call site.
  */
 
-const PRODUCTION_URL = 'https://server.chinesezerotohero.com/data/textbook';
+import { DEFAULT_TEXTBOOK_ASSET_BASE_URL } from '@langplayer/textbooks';
 
 /** The base URL textbook media is resolved against. */
 export const ASSET_BASE_URL: string =
-  (typeof process !== 'undefined' && process.env.EXPO_PUBLIC_ASSET_URL) || PRODUCTION_URL;
+  (typeof process !== 'undefined' && process.env.EXPO_PUBLIC_ASSET_URL) ||
+  DEFAULT_TEXTBOOK_ASSET_BASE_URL;
