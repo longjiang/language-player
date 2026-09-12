@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Created**: 2026-08-16
-- **Last updated**: 2026-09-07 (document CJK line-breaking / kinsoku)
+- **Last updated**: 2026-09-12 (correct the line-breaking claim: an adjacent-ruby run is unbreakable)
 - **Scope**: Web (`apps/web`)
 
 ## Context
@@ -150,6 +150,39 @@ explicit break opportunities were both unnecessary and harmful.
 `overflow-wrap: break-word` is kept so a long non-CJK "word" (e.g. an English
 loanword inside a Chinese paragraph) can still wrap instead of clipping.
 
+### Correction (2026-09-12): a ruby run is not breakable between adjacent rubies
+
+The claim above — "Modern Chromium already exposes Han line-break opportunities
+at ruby boundaries" — is **half true, and the missing half breaks layouts**.
+Measured in Chromium by rendering the flat run and reading `scrollWidth`:
+
+- **A run of adjacent `<ruby>` elements with no intervening text node does not
+  break at all.** 49 per-character rubies inside a 760px box render as **one
+  line of 833px** — no wrap, no overflow warning, just a line wider than its
+  container. Grouping the same characters two-per-`<ruby>`, or setting
+  `line-break: anywhere`, makes it wrap.
+- Breaks *do* happen at the text nodes between runs, so real prose wraps at its
+  punctuation and spaces and the defect stays hidden — until the width is
+  constrained by something else.
+
+The consequence is not about kinsoku, it is about **min-content**: because the
+run cannot break, the min-content width of a paragraph of Chinese tokenized text
+is not one character but the widest run between two punctuation marks. Any flex
+item holding such text therefore has an automatic minimum size far larger than
+the column, and `min-width: auto` makes it refuse to shrink. That is exactly
+what happened to the textbook task view: the instructions sat in a `flex-1`
+item beside the task-number badge, the item was pinned at 774px inside a 760px
+article, and the passage painted 54px past the pane on every task page.
+
+**Rule: a flex item that holds tokenized text must set `min-w-0` (and a grid
+item, `min-w-0` likewise).** `min-w-0` was appended to the instructions item in
+`apps/web/src/components/textbook/task-shell.tsx`; with it the item takes its
+760px column, the text wraps inside it, and the measured overflow is zero.
+
+`line-break: anywhere` and `word-break: break-all` fix the width too, and are
+**not** used: both relax the kinsoku rules this ADR deliberately preserves, and
+they paper over a layout bug instead of naming it.
+
 ## Alternatives considered
 
 1. **One `<ruby>` container per line with `<rb>/<rt>` pairs** — the strongest
@@ -173,6 +206,9 @@ loanword inside a Chinese paragraph) can still wrap instead of clipping.
   (Chrome < 151, Firefox), output is byte-identical to today.
 - **Group distribution** across *separate* `<ruby>` elements is not
   guaranteed by engines; full jukugo distribution needs Alternative 1.
+- **A run of adjacent rubies is unbreakable in Chromium**, so the min-content
+  width of Chinese tokenized text is a whole run and not a character — every
+  flex/grid item holding it needs `min-w-0` (see Line-breaking / kinsoku).
 - **Interlinear definition mode** keeps the boxed renderer (see above).
 
 ## Consequences

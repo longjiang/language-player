@@ -81,7 +81,15 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         >
           {task.number}
         </span>
-        <div className="flex-1">
+        {/* `min-w-0` is load-bearing, not decoration. A flex item's automatic minimum
+            size is its min-content width, and for this text that is huge: a run of
+            adjacent `<ruby>` elements offers the engine no line-break opportunity
+            (verified in Chromium — with no punctuation between them, a whole line of
+            ruby renders as one unbreakable box), so min-content is a full run and not
+            one character. Without `min-w-0` the item refuses to shrink to the column
+            and the passage paints past the article — measured at 774px inside a 760px
+            container, overflowing the pane by 54px. */}
+        <div className="min-w-0 flex-1">
           {/* Instructions are L2 text rendered through TokenizedText, so they
               carry ruby and are tappable like any other L2 text. */}
           <div className="text-base text-foreground">
