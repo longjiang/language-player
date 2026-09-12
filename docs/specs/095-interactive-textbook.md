@@ -1138,6 +1138,28 @@ A host-side declarative renderer is the wrong shape for that: its schema would a
 
 Per ADR-0045, mock apps are sandboxed and hosted same-origin.
 
+### How the app is served
+
+The HTML is a file in the web app's own `public/` — `public/mock-apps/<id>/index.html`,
+addressed by `mockAppHref` — so it is served by the origin that hosts the task and not by the
+asset host (ADR-0045: this is code, not media). Mobile's `MOCK_APP_BASE_URL` is that same
+origin, so both clients load one copy of the app and neither bundles it.
+
+**That origin routes through `apps/web/src/proxy.ts`, which has to pass a public file through
+before it decides anything about `[l1]/[l2]` — and it did not.** The pass-through test was a
+list of six extensions, `.html` was not one of them, and the file a task's frame requests ended
+in `.html`. So `/mock-apps/railway-12306/index.html` reached the invalid-pair rewrite at the foot
+of the proxy, where `mock-apps` is read as an L1 and `railway-12306` as an L2, and became
+`/_not-found`: B ➍ rendered the web 404 page inside its own frame. `runtime.v1.js` next to it
+loaded perfectly the whole time — `.js` *was* on the list — which is what made a misrouted
+request look like an app that was broken.
+
+A static file is now recognised by the `public/` directory it lives under as well as by its
+extension (`isStaticFileRequest`, `apps/web/src/lib/static-file-path.ts`), which is also the only
+test that recognises `/.well-known/apple-app-site-association` — a public file with no extension
+at all. `static-file-path.test.ts` walks `public/` and fails on any file the predicate does not
+recognise, so a new mock app, or a new directory beside it, cannot go unserved in silence.
+
 ### Three layers, and which one grows
 
 | Layer | Lives in | Grows per new app? |

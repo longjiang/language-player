@@ -321,8 +321,18 @@ pattern strings into regular expressions.
 `apps/web/src/proxy.ts` already exists (Next.js 16 proxy) and handles static
 assets, auth, locale cookies, and guest gating. The adapter is called from it:
 
-1. Skip non-page requests: `/api/*`, `/_next/*`, `/og`, requests with a file
-   extension, and non-GET/HEAD methods — as today.
+1. Skip non-page requests: `/api/*`, `/_next/*`, `/og`, static files, and
+   non-GET/HEAD methods — as today. A **static file** is a file in `public/`,
+   recognised by the directory it lives under (`.well-known/`, `fonts/`, `img/`,
+   `mock-apps/`) as well as by its extension
+   (`isStaticFileRequest`, `apps/web/src/lib/static-file-path.ts`). The
+   extension test alone is not enough: `/.well-known/apple-app-site-association`
+   has no extension, and `/mock-apps/<app>/index.html` was missed because
+   `.html` was not on the list.
+   **A file that this step misses is not left alone** — it reaches item 3 below
+   and is rewritten to `/_not-found`, because its first two segments are read as
+   an `[l1]/[l2]` pair (`mock-apps` / `railway-12306`). That is how B ➍'s mock
+   app came to render the web 404 page inside its own frame (SPEC-095).
 2. For remaining requests, resolve `pair` from the `l1`/`l2` cookies
    (fallback `en/zh`) and run
    `classicRouteAction(pathname, pair, req.nextUrl.searchParams)`:
