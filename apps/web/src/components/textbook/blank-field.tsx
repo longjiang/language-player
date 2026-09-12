@@ -76,12 +76,12 @@ export function BlankField({
       : 'border-destructive bg-destructive/10'
     : null;
 
-  const handleChoose = () => {
-    // Tapping a filled blank clears it; tapping an empty one selects it so the
-    // word bank's next tap fills it.
-    if (value) ctx!.store.setValue(blank.id, '');
-    else ctx!.selection.toggle(blank.id);
-  };
+  // Tapping a bank blank always SELECTS it. It never clears and never deselects: a filled
+  // blank is re-answered by picking another option (which replaces it), and a blank a stray
+  // second tap had deselected would silently swallow the next option tap — the student taps a
+  // word and nothing appears, with no sign that the blank was disarmed. Re-tapping the same
+  // blank is therefore a no-op rather than a toggle.
+  const handleChoose = () => ctx!.selection.set(blank.id);
 
   // ── Typed entry ──
   if (blank.kind === 'type') {
@@ -145,7 +145,9 @@ export function BlankField({
             : 'border-muted-foreground/60 hover:bg-muted/50')
         }`}
       >
-        {value || <span className="text-muted-foreground">＿</span>}
+        {/* Empty is empty: the blank's own bottom border is the line to write on, so a
+            placeholder underscore inside it drew a second line over the first. */}
+        {value}
       </button>
       {reveal && (
         <span className="text-sm font-medium text-green-600">

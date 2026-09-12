@@ -357,6 +357,24 @@ word **within one pool** — 随处 twice in A ➍ (1), 摇 twice in (4). A word
 summaries' pools (趟, in (2) and (4)) is the reason those pools are per summary at all: one
 shared pool would have had to list it once and reuse it across items.
 
+**Tapping a blank always selects it.** It never clears and never deselects — for a bank blank
+that is the whole gesture, and a filled one is re-answered by picking another option rather than
+by emptying it first. Both of the old behaviours were silent failures in practice: a tap that
+cleared an answer threw away work the student had done, and a tap that toggled the selection off
+disarmed the blank, so the *next* option tap went nowhere with nothing on screen to say why.
+Re-tapping the same blank is therefore a no-op, and clearing is what "Try again" is for.
+
+**Filling a blank does not move the selection.** It used to advance to the next empty blank,
+which answered a printed run of blanks with one tap each — but it also decided where the student
+was working: an option tapped to *correct* an earlier answer carried them away from the blank
+they were on, and left it as it was. The student picks the blank and stays on it.
+
+**An empty bank blank is empty.** Its own bottom border is the line to write on, so the
+placeholder underscore that used to sit inside it drew a second line just above the first — two
+underlines in one blank. (A blank inside running text is the exception: on mobile there is no
+interactive control there, so `InlineBlankText` still prints `＿` as the visible marker of a blank
+the student cannot tap.)
+
 **A used option is struck out, and `allowReuse` does not suppress it.** The strike means *you
 have placed this word*, which is what a student working down a summary needs to see — and it
 has to survive reuse, since (4) uses 摇 twice and its pool holds three words. `allowReuse`
@@ -1296,6 +1314,11 @@ which is the designed behaviour, and also why this went unnoticed.
 The task type labels are verified the same way: `task-types.test.ts` reads
 `translations.csv` and fails if any type's `label.<type>` row is absent or empty in any
 of the 18 locales, so an icon without an accessible name cannot ship quietly.
+
+**The blank's own gestures are verified in a browser on B ➊**: a tap selects, a second tap keeps
+it selected, a filled blank survives a tap, filling from the pool leaves the selection on the
+blank that was filled, and every empty blank reports empty text (no placeholder inside it).
+Covered by four tests in `blank-field.test.tsx` as well.
 
 **The pools are verified in a browser for all four behaviours.** Words are struck as they are
 placed and not before — including on A ➍ (1), whose four `given` answers are in the store from

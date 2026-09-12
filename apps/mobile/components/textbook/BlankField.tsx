@@ -122,12 +122,11 @@ export function BlankField({
   }
 
   // ── Choose from a bank ──
-  const handleChoose = () => {
-    // Tapping a filled blank clears it; tapping an empty one selects it so the
-    // word bank's next tap fills it.
-    if (value) fill('');
-    else ctx!.selection.toggle(blank.id);
-  };
+  // Tapping a bank blank always SELECTS it. It never clears and never deselects: a filled
+  // blank is re-answered by picking another option (which replaces it), and a blank a stray
+  // second tap had deselected would silently swallow the next option tap. Re-tapping the same
+  // blank is therefore a no-op rather than a toggle.
+  const handleChoose = () => ctx!.selection.set(blank.id);
 
   return (
     <View className="mx-0.5 mb-0.5 flex-row items-center">
@@ -146,9 +145,10 @@ export function BlankField({
         }`}
         style={[{ borderBottomWidth: 2, borderBottomColor: ICON_PRIMARY }, verdictStyle ?? {}]}
       >
-        <Text className="min-w-[28px] text-center text-base text-foreground">
-          {value || '＿'}
-        </Text>
+        {/* Empty is empty, and `min-w` is what keeps it visible: the blank's own bottom
+            border is the line to write on, so a placeholder underscore inside it drew a second
+            line over the first. */}
+        <Text className="min-w-[28px] text-center text-base text-foreground">{value}</Text>
       </Pressable>
       {reveal && (
         <Text className="ml-1.5 text-sm font-medium text-green-600">
