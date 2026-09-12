@@ -20,10 +20,19 @@ const nextConfig = {
   // `npm run build:check -w apps/web` to verify the build while `next dev`
   // is running without conflicts.
   distDir: process.env.BUILD_CHECK === '1' ? '.next-check' : '.next',
+  // Workspace packages whose **source** Next compiles for this app. All four export
+  // `./src/index.ts` (there is no build step and no `dist/`), so each one has to be
+  // listed or Next treats it as prebuilt dependency code and never watches it.
+  // `@langplayer/textbooks` was the one missing, and the symptom was subtle: editing
+  // a lesson file — the textbook's content — changed nothing in the running dev
+  // server until it was restarted, which reads exactly like a caching bug in the
+  // browser or a mistake in the content. Its sibling packages reloaded, because they
+  // were on the list.
   transpilePackages: [
     '@langplayer/shared',
     '@langplayer/api-client',
     '@langplayer/utils',
+    '@langplayer/textbooks',
   ],
   images: {
     remotePatterns: [
