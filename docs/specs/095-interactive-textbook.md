@@ -10,7 +10,7 @@
 - **Web ref**: `apps/web/src/app/[l1]/[l2]/textbook/` (new), `apps/web/src/components/tokenized-text.tsx`
 - **Mobile ref**: `apps/mobile/app/(tabs)/(reading)/textbook.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
 - **Source content**: `tmp/interactive-text/` (workbook PDF, answer key PDF, audio transcript PDF, 47 mp3)
-- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
+- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
 
 > **Note on scope**: Classic/Nuxt (`zerotohero-nuxt/`) is treated as **out of scope** for this feature by explicit product decision. This spec is grounded in the source workbook and the active web/mobile codebase only.
 
@@ -99,7 +99,7 @@ Every task is one or more **stimulus** blocks plus a **response** surface.
 | `pictureSet` | A ➋, A ➌, B ➎, E | lettered image grid the blanks reference by letter |
 | `imageMap` | A ➊ | image with positioned pins, each pin holding a blank |
 | `dataTable` | A ➌, B ➊, B ➋, B ➌ | tabular data, cells optionally blank |
-| `mockApp` | B ➍ | a rendered app screen driven by a dataset (see below) |
+| `mockApp` | B ➍ | a self-contained HTML mock app, referenced by id; owns its own UI and goals (see below) |
 | `inlineImageSlot` | B ➎, B ➏ | an inline image placeholder inside a passage, filled by assigning a letter |
 
 ### Response kinds
@@ -152,6 +152,21 @@ A typed blank with an explicit length hint and accepted alternates:
       b2: { kind: type, answer: 商务座, accept: [ 商务座 ], expectedLength: 3 }
 ```
 
+A mock-app task references its app by id and declares no blank answers — the app owns its own goals:
+
+```yaml
+  - id: tblt-hsk4.u06.B.t4
+    number: ➍
+    type: reading
+    sourcePage: 9
+    instructions: 这个周末，你想从北京坐高铁去杭州玩。参照下面"铁路12306"APP 的截图，回答问题。
+    body:
+      - kind: mockApp
+        app: railway-12306          # → /mock-apps/railway-12306/index.html
+        fallbackImage: u06/B/t4.png # workbook screenshot, shown if the frame fails
+        # no `data:` and no `blanks:` — the app is self-contained
+```
+
 ### Schema rules
 
 1. **Every blank has a resolution.** Either an `answer`, or `kind: given`. The validator rejects a blank with neither.
@@ -160,6 +175,7 @@ A typed blank with an explicit length hint and accepted alternates:
 4. **`expectedLength`** defaults to `answer.length`. The workbook annotates some blanks with a small circled numeral that appears to indicate expected character count; that reading must be confirmed during authoring before any explicit hint value is trusted over the answer length.
 5. **`accept[]`** lists additional correct surface forms (see Grading).
 6. **`sourcePage`** is mandatory where the task was transcribed from the workbook, so a reviewer can audit any task against the print original.
+7. **A `mockApp` stimulus carries no `data:` and no `blanks:`.** Its dataset, goals and expected answers live inside the app's HTML (see "The Mock App Stimulus"), and the validator cross-checks the answers the app declares against the task's expected answers.
 
 ## Inline Blanks Inside Tokenized Text
 
@@ -252,7 +268,11 @@ A validator must run over every content file and fail on:
 - `expectedLength` inconsistent with `answer.length` where both are set;
 - an `audio` key with no corresponding asset in the manifest;
 - a task missing `sourcePage` (transcription provenance);
-- a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa.
+- a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa;
+- a `mockApp` stimulus whose `app` id has no HTML file at `/mock-apps/<id>/index.html`;
+- a `mockApp` app whose declared expected answers disagree with the task's answers in the answer key;
+- a `mockApp` app missing a required hook (`define`, `goals`) or declaring a bridge version the frame cannot speak;
+- a `mockApp` app loading a third-party library that is not on the pinned allowlist.
 
 ## Assets
 
@@ -323,11 +343,13 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `PictureSet` | Lettered image grid referenced by blanks |
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
-| `MockApp` | Data-driven app-screen stimulus (see below) |
+| `MockAppFrame` | Host frame + bridge for a self-contained mock-app HTML file (see below) |
 | `InlineImageSlot` | In-passage image placeholder assigned a letter |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `DictationField` | Boxed per-character entry for dictation tasks |
 | `FreeWrite` | Ungraded writing surface |
+
+`MockAppFrame` is the one component whose payload is **not** authored in the task schema — a mock app is its own HTML file behind a frozen bridge contract (see "The Mock App Stimulus").
 
 ### Reuse
 
@@ -335,24 +357,115 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 - **`scoreTestResult`** and the other pure helpers in `packages/utils/src/srs-test-mode.ts` (see Grading).
 - **`TokenizedText`** itself, for all L2 text, with the `blank` format ranges.
 
-## The Mock App Stimulus (B ➍)
+## The Mock App Stimulus
 
-B ➍ shows two screenshots of the Railway 12306 app and asks six questions derived entirely from the data visible in them (fastest train, cheapest, which are 复兴号, which are sold out, which have 商务座, which have sleepers).
+B ➍ shows two screenshots of the Railway 12306 app and asks six questions derived entirely from the data visible in them (fastest train, cheapest, which are 复兴号, which are sold out, which have 商务座, which have sleepers). The natural interactive form of that task is not a screenshot at all: it is a **working mock of the 12306 app** the student filters, scrolls and taps.
 
-Because the answers are *derived from the screen*, the stimulus is modelled as a **declarative dataset**, and both the rendered screen and the expected answers come from that single source:
+The same applies to future books — a hotel booking flow, or an ATM task that has to mock up a physical cash dispenser. These UIs have almost nothing in common.
 
-```yaml
-      - kind: mockApp
-        app: railway-12306
-        data:
-          services:
-            - { no: G871, from: 北京南, to: 杭州东, dep: "16:13", arr: "22:04", price: 630.5,
-                classes: [二等, 一等, 商务], soldOut: false }
-            - { no: K1275, from: 北京, to: 杭州, dep: "23:37", arr: "20:38", price: 189.5,
-                classes: [硬座, 硬卧, 软卧], soldOut: false }
+A host-side declarative renderer is the wrong shape for that: its schema would accumulate a union of every app's UI and still need a bespoke escape hatch for the cash dispenser. Instead, **each mock app is a self-contained HTML file** (the "one-page app" model, authorable by an LLM), and the host provides only a frame and a bridge.
+
+Per ADR-0045, mock apps are sandboxed and hosted same-origin.
+
+### Three layers, and which one grows
+
+| Layer | Lives in | Grows per new app? |
+|---|---|---|
+| `MockAppFrame` — frame, bridge, TaskShell integration, host chrome | `apps/web` (iframe), `apps/mobile` (WebView) | **No** |
+| `mock-app-runtime.js` — help mode, token rendering, hint, progress, completion | repo, same-origin, version-pinned | **No** |
+| The app itself — HTML/CSS, dataset, goals | one file per app | Yes — and it is irreducible |
+
+Adding an app therefore costs **zero host code, zero content-schema fields, and zero translation keys**. That is the whole point of the design: the shared behaviour lives in the runtime and the contract, never in a per-app host component.
+
+### The bridge contract
+
+Versioned and transport-agnostic, so the same protocol rides web `postMessage` and RN WebView:
+
+```js
+// host → app
+{ v:1, type:'init',      payload:{ l2:'zh', l1:'en', helpMode:false } }
+{ v:1, type:'help-mode', payload:{ on:true } }
+{ v:1, type:'hint' } | { v:1, type:'reset' }
+{ v:1, type:'tokens',    payload:{ map:{ '北京南':[ LemmatizedToken, … ] } } }   // reply to 'tokenize'
+
+// app → host
+{ v:1, type:'ready',    payload:{ app:'railway-12306', version:'1.0.0', goals:[ { id, prompt } ] } }
+{ v:1, type:'tokenize', payload:{ texts:[ '北京南', '二等座' ] } }
+{ v:1, type:'lookup',   payload:{ text, lemma, rect, sentence } }
+{ v:1, type:'progress', payload:{ done:[ 'cheapest' ], total: 6 } }
+{ v:1, type:'complete', payload:{ goalId:'fastest', answer:'G49' } }
+{ v:1, type:'resize',   payload:{ height: 640 } }
 ```
 
-`MockApp` renders this through a small screen spec (tabs, filter chips, result rows, detail sheet). One renderer serves every future mock app; a second activity of this kind should cost near zero. The answers are validated against the dataset so the screen and the key cannot drift.
+`MockAppFrame` refuses a mismatched major version. This message set is the entire host surface.
+
+### Goals: one artifact for hint, evaluation and progress
+
+Each app declares its **goals**, and a goal is an acceptance predicate over its own dataset rather than a hardcoded correct answer:
+
+```js
+MockApp.define({
+  id: 'railway-12306',
+  data: { services: [ /* … */ ] },
+  goals: [
+    { id:'fastest', prompt:'哪次列车最快？',   accept:(el, d) => el.dataset.no === fastest(d) },
+    { id:'sleeper', prompt:'哪次列车有卧铺？', accept:(el, d) => el.dataset.sleeper === 'true' },
+  ],
+  mount(root, data) { /* render the app's own UI from data */ },
+});
+```
+
+From that single declaration the runtime derives all three shared behaviours:
+
+- **Evaluation** — the task is complete when every goal is satisfied. Evaluation must run app-side, because only the app has the data.
+- **Progress** — `done / total`, reported to `TaskShell` for a progress indicator.
+- **Hint** — highlight the candidate elements of the **first unmet goal**. This is why a completion path must exist for each answer: the hint is not a separate authored asset, it is the goal list read in order.
+
+This covers both shapes uniformly. A single-goal sequenced app (the ATM: card → PIN → amount → take cash) is an ordered goal list whose acceptance conditions encode the sequencing. And B ➍'s six questions become six goals — a better design than modelling them as blanks in `TaskShell`, because the student answers them *against the app* rather than transcribing from a screenshot.
+
+A mock app may also be a **pure stimulus with no goals** (a reference screen with nothing to do). `complete` is therefore optional, and such an app reports only tokens and lookups.
+
+### Help mode
+
+Help mode renders the app's words as tokenized text — **with lemmas but without ruby** — and tapping a token opens the same dictionary popup as everywhere else in the app.
+
+The host remains the tokenization authority, consistent with the runtime-tokenization decision above. On entering help mode the app sends its tokenizable strings in one `tokenize` message; the host resolves them through the existing `/lemmatize-normalized/batch` pipeline plus `lemmatizeCache`, and returns a token map the runtime uses to wrap text nodes in spans.
+
+Tapping a token sends `lookup` with the token text, its lemma, its rect and its sentence; the host renders **the existing `DictionaryPopup`** — not a lookalike. Its props are already exactly what the bridge carries (`token`, `l1Code`, `l2Code`, `position`, `context`, `onClose`, `apps/web/src/components/dictionary-popup.tsx:32`), so the work is a small popup-host provider, since the anchoring logic currently lives inside `TokenizedText` rather than in a provider. The token rect must be mapped from iframe coordinates to host viewport coordinates (frame offset + token rect).
+
+Two details worth getting right:
+
+- **Not every string is vocabulary.** Prices, times, train numbers and seat counts should not become tokens. The runtime auto-detects CJK text nodes and honours a `data-no-tokenize` opt-out.
+- **Ruby is deliberately suppressed** in help mode; the token map carries `pronunciation`, the runtime simply does not render `<rt>`.
+
+### The floor
+
+The proof that this does not bloat is how little an app must write:
+
+```html
+<script src="/mock-apps/runtime.v1.js"></script>
+<script>
+MockApp.define({
+  id: 'railway-12306',
+  data: { services: [ /* … */ ] },
+  goals: [ /* … */ ],
+  mount(root, data) { /* render rows from data */ },
+});
+</script>
+```
+
+Beyond its own HTML and CSS, an app writes a dataset, a few predicates and a mount function. **Phase 0 should ship a "hello world" mock app** specifically to prove this floor before a real one is authored.
+
+### Keeping the screen and the answer key from drifting
+
+The host cannot verify a goal it cannot evaluate, so the cross-check happens at **authoring** time instead: each app declares its derived expected answers, and the validator compares them against the content answer key (see Authoring-Time Validation). A build cannot execute the app's JS, but it can compare two declared values.
+
+### Authoring and supply-chain rules
+
+- Mock apps are **code, not media**, so ADR-0043 does not apply to the HTML itself: it is committed, reviewed and served same-origin. This matters because these files will largely be LLM-generated — executable code shipping inside the app must be reviewed source in git, never fetched from a mutable URL at runtime.
+- Media *inside* a mock app (photographs) still uses the asset host via `ASSET_BASE_URL`, but mock chrome and branding should prefer inline SVG/CSS so most apps remain genuinely one file.
+- Third-party libraries loaded via `<script>`/`<link>` tags are permitted but must be **allowlisted and pinned**, or vendored. Each remote tag is a supply-chain surface, a runtime dependency, and an origin the sandbox CSP must explicitly permit.
+- Mock-app text is **diegetic content** (a Chinese railway app is in Chinese) and does **not** belong in `translations.csv`. Host chrome — the help-mode and hint controls — does.
 
 This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled last.
 
@@ -360,27 +473,29 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 1. Student opens `/[l1]/[l2]/textbook` → book index loads (units → lessons → tasks).
 2. Student picks a task → task JSON loads and asset URLs resolve. `TaskShell` requests tokens for the task's passages (`/lemmatize-normalized/batch`) and holds the skeleton until they arrive.
-3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText` with `blank` format ranges.
-4. Student responds; each `BlankField` writes to its slice of the task store. The token tree never re-renders.
-5. Student submits → `gradeTask` runs locally → per-blank correct/incorrect is shown → the attempt is persisted (ADR-0044).
+3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText` with `blank` format ranges. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
+4. Student responds. Two shapes, one store:
+   - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
+   - **Mock-app tasks** — the app owns its own state; `TaskShell` renders goal progress from the app's `progress` messages and the host chrome (help mode, hint) forwards over the bridge.
+5. The attempt resolves — by explicit submit for blank tasks, or by the app reporting `complete` for goal-based ones. `gradeTask` runs locally wherever there are blanks; the app's declared answers cover the goal case. Correct/incorrect is shown and the attempt is persisted (ADR-0044).
 6. Optional (not in this spec): incorrect blanks feed the SRS deck.
 
 ## States
 
 - **Loading**: task skeleton from when the task is selected until its tokens resolve. The passage is deliberately **not** rendered before then — see "Render the passage only once its tokens have arrived" above.
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
-- **Error**: a task whose audio or image fails to load still renders the text and blanks, with an inline retry on the failing stimulus — a broken asset must never block the exercise.
+- **Error**: a task whose audio or image fails to load still renders the text and blanks, with an inline retry on the failing stimulus — a broken asset must never block the exercise. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
 - **Autoplay blocked**: audio requires an explicit tap; never autoplay.
-- **Edge cases**: audio-less task with `type: listening` (validator flag); a `choose` blank whose bank has one remaining option; `given` blanks excluded from scoring; a task with zero blanks (pure `freeWrite`); very long passages (chunked rendering / pagination reuse).
+- **Edge cases**: audio-less task with `type: listening` (validator flag); a `choose` blank whose bank has one remaining option; `given` blanks excluded from scoring; a task with zero blanks (pure `freeWrite`); a `mockApp` with no goals (pure stimulus — showing a submit/completion affordance would be wrong); a `mockApp` whose bridge major version the frame cannot speak (refuse, fall back to the image); very long passages (chunked rendering / pagination reuse).
 
 ## Phasing
 
 - **Phase 0 — the spine.** Content schema + compiler + validator; `packages/textbooks` (types, task store, grading, asset resolver); the `blank` format-range seam in `TokenizedText` on web and mobile; `extractBlankMarkers`; `BlankField` + `WordBank`; `TaskShell` including **runtime tokenization** (batch request + hold-until-ready, see the tokenization section); answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
-- **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), `MockApp` (B ➍).
+- **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), then `MockAppFrame` + `mock-app-runtime.js` + a "hello world" mock app to prove the per-app floor (B ➍).
 - **Phase 3 — writing lesson.** `DictationField` (wrapping `SpellCharInput`), `FreeWrite`, note-capture.
 - **Deferred**: free-form **conversation** production and its scoring. Note that dialogue *cloze* (lesson C) is not deferred — it is the same blank primitive over a `dialogue` stimulus and lands in Phase 1.
 
@@ -391,22 +506,10 @@ Audio is a from-scratch build on both platforms: there is no audio-file playback
 - **ADR-0043** — asset hosting (`ASSET_BASE_URL`). Must be settled before any content file references an asset key.
 - **ADR-0044** — exercise state model and attempt recording.
 - **ADR-0041** — the `notes` inline seam this feature's `blank` seam mirrors.
+- **ADR-0045** — mock apps as sandboxed, self-contained HTML behind a frozen bridge; supplies the bridge contract, the sandbox and hosting rules, and the design-token carve-out.
 - **ADR-0003** — UI not shared between web and mobile.
 - **SPEC-066** — SRS review; source of the reusable pure grading/question helpers.
 - **ADR-0034** — Pro gating and the SRS daily cap, if textbook progress feeds review.
-
-## Related Data That Is Not a Dependency
-
-The dictionary database contains a populated HSK curriculum index, `hsk_curriculum` (`zerotohero-python-server/import_dict_to_sqlite.py:166–174`), surfaced on every dictionary entry as `studyMaterials` (`utils_dictionary.py:617–628`; type `StudyMaterialCoverage` at `packages/shared/src/types.ts:359–370`) and already rendered in both apps.
-
-It is **not** usable as a per-lesson vocabulary list, and this spec does not depend on it:
-
-- `entry_id` is the `PRIMARY KEY` and the import is `INSERT OR IGNORE`, so a word appearing in multiple lessons stores only its first appearance — the table is lossy.
-- There is no reverse "lesson → words" query, and the only index is on `entry_id`, so a `WHERE book=? AND lesson=?` lookup would need a new index.
-- `lesson` is `TEXT` and not always numeric (it contains values such as `补充`).
-- The row count documented in `docs/arch/004-python-dictionary-db-schema.md` (5,746) does not match the source CSV (5,462 data rows).
-
-A future "words in this lesson" panel would require a migration (surrogate key or composite primary key). Out of scope here.
 
 ## Open Questions
 
