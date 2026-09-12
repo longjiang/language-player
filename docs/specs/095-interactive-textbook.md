@@ -4,9 +4,9 @@
 
 - **Spec ID**: SPEC-095
 - **Feature**: Hierarchical interactive textbook (`book > unit > lesson > task`) — tokenized L2 text with inline interactive blanks, audio playback, and per-activity stimulus widgets
-- **Status**: implemented (phases 0–3); **known gaps are listed at the end** — read
-  [Known Gaps Against This Spec](#known-gaps-against-this-spec) before relying on any
-  individual requirement below
+- **Status**: implemented (phases 0–3), with every requirement in this spec built — see
+  [Known Gaps Against This Spec](#known-gaps-against-this-spec), which is where anything
+  outstanding would be listed
 - **Created**: 2026-09-11
 - **ROADMAP Phase**: Phase 5 (Content Features)
 - **Web ref**: `apps/web/src/app/[l1]/[l2]/tasks/` (new), `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/app/docs/doc-sidebar.tsx` (TOC pattern)
@@ -423,7 +423,7 @@ upload with **no rename step**; images are `<lesson><task>-<letter>.<ext>`
    Circled numerals (①②③) are **question indices** — the numbering the answer key uses, so a student can find the corresponding answer — and carry no length information. Blank ids mirror them (`b1` ↔ ①) because they share that indexing role.
 5. **`accept[]`** lists additional correct surface forms (see Grading).
 6. **`sourcePage`** is mandatory where the task was transcribed from the workbook, so a reviewer can audit any task against the print original.
-7. **A `mockApp` stimulus carries no `data:` and no blank answers of its own.** Its dataset, goals and expected answers live inside the app's HTML (see [The Mock App Stimulus](#the-mock-app-stimulus)), and the intended cross-check is that the validator compares the answers the app declares against the content answer key — see [Known Gaps](#known-gaps-against-this-spec), because only the goal-to-blank linkage is implemented so far.
+7. **A `mockApp` stimulus carries no `data:` and no blank answers of its own.** Its dataset, goals and expected answers live inside the app's HTML (see [The Mock App Stimulus](#the-mock-app-stimulus)). The app derives its expected answers from its own dataset with the same predicates its goals use, and `mock-app-files.test.ts` compares them against the content's answer key — the frame cannot execute the app's JS, but a test can.
 
 ### Instructions
 
@@ -507,17 +507,17 @@ Two consequences are mandatory for this feature:
 
 Any future prop added to `TokenizedText` for this feature **must** be added to `tokenizedTextPropsEqual`, and compared by stable reference only.
 
-## Tokenization: Runtime, Parent-Owned
-
-> **Not yet built as described.** `TaskShell` does not currently own tokenization or
-> hold the skeleton; each `TokenizedText` still self-tokenizes. The design below is the
-> target — see [Known Gaps](#known-gaps-against-this-spec) for the symptom and the fix.
+## Tokenization: Runtime, Per Surface
 
 Both apps obtain tokens from Flask — `POST /lemmatize-normalized` (`zerotohero-python-server/routes/text_routes.py:184`) and `POST /lemmatize-normalized/batch` (`:219`), the latter reached on web via `enqueueLemmatize` (`apps/web/src/lib/lemmatize-queue.ts:36`, batch size 12 / 60 ms flush, cache key `${l2Code}:${text}`).
 
 **Nothing is tokenized at authoring time.** Content files store text only — no token blobs, no build step, and nothing to keep in sync when a passage is edited or re-transcribed.
 
-Instead the `TaskShell` is the lemmatization authority for its task, exactly as the paginated reader is for its page. It calls the batch endpoint once for the passages a task renders and hands the result to each `TokenizedText` through the existing seams: the `tokens` prop skips both the API and the `IntersectionObserver` lazy-tokenization gate (`tokenized-text.tsx:598`), and `deferTokenization` exists precisely so a parent can own lemmatization instead of the child starting its own queue request.
+**Each text surface tokenizes itself.** `TokenizedText` requests its text through the batched queue and renders when it arrives; `TaskShell` takes no part. The queue's shared cache and 60 ms flush coalesce a task's texts into one round-trip anyway, so a task does not make one request per surface — and no component has to know what its siblings render.
+
+`TaskShell` deliberately does **not** own lemmatization. A parent authority would have to enumerate every text in a task — passages, dialogue lines, every table cell, note-card titles — so adding a widget that renders text would mean changing the shell. The `tokens` prop and `deferTokenization` remain available for a parent that genuinely needs to own it, which is how the paginated readers work: there the page's lines must resolve together, whereas a task's surfaces are independent.
+
+While tokens load, a surface renders its plain-text fallback: the text, with any `{{bN}}` markers stripped, so a passage carrying blanks shows as running text and the blanks appear when the tokens land. That is accepted rather than hidden behind a skeleton — the window is one batch flush, the text is real L2 the student can start reading, and a skeleton would trade a brief reflow for a delay before anything is readable.
 
 Consequences to accept:
 
@@ -525,29 +525,7 @@ Consequences to accept:
 - This costs little in practice, because a task already needs the network for its audio and images (ADR-0043). The textbook is **online-first by construction** — tokenization is not the only thing that would fail offline.
 - A task's passage is short (a few sentences), so it resolves in a single batch flush rather than a per-line storm.
 
-### No text surface renders before its own tokens have arrived
-
-A passage that carries blanks must not render early. `TokenizedText`'s loading fallback is
-the text with its `{{bN}}` markers stripped, so a cloze passage would appear as running
-text with no gaps and the blanks would then pop in — the words shift under the student
-mid-sentence. So a `TokenizedText` that has blanks holds the space with a skeleton and
-renders once, complete. Text *without* blanks keeps the plain fallback, which is what the
-readers rely on while paging: there the text is complete and only the readings are
-missing.
-
-**This does not require a parent-owned tokenizer.** One `TaskShell` authority that
-enumerates every text in a task would have to know what each widget renders — the
-passages, the dialogue lines, every table cell, the note-card titles — so adding a widget
-with text would mean changing the shell. Each surface already decides when it is ready,
-and `enqueueLemmatize` has a shared cache keyed by `${l2Code}:${text}` with a 60 ms flush,
-so a task's texts are coalesced into one round-trip regardless of who asks. Holding each
-surface independently therefore gets the same result — no text before its tokens — without
-the coupling.
-
 ## Grading
-
-Acceptance of a traditional-form answer as correct for a simplified key (and vice
-versa) is specified but **not wired** — see [Known Gaps](#known-gaps-against-this-spec).
 
 The answer key is machine-structured and already states which blanks exist in which task (e.g. `B课 ➊: ③ f; ④ c; ⑤ e; ⑥ d.`). It is ingested into the `answer` field of each blank, and its omissions are how `given` blanks are detected.
 
@@ -927,7 +905,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 ## Data Flow
 
 1. Student opens **Study → Tasks** (`/[l1]/[l2]/tasks`), picks the textbook, and the unit → lesson → task TOC loads.
-2. Student picks a task → task data loads and asset URLs resolve. Each text surface requests its own tokens through the batched queue and holds a skeleton until they arrive, so a passage with blanks never renders without them.
+2. Student picks a task → task data loads and asset URLs resolve. Each text surface requests its own tokens through the batched queue and renders its plain-text fallback until they arrive.
 3. `TaskShell` renders the stimulus (audio, picture set, table, map, mock app) and the passage/dialogue via `TokenizedText`'s inline blank seam. For a `mockApp`, this means mounting `MockAppFrame` and waiting for the app's `ready` handshake.
 4. Student responds. Two shapes, one store:
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
@@ -936,7 +914,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 
 ## States
 
-- **Loading**: each text surface holds a skeleton until its own tokens resolve. A passage with blanks is deliberately **not** rendered before then — see "No text surface renders before its own tokens have arrived" above.
+- **Loading**: each text surface shows its plain-text fallback until its own tokens resolve, then re-renders with readings and blanks — see [Tokenization](#tokenization-runtime-per-surface).
 - **Empty**: a unit with no tasks renders the lesson list only; a lesson with no tasks is not reachable.
 - **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
@@ -962,11 +940,10 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 > audio playback are not. Mobile audio and the mobile mock-app frame specifically
 > need a device or simulator.
 >
-> **Behavioural gaps remain** — see [Known Gaps Against This Spec](#known-gaps-against-this-spec)
-> at the end, which lists what the spec claims but the code does not yet do.
+> **No behavioural gaps remain** — see [Known Gaps Against This Spec](#known-gaps-against-this-spec).
 
 - **Phase 0 — the spine.** Content schema + validator; `packages/textbooks` (types, task store, grading, asset resolver); the inline blank seam in `TokenizedText` on web and mobile (`extractInlineMarkers`, which extracts blanks and notes in one pass; `extractBlankMarkers` is the blank-only helper); `BlankField` + `WordBank`; `TaskShell` with **L2 tokenized instructions** and machine-translated L1; the **`Vocab` → `Study` rename** plus the `Tasks` nav entry on both platforms, `TextbookPicker` and `TextbookToc`; answer-key ingestion; `ASSET_BASE_URL`. Ship **one task end-to-end** — B ➋ is the recommendation (self-contained, global bank, exercises the highest-leverage primitive with no stimulus widget).
-  **Deferred from this phase:** parent-owned tokenization with hold-until-ready (see [Known Gaps](#known-gaps-against-this-spec)).
+  **Withdrawn from this phase:** parent-owned tokenization with hold-until-ready. Each surface tokenizes itself and renders its plain-text fallback while loading; the batching queue already coalesces a task's texts. See [Tokenization](#tokenization-runtime-per-surface).
 - **Phase 1 — stimulus widgets.** `AudioPlayer`, `PictureSet`, `DataTable`, `DialoguePassage`. Unlocks A ➋/➌, B ➊, C, D ➊.
 - **Phase 2 — bespoke stimuli.** `ImageMap` (A ➊), then `MockAppFrame` + `mock-app-runtime.js` + a "hello world" mock app to prove the per-app floor (B ➍).
 - **Phase 3 — writing lesson.** `DictationField` (wrapping `SpellCharInput`), `FreeWrite`, note-capture.
@@ -1004,22 +981,15 @@ All six questions this spec opened with were settled on 2026-09-11. Recorded her
 
 ## Known Gaps Against This Spec
 
-The text above describes the feature as built. This section lists the places where it
-specifies behaviour that is **not yet implemented** — a spec that quietly promises
-capability the code does not have is worse than one that admits what is missing.
+**None.** Every requirement this spec states is implemented, and the two pieces of
+behaviour it previously listed as outstanding have been either built or removed by
+decision rather than left ambiguous: `InlineImageSlot` is rendered, the mock app's dataset
+agrees with the printed key, and the hold-until-ready requirement was withdrawn in favour
+of the plain-text fallback described under Tokenization.
 
-These are all behavioural: the feature works, but these specific promises do not hold
-yet. Each is stated with its cause and the shape of the fix, so the work is scoped
-rather than merely noted.
-
-**1. Mobile still renders a passage with blanks before its tokens arrive.**
-
-Web holds a blank-carrying passage behind a skeleton, so the blanks never pop in there.
-Mobile does not yet: its plain fallback is deliberately pitch-matched to the tokenized
-render (a documented fix for the size and line-height jump when tokens land), and gating
-it on "has blanks" means touching a file whose memoisation is load-bearing — a token tree
-re-render there is a documented multi-second JS-thread block. The change is small but it
-belongs on a device with a profiler, not blind.
+What is deliberately not built is in [Non-Goals](#non-goals) — conversation production and
+scoring, SRS integration, server-side state, pagination, an authoring UI — and what is
+unsettled is in [Open Questions](#open-questions).
 
 ### Verified, not assumed
 
