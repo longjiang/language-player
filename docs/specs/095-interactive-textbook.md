@@ -226,18 +226,45 @@ banks: [
 ],
 ```
 
-### Audio is task-level
+### Audio is an array on the task, not a stimulus block
 
-Audio is not a stimulus block — it belongs to the task, so it renders in the same
-place in every task that has it rather than being positioned by each author. `key`
-is the asset key; `label` is the workbook's own marking (its circled numeral):
+`audio` is a field on the `Task` (`Task.audio?: AudioTrack[]`), not a member of the
+`Stimulus` union, so it is not one of the ordered `body` blocks. `TaskShell` renders it
+once at the top, in the same place for every task, rather than each author positioning
+it among the stimulus and response.
+
+**A task may have many tracks.** "Task-level" says *where* audio is declared, not how
+much of it there is:
+
+| Task | Tracks | Playback order is |
+|---|---|---|
+| A ➊ | 9 | one voice message per city |
+| A ➋ | 7 | one per workbook item ①–⑦ |
+| A ➌ | 5 | one per speaker |
+| C ➊ / C ➋ | 4 each | one per workbook item |
+| E ➊ / E ➋ | 4 and 3 | one per workbook item |
 
 ```ts
+// A ➊ — nine tracks, one per city
 audio: [
-  { key: 'tblt-hsk4/u06/六A ➋ ① 就要检票了.mp3' },
-  { key: 'tblt-hsk4/u06/六A ➋ ② 全列禁烟.mp3', label: '②' },
+  { key: 'tblt-hsk4/u06/六A ➊ 上海.mp3',   label: '上海' },
+  { key: 'tblt-hsk4/u06/六A ➊ 北京.mp3',   label: '北京' },
+  { key: 'tblt-hsk4/u06/六A ➊ 哈尔滨.mp3', label: '哈尔滨' },
+  // …six more
 ],
 ```
+
+`AudioTrack` is `{ key, label? }`: `key` is the asset key and `label` is optional
+human-readable text for the item a track belongs to — a city name in A ➊, a speaker in
+A ➌.
+
+**The circled numeral a student sees is derived from the track's position**, not from
+`label`: both players render `indexToCircled(index + 1)`. `label` is currently used only
+as the accessibility label. Two consequences, both recorded in
+[Known Gaps](#known-gaps-against-this-spec): `label` never reaches the screen, and the
+correspondence between a track and the item it belongs to is therefore positional and
+unvalidated — so reordering an `audio` array renumbers the tracks and silently breaks
+their alignment with the workbook's own numbering.
 
 ### Blank variants worth showing
 
@@ -944,6 +971,33 @@ which is a reminder that the audit was not exhaustive. The fix is small: surface
 retry control in `AudioPlayer`, `PictureSet` and `MockAppFrame` where the failure is
 already tracked (`PictureSet` keeps a per-letter `broken` map; `MockAppFrame` has a
 `failed` state).
+
+**8. `AudioTrack.label` is never displayed, and track↔item alignment is unvalidated.**
+
+`AudioTrack` is `{ key, label? }`. Both players render `indexToCircled(index + 1)` for
+each track and pass `label` only to `accessibilityLabel`, so the labels authored across
+the unit — A ➊'s city names, A ➌'s speaker names — never reach the screen. A student
+sees ① ② ③ … regardless.
+
+Whether that is wrong depends on the task, which is why this is recorded rather than
+fixed: in A ➊ the labels name the city whose scenic spot is being asked for, so hiding
+them preserves the listening challenge; in A ➌ the speakers are named in the printed
+table in the same order, so numerals are sufficient but names would be friendlier.
+
+The sharper issue is what replaces the labels: the correspondence between a track and
+the item it belongs to is **positional**. A ➋'s seven tracks carry no labels at all and
+rely on array order to line up with the workbook's ①–⑦ and the answer key. Reordering
+that array would renumber every track and silently break the alignment, and nothing
+detects it — the validator does not check audio order or count against the blanks or
+numbered items a task declares.
+
+Two candidate fixes, needing a decision rather than a default:
+
+- **Bind tracks explicitly** — give `AudioTrack` an optional `blankId` (or `itemId`) and
+  label from it, so order stops carrying meaning and the validator can check that every
+  numbered item has a track and vice versa.
+- **Show `label` where it does not leak the answer** — display it for A ➌'s speakers and
+  keep numerals for A ➊, since the two tasks want opposite things from the same field.
 
 ### Verified, not assumed
 
