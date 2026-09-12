@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
+import { Check } from 'lucide-react-native';
 import {
   createAssetResolver,
+  indexToCircled,
   isAppToHostMessage,
   mockAppHref,
   protocolCompatible,
@@ -13,7 +15,9 @@ import { MOCK_APP_BASE_URL } from '@/lib/mock-app-url';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { log } from '@/lib/logger';
+import { ICON_PRIMARY } from '@/lib/theme-colors';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
+import { TokenizedText } from '@/components/TokenizedText';
 import { useTextbookTask } from './task-provider';
 
 /**
@@ -30,6 +34,11 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const resolveAsset = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
+  /** The goals that print a question, in the app's own order. */
+  const questions = useMemo(
+    () => stimulus.goals.flatMap((goal) => (goal.prompt ? [{ id: goal.id, prompt: goal.prompt }] : [])),
+    [stimulus.goals],
+  );
 
   const webRef = useRef<WebView | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -56,12 +65,16 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     );
   }, []);
 
-  useEffect(() => {
+  const sendInit = useCallback(() => {
     send({
       v: 1,
       type: 'init',
       payload: { l1: l1Lang.code, l2: l2Lang.code, helpMode },
     });
+  }, [send, l1Lang.code, l2Lang.code, helpMode]);
+
+  useEffect(() => {
+    sendInit();
     // Only on mount / language change; help mode has its own message.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [l1Lang.code, l2Lang.code]);
@@ -132,6 +145,10 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
             break;
           }
           ctx.store.setValue(link.blankId, data.payload.answer);
+          // The app sends `complete` and then `progress`. Marking the goal here
+          // too means the question's own marker does not depend on the second
+          // message arriving.
+          setDoneGoalIds((ids) => (ids.includes(link.id) ? ids : [...ids, link.id]));
           break;
         }
         case 'resize':
@@ -214,6 +231,43 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
         </Text>
       </View>
 
+      {/*
+        The questions are the host's, not the app's — the app renders a 12306
+        screen and nothing else, so without this list the student had the screen,
+        a `1 / 6` counter and no idea what the six questions were. They come from
+        the content, which is also what each reported goal is graded against, so
+        the printed question and the graded answer cannot drift.
+
+        An answered one is struck out, this feature's existing mark for "you have
+        placed this" (see the option pools). A `goal` with no `prompt` has nothing
+        to print, but still counts in the counter and is still graded.
+      */}
+      {questions.length > 0 && (
+        <View className="gap-1.5">
+          {questions.map((goal, index) => {
+            const done = doneGoalIds.includes(goal.id);
+            return (
+              <View key={goal.id} className="flex-row items-start gap-2">
+                <Text className="text-sm text-muted-foreground">{indexToCircled(index + 1)}</Text>
+                {/*
+                  An answered question is dimmed here; web strikes it through, which
+                  is this feature's mark for "you have placed this" in the option
+                  pools. Dimming rather than striking because `TokenizedText`'s
+                  memo comparator is a hand-written allow-list (SPEC-095, The Mobile
+                  Re-render Boundary): a text-style prop added for a cosmetic mark
+                  would have to be threaded through it, and a prop omitted from it
+                  renders stale values in silence.
+                */}
+                <View className={done ? 'flex-1 opacity-50' : 'flex-1'}>
+                  <TokenizedText text={goal.prompt} l2Code={l2Lang.code} />
+                </View>
+                {done && <Check size={16} color={ICON_PRIMARY} />}
+              </View>
+            );
+          })}
+        </View>
+      )}
+
       <View className="overflow-hidden rounded-lg border border-border bg-card" style={{ height }}>
         {status === 'loading' && (
           <View className="absolute inset-0 z-10 items-center justify-center">
@@ -236,6 +290,10 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           onError={() => setStatus('failed')}
           onHttpError={() => setStatus('failed')}
           onLoadEnd={() => {
+            // `init` is delivered by injecting script, which needs a live document:
+            // the mount-time send races this WebView coming up, so re-announce on
+            // load, as web does. `init` is idempotent.
+            sendInit();
             // A frame that loads but never says 'ready' is broken; give it a beat
             // rather than leaving the student on a spinner.
             setTimeout(() => {
