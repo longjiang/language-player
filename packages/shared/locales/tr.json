@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Çekim",
         "context_sentence": "Bağlam cümlesi",
+        "conversation": "Konuşma",
         "cover": "Kapak",
         "created": "Oluşturulma",
         "current_plan": "Mevcut Plan",
@@ -432,6 +433,7 @@
         "lemma": "Sözlük biçimi",
         "level": "Seviye",
         "lifetime_one_time": "Ömür Boyu — 169$ tek seferlik",
+        "listening": "Dinleme",
         "measure_word": "Ölçü:",
         "media": "Medya",
         "native_level": "Anadil",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Bk.{book} D{lesson}",
         "subscribers": "Aboneler",
         "subtitles": "Altyazılar",
+        "task_number": "Görev {number}",
         "test_voice": "Sesi Test Et",
         "text_size": "Metin Boyutu",
         "textbook_format": "{material} — Kitap {book}, Ders {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "İzleme geçmişi",
         "watch_screen": "İzleme ekranı",
         "weekly_hours": "Haftalık hedef",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Yazma"
     },
     "landing": {
         "classic_desc": "Sürüm 2'deki (klasik) tüm özellikler sürüm 3'te mevcut değildir. Bu eski özellikleri kullanmak için aşağıdaki bağlantıdan her zaman erişebilirsiniz.",

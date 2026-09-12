@@ -384,6 +384,7 @@
         "commit": "提交",
         "conjugation": "变位",
         "context_sentence": "上下文句子",
+        "conversation": "会话",
         "cover": "封面",
         "created": "创建时间",
         "current_plan": "当前方案",
@@ -422,6 +423,7 @@
         "lemma": "词元",
         "level": "等级",
         "lifetime_one_time": "终身 — 一次性支付 $169",
+        "listening": "听力",
         "measure_word": "量词：",
         "native_level": "母语",
         "new_cards_per_day": "每日新卡片",
@@ -450,6 +452,7 @@
         "profile": "个人资料",
         "pronunciation_voice": "发音声音",
         "rate": "速率",
+        "reading": "阅读",
         "recent_activity": "近期活动",
         "recently_saved": "最近保存",
         "ruby_font": "注音字体",
@@ -478,6 +481,7 @@
         "study_material_format": "{material} 第{book}册第{lesson}课",
         "subscribers": "订阅者",
         "subtitles": "字幕",
+        "task_number": "任务 {number}",
         "test_voice": "测试声音",
         "text_size": "文字大小",
         "textbook_format": "{material} — 第{book}册，第{lesson}课",
@@ -501,7 +505,8 @@
         "watch_history": "观看历史",
         "watch_screen": "观看界面",
         "weekly_hours": "每周目标",
-        "words": "{count, plural, other {# 个词}}"
+        "words": "{count, plural, other {# 个词}}",
+        "writing": "写作"
     },
     "landing": {
         "classic_desc": "版本 2（经典版）的部分功能在版本 3 中尚不可用。如需使用这些旧版功能，您可以随时通过下面的链接访问。",

@@ -384,6 +384,7 @@
         "commit": "提交",
         "conjugation": "變位",
         "context_sentence": "上下文句子",
+        "conversation": "會話",
         "cover": "封面",
         "created": "建立時間",
         "current_plan": "當前方案",
@@ -422,6 +423,7 @@
         "lemma": "詞元",
         "level": "等級",
         "lifetime_one_time": "終身 — US$169 一次性付款",
+        "listening": "聽力",
         "measure_word": "量詞：",
         "native_level": "母語",
         "new_cards_per_day": "每日新卡片數",
@@ -450,6 +452,7 @@
         "profile": "個人資料",
         "pronunciation_voice": "發音語音",
         "rate": "速率",
+        "reading": "閱讀",
         "recent_activity": "近期活動",
         "recently_saved": "最近儲存",
         "ruby_font": "注音字體",
@@ -478,6 +481,7 @@
         "study_material_format": "{material} 第 {book} 冊 第 {lesson} 課",
         "subscribers": "訂閱者",
         "subtitles": "字幕",
+        "task_number": "任務 {number}",
         "test_voice": "測試語音",
         "text_size": "文字大小",
         "textbook_format": "{material} — 第 {book} 冊，第 {lesson} 課",
@@ -501,7 +505,8 @@
         "watch_history": "觀看紀錄",
         "watch_screen": "觀看畫面",
         "weekly_hours": "每週目標",
-        "words": "{count, plural, other {# 個詞}}"
+        "words": "{count, plural, other {# 個詞}}",
+        "writing": "寫作"
     },
     "landing": {
         "classic_desc": "版本 2（經典版）的部分功能在版本 3 中尚不可用。如要使用這些舊版功能，您可以隨時透過下方連結存取。",

@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Cách chia",
         "context_sentence": "Câu ngữ cảnh",
+        "conversation": "Hội thoại",
         "cover": "Bìa",
         "created": "Đã tạo",
         "current_plan": "Gói Hiện Tại",
@@ -432,6 +433,7 @@
         "lemma": "Từ nguyên",
         "level": "Cấp độ",
         "lifetime_one_time": "Trọn đời — 169 đô la một lần",
+        "listening": "Nghe",
         "measure_word": "Đo lường:",
         "media": "Phương tiện",
         "native_level": "Bản ngữ",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Quyển {book} Bài {lesson}",
         "subscribers": "Người đăng ký",
         "subtitles": "Phụ đề",
+        "task_number": "Nhiệm vụ {number}",
         "test_voice": "Giọng thử",
         "text_size": "Cỡ chữ",
         "textbook_format": "{material} — Sách {book}, Bài {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Lịch sử xem",
         "watch_screen": "Màn hình xem",
         "weekly_hours": "Mục tiêu tuần",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Viết"
     },
     "landing": {
         "classic_desc": "Không phải tất cả tính năng của phiên bản 2 (cổ điển) đều có trong phiên bản 3. Để sử dụng các tính năng cũ này, bạn luôn có thể truy cập qua liên kết bên dưới.",

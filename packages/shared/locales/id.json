@@ -392,6 +392,7 @@
         "commit": "Komit",
         "conjugation": "Konjugasi",
         "context_sentence": "Kalimat konteks",
+        "conversation": "Percakapan",
         "cover": "Sampul",
         "created": "Dibuat",
         "current_plan": "Paket Saat Ini",
@@ -432,6 +433,7 @@
         "lemma": "Lemma",
         "level": "Level",
         "lifetime_one_time": "Seumur hidup — $169 sekali bayar",
+        "listening": "Menyimak",
         "measure_word": "Ukuran:",
         "media": "Media",
         "native_level": "Penutur asli",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "subscribers": "Pelanggan",
         "subtitles": "Subtitel",
+        "task_number": "Tugas {number}",
         "test_voice": "Uji Suara",
         "text_size": "Ukuran teks",
         "textbook_format": "{material} — Buku {book}, Pelajaran {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Riwayat tontonan",
         "watch_screen": "Layar menonton",
         "weekly_hours": "Target mingguan",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Menulis"
     },
     "landing": {
         "classic_desc": "Tidak semua fitur dari versi 2 (klasik) tersedia di versi 3. Untuk menggunakan fitur lama ini, Anda selalu dapat mengaksesnya melalui tautan di bawah.",

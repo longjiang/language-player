@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Konjugation",
         "context_sentence": "Kontextsatz",
+        "conversation": "Konversation",
         "cover": "Cover",
         "created": "Erstellt",
         "current_plan": "Aktueller Plan",
@@ -432,6 +433,7 @@
         "lemma": "Lemma",
         "level": "Stufe",
         "lifetime_one_time": "Lebenslang — 169 $ einmalig",
+        "listening": "Hören",
         "measure_word": "Maß:",
         "media": "Medien",
         "native_level": "Muttersprache",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Buch {book}, Lektion {lesson}",
         "subscribers": "Abonnenten",
         "subtitles": "Untertitel",
+        "task_number": "Aufgabe {number}",
         "test_voice": "Teststimme",
         "text_size": "Textgröße",
         "textbook_format": "{material} — Buch {book}, Lektion {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Wiederverlauf",
         "watch_screen": "Ansicht",
         "weekly_hours": "Wochenziel",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Schreiben"
     },
     "landing": {
         "classic_desc": "Nicht alle Funktionen aus Version 2 (Classic) sind in Version 3 verfügbar. Diese älteren Funktionen kannst du jederzeit über den Link unten aufrufen.",

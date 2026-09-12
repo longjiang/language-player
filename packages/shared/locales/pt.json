@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Conjugação",
         "context_sentence": "Frase de contexto",
+        "conversation": "Conversação",
         "cover": "Capa",
         "created": "Criado",
         "current_plan": "Plano Atual",
@@ -432,6 +433,7 @@
         "lemma": "Lema",
         "level": "Nível",
         "lifetime_one_time": "Vitalício — $169 pagamento único",
+        "listening": "Compreensão auditiva",
         "measure_word": "Medida:",
         "media": "Mídia",
         "native_level": "Nativo",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "subscribers": "Inscritos",
         "subtitles": "Legendas",
+        "task_number": "Tarefa {number}",
         "test_voice": "Testar Voz",
         "text_size": "Tamanho do texto",
         "textbook_format": "{material} — Livro {book}, Lição {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Histórico de exibição",
         "watch_screen": "Tela de exibição",
         "weekly_hours": "Meta semanal",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Escrita"
     },
     "landing": {
         "classic_desc": "Nem todos os recursos da versão 2 (clássica) estão disponíveis na versão 3. Para usar esses recursos legados, você sempre pode acessá-los pelo link abaixo.",

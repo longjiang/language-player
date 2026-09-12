@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { mobileTaskHref } from '@/lib/textbook-routes';
 import { loadPersistedTask } from './task-provider';
+import { TaskTypeIcon } from './TaskTypeIcon';
 
 interface TextbookTocProps {
   tree: TocTree;
@@ -152,9 +153,7 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
                             >
                               {task.number}
                             </Text>
-                            {task.type && (
-                              <Text className="text-xs text-muted-foreground">{task.type}</Text>
-                            )}
+                            <TaskTypeIcon type={task.type} />
                             <TaskMark progress={status.tasks.get(task.id)} />
                           </Pressable>
                         );

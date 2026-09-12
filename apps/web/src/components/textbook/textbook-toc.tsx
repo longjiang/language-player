@@ -13,6 +13,7 @@ import {
   type TocTree,
 } from '@langplayer/textbooks';
 import { loadPersistedTask } from './task-provider';
+import { TaskTypeIcon } from './task-type-icon';
 
 interface TextbookTocProps {
   tree: TocTree;
@@ -155,9 +156,10 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
                                   }`}
                                 >
                                   <span aria-hidden>{task.number}</span>
-                                  {task.type && (
-                                    <span className="text-xs opacity-70">{task.type}</span>
-                                  )}
+                                  <TaskTypeIcon
+                                    type={task.type}
+                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                  />
                                   <TaskMark progress={lessonProgress.tasks.get(task.id)} />
                                 </Link>
                               </li>
