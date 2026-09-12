@@ -758,7 +758,8 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 - **Schema + types** — task/blank/bank/stimulus types, plus the validator (`validateBook`) and the loader map. **Not** a YAML→JSON compiler: see [Task Schema](#task-schema) for why content is TypeScript.
 - **`gradeTask(task, responses)`** — normalisation and alternate acceptance. Script-variant matching is *not* in here: `expandAcceptedVariants` runs first, in the app, and adds the converted form to each blank's `accept[]` so grading itself stays a pure string comparison (and works offline, which matters on mobile).
 - **Task store** — per-task, per-blank response state with subscribe/select, so blank components re-render independently of the token tree.
-- **Attempt persistence** — per-task attempts in local storage (ADR-0044). Not a cross-task **progress store**: nothing aggregates completion, so the picker and TOC show no progress (see [Known Gaps](#known-gaps-against-this-spec)).
+- **Attempt persistence** — per-task attempts in local storage (ADR-0044).
+- **Progress** — `bookProgress` / `summarizeProgress` roll the saved per-task attempts up through the book's own hierarchy, without a second store: the picker shows `complete/total`, each lesson a count, and each task a tick or a dot. The latest un-voided attempt is the one that counts, so a student who got it wrong and then right has completed it.
 - **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`, plus the shared default base URL constant.
 - **`assetKeysIn(task)`** — every asset key a task references, wherever it is declared (task, blank, table row, block, map pin, bank option, mock-app fallback), each with the location that declared it. The validator and the manifest test both call it, so a new declaration point cannot make the two disagree.
 - **Grading helpers** — `normalizeAnswer`, `acceptedAnswers`, `isBlankCorrect` (set comparison for `multiple`), `isBlankScoreable`, `expandAcceptedVariants`.
@@ -1040,13 +1041,7 @@ shows a letter chip rather than the illustration itself, where the booklet print
 picture in the gap. The component inventory marks it **not built**, and it is
 deliberately absent from the stimulus kinds table, which lists only kinds that exist.
 
-**4. There is no progress store.**
-
-Listed under shared logic. `TaskResponseStore` persists per-task responses and attempts,
-but nothing aggregates completion across tasks, so neither the picker nor the TOC shows
-any indication of what has been attempted or completed.
-
-**5. D ➐ asks the student to record audio, and the app cannot.**
+**4. D ➐ asks the student to record audio, and the app cannot.**
 
 The task is authored as its instruction, the draft from ➏ rendered by `RecallCard`, and
 a self-check box for what the student wants to improve. The recording itself is out of

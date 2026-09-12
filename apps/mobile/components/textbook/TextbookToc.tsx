@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
-import { type TocTree } from '@langplayer/textbooks';
+import {
+  bookProgress,
+  type BookProgress,
+  type LessonProgress,
+  type TaskProgress,
+  type TocTree,
+} from '@langplayer/textbooks';
 import { router } from 'expo-router';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { mobileTaskHref } from '@/lib/textbook-routes';
+import { loadPersistedTask } from './task-provider';
 
 interface TextbookTocProps {
   tree: TocTree;
@@ -21,6 +28,37 @@ interface TextbookTocProps {
  * collapsed by default, expanded when the group contains the open task.
  */
 export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
+  // Progress comes from the same local state the tasks write (ADR-0044). Recomputed
+  // when the route changes — the screen remounts on navigation, so a task the student
+  // just finished shows its tick when they come back.
+  const [progress, setProgress] = useState<BookProgress | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const tasks = tree.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks));
+      const entries = await Promise.all(
+        tasks.map(async (task) => [task.id, await loadPersistedTask(task.id)] as const),
+      );
+      if (!cancelled) setProgress(bookProgress(tree, new Map(entries)));
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [tree, currentTaskId]);
+
+  const status = useMemo(() => {
+    const lessons = new Map<string, LessonProgress>();
+    const tasks = new Map<string, TaskProgress>();
+    for (const unit of progress?.units ?? []) {
+      for (const lesson of unit.lessons) {
+        lessons.set(`${unit.unitId}/${lesson.lessonId}`, lesson);
+        for (const task of lesson.tasks) tasks.set(task.taskId, task);
+      }
+    }
+    return { lessons, tasks };
+  }, [progress]);
   const active = currentTaskId
     ? tree.units
         .flatMap((u) => u.lessons.map((l) => ({ unitId: u.id, lessonId: l.id, tasks: l.tasks })))
@@ -68,6 +106,7 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
             {unitOpen &&
               unit.lessons.map((lesson) => {
                 const lessonOpen = isLessonOpen(unit.id, lesson.id);
+                const lessonStat = status.lessons.get(`${unit.id}/${lesson.id}`);
                 return (
                   <View key={lesson.id} className="ml-3">
                     <Pressable
@@ -83,9 +122,14 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
                         color={ICON_MUTED}
                         style={{ transform: [{ rotate: lessonOpen ? '0deg' : '-90deg' }] }}
                       />
-                      <Text className="text-foreground">
+                      <Text className="flex-1 text-foreground">
                         {lesson.letter}. {lesson.title}
                       </Text>
+                      {lessonStat && lessonStat.attempted > 0 ? (
+                        <Text className="text-xs tabular-nums text-muted-foreground">
+                          {lessonStat.complete}/{lessonStat.total}
+                        </Text>
+                      ) : null}
                     </Pressable>
 
                     {lessonOpen &&
@@ -111,6 +155,7 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
                             {task.type && (
                               <Text className="text-xs text-muted-foreground">{task.type}</Text>
                             )}
+                            <TaskMark progress={status.tasks.get(task.id)} />
                           </Pressable>
                         );
                       })}
@@ -121,5 +166,22 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
         );
       })}
     </View>
+  );
+}
+
+/**
+ * A task's state in the TOC: a tick once fully correct, a dot once attempted.
+ * Attempted-but-not-complete is deliberately distinguishable — "I tried this" is the
+ * thing a student wants to find again.
+ */
+function TaskMark({ progress }: { progress?: TaskProgress }) {
+  if (!progress?.attempted) return null;
+  return (
+    <Text
+      className={`ml-auto text-xs ${progress.complete ? 'text-primary' : 'text-muted-foreground'}`}
+      accessibilityLabel={progress.complete ? 'complete' : 'attempted'}
+    >
+      {progress.complete ? '✓' : '•'}
+    </Text>
   );
 }

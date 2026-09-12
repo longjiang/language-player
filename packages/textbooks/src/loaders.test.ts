@@ -1,16 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  adjacentTasks,
-  allTasks,
-  buildTocTree,
-  findLesson,
-  findTask,
-  loadBook,
-  taskHref,
-  taskPathParts,
-  TEXTBOOK_CATALOGUE,
-  bookLoaders,
-} from './loaders';
+import {TEXTBOOK_CATALOGUE, adjacentTasks, allTasks, bookLoaders, buildTocTree, findLesson, findTask, loadBook, taskHref, taskPathParts} from './loaders';
 
 describe('catalogue and loaders', () => {
   it('has a loader for every catalogued book', () => {
@@ -107,5 +96,18 @@ describe('TOC tree', () => {
     expect(allTaskIds).toContain('tblt-hsk4.u06.E.t1');
     expect(allTaskIds).toContain('tblt-hsk4.u06.D.t5');
     expect(tree.contentVersion).toBe(book.contentVersion);
+  });
+});
+
+describe('catalogue', () => {
+  it('reports each book\'s task count accurately', async () => {
+    // The picker shows progress against this number without loading the book, so it
+    // has to stay true as tasks are added.
+    for (const entry of TEXTBOOK_CATALOGUE) {
+      const module = bookLoaders[entry.id];
+      expect(module, `no loader for ${entry.id}`).toBeTruthy();
+    }
+    const loaded = await bookLoaders['tblt-hsk4']!();
+    expect(TEXTBOOK_CATALOGUE[0]!.taskCount).toBe(allTasks(loaded.book).length);
   });
 });
