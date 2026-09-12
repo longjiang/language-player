@@ -3,11 +3,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createAssetResolver,
+  indexToCircled,
   isAppToHostMessage,
   mockAppHref,
   protocolCompatible,
   type MockAppStimulus,
 } from '@langplayer/textbooks';
+import { Check } from 'lucide-react';
 import { ASSET_BASE_URL, MOCK_APP_BASE_URL } from '@/lib/asset-url';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -16,6 +18,7 @@ import { log } from '@/lib/logger';
 import { DictionaryPopup } from '@/components/dictionary-popup';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { useTextbookTask } from './task-provider';
+import { TokenizedText } from '@/components/tokenized-text';
 
 /**
  * Host frame for a self-contained mock app (SPEC-095, ADR-0045).
@@ -33,6 +36,11 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const resolveAsset = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
+  /** The goals that print a question, in the app's own order. */
+  const questions = useMemo(
+    () => stimulus.goals.flatMap((goal) => (goal.prompt ? [{ id: goal.id, prompt: goal.prompt }] : [])),
+    [stimulus.goals],
+  );
 
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -47,6 +55,27 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
   const [height, setHeight] = useState(420);
+  const [loaded, setLoaded] = useState(false);
+  /**
+   * The frame is rendered after mount, never in the server HTML.
+   *
+   * A frame in the server HTML starts loading while the client bundle is still
+   * arriving, and the app announces itself the moment it has run — so its whole
+   * handshake can be over before this component is hydrated and listening.
+   * Measured on this page: the app posted `ready`, its first `progress` and its
+   * first `resize` at 1161ms, and the first `message` listener here was attached
+   * at 1272ms. All three went to nobody. `ready` is never re-sent, so the frame
+   * sat on 'loading' for good, while clicks still worked (a later `progress`
+   * arrived) — an app that looked alive and reported 1 / 6 with nothing asked.
+   *
+   * Rendering it here puts its first byte after this component's effects, so the
+   * listener and the `load` handler both exist before the app can speak. The
+   * `load` handler matters too: attached during hydration it missed a `load` that
+   * had already fired, so the 4s grace timer never started and a frame that never
+   * said `ready` never degraded to the fallback either.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [popup, setPopup] = useState<{
     token: LemmatizedToken;
     position: { x: number; y: number; width?: number; height?: number };
@@ -68,11 +97,12 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     });
   }, [send, l1.code, l2.code, helpMode]);
 
+  // `init` can only be delivered to a frame that exists, so it goes out when the
+  // frame loads rather than on this component's mount — and again if the language
+  // pair changes while the frame is up.
   useEffect(() => {
-    sendInit();
-    // Only on mount / when the language pair changes — help mode has its own message.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sendInit]);
+    if (loaded) sendInit();
+  }, [loaded, sendInit]);
 
   /**
    * Tokenize the app's strings via the app's OWN lemmatize pipeline.
@@ -156,6 +186,10 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
             break;
           }
           ctx.store.setValue(link.blankId, data.payload.answer);
+          // The app sends `complete` and then `progress`. Marking the goal here
+          // too means the question's own marker does not depend on the second
+          // message arriving — the same message the handshake race used to eat.
+          setDoneGoalIds((ids) => (ids.includes(link.id) ? ids : [...ids, link.id]));
           break;
         }
         case 'resize':
@@ -242,25 +276,60 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
         </span>
       </div>
 
+      {/*
+        The questions are the host's, not the app's. The app renders a 12306
+        screen and nothing else, so a student who only ever saw the frame had the
+        screen, a `1 / 6` counter and no idea what the six questions were. They
+        come from the content, which is also what each reported goal is graded
+        against, so the printed question and the graded answer cannot drift.
+
+        An answered one is struck out, which is this feature's existing mark for
+        "you have placed this" (see the option pools). A `goal` with no `prompt`
+        has nothing to print, but still counts in the counter and is still graded.
+      */}
+      {questions.length > 0 && (
+        <ol className="flex flex-col gap-1.5 text-sm text-foreground">
+          {questions.map((goal, index) => {
+            const done = doneGoalIds.includes(goal.id);
+            return (
+              <li key={goal.id} className="flex items-start gap-2">
+                <span className="text-muted-foreground">{indexToCircled(index + 1)}</span>
+                <span className={done ? 'flex-1 text-muted-foreground line-through' : 'flex-1'}>
+                  <TokenizedText text={goal.prompt} l2Code={l2.code} />
+                </span>
+                {done && <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         {status === 'loading' && (
           <p className="p-4 text-sm text-muted-foreground">{t('msg.loading')}</p>
         )}
-        <iframe
-          ref={frameRef}
-          title={stimulus.app}
-          src={mockAppHref(MOCK_APP_BASE_URL, stimulus.app)}
-          // No allow-same-origin: the app must not reach host storage or the DOM.
-          sandbox="allow-scripts"
-          onLoad={() => {
-            // A frame that loads but never says 'ready' is broken; give it a beat.
-            window.setTimeout(() => {
-              setStatus((s) => (s === 'loading' ? 'failed' : s));
-            }, 4000);
-          }}
-          onError={() => setStatus('failed')}
-          style={{ height, width: '100%', border: 0 }}
-        />
+        {mounted && (
+          <iframe
+            // Remounting with a new key is the only reliable retry for a frame
+            // that failed to load — without this the retry button was a no-op on
+            // web, which is what SPEC-095's Error state promises it is not.
+            key={attempt}
+            ref={frameRef}
+            title={stimulus.app}
+            src={mockAppHref(MOCK_APP_BASE_URL, stimulus.app)}
+            // No allow-same-origin: the app must not reach host storage or the DOM.
+            sandbox="allow-scripts"
+            onLoad={() => {
+              setLoaded(true);
+              // A frame that loads but never says 'ready' is broken; give it a beat.
+              window.setTimeout(() => {
+                setStatus((s) => (s === 'loading' ? 'failed' : s));
+              }, 4000);
+            }}
+            onError={() => setStatus('failed')}
+            style={{ height, width: '100%', border: 0 }}
+          />
+        )}
       </div>
 
       {popup && (
