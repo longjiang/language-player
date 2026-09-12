@@ -81,6 +81,7 @@
         "grant_admin": "ให้สิทธิ์ผู้ดูแลระบบ",
         "grant_subscription": "ให้การสมัครสมาชิก",
         "hide_sidebar": "ซ่อนแถบด้านข้าง",
+        "hint": "คำใบ้",
         "import": "นำเข้า",
         "import_files": "นำเข้าไฟล์",
         "inflection": "การผันรูป",

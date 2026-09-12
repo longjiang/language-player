@@ -107,3 +107,41 @@ export function parseAnswerKey(raw: string): AnswerKeyItem[] {
 export function answersForKeyIndex(raw: string, index: number): string[] {
   return parseAnswerKey(raw).find((item) => item.index === index)?.answers ?? [];
 }
+
+/**
+ * Parse a **label-keyed** answer key into `label → answers`.
+ *
+ * A ➊ puts its blanks on a map beside city names, so the key names each blank
+ * instead of numbering it:
+ *
+ *   北京：C；成都：D；吐鲁番：B；拉萨：J；…
+ *
+ * Kept separate from `parseAnswerKey` rather than folded into it: the two forms
+ * share punctuation but not structure (labels are arbitrary text, so treating
+ * them as indices would mis-key every blank).
+ */
+export function parseLabelledAnswerKey(raw: string): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  if (!raw) return out;
+
+  for (const segment of raw.split(/[;；。\n]/)) {
+    const text = segment.trim();
+    if (!text) continue;
+    const colon = text.search(/[:：]/);
+    if (colon === -1) continue;
+    const label = text.slice(0, colon).trim();
+    const answers = text
+      .slice(colon + 1)
+      .split(MULTI_ANSWER_SPLIT_RE)
+      .map((part) => part.replace(/^[\s.。]+|[\s.。]+$/g, '').trim())
+      .filter(Boolean);
+    if (label && answers.length) out.set(label, answers);
+  }
+
+  return out;
+}
+
+/** Answers for one label-keyed item. */
+export function answersForKeyLabel(raw: string, label: string): string[] {
+  return parseLabelledAnswerKey(raw).get(label) ?? [];
+}

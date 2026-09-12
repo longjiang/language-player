@@ -81,6 +81,7 @@
         "grant_admin": "관리자 권한 부여",
         "grant_subscription": "구독 부여",
         "hide_sidebar": "사이드바 숨기기",
+        "hint": "힌트",
         "import": "가져오기",
         "import_files": "파일 가져오기",
         "inflection": "굴절",

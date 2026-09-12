@@ -103,5 +103,43 @@ export const lessonB: LessonMeta = {
       banks: [{ id: 'w1', items: ['快', '免费Wi-Fi', '充电口', '新'], allowReuse: false }],
       answerKeyRaw: '② 新; ③ 免费Wi-Fi; ④ 充电口。',
     },
+    {
+      id: 'tblt-hsk4.u06.B.t4',
+      number: '➍',
+      type: 'reading',
+      sourcePage: 9,
+      instructions:
+        '这个周末，你想从北京坐高铁去杭州玩。参照下面“铁路12306”APP 的截图，回答问题。',
+      instructionsL1:
+        'This weekend you want to take the high-speed train from Beijing to Hangzhou. Look at the 12306 app screen and answer the questions.',
+      body: [
+        {
+          kind: 'mockApp',
+          app: 'railway-12306',
+          fallbackImage: 'tblt-hsk4/u06/b4-fallback.png',
+          goals: [
+            { id: 'fastest', blankId: 'b1', prompt: '哪次列车最快？' },
+            { id: 'cheapest', blankId: 'b2', prompt: '哪次列车最便宜？' },
+            { id: 'fuxing', blankId: 'b3', prompt: '哪些列车是“复兴号”？' },
+            { id: 'sold-out', blankId: 'b4', prompt: '哪次列车的票已经卖完了（售罄）？' },
+            { id: 'business', blankId: 'b5', prompt: '哪些列车有商务座（不包括候补）？' },
+            { id: 'sleeper', blankId: 'b6', prompt: '哪次列车有卧铺票（一等卧、二等卧、硬卧、软卧等，但不包括候补）？' },
+          ],
+        },
+      ],
+      blanks: {
+        // ① is pre-filled in the workbook, so the key starts at ②.
+        b1: { id: 'b1', kind: 'given', answer: 'G49' },
+        b2: { id: 'b2', kind: 'goal', answer: 'K1275' },
+        // Several trains answer this, so any of them satisfies the goal and all
+        // of them are accepted by grading. The validator additionally proves each
+        // accepted value is in the printed key.
+        b3: { id: 'b3', kind: 'goal', answer: 'G875', accept: ['G49', 'D17', 'D11'] },
+        b4: { id: 'b4', kind: 'goal', answer: 'Z281' },
+        b5: { id: 'b5', kind: 'goal', answer: 'G871', accept: ['G875'] },
+        b6: { id: 'b6', kind: 'goal', answer: 'D17', accept: ['D11'] },
+      },
+      answerKeyRaw: '② K1275; ③ G875、G49、D17、D11; ④ Z281; ⑤ G871、G875; ⑥ D17、D11。',
+    },
   ],
 };

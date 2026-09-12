@@ -9,7 +9,7 @@
  */
 
 import { extractBlankMarkers } from '@langplayer/utils';
-import { answersForKeyIndex } from './answer-key';
+import { answersForKeyIndex, answersForKeyLabel } from './answer-key';
 import { normalizeAnswer } from './grading';
 import { pictureSetsIn, textsIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
@@ -48,6 +48,8 @@ function markerIdsIn(task: Task): string[] {
   const ids = textsIn(task).flatMap((text) => extractBlankMarkers(text).markers.map((m) => m.id));
   for (const stimulus of task.body) {
     if (stimulus.kind === 'numberedBlanks') ids.push(...stimulus.ids);
+    if (stimulus.kind === 'imageMap') ids.push(...stimulus.pins.map((pin) => pin.blankId));
+    if (stimulus.kind === 'mockApp') ids.push(...stimulus.goals.map((goal) => goal.blankId));
   }
   return ids;
 }
@@ -111,6 +113,9 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     if (blank.kind === 'given' && blank.bank) {
       add('warning', `Given blank "${key}" declares a bank but is not answered.`, key);
     }
+    if (blank.kind === 'goal' && (blank.bank || blank.optionSet)) {
+      add('error', `Goal blank "${key}" cannot draw from a bank or picture set.`, key);
+    }
     if (blank.expectedLength !== undefined && blank.answer && blank.expectedLength !== blank.answer.length) {
       add(
         'warning',
@@ -153,6 +158,47 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     if (!referencedBanks.has(bank.id)) add('warning', `Bank "${bank.id}" is never referenced by a blank.`);
   }
 
+  // ── Mock apps ──
+  const goalBlanks = new Set(
+    Object.values(blanks)
+      .filter((b) => b.kind === 'goal')
+      .map((b) => b.id),
+  );
+  const linkedGoalBlanks = new Set<string>();
+  for (const stimulus of task.body) {
+    if (stimulus.kind !== 'mockApp') continue;
+    if (!stimulus.app) add('error', 'mockApp stimulus has no app id.');
+    const seenGoalIds = new Set<string>();
+    for (const goal of stimulus.goals) {
+      if (seenGoalIds.has(goal.id)) {
+        add('error', `mockApp declares goal "${goal.id}" twice.`);
+      }
+      seenGoalIds.add(goal.id);
+      const blank = blanks[goal.blankId];
+      if (!blank) {
+        add('error', `mockApp goal "${goal.id}" references missing blank "${goal.blankId}".`);
+        continue;
+      }
+      // A goal may link a `goal` blank (answered in the app) or a `given` blank
+      // (a worked example the workbook pre-fills). The second case is real: the
+      // 12306 app naturally answers all six questions, but ① is demonstrated
+      // rather than scored, and `given` already means exactly that.
+      if (blank.kind !== 'goal' && blank.kind !== 'given') {
+        add(
+          'error',
+          `mockApp goal "${goal.id}" must reference a goal or given blank, but "${goal.blankId}" is "${blank.kind}".`,
+          goal.blankId,
+        );
+      }
+      linkedGoalBlanks.add(goal.blankId);
+    }
+  }
+  for (const id of goalBlanks) {
+    if (!linkedGoalBlanks.has(id)) {
+      add('error', `Goal blank "${id}" is not linked from any mockApp goal.`, id);
+    }
+  }
+
   // ── Picture sets ──
   const referencedSets = new Set(
     Object.values(blanks)
@@ -183,6 +229,11 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
         }
       }
     }
+    for (const stimulus of task.body) {
+      if (stimulus.kind === 'imageMap' && stimulus.image && !keys.has(stimulus.image)) {
+        add('error', `imageMap image "${stimulus.image}" is not in the asset manifest.`);
+      }
+    }
   }
   if (task.type === 'listening' && !(task.audio ?? []).length) {
     add('warning', 'Task is typed "listening" but has no audio.');
@@ -192,20 +243,30 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
   if (task.answerKeyRaw) {
     for (const blank of Object.values(blanks)) {
       if (blank.kind === 'given') continue; // the key deliberately omits worked examples
-      const index = keyIndexFor(blank.id, blank.keyIndex);
-      if (index === null) continue;
-      const keyed = answersForKeyIndex(task.answerKeyRaw, index);
+      const keyed = blank.keyLabel
+        ? answersForKeyLabel(task.answerKeyRaw, blank.keyLabel)
+        : (() => {
+            const index = keyIndexFor(blank.id, blank.keyIndex);
+            return index === null ? null : answersForKeyIndex(task.answerKeyRaw, index);
+          })();
+      if (keyed === null) continue;
       if (keyed.length === 0) {
-        add('error', `Blank "${blank.id}" is absent from the answer key for this task.`, blank.id);
+        add(
+          'error',
+          `Blank "${blank.id}"${blank.keyLabel ? ` (label "${blank.keyLabel}")` : ''} is absent from the answer key for this task.`,
+          blank.id,
+        );
         continue;
       }
       const normalizedKeyed = keyed.map(normalizeAnswer);
-      if (!normalizedKeyed.includes(normalizeAnswer(blank.answer))) {
-        add(
-          'error',
-          `Blank "${blank.id}" answer "${blank.answer}" disagrees with the key (${keyed.join(' / ')}).`,
-          blank.id,
-        );
+      for (const candidate of [blank.answer, ...(blank.accept ?? [])]) {
+        if (!normalizedKeyed.includes(normalizeAnswer(candidate))) {
+          add(
+            'error',
+            `Blank "${blank.id}" answer "${candidate}" disagrees with the key (${keyed.join(' / ')}).`,
+            blank.id,
+          );
+        }
       }
     }
   } else {

@@ -25,6 +25,17 @@ const audio = (filename: string) => `${BOOK}/${UNIT}/${filename}`;
 const image = (name: string) => `${BOOK}/${UNIT}/${name}`;
 
 export const TBLT_HSK4_ASSET_KEYS: string[] = [
+  // ── Lesson A, task ➊ — nine spoken recommendations (拉萨 has no item) ──
+  audio('六A ➊ 上海.mp3'),
+  audio('六A ➊ 北京.mp3'),
+  audio('六A ➊ 哈尔滨.mp3'),
+  audio('六A ➊ 成都.mp3'),
+  audio('六A ➊ 新疆.mp3'),
+  audio('六A ➊ 杭州.mp3'),
+  audio('六A ➊ 桂林.mp3'),
+  audio('六A ➊ 苏州.mp3'),
+  audio('六A ➊ 西安.mp3'),
+
   // ── Lesson A, task ➋ — seven transport announcements ──
   audio('六A ➋ ① 就要检票了.mp3'),
   audio('六A ➋ ② 全列禁烟.mp3'),
@@ -52,6 +63,22 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   audio('六C ➋ ④.mp3'),
   // ➍ is the transcript-following task for the ➌ recording, so it reuses it.
   audio('六C ➌.mp3'),
+
+  // ── Lesson B ➍ — the workbook screenshot shown if the mock frame fails ──
+  image('b4-fallback.png'),
+
+  // ── Pictures, lesson A ➊ — the map and the ten scenic spots (A–J) ──
+  image('a1-map.png'),
+  image('a1-sight-a.png'),
+  image('a1-sight-b.png'),
+  image('a1-sight-c.png'),
+  image('a1-sight-d.png'),
+  image('a1-sight-e.png'),
+  image('a1-sight-f.png'),
+  image('a1-sight-g.png'),
+  image('a1-sight-h.png'),
+  image('a1-sight-i.png'),
+  image('a1-sight-j.png'),
 
   // ── Pictures, lesson A ➋ (A–G) ──
   image('a2-a.png'),

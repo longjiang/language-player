@@ -8,6 +8,28 @@
  */
 
 export { pictureSetsIn, textsIn } from './types';
+export {
+  isAppToHostMessage,
+  MOCK_APP_PROTOCOL_VERSION,
+  mockAppHref,
+  protocolCompatible,
+} from './mock-app';
+export type {
+  AppToHostMessage,
+  CompleteMessage,
+  HelpModeMessage,
+  HintMessage,
+  HostToAppMessage,
+  InitMessage,
+  LookupMessage,
+  MockAppGoal,
+  ProgressMessage,
+  ReadyMessage,
+  ResetMessage,
+  ResizeMessage,
+  TokenizeRequestMessage,
+  TokensMessage,
+} from './mock-app';
 export type {
   AudioTrack,
   Bank,
@@ -19,7 +41,11 @@ export type {
   DataTableStimulus,
   DialogueLine,
   DialogueStimulus,
+  ImageMapPin,
+  ImageMapStimulus,
   LessonMeta,
+  MockAppGoalLink,
+  MockAppStimulus,
   NumberedBlanksStimulus,
   PassageStimulus,
   PictureOption,
@@ -41,9 +67,11 @@ export {
 
 export {
   answersForKeyIndex,
+  answersForKeyLabel,
   circledToIndex,
   indexToCircled,
   parseAnswerKey,
+  parseLabelledAnswerKey,
 } from './answer-key';
 export type { AnswerKeyItem } from './answer-key';
 

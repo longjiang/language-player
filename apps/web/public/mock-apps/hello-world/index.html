@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hello World</title>
+    <style>
+      /* A mock app owns its own branding; these colours are deliberately not the
+         LP design tokens (ADR-0045). */
+      :root { color-scheme: light; }
+      body { margin: 0; font: 16px/1.6 -apple-system, "PingFang SC", sans-serif; background: #eef2f7; }
+      #app { max-width: 420px; margin: 16px auto; background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.12); overflow: hidden; }
+      header { background: #2563eb; color: #fff; padding: 12px 16px; font-weight: 600; }
+      ul { list-style: none; margin: 0; padding: 8px; }
+      li { padding: 10px 12px; border-radius: 8px; margin: 4px 0; background: #f1f5f9; cursor: pointer; }
+      li[data-mock-target]:hover { background: #e2e8f0; }
+      .mock-hint { outline: 3px solid #f59e0b; outline-offset: 2px; }
+      .done { background: #dcfce7; }
+    </style>
+  </head>
+  <body>
+    <!--
+      The floor this file proves: a mock app supplies its own HTML/CSS, a dataset,
+      goals, and a mount function — nothing else. Help mode, tokenization,
+      hinting and completion reporting all come from the shared runtime.
+    -->
+    <div id="app">
+      <header>模拟应用 Hello World</header>
+      <ul id="list"></ul>
+    </div>
+
+    <script src="/mock-apps/runtime.v1.js"></script>
+    <script>
+      MockApp.define({
+        id: 'hello-world',
+        data: {
+          items: [
+            { id: 'a', label: '选项 A', correct: true },
+            { id: 'b', label: '选项 B', correct: false },
+          ],
+        },
+        goals: [
+          {
+            id: 'pick-a',
+            prompt: '选择正确的选项',
+            candidates: () => Array.from(document.querySelectorAll('[data-mock-target]')),
+            accept: (el) => el.dataset.item === 'a',
+            answer: (el) => el.dataset.item,
+          },
+        ],
+        mount(root, data) {
+          const list = root.querySelector('#list');
+          data.items.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item.label;
+            li.dataset.mockTarget = '';
+            li.dataset.item = item.id;
+            li.addEventListener('click', () => {
+              if (item.correct) li.classList.add('done');
+            });
+            list.appendChild(li);
+          });
+        },
+        reset(data) {
+          document.querySelectorAll('#list li').forEach((li) => li.classList.remove('done'));
+        },
+      });
+    </script>
+  </body>
+</html>

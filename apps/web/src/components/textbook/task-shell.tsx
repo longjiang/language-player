@@ -12,6 +12,8 @@ import { PictureSet } from './picture-set';
 import { DataTable } from './data-table';
 import { DialoguePassage } from './dialogue-passage';
 import { NumberedBlanks } from './numbered-blanks';
+import { ImageMap } from './image-map';
+import { MockAppFrame } from './mock-app-frame';
 
 /**
  * The frame every task renders inside.
