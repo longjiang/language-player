@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "Media",
         "reading": "Reading",
-        "vocab": "Vocab"
+        "study": "Study"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "Suggested reading",
         "sync_status": "Sync Status",
         "tags": "Tags",
+        "tasks": "Tasks",
         "textbook_appearances": "Textbook Appearances",
         "tokenized_result": "Tokenized Result",
         "tokenizer_test": "Tokenizer Test",

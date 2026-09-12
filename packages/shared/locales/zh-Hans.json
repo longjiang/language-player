@@ -1170,7 +1170,7 @@
     "nav": {
         "media": "媒体",
         "reading": "阅读",
-        "vocab": "词汇"
+        "study": "学习"
     },
     "option": {
         "app_store": "应用商店",
@@ -1571,6 +1571,7 @@
         "suggested_reading": "推荐阅读",
         "sync_status": "同步状态",
         "tags": "标签",
+        "tasks": "任务",
         "textbook_appearances": "教材收录",
         "tokenized_result": "分词结果",
         "tokenizer_test": "分词测试",

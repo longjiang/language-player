@@ -24,7 +24,7 @@ import {
   sentenceForToken,
   tokenMatchesAnyForm,
   tokenMatchesAnyTerm,
-  extractNoteMarkers,
+  extractInlineMarkers,
 } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -72,6 +72,8 @@ import { buildSelectionMap, selectionSourceOffset, selectionTermAt } from '@/lib
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 import { NoteBadge, NotePopup } from '@/components/note-popup';
+import { BlankField, InlineBlankText } from '@/components/textbook/BlankField';
+import { useTextbookTask } from '@/components/textbook/task-provider';
 
 const { log, logwarn } = tokenizedTextLogger;
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
@@ -228,23 +230,36 @@ export interface TokenizedTextProps {
  */
 function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, karaokeDimOpacity = 0.4, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, blankHighlighted = false, quickGlossOnBlank = false, bold, textScale, textAlign = 'left', inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid, debugFontFamily, debugRubyFontFamily, debugRubyMetrics, disablePopup = false, ctx, notes }: TokenizedTextProps) {
   const t = useT();
-  // SPEC-093: when a notes map is supplied, strip `[n]` markers from the text
-  // so the lemmatizer never sees bracket junk. The clean text is what gets
-  // tokenized, measured, and rendered; each marker becomes an inline badge
-  // (see renderItems + render loop below).
-  const noteContext = useMemo(
-    () => (notes?.length ? extractNoteMarkers(rawText) : { cleanText: rawText, markers: [] }),
-    [rawText, notes],
+  // SPEC-093 / SPEC-095: strip inline markers from the text *before*
+  // tokenization so the lemmatizer never sees marker junk, recording each
+  // marker's char offset in the clean text. Each marker then becomes an inline
+  // element at exactly that offset (see renderItems + render loop below).
+  //
+  // Notes (`[n]`, opt-in via the `notes` prop) and textbook blanks (`{{bN}}`,
+  // opt-in via a task context) are extracted in a SINGLE pass: running the two
+  // extractors in sequence would leave the first one's offsets stale as soon as
+  // a marker of the other kind preceded it.
+  //
+  // The task context is read directly rather than through a prop, which is why
+  // this feature needed no change to `tokenizedTextPropsEqual` below. That is
+  // only safe because the provider's value is stable for the life of an
+  // attempt — see the note on the comparator at the bottom of this file.
+  const textbook = useTextbookTask();
+  const wantBlanks = textbook !== null;
+  const inlineContext = useMemo(
+    () => extractInlineMarkers(rawText, { notes: Boolean(notes?.length), blanks: wantBlanks }),
+    [rawText, notes, wantBlanks],
   );
   const noteById = useMemo(
     () => new Map((notes ?? []).map((n) => [n.id, n])),
     [notes],
   );
   const noteMarkers = useMemo<SubtitleNoteMarker[]>(
-    () => noteContext.markers.map((m) => ({ id: m.id, index: m.index, note: noteById.get(m.id)?.note ?? '' })),
-    [noteContext.markers, noteById],
+    () => inlineContext.noteMarkers.map((m) => ({ id: m.id, index: m.index, note: noteById.get(m.id)?.note ?? '' })),
+    [inlineContext.noteMarkers, noteById],
   );
-  const text = noteContext.cleanText;
+  const blankMarkers = inlineContext.blankMarkers;
+  const text = inlineContext.cleanText;
   const [selectedNote, setSelectedNote] = useState<SubtitleNoteMarker | null>(null);
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -680,27 +695,49 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   // concatenate back to). Each badge is drawn at the token boundary where its
   // `[n]` marker was stripped from (SPEC-093).
   const renderItems = useMemo(() => {
-    if (noteMarkers.length === 0) {
+    if (noteMarkers.length === 0 && blankMarkers.length === 0) {
       return displayTokens.map((_, i) => ({ kind: 'token' as const, tokenIndex: i }));
     }
-    const markers = [...noteMarkers].sort((a, b) => a.index - b.index);
-    const items: Array<{ kind: 'token'; tokenIndex: number } | { kind: 'note'; marker: SubtitleNoteMarker }> = [];
+    type MobileItem =
+      | { kind: 'token'; tokenIndex: number }
+      | { kind: 'note'; marker: SubtitleNoteMarker }
+      | { kind: 'blank'; blankId: string };
+
+    // Two independent marker streams, merged in offset order.
+    const notes = [...noteMarkers].sort((a, b) => a.index - b.index);
+    const blanks = [...blankMarkers].sort((a, b) => a.index - b.index);
+    const items: MobileItem[] = [];
     let pos = 0;
-    let mi = 0;
-    for (let ti = 0; ti < displayTokens.length; ti++) {
-      while (mi < markers.length && markers[mi]!.index <= pos) {
-        items.push({ kind: 'note', marker: markers[mi]! });
-        mi++;
+    let ni = 0;
+    let bi = 0;
+
+    const flushUpTo = (limit: number) => {
+      for (;;) {
+        const note = notes[ni];
+        const blank = blanks[bi];
+        const noteReady = note !== undefined && note.index <= limit;
+        const blankReady = blank !== undefined && blank.index <= limit;
+        if (!noteReady && !blankReady) return;
+        // At the same offset a note wins, matching the previous behaviour where
+        // notes were the only interleaved kind.
+        if (noteReady && (!blankReady || note!.index <= blank!.index)) {
+          items.push({ kind: 'note', marker: note! });
+          ni++;
+        } else {
+          items.push({ kind: 'blank', blankId: blank!.id });
+          bi++;
+        }
       }
+    };
+
+    for (let ti = 0; ti < displayTokens.length; ti++) {
+      flushUpTo(pos);
       items.push({ kind: 'token', tokenIndex: ti });
       pos += displayTokens[ti]!.text.length;
     }
-    while (mi < markers.length) {
-      items.push({ kind: 'note', marker: markers[mi]! });
-      mi++;
-    }
+    flushUpTo(Number.POSITIVE_INFINITY);
     return items;
-  }, [displayTokens, noteMarkers]);
+  }, [displayTokens, noteMarkers, blankMarkers]);
 
   // ── Map format ranges (links, highlights, markdown bold/italic/code) onto
   //    display-token indices. Merged saved phrases keep their exact source
@@ -1426,7 +1463,12 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               // badges inline) and use the JS flex path so note badges render
               // as flex items between words.
               const hasNotes = noteMarkers.length > 0;
-              const useParagraph = NATIVE_PARAGRAPH_ACTIVE && !showDefinition && !hasNotes;
+              // Textbook blanks are interactive inline widgets, so like note
+              // badges they force the JS flex path: a single native attributed
+              // string cannot host them.
+              const hasBlanks = blankMarkers.length > 0;
+              const useParagraph =
+                NATIVE_PARAGRAPH_ACTIVE && !showDefinition && !hasNotes && !hasBlanks;
               // Dev-only: log the ruby render path once per change, so the
               // Metro log shows which path this build actually takes (native
               // paragraph / native per-token / JS fallback).
@@ -1461,6 +1503,17 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                   : '└─ View flex-row flex-wrap items-end (line container)',
               ];
               const rendered = renderItems.map((item) => {
+              // ── Textbook blank (SPEC-095): render the interactive blank
+              // where its `{{bN}}` marker was stripped from the clean text.
+              // Rendered as a sibling of the token views so the words on either
+              // side stay tappable for the dictionary. ──
+              if (item.kind === 'blank') {
+                const blank = textbook?.task.blanks?.[item.blankId];
+                // A marker with no matching blank spec renders nothing rather
+                // than throwing; the content validator catches that case.
+                if (!blank) return null;
+                return <BlankField key={`blank-${item.blankId}`} blank={blank} />;
+              }
               // ── Note badge (SPEC-093): render the solid-circle marker where
               // a `[n]` note was stripped from the clean text. ──
               if (item.kind === 'note') {
@@ -1804,6 +1857,13 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               // SPEC-082 Task 5: first-line indent (U+3000 = 1 em).
               const indentNode = leadingIndent ? '\u3000' : '';
               const spans = renderItems.map((item) => {
+              // ── Textbook blank (SPEC-095): read-only in this path, because a
+              // TextInput/Pressable cannot live inside an RN <Text>. ──
+              if (item.kind === 'blank') {
+                const blank = textbook?.task.blanks?.[item.blankId];
+                if (!blank) return null;
+                return <InlineBlankText key={`blank-${item.blankId}`} blank={blank} />;
+              }
               // ── Note badge (SPEC-093): a nested tappable Text in the plain
               // inline path (a Pressable cannot live inside an RN <Text>). ──
               if (item.kind === 'note') {

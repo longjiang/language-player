@@ -9,12 +9,7 @@ import { useReaderChrome } from '@/providers/reader-chrome-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
 import { Logo } from '@/components/ui/logo';
-import {
-  Menu, X, ChevronDown, Search,
-  Compass, Tv, Clapperboard, Upload,
-  BookOpen, Globe, BookMarked, ImageIcon,
-  RotateCcw, FileText, Youtube,
-} from 'lucide-react';
+import { BookMarked, BookOpen, ChevronDown, Clapperboard, ClipboardCheck, Compass, FileText, Globe, ImageIcon, Menu, RotateCcw, Search, Tv, Upload, X, Youtube } from 'lucide-react';
 
 interface NavGroup {
   label: string;
@@ -42,10 +37,11 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'Vocab',
+    label: 'Study',
     links: [
       { key: 'title.dictionary', href: 'dictionary' },
       { key: 'title.review', href: 'review' },
+      { key: 'title.tasks', href: 'tasks' },
     ],
   },
 ] as const;
@@ -61,6 +57,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   'image-reader': <ImageIcon className="h-4 w-4" />,
   dictionary: <BookMarked className="h-4 w-4" />,
   review: <RotateCcw className="h-4 w-4" />,
+  tasks: <ClipboardCheck className="h-4 w-4" />,
   'local-media': <Upload className="h-4 w-4" />,
 };
 

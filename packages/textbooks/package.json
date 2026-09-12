@@ -1,0 +1,19 @@
+{
+  "name": "@langplayer/textbooks",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Interactive textbook content model, schema validation, grading and local attempt store (SPEC-095).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@langplayer/shared": "*",
+    "@langplayer/utils": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

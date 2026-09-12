@@ -41,7 +41,7 @@ const ALWAYS_KEEP = [
 // ── Known-live keys for verification ────────
 const MUST_BE_ALIVE = [
   // nav.* — used via t(\`nav.${group.label.toLowerCase()}\`)
-  'nav.media', 'nav.vocab', 'nav.reading',
+  'nav.media', 'nav.study', 'nav.reading',
   // title.* — used via t(link.key) where link.key = 'title.explore' etc.
   'title.explore', 'title.dictionary', 'title.tv_shows', 'title.watch_history',
   'title.reader', 'title.saved_words', 'title.review', 'title.app_name',

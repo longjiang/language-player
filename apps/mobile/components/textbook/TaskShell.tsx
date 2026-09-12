@@ -1,0 +1,136 @@
+import React, { useCallback, useSyncExternalStore } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { TokenizedText } from '@/components/TokenizedText';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useT } from '@/hooks/use-t';
+import { useTextbookTask } from './task-provider';
+import { WordBank } from './WordBank';
+
+/**
+ * The frame every task renders inside.
+ *
+ * This is the consistency anchor: the task number, tokenized instructions,
+ * submit/reset controls and result banner are identical for every task, so a
+ * heterogeneous set of activities reads as one product. A task's own stimulus
+ * widgets render in the middle and are free to look however they must.
+ */
+export function TaskShell({ children }: { children?: React.ReactNode }) {
+  const ctx = useTextbookTask()!;
+  const { task, book } = ctx;
+  const { l2Lang } = useLanguage();
+  const { getL2 } = useSettingsContext();
+  const t = useT();
+
+  // Per-L2 display setting, shared with the readers — not a textbook-specific
+  // toggle.
+  const showTranslation = getL2(l2Lang.code).display.translation;
+
+  const submitted = useSyncExternalStore(
+    ctx.store.subscribe,
+    useCallback(() => ctx.store.isSubmitted(), [ctx]),
+    useCallback(() => ctx.store.isSubmitted(), [ctx]),
+  );
+  const result = useSyncExternalStore(
+    ctx.store.subscribe,
+    useCallback(() => ctx.store.getResult(), [ctx]),
+    useCallback(() => ctx.store.getResult(), [ctx]),
+  );
+  const responses = useSyncExternalStore(
+    ctx.store.subscribe,
+    useCallback(() => ctx.store.getResponsesSnapshot(), [ctx]),
+    useCallback(() => ctx.store.getResponsesSnapshot(), [ctx]),
+  );
+
+  const banks = task.banks ?? [];
+  const hasBlanks = Object.keys(task.blanks ?? {}).length > 0;
+  const anyAnswer = Object.values(responses).some((v) => v.trim());
+
+  return (
+    <ScrollView contentContainerClassName="gap-5 pb-16" className="flex-1">
+      <View className="flex-row items-start gap-3">
+        <View className="mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+          <Text className="text-sm font-semibold text-primary">{task.number}</Text>
+        </View>
+        <View className="flex-1">
+          {/* Instructions are L2 text rendered through TokenizedText, so they
+              carry ruby and are tappable like any other L2 text. */}
+          <TokenizedText text={task.instructions} l2Code={l2Lang.code} />
+          {showTranslation && task.instructionsL1 && (
+            <Text className="mt-1 text-sm text-muted-foreground">{task.instructionsL1}</Text>
+          )}
+        </View>
+      </View>
+
+      {children}
+
+      {banks.map((bank) => (
+        <WordBank key={bank.id} bank={bank} />
+      ))}
+
+      <View className="flex-row flex-wrap items-center gap-3">
+        <Pressable
+          onPress={() => ctx.store.submit()}
+          disabled={hasBlanks && !anyAnswer}
+          accessibilityRole="button"
+          className={`rounded-md bg-primary px-4 py-2 ${hasBlanks && !anyAnswer ? 'opacity-50' : ''}`}
+        >
+          <Text className="text-sm font-medium text-primary-foreground">{t('review.submit')}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => ctx.store.reset()}
+          accessibilityRole="button"
+          className="rounded-md border border-border px-4 py-2"
+        >
+          <Text className="text-sm text-foreground">{t('action.try_again')}</Text>
+        </Pressable>
+      </View>
+
+      {submitted && result && (
+        <View
+          accessibilityRole="alert"
+          className={`rounded-md border px-4 py-3 ${
+            result.complete ? 'border-green-600 bg-green-500/10' : 'border-destructive bg-destructive/10'
+          }`}
+        >
+          <Text className="text-sm text-foreground">
+            {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
+            <Text className="text-muted-foreground">
+              {'  '}
+              {result.correctCount} / {result.scoreableCount}
+            </Text>
+          </Text>
+        </View>
+      )}
+
+      <Text className="text-xs text-muted-foreground">{book.title}</Text>
+    </ScrollView>
+  );
+}
+
+/**
+ * Renders the task's stimulus blocks.
+ *
+ * Phase 0 implements `passage`; the remaining kinds arrive with their widgets in
+ * later phases, and an unimplemented kind renders nothing rather than throwing,
+ * so a newer content file cannot break an older client outright.
+ */
+export function TaskStimulus() {
+  const ctx = useTextbookTask()!;
+  const { l2Lang } = useLanguage();
+
+  return (
+    <>
+      {ctx.task.body.map((stimulus, i) => {
+        if (stimulus.kind === 'passage') {
+          return (
+            <View key={i}>
+              <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
+            </View>
+          );
+        }
+        return null;
+      })}
+    </>
+  );
+}

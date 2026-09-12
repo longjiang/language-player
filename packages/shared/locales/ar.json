@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "وسائط",
         "reading": "قراءة",
-        "vocab": "مفردات"
+        "study": "الدراسة"
     },
     "option": {
         "app_store": "متجر التطبيقات",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "قراءات مقترحة",
         "sync_status": "حالة المزامنة",
         "tags": "وسوم",
+        "tasks": "المهام",
         "textbook_appearances": "ظهور في الكتب المدرسية",
         "tokenized_result": "النتيجة المجزأة",
         "tokenizer_test": "اختبار التجزئة",

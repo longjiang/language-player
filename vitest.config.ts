@@ -10,6 +10,7 @@ export default defineConfig({
       'apps/mobile/lib/**/*.test.{ts,tsx}',
       'packages/shared/src/**/*.test.{ts,tsx}',
       'packages/utils/src/**/*.test.{ts,tsx}',
+      'packages/textbooks/src/**/*.test.{ts,tsx}',
     ],
   },
   resolve: {
@@ -18,6 +19,7 @@ export default defineConfig({
       '@langplayer/shared': path.resolve(__dirname, 'packages/shared/src'),
       '@langplayer/api-client': path.resolve(__dirname, 'packages/api-client/src'),
       '@langplayer/utils': path.resolve(__dirname, 'packages/utils/src'),
+      '@langplayer/textbooks': path.resolve(__dirname, 'packages/textbooks/src'),
     },
   },
 });

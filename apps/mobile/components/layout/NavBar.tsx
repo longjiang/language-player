@@ -34,10 +34,11 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'Vocab',
+    label: 'Study',
     links: [
       { key: 'title.dictionary', href: '/(tabs)/(vocab)', sf: 'character.book.closed' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review', sf: 'arrow.clockwise' },
+      { key: 'title.tasks', href: '/(tabs)/(vocab)/tasks', sf: 'checklist' },
     ],
   },
 ];

@@ -1193,7 +1193,7 @@
     "nav": {
         "media": "미디어",
         "reading": "읽기",
-        "vocab": "단어장"
+        "study": "학습"
     },
     "option": {
         "app_store": "App Store",
@@ -1595,6 +1595,7 @@
         "suggested_reading": "추천 읽을거리",
         "sync_status": "동기화 상태",
         "tags": "태그",
+        "tasks": "과제",
         "textbook_appearances": "교재 출현",
         "tokenized_result": "토큰화 결과",
         "tokenizer_test": "토크나이저 테스트",

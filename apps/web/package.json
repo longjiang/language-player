@@ -14,6 +14,7 @@
   "dependencies": {
     "@langplayer/api-client": "*",
     "@langplayer/shared": "*",
+    "@langplayer/textbooks": "*",
     "@langplayer/utils": "*",
     "@radix-ui/react-dialog": "^1.1.20",
     "@radix-ui/react-hover-card": "^1.1.23",
