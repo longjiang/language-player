@@ -424,6 +424,73 @@ and becomes the accessible name; the audio row shows `① ② ③` from each tra
 dictation tasks the label *is* the answer (`转机`, `门票`, `选择`), so displaying it would
 give the exercise away.
 
+### Transcript
+
+Every audio control carries a **transcript button** beside its play button, and pressing
+it opens what that recording says — speaker-labelled lines of tokenized L2 text, with an
+L1 translation under each line when the per-L2 `display.translation` setting is on. It is
+the workbook's own Audio Transcript booklet, made reachable from the recording it belongs
+to instead of from a separate page.
+
+```ts
+interface TranscriptLine {
+  speaker?: string;   // 男 / 女, a name, or the setting (车站广播, 车内广播, 扶梯安全提示)
+  text: string;       // what is said — plain L2, no blanks
+}
+
+interface AudioTrack {
+  key: string;
+  label?: string;
+  transcript?: TranscriptLine[];
+}
+```
+
+Line-shaped rather than one string, because that is how the booklet is laid out and how a
+conversation reads: who is speaking is often the point (A ➋ turns on 车站广播 vs 车内广播
+vs 地铁广播) and `DialoguePassage`'s speaker-when-it-changes rule applies unchanged. A line
+with no `speaker` is a paragraph of continuous speech — an article read aloud, a monologue.
+
+**Attached to the recording, not to the task.** Five tasks replay someone else's file —
+A ➍ replays A ➌'s five recordings, D ➌/➍ replay D ➋'s, B ➏ replays B ➎'s, C ➍ replays
+C ➌'s — so `transcriptsIn(book)` indexes transcripts by asset key across the whole book:
+declared once where the recording is first used, found by key from every control that
+plays it. Per-task declarations would repeat the same text verbatim up to five times and
+drift the moment one copy was edited, so a recording carrying two different transcripts is
+a **validator error** rather than a silent winner.
+
+**It carries no blanks.** A transcript is read-only text — what was said, with no holes in
+it — so the validator rejects a `{{bN}}` marker in one. Where a task's own text *is* the
+transcript (C ➍, D ➌), the recording's transcript is that text with the exercise's words
+filled back in from their bank.
+
+**Where a transcript is available, and where it is not.** The booklet covers lessons A and
+C only, so the rest are derived from text the lesson JSONs already carry — the article of
+B ➎/➏, ➍'s shadowing text for D ➋, D ➊'s six paragraphs, E ➌'s model post — with the cloze
+blanks filled in. Two cases deliberately have none, and the button is **absent** rather
+than disabled:
+
+- **E ➊/➋ dictation.** The recording says the sentence the student is asked to write, so a
+  transcript there is the answer key with a play button; the booklet has no entry for them
+  either.
+- **六D ➍.mp3.** A second recording of the same talk, whose text the page never prints.
+
+**Always available, not gated on submit.** A student who did not catch a word can check
+what was said, which is what the printed booklet is for. It is the student's choice to
+look — and for a cloze task (A ➍, C ➍, D ➌, B ➏) the transcript does contain the words
+being asked for, as any transcript would.
+
+**One dialog per task**, opened by whichever control carries the recording, as with the
+picture choices: A ➊ alone has nine recordings, and nine dialogs is nine focus traps
+waiting to be open at once. The dialog's title is the feature's name and never the track's
+`label` — in A ➊ that label is the city the recording names, which is exactly what the
+student has to work out.
+
+**Translation is generated, not authored.** There is no `transcriptL1` in the content
+model, for the same reason there is no `instructionsL1`: it would have to be re-authored
+for every locale and would drift from the L2 text. All of a transcript's lines go in **one**
+`/translate_array` request when the dialog opens, cached per (l1, l2, text), so a second
+open is instant; a line the backend echoes back is rendered untranslated rather than twice.
+
 ### Blank variants worth showing
 
 A typed blank with a length hint and accepted alternates. `expectedLength` is set
@@ -859,7 +926,10 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input) |
-| `InlineTrackButton` | The compact play/pause control an item renders beside itself. Renders nothing when the item has no recording, so a widget can place it unconditionally |
+| `InlineTrackButton` | The compact play/pause control an item renders beside itself, with its transcript button. Renders nothing when the item has no recording, so a widget can place it unconditionally |
+| `TranscriptDialogProvider` / `useTranscriptDialog` | The task's transcript dialog and its opener. One dialog per task; a play control calls `open(key)`. Resolves transcripts through `transcriptsIn(book)`, so a task that replays another task's recording still offers its text |
+| `TranscriptButton` | The transcript control beside a play button. Renders nothing when that recording has no transcript |
+| `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app |
 | `WordBank` | The option pool a `choose` blank draws from; dims consumed options when `allowReuse` is false |
@@ -1016,6 +1086,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 - **Error**: a task whose audio or image fails to load still renders the text and blanks — a broken asset must never block the exercise. Pictures degrade to a labelled placeholder and a broken mock app falls back to the workbook screenshot. An **inline retry** on the failing stimulus clears the failure and re-requests it: pictures by bumping a cache-busting query, a mock app by remounting its frame, a recording by re-selecting the track. A `mockApp` that fails to load, errors, or never completes its `ready` handshake degrades to its fallback image (the original workbook screenshot) so the task stays answerable in `TaskShell`.
 - **Offline**: **a task cannot be tokenized on web without the server** — there is no client-side tokenizer in `apps/web` — and its audio and images are remote in any case (ADR-0043). The textbook is therefore online-first, and offline is a **degradation, not a mode**: a previously-loaded task's saved answers remain readable and resumable from the local store (ADR-0044), and mobile renders tokenized text offline for Chinese via its dict-segmentation fallback. Media that fails to load degrades with an explicit notice rather than blocking the exercise.
 - **Already attempted**: show previous answers and result; offer "try again".
+- **Transcript**: available on every control whose recording has one, at any time — before, during and after answering. The dialog shows the lines tokenized and translated per the student's own settings, and scrolls; a recording with no transcript shows no button at all, so the affordance never promises text that is not there.
 - **Resuming vs. first paint**: on web the task page is server-rendered, and ADR-0044's saved attempt exists only in the browser. So the HTML always shows an **unanswered** task, and the store adopts the saved attempt immediately after hydration — reading device storage while rendering made the first client render disagree with the server's HTML, which React answers by discarding the whole tree (the mismatch A ➋ shipped with: the server's `?` re-rendered as the saved `E`). Nothing is persisted before the attempt is adopted, so an empty store can never overwrite a saved one. A client-side navigation has no server HTML to disagree with and restores the saved answers on the first render.
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
 - **Autoplay blocked**: audio requires an explicit tap; never autoplay.
@@ -1174,6 +1245,21 @@ headless Chromium: with a saved attempt seeded, that page reported 1 hydration f
 (② E, ③ D, ④ E, ⑤ B, ⑥ G, ⑦ F). A ➊/➌/➍ are clean in the same harness, and the
 server-render-then-hydrate path is covered by `task-provider.test.tsx` rather than by
 inspection.
+
+**The transcripts are verified against their sources, and one page in a browser.** The 29
+recordings the workbook's Audio Transcript booklet covers were transcribed from it, matched
+to files **by city/speaker rather than by position** (the booklet's order is not the audio
+row's); the other ten are derived mechanically from text already in the lesson JSONs by
+filling each cloze blank from its bank, so the transcript cannot disagree with the exercise
+it belongs to. `scripts`-free one-off derivation aside, nothing was transcribed by ear.
+`validateBook` reports no errors over the unit — every transcript is non-empty, carries no
+blank marker, and no recording carries two different transcripts.
+
+The web dialog is covered by `transcript-dialog.test.tsx`, which asserts the transcript
+reaches the DOM through `TokenizedText` rather than as a string (a blob would pass a text
+assertion and still not be the feature), that a conversation keeps its speakers, that a
+translation arrives in **one** request for the whole transcript, and that the button is
+absent for E ➊'s dictation recordings and for 六D ➍.mp3.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame and the
