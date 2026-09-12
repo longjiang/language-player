@@ -18,7 +18,6 @@ export const lessonC: LessonMeta = {
       type: 'listening',
       sourcePage: 13,
       instructions: '听录音，选择最合适的图片：',
-      instructionsL1: 'Listen to the recording and choose the most suitable picture:',
       audio: [
         { key: 'tblt-hsk4/u06/六C ➊ ① 下一站，无锡站.mp3' },
         { key: 'tblt-hsk4/u06/六C ➊ ②.mp3' },
@@ -60,7 +59,6 @@ export const lessonC: LessonMeta = {
       type: 'listening',
       sourcePage: 13,
       instructions: '听录音，选择最合适的图片：',
-      instructionsL1: 'Listen to the recording and choose the most suitable picture:',
       audio: [
         { key: 'tblt-hsk4/u06/六C ➋ ①.mp3' },
         { key: 'tblt-hsk4/u06/六C ➋ ②.mp3' },
@@ -94,8 +92,6 @@ export const lessonC: LessonMeta = {
       type: 'conversation',
       sourcePage: 14,
       instructions: '看着对话文本再听一遍 ➌ 的录音，在（　）里填写需要的词语。',
-      instructionsL1:
-        'Follow the dialogue text and listen to the ➌ recording again, then fill each blank with the right word.',
       audio: [{ key: 'tblt-hsk4/u06/六C ➌.mp3' }],
       body: [
         {

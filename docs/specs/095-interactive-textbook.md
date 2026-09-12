@@ -192,17 +192,30 @@ A mock-app task references its app by id and declares no blank answers — the a
 
 ### Instructions
 
-Task instructions are **L2 text, rendered as tokenized text** — not plain strings. This is deliberate: instructions are the first thing a student reads, so they must carry ruby and must be tappable for a definition like any other L2 text.
+Task instructions are **L2 text, rendered as tokenized text** — not plain strings.
+This is deliberate: instructions are the first thing a student reads, so they must
+carry ruby and must be tappable for a definition like any other L2 text.
 
 ```yaml
     instructions: 看看上面的信息，然后用给出的选项在（　）中填入合适的词。
-    instructionsL1: Look at the information above, then fill each blank with the right word from the list.
 ```
 
-- The L2 instructions render through `TokenizedText`, so the student's phonetics/gloss settings apply as usual.
-- The **L1 translation renders as plain text directly below**, and only when translation is enabled. That is the per-L2 `display.translation` setting (`packages/shared/src/types.ts:1010`, per-L2 since 2026-09-11), not a textbook-specific toggle.
-- `instructionsL1` is authored, starting with English. Other L1 locales follow the existing docs translation path rather than being authored per locale.
-- Instructions live in the task, above the stimulus, in `TaskShell` — so every task type gets the same treatment.
+The L1 rendering under them is **machine-translated on the spot**, not authored.
+
+- There is deliberately **no `instructionsL1` field**. Authoring it would mean 17
+  extra strings per task for a line the student reads once, and the translation
+  would drift the moment the L2 instruction is edited.
+- `translateTexts` in `@langplayer/utils` calls the existing `/translate_array`
+  endpoint (the same one the readers use), caches per language pair in memory, and
+  returns `null` on any failure rather than throwing. The L2 instructions are
+  always shown and are the exercise; the translation is support beneath them, so a
+  missing translation degrades to showing the L2 line alone.
+- An echo of the source is treated as "could not translate" and hidden — showing
+  the L2 line twice is worse than showing it once.
+- It is gated by the per-L2 `display.translation` setting
+  (`packages/shared/src/types.ts:1010`), not a textbook-specific toggle.
+- Instructions live in the task, above the stimulus, in `TaskShell` — so every
+  task type gets the same treatment.
 
 ## Inline Blanks Inside Tokenized Text
 

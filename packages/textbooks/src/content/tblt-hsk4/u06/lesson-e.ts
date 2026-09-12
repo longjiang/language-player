@@ -18,7 +18,6 @@ export const lessonE: LessonMeta = {
       type: 'writing',
       sourcePage: 21,
       instructions: '学习以下的词汇，然后听录音，写下听到的内容。',
-      instructionsL1: 'Study the words below, then listen and write down what you hear.',
       audio: [
         { key: 'tblt-hsk4/u06/六E ➊ ①.mp3' },
         { key: 'tblt-hsk4/u06/六E ➊ ②.mp3' },
@@ -57,7 +56,6 @@ export const lessonE: LessonMeta = {
       type: 'writing',
       sourcePage: 21,
       instructions: '学习以下的词汇，然后听录音，写下听到的内容。',
-      instructionsL1: 'Study the words below, then listen and write down what you hear.',
       audio: [
         { key: 'tblt-hsk4/u06/六E ➋ ①.mp3' },
         { key: 'tblt-hsk4/u06/六E ➋ ②.mp3' },
@@ -89,8 +87,6 @@ export const lessonE: LessonMeta = {
       type: 'reading',
       sourcePage: 22,
       instructions: '看一段乘坐商务座去上海的经历的社交媒体范文。',
-      instructionsL1:
-        'Read a social-media post about a trip to Shanghai in a business-class seat.',
       audio: [{ key: 'tblt-hsk4/u06/六E ➌.mp3' }],
       body: [
         {
@@ -114,8 +110,6 @@ export const lessonE: LessonMeta = {
       sourcePage: 22,
       instructions:
         '你自己出行时遇到过什么困难或者感到意外的经历？写一写，然后发布到你的社交平台上，或者贴在这一课的评论区里。',
-      instructionsL1:
-        'What difficulty or surprise have you met while travelling? Write about it, then post it to your social media or in this lesson’s comments.',
       body: [{ kind: 'freeWrite', blankId: 'b1', rows: 8 }],
       blanks: {
         // No answer: free writing is recorded, not graded.

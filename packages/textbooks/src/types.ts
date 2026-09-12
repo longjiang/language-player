@@ -284,10 +284,14 @@ export interface Task {
   type?: TaskType;
   /** Workbook page this was transcribed from, for human audit. */
   sourcePage?: number;
-  /** L2 instructions — rendered as tokenized text, never as a plain string. */
+  /**
+   * L2 instructions — rendered as tokenized text, never as a plain string.
+   *
+   * There is deliberately no authored L1 counterpart: the translation is
+   * machine-generated on the spot (see `translateTexts` in `@langplayer/utils`),
+   * so it cannot drift from the L2 text and no per-locale authoring is needed.
+   */
   instructions: string;
-  /** Authored L1 translation of the instructions, shown when translation is on. */
-  instructionsL1?: string;
   audio?: AudioTrack[];
   banks?: Bank[];
   body: Stimulus[];
