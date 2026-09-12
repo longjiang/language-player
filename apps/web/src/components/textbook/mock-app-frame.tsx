@@ -55,7 +55,6 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
   const [height, setHeight] = useState(420);
-  const [loaded, setLoaded] = useState(false);
   /**
    * The frame is rendered after mount, never in the server HTML.
    *
@@ -97,12 +96,15 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     });
   }, [send, l1.code, l2.code, helpMode]);
 
-  // `init` can only be delivered to a frame that exists, so it goes out when the
-  // frame loads rather than on this component's mount — and again if the language
-  // pair changes while the frame is up.
+  // The language pair can change while the frame is up, so it is announced again;
+  // on mount this is a no-op, because there is no frame yet and the frame's own
+  // `load` below is what greets the first document — and the document a retry
+  // mounts. Re-announcing help mode is not needed here: `toggleHelp` sends
+  // `help-mode` itself.
   useEffect(() => {
-    if (loaded) sendInit();
-  }, [loaded, sendInit]);
+    sendInit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [l1.code, l2.code]);
 
   /**
    * Tokenize the app's strings via the app's OWN lemmatize pipeline.
@@ -320,7 +322,10 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
             // No allow-same-origin: the app must not reach host storage or the DOM.
             sandbox="allow-scripts"
             onLoad={() => {
-              setLoaded(true);
+              // The frame has a document now, which is the first moment it can
+              // hear anything — and the moment a retry's new document needs its
+              // own `init`. `init` is idempotent.
+              sendInit();
               // A frame that loads but never says 'ready' is broken; give it a beat.
               window.setTimeout(() => {
                 setStatus((s) => (s === 'loading' ? 'failed' : s));
