@@ -582,16 +582,15 @@ below fall either side of.
 - a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to;
 - a `recall` pointing at a task the book does not have — a wrong id renders nothing at all, silently.
 
-**Specified but not yet enforced** — these need to read `apps/web/public/mock-apps/`,
-so they belong in a check with filesystem access (a script or a test) rather than in
-the pure validator:
+**Enforced by `mock-app-files.test.ts`** — these need to read
+`apps/web/public/mock-apps/`, which the pure validator cannot, so they live in a test
+with filesystem access:
 
 - a `mockApp` stimulus whose `app` id has no HTML file at `/mock-apps/<id>/index.html`;
-- a `mockApp` app whose declared expected answers disagree with the task's answers in the answer key;
-- a `mockApp` app missing a required hook (`define`, `goals`) or declaring a bridge version the frame cannot speak;
-- a `mockApp` app loading a third-party library that is not on the pinned allowlist.
-
-See [Known Gaps](#known-gaps-against-this-spec).
+- a `mockApp` app that does not declare the id the content references;
+- a `mockApp` app missing the goals the content links to, or declaring goals no blank can grade (both directions, with a positive control on the parse);
+- a `mockApp` app loading a runtime whose major version the frame cannot speak, or a third-party library that is not on the pinned allowlist;
+- a `mockApp` app whose declared expected answers disagree with the task's answers — **written, and currently failing**: see [Known Gaps](#known-gaps-against-this-spec).
 
 ## Assets
 
@@ -1017,20 +1016,35 @@ cells tokenizing independently, each flashing on its own schedule.
 The fix is the one the spec describes: `TaskShell` batches the task's passages through
 `/lemmatize-normalized/batch` and withholds the skeleton until they resolve.
 
-**2. The mock-app file checks are not implemented.**
+**2. The mock app's dataset disagrees with the answer key, and one check documents it.**
 
-Of the four mock-app checks this spec specifies, only the content-side one exists (goals
-reference real blanks, ids are unique, no `goal` blank is orphaned). The other four —
-that `/mock-apps/<id>/index.html` exists, that the app's declared expected answers agree
-with the content answer key, that the app defines the required hooks and speaks a
-compatible bridge version, and the third-party library allowlist — all need to read
-`apps/web/public/mock-apps/`, which `validateBook` cannot do.
+Four of the five mock-app file checks the spec lists are now enforced by
+`mock-app-files.test.ts`, which runs with filesystem access that `validateBook` cannot
+have: the app's HTML exists where the frame requests it, it declares the id the content
+references, it loads a runtime whose major version the frame speaks, and it declares
+exactly the goals the content links to — the last with a positive control, because the
+first version of that check matched nothing and passed.
 
-Missing this check is what allows the screen and the answer key to drift, which is the
-exact failure the cross-check exists to prevent: the app's dataset could be edited so a
-goal's correct answer changes while the content key keeps the old one, and nothing would
-notice. The fix is a script or test with filesystem access, kept separate from the pure
-validator rather than merged into it.
+The fifth — the app's declared answers agreeing with the content's — is written and
+**currently fails**, which is the check doing its job on its first run. railway-12306's
+dataset disagrees with the printed key on two goals:
+
+- G871 is flagged 复兴号, but its row in the screenshot carries no 复兴号 tag (verified at
+  high resolution). The key lists G875, G49, D17 and D11 instead, and **D11 is missing
+  from the dataset entirely**.
+- The sleeper goal asks for sleepers that are **not** 候补. Z281 and K1275 show a 铺 badge
+  that is waitlisted, so the key counts neither, but the dataset has one `sleeper` flag
+  serving both the badge and the answer.
+
+Fixing it means re-deriving the dataset from the two screenshots with separate
+"has sleepers" (for the badge) and "sleepers available" (for the goal) flags. The test is
+marked `it.fails` so the suite stays honest rather than green-by-omission: it asserts the
+defect still exists and fails loudly if the marker is removed without fixing the data.
+
+The content side of this was wrong too, and is fixed: B ➍'s three multi-match goals
+stored one train with the rest in `accept[]`, which would have marked a student who
+picked only one of the four 复兴号 correct. They are now sets (`multiple: true`), and the
+key comparison joins the key's separate entries before comparing.
 
 **3. `InlineImageSlot` does not exist.**
 

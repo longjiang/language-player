@@ -203,10 +203,13 @@ export const lessonB: LessonMeta = {
         // Several trains answer this, so any of them satisfies the goal and all
         // of them are accepted by grading. The validator additionally proves each
         // accepted value is in the printed key.
-        b3: { id: 'b3', kind: 'goal', answer: 'G875', accept: ['G49', 'D17', 'D11'] },
+        // Three goals match several trains. They are sets, not one answer with
+        // alternatives: `accept` would mark a student who picked only one of the four
+        // 复兴号 correct.
+        b3: { id: 'b3', kind: 'goal', answer: 'G875、G49、D17、D11', multiple: true },
         b4: { id: 'b4', kind: 'goal', answer: 'Z281' },
-        b5: { id: 'b5', kind: 'goal', answer: 'G871', accept: ['G875'] },
-        b6: { id: 'b6', kind: 'goal', answer: 'D17', accept: ['D11'] },
+        b5: { id: 'b5', kind: 'goal', answer: 'G871、G875', multiple: true },
+        b6: { id: 'b6', kind: 'goal', answer: 'D17、D11', multiple: true },
       },
       answerKeyRaw: '② K1275; ③ G875、G49、D17、D11; ④ Z281; ⑤ G871、G875; ⑥ D17、D11。',
     },
