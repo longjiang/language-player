@@ -154,11 +154,13 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 }
 
 /**
- * Renders the task's stimulus blocks.
+ * Renders the task's stimulus blocks, in authored order.
  *
- * Phase 0 implements `passage`; the remaining kinds arrive with their widgets
- * in later phases, and an unimplemented kind renders nothing rather than
- * throwing, so a newer content file cannot break an older client outright.
+ * Every kind in the `Stimulus` union has a widget here — a task whose stimulus is
+ * not rendered is a task the student cannot answer, which is what A ➊ was before
+ * the image map was wired in. An unknown kind renders nothing rather than
+ * throwing, so a content file authored for a newer client cannot break an older
+ * one outright; the validator is what catches genuinely broken content.
  */
 export function TaskStimulus() {
   const ctx = useTextbookTask()!;
@@ -167,32 +169,50 @@ export function TaskStimulus() {
   return (
     <>
       {ctx.task.body.map((stimulus, i) => {
-        if (stimulus.kind === 'passage') {
-          return (
-            <div key={i} className="flex flex-col gap-2">
-              {stimulus.audio && stimulus.audio.length > 0 && (
-                <AudioPlayer tracks={stimulus.audio} />
-              )}
-              <div className="text-lg leading-loose text-foreground">
-                <TokenizedText text={stimulus.text} l2Code={l2.code} />
+        switch (stimulus.kind) {
+          case 'passage':
+            return (
+              <div key={i} className="flex flex-col gap-2">
+                {stimulus.audio && stimulus.audio.length > 0 && (
+                  <AudioPlayer tracks={stimulus.audio} />
+                )}
+                <div className="text-lg leading-loose text-foreground">
+                  <TokenizedText text={stimulus.text} l2Code={l2.code} />
+                </div>
               </div>
-            </div>
-          );
+            );
+          case 'recall':
+            return <RecallCard key={i} stimulus={stimulus} />;
+          case 'audio':
+            return (
+              <div key={i} className="flex flex-col gap-2">
+                {stimulus.label && (
+                  <p className="text-sm font-medium text-foreground">{stimulus.label}</p>
+                )}
+                <AudioPlayer tracks={stimulus.tracks} />
+              </div>
+            );
+          case 'dialogue':
+            return <DialoguePassage key={i} dialogue={stimulus} />;
+          case 'dataTable':
+            return <DataTable key={i} table={stimulus} />;
+          case 'pictureSet':
+            return <PictureSet key={i} set={stimulus} />;
+          case 'numberedBlanks':
+            return <NumberedBlanks key={i} ids={stimulus.ids} />;
+          case 'imageMap':
+            return <ImageMap key={i} map={stimulus} />;
+          case 'mockApp':
+            return <MockAppFrame key={i} stimulus={stimulus} />;
+          case 'dictation':
+            return <Dictation key={i} ids={stimulus.ids} />;
+          case 'freeWrite':
+            return <FreeWrite key={i} blankId={stimulus.blankId} rows={stimulus.rows} />;
+          case 'noteCards':
+            return <NoteCards key={i} cards={stimulus.cards} />;
+          default:
+            return null;
         }
-        if (stimulus.kind === 'recall') {
-          return <RecallCard key={i} stimulus={stimulus} />;
-        }
-        if (stimulus.kind === 'audio') {
-          return (
-            <div key={i} className="flex flex-col gap-2">
-              {stimulus.label && (
-                <p className="text-sm font-medium text-foreground">{stimulus.label}</p>
-              )}
-              <AudioPlayer tracks={stimulus.tracks} />
-            </div>
-          );
-        }
-        return null;
       })}
     </>
   );
