@@ -1,11 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-import { Check, ExternalLink, Languages, Lightbulb, PartyPopper, X } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Languages,
+  Lightbulb,
+  PartyPopper,
+  X,
+} from 'lucide-react-native';
 import {
   createAssetResolver,
-  indexToCircled,
   isAppToHostMessage,
+  isBlankCorrect,
   mockAppHref,
   protocolCompatible,
   type MockAppStimulus,
@@ -55,8 +63,15 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     setStatus('loading');
   };
   const [open, setOpen] = useState(false);
-  /** Which task the header is on. It does not advance by itself: Next does that. */
+  /** Which task the header is on. */
   const [cursor, setCursor] = useState(0);
+  /** Tasks submitted correctly, in this sitting — what gates the way forward. */
+  const [correctGoalIds, setCorrectGoalIds] = useState<string[]>([]);
+  /** Set when a Submit found the task not done or not right; cleared on navigation. */
+  const [note, setNote] = useState<'incorrect' | null>(null);
+  /** The transient "Correct" acknowledgement — RN has no toast, so it is a pill. */
+  const [flash, setFlash] = useState(false);
+  /** Every goal the app has reported, which is "the student performed this task". */
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
   const [popup, setPopup] = useState<{
@@ -182,13 +197,65 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
 
   const currentIndex = Math.min(cursor, Math.max(0, questions.length - 1));
   const current = questions[currentIndex];
-  const allDone = questions.length > 0 && questions.every((goal) => doneGoalIds.includes(goal.id));
-  const currentDone = current ? doneGoalIds.includes(current.id) : false;
+  const currentCorrect = current ? correctGoalIds.includes(current.id) : false;
+  const isLast = currentIndex === questions.length - 1;
 
-  /** Next: the next task still unanswered, so it never lands on a finished one. */
-  const advance = () => {
-    const next = questions.findIndex((goal, i) => i > currentIndex && !doneGoalIds.includes(goal.id));
-    if (next >= 0) setCursor(next);
+  /**
+   * Submit one task.
+   *
+   * Two authorities have to agree, and neither is sufficient alone:
+   *
+   * - **The app reports the task done.** Its goals are acceptance predicates over its own
+   *   dataset (ADR-0045), so this is the evidence that the student actually performed the
+   *   task rather than arriving at the right words some other way — and it is what makes
+   *   an early Submit mean something. Without it, Submit on the first task would pass
+   *   before the student had tapped anything.
+   * - **The content says the answer is the expected one**, via `isBlankCorrect`, which is
+   *   the same comparison the final grade uses. A `given` first task is always correct
+   *   once the app reports it — it is a worked example and not scored.
+   *
+   * So submitting before the task is done reports "incorrect", which is the reachable
+   * wrong path; the app ignores a tap it does not accept, so a half-picked set task is
+   * simply not done yet.
+   */
+  const submitTask = () => {
+    if (!current) return;
+    const goal = stimulus.goals.find((g) => g.id === current.id);
+    const blank = goal ? ctx.task.blanks?.[goal.blankId] : undefined;
+    const performed = doneGoalIds.includes(current.id);
+    const correct =
+      Boolean(blank && goal) &&
+      performed &&
+      isBlankCorrect(blank!, ctx.store.getValue(goal!.blankId));
+
+    if (!correct) {
+      setNote('incorrect');
+      return;
+    }
+    setNote(null);
+    setCorrectGoalIds((ids) => (ids.includes(current.id) ? ids : [...ids, current.id]));
+    setFlash(true);
+    setTimeout(() => setFlash(false), 1800);
+  };
+
+  /** The tasks still to do, from `from` forward — Next never lands on a finished one. */
+  const nextIndexFrom = (from: number) =>
+    questions.findIndex((goal, i) => i > from && !correctGoalIds.includes(goal.id));
+
+  const goTo = (index: number) => {
+    setNote(null);
+    setCursor(index);
+  };
+
+  const nextTask = () => {
+    const next = nextIndexFrom(currentIndex);
+    if (next >= 0) goTo(next);
+  };
+
+  /** All Done!: grade the whole task and record the attempt, which is what marks it done. */
+  const finishTask = () => {
+    ctx.store.submit();
+    setOpen(false);
   };
 
   if (status === 'failed' && !open) {
@@ -237,43 +304,50 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
    */
   const header = current && (
     <View className="flex-row items-start gap-2 border-b border-border pb-3">
-      <Text className="pt-0.5 text-sm text-muted-foreground">{indexToCircled(currentIndex + 1)}</Text>
-      <View className={currentDone && !allDone ? 'flex-1 opacity-50' : 'flex-1'}>
+      <View className="flex-1">
         {/*
-          Dimmed rather than struck through: `TokenizedText`'s memo comparator is a
-          hand-written allow-list (SPEC-095, The Mobile Re-render Boundary), so a
-          text-style prop added for a cosmetic mark would have to be threaded through
-          it — and a prop left out of it renders stale values in silence.
+          Dimmed rather than struck through while it is being worked on: `TokenizedText`'s
+          memo comparator is a hand-written allow-list (SPEC-095, The Mobile Re-render
+          Boundary), so a text-style prop added for a cosmetic mark would have to be
+          threaded through it — and a prop left out of it renders stale values in silence.
         */}
         <Dialog.Title className="text-sm font-normal leading-relaxed text-foreground">
           <TokenizedText text={current.prompt} l2Code={l2Lang.code} />
         </Dialog.Title>
       </View>
-      <View className="flex-row shrink-0 items-center gap-1.5">
-        {allDone ? (
-          <Pressable
-            onPress={() => setOpen(false)}
-            accessibilityRole="button"
-            className="flex-row items-center gap-1.5 rounded-md bg-primary px-3 py-1.5"
-          >
-            <PartyPopper size={14} color={ICON_ON_PRIMARY} />
-            <Text className="text-xs font-medium text-primary-foreground">{t('msg.all_done')}</Text>
-          </Pressable>
-        ) : currentDone ? (
-          <Pressable
-            onPress={advance}
-            accessibilityRole="button"
-            className="flex-row items-center gap-1.5 rounded-md border border-primary px-3 py-1.5"
-          >
-            <Check size={14} color={ICON_PRIMARY} />
-            <Text className="text-xs font-medium text-primary">{t('action.next')}</Text>
-          </Pressable>
-        ) : null}
+      {/*
+        The paginator replaces the task's circled numeral: which task this is, and how to
+        reach the others. Back is always available — reviewing a task you have done is not
+        a mistake — while forward waits for a correct Submit, so the six are worked in
+        order.
+      */}
+      <View className="flex-row shrink-0 items-center gap-1">
+        <Pressable
+          onPress={() => goTo(Math.max(0, currentIndex - 1))}
+          disabled={currentIndex === 0}
+          accessibilityRole="button"
+          accessibilityLabel={t('action.previous')}
+          className={`rounded-md p-1 ${currentIndex === 0 ? 'opacity-40' : ''}`}
+        >
+          <ChevronLeft size={18} color={ICON_MUTED} />
+        </Pressable>
+        <Text className="min-w-9 text-center text-xs text-muted-foreground">
+          {currentIndex + 1} / {questions.length}
+        </Text>
+        <Pressable
+          onPress={nextTask}
+          disabled={!currentCorrect || isLast}
+          accessibilityRole="button"
+          accessibilityLabel={t('action.next')}
+          className={`rounded-md p-1 ${!currentCorrect || isLast ? 'opacity-40' : ''}`}
+        >
+          <ChevronRight size={18} color={ICON_MUTED} />
+        </Pressable>
         <Pressable
           onPress={() => setOpen(false)}
           accessibilityRole="button"
           accessibilityLabel={t('action.close')}
-          className="rounded-md p-1.5"
+          className="ml-0.5 rounded-md p-1.5"
         >
           <X size={16} color={ICON_MUTED} />
         </Pressable>
@@ -337,21 +411,26 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     </View>
   );
 
-  /** Help mode and hint act on the app, so they live with it rather than behind it. */
+  /**
+   * Help mode and hint act on the app, so they live with it rather than behind it — and so
+   * does the only control that resolves anything.
+   *
+   * Help mode is icon-only: it is a toggle whose state is visible in the app itself (words
+   * become tappable), so the label was noise next to the two controls it shares the row
+   * with. It keeps its accessible name.
+   */
   const toolbar = (
     <View className="flex-row flex-wrap items-center gap-2 border-t border-border pt-3">
       <Pressable
         onPress={toggleHelp}
         accessibilityRole="button"
         accessibilityState={{ selected: helpMode }}
-        className={`flex-row items-center gap-1.5 rounded-md border px-3 py-1.5 ${
+        accessibilityLabel={t('label.enable_popup_dictionary')}
+        className={`items-center rounded-md border p-2 ${
           helpMode ? 'border-primary bg-primary/10' : 'border-border'
         }`}
       >
-        <Languages size={14} color={helpMode ? ICON_PRIMARY : ICON_MUTED} />
-        <Text className={`text-xs ${helpMode ? 'text-primary' : 'text-foreground'}`}>
-          {t('label.enable_popup_dictionary')}
-        </Text>
+        <Languages size={16} color={helpMode ? ICON_PRIMARY : ICON_MUTED} />
       </Pressable>
       <Pressable
         onPress={() => send({ v: 1, type: 'hint' })}
@@ -361,12 +440,59 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
         <Lightbulb size={14} color={ICON_MUTED} />
         <Text className="text-xs text-foreground">{t('action.hint')}</Text>
       </Pressable>
+
+      {/* A wrong Submit is acknowledged without a toast: the button stays Submit, and the
+          student is told to keep working on this one. */}
+      {note === 'incorrect' && (
+        <Text accessibilityRole="alert" className="text-xs text-muted-foreground">
+          {t('review.answer_incorrect')}
+        </Text>
+      )}
+
+      <View className="ml-auto">
+        {currentCorrect && !isLast ? (
+          <Pressable
+            onPress={nextTask}
+            accessibilityRole="button"
+            className="flex-row items-center gap-1.5 rounded-md border border-primary px-4 py-1.5"
+          >
+            <Text className="text-sm font-medium text-primary">{t('action.next')}</Text>
+            <ChevronRight size={16} color={ICON_PRIMARY} />
+          </Pressable>
+        ) : currentCorrect && isLast ? (
+          <Pressable
+            onPress={finishTask}
+            accessibilityRole="button"
+            className="flex-row items-center gap-1.5 rounded-md bg-primary px-4 py-1.5"
+          >
+            <PartyPopper size={16} color={ICON_ON_PRIMARY} />
+            <Text className="text-sm font-medium text-primary-foreground">{t('msg.all_done')}</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={submitTask}
+            accessibilityRole="button"
+            className="rounded-md bg-primary px-4 py-1.5"
+          >
+            <Text className="text-sm font-medium text-primary-foreground">{t('review.submit')}</Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 
   /** The app itself is only mounted here, so it cannot load before the host listens. */
   const panel = (
     <View className="flex-1 gap-3">
+      {/* RN has no toast stack, so the "Correct" acknowledgement is a pill over the panel
+          rather than web's `toast.success` — the same shape `SettingsDialog` uses. */}
+      {flash && (
+        <View className="absolute top-1 right-1 z-50 rounded-full bg-primary/90 px-3 py-1.5">
+          <Text className="text-xs font-medium text-primary-foreground">
+            ✓ {t('review.answer_correct')}
+          </Text>
+        </View>
+      )}
       {header}
       {appPane}
       {toolbar}
