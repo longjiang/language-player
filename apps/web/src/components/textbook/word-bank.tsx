@@ -2,6 +2,8 @@
 
 import React from 'react';
 import type { Bank } from '@langplayer/textbooks';
+import { createAssetResolver } from '@langplayer/textbooks';
+import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { useT } from '@/hooks/use-t';
 import { useBlankPicker } from './blank-picker';
 
@@ -19,6 +21,7 @@ import { useBlankPicker } from './blank-picker';
 export function WordBank({ bank }: { bank: Bank }) {
   const t = useT();
   const { selected, pick, responses } = useBlankPicker();
+  const resolve = createAssetResolver(ASSET_BASE_URL);
 
   const usedValues = new Set(Object.values(responses).filter(Boolean));
   // For a multi-select blank the options already picked are shown as chosen rather
@@ -42,7 +45,9 @@ export function WordBank({ bank }: { bank: Bank }) {
               type="button"
               onClick={() => pick(item)}
               aria-pressed={isPicked}
-              className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+              className={`flex flex-col items-center gap-1 overflow-hidden rounded-md border text-sm transition-colors ${
+                bank.optionImages?.[item] ? 'w-32 p-0 pb-1.5' : 'px-3 py-1.5'
+              } ${
                 isPicked
                   ? 'border-primary bg-primary/10 text-foreground'
                   : consumed
@@ -50,13 +55,21 @@ export function WordBank({ bank }: { bank: Bank }) {
                     : 'border-border bg-card text-foreground hover:bg-muted'
               }`}
             >
+              {bank.optionImages?.[item] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolve(bank.optionImages[item]!)}
+                  alt=""
+                  className={`h-20 w-full object-cover ${consumed ? 'opacity-40' : ''}`}
+                />
+              )}
               {bank.optionLabels?.[item] ? (
-                <span>
-                  <span className="mr-1.5 font-semibold text-primary">{item}</span>
-                  {bank.optionLabels[item]}
+                <span className={bank.optionImages?.[item] ? 'px-1' : ''}>
+                  <span className="font-semibold text-primary">{item}</span>
+                  <span className="ml-1">{bank.optionLabels[item]}</span>
                 </span>
               ) : (
-                item
+                <span className={bank.optionImages?.[item] ? 'px-1' : ''}>{item}</span>
               )}
             </button>
           );

@@ -52,6 +52,15 @@ export interface Bank {
   /** Optional description shown beside a value, keyed by that value. */
   optionLabels?: Record<string, string>;
   /**
+   * Optional picture shown with an option, keyed by that value.
+   *
+   * B ➌'s options are the seat classes the workbook photographs above each table, so
+   * the student picks the class they can see. Unlike a `pictureSet`, an option image
+   * is not what the blank stores — the blank answers with the class name, which is
+   * what the answer key gives — so this is a bank, with pictures.
+   */
+  optionImages?: Record<string, string>;
+  /**
    * Whether an option may be used by more than one blank. Defaults to false.
    *
    * This is a per-task fact, not a global rule: in B ➊ the answer key reuses
@@ -437,6 +446,11 @@ export function assetKeysIn(task: Task): AssetRef[] {
   };
 
   tracks(task.audio, 'task audio');
+  for (const bank of task.banks ?? []) {
+    for (const [value, image] of Object.entries(bank.optionImages ?? {})) {
+      found.push({ key: image, where: `bank ${bank.id} option ${value}` });
+    }
+  }
   for (const [id, blank] of Object.entries(task.blanks ?? {})) {
     tracks(blank.audio, `blank ${id}`);
   }

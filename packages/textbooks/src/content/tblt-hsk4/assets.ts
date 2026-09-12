@@ -94,6 +94,16 @@ export const TBLT_HSK4_ASSET_KEYS: string[] = [
   // ── Lesson B ➍ — the workbook screenshot shown if the mock frame fails ──
   image('b4-fallback.jpg'),
 
+  // ── Pictures, lesson B ➌ — the seat classes each table photographs ──
+  image('b3-g41-wuzuo.jpg'),
+  image('b3-g41-erdengzuo.jpg'),
+  image('b3-g41-yidengzuo.jpg'),
+  image('b3-g41-shangwuzuo.jpg'),
+  image('b3-k1275-wuzuo.jpg'),
+  image('b3-k1275-yingzuo.jpg'),
+  image('b3-k1275-yingwo.jpg'),
+  image('b3-k1275-ruanwo.jpg'),
+
   // ── Pictures, lesson B ➎ — the six illustrations the student places ──
   // Numbered as the workbook letters them: A calendar, B transfer, C passenger
   // info, D waitlist, E scam, F unpaid ticket.

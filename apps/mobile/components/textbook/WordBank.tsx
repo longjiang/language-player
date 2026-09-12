@@ -1,6 +1,9 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { Bank } from '@langplayer/textbooks';
+import { Image } from 'react-native';
+import { createAssetResolver } from '@langplayer/textbooks';
+import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { useT } from '@/hooks/use-t';
 import { useBlankPicker } from './blank-picker';
 
@@ -17,6 +20,7 @@ import { useBlankPicker } from './blank-picker';
 export function WordBank({ bank }: { bank: Bank }) {
   const t = useT();
   const { selected, pick, responses } = useBlankPicker();
+  const resolve = createAssetResolver(ASSET_BASE_URL);
 
   const usedValues = new Set(Object.values(responses).filter(Boolean));
   // For a multi-select blank the options already picked are shown as chosen rather
@@ -40,12 +44,22 @@ export function WordBank({ bank }: { bank: Bank }) {
               onPress={() => pick(item)}
               accessibilityRole="button"
               accessibilityState={{ selected: isPicked }}
-              className={`rounded-md border px-3 py-1.5 ${
+              className={`items-center gap-1 overflow-hidden rounded-md border ${
+                bank.optionImages?.[item] ? 'w-32 pb-1.5' : 'px-3 py-1.5'
+              } ${
                 isPicked ? 'border-primary bg-primary/10' : consumed ? 'border-border bg-muted/40' : 'border-border bg-card'
               }`}
             >
+              {bank.optionImages?.[item] ? (
+                <Image
+                  source={{ uri: resolve(bank.optionImages[item]!) }}
+                  className="h-20 w-full rounded-t-md"
+                  resizeMode="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              ) : null}
               <Text
-                className={`text-sm ${consumed ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+                className={`px-1 text-sm ${consumed ? 'text-muted-foreground line-through' : 'text-foreground'}`}
               >
                 {bank.optionLabels?.[item] ? (
                   <>
