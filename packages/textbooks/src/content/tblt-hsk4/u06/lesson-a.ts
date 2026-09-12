@@ -39,35 +39,37 @@ export const lessonA: LessonMeta = {
           id: 't1-map',
           image: 'tblt-hsk4/u06/a1-map.png',
           alt: '中国地图',
-          // Positions are percentages of the image, placed over the printed
-          // "( )" beside each city name.
+          // Positions are percentages of the image, sitting on the printed map
+          // dots — the point each city's connector line terminates at, so there
+          // is no ambiguity about which city a blank belongs to. Measured from
+          // the image rather than estimated.
           pins: [
-            { blankId: 'b1', x: 37.5, y: 18.0 }, // 吐鲁番
-            { blankId: 'b2', x: 78.1, y: 20.5 }, // 哈尔滨
-            { blankId: 'b3', x: 46.9, y: 32.0 }, // 西安 (given)
-            { blankId: 'b4', x: 78.1, y: 43.0 }, // 北京
-            { blankId: 'b5', x: 76.9, y: 53.5 }, // 苏州
-            { blankId: 'b6', x: 81.3, y: 62.0 }, // 上海
-            { blankId: 'b7', x: 84.4, y: 73.0 }, // 杭州
-            { blankId: 'b8', x: 28.1, y: 85.0 }, // 拉萨
-            { blankId: 'b9', x: 38.8, y: 93.0 }, // 成都
-            { blankId: 'b10', x: 65.6, y: 84.5 }, // 桂林
+            { blankId: 'b1', x: 22.0, y: 32.4 }, // 吐鲁番
+            { blankId: 'b2', x: 69.8, y: 21.7 }, // 哈尔滨
+            { blankId: 'b3', x: 47.6, y: 53.5 }, // 西安 (given)
+            { blankId: 'b4', x: 57.9, y: 38.3 }, // 北京
+            { blankId: 'b5', x: 64.6, y: 58.8 }, // 苏州
+            { blankId: 'b6', x: 66.9, y: 58.8 }, // 上海
+            { blankId: 'b7', x: 64.6, y: 61.6 }, // 杭州
+            { blankId: 'b8', x: 23.0, y: 61.6 }, // 拉萨
+            { blankId: 'b9', x: 40.7, y: 61.6 }, // 成都
+            { blankId: 'b10', x: 50.0, y: 75.1 }, // 桂林
           ],
         },
         {
           kind: 'pictureSet',
           id: 'sights',
           items: [
-            { letter: 'A', label: '兵马俑', image: 'tblt-hsk4/u06/a1-sight-a.png' },
-            { letter: 'B', label: '葡萄', image: 'tblt-hsk4/u06/a1-sight-b.png' },
-            { letter: 'C', label: '长城', image: 'tblt-hsk4/u06/a1-sight-c.png' },
-            { letter: 'D', label: '大熊猫', image: 'tblt-hsk4/u06/a1-sight-d.png' },
-            { letter: 'E', label: '园林', image: 'tblt-hsk4/u06/a1-sight-e.png' },
-            { letter: 'F', label: '西湖', image: 'tblt-hsk4/u06/a1-sight-f.png' },
-            { letter: 'G', label: '冰雕', image: 'tblt-hsk4/u06/a1-sight-g.png' },
-            { letter: 'H', label: '山水', image: 'tblt-hsk4/u06/a1-sight-h.png' },
-            { letter: 'I', label: '电视塔', image: 'tblt-hsk4/u06/a1-sight-i.png' },
-            { letter: 'J', label: '布达拉宫', image: 'tblt-hsk4/u06/a1-sight-j.png' },
+            { letter: 'A', label: '兵马俑', image: 'tblt-hsk4/u06/a1-sight-a.jpg' },
+            { letter: 'B', label: '葡萄', image: 'tblt-hsk4/u06/a1-sight-b.jpg' },
+            { letter: 'C', label: '长城', image: 'tblt-hsk4/u06/a1-sight-c.jpg' },
+            { letter: 'D', label: '大熊猫', image: 'tblt-hsk4/u06/a1-sight-d.jpg' },
+            { letter: 'E', label: '园林', image: 'tblt-hsk4/u06/a1-sight-e.jpg' },
+            { letter: 'F', label: '西湖', image: 'tblt-hsk4/u06/a1-sight-f.jpg' },
+            { letter: 'G', label: '冰雕', image: 'tblt-hsk4/u06/a1-sight-g.jpg' },
+            { letter: 'H', label: '山水', image: 'tblt-hsk4/u06/a1-sight-h.jpg' },
+            { letter: 'I', label: '电视塔', image: 'tblt-hsk4/u06/a1-sight-i.jpg' },
+            { letter: 'J', label: '布达拉宫', image: 'tblt-hsk4/u06/a1-sight-j.jpg' },
           ],
         },
       ],
