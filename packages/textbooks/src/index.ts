@@ -8,6 +8,7 @@
  */
 
 export { pictureSetsIn, textsIn } from './types';
+export { TASK_TYPES, taskTypeKey } from './task-types';
 export {
   isAppToHostMessage,
   MOCK_APP_PROTOCOL_VERSION,

@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Vervoeging",
         "context_sentence": "Contextzin",
+        "conversation": "Gesprek",
         "cover": "Omslag",
         "created": "Aangemaakt",
         "current_plan": "Huidig Abonnement",
@@ -432,6 +433,7 @@
         "lemma": "Lemma",
         "level": "Niveau",
         "lifetime_one_time": "Levenslang — €169 eenmalig",
+        "listening": "Luisteren",
         "measure_word": "Maatstaf:",
         "media": "Media",
         "native_level": "Moedertaal",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "subscribers": "Abonnees",
         "subtitles": "Ondertitels",
+        "task_number": "Taak {number}",
         "test_voice": "Teststem",
         "text_size": "Tekstgrootte",
         "textbook_format": "{material} — Boek {book}, Les {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Kijkgeschiedenis",
         "watch_screen": "Scherm bekijken",
         "weekly_hours": "Weekdoel",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Schrijven"
     },
     "landing": {
         "classic_desc": "Niet alle functies van versie 2 (classic) zijn beschikbaar in versie 3. Om deze oudere functies te gebruiken, kun je ze altijd openen via de link hieronder.",

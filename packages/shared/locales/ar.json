@@ -392,6 +392,7 @@
         "commit": "الالتزام",
         "conjugation": "تصريف",
         "context_sentence": "جملة السياق",
+        "conversation": "محادثة",
         "cover": "غلاف",
         "created": "تاريخ الإنشاء",
         "current_plan": "الخطة الحالية",
@@ -432,6 +433,7 @@
         "lemma": "الجذر",
         "level": "المستوى",
         "lifetime_one_time": "مدى الحياة — ١٦٩$ دفعة واحدة",
+        "listening": "الاستماع",
         "measure_word": "كلمة قياس:",
         "media": "الوسائط",
         "native_level": "اللغة الأم",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} ك{book} د{lesson}",
         "subscribers": "المشتركون",
         "subtitles": "ترجمات",
+        "task_number": "المهمة {number}",
         "test_voice": "اختبار الصوت",
         "text_size": "حجم النص",
         "textbook_format": "{material} — الكتاب {book}، الدرس {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "سجل المشاهدة",
         "watch_screen": "شاشة المشاهدة",
         "weekly_hours": "الهدف الأسبوعي",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "الكتابة"
     },
     "landing": {
         "classic_desc": "ليست جميع ميزات الإصدار 2 (الكلاسيكي) متاحة في الإصدار 3. لاستخدام هذه الميزات القديمة، يمكنك دائمًا الوصول إليها من الرابط أدناه.",

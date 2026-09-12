@@ -392,6 +392,7 @@
         "commit": "Коммит",
         "conjugation": "Спряжение",
         "context_sentence": "Предложение из контекста",
+        "conversation": "Разговор",
         "cover": "Обложка",
         "created": "Создан",
         "current_plan": "Текущий план",
@@ -432,6 +433,7 @@
         "lemma": "Лемма",
         "level": "Уровень",
         "lifetime_one_time": "Навсегда — 169 $ единоразово",
+        "listening": "Аудирование",
         "measure_word": "Мера:",
         "media": "Медиа",
         "native_level": "Родной",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Ур.{book} Урок {lesson}",
         "subscribers": "Подписчики",
         "subtitles": "Субтитры",
+        "task_number": "Задание {number}",
         "test_voice": "Тестовый голос",
         "text_size": "Размер текста",
         "textbook_format": "{material} — Книга {book}, Урок {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "История просмотров",
         "watch_screen": "Экран просмотра",
         "weekly_hours": "Недельная цель",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Письмо"
     },
     "landing": {
         "classic_desc": "Не все функции версии 2 (классической) доступны в версии 3. Чтобы воспользоваться этими старыми функциями, вы всегда можете перейти по ссылке ниже.",

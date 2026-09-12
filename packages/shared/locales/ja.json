@@ -392,6 +392,7 @@
         "commit": "コミット",
         "conjugation": "活用",
         "context_sentence": "文脈の文",
+        "conversation": "会話",
         "cover": "表紙",
         "created": "作成日",
         "current_plan": "現在のプラン",
@@ -432,6 +433,7 @@
         "lemma": "見出し語",
         "level": "レベル",
         "lifetime_one_time": "ライフタイム — 一括 $169",
+        "listening": "リスニング",
         "measure_word": "測定：",
         "media": "メディア",
         "native_level": "ネイティブ",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} 第{book}課 L{lesson}",
         "subscribers": "登録者",
         "subtitles": "字幕",
+        "task_number": "タスク {number}",
         "test_voice": "音声をテスト",
         "text_size": "文字サイズ",
         "textbook_format": "{material} — ブック{book}、レッスン{lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "視聴履歴",
         "watch_screen": "視聴画面",
         "weekly_hours": "週間目標",
-        "words": "{count, plural, other {# 語}}"
+        "words": "{count, plural, other {# 語}}",
+        "writing": "ライティング"
     },
     "landing": {
         "classic_desc": "バージョン2（クラシック）の全機能がバージョン3で利用できるわけではありません。これらの従来機能を使うには、下のリンクからいつでもアクセスできます。",

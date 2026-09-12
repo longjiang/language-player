@@ -392,6 +392,7 @@
         "commit": "คอมมิต",
         "conjugation": "การผัน",
         "context_sentence": "ประโยคบริบท",
+        "conversation": "การสนทนา",
         "cover": "ปก",
         "created": "สร้างเมื่อ",
         "current_plan": "แผนปัจจุบัน",
@@ -432,6 +433,7 @@
         "lemma": "รากศัพท์",
         "level": "ระดับ",
         "lifetime_one_time": "ตลอดชีพ — 169 ดอลลาร์สหรัฐ จ่ายครั้งเดียว",
+        "listening": "การฟัง",
         "measure_word": "วัด:",
         "media": "สื่อ",
         "native_level": "เจ้าของภาษา",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} เล่ม {book} บทที่ {lesson}",
         "subscribers": "ผู้ติดตาม",
         "subtitles": "คำบรรยาย",
+        "task_number": "งาน {number}",
         "test_voice": "ทดสอบเสียง",
         "text_size": "ขนาดข้อความ",
         "textbook_format": "{material} — หนังสือ {book}, บทที่ {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "ประวัติการรับชม",
         "watch_screen": "หน้าจอรับชม",
         "weekly_hours": "เป้าหมายรายสัปดาห์",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "การเขียน"
     },
     "landing": {
         "classic_desc": "ฟีเจอร์บางอย่างจากเวอร์ชัน 2 (คลาสสิก) ยังไม่พร้อมใช้งานในเวอร์ชัน 3 หากต้องการใช้ฟีเจอร์ดั้งเดิมเหล่านี้ คุณสามารถเข้าถึงได้จากลิงก์ด้านล่างเสมอ",

@@ -392,6 +392,7 @@
         "commit": "커밋",
         "conjugation": "활용",
         "context_sentence": "문맥 문장",
+        "conversation": "회화",
         "cover": "표지",
         "created": "생성일",
         "current_plan": "현재 요금제",
@@ -432,6 +433,7 @@
         "lemma": "표제어",
         "level": "레벨",
         "lifetime_one_time": "평생 — $169 일회 결제",
+        "listening": "듣기",
         "measure_word": "측정:",
         "media": "미디어",
         "native_level": "원어민",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} 권{book} 레슨 {lesson}",
         "subscribers": "구독자",
         "subtitles": "자막",
+        "task_number": "과제 {number}",
         "test_voice": "음성 테스트",
         "text_size": "텍스트 크기",
         "textbook_format": "{material} — 책 {book}, 레슨 {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "시청 기록",
         "watch_screen": "시청 화면",
         "weekly_hours": "주간 목표",
-        "words": "{count, plural, other {# 단어}}"
+        "words": "{count, plural, other {# 단어}}",
+        "writing": "쓰기"
     },
     "landing": {
         "classic_desc": "버전 2(클래식)의 모든 기능이 버전 3에서 제공되지는 않습니다. 이 레거시 기능을 사용하려면 아래 링크에서 언제든지 액세스할 수 있습니다.",

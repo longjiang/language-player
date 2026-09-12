@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Coniugazione",
         "context_sentence": "Frase di contesto",
+        "conversation": "Conversazione",
         "cover": "Copertina",
         "created": "Creato",
         "current_plan": "Piano Attuale",
@@ -432,6 +433,7 @@
         "lemma": "Lemma",
         "level": "Livello",
         "lifetime_one_time": "A vita — 169 $ una tantum",
+        "listening": "Ascolto",
         "measure_word": "Misura:",
         "media": "Media",
         "native_level": "Madrelingua",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Lib.{book} L{lesson}",
         "subscribers": "Iscritti",
         "subtitles": "Sottotitoli",
+        "task_number": "Attività {number}",
         "test_voice": "Prova voce",
         "text_size": "Dimensione del testo",
         "textbook_format": "{material} — Libro {book}, Lezione {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Cronologia di visione",
         "watch_screen": "Schermata di visione",
         "weekly_hours": "Obiettivo settimanale",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Scrittura"
     },
     "landing": {
         "classic_desc": "Non tutte le funzionalità della versione 2 (classica) sono disponibili nella versione 3. Per usare queste funzionalità legacy, puoi sempre accedervi dal link qui sotto.",

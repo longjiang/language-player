@@ -392,6 +392,7 @@
         "commit": "Commit",
         "conjugation": "Conjugación",
         "context_sentence": "Frase de contexto",
+        "conversation": "Conversación",
         "cover": "Portada",
         "created": "Creado",
         "current_plan": "Plan Actual",
@@ -432,6 +433,7 @@
         "lemma": "Lema",
         "level": "Nivel",
         "lifetime_one_time": "Vitalicio — $169 pago único",
+        "listening": "Comprensión auditiva",
         "measure_word": "Medida:",
         "media": "Multimedia",
         "native_level": "Nativo",
@@ -491,6 +493,7 @@
         "study_material_format": "{material} Libro {book} Lección {lesson}",
         "subscribers": "Suscriptores",
         "subtitles": "Subtítulos",
+        "task_number": "Tarea {number}",
         "test_voice": "Probar voz",
         "text_size": "Tamaño del texto",
         "textbook_format": "{material} — Libro {book}, Lección {lesson}",
@@ -515,7 +518,8 @@
         "watch_history": "Historial de visualización",
         "watch_screen": "Pantalla de visualización",
         "weekly_hours": "Objetivo semanal",
-        "words": "{count, plural, one {# word} other {# words}}"
+        "words": "{count, plural, one {# word} other {# words}}",
+        "writing": "Escritura"
     },
     "landing": {
         "classic_desc": "No todas las funciones de la versión 2 (clásica) están disponibles en la versión 3. Para usar estas funciones heredadas, siempre puedes acceder a ellas desde el enlace de abajo.",
