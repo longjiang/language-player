@@ -687,6 +687,30 @@ export function dialogBankIds(task: Task): Set<string> {
 }
 
 /**
+ * The separator a `multiple` blank's picks are stored with.
+ *
+ * One constant because it is a storage format: `pick` joins with it, and anything asking "is this
+ * option chosen?" has to split on it.
+ */
+export const PICK_SEPARATOR = '、';
+
+/**
+ * The picks stored in a `multiple` blank's value — split, trimmed, empties dropped.
+ *
+ * **One definition, because the dialog got this wrong by not using one.** A blank's value is a
+ * single string, so a control that asks whether an option is chosen cannot compare the whole
+ * value to one item: `current === item.letter` highlights the one thing you picked and then
+ * highlights *nothing* as soon as a second pick is added (`硬卧、软卧` equals neither). Everything
+ * that reads picks goes through here.
+ */
+export function pickValues(value: string): string[] {
+  return value
+    .split(/[、,，]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+/**
  * A bank's options as dialog tiles: the item is what the blank records, and its label and picture
  * are how the student recognises it — `无座` printed as `无座（站着）` beside its photograph.
  *

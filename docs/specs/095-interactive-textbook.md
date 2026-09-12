@@ -204,7 +204,12 @@ Four details that are easy to get wrong:
   mis-pick can be undone, because tapping the blank itself opens the dialog rather than
   clearing it.
 - **A `multiple` blank keeps the dialog open** so a student can pick several; a
-  single-answer blank closes on the tap.
+  single-answer blank closes on the tap. **Every pick must be shown as chosen**, which means the
+  blank's value has to be *split into its picks* (`pickValues`) rather than compared with an
+  option: a `multiple` blank stores them in one string (`硬卧、软卧`), so `value === option` marks
+  the first pick and then marks nothing at all once a second is added — the tiles all look
+  unselected while the blank reads both. This bit exactly once, in B ➌'s dialog, and the shared
+  helper is what stops the picker, the pool and the dialog from each splitting it their own way.
 
 Two consequences worth stating because they are what made the change correct rather than
 merely nicer:
@@ -1367,6 +1372,12 @@ of the 18 locales, so an icon without an accessible name cannot ship quietly.
 
 **B ➊'s emoji are verified by test** (`data-table.test.tsx`): the six glyphs render beside the
 cells, none of them inside a tokenized element, and the row's own text is still letter-first.
+
+**Multi-pick highlighting is verified in a browser and by test.** In B ➌, picking 硬卧 leaves it
+with the primary border and tint; picking 软卧 as well leaves **both** highlighted and the blank
+reading `硬卧、软卧`; tapping 硬卧 again un-marks it and leaves 软卧. `blank-choice.test.tsx` asserts
+the same from the tile's `aria-pressed`, and fails against the old whole-string comparison with
+*no* tile marked once two picks are held — the reported symptom.
 
 **B ➌'s dialog flow is verified in a browser and by test.** In the browser: tapping ② opens the
 four classes with their photographs under the title *Please select an option.*; tapping 商务座

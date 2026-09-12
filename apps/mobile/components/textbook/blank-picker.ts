@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
+import { PICK_SEPARATOR, pickValues } from '@langplayer/textbooks';
 import { useTextbookTask } from './task-provider';
 
 export interface BlankPicker {
@@ -45,14 +46,11 @@ export function useBlankPicker(): BlankPicker {
       // A multi-select blank stays selected and toggles picks, because the student
       // is choosing a set rather than answering a run of slots.
       if (blank?.multiple) {
-        const current = (responses[selected] ?? '')
-          .split(/[、,，]/)
-          .map((part) => part.trim())
-          .filter(Boolean);
+        const current = pickValues(responses[selected] ?? '');
         const next = current.includes(value)
           ? current.filter((v) => v !== value)
           : [...current, value];
-        ctx!.store.setValue(selected, next.join('、'));
+        ctx!.store.setValue(selected, next.join(PICK_SEPARATOR));
         return;
       }
 
