@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { indexToCircled, type AudioTrack } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
 import { useTaskAudio } from './TaskAudio';
-import { TranscriptButton } from './TranscriptDialog';
+import { TrackControls } from './TrackControls';
 
 /**
  * A set of recordings, rendered as a row.
@@ -27,55 +27,22 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
     <View className="gap-2 rounded-lg border border-border bg-card p-3">
       {rows.length === 1 ? (
         <View className="flex-row items-center gap-2">
-          <Pressable
-            onPress={() => audio.toggle(rows[0]!.key)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: audio.activeKey === rows[0]!.key }}
-            accessibilityLabel={rows[0]!.label ?? t('action.speak')}
-            className={`items-center rounded-md px-4 py-2 ${
-              audio.activeKey === rows[0]!.key ? 'bg-primary/20' : 'bg-primary'
-            }`}
-          >
-            <Text
-              className={
-                audio.activeKey === rows[0]!.key
-                  ? 'text-sm font-medium text-primary'
-                  : 'text-sm font-medium text-primary-foreground'
-              }
-            >
-              {audio.activeKey === rows[0]!.key ? '❚❚' : '▶'}
-            </Text>
-          </Pressable>
-          <TranscriptButton track={rows[0]!} />
+          <TrackControls track={rows[0]!} size="md" />
         </View>
       ) : (
         <View className="flex-row flex-wrap gap-2">
           {rows.map((track, index) => (
-            // Each track keeps its own transcript button: A ➊'s nine recordings each say
-            // something different, so "the transcript" is only meaningful per recording.
-            // It is absent where a recording has no transcript.
-            <View key={track.key} className="flex-row items-center gap-1">
-              <Pressable
-                onPress={() => audio.toggle(track.key)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: audio.activeKey === track.key }}
-                // The label is the accessible name, never visible text: in the
-                // dictation tasks it is the answer.
-                accessibilityLabel={track.label ?? `track ${index + 1}`}
-                className={`h-9 w-9 items-center justify-center rounded-full border ${
-                  audio.activeKey === track.key ? 'border-primary bg-primary' : 'border-border bg-background'
-                }`}
-              >
-                <Text
-                  className={`text-sm ${
-                    audio.activeKey === track.key ? 'text-primary-foreground' : 'text-foreground'
-                  }`}
-                >
-                  {indexToCircled(index + 1)}
-                </Text>
-              </Pressable>
-              <TranscriptButton track={track} />
-            </View>
+            // Each track is its own pill: A ➊'s nine recordings each say something
+            // different, so "the transcript" is only meaningful per recording, and the
+            // numeral printed in the play segment is how the student matches one to the
+            // city they are answering. A recording with no transcript gets a one-segment
+            // pill rather than a disabled button.
+            <TrackControls
+              key={track.key}
+              track={track}
+              numeral={indexToCircled(index + 1)}
+              size="md"
+            />
           ))}
         </View>
       )}

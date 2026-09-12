@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { FileText, X } from 'lucide-react-native';
-import { transcriptsIn, type AudioTrack, type TranscriptLine } from '@langplayer/textbooks';
+import { ScrollView, Text, View } from 'react-native';
+import { X } from 'lucide-react-native';
+import { transcriptsIn, type TranscriptLine } from '@langplayer/textbooks';
 import * as Dialog from '@/components/ui/dialog';
 import { TokenizedText } from '@/components/TokenizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -58,33 +58,6 @@ export function useTaskTranscripts(): Map<string, TranscriptLine[]> {
   const ctx = useTextbookTask();
   const book = ctx?.book;
   return useMemo(() => (book ? transcriptsIn(book) : new Map<string, TranscriptLine[]>()), [book]);
-}
-
-/**
- * The play control's transcript button.
- *
- * Renders nothing when the recording has no transcript — E ➊/➋ are dictation, where the
- * recording says the answer, and one D recording has no printed text — so a widget can
- * place it unconditionally beside its play control.
- */
-export function TranscriptButton({ track }: { track: AudioTrack }) {
-  const t = useT();
-  const dialog = useTranscriptDialog();
-  const transcripts = useTaskTranscripts();
-
-  if (!dialog || !transcripts.has(track.key)) return null;
-
-  return (
-    <Pressable
-      onPress={() => dialog.open(track.key)}
-      accessibilityRole="button"
-      accessibilityLabel={t('title.transcript')}
-      hitSlop={6}
-      className="h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background"
-    >
-      <FileText size={13} color={ICON_MUTED} />
-    </Pressable>
-  );
 }
 
 export function TranscriptDialogProvider({ children }: { children: React.ReactNode }) {
