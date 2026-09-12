@@ -41,7 +41,16 @@ Relevant existing facts, verified rather than assumed:
 
    Adding an app costs zero host code, zero content-schema fields and zero translation keys.
 
-2. **A frozen, versioned bridge contract**, transport-agnostic so the same protocol rides web `postMessage` and RN WebView. Host → app: `init`, `help-mode`, `hint`, `reset`, `tokens`. App → host: `ready`, `tokenize`, `lookup`, `progress`, `complete`, `resize`. The frame **refuses a mismatched major version**.
+2. **A frozen, versioned bridge contract**, transport-agnostic so the same protocol rides web `postMessage` and RN WebView. Host → app: `init`, `focus`, `help-mode`, `hint`, `reset`, `tokens`. App → host: `ready`, `selection`, `tokenize`, `lookup`, `progress`, `complete`, `resize`. The frame **refuses a mismatched major version**.
+
+   > **Amended 2026-09-13 — `focus` and `selection` were added.** Selecting is an interaction a
+   > student has to be able to undo, and an app cannot know what the content expects, so the app
+   > now reports *what is selected* rather than *that a goal is satisfied*, and the host says
+   > which task is being asked and what it already holds. Nothing in the list changed shape and
+   > no version was bumped: each side already ignores a message it does not know, so this is
+   > additive to v1. §3 still holds — the app still evaluates its own goals for `progress` and
+   > `complete`, now from the selection instead of from a tap — and grading moved no further
+   > app-side than it already was (the host has always graded the blank the app wrote).
 
 3. **Goals are acceptance predicates over the app's own dataset, not hardcoded answers.** The runtime derives all three shared behaviours from that one declaration: evaluation (all goals met), progress (`done / total`), and hint (the candidate elements of the first unmet goal). A completion path therefore is not a separate authored asset — it is the goal list read in order. A mock app may declare **no goals** (a pure stimulus); `complete` is optional.
 
