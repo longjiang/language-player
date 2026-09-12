@@ -11,6 +11,7 @@ import {
 import { router } from 'expo-router';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { mobileTaskHref } from '@/lib/textbook-routes';
+import { useT } from '@/hooks/use-t';
 import { loadPersistedTask } from './task-provider';
 import { TaskTypeIcon } from './TaskTypeIcon';
 
@@ -29,6 +30,7 @@ interface TextbookTocProps {
  * collapsed by default, expanded when the group contains the open task.
  */
 export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
+  const t = useT();
   // Progress comes from the same local state the tasks write (ADR-0044). Recomputed
   // when the route changes — the screen remounts on navigation, so a task the student
   // just finished shows its tick when they come back.
@@ -151,7 +153,7 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
                                 isActive ? 'font-medium text-primary' : 'text-muted-foreground'
                               }
                             >
-                              {task.number}
+                              {t('label.task_number', { number: task.number })}
                             </Text>
                             <TaskTypeIcon type={task.type} />
                             <TaskMark progress={status.tasks.get(task.id)} />

@@ -14,6 +14,7 @@ import {
 } from '@langplayer/textbooks';
 import { loadPersistedTask } from './task-provider';
 import { TaskTypeIcon } from './task-type-icon';
+import { useT } from '@/hooks/use-t';
 
 interface TextbookTocProps {
   tree: TocTree;
@@ -32,6 +33,7 @@ interface TextbookTocProps {
  */
 export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
   const pathname = usePathname();
+  const t = useT();
   // Progress is derived from the same local state the tasks write (ADR-0044). It is
   // recomputed when the route changes, which is when a student could next see it —
   // this layout persists across task navigations.
@@ -155,7 +157,13 @@ export function TextbookToc({ tree, l1, l2, onNavigate }: TextbookTocProps) {
                                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                   }`}
                                 >
-                                  <span aria-hidden>{task.number}</span>
+                                  {/* The workbook's own numeral, preceded by a localized
+                                      "Task" so the row reads as a task and not as a stray
+                                      dingbat. The whole label is one message, because word
+                                      order differs by language. */}
+                                  <span>
+                                    {t('label.task_number', { number: task.number })}
+                                  </span>
                                   <TaskTypeIcon
                                     type={task.type}
                                     className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
