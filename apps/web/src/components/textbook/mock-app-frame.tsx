@@ -9,23 +9,45 @@ import {
   protocolCompatible,
   type MockAppStimulus,
 } from '@langplayer/textbooks';
-import { Check } from 'lucide-react';
+import { Check, ExternalLink, Languages, Lightbulb, PartyPopper, X } from 'lucide-react';
 import { ASSET_BASE_URL, MOCK_APP_BASE_URL } from '@/lib/asset-url';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { RetryIcon } from './retry-icon';
 import { log } from '@/lib/logger';
 import { DictionaryPopup } from '@/components/dictionary-popup';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { useTextbookTask } from './task-provider';
 import { TokenizedText } from '@/components/tokenized-text';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+
+/** SPEC-052's small/large boundary: a sheet below it, a centered modal at or above. */
+const WIDE = '(min-width: 768px)';
 
 /**
- * Host frame for a self-contained mock app (SPEC-095, ADR-0045).
+ * Host for a self-contained mock app (SPEC-095, ADR-0045).
  *
- * The host deliberately knows nothing about the app's UI. It owns the frame, the
- * bridge, and the three shared affordances — help mode, hint, and grading the
- * answers the app reports — so adding a mock app adds no host code.
+ * The app is not embedded in the page. The page carries one control — the launch
+ * button — and the app opens in a panel over it: a bottom sheet on a narrow screen, a
+ * centered modal on a wide one, which is the container policy SPEC-052 and ADR-0042
+ * already set out.
+ *
+ * Inside the panel the host owns four things, and the app owns its screen:
+ *
+ * - **The task being asked**, one at a time, in the header. Six tasks in one app is
+ *   only followable if the student is told which one they are on; the prompts live in
+ *   the content, which is also what each reported goal is graded against.
+ * - **Next** — once the app reports the current task done — and **All Done!** once
+ *   every one is, which closes the panel so the student can submit.
+ * - **Help mode and Hint**, in the bottom toolbar, because they act on the app.
+ * - **Grading**: the app reports which goal it satisfied and with what, and the host
+ *   writes that into the linked blank. A buggy or malicious app cannot mark itself
+ *   correct.
+ *
+ * The host deliberately knows nothing about the app's UI. Adding a mock app adds no
+ * host code.
  *
  * Sandboxed WITHOUT `allow-same-origin`: the app runs on an opaque origin, and
  * `postMessage` is the only channel. That is why tokens are pushed in rather than
@@ -35,8 +57,9 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
   const ctx = useTextbookTask()!;
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const wide = useMediaQuery(WIDE);
   const resolveAsset = useMemo(() => createAssetResolver(ASSET_BASE_URL), []);
-  /** The goals that print a question, in the app's own order. */
+  /** The goals that print a task, in the app's own order. */
   const questions = useMemo(
     () => stimulus.goals.flatMap((goal) => (goal.prompt ? [{ id: goal.id, prompt: goal.prompt }] : [])),
     [stimulus.goals],
@@ -51,7 +74,9 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     setAttempt((n) => n + 1);
     setStatus('loading');
   };
-  const [goalCount, setGoalCount] = useState(stimulus.goals.length);
+  const [open, setOpen] = useState(false);
+  /** Which task the header is on. It does not advance by itself: Next does that. */
+  const [cursor, setCursor] = useState(0);
   const [doneGoalIds, setDoneGoalIds] = useState<string[]>([]);
   const [helpMode, setHelpMode] = useState(false);
   const [height, setHeight] = useState(420);
@@ -60,18 +85,13 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
    *
    * A frame in the server HTML starts loading while the client bundle is still
    * arriving, and the app announces itself the moment it has run — so its whole
-   * handshake can be over before this component is hydrated and listening.
-   * Measured on this page: the app posted `ready`, its first `progress` and its
-   * first `resize` at 1161ms, and the first `message` listener here was attached
-   * at 1272ms. All three went to nobody. `ready` is never re-sent, so the frame
-   * sat on 'loading' for good, while clicks still worked (a later `progress`
-   * arrived) — an app that looked alive and reported 1 / 6 with nothing asked.
+   * handshake can be over before this component is hydrated and listening. Measured
+   * on this page: the app posted `ready`, its first `progress` and its first `resize`
+   * at 1161ms, and the first `message` listener here was attached at 1272ms. All three
+   * went to nobody. `ready` is never re-sent, so the frame sat on 'loading' for good.
    *
-   * Rendering it here puts its first byte after this component's effects, so the
-   * listener and the `load` handler both exist before the app can speak. The
-   * `load` handler matters too: attached during hydration it missed a `load` that
-   * had already fired, so the 4s grace timer never started and a frame that never
-   * said `ready` never degraded to the fallback either.
+   * The panel is only rendered once it is open, which is after mount by construction,
+   * so the listener and the `load` handler always exist before the app can speak.
    */
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -87,7 +107,7 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     frameRef.current?.contentWindow?.postMessage(message, '*');
   }, []);
 
-  // Tell the app about the environment as soon as it is ready.
+  // Tell the app about the environment.
   const sendInit = useCallback(() => {
     send({
       v: 1,
@@ -96,11 +116,9 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     });
   }, [send, l1.code, l2.code, helpMode]);
 
-  // The language pair can change while the frame is up, so it is announced again;
-  // on mount this is a no-op, because there is no frame yet and the frame's own
-  // `load` below is what greets the first document — and the document a retry
-  // mounts. Re-announcing help mode is not needed here: `toggleHelp` sends
-  // `help-mode` itself.
+  // The language pair can change while the frame is up, so it is announced again; on
+  // mount this is a no-op, because there is no frame yet and the frame's own `load`
+  // below is what greets the first document — and the document a retry mounts.
   useEffect(() => {
     sendInit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,7 +168,6 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
       switch (data.type) {
         case 'ready':
           setStatus('ready');
-          setGoalCount(data.payload.goals.length);
           log('[LP Web] MockApp ready:', data.payload.app, data.payload.goals.length, 'goals');
           break;
         case 'tokenize':
@@ -176,8 +193,11 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           break;
         }
         case 'progress':
-          setDoneGoalIds(data.payload.done);
-          setGoalCount(data.payload.total);
+          // Only ever added to. The panel unmounts its frame when it closes, so
+          // reopening the app starts a fresh one that reports `done: []` — and
+          // replacing the set with that empty list would take the student back to
+          // task ① on a task they have already finished.
+          setDoneGoalIds((ids) => [...new Set([...ids, ...data.payload.done])]);
           break;
         case 'complete': {
           // The app reports the answer; the host grades it against the linked
@@ -189,8 +209,7 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
           }
           ctx.store.setValue(link.blankId, data.payload.answer);
           // The app sends `complete` and then `progress`. Marking the goal here
-          // too means the question's own marker does not depend on the second
-          // message arriving — the same message the handshake race used to eat.
+          // too means the header's own state does not depend on the second message.
           setDoneGoalIds((ids) => (ids.includes(link.id) ? ids : [...ids, link.id]));
           break;
         }
@@ -212,10 +231,19 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     send({ v: 1, type: 'help-mode', payload: { on: next } });
   };
 
-  const answered = doneGoalIds.length;
+  const currentIndex = Math.min(cursor, Math.max(0, questions.length - 1));
+  const current = questions[currentIndex];
+  const allDone = questions.length > 0 && questions.every((goal) => doneGoalIds.includes(goal.id));
+  const currentDone = current ? doneGoalIds.includes(current.id) : false;
 
-  if (status === 'failed') {
-    // Never let a broken frame block the exercise: fall back to the workbook
+  /** Next: the next task that is still unanswered, so it never lands on a struck one. */
+  const advance = () => {
+    const next = questions.findIndex((goal, i) => i > currentIndex && !doneGoalIds.includes(goal.id));
+    if (next >= 0) setCursor(next);
+  };
+
+  if (status === 'failed' && !open) {
+    // Never let a broken app block the exercise: fall back to the workbook
     // screenshot so the questions stay answerable.
     return (
       <div className="flex flex-col gap-2">
@@ -251,70 +279,72 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
     );
   }
 
-  return (
-    <section className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={toggleHelp}
-          aria-pressed={helpMode}
-          className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-            helpMode
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-border text-foreground hover:bg-muted'
-          }`}
-        >
-          {t('label.enable_popup_dictionary')}
-        </button>
-        <button
-          type="button"
-          onClick={() => send({ v: 1, type: 'hint' })}
-          className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted"
-        >
-          {t('action.hint')}
-        </button>
-        <span className="ml-auto text-xs text-muted-foreground">
-          {answered} / {goalCount}
-        </span>
-      </div>
-
-      {/*
-        The questions are the host's, not the app's. The app renders a 12306
-        screen and nothing else, so a student who only ever saw the frame had the
-        screen, a `1 / 6` counter and no idea what the six questions were. They
-        come from the content, which is also what each reported goal is graded
-        against, so the printed question and the graded answer cannot drift.
-
-        An answered one is struck out, which is this feature's existing mark for
-        "you have placed this" (see the option pools). A `goal` with no `prompt`
-        has nothing to print, but still counts in the counter and is still graded.
-      */}
-      {questions.length > 0 && (
-        <ol className="flex flex-col gap-1.5 text-sm text-foreground">
-          {questions.map((goal, index) => {
-            const done = doneGoalIds.includes(goal.id);
-            return (
-              <li key={goal.id} className="flex items-start gap-2">
-                <span className="text-muted-foreground">{indexToCircled(index + 1)}</span>
-                <span className={done ? 'flex-1 text-muted-foreground line-through' : 'flex-1'}>
-                  <TokenizedText text={goal.prompt} l2Code={l2.code} />
-                </span>
-                {done && <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />}
-              </li>
-            );
-          })}
-        </ol>
+  const header = current && (
+    <div className="flex items-start gap-2 border-b border-border pb-3">
+      <span className="pt-0.5 text-sm text-muted-foreground">{indexToCircled(currentIndex + 1)}</span>
+      {wide ? (
+        <DialogTitle className="flex-1 text-sm leading-relaxed font-normal">
+          <TokenizedText text={current.prompt} l2Code={l2.code} />
+        </DialogTitle>
+      ) : (
+        <SheetTitle className="flex-1 text-sm leading-relaxed font-normal">
+          <TokenizedText text={current.prompt} l2Code={l2.code} />
+        </SheetTitle>
       )}
+      <div className="flex shrink-0 items-center gap-1.5">
+        {allDone ? (
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <PartyPopper className="h-3.5 w-3.5" aria-hidden />
+            {t('msg.all_done')}
+          </button>
+        ) : currentDone ? (
+          <button
+            type="button"
+            onClick={advance}
+            className="inline-flex items-center gap-1.5 rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10"
+          >
+            <Check className="h-3.5 w-3.5" aria-hidden />
+            {t('action.next')}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label={t('action.close')}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {status === 'loading' && (
-          <p className="p-4 text-sm text-muted-foreground">{t('msg.loading')}</p>
-        )}
-        {mounted && (
+  const app = (
+    <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-border bg-card">
+      {status === 'loading' && (
+        <p className="p-4 text-sm text-muted-foreground">{t('msg.loading')}</p>
+      )}
+      {status === 'failed' ? (
+        <div className="flex flex-col items-start gap-2 p-4">
+          <p className="text-xs text-muted-foreground">{t('msg.app_unavailable')}</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
+          >
+            <RetryIcon />
+            {t('action.retry')}
+          </button>
+        </div>
+      ) : (
+        mounted && (
           <iframe
             // Remounting with a new key is the only reliable retry for a frame
-            // that failed to load — without this the retry button was a no-op on
-            // web, which is what SPEC-095's Error state promises it is not.
+            // that failed to load.
             key={attempt}
             ref={frameRef}
             title={stimulus.app}
@@ -334,8 +364,76 @@ export function MockAppFrame({ stimulus }: { stimulus: MockAppStimulus }) {
             onError={() => setStatus('failed')}
             style={{ height, width: '100%', border: 0 }}
           />
-        )}
-      </div>
+        )
+      )}
+    </div>
+  );
+
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+      <button
+        type="button"
+        onClick={toggleHelp}
+        aria-pressed={helpMode}
+        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors ${
+          helpMode
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-border text-foreground hover:bg-muted'
+        }`}
+      >
+        <Languages className="h-3.5 w-3.5" aria-hidden />
+        {t('label.enable_popup_dictionary')}
+      </button>
+      <button
+        type="button"
+        onClick={() => send({ v: 1, type: 'hint' })}
+        className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-foreground hover:bg-muted"
+      >
+        <Lightbulb className="h-3.5 w-3.5" aria-hidden />
+        {t('action.hint')}
+      </button>
+    </div>
+  );
+
+  const panel = (
+    <>
+      {header}
+      {app}
+      {toolbar}
+    </>
+  );
+
+  return (
+    <section className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex w-fit items-center gap-2 rounded-lg bg-primary px-5 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        <ExternalLink className="h-5 w-5" aria-hidden />
+        {t('action.launch_mini_app')}
+      </button>
+
+      {wide ? (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent
+            showCloseButton={false}
+            className="flex max-h-[85vh] min-h-0 w-[min(32rem,92vw)] max-w-none flex-col gap-3 p-4"
+          >
+            {panel}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side="bottom"
+            showCloseButton={false}
+            className="flex max-h-[88vh] min-h-0 flex-col gap-3 rounded-t-2xl p-4"
+          >
+            {panel}
+          </SheetContent>
+        </Sheet>
+      )}
 
       {popup && (
         <DictionaryPopup
