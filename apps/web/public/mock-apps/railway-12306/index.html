@@ -102,6 +102,21 @@
       MockApp.define({
         id: 'railway-12306',
         data: { services: SERVICES },
+        /*
+         * What this app's own logic says the answers are, derived from the dataset by
+         * the same predicates the goals use — not written out by hand, so it cannot
+         * drift from the screen. The host compares it against the content's answer key
+         * (a test, since the frame cannot execute this file), which is what catches a
+         * dataset edit that changes an answer without the content following.
+         */
+        expected: {
+          fastest: fastest().no,
+          cheapest: cheapest().no,
+          fuxing: matching((s) => s.fuxing).map((s) => s.no).join('、'),
+          'sold-out': matching((s) => s.soldOut).map((s) => s.no).join('、'),
+          business: matching((s) => s.business).map((s) => s.no).join('、'),
+          sleeper: matching((s) => s.sleeper).map((s) => s.no).join('、'),
+        },
         goals: [
           {
             id: 'fastest',

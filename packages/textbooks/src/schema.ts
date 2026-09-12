@@ -302,8 +302,10 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
       for (const candidate of [blank.answer, ...(blank.accept ?? [])]) {
         // A multi-select blank may join its picks differently from the key — 硬卧和软卧
         // against 硬卧、软卧 — so its picks are compared as a set.
+        // A multiple blank's key lists its picks as separate entries (`G875 / G49 /
+        // D17 / D11`), so the whole list is compared as one set.
         const agrees = blank.multiple === true
-          ? normalizedKeyed.some((k) => asSet(k) === asSet(candidate))
+          ? asSet(normalizedKeyed.join('、')) === asSet(candidate)
           : normalizedKeyed.includes(normalizeAnswer(candidate));
         if (!agrees) {
           add(
