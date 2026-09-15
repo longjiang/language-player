@@ -20,6 +20,7 @@
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
+import { readCSV } from './lib/csv-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -27,10 +28,20 @@ const CSV_PATH = resolve(ROOT, 'translations.csv');
 
 // Scan all app source directories for t() key usage.
 // The CSV is the single source of truth for both the web app and mobile app.
+//
+// `apps/mobile` — not `apps/mobile-v2`, a directory that no longer exists. While
+// the path was wrong the scan silently covered web only, so every mobile-only
+// key was reported dead (535 of them) and `--verify` could not tell the
+// difference: a key used *only* on mobile looks exactly like a key used nowhere.
+// The walk skips `node_modules` and dot-directories; the native/build output
+// directories below hold no source but are large, so they are skipped by name.
 const SRC_DIRS = [
   resolve(ROOT, 'apps', 'web', 'src'),
-  resolve(ROOT, 'apps', 'mobile-v2'),  // React Native app
+  resolve(ROOT, 'apps', 'mobile'),  // React Native app (ADR-0010)
 ].filter(d => { try { statSync(d); return true; } catch { return false; } });
+
+/** Directories that never contain app source, walked only to waste time. */
+const SKIP_DIRS = new Set(['node_modules', 'ios', 'android', 'build', 'dist', 'e2e']);
 
 // ── Whitelist ───────────────────────────────
 const ALWAYS_KEEP = [
@@ -52,9 +63,12 @@ const MUST_BE_ALIVE = [
   'placeholder.filter', 'placeholder.search_languages',
   'sort.most_viewed', 'a11y.next_line', 'a11y.play',
   // Mobile app — ContextRow, saved-words, etc.
-  'action.cancel', 'action.copy', 'action.speak', 'action.clear_words',
-  'msg.options', 'msg.choose_action', 'msg.no_saved_words',
-  'title.saved_words',
+  'action.cancel', 'action.copy', 'action.speak',
+  // NOTE: `action.clear_words`, `msg.options` and `msg.choose_action` used to be
+  // listed here as mobile keys. They are now only referenced by the *archived*
+  // GO app (`apps/mobile-go-legacy/`, reference-only, with its own CSV), so with
+  // `apps/mobile` actually scanned they correctly report as dead. Re-add them
+  // only if a live app starts using them again.
   // Whitelisted prefixes
   'lang.ja', 'lang.zh', 'level.hsk', 'level.jlpt', 'level.cefr',
 ];
@@ -62,10 +76,14 @@ const MUST_BE_ALIVE = [
 // ── 1. CSV keys ─────────────────────────────
 
 function getCsvKeys() {
-  const text = readFileSync(CSV_PATH, 'utf-8');
+  // Papa-based parsing (scripts/lib/csv-utils.mjs), not `line.split(',')`: any
+  // cell containing a comma — prose, or an ICU plural — shifted the columns, so
+  // the naive parse reported sentence fragments ("Halte deine Erklärung kurz.")
+  // as keys and inflated the dead list by ~50 entries.
+  const { rows } = readCSV(CSV_PATH, { readFileSync });
   const keys = new Set();
-  for (const line of text.trim().split('\n').slice(1)) {
-    const key = line.split(',')[0]?.trim();
+  for (const row of rows) {
+    const key = row[0]?.trim();
     if (key) keys.add(key);
   }
   return keys;
@@ -78,7 +96,7 @@ function* walk(dir) {
     const full = resolve(dir, entry);
     let st;
     try { st = statSync(full); } catch { continue; }  // skip broken symlinks etc.
-    if (st.isDirectory() && entry !== 'node_modules' && !entry.startsWith('.')) {
+    if (st.isDirectory() && !SKIP_DIRS.has(entry) && !entry.startsWith('.')) {
       yield* walk(full);
     } else if (st.isFile()) {
       const ext = extname(entry);
