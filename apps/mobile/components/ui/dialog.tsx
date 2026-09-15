@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 import * as DialogPrimitive from '@rn-primitives/dialog';
+import { cn } from '@/lib/utils';
 
 // ── Root ──
 
@@ -69,7 +70,7 @@ export function Overlay({ className, open, forceMount, ...props }: OverlayProps)
     >
       <DialogPrimitive.Overlay
         forceMount={effectiveForceMount}
-        className={className ? `absolute inset-0 ${className}` : 'absolute inset-0 bg-black/40'}
+        className={cn('absolute inset-0', className ?? 'bg-black/40')}
         {...props}
       />
     </Animated.View>
@@ -100,9 +101,12 @@ type ContentProps = DialogPrimitive.ContentProps & {
  */
 export function Content({ children, className, containerClassName, onStartShouldSetResponder, ...props }: ContentProps) {
   return (
-    <View className={`absolute inset-0 flex items-center justify-center ${containerClassName ?? ''}`}>
+    <View className={cn('absolute inset-0 flex items-center justify-center', containerClassName)}>
       <DialogPrimitive.Content
-        className={`bg-background border-border z-50 w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 ${className ?? ''}`}
+        className={cn(
+          'bg-background border-border z-50 w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5',
+          className
+        )}
         onStartShouldSetResponder={onStartShouldSetResponder ?? (() => false)}
         {...props}
       >
@@ -154,7 +158,7 @@ export function SheetContent({
     >
       <View className="flex-1 justify-end" pointerEvents="box-none">
         <DialogPrimitive.Content
-          className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
+          className={cn('rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%]', className)}
           // Same scroll fix as Content (see above): the sheet must never
           // claim the JS responder away from its ScrollView.
           onStartShouldSetResponder={onStartShouldSetResponder ?? (() => false)}
@@ -208,7 +212,7 @@ export function DrawerContent({ children, className, topOffset = 0, open, drawer
     >
       <DialogPrimitive.Content
         forceMount={effectiveForceMount}
-        className={`border-l border-border bg-background p-4 shadow-lg ${className ?? ''}`}
+        className={cn('border-l border-border bg-background p-4 shadow-lg', className)}
         style={{ width: drawerWidth }}
         {...props}
       >
@@ -236,7 +240,7 @@ type TitleProps = DialogPrimitive.TitleProps;
 
 export function Title({ children, className, ...props }: TitleProps) {
   return (
-    <DialogPrimitive.Title className={`text-foreground text-base font-semibold leading-none ${className ?? ''}`} {...props}>
+    <DialogPrimitive.Title className={cn('text-foreground text-base font-semibold leading-none', className)} {...props}>
       {children}
     </DialogPrimitive.Title>
   );
@@ -248,7 +252,7 @@ type DescriptionProps = DialogPrimitive.DescriptionProps;
 
 export function Description({ children, className, ...props }: DescriptionProps) {
   return (
-    <DialogPrimitive.Description className={`text-sm text-muted-foreground ${className ?? ''}`} {...props}>
+    <DialogPrimitive.Description className={cn('text-sm text-muted-foreground', className)} {...props}>
       {children}
     </DialogPrimitive.Description>
   );
