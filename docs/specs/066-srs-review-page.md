@@ -946,6 +946,19 @@ answer:
   pattern) that each tile gesture `.blocksExternalGesture()`-es. The host also
   disables the card's scrolling for the duration of a tile gesture.
   A cancelled drag snaps back and never places or clears a block.
+- **Tile classes must not carry `cursor-*` / `active:` / `hover:` / `focus:`**
+  (mobile). Those are web-only, and on native a pseudo-class makes css-interop
+  upgrade the `View` to a `Pressable` — which is safe during the initial render
+  but fatal after it. A slot starts empty (`cursor-default`) and gains
+  `active:cursor-grabbing` when a block lands on it, so the first successful tap
+  triggered that late upgrade, and css-interop's warning called
+  `stringify(props)`, whose recursive walk reached the navigation context and
+  threw `Couldn't find a navigation context`, unmounting the review page
+  (fixed 2026-09-15, commit `0baabcc1`). Any dynamic class swap on a mobile
+  `View` has to stay inside plain utilities. The same trap exists in
+  `components/dictionary/DictionaryEntryCard.tsx:283`, which swaps its root
+  between `View` and `Pressable` on `isHeadOnly` while adding ` active:bg-muted`
+  in the same branch.
 - **Auto-submit** — filling the **last** slot automatically submits the arranged
   word. There is **no submit button** (unlike spell mode, which has one).
 - **No hints** — scrabble mode shows **no** first-character hint (neither the
