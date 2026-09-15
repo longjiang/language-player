@@ -487,6 +487,12 @@ Tapping `[{action.download}]` navigates to the Offline Dictionaries screen.
    > "💡 {msg.confirm_download_dictionary}"
    This only appears if no download is in progress and the user hasn't dismissed it recently (once per session).
 3. **Settings entry point** — Add an "Offline Dictionaries" row to the Settings screen's main list (outside the 4 tabs, as a separate nav item).
+4. **L2-switch prompt** — Switching to an L2 with no downloaded dictionary opens a dialog immediately, asking whether to download it now (shipped 2026-09-15). It is mounted once at the root (`apps/mobile/components/dictionary/OfflineDictionaryPrompt.tsx`, inside `_layout.tsx`) and watches `l2Lang.code` — the only point every way of changing the L2 passes through, since `LanguagePicker`/`LanguageSwitcher` call `setL2Lang` directly.
+
+   - Copy: `{title.offline_dictionaries}` + `{msg.download_offline_dict_prompt}` (its `{language}` placeholder resolves through `lang.<code>`); buttons `{action.download}` and `{action.cancel}`.
+   - Accepting starts the normal `DictionaryContext.startDownload(l2)` in the background — progress is reported by the download state and the Offline Dictionaries screen — and confirms with a toast. It does **not** navigate away from what the learner was doing.
+   - Deliberately silent when: the app has just started (the first observed L2 is not a switch), the route is `/login`, `/register`, `/verify-email` or `/select-language` (those restore or set the pair rather than the learner switching), a download for that L2 is already running, or the device is offline — a download would be blocked by the network gate, the same reason `OfflineBanner` hides itself while offline. The Dictionary Hub banner still offers it once back online.
+   - This adds a prompt in front of SPEC-022's silent regex fallback; it does not change lookup or tokenization behaviour. When the learner declines, everything behaves exactly as before.
 
 ### Phase 8: Memory Cache
 

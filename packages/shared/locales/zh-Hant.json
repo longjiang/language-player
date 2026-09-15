@@ -893,6 +893,7 @@
         "dont_have_account": "還沒有帳戶？",
         "dont_have_an_account": "還沒有帳號嗎？",
         "download_failed": "下載失敗 — 點擊重試",
+        "download_offline_dict_prompt": "下載{language}離線詞典？這樣即使沒有網路也能查詞。",
         "drop_epub_here": "將EPUB檔案拖放到此處，或點擊瀏覽",
         "drop_images_here": "將圖片檔案拖放到此處，或點擊瀏覽",
         "drop_media_here": "將影片或音訊檔案拖放到此處",

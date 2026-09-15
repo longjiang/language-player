@@ -907,6 +907,7 @@
         "dont_have_account": "Don't have an account?",
         "dont_have_an_account": "Don't have an account?",
         "download_failed": "Download failed — Tap to retry",
+        "download_offline_dict_prompt": "Download the offline dictionary for {language}? Then you can look up words without an internet connection.",
         "drop_epub_here": "Drop an EPUB file here, or click to browse",
         "drop_images_here": "Drag & drop image files here, or click to browse",
         "drop_media_here": "Drop a video or audio file here",

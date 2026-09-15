@@ -907,6 +907,7 @@
         "dont_have_account": "Nog geen account?",
         "dont_have_an_account": "Heb je geen account?",
         "download_failed": "Download mislukt — Tik om opnieuw te proberen",
+        "download_offline_dict_prompt": "Offlinewoordenboek voor {language} downloaden? Daarna kun je woorden opzoeken zonder internetverbinding.",
         "drop_epub_here": "Sleep een EPUB-bestand hierheen of klik om te bladeren",
         "drop_images_here": "Sleep afbeeldingsbestanden hierheen of klik om te bladeren",
         "drop_media_here": "Sleep een video- of audiobestand hierheen",

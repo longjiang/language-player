@@ -907,6 +907,7 @@
         "dont_have_account": "ليس لديك حساب؟",
         "dont_have_an_account": "ليس لديك حساب؟",
         "download_failed": "فشل التنزيل — اضغط لإعادة المحاولة",
+        "download_offline_dict_prompt": "هل تريد تنزيل قاموس {language} دون اتصال؟ بعد ذلك يمكنك البحث عن الكلمات دون اتصال بالإنترنت.",
         "drop_epub_here": "أسقط ملف EPUB هنا، أو انقر للتصفح",
         "drop_images_here": "اسحب ملفات الصور هنا أو انقر للتصفح",
         "drop_media_here": "أسقط ملف فيديو أو صوتي هنا",

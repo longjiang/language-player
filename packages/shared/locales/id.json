@@ -907,6 +907,7 @@
         "dont_have_account": "Belum punya akun?",
         "dont_have_an_account": "Belum memiliki akun?",
         "download_failed": "Unduh gagal — Ketuk untuk mencoba lagi",
+        "download_offline_dict_prompt": "Unduh kamus luring untuk {language}? Setelah itu kamu bisa mencari kata tanpa koneksi internet.",
         "drop_epub_here": "Letakkan file EPUB di sini, atau klik untuk menjelajah",
         "drop_images_here": "Letakkan file gambar di sini atau klik untuk menjelajah",
         "drop_media_here": "Letakkan file video atau audio di sini",

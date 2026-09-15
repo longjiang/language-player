@@ -3,15 +3,33 @@ import * as SecureStore from 'expo-secure-store';
 import { createApiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { isOfflineModeEnabled, setOfflineModeEnabled } from '@/lib/offline-mode';
-import { bootLogger } from '@/lib/logger';
-
-const { log } = bootLogger;
+import { getConnectivity } from '@/lib/connectivity';
+// The app-wide logger, not `bootLogger`: the boot domain is off by default
+// (`defaultOff('boot')` in lib/logger.ts), and these are exactly the lines that
+// diagnose "the app logged me out while I was offline" from a device console.
+import { log } from '@/lib/logger';
 
 // ── API Client Singleton ────────────────────
 
 let initialized = false;
 let onTokenRefreshed: ((token: string) => void) | null = null;
-let refreshPromise: Promise<string | null> | null = null;
+
+/**
+ * Why a refresh ended the way it did.
+ *
+ * The distinction matters at boot: a refresh that *failed* must not be read as
+ * "this session is over". Only `rejected` means the server decided the stored
+ * refresh token is no longer valid; `unreachable` means we could not ask
+ * (offline, DNS, a 5xx, a truncated response) and the session has to survive —
+ * otherwise starting the app offline logs the learner out, and they cannot log
+ * back in while still offline (SPEC-053).
+ */
+type RefreshOutcome =
+  | { status: 'refreshed'; token: string }
+  | { status: 'rejected' }
+  | { status: 'unreachable' };
+
+let refreshPromise: Promise<RefreshOutcome> | null = null;
 
 /** Decode the JWT `exp` claim (ms) for boot-time staleness checks. */
 function tokenExpiresAt(token: string): number {
@@ -25,27 +43,47 @@ function tokenExpiresAt(token: string): number {
   }
 }
 
-async function doRefreshAccessToken(): Promise<string | null> {
+async function doRefreshAccessToken(): Promise<RefreshOutcome> {
   try {
     const refreshToken = await SecureStore.getItemAsync('authRefreshToken');
-    if (!refreshToken) return null;
+    if (!refreshToken) {
+      // Nothing to refresh with: there is no session to preserve.
+      log('[Auth] refresh — no stored refresh token; the session cannot be resumed');
+      return { status: 'rejected' };
+    }
     const res = await fetch(`${PYTHON_API_URL}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // 4xx is the server's verdict on this refresh token. Anything else (5xx,
+      // a proxy error page) says nothing about the token, so it must not be
+      // allowed to end the session.
+      if (res.status >= 400 && res.status < 500) {
+        log(`[Auth] refresh — server rejected the refresh token (${res.status}); the session is over`);
+        return { status: 'rejected' };
+      }
+      log(`[Auth] refresh — inconclusive server response (${res.status}); keeping the session`);
+      return { status: 'unreachable' };
+    }
     const data = await res.json();
-    if (!data?.token) return null;
+    if (!data?.token) {
+      log('[Auth] refresh — 200 without a token in the body; keeping the session');
+      return { status: 'unreachable' };
+    }
     await SecureStore.setItemAsync('authToken', data.token);
     if (data.refreshToken) {
       await SecureStore.setItemAsync('authRefreshToken', data.refreshToken);
     }
     // Keep useAuth().token consumers (raw fetches, gating) on the fresh token.
     onTokenRefreshed?.(data.token);
-    return data.token;
-  } catch {
-    return null;
+    return { status: 'refreshed', token: data.token };
+  } catch (e) {
+    // The overwhelmingly common cause is "there is no network" — the one case
+    // where wiping the session is the worst possible answer.
+    log('[Auth] refresh — request failed (offline?):', (e as Error)?.message ?? e);
+    return { status: 'unreachable' };
   }
 }
 
@@ -55,11 +93,16 @@ async function doRefreshAccessToken(): Promise<string | null> {
  * because Supabase refresh tokens rotate and a second concurrent grant with
  * the same token would 401.
  */
-export function refreshAccessToken(): Promise<string | null> {
+function refreshAccessTokenOutcome(): Promise<RefreshOutcome> {
   refreshPromise ??= doRefreshAccessToken().finally(() => {
     refreshPromise = null;
   });
   return refreshPromise;
+}
+
+export async function refreshAccessToken(): Promise<string | null> {
+  const outcome = await refreshAccessTokenOutcome();
+  return outcome.status === 'refreshed' ? outcome.token : null;
 }
 
 export function initApiClient() {
@@ -162,17 +205,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(JSON.parse(storedUser));
           // Boot-time staleness check (mirrors Classic's auth-guard.js): if the
           // stored access token already expired, refresh before the first batch
-          // of requests fires; a dead refresh token means a clean logout.
+          // of requests fires. Only a refresh the SERVER rejects ends the
+          // session — an unreachable server (offline start) keeps it, so the
+          // learner is not logged out for being offline (SPEC-053).
           const expiresAt = tokenExpiresAt(storedToken);
           if (expiresAt > 0 && expiresAt <= Date.now()) {
-            if (isOfflineModeEnabled()) {
-              // Offline Mode blocks the refresh request, so skip it and keep
-              // the local session until the user goes back online.
-              log('[Auth] boot — access token expired but Offline Mode is on; skipping refresh');
+            if (isOfflineModeEnabled() || getConnectivity() === 'offline') {
+              // Offline Mode blocks the request, and an auto-detected offline
+              // start has no request to make, so skip the refresh and keep the
+              // local session until the user goes back online. The next API call
+              // after that is what triggers the normal refresh path.
+              log('[Auth] boot — access token expired and we are offline; keeping the stored session and deferring the refresh', {
+                offlineMode: isOfflineModeEnabled(),
+                connectivity: getConnectivity(),
+              });
             } else {
               log('[Auth] boot — access token expired; refreshing');
-              const newToken = await refreshAccessToken();
-              if (!newToken) {
+              const outcome = await refreshAccessTokenOutcome();
+              if (outcome.status === 'refreshed') {
+                log('[Auth] boot — access token refreshed');
+              } else if (outcome.status === 'rejected') {
+                log('[Auth] boot — refresh token rejected; clearing the stored session');
                 await SecureStore.deleteItemAsync('authToken');
                 await SecureStore.deleteItemAsync('authRefreshToken');
                 await SecureStore.deleteItemAsync('userInfo');
@@ -180,6 +233,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(null);
                 // No session → Offline Mode must not block auth screens.
                 await setOfflineModeEnabled(false);
+              } else {
+                log('[Auth] boot — could not reach the server to refresh; keeping the stored session');
               }
             }
           } else {

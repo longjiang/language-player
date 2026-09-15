@@ -81,6 +81,7 @@ import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
 import { SettingsDialogProvider } from '@/contexts/SettingsDialogContext';
+import { OfflineDictionaryPrompt } from '@/components/dictionary/OfflineDictionaryPrompt';
 import '../global.css';
 
 // Suppress all on-screen LogBox notifications. This is intentional for store
@@ -174,6 +175,7 @@ export default function RootLayout() {
                       <SubscriptionProvider>
                       <UserLibraryProvider>
                       <SettingsDialogProvider>
+                      <OfflineDictionaryPrompt />
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(tabs)" />

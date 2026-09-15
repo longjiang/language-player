@@ -907,6 +907,7 @@
         "dont_have_account": "アカウントをお持ちではありませんか？",
         "dont_have_an_account": "アカウントをお持ちではありませんか？",
         "download_failed": "ダウンロード失敗 — タップして再試行",
+        "download_offline_dict_prompt": "{language}のオフライン辞書をダウンロードしますか？インターネット接続がなくても単語を調べられるようになります。",
         "drop_epub_here": "EPUBファイルをここにドロップするか、クリックして参照",
         "drop_images_here": "画像ファイルをここにドロップするか、クリックして参照",
         "drop_media_here": "動画または音声ファイルをここにドロップ",

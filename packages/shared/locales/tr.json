@@ -907,6 +907,7 @@
         "dont_have_account": "Hesabınız yok mu?",
         "dont_have_an_account": "Hesabınız yok mu?",
         "download_failed": "İndirme başarısız — Yeniden denemek için dokunun",
+        "download_offline_dict_prompt": "{language} için çevrimdışı sözlüğü indirilsin mi? Böylece internete bağlı olmadan sözcüklere bakabilirsiniz.",
         "drop_epub_here": "EPUB dosyasını buraya bırakın veya göz atmak için tıklayın",
         "drop_images_here": "Görsel dosyalarını buraya bırakın veya göz atmak için tıklayın",
         "drop_media_here": "Buraya bir video veya ses dosyası bırakın",

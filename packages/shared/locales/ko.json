@@ -907,6 +907,7 @@
         "dont_have_account": "계정이 없으신가요?",
         "dont_have_an_account": "계정이 없으신가요?",
         "download_failed": "다운로드 실패 — 다시 시도하려면 탭하세요",
+        "download_offline_dict_prompt": "{language} 오프라인 사전을 다운로드할까요? 그러면 인터넷 연결 없이도 단어를 찾아볼 수 있습니다.",
         "drop_epub_here": "EPUB 파일을 여기에 드롭하거나 클릭하여 찾아보기",
         "drop_images_here": "이미지 파일을 여기에 드롭하거나 클릭하여 찾아보기",
         "drop_media_here": "동영상 또는 오디오 파일을 여기에 드롭하세요",

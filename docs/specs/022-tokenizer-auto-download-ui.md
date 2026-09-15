@@ -127,7 +127,7 @@ The warning is hidden during download (progress bar visible) and during error st
 | User deletes offline dictionary | Tokenizer is also deleted (no orphaned data) |
 | Dictionary download fails | Tokenizer download is cancelled |
 | Tokenizer download fails (but dict succeeds) | Dict works offline; tokenizer falls back to regex + surface-as-lemma |
-| User switches to a new L2 with no dict | Phase 1 regex fallback applies (server remains primary) |
+| User switches to a new L2 with no dict | Mobile asks first (`msg.download_offline_dict_prompt`, SPEC-013 Phase 7.4) and downloads the dictionary + tokenizer together if accepted; if declined — or on web, which has no prompt — Phase 1 regex fallback applies (server remains primary) |
 
 ---
 
