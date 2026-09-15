@@ -6,11 +6,23 @@ import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { ChevronDown } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { hasTextbookForL2 } from '@langplayer/textbooks';
 
 interface NavGroup {
   label: string;
   /** `sf` is the iOS SF Symbol for the item (Android PopupMenu renders text-only). */
-  links: { key: string; href: string; sf: string }[];
+  links: {
+    key: string;
+    href: string;
+    sf: string;
+    /**
+     * Only available when the current L2 has a textbook (SPEC-095 § "Initial L2
+     * scope"). Set on `Tasks`, the textbook feature, so an L2 with no corpus does
+     * not show an item that leads to an empty picker.
+     */
+    requiresTextbook?: boolean;
+  }[];
 }
 
 const NAV_GROUPS: NavGroup[] = [
@@ -38,10 +50,27 @@ const NAV_GROUPS: NavGroup[] = [
     links: [
       { key: 'title.dictionary', href: '/(tabs)/(vocab)', sf: 'character.book.closed' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review', sf: 'arrow.clockwise' },
-      { key: 'title.tasks', href: '/(tabs)/(vocab)/tasks', sf: 'checklist' },
+      { key: 'title.tasks', href: '/(tabs)/(vocab)/tasks', sf: 'checklist', requiresTextbook: true },
     ],
   },
 ];
+
+/**
+ * The nav groups for one L2.
+ *
+ * `Tasks` is the interactive-textbook feature, and a textbook exists only for
+ * some L2s (today: `zh` — "Tasks for Life in China (HSK 4)"). For an L2 with no
+ * corpus the item is dropped entirely rather than opening an empty picker
+ * (SPEC-095 § "Initial L2 scope"). `hasTextbookForL2` reads the textbook
+ * catalogue, so a second book needs no change here.
+ */
+function navGroupsFor(l2: string): NavGroup[] {
+  if (hasTextbookForL2(l2)) return NAV_GROUPS;
+  return NAV_GROUPS.map((group) => ({
+    ...group,
+    links: group.links.filter((link) => !link.requiresTextbook),
+  }));
+}
 
 /**
  * Desktop/tablet navigation bar — each group renders a native UIMenu popover
@@ -50,6 +79,9 @@ const NAV_GROUPS: NavGroup[] = [
  */
 export function NavBar() {
   const t = useT();
+  const { l2Lang } = useLanguage();
+  // Tasks is textbook-only; see navGroupsFor.
+  const navGroups = navGroupsFor(l2Lang.code);
 
   const navigate = (href: string) => {
     // NOTE: tapping "Epub Reader" no longer closes an open book from the nav
@@ -63,7 +95,7 @@ export function NavBar() {
 
   return (
     <View className="flex-row items-center gap-1">
-      {NAV_GROUPS.map((group) => (
+      {navGroups.map((group) => (
         <MenuView
           key={group.label}
           onPressAction={({ nativeEvent }) => navigate(nativeEvent.event)}

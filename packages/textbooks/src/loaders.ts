@@ -36,6 +36,22 @@ export const TEXTBOOK_CATALOGUE: BookSummary[] = [
   { id: 'tblt-hsk4', title: 'Tasks for Life in China (HSK 4)', l2: 'zh', taskCount: 25 },
 ];
 
+/**
+ * The books that teach `l2`. **This is the only source of truth for "does this
+ * L2 have a textbook?"** — the nav item, the picker, and both apps' route
+ * guards all derive from it, so a second book is one catalogue entry and
+ * nothing else (SPEC-095 § "Initial L2 scope": non-Chinese books must not be
+ * advertised until a second corpus exists).
+ */
+export function booksForL2(l2: string): BookSummary[] {
+  return TEXTBOOK_CATALOGUE.filter((book) => book.l2 === l2);
+}
+
+/** Whether any textbook exists for `l2` — see `booksForL2`. */
+export function hasTextbookForL2(l2: string): boolean {
+  return TEXTBOOK_CATALOGUE.some((book) => book.l2 === l2);
+}
+
 type BookModule = { book: BookMeta };
 
 export const bookLoaders: Record<string, () => Promise<BookModule>> = {
