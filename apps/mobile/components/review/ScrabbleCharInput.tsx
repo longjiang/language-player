@@ -1,9 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TextInput, Animated, PanResponder, type GestureResponderEvent, type PanResponderGestureState, type LayoutChangeEvent, type NativeSyntheticEvent, type TextInputKeyPressEventData } from 'react-native';
+import { View, Text, TextInput, Animated, type LayoutChangeEvent, type NativeSyntheticEvent, type TextInputKeyPressEventData } from 'react-native';
+import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { shuffleScrabbleBlocks, type ScrabbleBlock } from '@langplayer/utils';
 import { srsLogger } from '@/lib/logger';
 
 const { log } = srsLogger;
+
+/** A point in window coordinates (what `absoluteX`/`absoluteY` report). */
+interface Point {
+  x: number;
+  y: number;
+}
 
 /**
  * Scrabble-mode block arrangement input (SPEC-066).
@@ -30,10 +37,26 @@ const { log } = srsLogger;
  * only, so the on-screen keyboard is never summoned and the block pool stays the
  * source of truth — typing just drives the same placement as a tap/drag.
  *
- * Drag uses React Native's PanResponder (no extra dependency): a ghost block
- * follows the finger in the input container's own coordinate space (measured
- * from the container origin), and on release the release point is hit-tested
- * against each slot's measured layout. A move under ~8px is a tap.
+ * **Gestures are react-native-gesture-handler, not `PanResponder`.** The card
+ * body is a `ScrollView`, and on iOS the JS-responder route cannot win against
+ * it: `onShouldBlockNativeResponder` is a no-op on iOS (it only exists on
+ * Android — see RN's `PanResponder.js` and Fabric's `RCTMountingManager.mm`,
+ * which merely calls `setIsJSResponder:`), `RCTScrollViewComponentView` only
+ * disables scroll interaction for a JS responder that is an *ancestor* of the
+ * scroll view, never a descendant, and a `PanResponder` grants the
+ * ScrollView's termination request by default. So the blocks took no taps at
+ * all, and a drag was terminated into a "tap" the moment the card scrolled.
+ * RNGH gestures are native recognizers, so they do not depend on the JS
+ * responder chain; the tile pan additionally `.blocksExternalGesture()`-es the
+ * card's scroll gesture (`Gesture.Native()`, attached by the parent), which is
+ * this repo's established answer to the same conflict (see
+ * `components/reader/PaginatedReader.tsx` and `TranslationSplitHandle.tsx`).
+ *
+ * One `Pan` with `minDistance(0)` covers both interactions, exactly as the old
+ * 8px rule did: a release that never moved is a tap, anything further is a drag
+ * hit-tested against each slot's measured layout. The ghost block follows the
+ * finger in the input container's own coordinate space (measured from the
+ * container origin).
  */
 export interface ScrabbleCharInputProps {
   /** The correct answer (the blanked surface form). Drives block count + chars. */
@@ -49,6 +72,17 @@ export interface ScrabbleCharInputProps {
    * matching pool blocks into the slots; the soft keyboard / IME is not shown.
    */
   keyboardEnabled?: boolean;
+  /**
+   * The card's native scroll gesture (`Gesture.Native()` around the ScrollView
+   * that hosts this input). The tile pan blocks it so a drag on a block moves
+   * the block instead of scrolling the card.
+   */
+  scrollGesture?: GestureType | null;
+  /**
+   * Fires while a tile gesture is in progress, so the host can also pin the
+   * card's scroll (`scrollEnabled={false}`) for the duration.
+   */
+  onTileGestureActive?: (active: boolean) => void;
 }
 
 interface SlotLayout {
@@ -62,10 +96,14 @@ interface BlockTileProps {
   block: ScrabbleBlock;
   fromSlot: number | null;
   disabled: boolean;
-  onDragStart: (block: ScrabbleBlock, fromSlot: number | null, e: GestureResponderEvent) => void;
-  onDragMove: (e: GestureResponderEvent, g: PanResponderGestureState) => void;
-  onDragRelease: (block: ScrabbleBlock, fromSlot: number | null, e: GestureResponderEvent, g: PanResponderGestureState) => void;
+  scrollGesture?: GestureType | null;
+  onDragStart: (block: ScrabbleBlock, fromSlot: number | null, at: Point) => void;
+  onDragMove: (at: Point) => void;
+  onDragRelease: (block: ScrabbleBlock, fromSlot: number | null, at: Point) => void;
+  /** A drag that ended without success (recognizer cancelled) — snap back. */
+  onDragCancel?: () => void;
   onTap: (block: ScrabbleBlock, fromSlot: number | null) => void;
+  onGestureActive?: (active: boolean) => void;
   className: string;
   /** Optional onLayout forwarded to the root View (used to record slot rects). */
   onLayout?: (e: LayoutChangeEvent) => void;
@@ -75,61 +113,82 @@ function BlockTile({
   block,
   fromSlot,
   disabled,
+  scrollGesture,
   onDragStart,
   onDragMove,
   onDragRelease,
+  onDragCancel,
   onTap,
+  onGestureActive,
   className,
   onLayout,
 }: BlockTileProps) {
-  const handlersRef = useRef({ onDragStart, onDragMove, onDragRelease, onTap });
-  handlersRef.current = { onDragStart, onDragMove, onDragRelease, onTap };
-  const movedRef = useRef(false);
+  const handlersRef = useRef({ onDragStart, onDragMove, onDragRelease, onDragCancel, onTap, onGestureActive });
+  handlersRef.current = { onDragStart, onDragMove, onDragRelease, onDragCancel, onTap, onGestureActive };
   const layoutRef = useRef(onLayout);
   layoutRef.current = onLayout;
 
-  const panResponder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: () => !disabled,
-    onMoveShouldSetPanResponder: () => !disabled,
-    // The review card lives inside a ScrollView. Once this block claims the
-    // JS responder, block the NATIVE responder (the ScrollView's pan
-    // recognizer) from stealing/cancelling the touch — otherwise a drag on a
-    // block is treated as a scroll and neither onDragMove nor onTap fires
-    // (SPEC-066 scrabble drag).
-    onShouldBlockNativeResponder: () => true,
-    onPanResponderGrant: (e) => {
-      movedRef.current = false;
-      handlersRef.current.onDragStart(block, fromSlot, e);
-      log('[srs-scrabble] grant', { char: block.char, fromSlot });
-    },
-    onPanResponderMove: (e, g) => {
-      if (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8) movedRef.current = true;
-      handlersRef.current.onDragMove(e, g);
-    },
-    onPanResponderRelease: (e, g) => {
-      log('[srs-scrabble] release', { char: block.char, fromSlot, moved: movedRef.current, dx: g.dx, dy: g.dy });
-      if (movedRef.current) {
-        handlersRef.current.onDragRelease(block, fromSlot, e, g);
-      } else {
-        handlersRef.current.onTap(block, fromSlot);
-      }
-      movedRef.current = false;
-    },
-    onPanResponderTerminate: () => {
-      log('[srs-scrabble] terminate', { char: block.char, fromSlot });
-      handlersRef.current.onTap(block, fromSlot); // snap back / treat as tap
-      movedRef.current = false;
-    },
-  }), [block, fromSlot, disabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  const gesture = useMemo(() => {
+    // Two recognizers, not one: a pan only reaches ACTIVE on a touch-move
+    // event, so a pan alone would silently drop a tap that never moves a
+    // pixel. `Exclusive` gives the drag priority and lets the tap recognise
+    // once the drag has failed — i.e. when the finger lifts before the
+    // threshold, which is exactly SPEC-066's "a short click that drifts a few
+    // pixels still places the block".
+    const drag = Gesture.Pan()
+      .enabled(!disabled)
+      // Same 8px threshold the input always used: below it, the release is a tap.
+      .minDistance(8)
+      .maxPointers(1)
+      .shouldCancelWhenOutside(false)
+      // Required: these callbacks touch React state and `Animated` values, so
+      // they must run on the JS thread (no worklets in this app — ADR-0016).
+      .runOnJS(true)
+      .onStart((e) => {
+        log('[srs-scrabble] drag-start', { char: block.char, fromSlot, x: e.absoluteX, y: e.absoluteY });
+        handlersRef.current.onGestureActive?.(true);
+        handlersRef.current.onDragStart(block, fromSlot, { x: e.absoluteX, y: e.absoluteY });
+      })
+      .onUpdate((e) => {
+        handlersRef.current.onDragMove({ x: e.absoluteX, y: e.absoluteY });
+      })
+      .onEnd((e) => {
+        log('[srs-scrabble] drag-release', { char: block.char, fromSlot, x: e.absoluteX, y: e.absoluteY });
+        handlersRef.current.onDragRelease(block, fromSlot, { x: e.absoluteX, y: e.absoluteY });
+      })
+      .onFinalize((_e, success) => {
+        // A drag that was cancelled (a competing recognizer won, the system
+        // interrupted it) must snap back, never place or clear a block.
+        if (!success) handlersRef.current.onDragCancel?.();
+        handlersRef.current.onGestureActive?.(false);
+      });
+
+    const tap = Gesture.Tap()
+      .enabled(!disabled)
+      // Generous, so a slow but motionless tap is still a tap; the drag's 8px
+      // threshold is what actually separates the two.
+      .maxDuration(2000)
+      .maxDistance(12)
+      .runOnJS(true)
+      .onEnd((_e, success) => {
+        log('[srs-scrabble] tap', { char: block.char, fromSlot, success });
+        if (success) handlersRef.current.onTap(block, fromSlot);
+      });
+
+    // A drag on a block must not scroll the card. The scroll view's own
+    // recognizer is a native gesture handler, so blocking it has to happen at
+    // the native level — the JS responder cannot do it on iOS.
+    return scrollGesture
+      ? Gesture.Exclusive(drag.blocksExternalGesture(scrollGesture), tap.blocksExternalGesture(scrollGesture))
+      : Gesture.Exclusive(drag, tap);
+  }, [block, fromSlot, disabled, scrollGesture]);
 
   return (
-    <View
-      {...panResponder.panHandlers}
-      onLayout={layoutRef.current}
-      className={className}
-    >
-      <Text className="text-lg font-medium text-foreground">{block.char}</Text>
-    </View>
+    <GestureDetector gesture={gesture}>
+      <View onLayout={layoutRef.current} className={className}>
+        <Text className="text-lg font-medium text-foreground">{block.char}</Text>
+      </View>
+    </GestureDetector>
   );
 }
 
@@ -139,6 +198,8 @@ export function ScrabbleCharInput({
   disabled = false,
   label,
   keyboardEnabled = false,
+  scrollGesture = null,
+  onTileGestureActive,
 }: ScrabbleCharInputProps) {
   // Shuffle ONCE per answer (the component is remounted per card via a `key`).
   const [blocks] = useState<ScrabbleBlock[]>(() => shuffleScrabbleBlocks(answer));
@@ -159,6 +220,20 @@ export function ScrabbleCharInput({
   const ghostX = useRef(new Animated.Value(0)).current;
   const ghostY = useRef(new Animated.Value(0)).current;
   const kbInputRef = useRef<TextInput | null>(null);
+
+  // Mount diagnostic (SPEC-066 device debugging): the block gestures are native
+  // recognizers now, so the useful evidence is whether this component is on
+  // screen at all and whether the host passed the card's scroll gesture down.
+  useEffect(() => {
+    log('[srs-scrabble] input mounted', {
+      answer,
+      slotCount,
+      blocks: blocks.length,
+      keyboardEnabled,
+      scrollGesture: scrollGesture != null,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // The block array is SHUFFLED in place, so array index ≠ block id. Look up
   // blocks by their stable id (never by array index) so the ghost and the
@@ -222,7 +297,7 @@ export function ScrabbleCharInput({
     };
   }, []);
 
-  const onDragStart = useCallback((_block: ScrabbleBlock, _fromSlot: number | null, e: GestureResponderEvent) => {
+  const onDragStart = useCallback((_block: ScrabbleBlock, _fromSlot: number | null, at: Point) => {
     if (disabled || submittedRef.current) return;
     draggingIdRef.current = _block.id;
     setDraggingId(_block.id);
@@ -231,19 +306,19 @@ export function ScrabbleCharInput({
       containerOrigin.current = { x, y };
     });
     // Put the ghost at the finger (window) position; transform converts below.
-    setDragGhost({ x: e.nativeEvent.pageX, y: e.nativeEvent.pageY });
-    ghostX.setValue(e.nativeEvent.pageX);
-    ghostY.setValue(e.nativeEvent.pageY);
+    setDragGhost({ x: at.x, y: at.y });
+    ghostX.setValue(at.x);
+    ghostY.setValue(at.y);
   }, [disabled, ghostX, ghostY]);
 
-  const onDragMove = useCallback((_e: GestureResponderEvent, g: PanResponderGestureState) => {
+  const onDragMove = useCallback((at: Point) => {
     if (draggingIdRef.current == null) return;
-    ghostX.setValue(g.moveX);
-    ghostY.setValue(g.moveY);
-    setDragGhost({ x: g.moveX, y: g.moveY });
+    ghostX.setValue(at.x);
+    ghostY.setValue(at.y);
+    setDragGhost({ x: at.x, y: at.y });
   }, [ghostX, ghostY]);
 
-  const onDragRelease = useCallback((_block: ScrabbleBlock, fromSlot: number | null, _e: GestureResponderEvent, g: PanResponderGestureState) => {
+  const onDragRelease = useCallback((_block: ScrabbleBlock, fromSlot: number | null, at: Point) => {
     const blockId = draggingIdRef.current;
     if (blockId == null) return;
     const origin = containerOrigin.current;
@@ -254,7 +329,7 @@ export function ScrabbleCharInput({
       if (!layout) continue;
       const wx = origin.x + layout.x;
       const wy = origin.y + layout.y;
-      if (g.moveX >= wx && g.moveX <= wx + layout.w && g.moveY >= wy && g.moveY <= wy + layout.h) {
+      if (at.x >= wx && at.x <= wx + layout.w && at.y >= wy && at.y <= wy + layout.h) {
         target = i;
         break;
       }
@@ -264,14 +339,13 @@ export function ScrabbleCharInput({
     } else if (fromSlot != null) {
       removeFromSlot(fromSlot);
     }
-    log('[srs-scrabble] drag-release', { blockId, char: blockByKey.get(blockId)?.char ?? '', fromSlot, target, moveX: g.moveX, moveY: g.moveY, origin });
+    log('[srs-scrabble] drag-release', { blockId, char: blockByKey.get(blockId)?.char ?? '', fromSlot, target, x: at.x, y: at.y, origin });
     draggingIdRef.current = null;
     setDraggingId(null);
     setDragGhost(null);
   }, [placeBlock, removeFromSlot, blockByKey]);
 
-  const onTap = useCallback((block: ScrabbleBlock, fromSlot: number | null) => {
-    if (disabled || submittedRef.current) return;
+  const onTap = useCallback((block: ScrabbleBlock, fromSlot: number | null) => {    if (disabled || submittedRef.current) return;
     log('[srs-scrabble] tap', { char: block.char, id: block.id, fromSlot, disabled, submitted: submittedRef.current, slots });
     if (fromSlot != null) removeFromSlot(fromSlot);
     else placeBlock(block.id);
@@ -279,6 +353,19 @@ export function ScrabbleCharInput({
     setDraggingId(null);
     setDragGhost(null);
   }, [disabled, removeFromSlot, placeBlock, slots]);
+
+  /**
+   * A drag the recognizer cancelled — the arrangement must be left exactly as
+   * it was. (The old `onPanResponderTerminate` called `onTap` here, so a drag
+   * the ScrollView interrupted silently placed or cleared a block.)
+   */
+  const onDragCancel = useCallback(() => {
+    if (draggingIdRef.current == null) return;
+    log('[srs-scrabble] drag-cancelled', { blockId: draggingIdRef.current });
+    draggingIdRef.current = null;
+    setDraggingId(null);
+    setDragGhost(null);
+  }, []);
 
   // ── Physical-keyboard fill (SPEC-066) ──────────────────────────────────
   // A hidden focused TextInput (soft keyboard suppressed) receives hardware
@@ -356,10 +443,13 @@ export function ScrabbleCharInput({
               block={block ?? { id: -1, char: '' }}
               fromSlot={i}
               disabled={disabled || !block}
+              scrollGesture={scrollGesture}
               onDragStart={onDragStart}
               onDragMove={onDragMove}
               onDragRelease={onDragRelease}
+              onDragCancel={onDragCancel}
               onTap={onTap}
+              onGestureActive={onTileGestureActive}
               className={`${slotBase} ${block ? 'border-primary bg-primary/5' : 'border-border'} ${block ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
               onLayout={recordSlotLayout(i)}
             />
@@ -375,10 +465,13 @@ export function ScrabbleCharInput({
             block={b}
             fromSlot={null}
             disabled={disabled}
+            scrollGesture={scrollGesture}
             onDragStart={onDragStart}
             onDragMove={onDragMove}
             onDragRelease={onDragRelease}
+            onDragCancel={onDragCancel}
             onTap={onTap}
+            onGestureActive={onTileGestureActive}
             className={`${poolBase} ${disabled ? 'opacity-60' : 'cursor-grab active:cursor-grabbing'} ${draggingId === b.id ? 'opacity-20' : ''}`}
           />
         ))}
