@@ -64,6 +64,7 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { SpellCharInput } from '@/components/review/SpellCharInput';
 import { ScrabbleCharInput } from '@/components/review/ScrabbleCharInput';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { lemmatizeText } from '@/lib/tokenizer';
 import {
   enqueueLookupWords,
@@ -249,6 +250,13 @@ export default function ReviewScreen() {
   const router = useRouter();
   const { isSm } = useResponsive();
   const { isPro } = useSubscription();
+
+  // The card's scroll view, declared as a native gesture handler so the scrabble
+  // tiles can block it while a block is being dragged (see the card's ScrollView
+  // comment). `cardScrollPinned` is the belt-and-braces half: scrolling is
+  // disabled outright for the duration of a block gesture.
+  const cardScrollGesture = useMemo(() => Gesture.Native(), []);
+  const [cardScrollPinned, setCardScrollPinned] = useState(false);
 
   const { savedWords, loaded: wordsLoaded, cloudHydrated: savedWordsCloudHydrated, getPendingPutWordIds } = useSavedWords();
   const {
@@ -2005,12 +2013,20 @@ export default function ReviewScreen() {
         <View className={`max-h-full rounded-xl border border-border bg-card ${isSm ? 'p-8' : 'p-4'}`}>
           {/* The review card hosts spell/scrabble inputs. Without
               keyboardShouldPersistTaps the ScrollView swallows taps meant for
-              the spell TextInput (no keyboard on tap) and the scrabble blocks
-              (unresponsive) — the same class of ScrollView gesture bug the
-              scrabble PanResponder's onShouldBlockNativeResponder addresses,
-              but for tap-to-focus/keyboard persistence. Every other
-              text-input ScrollView in the app sets this (SPEC-066). */}
-          <ScrollView keyboardShouldPersistTaps="handled">
+              the spell TextInput (no keyboard on tap) — every other
+              text-input ScrollView in the app sets this (SPEC-066).
+
+              The scrabble blocks need more than that: on iOS a JS-responder
+              component inside a ScrollView can neither block the scroll
+              (`onShouldBlockNativeResponder` is Android-only, and
+              RCTScrollViewComponentView only honours a JS responder that is an
+              ancestor of the scroll view) nor keep a gesture the scroll view has
+              claimed. So the scroll view is declared here as a native gesture
+              handler (`Gesture.Native()`, the PaginatedReader pattern) and the
+              scrabble tiles block it; `cardScrollPinned` additionally disables
+              scrolling outright for the duration of a block gesture. */}
+          <GestureDetector gesture={cardScrollGesture}>
+            <ScrollView keyboardShouldPersistTaps="handled" scrollEnabled={!cardScrollPinned}>
             {/* Context sentences — loop over saved word instances */}
           {instances.length === 0 ? (
             /* No saved context (e.g. word saved from dictionary search):
@@ -2311,6 +2327,7 @@ export default function ReviewScreen() {
           )}
 
           </ScrollView>
+          </GestureDetector>
         </View>
       </View>
 

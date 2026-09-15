@@ -928,6 +928,24 @@ answer:
   Because a short click that drifts a few pixels still places the block (it is
   not mistaken for an aborted drag), a misplaced block can be fixed before the
   last slot auto-submits.
+- **Gesture layer (mobile)** — the tiles are driven by
+  `react-native-gesture-handler`, **not** `PanResponder`. The card body is a
+  `ScrollView`, and on iOS the JS-responder route cannot win against it:
+  `onShouldBlockNativeResponder` is a no-op there (RN's `PanResponder.js` marks
+  it Android-only and Fabric's `RCTMountingManager.mm` only calls
+  `setIsJSResponder:`), `RCTScrollViewComponentView` disables scroll interaction
+  only for a JS responder that is an *ancestor* of the scroll view, and a
+  `PanResponder` grants the ScrollView's termination request by default. In
+  practice the tiles took no taps at all and a drag was terminated into a "tap"
+  as soon as the card scrolled (commit `475653ff`'s flag fixed neither). The
+  current wiring is `Gesture.Exclusive(Pan().minDistance(8), Tap())` per tile
+  (two recognizers because a pan only reaches ACTIVE on a touch-move, so a
+  pan alone drops a tap that never moves), with `runOnJS(true)` (no worklets —
+  ADR-0016) and the card's `ScrollView` declared as a native gesture
+  (`Gesture.Native()` inside a `GestureDetector`, the `PaginatedReader`
+  pattern) that each tile gesture `.blocksExternalGesture()`-es. The host also
+  disables the card's scrolling for the duration of a tile gesture.
+  A cancelled drag snaps back and never places or clears a block.
 - **Auto-submit** — filling the **last** slot automatically submits the arranged
   word. There is **no submit button** (unlike spell mode, which has one).
 - **No hints** — scrabble mode shows **no** first-character hint (neither the
@@ -1194,6 +1212,7 @@ orphaned.
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
 | 18 | Reconcile local-only cards | `useSrs` dropped local-only cards against the server deck (2026-09-07) | `refreshFromCache()` does the same | **Resolved (2026-09-07)** — web now reconciles stale server-absent local cards against the authoritative deck, matching the mobile pull-merge reconcile, so the new/again/review header counts converge across devices/browsers |
 | 19 | Scrabble keyboard-fill | Hidden `<input>`, reliable on any desktop keyboard | Hidden `TextInput` with `showSoftInputOnFocus={false}`; relies on hardware-keyboard support, whose availability/behaviour varies by device & OS | Both gate on `supportsScrabbleKeyboard` and use a hidden focused field that never summons the soft keyboard/IME; mobile is best-effort for physical keyboards (on-screen touch blocks remain the primary input there). Web's rate/reveal/undo shortcuts ignore this field's keystrokes. |
+| 20 | Scrabble tap/drag layer | Pointer events with pointer capture + a 5px drag threshold | `react-native-gesture-handler` `Exclusive(Pan(8px), Tap())` per tile, composed with the card's native scroll gesture | **Resolved (2026-09-15)** — the mobile tiles previously used `PanResponder`, which iOS cannot shield from the card's `ScrollView`: taps never reached a tile and a drag scrolled the card. Mobile now uses native recognizers and blocks the card's scroll gesture. |
 
 ## Implementation Status (2026-08-11)
 
@@ -1359,6 +1378,13 @@ orphaned.
   `scoreSpellResult`, and the same-language rephrasing applies to scrabble too.
   New `review.scrabble_mode` ("Scrabble mode") and `review.scrabble_prompt`
   ("Arrange the letters") labels are added.
+  **Fixed 2026-09-15:** the mobile tiles were unresponsive on iOS — tap did
+  nothing and a drag scrolled the card — because the input used `PanResponder`
+  inside the card's `ScrollView`, whose `onShouldBlockNativeResponder` is
+  Android-only. Mobile now uses RNGH gestures and blocks the card's scroll
+  gesture; see [Scrabble mode](#scrabble-mode) for the mechanism. The earlier
+  comment in `review.tsx` claiming the JS responder addressed this was wrong on
+  iOS and is corrected.
 - ✅ **Scrabble physical-keyboard fill** — implemented (both review pages +
   shared utils): for non-IME L2s (`supportsScrabbleKeyboard`) a hidden focused
   field captures a physical keyboard (web `<input>`; mobile `TextInput` with
