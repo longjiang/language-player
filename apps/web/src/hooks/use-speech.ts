@@ -146,9 +146,16 @@ export function useSpeech() {
     return speechSynthesisOrNull()?.getVoices() ?? [];
   }, []);
 
-  /** Build a Wiktionary Commons audio URL from a filename. */
+  /**
+   * Build a Wiktionary Commons audio URL from a filename.
+   *
+   * Same-origin via `/api/asset-proxy`: Wikimedia's projects have been blocked
+   * in mainland China since 2019, so the audio has to be fetched server-side
+   * (ADR-0046). The proxy follows the `Special:FilePath` redirect.
+   */
   const wiktionaryAudioUrl = useCallback((filename: string): string => {
-    return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
+    const upstream = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
+    return `/api/asset-proxy?u=${encodeURIComponent(upstream)}`;
   }, []);
 
   return {

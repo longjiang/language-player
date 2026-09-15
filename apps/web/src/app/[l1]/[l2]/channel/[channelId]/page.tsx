@@ -81,7 +81,8 @@ export default function ChannelPage() {
       {channel && (
         <div className="mb-8 flex items-center gap-4 rounded-xl border border-border bg-card p-6">
           <img
-            src={channel.thumbnail || 'https://www.youtube.com/favicon.ico'}
+            /* Local fallback asset — youtube.com is blocked in China (ADR-0046). */
+            src={channel.thumbnail || '/img/channel-placeholder.svg'}
             alt=""
             className="h-16 w-16 rounded-full object-cover"
           />

@@ -37,11 +37,16 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 
 const log = appLog;
 
-/** Google favicon for a URL's host — mirrors the web reader suggestion cards. */
+/**
+ * The site's own favicon for a URL's host — mirrors the web reader suggestion
+ * cards. Google's `s2/favicons` service is blocked in mainland China, so it
+ * showed nothing there (ADR-0046); a site without a root favicon renders no
+ * icon, as before.
+ */
 function faviconUrl(url: string): string {
   try {
     const host = new URL(url).hostname;
-    return host ? `https://www.google.com/s2/favicons?domain=${host}&sz=32` : '';
+    return host ? `https://${host}/favicon.ico` : '';
   } catch {
     return '';
   }
