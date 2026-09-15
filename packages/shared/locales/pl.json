@@ -907,6 +907,7 @@
         "dont_have_account": "Nie masz konta?",
         "dont_have_an_account": "Nie masz konta?",
         "download_failed": "Pobieranie nie powiodło się — Dotknij, aby spróbować ponownie",
+        "download_offline_dict_prompt": "Pobrać słownik offline dla języka {language}? Dzięki temu sprawdzisz słowa bez połączenia z internetem.",
         "drop_epub_here": "Upuść plik EPUB tutaj lub kliknij, aby przeglądać",
         "drop_images_here": "Upuść pliki obrazów tutaj lub kliknij, aby przeglądać",
         "drop_media_here": "Upuść plik wideo lub audio tutaj",

@@ -907,6 +907,7 @@
         "dont_have_account": "Chưa có tài khoản?",
         "dont_have_an_account": "Bạn chưa có tài khoản?",
         "download_failed": "Tải xuống thất bại — Chạm để thử lại",
+        "download_offline_dict_prompt": "Tải từ điển ngoại tuyến cho {language}? Sau đó bạn có thể tra từ mà không cần kết nối internet.",
         "drop_epub_here": "Thả tệp EPUB vào đây hoặc nhấp để duyệt",
         "drop_images_here": "Thả tệp hình ảnh vào đây hoặc nhấp để duyệt",
         "drop_media_here": "Thả tệp video hoặc âm thanh vào đây",

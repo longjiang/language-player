@@ -83,6 +83,20 @@ tested and ready for shipping**; checks without a ✅/⚠️ marker are marked
 - Skip boot-time auth refresh while Offline Mode is on so an expired access
   token does not log the user out; refresh happens naturally after the user
   returns online.
+- **The same holds for genuinely being offline, toggle or not.** A boot-time
+  refresh only ends the session when the server *rejects* the refresh token (a
+  4xx on `/auth/refresh`, or no stored refresh token at all). A refresh that
+  could not be attempted — `fetch` throwing, a 5xx, a 200 with no token — is
+  inconclusive and keeps the stored session. Otherwise starting the app offline
+  with an expired access token logs the learner out, and they cannot log back in
+  while they are still offline. `doRefreshAccessToken()` in
+  `apps/mobile/contexts/AuthContext.tsx` therefore returns
+  `refreshed | rejected | unreachable`, where it previously collapsed all four
+  failure modes into `null` and the caller answered `null` by deleting
+  `authToken`, `authRefreshToken` and `userInfo`.
+- Boot skips the refresh altogether when `isOfflineModeEnabled() ||
+  getConnectivity() === 'offline'`, so an offline start never makes a doomed
+  request; the next call after going online refreshes normally.
 - When Offline Mode is turned off, networking resumes immediately and cloud
   settings hydration retries if it was blocked at startup.
 
@@ -878,6 +892,14 @@ These checks have no ✅/⚠️ result yet and should be run later:
   session, but the value will not survive restart.
 - **Offline Mode on at boot with an expired token** — session is preserved;
   the next network call after going online triggers the normal refresh path.
+- **Offline at boot with an expired token** (no Offline Mode — just no network) —
+  session is preserved as well: the refresh is skipped when connectivity is
+  already known to be offline, and a refresh that fails to reach the server
+  keeps the session rather than clearing it. Only a server-side rejection of the
+  refresh token is a logout.
+- **Server unreachable but not offline** (5xx, a proxy error page, DNS failure) —
+  also not a logout: the refresh is inconclusive, so the stored session stays and
+  the next successful attempt settles it.
 - **Cloud settings load fails while offline** — `cloudLoaded` is reset so
   hydration retries when Offline Mode is turned off.
 - **Dictionary download blocked mid-flight** — the gate only blocks new

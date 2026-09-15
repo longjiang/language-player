@@ -907,6 +907,7 @@
         "dont_have_account": "Sie haben noch kein Konto?",
         "dont_have_an_account": "Sie haben noch kein Konto?",
         "download_failed": "Download fehlgeschlagen — Zum Wiederholen tippen",
+        "download_offline_dict_prompt": "Offline-Wörterbuch für {language} herunterladen? Danach kannst du Wörter ohne Internetverbindung nachschlagen.",
         "drop_epub_here": "EPUB-Datei hier ablegen oder zum Durchsuchen klicken",
         "drop_images_here": "Bilddateien hierher ziehen oder zum Durchsuchen klicken",
         "drop_media_here": "Video- oder Audiodatei hier ablegen",

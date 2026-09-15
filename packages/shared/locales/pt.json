@@ -907,6 +907,7 @@
         "dont_have_account": "Não tem uma conta?",
         "dont_have_an_account": "Não tem uma conta?",
         "download_failed": "Falha no download — Toque para tentar novamente",
+        "download_offline_dict_prompt": "Baixar o dicionário offline de {language}? Assim você poderá consultar palavras sem conexão com a internet.",
         "drop_epub_here": "Solte um arquivo EPUB aqui ou clique para procurar",
         "drop_images_here": "Solte arquivos de imagem aqui ou clique para procurar",
         "drop_media_here": "Solte um arquivo de vídeo ou áudio aqui",
