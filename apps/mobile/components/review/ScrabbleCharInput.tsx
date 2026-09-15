@@ -403,6 +403,18 @@ export function ScrabbleCharInput({
     }
   }, [keyboardEnabled, disabled]);
 
+  /**
+   * Tile classes are deliberately free of `cursor-*` and `active:` / `hover:` /
+   * `focus:` — there is no pointer on a phone, and on native a pseudo-class
+   * makes css-interop upgrade the View to a Pressable. These tiles change
+   * classes at runtime (an empty slot gains `border-primary` when a block lands
+   * on it), so such an upgrade happens *after* the initial render, and
+   * css-interop then prints an upgrade warning whose `stringify(props)` walk
+   * crashes the screen with "Couldn't find a navigation context" — the tiles
+   * were unsorted between `cursor-default` and `active:cursor-grabbing` and the
+   * first successful tap took the whole review page down. (AGENTS.md's porting
+   * table says to drop web-only pseudo-classes; this is why.)
+   */
   const slotBase = 'h-11 w-10 items-center justify-center rounded-lg border';
   const poolBase = 'h-11 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm';
 
@@ -450,7 +462,7 @@ export function ScrabbleCharInput({
               onDragCancel={onDragCancel}
               onTap={onTap}
               onGestureActive={onTileGestureActive}
-              className={`${slotBase} ${block ? 'border-primary bg-primary/5' : 'border-border'} ${block ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+              className={`${slotBase} ${block ? 'border-primary bg-primary/5' : 'border-border'}`}
               onLayout={recordSlotLayout(i)}
             />
           );
@@ -472,7 +484,7 @@ export function ScrabbleCharInput({
             onDragCancel={onDragCancel}
             onTap={onTap}
             onGestureActive={onTileGestureActive}
-            className={`${poolBase} ${disabled ? 'opacity-60' : 'cursor-grab active:cursor-grabbing'} ${draggingId === b.id ? 'opacity-20' : ''}`}
+            className={`${poolBase} ${disabled ? 'opacity-60' : ''} ${draggingId === b.id ? 'opacity-20' : ''}`}
           />
         ))}
       </View>
