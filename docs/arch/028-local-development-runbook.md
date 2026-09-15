@@ -6,7 +6,7 @@
 - **Type**: reference
 - **Status**: draft
 - **Created**: 2026-08-13
-- **Last Updated**: 2026-08-16
+- **Last Updated**: 2026-09-15
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (active), Admin (active), Mobile (active), Chrome Extension (active), Classic Nuxt (reference), Flask backend
 - **See also**:
@@ -291,6 +291,14 @@ The development build is a native binary with all SDK 57 modules. It still
 needs Metro running to load its JS bundle. This workflow is for **physical
 devices only** — for the iOS Simulator use Workflow 1 (Expo Go).
 
+> **Routine path — don't build if you don't have to.** When a dev build is
+> already retained in `.dev-builds/`, don't build: run
+> `node scripts/install-dev-build.mjs --device <udid>` — see
+> [Install a retained dev build onto the device](#install-a-retained-dev-build-onto-the-device-lan-change-proof).
+> That section installs and launches the existing artifact using the Mac's
+> *current* LAN IP, so it keeps working when the network changes — the build
+> steps below are only needed when no retained build suits.
+
 #### Check for an existing build first
 
 A dev build may already exist on this machine — don't rebuild if a usable one
@@ -334,7 +342,9 @@ is found. Check in this order:
    then inspect `ProvisionedDevices` (hardware UDIDs) and `ExpirationDate`.
    `security` also fails inside a restricted sandbox.
 5. Install **only if the target device's hardware UDID is in the profile**:
-   `xcrun devicectl device install app --device <devicectl-identifier> /path/to/App.app`
+   `xcrun devicectl device install app --device <udid|identifier> /path/to/App.app`
+   — prefer the hardware UDID; see
+   [Install a retained dev build onto the device](#install-a-retained-dev-build-onto-the-device-lan-change-proof)
 
 **Worked example (2026-08-14):** the cached 3.0.0 build was provisioned for 6
 devices, including the iPad Air 11-inch M4 (`00008132-000261A41EFA401C`) and
@@ -348,7 +358,10 @@ iPad with:
   must be running and `EXPO_PUBLIC_API_URL` must point at the Mac's LAN IP
   (never `127.0.0.1`) or the app cannot reach the Flask backend from the
   device. (For builds made by `dev-build.mjs`, `ip.txt` is baked in and the
-  app finds Metro at `http://<mac-lan-ip>:8081` automatically.)
+  app finds Metro at `http://<mac-lan-ip>:8081` **automatically — but only for
+  the IP that was current at build time**. If the LAN changed since the build,
+  the app opens to a redbox instead; see
+  [Install a retained dev build onto the device](#install-a-retained-dev-build-onto-the-device-lan-change-proof).)
 - Installing a dev build replaces any installed app with the same bundle ID
   (TestFlight/App Store included) — they cannot coexist on one device.
 
@@ -394,6 +407,141 @@ sure"), requires Metro already running (`npx expo start` above), and bakes
 `ip.txt` so the device finds Metro at `http://<mac-lan-ip>:8081`. To show the
 exact commit in the About dialog, start Metro with
 `EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) npx expo start`.
+
+#### Install a retained dev build onto the device (LAN-change-proof)
+
+This is the routine path: the artifact already exists in `.dev-builds/`, so
+there is nothing to build. Every command below derives the current LAN IP at
+run time, so the procedure keeps working after the network changes — which is
+exactly what breaks the "just open the app" flow.
+
+**One command does steps 1–4 for you:**
+
+```bash
+node scripts/install-dev-build.mjs --device 00008132-000261A41EFA401C
+```
+
+It picks the newest retained artifact, verifies it against the ledger,
+resolves the device, derives the current LAN IP, refuses to launch when Metro
+isn't reachable, warns when `apps/mobile/.env` points at a stale API host,
+installs, and launches with the `-RCT_jsLocation` override — retrying once if
+the CoreDevice tunnel drops. `--dry-run` prints the plan without touching the
+device, `--no-launch` installs only, and `--device` is required whenever more
+than one iOS device is reachable (the script lists the candidates by UDID when
+you omit it). The steps below are the same procedure by hand — read them to
+understand or debug what the script does.
+
+**The two values that go stale when the LAN changes**
+
+| Value | Set when | Stale symptom | Fix without a rebuild |
+|---|---|---|---|
+| Metro host for the device (`ip.txt` inside the `.app`) | build time — `react-native-xcode.sh` runs `ipconfig getifaddr en0` | redbox **"No script URL provided … unsanitizedScriptURLString = (null)"** | `-RCT_jsLocation <lan-ip>:8081` launch argument (step 4), or dev menu → Configure Bundler |
+| Backend URL (`EXPO_PUBLIC_API_URL`) | Metro start — inlined into the bundle at serve time | JS loads, but every Flask call fails | restart Metro with the current IP (step 2) |
+
+Android's equivalent of `ip.txt` is the `debug_http_host` preference; the same
+"the host is stored, not derived" problem applies (see the Android section).
+
+**1. Find the device's hardware UDID**
+
+```bash
+xcrun devicectl list devices --json-output /tmp/devices.json
+python3.10 -c "import json;[print(d['deviceProperties']['name'], d['hardwareProperties']['udid']) for d in json.load(open('/tmp/devices.json'))['result']['devices']]"
+```
+
+Address devices by **hardware UDID**: it is stable across re-pairing and
+network changes, unlike the CoreDevice UUID that `list devices` prints as
+`Identifier` (and that UUID is *not* the UDID stored in provisioning
+profiles). Known devices:
+
+| Device | Hardware UDID |
+|---|---|
+| iPad Air 11-inch M4 | `00008132-000261A41EFA401C` |
+| iPhone 15 Pro Max | `00008130-0016691A3A78001C` |
+
+**2. Start Metro with the current IP** (check `lsof -ti:8081` first — one
+instance only)
+
+```bash
+cd apps/mobile
+source ~/.nvm/nvm.sh && nvm use 22
+export EXPO_PUBLIC_API_URL=http://$(ipconfig getifaddr en0):5001
+ulimit -n 65536 && npx expo start
+```
+
+The exported value wins over `apps/mobile/.env` — Expo never overwrites a key
+that is already defined in the shell environment — so you don't have to edit
+`.env` when the LAN changes. `EXPO_PUBLIC_*` is inlined at **serve** time:
+after changing it, restart Metro rather than just reloading the app.
+
+**3. Unzip the newest retained dev build**
+
+```bash
+node scripts/verify-dev-build.mjs latest        # prove which commit it mirrors
+unzip -q "$(ls -t .dev-builds/lp-dev-*.zip | head -1)" -d /tmp/lp-dev
+```
+
+Check which Metro host the build was made with, before installing:
+
+```bash
+unzip -p "$(ls -t .dev-builds/lp-dev-*.zip | head -1)" 'LanguagePlayer3.app/ip.txt'
+ipconfig getifaddr en0                          # compare with the current LAN IP
+```
+
+If both match, the app will find Metro on launch and you can skip the
+`-RCT_jsLocation` override in step 4. If they differ (the usual case after any
+network change), keep step 4 as written.
+
+**4. Install and launch, pointed at the current Metro**
+
+```bash
+LAN_IP=$(ipconfig getifaddr en0)
+UDID=00008132-000261A41EFA401C        # iPad Air M4
+
+xcrun devicectl device install app --device $UDID /tmp/lp-dev/LanguagePlayer3.app
+
+xcrun devicectl device process launch --device $UDID --terminate-existing \
+  ca.zerotohero.go -- -RCT_jsLocation "$LAN_IP:8081"
+```
+
+⚠️ The `--` is required. Without it `devicectl` parses `-RCT_jsLocation` as one
+of its own flags and fails with `Missing value for '-t <seconds>'`.
+
+Why this beats a rebuild: `RCTBundleURLProvider` resolves the packager host as
+`jsLocation` first — the `NSUserDefaults` key `RCT_jsLocation`, which is stored
+in the highest-priority *argument* domain when passed on the command line —
+and only then falls back to the `ip.txt` baked into the bundle
+(`node_modules/react-native/React/Base/RCTBundleURLProvider.mm`,
+`packagerServerHostPort`). So the launch argument overrides a stale `ip.txt`
+with no rebuild. (`jsLocation` is honored only while the packager is actually
+reachable, which is why step 2 comes first.)
+
+**5. Make it stick.** With the app running, shake → dev menu →
+**Configure Bundler** → `<lan-ip>:8081`. That persists `RCT_jsLocation`, so
+ordinary launches from the home screen work from then on — until the LAN
+changes again, at which point this section takes a minute to redo.
+
+**Troubleshooting**
+
+- **Redbox "No script URL provided … unsanitizedScriptURLString = (null)"** —
+  the build's `ip.txt` points at an IP this Mac no longer has, so
+  `guessPackagerHost` finds nothing and `jsBundleURL` is nil. Fix with step 4.
+  **Shake will not open the dev menu in this state** — `RCTDevMenu`'s
+  `showOnShake` only presents the menu when the window hierarchy already
+  contains an `RCTView` (`React/CoreModules/RCTDevMenu.mm:234-248`), which
+  requires a rendered bundle. So with no bundle there is no way in from the
+  UI; the launch argument is the fix, not the menu.
+- **Never edit `ip.txt` inside the `.app`** — it is covered by the code
+  signature (`_CodeSignature/CodeResources`), so the install is rejected.
+- **`A connection to this device could not be established`
+  (`CoreDeviceError error 4000`)**, especially right after the device has been
+  idle — the CoreDevice tunnel was down; this is a transport failure, not a
+  signing or build problem. Wake and unlock the device and re-run the command;
+  probing with `xcrun devicectl device info details --device <udid>` usually
+  brings the tunnel up on its own. In `list devices --json-output`, a device
+  showing `transportType: localNetwork` with `tunnelState: disconnected` is
+  reached over Wi-Fi — a USB-C cable gives a far more reliable wired tunnel.
+- **`devicectl` and `security cms -D` fail inside a restricted sandbox** —
+  they talk to CoreDeviceService; run them from a normal terminal.
 
 #### Android (physical device)
 
