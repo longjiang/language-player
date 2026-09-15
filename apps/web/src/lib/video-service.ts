@@ -232,9 +232,21 @@ export async function getSyncedSubtitles(
   }
 }
 
-/** Build a YouTube thumbnail URL from a video ID. */
+/**
+ * Build a YouTube thumbnail URL from a video ID.
+ *
+ * Same-origin via `/api/asset-proxy`, never `img.youtube.com` directly:
+ * YouTube's image hosts are blocked in mainland China, so the browser must not
+ * request them (ADR-0046). The server still fetches the same bytes, so nothing
+ * changes anywhere the host is reachable — the thumbnail simply arrives through
+ * our own domain.
+ *
+ * The URL is relative, which is what an `<img src>` wants. Where it has to be
+ * absolute (an `og:image`, which a crawler never resolves against our origin),
+ * prefix it with the site URL — see the watch page's `generateMetadata`.
+ */
 export function youtubeThumbnail(youtubeId: string, quality: 'default' | 'mqdefault' | 'hqdefault' | 'maxresdefault' = 'mqdefault'): string {
-  return `https://img.youtube.com/vi/${youtubeId}/${quality}.jpg`;
+  return `/api/asset-proxy?u=${encodeURIComponent(`https://img.youtube.com/vi/${youtubeId}/${quality}.jpg`)}`;
 }
 
 /** Build a YouTube watch URL. */

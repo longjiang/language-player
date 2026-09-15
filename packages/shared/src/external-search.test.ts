@@ -16,7 +16,7 @@ describe('external-search builder (SPEC-094)', () => {
       l1Han: false,
     });
     const keys = links.map((l) => l.key);
-    for (const k of ['google-images', 'wikipedia', 'wiktionary']) {
+    for (const k of ['bing-images', 'wikipedia', 'wiktionary']) {
       expect(keys).toContain(k);
     }
   });
@@ -71,7 +71,10 @@ describe('external-search builder (SPEC-094)', () => {
     const groups = groupExternalSearchLinks(links);
     expect(groups.map((g) => g.group)).toEqual(['images', 'reference', 'dictionaries']);
     const first = groups[0]!.links.map((l) => l.key);
-    expect(first).toContain('google-images');
+    expect(first).toContain('bing-images');
+    // Google Images is deliberately not offered: google.com is blocked in
+    // mainland China (ADR-0046).
+    expect(first).not.toContain('google-images');
     // Han sources appear for Chinese (Baidu Baike, Moedict, ZDIC).
     expect(groups[1]!.links.map((l) => l.key)).toEqual(
       expect.arrayContaining(['baidu-baike', 'moedict']),
@@ -99,8 +102,9 @@ describe('external-search builder (SPEC-094)', () => {
     const keys = de.map((l) => l.key);
     expect(keys).not.toContain('baidu-baike');
     expect(keys).not.toContain('zdic');
-    // Usage trends applies for de.
-    expect(keys).toContain('usage-trends');
+    // Google Ngrams is gone for every language: books.google.com is blocked in
+    // mainland China and it had no non-Google equivalent (ADR-0046).
+    expect(keys).not.toContain('usage-trends');
   });
 
   it('classifies Han scripts', () => {

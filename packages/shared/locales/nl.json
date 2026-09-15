@@ -283,9 +283,9 @@
     },
     "external": {
         "baidu_baike": "Baidu Baike",
+        "bing_images": "Bing Afbeeldingen",
         "cambridge": "Cambridge Dictionary",
         "etymonline": "Etymologie",
-        "google_images": "Google Afbeeldingen",
         "grammar_wiki": "Grammatica-wiki",
         "japandict": "JapanDict",
         "jisho": "Jisho",
@@ -302,7 +302,6 @@
         "naver_koko": "Naver Ko-Ko",
         "naver_kozh": "Naver Ko/Zh",
         "tangorin": "Tangorin",
-        "usage_trends": "Gebruikstrends",
         "weblio": "Weblio",
         "wikipedia": "Wikipedia",
         "wiktionary": "Wiktionary",

@@ -66,6 +66,11 @@ export default function proxy(req: NextRequest) {
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/videos') ||
     pathname.startsWith('/api/channels') ||
+    // Same-origin relay for third-party media (ADR-0046): thumbnails and
+    // Wiktionary audio, addressed by an allowlisted absolute URL, not by a
+    // language pair. Without this the request would be read as `[l1]/[l2]` and
+    // rewritten to /_not-found.
+    pathname.startsWith('/api/asset-proxy') ||
     pathname.startsWith('/og') ||
     pathname.startsWith('/favicon')
   ) {

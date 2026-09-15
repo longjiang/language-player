@@ -51,13 +51,17 @@ export function isHanScript(code: string): boolean {
   return HAN_SCRIPT_CODES.has(code);
 }
 
-/** Favicon URL from a site's domain via the Google favicon service. */
-export function faviconUrl(domain: string, size = 64): string {
-  return `https://www.google.com/s2/favicons?sz=${size}&domain=${encodeURIComponent(domain)}`;
+/**
+ * Favicon URL from a site's domain.
+ *
+ * The site's own `/favicon.ico`, not Google's `s2/favicons` service: that
+ * service is blocked in mainland China, so it showed nothing for exactly the
+ * learners this panel is also for (ADR-0046). A site without a root favicon
+ * shows no icon — both apps hide the image when it fails to load.
+ */
+export function faviconUrl(domain: string): string {
+  return `https://${domain}/favicon.ico`;
 }
-
-/** Google Ngrams corpus id per language (Classic mapping). */
-const NGRAM_CORPUS: Record<string, number> = { en: 26, zh: 34, fr: 30, de: 31, he: 35, it: 33, ru: 36, es: 32 };
 
 /** The per-language `{l2}/KO` Naver dictionaries Classic generates. */
 const NAVER_KO_PAIRS: string[] = [
@@ -99,11 +103,16 @@ export function buildExternalSearchLinks(opts: ExternalSearchOptions): ExternalS
 
   // ── Images ─────────────────────────────────────────────────────
 
+  // Bing Images, not Google Images: google.com is blocked in mainland China, so
+  // the link was dead for a large share of learners (ADR-0046). Bing is
+  // reachable from China and from everywhere else, so no second variant is
+  // needed. (`bing.com` also serves `cn.bing.com`, which redirects for Chinese
+  // visitors on its own.)
   links.push({
-    key: 'google-images',
-    titleKey: 'external.google_images',
-    url: `https://www.google.com/search?q=${termEnc}&tbm=isch`,
-    domain: 'www.google.com',
+    key: 'bing-images',
+    titleKey: 'external.bing_images',
+    url: `https://www.bing.com/images/search?q=${termEnc}`,
+    domain: 'www.bing.com',
   });
 
   // ── Reference ──────────────────────────────────────────────────
@@ -127,16 +136,9 @@ export function buildExternalSearchLinks(opts: ExternalSearchOptions): ExternalS
     });
   }
 
-  if (l2Code in NGRAM_CORPUS) {
-    const corpus = NGRAM_CORPUS[l2Code];
-    const yearStart = l2Code === 'zh' ? 1900 : 1800;
-    links.push({
-      key: 'usage-trends',
-      titleKey: 'external.usage_trends',
-      url: `https://books.google.com/ngrams/graph?content=${termEnc}&year_start=${yearStart}&year_end=2019&corpus=${corpus}&smoothing=3`,
-      domain: 'books.google.com',
-    });
-  }
+  // Google Ngrams is gone: books.google.com is blocked in mainland China and
+  // there is no comparable corpus elsewhere, so the link was removed rather than
+  // left as a dead end (ADR-0046). Its per-language corpus map went with it.
 
   if (l2Code === 'zh') {
     links.push({
@@ -359,10 +361,9 @@ export function groupExternalSearchLinks(
  *  source ordering). Kept as an explicit table so group membership is
  *  unambiguous regardless of insertion order. */
 const GROUP_BY_KEY: Record<string, ExternalSearchGroup> = {
-  'google-images': 'images',
+  'bing-images': 'images',
   wikipedia: 'reference',
   'baidu-baike': 'reference',
-  'usage-trends': 'reference',
   'grammar-wiki': 'reference',
   moedict: 'reference',
   etymonline: 'reference',

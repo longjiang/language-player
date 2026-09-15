@@ -47,3 +47,4 @@ NNNN-title-with-dashes.md
 | 0043 | Serve textbook media from the existing shared host behind `ASSET_BASE_URL` | accepted | 2026-09-11 |
 | 0044 | Textbook exercise state is local-only, with an append-only attempt log in SRS's shape | accepted | 2026-09-11 |
 | 0045 | Mock apps are sandboxed, self-contained HTML behind a frozen bridge | accepted | 2026-09-11 |
+| 0046 | The web app loads no third-party host that mainland China blocks | accepted | 2026-09-15 |

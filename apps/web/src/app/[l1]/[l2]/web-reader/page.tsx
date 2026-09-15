@@ -40,9 +40,15 @@ function isSiteRoot(url: string): boolean {
   }
 }
 
+/**
+ * The site's own favicon, not Google's `s2/favicons` service: that service is
+ * blocked in mainland China, so the suggestion cards showed no icons for the
+ * learners who most need a hint about which site a link goes to (ADR-0046).
+ * Sites without a root favicon render no icon, as before.
+ */
 function faviconUrl(url: string): string {
   const host = hostnameOf(url);
-  return host ? `https://www.google.com/s2/favicons?domain=${host}&sz=32` : '';
+  return host ? `https://${host}/favicon.ico` : '';
 }
 
 function loadVisitedSites(): VisitedSite[] {

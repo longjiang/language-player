@@ -26,8 +26,10 @@ export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
   // Classic polyfills avatars through /channel-thumbnail (fresh from YouTube,
   // cached server-side) instead of trusting the DB thumbnail, which can go
   // stale/broken (SPEC-072).
+  // Local fallback asset, not YouTube's favicon: youtube.com is blocked in
+  // mainland China, so the fallback failed exactly where it was needed (ADR-0046).
   const avatarSrc = avatarError
-    ? 'https://www.youtube.com/favicon.ico'
+    ? '/img/channel-placeholder.svg'
     : `${PYTHON_API_URL}/channel-thumbnail?channel_id=${encodeURIComponent(channelId)}`;
 
   useEffect(() => {

@@ -109,12 +109,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} data-ui-lang={locale} suppressHydrationWarning>
-      <head>
-        {/* Preconnect to YouTube for faster iframe embed */}
-        <link rel="preconnect" href="https://www.youtube.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://i.ytimg.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://www.youtube.com" />
-      </head>
+      {/* No preconnect / dns-prefetch hint for YouTube: youtube.com and
+          i.ytimg.com are blocked in mainland China, so the hint only opens a
+          handshake that can never complete (ADR-0046). Thumbnails are served
+          same-origin through /api/asset-proxy instead. */}
+      <head />
       <body className={`${inter.variable} font-sans`}>
         <LocaleProvider locale={locale} messages={messages} timeZone={timeZone}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
