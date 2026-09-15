@@ -8,6 +8,7 @@ import {
 } from '@langplayer/textbooks';
 import type { PersistedTaskState } from '@langplayer/textbooks';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { TextbookTaskProvider, loadPersistedTask } from './task-provider';
 import { TaskShell, TaskStimulus } from './TaskShell';
 
@@ -17,6 +18,10 @@ import { TaskShell, TaskStimulus } from './TaskShell';
  * `AsyncStorage` is asynchronous, so the saved attempt is read *before* the
  * provider mounts and passed in — that keeps `TaskResponseStore` synchronous and
  * identical to its web counterpart.
+ *
+ * A book is only served under the L2 it teaches (SPEC-095 § "Initial L2 scope"),
+ * so a task URL pointing at the Chinese book while the L2 is Japanese resolves to
+ * nothing and shows the same empty state as an unknown task.
  */
 export function TaskView({
   bookId,
@@ -30,6 +35,7 @@ export function TaskView({
   taskId: string;
 }) {
   const t = useT();
+  const { l2Lang } = useLanguage();
   const [book, setBook] = useState<BookMeta | null>(null);
   const [initialState, setInitialState] = useState<PersistedTaskState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,14 +49,14 @@ export function TaskView({
       const loaded = await loadBook(bookId);
       const persisted = await loadPersistedTask(fullTaskId);
       if (cancelled) return;
-      setBook(loaded);
+      setBook(loaded && loaded.l2 === l2Lang.code ? loaded : null);
       setInitialState(persisted);
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [bookId, fullTaskId]);
+  }, [bookId, fullTaskId, l2Lang.code]);
 
   const task = useMemo(
     () =>
@@ -87,17 +93,25 @@ export function TaskView({
   );
 }
 
-/** Loads a book and exposes its navigation tree. */
+/**
+ * Loads a book and exposes its navigation tree.
+ *
+ * The L2 gate lives here as well as in `TaskView`: mobile routes carry no
+ * language segment, so the current L2 comes from context and the book must be
+ * checked against it (SPEC-095 § "Initial L2 scope"). A mismatch yields the same
+ * `tree === null` the caller already renders as an empty state.
+ */
 export function useBookTree(bookId: string): { tree: TocTree | null; loading: boolean } {
+  const { l2Lang } = useLanguage();
   const [tree, setTree] = useState<TocTree | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
     setLoading(true);
     const book = await loadBook(bookId);
-    setTree(book ? buildTocTree(book) : null);
+    setTree(book && book.l2 === l2Lang.code ? buildTocTree(book) : null);
     setLoading(false);
-  }, [bookId]);
+  }, [bookId, l2Lang.code]);
 
   useEffect(() => {
     void reload();

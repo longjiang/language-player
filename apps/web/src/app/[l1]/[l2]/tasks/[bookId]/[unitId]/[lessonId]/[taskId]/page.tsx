@@ -8,6 +8,9 @@ import { TaskView } from '@/components/textbook/task-view';
  * The book is loaded to resolve the task and to carry its content version; the
  * route segments are the reverse of the canonical task id
  * (`tblt-hsk4.u06.B.t2` → `/tblt-hsk4/u06/B/t2`).
+ *
+ * The book must teach the route's L2 as well as exist: `/xx/ja/tasks/tblt-hsk4/...`
+ * is a 404, not the Chinese task (SPEC-095 § "Initial L2 scope").
  */
 export default async function TaskPage(props: {
   params: Promise<{
@@ -19,10 +22,10 @@ export default async function TaskPage(props: {
     taskId: string;
   }>;
 }) {
-  const { bookId, unitId, lessonId, taskId } = await props.params;
+  const { l2, bookId, unitId, lessonId, taskId } = await props.params;
 
   const book = await loadBook(bookId);
-  if (!book) notFound();
+  if (!book || book.l2 !== l2) notFound();
 
   // Broken or hand-edited URL: resolve defensively so an unknown task is a 404
   // rather than an exception.

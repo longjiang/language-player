@@ -17,7 +17,8 @@ export default async function BookPage(props: {
 }) {
   const { l1, l2, bookId } = await props.params;
   const book = await loadBook(bookId);
-  if (!book) notFound();
+  // A book is only served under the L2 it teaches (SPEC-095 § "Initial L2 scope").
+  if (!book || book.l2 !== l2) notFound();
 
   // `buildTocTree` strips task bodies, so the whole book — including every answer —
   // is not serialised to the client just to draw the list.

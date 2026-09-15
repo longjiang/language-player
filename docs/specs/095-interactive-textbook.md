@@ -942,14 +942,18 @@ So the nav change is two edits to an existing group, not a new group:
 |---|---|---|
 | Media | explore, live-tv, tv-shows, channels, local-media | unchanged |
 | Reading | reader, web-reader, epub, image-reader | unchanged |
-| **Study** (was `Vocab`) | dictionary, review | dictionary, review, **tasks** |
+| **Study** (was `Vocab`) | dictionary, review | dictionary, review, **tasks**\* |
+
+\* `tasks` is **conditional on the L2**: it appears only when the current L2 has a textbook. See [Initial L2 scope](#initial-l2-scope).
 
 | Platform | Where the groups are declared |
 |---|---|
-| Web | `apps/web/src/components/layout/header.tsx:25–49` |
+| Web | `apps/web/src/components/layout/header.tsx` (`NAV_GROUPS`, both the md+ dropdowns and the sub-md drawer) |
 | Mobile | `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, MD/tablet dropdown) and `apps/mobile/components/layout/HamburgerDrawer.tsx` (phones) |
 
 Both mobile surfaces need the change — they are two presentations of the same list, and a link added to only one would be unreachable on the other form factor. `Tasks` also needs an icon entry in each (`sf` SF Symbol in `NavBar.tsx`, `NAV_ICONS` in both files).
+
+Each platform filters that list through its own `navGroupsFor(l2)`, which drops links marked `requiresTextbook` when the L2 has no corpus — the reason the item is invisible rather than broken for `l2 = ja`.
 
 ### Translation keys
 
@@ -1042,7 +1046,8 @@ sidebar is suppressed (see Screens).
 The route is `tasks` to match the menu item. It is a deliberate, small naming choice — if the menu item is renamed, the path should be renamed with it.
 
 - `[l1]`/`[l2]` are validated by `apps/web/src/app/[l1]/[l2]/layout.tsx:24–29`.
-- The `Vocab` group label is `Study`, with `{ key: 'title.tasks', href: 'tasks' }` below `review` in `apps/web/src/components/layout/header.tsx`.
+- The `Vocab` group label is `Study`, with `{ key: 'title.tasks', href: 'tasks', requiresTextbook: true }` below `review` in `apps/web/src/components/layout/header.tsx` — shown only when `hasTextbookForL2(l2)`.
+- **L2 gate.** `tasks/page.tsx` returns `notFound()` when the L2 has no textbook, and `[bookId]/layout.tsx`, `[bookId]/page.tsx` and the task page return `notFound()` when `book.l2 !== l2`. Without it the Chinese pilot was served in full under any L2 — `/en/ja/tasks/tblt-hsk4/u06/B/t2` rendered the Chinese task (see [Initial L2 scope](#initial-l2-scope)).
 - Auth gating: add `tasks` to `AUTH_REQUIRED_SEGMENTS` in `apps/web/src/proxy.ts` if the pilot is Pro-only (ADR-0034); otherwise add it to `GUEST_NAV_FREE_SEGMENTS`. **Not decided yet** — `tasks` is currently in neither list.
 - Note: the `/learn/:rest*` and `/learning-path` patterns are currently redirect targets away from the web app (`apps/web/src/lib/classic-route-redirect.ts:296,356–357`), so this feature introduces its own `tasks` path and leaves those redirects untouched.
 
@@ -1062,11 +1067,23 @@ has no room for a persistent sidebar beside the task.
 - `Tasks` extends the existing `(vocab)` route group — **no new `Stack.Screen`** is required in `apps/mobile/app/(tabs)/_layout.tsx`, and the directory is **not** renamed (see "Mobile route group" above).
 - Screens are registered as-is by the existing `(vocab)` stack; there is no per-screen config to add.
 - Rename the group label to `Study` and add the `Tasks` link below `review` in **both** `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, tablets/MD) and `HamburgerDrawer.tsx` (phones), with an `sf` symbol and a `NAV_ICONS` entry in each.
+- **L2 gate.** Routes here carry no language segment, so the book is checked against `useLanguage().l2Lang.code` instead of a URL param: `useBookTree` and `TaskView` in `apps/mobile/components/textbook/TaskView.tsx` yield `null` for a book that does not teach the current L2, which the screens already render as `msg.no_results`, and the picker lists `booksForL2(l2Lang.code)` only. Mobile keeps the empty state rather than gaining a redirect — the app has no `<Redirect>` precedent, and Tasks is not reachable by URL (`web-url-mapper.ts` has no `tasks` entry).
 - **Not a bottom tab.** The mobile app has no bottom tab bar: `apps/mobile/app/(tabs)/_layout.tsx` renders a `Stack` despite the directory name, and navigation is the top `Header` plus those two menus. `Tasks` follows the existing pattern rather than introducing a new navigation shell.
 
 ### Initial L2 scope
 
 Chinese only (`l2 = zh`). The model is language-agnostic, but the pilot corpus, the answer key, and the ruby/pinyin rendering are all Chinese. Non-Chinese books must not be advertised until a second corpus exists.
+
+**"Not advertised" is enforced, not just intended.** A textbook exists only for the L2s that have a corpus, and three things follow from that in both apps:
+
+- **The nav item is hidden.** `Study > Tasks` is dropped for an L2 with no textbook, so `l2 = ja` shows `Study > Dictionary, Review` and nothing else. In code the item carries `requiresTextbook: true` and the group list is filtered by `hasTextbookForL2(l2)`:
+  - web — `navGroupsFor()` in `apps/web/src/components/layout/header.tsx`, used by both the md+ dropdowns and the sub-md drawer;
+  - mobile — `navGroupsFor()` in `apps/mobile/components/layout/NavBar.tsx` (tablets) and `HamburgerDrawer.tsx` (phones).
+  The `Study` group keeps dictionary and review, so hiding the item never leaves an empty group.
+- **Direct URLs are refused.** The menu is not the only entry point — the URL is bookmarkable and deep-linkable. Web returns `notFound()` when the L2 has no textbook (`tasks/page.tsx`) and when a book does not teach the route's L2 (`book.l2 !== l2`, checked in `[bookId]/layout.tsx`, `[bookId]/page.tsx` and the task page), so `/en/ja/tasks/tblt-hsk4/...` is a 404 rather than the Chinese book under a Japanese L2. Mobile routes carry no language segment, so the same rule is applied against `useLanguage().l2Lang.code` in `useBookTree` and `TaskView` (`apps/mobile/components/textbook/TaskView.tsx`), which yield the existing `msg.no_results` empty state — mobile has no `<Redirect>` precedent and does not gain one.
+- **The picker lists only the current L2's books.** `booksForL2(l2)` filters `TEXTBOOK_CATALOGUE` in `apps/web/src/components/textbook/textbook-picker.tsx` and `apps/mobile/app/(tabs)/(vocab)/tasks/index.tsx`.
+
+`hasTextbookForL2` / `booksForL2` in `packages/textbooks/src/loaders.ts` are the single source of truth for "does this L2 have a textbook?" — they read `TEXTBOOK_CATALOGUE`, whose entries already carry `l2`. Adding a second book is therefore **one catalogue entry**: no nav, route, or picker change is needed, and the nav item appears for that L2 automatically. `loaders.test.ts` asserts the pilot stays `zh`-only, so adding a non-Chinese book is a deliberate change (delete that test) rather than an accident.
 
 ## Components
 

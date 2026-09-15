@@ -10,6 +10,8 @@ import { useT } from '@/hooks/use-t';
 import { BookMarked, BookOpen, Clapperboard, ClipboardCheck, Compass, FileText, Globe, ImageIcon, RotateCcw, Tv, Upload } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SIDEBAR_EDGE_MARGIN } from '@/components/ui/sidebar';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { hasTextbookForL2 } from '@langplayer/textbooks';
 
 const ICON_COLOR = ICON_MUTED;
 
@@ -17,7 +19,16 @@ const ICON_COLOR = ICON_MUTED;
 
 interface NavGroup {
   label: string;
-  links: { key: string; href: string }[];
+  links: {
+    key: string;
+    href: string;
+    /**
+     * Only available when the current L2 has a textbook (SPEC-095 § "Initial L2
+     * scope"). Set on `Tasks`, the textbook feature, so an L2 with no corpus does
+     * not show an item that leads to an empty picker.
+     */
+    requiresTextbook?: boolean;
+  }[];
 }
 
 const NAV_GROUPS: NavGroup[] = [
@@ -45,10 +56,23 @@ const NAV_GROUPS: NavGroup[] = [
     links: [
       { key: 'title.dictionary', href: '/(tabs)/(vocab)' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review' },
-      { key: 'title.tasks', href: '/(tabs)/(vocab)/tasks' },
+      { key: 'title.tasks', href: '/(tabs)/(vocab)/tasks', requiresTextbook: true },
     ],
   },
 ];
+
+/**
+ * The nav groups for one L2 — phone counterpart of `NavBar`'s, with the same
+ * rule: `Tasks` exists only for an L2 that has a textbook (SPEC-095 § "Initial L2
+ * scope").
+ */
+function navGroupsFor(l2: string): NavGroup[] {
+  if (hasTextbookForL2(l2)) return NAV_GROUPS;
+  return NAV_GROUPS.map((group) => ({
+    ...group,
+    links: group.links.filter((link) => !link.requiresTextbook),
+  }));
+}
 
 // Icons matching Next.js NAV_ICONS (apps/web/src/components/layout/header.tsx)
 const NAV_ICONS: Record<string, React.JSX.Element> = {
@@ -84,9 +108,12 @@ interface HamburgerDrawerProps {
 
 export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawerProps) {
   const t = useT();
+  const { l2Lang } = useLanguage();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const drawerWidth = Math.min(256, screenWidth * 0.6);
+  // Tasks is textbook-only; see navGroupsFor.
+  const navGroups = navGroupsFor(l2Lang.code);
 
   // Hidden position: fully off the right edge (resting position is
   // right: SIDEBAR_EDGE_MARGIN), so the floating panel clears the screen.
@@ -142,7 +169,7 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
         }}
       >
         <ScrollView className="flex-1 p-4">
-          {NAV_GROUPS.map((group) => (
+          {navGroups.map((group) => (
             <View key={group.label} className="mb-4">
               <Text className="mb-1 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {t(`nav.${group.label.toLowerCase()}` as any)}

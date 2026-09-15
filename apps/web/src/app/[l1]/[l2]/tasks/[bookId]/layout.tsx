@@ -13,6 +13,10 @@ import { TextbookTocSidebar } from '@/components/textbook/textbook-toc-sidebar';
  * The TOC lives here rather than on the top `tasks` layout because it needs the
  * book to build the tree, and the picker at `tasks/page.tsx` must render without a
  * sidebar: it has not chosen a book yet.
+ *
+ * A book is only served under the L2 it teaches, so `/en/ja/tasks/tblt-hsk4` — the
+ * Chinese book reached from a Japanese L2 — is a 404 rather than the Chinese TOC
+ * (SPEC-095 § "Initial L2 scope"). This guard covers the task pages below it too.
  */
 export default async function BookLayout(props: {
   children: React.ReactNode;
@@ -20,7 +24,7 @@ export default async function BookLayout(props: {
 }) {
   const { l1, l2, bookId } = await props.params;
   const book = await loadBook(bookId);
-  if (!book) notFound();
+  if (!book || book.l2 !== l2) notFound();
 
   // The TOC needs ids and titles only — `buildTocTree` strips task bodies so
   // the whole book (including every answer) is not serialised to the client.

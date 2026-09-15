@@ -9,11 +9,21 @@ import { useReaderChrome } from '@/providers/reader-chrome-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
 import { Logo } from '@/components/ui/logo';
+import { hasTextbookForL2 } from '@langplayer/textbooks';
 import { BookMarked, BookOpen, ChevronDown, Clapperboard, ClipboardCheck, Compass, FileText, Globe, ImageIcon, Menu, RotateCcw, Search, Tv, Upload, X, Youtube } from 'lucide-react';
 
 interface NavGroup {
   label: string;
-  links: { key: string; href: string }[];
+  links: {
+    key: string;
+    href: string;
+    /**
+     * Only available when the current L2 has a textbook (SPEC-095 § "Initial L2
+     * scope"). Set on `Tasks`, the textbook feature, so an L2 with no corpus
+     * does not show a menu item that leads to an empty picker.
+     */
+    requiresTextbook?: boolean;
+  }[];
 }
 
 const NAV_GROUPS: NavGroup[] = [
@@ -41,10 +51,27 @@ const NAV_GROUPS: NavGroup[] = [
     links: [
       { key: 'title.dictionary', href: 'dictionary' },
       { key: 'title.review', href: 'review' },
-      { key: 'title.tasks', href: 'tasks' },
+      { key: 'title.tasks', href: 'tasks', requiresTextbook: true },
     ],
   },
 ] as const;
+
+/**
+ * The nav groups for one L2.
+ *
+ * `Tasks` is the interactive-textbook feature, and a textbook exists only for
+ * some L2s (today: `zh` — "Tasks for Life in China (HSK 4)"). For an L2 with no
+ * corpus the item is dropped entirely rather than linking to an empty picker
+ * (SPEC-095 § "Initial L2 scope"). `hasTextbookForL2` reads the textbook
+ * catalogue, so a second book needs no change here.
+ */
+function navGroupsFor(l2: string): NavGroup[] {
+  if (hasTextbookForL2(l2)) return NAV_GROUPS;
+  return NAV_GROUPS.map((group) => ({
+    ...group,
+    links: group.links.filter((link) => !link.requiresTextbook),
+  }));
+}
 
 const NAV_ICONS: Record<string, React.ReactNode> = {
   explore: <Compass className="h-4 w-4" />,
@@ -137,6 +164,8 @@ export function Header() {
   const { immersed, requestCloseReader } = useReaderChrome();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  // Tasks is textbook-only; see navGroupsFor.
+  const navGroups = navGroupsFor(l2.code);
   const exploreHref = `/${l1.code}/${l2.code}/explore`;
   const logoHref =
     pathname === exploreHref || pathname === `${exploreHref}/`
@@ -172,7 +201,7 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_GROUPS.map((group) => (
+          {navGroups.map((group) => (
             <NavDropdown
               key={group.label}
               group={group}
@@ -216,7 +245,7 @@ export function Header() {
           <div className="fixed inset-0 z-40 bg-black/20 md:hidden" onClick={() => setMobileOpen(false)} />
           <div className="fixed right-0 top-14 z-50 w-64 border-l border-border bg-background p-4 shadow-lg md:hidden" style={{ height: 'calc(100vh - 3.5rem)' }}>
             <nav className="flex flex-col gap-4">
-              {NAV_GROUPS.map((group) => (
+              {navGroups.map((group) => (
                 <div key={group.label}>
                   <p className="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t(`nav.${group.label.toLowerCase()}` as any)}

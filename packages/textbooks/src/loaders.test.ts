@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {TEXTBOOK_CATALOGUE, adjacentTasks, allTasks, bookLoaders, buildTocTree, findLesson, findTask, loadBook, taskHref, taskPathParts} from './loaders';
+import {TEXTBOOK_CATALOGUE, adjacentTasks, allTasks, bookLoaders, booksForL2, buildTocTree, findLesson, findTask, hasTextbookForL2, loadBook, taskHref, taskPathParts} from './loaders';
 
 describe('catalogue and loaders', () => {
   it('has a loader for every catalogued book', () => {
@@ -17,6 +17,34 @@ describe('catalogue and loaders', () => {
 
   it('returns null for an unknown book rather than throwing', async () => {
     expect(await loadBook('nope')).toBeNull();
+  });
+});
+
+describe('per-L2 availability (SPEC-095 § "Initial L2 scope")', () => {
+  it('offers the HSK 4 book for zh', () => {
+    expect(booksForL2('zh').map((book) => book.id)).toEqual(['tblt-hsk4']);
+    expect(hasTextbookForL2('zh')).toBe(true);
+  });
+
+  it('reports no textbook for an L2 that has no corpus, so the nav item and the route can be hidden', () => {
+    expect(booksForL2('ja')).toEqual([]);
+    expect(hasTextbookForL2('ja')).toBe(false);
+    expect(hasTextbookForL2('')).toBe(false);
+  });
+
+  it('keeps booksForL2 in step with the catalogue, whatever the catalogue holds', () => {
+    for (const book of TEXTBOOK_CATALOGUE) {
+      expect(booksForL2(book.l2)).toContainEqual(book);
+    }
+  });
+
+  it('advertises only Chinese books until a second corpus exists', () => {
+    // SPEC-095: "Non-Chinese books must not be advertised until a second
+    // corpus exists." Adding a non-zh book is a deliberate change: this test
+    // is the reminder to revisit the L2-scope rule, not an accident.
+    for (const book of TEXTBOOK_CATALOGUE) {
+      expect(book.l2).toBe('zh');
+    }
   });
 });
 
