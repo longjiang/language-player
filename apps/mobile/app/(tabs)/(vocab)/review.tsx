@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Platform, Keyboard as RNKeyboard, useWindowDimensions } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  KeyboardAvoidingView,
   KeyboardController,
   KeyboardEvents,
+  useReanimatedKeyboardAnimation,
 } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -260,6 +261,32 @@ export default function ReviewScreen() {
   // disabled outright for the duration of a block gesture.
   const cardScrollGesture = useMemo(() => Gesture.Native(), []);
   const [cardScrollPinned, setCardScrollPinned] = useState(false);
+
+  /**
+   * The pinned answer row's container, measured against the keyboard to prove
+   * the row clears it (ADR-0047 diagnostic).
+   */
+  const spellFooterRef = useRef<View>(null);
+  const { height: windowHeight } = useWindowDimensions();
+
+  /**
+   * Keyboard height as an animated value, used as an explicit bottom spacer
+   * below the answer row (`keyboardSpacerStyle`).
+   *
+   * This replaces KeyboardAvoidingView deliberately. That component computes
+   * its bottom padding as `frame.y + frame.height - keyboardTop`, where the
+   * frame arrives parent-relative unless its native `viewPositionInWindow`
+   * lookup succeeds — and when that lookup fails the library swallows the
+   * failure and falls back to the relative frame, so the padding came out short
+   * by exactly the app's chrome (status bar + header): the top of the answer
+   * row cleared the keyboard while the Submit button and the hint below it
+   * stayed behind it. A spacer equal to the keyboard height needs no frame
+   * arithmetic at all, so no header/offset guess can be wrong. `Math.abs` is
+   * used because the animated height is signed by convention (negative while
+   * open), and the absolute value is the height in both directions.
+   */
+  const { height: keyboardHeight } = useReanimatedKeyboardAnimation();
+  const keyboardSpacerStyle = useAnimatedStyle(() => ({ height: Math.abs(keyboardHeight.value) }));
 
   const { savedWords, loaded: wordsLoaded, cloudHydrated: savedWordsCloudHydrated, getPendingPutWordIds } = useSavedWords();
   const {
@@ -1814,17 +1841,50 @@ export default function ReviewScreen() {
     log('[srs-spell] answer row pinned', { pinned: spellAnswerPinned, mode: effectiveMode, testStartedAt: testStartedAt !== null });
   }, [spellAnswerPinned, effectiveMode, testStartedAt]);
   useEffect(() => {
+    /**
+     * Measure the answer row against the keyboard and log the clearance, so
+     * "is the row actually above the keyboard?" is answered by a number rather
+     * than by a screenshot. Runs shortly after the keyboard event because the
+     * spacer is animated: `clearance >= 0` means the row's bottom edge is above
+     * the keyboard's top edge. The clearance is computed from the library's
+     * height *and* logged next to React Native's own keyboard height, because a
+     * height that is itself short (an input-accessory or IME candidate bar left
+     * out) would otherwise make this check pass while the row is still covered.
+     */
+    const measureClearance = (phase: string, keyboardHeightPx: number) => {
+      spellFooterRef.current?.measureInWindow((_x, y, _w, h) => {
+        const footerBottom = y + h;
+        const keyboardTop = windowHeight - keyboardHeightPx;
+        log('[srs-spell] answer row vs keyboard', {
+          phase,
+          keyboardHeight: Math.round(keyboardHeightPx),
+          footerBottom: Math.round(footerBottom),
+          keyboardTop: Math.round(keyboardTop),
+          clearance: Math.round(keyboardTop - footerBottom),
+        });
+      });
+    };
     const showSub = KeyboardEvents.addListener('keyboardWillShow', (e) => {
       log('[srs-spell] keyboard will show', { height: e.height });
+      setTimeout(() => measureClearance('after-show', e.height), 450);
     });
     const hideSub = KeyboardEvents.addListener('keyboardDidHide', (e) => {
       log('[srs-spell] keyboard did hide', { height: e.height });
     });
+    // Independent cross-check of the height the spacer is built from: React
+    // Native's own keyboard frame. If these two disagree, the spacer is being
+    // told the wrong height and the clearance above cannot be trusted.
+    const rnShow = RNKeyboard.addListener('keyboardWillShow', (e) => {
+      log('[srs-spell] RN keyboard height (cross-check)', {
+        rnHeight: Math.round(e.endCoordinates.height),
+      });
+    });
     return () => {
       showSub.remove();
       hideSub.remove();
+      rnShow.remove();
     };
-  }, []);
+  }, [windowHeight]);
 
   const isLoading = !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded || initializing || (user && (!savedWordsCloudHydrated || !srsCloudHydrated));
 
@@ -2055,14 +2115,13 @@ export default function ReviewScreen() {
         </View>
       </View>
 
-      {/* Keyboard-aware region (SPEC-066): while the software keyboard is up,
-          this region shrinks to the space above it, so the card stays fully
-          scrollable and the spell answer footer below sits directly on top of
-          the keyboard. `automaticOffset` lets the view resolve its own screen
-          position — this screen sits under the app's custom Header, not a
-          react-navigation header, so a hand-computed vertical offset would be a
-          guess. */}
-      <KeyboardAvoidingView behavior="padding" automaticOffset style={{ flex: 1 }}>
+      {/* The card, the pinned answer row and the rating buttons share one
+          column; `keyboardSpacerStyle` below closes the bottom of it with the
+          keyboard's height while the keyboard is up, which lifts both bottom
+          surfaces above the keyboard and shrinks the card to the space that is
+          left. Deliberately not KeyboardAvoidingView — see the spacer's comment
+          at the top of this screen for why its frame arithmetic came up short. */}
+      <View style={{ flex: 1 }}>
       {/* Flashcard — only as tall as content, max height fills remaining space */}
       <View className="px-4 mb-2 flex-1">
         <View className={`max-h-full rounded-xl border border-border bg-card ${isSm ? 'p-8' : 'p-4'}`}>
@@ -2370,7 +2429,7 @@ export default function ReviewScreen() {
           independently in the space above it. Same visual language as the card
           so it reads as the bottom of the same flashcard. */}
       {spellAnswerPinned && (
-        <View className="mx-4 mb-2 rounded-xl border border-border bg-card p-3">
+        <View ref={spellFooterRef} className="mx-4 mb-2 rounded-xl border border-border bg-card p-3">
           <View className="w-full gap-2">
             <Text className="text-center text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
             <SpellCharInput
@@ -2429,7 +2488,12 @@ export default function ReviewScreen() {
           </View>
         </View>
       )}
-      </KeyboardAvoidingView>
+      {/* The keyboard's height, as a spacer: this is what lifts the answer row
+          and the rating buttons above the keyboard and shrinks the card. It
+          sits behind the keyboard while it is up, and collapses to 0 when the
+          keyboard closes, so the closed layout is untouched. */}
+      <Animated.View style={keyboardSpacerStyle} />
+      </View>
     </PageContainer>
   );
 }
