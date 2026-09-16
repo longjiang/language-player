@@ -1,5 +1,6 @@
 import React, { useCallback, useSyncExternalStore } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from '@/components/ui/keyboard-aware-scroll-view';
 import { TokenizedText } from '@/components/TokenizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -86,7 +87,17 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
     {/* The transcript dialog is the same shape as the picture choices for the same
         reason: one per task, opened by whichever audio control carries the recording. */}
     <TranscriptDialogProvider>
-    <ScrollView contentContainerClassName="gap-5 pb-16" className="flex-1">
+    {/* Task bodies put text fields inline — fill-in blanks inside a passage,
+        dictation boxes, free-write areas — so the scroll view has to keep the
+        focused one visible: a task can be far taller than the screen, and the
+        keyboard covers the bottom of it. `keyboardShouldPersistTaps` so a tap
+        on the next blank lands in the field instead of only dismissing the
+        keyboard (SPEC-095, same convention as the review card in SPEC-066). */}
+    <KeyboardAwareScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerClassName="gap-5 pb-16"
+      className="flex-1"
+    >
       <View className="flex-row items-start gap-3">
         <View className="mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
           <Text className="text-sm font-semibold text-primary">{task.number}</Text>
@@ -166,7 +177,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
       )}
 
       <Text className="text-xs text-muted-foreground">{book.title}</Text>
-    </ScrollView>
+    </KeyboardAwareScrollView>
     </TranscriptDialogProvider>
     </BlankChoiceProvider>
     </TaskAudioProvider>
