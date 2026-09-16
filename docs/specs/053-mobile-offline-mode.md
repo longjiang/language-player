@@ -447,6 +447,19 @@ initialised from the Offline Mode override and the current connectivity, not
 hardcoded `true`, so the header icon no longer claims "offline" from the first
 frame before any signal has arrived.
 
+**One owner for the subscription check.** The provider
+(`contexts/SubscriptionContext.tsx` on mobile,
+`providers/subscription-provider.tsx` on web) is the only place that reads
+`GET /user-subscription`; screens read the context. Two profile pages and a
+web `useSubscription` hook used to run their own copies of that check, which
+reproduced both failure modes independently of the provider: a failed or non-2xx
+response set the page's local `sub` to `null` (a lifetime subscriber saw "Free
+account" while offline, or when the backend was down), and each check flipped a
+page-local loading flag, so the subscription section collapsed into a spinner
+and came back on every foreground/identity change. Those copies are gone
+(2026-09-16): the mobile and web profile pages and the web go-pro page read the
+provider, and `apps/web/src/hooks/use-subscription.ts` was deleted.
+
 The UI must keep the two reasons visually distinct:
 
 - **Auto-detected**: "No connection — changes are saved on this device."

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { useSubscription } from '@/hooks/use-subscription';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { getStripePrices, findUsdPrice, findCnyPrice, type StripePrice } from '@/lib/prices';
 import {
@@ -71,7 +71,7 @@ export default function GoProPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const userId = session?.user?.id;
-  const { sub: subscription } = useSubscription();
+  const { sub: subscription } = useSubscriptionContext();
 
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [prices, setPrices] = useState<StripePrice[]>([]);
