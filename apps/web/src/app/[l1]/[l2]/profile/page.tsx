@@ -9,12 +9,11 @@ import { useAuth } from '@langplayer/api-client';
 import { useLanguage } from '@/providers/language-provider';
 import { useProgress } from '@/hooks/use-progress';
 import { useChannelPreferences } from '@/hooks/use-channel-preferences';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
 import { toast } from 'sonner';
 import { LanguageLevelSelect } from '@/components/language-level-select';
 import { baseCode, languageName } from '@/lib/language-data';
-import { PYTHON_API_URL } from '@/lib/api-url';
-import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import {
   Dialog,
   DialogContent,
@@ -42,15 +41,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface SubscriptionInfo {
-  id?: number;
-  type?: string;
-  expires_on?: string | null;
-  payment_processor?: string;
-  payment_customer_id?: string;
-  status?: string;
-}
 
 const PLANS = [
   {
@@ -96,8 +86,21 @@ export default function ProfilePage() {
   const userName = session?.user?.name;
 
   // ── Subscription ──
-  const [sub, setSub] = useState<SubscriptionInfo | null>(null);
-  const [subLoading, setSubLoading] = useState(true);
+  // From the shared provider, which caches the last server-confirmed plan and
+  // never downgrades on a failed check. This page used to run its own copy of
+  // the check: any non-2xx read as "Free account", and it flipped its own
+  // loading flag on every identity change, collapsing the section into a
+  // spinner and back (SPEC-053).
+  const {
+    sub,
+    loaded: subLoaded,
+    isPro,
+    isLifetime,
+    isExpired,
+    willAutoRenew,
+    daysUntilExpiry: daysLeft,
+    cancelSubscription,
+  } = useSubscriptionContext();
   const [cancelling, setCancelling] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -105,45 +108,17 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
 
-  useEffect(() => {
-    if (!userId) { setSubLoading(false); return; }
-    let cancelled = false;
-    setSubLoading(true);
-    authenticatedFetch(`${PYTHON_API_URL}/user-subscription`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (cancelled) return;
-        setSub(data?.id ? data : null);
-        setSubLoading(false);
-      })
-      .catch(() => { if (!cancelled) setSubLoading(false); });
-    return () => { cancelled = true; };
-  }, [userId, token]);
-
   const planType = sub?.type ?? 'free';
   const isFree = !sub || planType === 'free';
-  const isLifetime = planType === 'lifetime';
+  const isActive = isPro;
   const expiresOn = sub?.expires_on ? new Date(sub.expires_on.replace(' ', 'T')) : null;
-  const isExpired = expiresOn ? expiresOn < new Date() : false;
-  const isActive = isLifetime || (expiresOn && !isExpired);
-  const willAutoRenew = ['monthly', 'annual'].includes(planType) && !!sub?.payment_customer_id && isActive;
   const hasRenewingSubscription = willAutoRenew;
-  const daysLeft = expiresOn && isActive
-    ? Math.max(0, Math.ceil((expiresOn.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : null;
 
   const handleCancel = async () => {
-    if (!sub?.payment_customer_id) return;
     setCancelling(true);
     try {
-      await fetch(`${PYTHON_API_URL}/cancel-subscription-at-end-of-period`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer_id: sub.payment_customer_id }),
-      });
-      // Optimistically update
-      setSub((prev) => prev ? { ...prev, payment_customer_id: '' } : null);
-    } catch {} finally {
+      await cancelSubscription();
+    } finally {
       setCancelling(false);
     }
   };
@@ -228,7 +203,7 @@ export default function ProfilePage() {
           <Crown className="h-5 w-5 text-amber-500" />
           {t('title.subscription')}
         </h2>
-        {subLoading ? (
+        {!subLoaded ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
@@ -420,7 +395,7 @@ export default function ProfilePage() {
         <p className="mt-2 text-sm text-muted-foreground">
           {t('msg.delete_account_permanent_warning')}
         </p>
-        {subLoading ? (
+        {!subLoaded ? (
           <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             {t('msg.loading')}

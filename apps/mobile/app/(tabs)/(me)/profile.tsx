@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Modal, Linking, AppState, Alert } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Modal, Linking, Alert } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useProgress } from '@/hooks/use-progress';
 import { useChannelPreferences } from '@/hooks/use-channel-preferences';
 import { useT } from '@/hooks/use-t';
@@ -20,15 +21,6 @@ import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE, ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { User, Mail, Clock, BookOpen, Crown, Star, ArrowRight, Check, ChevronDown, Trash2, AlertTriangle, ListVideo, Heart, Bookmark, RotateCcw } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-interface SubscriptionInfo {
-  id?: number;
-  type?: string;
-  expires_on?: string | null;
-  payment_processor?: string;
-  payment_customer_id?: string;
-  status?: string;
-}
 
 const PLANS = [
   { nameKey: 'subscription.monthly_cap' as const, price: '$10', interval: '/mo', planKey: 'monthly' },
@@ -94,62 +86,37 @@ export default function ProfileScreen() {
     : t('label.unknown_user');
 
   // ── Subscription ──
-  const [sub, setSub] = useState<SubscriptionInfo | null>(null);
-  const [subLoading, setSubLoading] = useState(true);
+  // Read from the shared context, which caches the last server-confirmed plan
+  // and refuses to downgrade on a failed check (SPEC-053). This page used to
+  // run its own copy of the check: it set `sub` to null whenever the request
+  // failed — so offline, or with the backend down, a lifetime subscriber saw
+  // "Free account" — and it flipped its own loading flag on every fetch, which
+  // is what made the section collapse into a spinner and come back.
+  const {
+    sub,
+    loaded: subLoaded,
+    isPro,
+    isLifetime,
+    isExpired,
+    willAutoRenew,
+    daysUntilExpiry: daysLeft,
+    cancelSubscription,
+  } = useSubscription();
   const [cancelling, setCancelling] = useState(false);
-
-  const fetchSub = useCallback(async () => {
-    if (!user?.id) { setSubLoading(false); return; }
-    setSubLoading(true);
-    try {
-      const res = await authenticatedFetch(`${PYTHON_API_URL}/user-subscription`);
-      const data = res.ok ? await res.json() : null;
-      setSub(data?.id ? data : null);
-    } catch {
-      setSub(null);
-    } finally {
-      setSubLoading(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    fetchSub();
-  }, [fetchSub]);
-
-  // Refetch when the app returns to the foreground so a website/admin
-  // subscription change shows up without restarting the app.
-  useEffect(() => {
-    const s = AppState.addEventListener('change', (state) => {
-      if (state === 'active') fetchSub();
-    });
-    return () => s.remove();
-  }, [fetchSub]);
 
   const planType = sub?.type ?? 'free';
   const isFree = !sub || planType === 'free';
-  const isLifetime = planType === 'lifetime';
+  const isActive = isPro;
   const expiresOn = sub?.expires_on ? new Date(sub.expires_on.replace(' ', 'T')) : null;
-  const isExpired = expiresOn ? expiresOn < new Date() : false;
-  const isActive = isLifetime || (expiresOn && !isExpired);
-  const willAutoRenew = ['monthly', 'annual'].includes(planType) && !!sub?.payment_customer_id && isActive;
-  const daysLeft = expiresOn && isActive
-    ? Math.max(0, Math.ceil((expiresOn.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : null;
 
   const handleCancel = useCallback(async () => {
-    if (!sub?.payment_customer_id) return;
     setCancelling(true);
     try {
-      await fetch(`${PYTHON_API_URL}/cancel-subscription-at-end-of-period`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer_id: sub.payment_customer_id }),
-      });
-      setSub((prev) => prev ? { ...prev, payment_customer_id: '' } : null);
-    } catch {} finally {
+      await cancelSubscription();
+    } finally {
       setCancelling(false);
     }
-  }, [sub?.payment_customer_id]);
+  }, [cancelSubscription]);
 
   // ── Delete account (mirrors apps/web profile) ──
   const hasRenewingSubscription = willAutoRenew;
@@ -256,7 +223,7 @@ export default function ProfileScreen() {
           <Text className="text-lg font-semibold text-foreground">{t('title.subscription')}</Text>
         </View>
 
-        {subLoading ? (
+        {!subLoaded ? (
           <View className="items-center py-8">
             <ActivityIndicator size="small" color={ICON_MUTED} />
           </View>
@@ -441,7 +408,7 @@ export default function ProfileScreen() {
         <Text className="mt-2 text-sm text-muted-foreground">
           {t('msg.delete_account_permanent_warning')}
         </Text>
-        {subLoading ? (
+        {!subLoaded ? (
           <View className="mt-3 flex-row items-center gap-2">
             <ActivityIndicator size="small" color={ICON_MUTED} />
             <Text className="text-sm text-muted-foreground">{t('msg.loading')}</Text>
