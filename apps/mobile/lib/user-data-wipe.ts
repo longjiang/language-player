@@ -16,9 +16,11 @@ import { openSyncDB } from '@/lib/sync-db';
 import { resetSyncEngineForLogout } from '@/lib/sync-engine';
 import { clearRecentSearchesStorage } from '@/lib/recent-searches-storage';
 import { setOfflineModeEnabled } from '@/lib/offline-mode';
+import { SUBSCRIPTION_CACHE_KEY } from '@/lib/subscription-cache';
 
 const SECURE_KEYS = [
   'lp_settings',               // SettingsV2
+  SUBSCRIPTION_CACHE_KEY,      // last-confirmed subscription record (SPEC-053)
   'zthProgress',               // learning progress
   'zthSrsProgress',            // SRS cards + daily limit
   'zthSavedWords',             // saved words
