@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, one {# kez gözden geçirildi} other {# kez gözden geçirildi}}",
         "start_test": "Testi başlat",
         "submit": "Gönder",
+        "test_definition_prompt": "Bu cümlede “{word}” ne anlama geliyor?",
         "test_error": "Bu test oluşturulurken bir sorun oluştu.",
         "test_skipped": "Atlandı",
         "trying_again": "Bir sorun oluştu, tekrar deneniyor..."

@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, other {# 回復習済み}}",
         "start_test": "テストを開始",
         "submit": "送信",
+        "test_definition_prompt": "この文での「{word}」の意味は？",
         "test_error": "このテストの生成中に問題が発生しました。",
         "test_skipped": "スキップ済み",
         "trying_again": "問題が発生しました。もう一度試しています…"

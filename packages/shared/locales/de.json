@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}",
         "start_test": "Test starten",
         "submit": "Absenden",
+        "test_definition_prompt": "Was bedeutet „{word}“ in diesem Satz?",
         "test_error": "Beim Erstellen dieses Tests gab es ein Problem.",
         "test_skipped": "Übersprungen",
         "trying_again": "Es gab ein Problem, versuche es erneut..."

@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, one {1 keer herhaald} other {# keer herhaald}}",
         "start_test": "Test starten",
         "submit": "Verzenden",
+        "test_definition_prompt": "Wat betekent “{word}” in deze zin?",
         "test_error": "Er is een probleem opgetreden bij het genereren van deze test.",
         "test_skipped": "Overgeslagen",
         "trying_again": "Er is een probleem opgetreden, opnieuw proberen..."

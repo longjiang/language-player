@@ -355,3 +355,120 @@ describe('SrsTestManager retry + diagnostics', () => {
     expect(regenResult).toMatchObject({ ok: true });
   });
 });
+
+describe('SrsTestManager offline fallback (SPEC-066)', () => {
+  const failing: SrsTestTransport = {
+    async generate() {
+      throw new Error('Could not connect to the server');
+    },
+  };
+
+  const fallbackQuestion: SrsTestQuestion = {
+    kind: 'definition',
+    prompt: 'What does "夢" mean in this sentence?',
+    correctAnswer: 'a dream',
+    choices: ['a dream', 'a nightmare', 'an illusion'],
+  };
+
+  it('returns a programmatic question when generation fails, flagged as a fallback', async () => {
+    const manager = new SrsTestManager(failing);
+    const fallback = vi.fn(async () => fallbackQuestion);
+    const result = await manager.requestTest({
+      cardKey: 'k',
+      priority: 'current',
+      input: input('definition'),
+      fallback,
+    });
+    expect(result).toMatchObject({ ok: true, source: 'fallback', fromCache: false });
+    expect(fallback).toHaveBeenCalledTimes(1);
+    if (result.ok) expect(result.question).toEqual(fallbackQuestion);
+  });
+
+  it('does not cache a fallback question — the next request tries the LLM again', async () => {
+    const calls: string[] = [];
+    let online = false;
+    const transport: SrsTestTransport = {
+      async generate(prompt: string) {
+        calls.push(prompt);
+        if (!online) throw new Error('offline');
+        return makeResponse('definition');
+      },
+    };
+    const manager = new SrsTestManager(transport);
+    const fallback = async () => fallbackQuestion;
+
+    const offlineResult = await manager.requestTest({
+      cardKey: 'k', priority: 'current', input: input('definition'), fallback,
+    });
+    expect(offlineResult).toMatchObject({ ok: true, source: 'fallback' });
+
+    online = true;
+    const onlineResult = await manager.requestTest({
+      cardKey: 'k', priority: 'current', input: input('definition'), fallback,
+    });
+    expect(onlineResult).toMatchObject({ ok: true, source: 'llm', fromCache: false });
+    expect(calls).toHaveLength(3); // two failed attempts offline, then a fresh one
+  });
+
+  it('keeps the diagnostic when the fallback cannot build a question', async () => {
+    const manager = new SrsTestManager(failing);
+    const result = await manager.requestTest({
+      cardKey: 'k',
+      priority: 'current',
+      input: input('definition'),
+      fallback: async () => null,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.diagnostic.error).toContain('Could not connect');
+  });
+
+  it('survives a throwing fallback and still reports the generation diagnostic', async () => {
+    const manager = new SrsTestManager(failing);
+    const result = await manager.requestTest({
+      cardKey: 'k',
+      priority: 'current',
+      input: input('definition'),
+      fallback: async () => { throw new Error('dictionary exploded'); },
+    });
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe('SrsTestManager fallback upgrade', () => {
+  it('attaches a fallback to a queued prefetch that the current card takes over', async () => {
+    // The prefetch is held open so the current-card request reuses it.
+    const held: Array<(value: string) => void> = [];
+    const transport: SrsTestTransport = {
+      async generate() {
+        return new Promise<string>((resolve) => { held.push(resolve); });
+      },
+    };
+    const manager = new SrsTestManager(transport);
+    const prefetch = manager.requestTest({
+      cardKey: 'k', priority: 'prefetch', input: input('definition'),
+    });
+    // Let the prefetch start (so the second call joins the in-flight request).
+    await sleep();
+
+    const fallback = vi.fn(async () => ({
+      kind: 'definition' as const,
+      prompt: 'What does it mean?',
+      correctAnswer: 'answer',
+      choices: ['answer', 'one', 'two'],
+    }));
+    const current = manager.requestTest({
+      cardKey: 'k', priority: 'current', input: input('definition'), fallback,
+    });
+
+    // Both attempts fail.
+    held[0]!(JSON.stringify({ kind: 'definition', question: '', correct_answer: '', confounders: [] }));
+    await sleep();
+    held[1]?.(JSON.stringify({ kind: 'definition', question: '', correct_answer: '', confounders: [] }));
+    await sleep(10);
+
+    const [a, b] = await Promise.all([prefetch, current]);
+    expect(a).toMatchObject({ ok: true, source: 'fallback' });
+    expect(b).toMatchObject({ ok: true, source: 'fallback' });
+    expect(fallback).toHaveBeenCalledTimes(1); // exactly one fallback build
+  });
+});

@@ -7,12 +7,21 @@
 import { SrsTestManager, type SrsTestTransport } from '@langplayer/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { srsLogger } from '@/lib/logger';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { getConnectivity } from '@/lib/connectivity';
 
 const { log } = srsLogger;
 const CACHE_KEY = 'lp:srs-test-cache';
 
 const transport: SrsTestTransport = {
   async generate(prompt: string, options: { cache: boolean }) {
+    // Offline, don't even try: the request would be rejected by the Offline
+    // Mode gate or hang until the fetch times out. Failing immediately hands
+    // the request to the programmatic fallback (SPEC-066 § "Offline test
+    // generation") without making the learner wait.
+    if (isOfflineModeEnabled() || getConnectivity() === 'offline') {
+      throw new Error('Offline — no test question was requested from the server');
+    }
     const { apiClient } = await import('@langplayer/api-client');
     const payload = await apiClient.post(
       '/chatgpt',

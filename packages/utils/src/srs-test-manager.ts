@@ -68,11 +68,28 @@ export interface SrsTestCacheStorage {
 }
 
 export type SrsTestRequestResult =
-  | { ok: true; question: SrsTestQuestion; fromCache: boolean }
+  | {
+      ok: true;
+      question: SrsTestQuestion;
+      fromCache: boolean;
+      /** 'llm' for a generated question, 'fallback' for a programmatic one. */
+      source: 'llm' | 'fallback';
+    }
   | { ok: false; diagnostic: SrsTestDiagnostic };
+
+/**
+ * Programmatic question builder used when generation fails (SPEC-066
+ * § "Offline test generation"). Returns null when the local material cannot
+ * make a fair question — the caller then keeps its normal error UI.
+ */
+export type SrsTestFallback = (
+  input: SrsTestGenerationInput,
+) => Promise<SrsTestQuestion | null>;
 
 export interface SrsTestManagerOptions {
   storage?: SrsTestCacheStorage;
+  /** App-wide fallback; a request may override it with its own. */
+  fallback?: SrsTestFallback;
   /** Optional structured logger callback (apps wrap their app-prefixed logger). */
   onLog?: (event: string, data?: Record<string, unknown>) => void;
 }
@@ -84,6 +101,11 @@ export interface SrsTestRequestParams {
   input: SrsTestGenerationInput;
   /** Called when the automatic retry begins (e.g. "There was a problem, trying again…"). */
   onRetry?: () => void;
+  /**
+   * Optional per-request fallback (mobile passes one seeded with the current
+   * card's offline material). Overrides the manager-level `fallback`.
+   */
+  fallback?: SrsTestFallback;
 }
 
 interface QueuedRequest {
@@ -93,6 +115,7 @@ interface QueuedRequest {
   priority: SrsTestPriority;
   input: SrsTestGenerationInput;
   onRetry?: () => void;
+  fallback?: SrsTestFallback;
   promise: Promise<SrsTestRequestResult>;
   resolve: (result: SrsTestRequestResult) => void;
   superseded?: boolean;
@@ -204,6 +227,7 @@ export class SrsTestManager {
   private nextId = 1;
   readonly cache: SrsTestCacheStore;
   private readonly onLog?: (event: string, data?: Record<string, unknown>) => void;
+  private readonly fallback?: SrsTestFallback;
 
   constructor(
     private readonly transport: SrsTestTransport,
@@ -211,6 +235,7 @@ export class SrsTestManager {
   ) {
     this.cache = new SrsTestCacheStore(options.storage);
     this.onLog = options.onLog;
+    this.fallback = options.fallback;
   }
 
   /** Await cache hydration (storage load) before the first lookups. */
@@ -257,7 +282,7 @@ export class SrsTestManager {
       const cached = this.cache.get(dedupeKey);
       if (cached) {
         this.log('cache-hit', { cardKey, kind: input.kind });
-        return { ok: true, question: cached, fromCache: true };
+        return { ok: true, question: cached, fromCache: true, source: 'llm' };
       }
       const existing = this.pending.get(dedupeKey);
       if (existing) {
@@ -273,6 +298,15 @@ export class SrsTestManager {
           existing.onRetry = previous
             ? () => { previous(); params.onRetry?.(); }
             : params.onRetry;
+        }
+        // A queued prefetch carries no fallback (a fallback question is never
+        // cached, so warming the cache with one is pointless). If the user
+        // reaches that card before it settles, the upgraded request brings the
+        // real fallback with it — otherwise an offline learner would get the
+        // error box for a card whose fallback was available.
+        if (params.fallback && !existing.fallback) {
+          this.log('fallback-attached', { cardKey, kind: input.kind });
+          existing.fallback = params.fallback;
         }
         return existing.promise;
       }
@@ -300,6 +334,7 @@ export class SrsTestManager {
       priority,
       input,
       onRetry: params.onRetry,
+      fallback: params.fallback,
       promise,
       resolve: resolveRequest,
     };
@@ -410,7 +445,7 @@ export class SrsTestManager {
         });
         const question = this.parseAndValidate(response, input);
         this.cache.set(this.cacheKey(cardKey, input), question);
-        return { ok: true, question, fromCache: false };
+        return { ok: true, question, fromCache: false, source: 'llm' };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         lastDiagnostic = diagnosticFor(input.kind, prompt, response, message);
@@ -426,6 +461,34 @@ export class SrsTestManager {
         }
       }
     }
+
+    // Every attempt failed. Before giving up, build a question from local data
+    // (SPEC-066 § "Offline test generation"). A fallback question is
+    // deliberately NOT cached: once the device is online again the card must
+    // get a real generated question rather than replay the offline one.
+    const fallback = request.fallback ?? this.fallback;
+    if (fallback) {
+      try {
+        this.log('fallback-start', { cardKey, kind: input.kind, error: lastDiagnostic?.error });
+        const question = await fallback(input);
+        if (question) {
+          this.log('fallback-question', {
+            cardKey,
+            kind: input.kind,
+            choices: question.choices.length,
+          });
+          return { ok: true, question, fromCache: false, source: 'fallback' };
+        }
+        this.log('fallback-unavailable', { cardKey, kind: input.kind });
+      } catch (error) {
+        this.log('fallback-failed', {
+          cardKey,
+          kind: input.kind,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
     return { ok: false, diagnostic: lastDiagnostic! };
   }
 

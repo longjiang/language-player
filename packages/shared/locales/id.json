@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, other {diulas # kali}}",
         "start_test": "Mulai tes",
         "submit": "Kirim",
+        "test_definition_prompt": "Apa arti “{word}” dalam kalimat ini?",
         "test_error": "Terjadi masalah saat membuat tes ini.",
         "test_skipped": "Dilewati",
         "trying_again": "Ada masalah, mencoba lagi..."
