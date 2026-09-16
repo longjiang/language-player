@@ -5,6 +5,7 @@
 
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { assetProxyUrl } from '@/lib/asset-proxy';
 import { logerr } from '@/lib/logger';
 
 const PYTHON_URL = PYTHON_API_URL;
@@ -244,9 +245,16 @@ export async function getSyncedSubtitles(
  * The URL is relative, which is what an `<img src>` wants. Where it has to be
  * absolute (an `og:image`, which a crawler never resolves against our origin),
  * prefix it with the site URL — see the watch page's `generateMetadata`.
+ *
+ * The video id is in the *path*, not a query string: Netlify keys the proxy's
+ * cached response on the path alone, so the old `?u=` form returned one image
+ * for every video in the app. See `lib/asset-proxy.ts` for the measurements.
  */
 export function youtubeThumbnail(youtubeId: string, quality: 'default' | 'mqdefault' | 'hqdefault' | 'maxresdefault' = 'mqdefault'): string {
-  return `/api/asset-proxy?u=${encodeURIComponent(`https://img.youtube.com/vi/${youtubeId}/${quality}.jpg`)}`;
+  // The id is encoded before it reaches `assetProxyUrl`: a malformed id
+  // containing `?` or `#` would otherwise be read as a query or fragment and
+  // make `assetProxyUrl` throw inside a render.
+  return assetProxyUrl(`https://img.youtube.com/vi/${encodeURIComponent(youtubeId)}/${quality}.jpg`);
 }
 
 /** Build a YouTube watch URL. */

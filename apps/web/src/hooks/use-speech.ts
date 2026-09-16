@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useLanguage } from '@/providers/language-provider';
+import { assetProxyUrl } from '@/lib/asset-proxy';
 import { log, logwarn } from '@/lib/logger';
 import { speechLogger } from '@/lib/logger';
 import { SPEECH_DEFAULTS, LANG_TO_SPEECH_TAG, pickBestVoice, type VoiceCandidate } from '@langplayer/shared';
@@ -152,10 +153,14 @@ export function useSpeech() {
    * Same-origin via `/api/asset-proxy`: Wikimedia's projects have been blocked
    * in mainland China since 2019, so the audio has to be fetched server-side
    * (ADR-0046). The proxy follows the `Special:FilePath` redirect.
+   *
+   * The filename is in the *path*, not a query string: Netlify keys the proxy's
+   * cached response on the path alone, so the old `?u=` form returned one file
+   * for every word. See `lib/asset-proxy.ts` for the measurements.
    */
   const wiktionaryAudioUrl = useCallback((filename: string): string => {
     const upstream = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
-    return `/api/asset-proxy?u=${encodeURIComponent(upstream)}`;
+    return assetProxyUrl(upstream);
   }, []);
 
   return {
