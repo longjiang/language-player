@@ -950,6 +950,7 @@
         "find_videos_matched": "내 레벨에 맞는 비디오 찾기",
         "for_term": "{term}의",
         "forgot_password": "비밀번호를 잊으셨나요?",
+        "free_new_cards_limit": "무료 계정은 하루에 최대 20장의 새 카드를 추가할 수 있습니다. 프로로 업그레이드하면 일일 한도를 더 높게 설정할 수 있습니다.",
         "free_subtitle_limit_reached": "무료 자막 줄의 끝에 도달했습니다.",
         "full_subtitles_failed": "전체 자막을 불러오지 못했습니다",
         "full_subtitles_loaded": "전체 자막을 불러왔습니다",

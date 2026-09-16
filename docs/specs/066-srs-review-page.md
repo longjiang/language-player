@@ -36,8 +36,8 @@ both platforms and records the current web ↔ mobile disparities.
   corrupted.
 - As a learner, I want a daily limit on new cards so the deck doesn't become
   overwhelming.
-- As a free user, I want a clear upgrade path when I hit the free daily review
-  cap.
+- As a free user, I want to be told why I can't introduce more than 20 new
+  cards a day — while still being able to review every card I've already got.
 
 When a learner opens Review for a language, they see the words they've saved,
 presented one card at a time, starting with the ones due for review. Each card
@@ -243,13 +243,13 @@ it does not open a slot for a replacement card (`getNewCardBudget()` counts a
 card minted before today if it is still new or has been rated at any point
 today, keeping the budget monotone for the local day).
 
-### Undo and the free cap
+### Undo and the free allowance
 
 Undo restores the card to exactly the scheduling state it had before the last
 rating (including its memory state and current step) and returns it to the
-front of the session. For free users, each rating counts toward a daily cap
-of 20; undoing a rating restores the card's schedule and should also release
-that rating back to the daily budget. Both
+front of the session. The card stays in the deck, so undo releases nothing
+against the free allowance — only the rating record is voided
+(`state.voidRatingId`). Both
 platforms share this algorithm through the same utility implementation, so a
 card rated on web and a card rated on mobile follow identical scheduling.
 
@@ -1154,21 +1154,47 @@ all key off the resolved mode rather than the raw selector value.
   refill until the next local day.
 - The review day starts at `review.dayStartHour` (0–23, default 4, Anki's
   "next day starts at") in the device's local timezone — not UTC midnight.
-- Free users can complete 20 ratings per day (`FREE_SRS_DAILY_CAP = 20`,
-  [ADR-0034 — Pro gating/freemium strategy](../adr/0034-pro-gating-freemium-strategy.md)).
-  At the cap, ratings are blocked and an upgrade banner links to the Pro page.
-- The counter is per user + per local day, keyed
-  `lpSrsReviewsDone:<userId>:<YYYY-MM-DD>`.
+- **Rating is never gated by plan** (2026-09-16,
+  [ADR-0034 Revision 1](../adr/0034-pro-gating-freemium-strategy.md)). Review
+  is a free feature: every card in the deck can be rated, and no review screen
+  shows an upgrade banner. (Before this revision, free users were blocked at 20
+  ratings per day with an upgrade banner — that gate is gone.)
+- **Free daily new-card allowance = 20** (`FREE_SRS_DAILY_CAP = 20` backend,
+  `FREE_SRS_DAILY_NEW_CARDS` client). It bounds how many *new* cards a deck may
+  add per local day, **per language**. Once a free user has added 20 new cards
+  today, the server refuses further *creations* — a rating that creates a card
+  returns `403 {"code": "srs_cap_reached"}`. Reviews of cards already in the
+  deck are unaffected, so working through a large deck is always possible.
+- The effective daily limit is `effectiveDailyNewLimit(dailyNewLimit, isPro)`
+  = the configured value for Pro/trial, and `min(configured, 20)` for free
+  users; both clients drive deck construction (`getNewCardBudget`,
+  `getActiveNewCardIds`, `countDeckStates`) from that effective value.
+- The **only** Pro gate in SRS is the settings control: the slider keeps its
+  1–200 range for everyone, but a free user's attempt to set more than 20 is
+  denied — the value stays at the ceiling and
+  `msg.free_new_cards_limit` explains why, next to an Upgrade to Pro link
+  (Settings → Review on both platforms).
+- The former per-user counter (`lpSrsReviewsDone:<userId>:<YYYY-MM-DD>`) is
+  removed; the allowance is counted server-side from the deck itself.
 
-**Backend cap contract (Phase 0 decision).** The free 20-review cap is counted
-at a rating boundary, never on generic `PUT /srs/cards` sync writes (undo
-restores and offline outbox replays are also PUTs and would double-count).
-Each interactive rating carries a client-generated rating id recorded in a
-per-user review log so replays/retries count once; undo writes a matching void
-event so the cap is restored. Trial users are Pro-equivalent while active
-(mirroring the clients' `isPro` logic from `user_subscriptions`). Pro
-detection mirrors `/user-subscription`: lifetime is unconditional, and other
-types count while unexpired — there is no `status` filter.
+**Backend allowance contract (revised 2026-09-16, ADR-0034 Revision 1).** The
+free allowance counts cards the deck **adds** in the user's current local day —
+`count_srs_new_cards_today()` counts `user_srs_cards` rows for `(user, l2)`
+with `created_at` inside `[localDayStart, now]`. A write for a `(user, l2,
+word_id)` that already has a row is a review and is accepted unconditionally;
+only a write that creates the row is counted, and the 21st creation in the day
+raises `SrsDailyCapExceeded` →
+`403 {"code": "srs_cap_reached", "cap": 20}`. Both a rating and a card minted by
+the deck's auto-init create a row, so both are counted; `state.voidRatingId`
+(undo restore) is never counted. The upper bound on `created_at` keeps a
+fast client clock from parking a card in the future (which would otherwise
+count against every later day). `user_srs_review_log` remains the append-only
+rating history: every rating is logged and undo voids its row, which is what
+`repair_new_cards_with_review_log()` uses to heal cards reset to `new`.
+Trial users are Pro-equivalent while active (mirroring the clients' `isPro`
+logic from `user_subscriptions`). Pro detection mirrors `/user-subscription`:
+lifetime is unconditional, and other types count while unexpired — there is no
+`status` filter.
 
 ### Orphan reconciliation
 
@@ -1214,7 +1240,7 @@ orphaned.
 | 6 | L1-translated definitions | Fetches L1-translated entry on reveal for non-English L1 | Uses cached/offline entries as-is | **Web is correct** — mobile should port the L1-translated entry lookup |
 | 7 | Offline | Online-only: localStorage + row API + network fetches | Offline-first: SecureStore, SQLite dictionary, sync outbox | Intended per platform (SPEC-053) |
 | 8 | Loading/flash guard | Guards authenticated hydration (`cloudLoaded`, `savedWordsEmpty`) to avoid a false "No words" flash | No equivalent guard; `loaded` is true after local load even while cloud hydration is pending | **Web is correct** — mobile should port the guard (commit `d2faf8f3` was never ported) |
-| 9 | Free-cap UI | Buttons stay enabled at cap but `handleRate` no-ops; toast colors via sonner | Buttons disabled + dimmed at cap; toast colors via custom RN Toast config | Cosmetic parity gap |
+| 9 | ~~Free-cap UI~~ | **Removed 2026-09-16** (ADR-0034 Revision 1): neither platform gates rating; the only SRS Pro gate is Settings → Review (new cards per day > 20 denied + explained on both) | Same | Resolved — was: web no-op'd `handleRate` at the cap, mobile disabled + dimmed the buttons |
 | 10 | Rating settle delay | 400 ms before buttons re-enable | 600 ms | Minor timing difference |
 | 11 | Entry-miss state | `review.no_definition_available` text | Spinner → offline-dictionary message | Web has no offline fallback, so states differ by design |
 | 12 | Header | Back link to Explore + colored counts | "Review" title + colored counts (tab navigation) | Platform navigation difference |
@@ -1285,9 +1311,13 @@ orphaned.
 - ✅ **Mobile SRS hydration retry** — implemented (2026-08-13): failed
   `GET /srs` fetches retry every 5 seconds when online; Offline Mode and
   detected-offline use the local store.
-- ✅ **Mobile cap-rejection reconciliation** — implemented (2026-08-13):
-  `srs_cap_reached` rejections revert the unsynced card and surface the
-  upgrade banner instead of silently dropping the rating.
+- ✅ **Mobile cap-rejection reconciliation** — implemented (2026-08-13,
+  **re-scoped 2026-09-16**): `srs_cap_reached` now means "this write would ADD
+  a card beyond the free daily allowance", so the rejection reverts the
+  unsynced card (it isn't in the deck server-side) and logs the reason. Since
+  the clients clamp the free new-card limit to 20, it only fires on a
+  day-boundary/another-device edge. Before the revision the same path also
+  surfaced the review-screen upgrade banner.
 - ✅ **Reversible daily-limit changes** — implemented (2026-08-21):
   changing `dailyNewLimit` no longer deletes blue cards outside the active
   window. Both review pages soft-deactivate those cards during selection;
@@ -1307,13 +1337,20 @@ orphaned.
 - ✅ **Duplicate-instance guard** — implemented (2026-08-13): saved-word
   instances dedupe by `form + context.text` regardless of save date, existing
   duplicates are cleaned up, and mobile renders a single context.
-- ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
-  ratings through an idempotent `user_srs_review_log`; undo writes a void
-  event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
-  The mobile outbox acknowledges `srs_cap_reached` as an expected rejection,
-  so over-cap ratings never surface as Sync Status errors.
-- ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
-  restores the card and releases the rating back to the local-day budget.
+- ✅ **Backend free new-card allowance** — implemented (Phase 5; **revised
+  2026-09-16**, ADR-0034 Revision 1): Flask counts the cards a deck *adds* per
+  local day from `user_srs_cards.created_at`, per language. A write for a card
+  already in the deck is a review and is always accepted, on every plan; only a
+  write that creates the row can be rejected with
+  `403 {"code": "srs_cap_reached"}`. Pro/trial are unlimited, and
+  `user_srs_review_log` remains as the append-only rating history (it feeds
+  `repair_new_cards_with_review_log`; undo writes a void event). The mobile
+  outbox acknowledges `srs_cap_reached` as an expected rejection, so it never
+  surfaces as a Sync Status error.
+- ❌ **Undo decrements the free daily counter** — removed (2026-09-16): the
+  free allowance counts new cards, and an undone card stays in the deck, so
+  there is nothing to release. Undo still restores the card's schedule and
+  voids the rating record.
 - ✅ **Per-test regeneration** — implemented (2026-08-25, web `367f211e`,
   mobile `1d2f784f`): each test question (definition / pronunciation) has its
   own Regenerate control that replaces just that test.
@@ -1587,6 +1624,12 @@ missing on the server, so it can reappear as new on web or other devices.
 screen reconciles `reviewsDoneToday` to the cap so the upgrade banner appears.
 The flag resets on the next local day.
 
+**Re-scoped (2026-09-16, ADR-0034 Revision 1):** the event now fires only when
+a write would *create* a card past the free daily allowance, so reverting the
+card is the correct outcome (the server holds no row for it). The
+`reviewsDoneToday` counter and the review-screen banner are gone; the review
+page logs the event and nothing else.
+
 ### Shared backend: no server-side tombstone for saved words or SRS cards
 
 `DELETE /saved-words/...` and `DELETE /srs/cards/...` hard-delete rows. The
@@ -1793,12 +1836,17 @@ files must agree before Phase 2 starts.
    message.~~ Decision: `remainingNewCardsToday()` = `max(0, dailyNewLimit −
    cards introduced today − older unrated cards still in the blue deck)`, and
    `planNewDeck` must not create cards beyond today's budget.
-3. **Backend free-cap counting contract (needed by Phase 5).** Decision:
+3. ~~**Backend free-cap counting contract (needed by Phase 5).** Decision:
    ratings are counted at a rating boundary with a client-generated rating id
    recorded in a per-user review log (replays/retries count once); undo writes
    a void/decrement event; the backend mirrors the clients' `isPro` logic
    (`user_subscriptions`; an active trial is Pro-equivalent); free = 20
-   reviews per local day.
+   reviews per local day.~~
+   **Superseded 2026-09-16** (ADR-0034 Revision 1): the free allowance counts
+   *new cards added to a deck* per local day (per language, from
+   `user_srs_cards.created_at`); reviews of existing cards are never counted or
+   blocked. The rating-id/review-log plumbing survives as rating history, not
+   as the allowance.
 4. **Legacy-field compatibility window.** Decision: keep writing deprecated
    `ease`, `interval`, `repetitions`, `nextReview` fields alongside FSRS
    fields for one release cycle so old installed clients don't crash on
@@ -1976,25 +2024,27 @@ Gate: typecheck + manual pass on both platforms for each item.
 Gate: typecheck + manual free-user session crossing the cap and undoing across
 the boundary.
 
-### Phase 5 — Backend free cap
+### Phase 5 — Backend free allowance (delivered; re-scoped 2026-09-16)
 
 Depends on the Phase 0 contract. This is a separate, larger change; do not
 combine it with Phase 4.
 
-1. **Schema:** per-user review-log table (or equivalent) keyed by the client
-   rating id, with the local-day count for free users; void/decrement rows for
-   undo.
-2. **Flask:** enforce the cap at the rating boundary (not on generic
-   `PUT /srs/cards`, which also carries sync replays and undo restores).
-   Return an explicit 429/403-style response the clients can render as the
-   upgrade banner. Mirror the clients' Pro/trial determination from
-   `user_subscriptions`.
-3. **Clients:** keep the local counter as a UX hint only; reconcile from the
-   server response so a failed/rejected rating doesn't permanently burn the
-   budget. Update the free-cap UI copy to match the server response.
-4. **Tests:** backend tests in `zerotohero-python-server/test_app.py` (cap
-   counting, idempotent replays, undo decrement, trial exemption) plus the
-   SPEC-054 row added in Phase 0.
+1. **Schema:** per-user review-log table keyed by the client rating id, plus
+   `user_srs_cards.created_at` (added lazily with `add column if not exists`;
+   pre-existing rows back-fill to 0 so they can never consume today's
+   allowance). Undo still writes void rows for the rating history.
+2. **Flask:** enforce the allowance when a write would **create** a card
+   (`srs_card_exists()`), never for a card already in the deck. Return
+   `403 {"code": "srs_cap_reached", "cap": 20}`. Mirror the clients' Pro/trial
+   determination from `user_subscriptions`.
+3. **Clients:** no local counter, no review-screen gate. Both platforms clamp
+   the effective limit with `effectiveDailyNewLimit()` and deny a free user's
+   attempt to raise it above 20 in Settings → Review with
+   `msg.free_new_cards_limit`.
+4. **Tests:** backend tests in `zerotohero-python-server/test_app.py`
+   (allowance counting per deck/day, existing-card reviews always accepted,
+   auto-init creations counted, pro/trial exemption, future-dated rows
+   ignored) plus the SPEC-054 row updated in Phase 0.
 
 Gate: backend tests pass; web + mobile manual free-session QA against the local
 Flask API (server started by the user, per repo rules).

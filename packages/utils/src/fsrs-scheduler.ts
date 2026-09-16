@@ -451,6 +451,28 @@ export function newCardsIntroducedToday(
   return count;
 }
 
+/**
+ * Free tier: how many NEW cards a deck may introduce per local day
+ * (ADR-0034 D4, revised 2026-09-16). Reviewing a card that is already in the
+ * deck is never limited — this bounds introductions only. Mirrors the
+ * backend's `FREE_SRS_DAILY_CAP` (`utils_user_data.py`).
+ */
+export const FREE_SRS_DAILY_NEW_CARDS = 20;
+
+/**
+ * Effective daily new-card limit for a plan.
+ *
+ * The configured limit (`Settings → Review → new cards per day`, 1–200) is the
+ * user's choice; the free tier is bounded by `FREE_SRS_DAILY_NEW_CARDS`, so a
+ * free user who previously set a higher limit (a lapsed Pro) — or a client
+ * that never applied the gate — can never introduce more new cards per day
+ * than the server's free allowance will accept.
+ */
+export function effectiveDailyNewLimit(configured: number, isPro: boolean): number {
+  const limit = Math.max(0, Math.floor(configured));
+  return isPro ? limit : Math.min(limit, FREE_SRS_DAILY_NEW_CARDS);
+}
+
 /** Breakdown of the local-day new-card budget (SPEC-066). */
 export interface NewCardBudget {
   /** Effective daily new-card limit after clamping. */

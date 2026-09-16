@@ -950,6 +950,7 @@
         "find_videos_matched": "Find videos matched to your level",
         "for_term": "for {term}",
         "forgot_password": "Forgot password?",
+        "free_new_cards_limit": "Free accounts can add up to 20 new cards a day. Upgrade to Pro to set a higher daily limit.",
         "free_subtitle_limit_reached": "You've reached the end of free subtitle lines.",
         "full_subtitles_failed": "Failed to load full subtitles",
         "full_subtitles_loaded": "Full subtitles loaded",

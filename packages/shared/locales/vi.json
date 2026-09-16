@@ -950,6 +950,7 @@
         "find_videos_matched": "Tìm video phù hợp với trình độ của bạn",
         "for_term": "cho {term}",
         "forgot_password": "Quên mật khẩu?",
+        "free_new_cards_limit": "Tài khoản miễn phí có thể thêm tối đa 20 thẻ mới mỗi ngày. Nâng cấp lên Pro để đặt giới hạn hàng ngày cao hơn.",
         "free_subtitle_limit_reached": "Bạn đã đến cuối các dòng phụ đề miễn phí.",
         "full_subtitles_failed": "Không thể tải toàn bộ phụ đề",
         "full_subtitles_loaded": "Đã tải toàn bộ phụ đề",

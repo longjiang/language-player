@@ -62,6 +62,8 @@ export {
   getActiveNewCardIds,
   mergeSrsCards,
   reconcileCardsToServer,
+  effectiveDailyNewLimit,
+  FREE_SRS_DAILY_NEW_CARDS,
 } from './fsrs-scheduler';
 export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating, SrsReviewStatus } from './fsrs-scheduler';
 /** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …). */

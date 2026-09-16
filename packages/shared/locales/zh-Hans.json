@@ -935,6 +935,7 @@
         "find_videos_matched": "找到适合您水平的视频",
         "for_term": "搜索「{term}」",
         "forgot_password": "忘记密码？",
+        "free_new_cards_limit": "免费账户每天最多可添加 20 张新卡片。升级至 Pro 可设置更高的每日上限。",
         "free_subtitle_limit_reached": "您已到达免费字幕行的末尾。",
         "full_subtitles_failed": "加载完整字幕失败",
         "full_subtitles_loaded": "完整字幕已加载",
