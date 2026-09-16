@@ -8,6 +8,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
@@ -162,6 +163,14 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
     <GestureHandlerRootView style={{ flex: 1 }}>
+    {/* Keyboard metrics for the whole app (react-native-keyboard-controller).
+        Mounted inside GestureHandlerRootView because the library drives its
+        keyboard tracking through gesture handler + reanimated, and above every
+        screen so `KeyboardAwareScrollView` / `KeyboardStickyView` anywhere in
+        the tree can read the live keyboard height. Without it the keyboard
+        APIs return zeros and inputs stay hidden behind the keyboard on a long
+        card (SPEC-066 spell mode, SPEC-095 task inputs). */}
+    <KeyboardProvider>
     <LanguageProvider>
       <IntlProviderWrapper>
         <AuthProvider>
@@ -201,6 +210,7 @@ export default function RootLayout() {
         </AuthProvider>
       </IntlProviderWrapper>
     </LanguageProvider>
+    </KeyboardProvider>
     </GestureHandlerRootView>
     </ErrorBoundary>
   );
