@@ -421,6 +421,32 @@ starts a pull/push cycle automatically. Detection is debounced (~1–3 s) before
 marking the app offline to avoid flickering on flaky networks, and returns
 online immediately when connectivity is confirmed.
 
+**What "offline" means here — device, not backend (fixed 2026-09-16).**
+`connectivity` answers exactly one question: *does this device have a network?*
+It is driven by NetInfo's `isConnected` (an OS-level signal). Two rules follow,
+and getting either wrong makes the app lie about being offline:
+
+1. **NetInfo's `isInternetReachable` is ignored.** It is not provided by the
+   iOS native module, so the library falls back to its own HTTP check against
+   its default `reachabilityUrl`, `https://clients3.google.com/generate_204` —
+   a host mainland China blocks (ADR-0046). On a good connection that check
+   times out, `isInternetReachable` becomes `false`, and the app used to
+   declare itself offline: cloud-off icon, "you are offline" notices on
+   Explore, sync skipped, while every other app on the device worked. The
+   client now configures NetInfo to probe `PYTHON_API_URL` instead (so no
+   request goes to a China-blocked host) and ignores the result for the
+   offline decision.
+2. **A failed API probe never means the device is offline.** An unreachable,
+   restarting, or hung backend is a *sync* problem and shows up as a sync
+   error (`lastError`, cloud-alert); it must not flip the device-offline UI. The
+   probe may only publish `offline` while the native signal is *missing*
+   (`isConnected === null`), never over a positive `isConnected === true`.
+
+The status model also starts from what is actually known: `effectiveOffline` is
+initialised from the Offline Mode override and the current connectivity, not
+hardcoded `true`, so the header icon no longer claims "offline" from the first
+frame before any signal has arrived.
+
 The UI must keep the two reasons visually distinct:
 
 - **Auto-detected**: "No connection — changes are saved on this device."
