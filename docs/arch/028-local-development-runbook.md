@@ -408,6 +408,24 @@ sure"), requires Metro already running (`npx expo start` above), and bakes
 exact commit in the About dialog, start Metro with
 `EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) npx expo start`.
 
+#### Adding a native module — run `pod install` first
+
+`dev-build.mjs` runs `xcodebuild` against the workspace as it is; it does **not**
+install pods. So adding a dependency with native code (ADR-0047 added
+`react-native-keyboard-controller`) needs CocoaPods to link it before the build,
+or the JS import fails at runtime with a missing-native-module error even though
+the package is installed:
+
+```bash
+cd apps/mobile/ios
+pod install                      # if the RVM nkf gem fails on Apple silicon:
+/usr/bin/ruby -S pod install     # ... use the system Ruby instead
+```
+
+Then build as usual. Android needs no equivalent step (Gradle autolinking picks
+the module up), and a tree that does not yet contain native changes needs
+nothing at all — this is only for the commit that introduces or removes one.
+
 #### Install a retained dev build onto the device (LAN-change-proof)
 
 This is the routine path: the artifact already exists in `.dev-builds/`, so
