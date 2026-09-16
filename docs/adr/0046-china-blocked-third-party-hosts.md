@@ -64,13 +64,20 @@ Concretely, in four rules:
    rather than kept for the sake of visitors who *can* reach YouTube: a hint that
    cannot complete is worse than no hint.
 2. **Blocked media is relayed same-origin through `/api/asset-proxy`.** The route
-   (`apps/web/src/app/api/asset-proxy/route.ts`) takes an absolute `https` URL,
-   **validates its hostname against a hard allowlist**, fetches it server-side and
+   (`apps/web/src/app/api/asset-proxy/[...target]/route.ts`) is addressed **by
+   path** — `/api/asset-proxy/<host>/<path…>`, e.g.
+   `/api/asset-proxy/img.youtube.com/vi/<videoId>/mqdefault.jpg` — and
+   **validates the host against a hard allowlist**, fetches it server-side and
    streams the body back with the upstream content type and a long
    `cache-control`. It is deliberately not a general-purpose proxy: an open
-   `?u=` fetcher is an SSRF hole, so the allowlist (`img.youtube.com`,
-   `i.ytimg.com`, `commons.wikimedia.org`, `upload.wikimedia.org`) grows only with
-   a caller that needs it.
+   fetcher is an SSRF hole, so the allowlist (`img.youtube.com`, `i.ytimg.com`,
+   `commons.wikimedia.org`, `upload.wikimedia.org`) grows only with a caller that
+   needs it. `lib/asset-proxy.ts` owns both halves of the addressing scheme
+   (`assetProxyUrl` for callers, `parseAssetProxyTarget` for the route) so the two
+   ends cannot drift apart.
+   - The asset identity is in the path and **not** in a query string — the
+     original `?u=<absolute URL>` form collapsed in production, see the
+     amendment below.
    - `youtubeThumbnail()` returns the relative proxy path, so `<img>` markup and
      layout are untouched at every call site.
    - `og:image` prefixes it with the site URL, because a crawler never resolves a
@@ -131,8 +138,41 @@ a network, thumbnails still fail — now with a `502` from our own route instead
 a browser-level connection error — and the fix only becomes visible once the
 route runs somewhere with real egress (Netlify, or any dev machine outside
 China). Verified against a running dev server: the route is reachable and
-enforces its allowlist (`400` for a missing `u`, `403` for `www.google.com`),
-and the upstream fetch returned `502`.
+enforces its allowlist (`403` for a host that is not allowlisted, `400` for a
+malformed target or a stray query string), and the upstream fetch returned `502`.
+
+### Amendment — 2026-09-16: the relay addresses its target by path, not by query
+
+The first version of the relay took its target as `?u=<absolute URL>`. That
+silently broke every thumbnail in the app in production, because **Netlify keys
+the cached response on the path alone**:
+
+| Request to `/api/asset-proxy`                  | Result               |
+| ---------------------------------------------- | -------------------- |
+| `?u=…/vi/dQw4w9WgXcQ/mqdefault.jpg`            | 200, 23,512 B        |
+| `?u=…/vi/9bZkp7q19f0/mqdefault.jpg`            | 200, same 23,512 B   |
+| `?u=…/vi/AAAAAAAAAAA/mqdefault.jpg` (bogus id) | 200, same 23,512 B   |
+| no `u` at all (expected `400 Missing u`)       | 200, same 23,512 B   |
+| `?u=https://evil.example.com/x.jpg` (403)      | 200, same 23,512 B   |
+
+Every one of those answered `Netlify Durable; hit` with the same `age`
+(~75,158 s) — one stored object, ~21 hours old, matching the deploy of this ADR.
+Adding `&cachebust=1` changed nothing, and a path that had never been cached
+answered `age: 1`. So the app served the first thumbnail ever fetched through the
+route (a Thai video, poignantly) for every video in every language until the
+entry expired — and because the cache answered before the handler ran, the host
+allowlist was never consulted for those requests.
+
+Two things to carry forward:
+
+- **A cacheable function response must not depend on anything outside its own
+  path.** Netlify's docs say query parameters are normally part of the key for
+  serverless functions, and `Netlify-Vary: query` exists to force the issue;
+  neither held here for this route under the Next runtime. The path is the one
+  part that observably did.
+- **A cache hit skips the handler, so guards inside the handler are not controls
+  on cached responses.** A response must not be made cacheable unless its URL
+  alone fully determines it.
 
 ## Consequences
 
