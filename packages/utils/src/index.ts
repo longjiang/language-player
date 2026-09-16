@@ -115,13 +115,10 @@ export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';
 export { splitPhraseTokens, type SplitPhraseTokensResult } from './split-phrase-tokens';
 export {
-  dailyReviewCounterKey,
-  msUntilNextDay,
-} from './daily-counter';
-export {
   clampDayStartHour,
   localDayStartMs,
   dayKey,
+  msUntilNextDay,
   deviceTimezone,
 } from './day-boundary';
 export { tokenMatchesAnyTerm, tokenMatchesAnyForm, kanaFormsForEntries } from './highlight-match';
