@@ -426,6 +426,50 @@ Then build as usual. Android needs no equivalent step (Gradle autolinking picks
 the module up), and a tree that does not yet contain native changes needs
 nothing at all — this is only for the commit that introduces or removes one.
 
+#### …and re-check the prebuilt flavors after `pod install`
+
+`pod install` also re-installs two **prebuilt** binaries that must match the
+build's flavor. Both mechanisms decide by comparing a `Debug`/`Release` marker
+file against the build configuration, and both can be left saying "already
+correct" while the wrong binary is installed. Since a Debug app build compiles
+every pod with `RN_DEBUG_STRING_CONVERTIBLE=1` (from `REACT_NATIVE_DEBUG`), a
+Release-flavored prebuilt is ABI-incompatible with it in two different ways —
+and the two failures look nothing alike, which is what makes this expensive:
+
+| Prebuilt | What `pod install` leaves behind | How it fails |
+|---|---|---|
+| React core (`Pods/React-Core-prebuilt`) | Installs the **Release** `React.xcframework` and deletes `.last_build_configuration`; RN's `replace-rncore-version.js` then assumes "no marker + Debug ⇒ already debug" and skips | **Link failure**: `ld: symbol(s) not found for architecture arm64` for `facebook::react::Props::getDebugProps()`, `typeinfo for facebook::react::BaseViewProps`, `Sealable::ensureUnsealed()` — all Debug-only C++ symbols |
+| Expo precompiled modules (`Pods/<Pod>/artifacts`) | Writes the marker as `debug` but leaves the **Release** xcframework in place; Expo's switch phase exits early when marker == configuration, so it never swaps | **Launch crash**: the app links fine and then `EXC_BAD_ACCESS` (SIGSEGV) in `facebook::react::Props::Props()` called from `expo::ExpoViewProps` in the precompiled `ExpoModulesCore` — an ABI mismatch, not a bug in the app's code |
+
+Force both to redo the swap by making the markers disagree with the build
+configuration, then rebuild:
+
+```bash
+cd apps/mobile/ios/Pods
+echo "Release" > React-Core-prebuilt/.last_build_configuration        # RN core → Debug tarball
+for f in */artifacts/.last_build_configuration; do echo "release" > "$f"; done   # Expo → debug tarball
+```
+
+Each build phase then extracts the flavor it needs
+(`ReactNativeCore-artifacts/reactnative-core-<version>-debug.tar.gz`, and
+`<Pod>/artifacts/<Product>-debug.tar.gz` — both are copied in at install time, no
+network needed) and rewrites its marker.
+
+**Verify the built app, don't trust the build:** both sides must report Debug.
+A `0` on the Expo line means the Release-ABI module is embedded and the app will
+crash on launch.
+
+```bash
+APP=apps/mobile/build/devbuild/Build/Products/Debug-iphoneos/LanguagePlayer3.app
+nm -gU "$APP/Frameworks/React.framework/React" | grep -c getDebugPropsDescription                    # expect 11
+nm -u  "$APP/Frameworks/ExpoModulesCore.framework/ExpoModulesCore" | grep -c getDebugPropsDescription # expect 1
+```
+
+Note this is a side effect of *running* `pod install`, not of the dependency that
+prompted it, and it survives until something forces the swap — a Release build
+(or `EXPO_PRECOMPILED_FLAVOR=release`) flips the markers back, and the next Debug
+build is then fine.
+
 #### Install a retained dev build onto the device (LAN-change-proof)
 
 This is the routine path: the artifact already exists in `.dev-builds/`, so
