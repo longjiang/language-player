@@ -70,11 +70,12 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 51 | 3b3a8ee2 | 2026-09-03 | — | dev 34 (Debug; archived; lp-dev-34-android-3b3a8ee27312.apk; ea83c89fd29855932e03125c78e94ffbf55b1effc2b72dccc0efb023869b80de) |
 | 52 | c1ae1557 | 2026-09-03 | — | dev 35 (Debug; archived; lp-dev-35-android-c1ae1557790c.apk; 3e7aa4c0a81e36158ba0f3c2fbc7323dbc0682e1405248d8012990772cb389a2) |
 | 53 | 19d8369b | 2026-09-08 | — | dev 36 (Debug; archived; lp-dev-36-ios-device-19d8369b980a.zip; 8add57b6c8f7db5611c502f4db44b30142b319ba9ee5d95d6f8e12ad04452c47) |
-| 54 | 7806009c | 2026-09-08 | — | dev 37 (Debug; active; lp-dev-37-android-7806009cc5ec.apk; 65dc0d395fbbdea417f0c16e2c17d52f7c75ffba6a2eba50808d07925b692731) |
+| 54 | 7806009c | 2026-09-08 | — | dev 37 (Debug; archived; lp-dev-37-android-7806009cc5ec.apk; 65dc0d395fbbdea417f0c16e2c17d52f7c75ffba6a2eba50808d07925b692731) |
 | 55 | 74395962 | 2026-09-08 | — | dev 38 (Debug; active; lp-dev-38-ios-device-7439596290e6.zip; 7d9901363582b6d562535e0618479e33c1c437a85c17f5812bad110ebdf8b03a) |
 | 56 | ffac75ce | 2026-09-08 | 3.5.0 — iOS TestFlight (b21, consumed) · 3.5.0 — Android Internal testing (b21, consumed) | — |
 | 57 | f6c7ab27 | 2026-09-16 | 3.6.0 — iOS TestFlight (b22, consumed) | — |
 | 58 | c9634ffb | 2026-09-16 | — | dev 39 (Debug; active; lp-dev-39-ios-device-c9634ffb9b32.zip; 4161a8881db30bbf8c48f12966e05c0bf0d7caa9082b87299bc22069bbc9fdd0) |
+| 59 | 5aca7f47 | 2026-09-16 | — | dev 40 (Debug; active; lp-dev-40-ios-device-5aca7f47e8ac.zip; aa0e5e99967fb88de83dcf943c7e5cf133cb75ae5addad28384c1819fb506ac1) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
