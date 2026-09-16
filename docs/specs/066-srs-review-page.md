@@ -672,7 +672,10 @@ answering the final question reveals the card back and the rating buttons.
   **exactly once**. If it still fails, the test shows a generic error
   (no error specifics) with a **Retry** button and a **Skip** button, plus a
   very small **Diagnostic** link that reveals — in plain text — the prompt
-  sent to the LLM, the raw LLM response, and the error.
+  sent to the LLM, the raw LLM response, and the error. On mobile the
+  programmatic fallback ([Offline test generation](#offline-test-generation-programmatic-confounders))
+  runs between the retry and the error box: when it can build a valid question,
+  the error box never appears for that test.
 - **Skip (2026-08-25)** — a failed test can be **skipped** instead of
   retried. The skipped test is excluded from the flow and **does not count
   toward the scoring** (`totalTests` is the number of non-skipped tests), so
@@ -759,6 +762,58 @@ answering the final question reveals the card back and the rating buttons.
   only the kanji readings with real or plausible readings of the same kanji
   (e.g. `憑き物` = `つきもの` → `つきぶつ`, `つきもつ`, `つきもち`), and must
   never extend/truncate/reorder the correct reading.
+
+### Offline test generation (programmatic confounds)
+
+Choose mode is the one review mode that needs the LLM: definition confounders
+must be plausible-but-wrong *for this sentence*, which needs a model. Offline
+(Offline Mode, or a dead/failing `/chatgpt`) generation fails and the card shows
+the error box with Retry/Skip — so an offline learner can only rate new cards by
+skipping every test. Since 2026-09-16 a failed generation falls back to a
+**programmatic** question built from data the device already has.
+
+- **Trigger** — the fallback runs when generation fails after the manager's one
+  automatic retry, whatever the reason (Offline Mode, no network, a failing or
+  slow endpoint), so one code path covers all of them. The mobile transport
+  rejects immediately when the app already knows it is offline, so the fallback
+  is reached without waiting for a request timeout.
+- **Never cached** — a fallback question is not written to the card-test cache.
+  Coming back online must produce a real LLM question, not replay the offline
+  one. The manager logs `fallback-question` / `fallback-unavailable` /
+  `fallback-failed`, and the request result carries
+  `source: 'llm' | 'fallback'` so the review pages can log which one answered.
+- **Pronunciation (Japanese)** — the correct answer is the headword's kana
+  reading, which the app already owns (`pronunciationReadingOf`). The
+  confounders are **readings of other offline-dictionary entries that share a
+  kanji with the headword** (real readings a learner would actually weigh),
+  best-first by shared characters then `stringSimilarity`, topped up when needed
+  by deterministic kana variants of the correct reading (voicing/rendaku swaps,
+  促音 insertion). The existing validity rules apply unchanged: hiragana only,
+  every choice distinct, and no choice that contains or is contained by the
+  correct reading (`isObviousPronunciationWrong`) — which is why
+  appended-long-vowel variants are never used. An entry with **no** kana reading
+  (the LLM-hybrid case) has no fallback: offline the app cannot know the answer,
+  so the error box stays.
+- **Definition** — the correct answer is the target's own first definition
+  (resolved entry / offline dictionary), and the confounders are the **first
+  definitions of the most similar saved words** (shared characters first, then
+  `stringSimilarity`), resolved through the offline dictionary by entry id. The
+  target word is excluded, candidates are deduped, and only definitions whose
+  length is comparable to the correct answer are used so the answer-length guard
+  (`validateSrsDefinitionChoices`) still holds. **At least two confounders are
+  required**: if the saved-word pool cannot supply them, no question is built
+  and the normal error box is shown instead of a 2-option quiz.
+- **Deviation from the online contract** — a programmatic definition confounder
+  is not *contextually* wrong for this sentence; it is wrong because it belongs
+  to a different word. That is a weaker distractor than the model's, and it is
+  the price of a usable card offline. The online path (prompt, validation,
+  caching) is unchanged.
+- **Platforms** — mobile only, the offline-capable client
+  ([SPEC-053](053-mobile-offline-mode.md)). Web is online-only (disparity 7) and
+  keeps the error box.
+- **Question text** — app-owned and localized, like the pronunciation question:
+  the definition fallback question comes from `review.test_definition_prompt`
+  (`What does "{word}" mean in this sentence?`), never from the model.
 
 ### Spell mode
 
@@ -1250,6 +1305,7 @@ orphaned.
 | 16 | Unused/dead code | Cleaned up in Phase 6 (`fetchingEntries`, `handleSpeak`, unused imports removed) | `removeWord` intentionally unused: unsaving happens from saved-words/dictionary surfaces, not Review (2026-08-11) | Intended — no delete control on the card; orphan pruning removes the card (disparity 4) |
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
 | 18 | Reconcile local-only cards | `useSrs` dropped local-only cards against the server deck (2026-09-07) | `refreshFromCache()` does the same | **Resolved (2026-09-07)** — web now reconciles stale server-absent local cards against the authoritative deck, matching the mobile pull-merge reconcile, so the new/again/review header counts converge across devices/browsers |
+| 19 | Offline test generation | LLM only; a failed generation shows the error box with Retry/Skip | Programmatic fallback: pronunciation confounders from offline-dictionary readings, definition confounders from similar saved words' first definitions | Mobile-only by design (offline-first client); web is online-only (disparity 7) |
 | 19 | Scrabble keyboard-fill | Hidden `<input>`, reliable on any desktop keyboard | Hidden `TextInput` with `showSoftInputOnFocus={false}`; relies on hardware-keyboard support, whose availability/behaviour varies by device & OS | Both gate on `supportsScrabbleKeyboard` and use a hidden focused field that never summons the soft keyboard/IME; mobile is best-effort for physical keyboards (on-screen touch blocks remain the primary input there). Web's rate/reveal/undo shortcuts ignore this field's keystrokes. |
 | 20 | Scrabble tap/drag layer | Pointer events with pointer capture + a 5px drag threshold | `react-native-gesture-handler` `Exclusive(Pan(8px), Tap())` per tile, composed with the card's native scroll gesture | **Resolved (2026-09-15)** — the mobile tiles previously used `PanResponder`, which iOS cannot shield from the card's `ScrollView`: taps never reached a tile and a drag scrolled the card. Mobile now uses native recognizers and blocks the card's scroll gesture. |
 
