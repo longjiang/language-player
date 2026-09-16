@@ -40,6 +40,11 @@ export {
   savedEntryReading,
 } from './pronunciation';
 export { rawByeonggi, normalizeByeonggi, resolveByeonggi } from './han-script';
+export {
+  classifySubscriptionResponse,
+  parseSubscriptionBody,
+} from './subscription-check';
+export type { SubscriptionCheck } from './subscription-check';
 export type { ByeonggiBase } from './han-script';
 export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
 export type { FuriganaSegment, RubySegment } from './furigana';

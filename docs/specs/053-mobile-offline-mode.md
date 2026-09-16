@@ -313,10 +313,52 @@ Current mobile behavior (verified against the codebase):
 | Watch history | None | Direct `POST /watch-history` every 15s; failures silently ignored | Offline watching is effectively lost |
 | EPUB bookshelf + reading progress | AsyncStorage `lp_epub_library_v1` | Local-only (out of scope for Phase 2 sync) | Device-local by design; Flask `/bookshelf` endpoint reserved for future cross-device resume |
 | Likes / playlists / channel prefs | Not yet ported to mobile | Server row APIs exist | Must use the same sync engine when ported |
+| Subscription status | SecureStore `lp_subscription_cache` (one record: `{userId, sub, cachedAt}`) | Read-only cache of the last server-confirmed `GET /user-subscription`; never written back to the server | None — a failed check keeps the last confirmed plan (§ Subscription status must survive a failed check) |
 
 Intentionally **not** syncable: the Offline Mode toggle itself (Phase 1),
 downloaded dictionaries, tokenizer packs, dictionary caches, and tokenizer
 caches.
+
+### Subscription status must survive a failed check
+
+`GET /user-subscription` is an online check, but a learner's plan is not
+something a missed request may take away. Before 2026-09-16 a failed or blocked
+check set the client's subscription to `null`, so **Offline Mode showed a paying
+account as free** — Pro-only UI applied to a Pro user, and the free-tier SRS
+gate applied on top of it.
+
+The rule now (2026-09-16):
+
+- **Only an authoritative server answer changes plan state.** A 2xx body
+  carrying a subscription record applies and is cached; a 2xx body that
+  explicitly says there is no subscription (`{"subscription": null}`) clears the
+  cache and is the *only* way the client goes back to free; **anything else** —
+  offline, Offline Mode, a DNS/TLS failure, a non-2xx (including 401/5xx from a
+  proxy or the auth layer), or an unparseable/unrecognized body — is a *failed
+  check*: the last known record stays in force and the failure is logged.
+- **The last confirmed record is cached per user.** One SecureStore record,
+  `lp_subscription_cache` = `{userId, sub, cachedAt}`
+  (`apps/mobile/lib/subscription-cache.ts`). It is read before the first check
+  so a Pro user's first render is already Pro (no free flicker), the stored
+  `userId` must match the signed-in user or it is ignored, and logout deletes
+  it (`lib/user-data-wipe.ts`) so one account's plan can never leak into
+  another's session. A cached record is never edited locally, and an
+  authoritative "no subscription" answer deletes it.
+- **Expiry is evaluated locally** from `expires_on` while offline: a lifetime
+  plan never expires, and monthly/annual/annual/trial plans stay Pro until
+  their expiration date even if the check cannot run. A plan past its date is
+  expired on both clients and server (`is_srs_pro` mirrors this), so an
+  offline device cannot extend a lapsed subscription.
+- **Where.** Mobile: `contexts/SubscriptionContext.tsx` +
+  `lib/subscription-cache.ts`. Web: `providers/subscription-provider.tsx`
+  (in-memory only — the web app has no offline mode, but a failed check there
+  also no longer downgrades). Both read the shared, unit-tested classifier
+  `classifySubscriptionResponse()` / `parseSubscriptionBody()` in
+  `packages/utils/src/subscription-check.ts`.
+
+Not covered: a device whose clock is wrong can evaluate `expires_on`
+incorrectly. The clock is the only local source of truth available offline, and
+the server re-checks plan state on every authenticated write.
 
 ### Target architecture
 

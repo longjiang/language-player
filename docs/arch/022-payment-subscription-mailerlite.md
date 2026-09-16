@@ -105,6 +105,16 @@ CASCADE` so deleting an account removes subscriptions, acquisition rows, and
 
 Web (`use-subscription.ts`, `SubscriptionProvider`) and mobile (`SubscriptionContext`) treat a user as Pro when the row is lifetime or has a future `expires_on`. Auto-renew is derived client-side as `monthly|annual && payment_customer_id != null && active`.
 
+**A failed check never downgrades.** Reading plan state is an online check, so
+clients apply a record only from an authoritative answer: a 2xx with a record,
+or a 2xx that explicitly reports none (`{"subscription": null}`). Offline,
+Offline Mode, a transport failure, a non-2xx, or an unrecognized body leave the
+last known plan in force — mobile keeps the last confirmed record in
+SecureStore (`lp_subscription_cache`) and evaluates `expires_on` locally, so a
+lifetime or unexpired plan survives any number of failed checks (SPEC-053 §
+Subscription status must survive a failed check; shared classifier in
+`packages/utils/src/subscription-check.ts`).
+
 ---
 
 ## Purchase Flows — How Successful Payments Raise the Subscription
