@@ -950,6 +950,7 @@
         "find_videos_matched": "Trouvez des vidéos adaptées à votre niveau",
         "for_term": "pour {term}",
         "forgot_password": "Mot de passe oublié ?",
+        "free_new_cards_limit": "Les comptes gratuits peuvent ajouter jusqu'à 20 nouvelles cartes par jour. Passez à Pro pour définir une limite quotidienne plus élevée.",
         "free_subtitle_limit_reached": "Vous avez atteint la fin des lignes de sous-titres gratuites.",
         "full_subtitles_failed": "Impossible de charger tous les sous-titres",
         "full_subtitles_loaded": "Tous les sous-titres ont été chargés",

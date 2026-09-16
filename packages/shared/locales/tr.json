@@ -950,6 +950,7 @@
         "find_videos_matched": "Seviyenize uygun videolar bulun",
         "for_term": "{term} için",
         "forgot_password": "Şifrenizi mi unuttunuz?",
+        "free_new_cards_limit": "Ücretsiz hesaplar günde en fazla 20 yeni kart ekleyebilir. Daha yüksek bir günlük sınır belirlemek için Pro'ya yükseltin.",
         "free_subtitle_limit_reached": "Ücretsiz altyazı satırlarının sonuna ulaştınız.",
         "full_subtitles_failed": "Tüm altyazılar yüklenemedi",
         "full_subtitles_loaded": "Tüm altyazılar yüklendi",

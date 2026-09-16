@@ -950,6 +950,7 @@
         "find_videos_matched": "自分のレベルに合った動画を見つける",
         "for_term": "{term}の場合",
         "forgot_password": "パスワードをお忘れですか？",
+        "free_new_cards_limit": "無料アカウントは1日に最大20枚の新しいカードを追加できます。Proにアップグレードすると1日の上限を増やせます。",
         "free_subtitle_limit_reached": "無料字幕行の末尾に達しました。",
         "full_subtitles_failed": "字幕をすべて読み込めませんでした",
         "full_subtitles_loaded": "字幕をすべて読み込みました",

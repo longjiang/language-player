@@ -10,7 +10,7 @@ import { useSrs } from '@/hooks/use-srs';
 import {
   fsrs,
   baseCode,
-  dailyReviewCounterKey,
+  effectiveDailyNewLimit,
   formatNextDueLabel,
   getNextReviewInterval,
   dayKey,
@@ -141,9 +141,6 @@ function DiagnosticButton({ diagnostic }: { diagnostic?: SrsTestDiagnostic }) {
   );
 }
 
-/** ADR-0034: free users can complete 20 SRS reviews per day. */
-const FREE_SRS_DAILY_CAP = 20;
-
 /** State saved before a rating, so the user can undo it. */
 interface UndoState {
   wordId: string;
@@ -207,6 +204,10 @@ export default function ReviewPage() {
     [dayStartHour],
   );
   const { isPro } = useSubscriptionContext();
+  // Free users may not introduce more than the free daily allowance of new
+  // cards (ADR-0034 D4, revised 2026-09-16). Reviewing cards already in the
+  // deck is never limited, so this only bounds the blue deck.
+  const newCardLimit = effectiveDailyNewLimit(dailyLimit, isPro);
   const t = useT();
   const router = useRouter();
   const RATING_LABELS = useRatingLabels();
@@ -294,8 +295,6 @@ export default function ReviewPage() {
   const undoRef = useRef<UndoState | null>(null);
   /** Toast ID of the most recent rating toast, so undo can dismiss it. */
   const ratingToastIdRef = useRef<string | number | null>(null);
-  const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
-  /** Current local day (YYYY-MM-DD); rolls over at the configured hour. */
   const [day, setDay] = useState(() => dayKey(Date.now(), dayStartHour));
 
   useEffect(() => {
@@ -305,28 +304,24 @@ export default function ReviewPage() {
     return () => clearTimeout(timer);
   }, [day, dayStartHour]);
 
-  const reviewCounterKey = session?.user?.id
-    ? dailyReviewCounterKey(session.user.id, Date.now(), dayStartHour)
-    : null;
-
+  // The server refuses a write only when it would ADD a card beyond the free
+  // tier's daily new-card allowance — reviewing a card already in the deck is
+  // never rejected (ADR-0034 D4, revised 2026-09-16). The queue drops that op
+  // and keeps flushing; nothing to gate in the UI.
   useEffect(() => {
-    if (!reviewCounterKey) return;
-    setReviewsDoneToday(Number(localStorage.getItem(reviewCounterKey) ?? 0));
-  }, [reviewCounterKey]);
-
-  // If the server rejects a rating (multi-device cap edge), reconcile the
-  // local counter so the upgrade banner shows immediately.
-  useEffect(() => {
-    const onCapReached = () => setReviewsDoneToday(FREE_SRS_DAILY_CAP);
+    const onCapReached = () => {
+      log('[SRS Review] new-card allowance reached — the server refused a new card', { isPro });
+    };
     window.addEventListener('lp:srs-cap-reached', onCapReached);
     return () => window.removeEventListener('lp:srs-cap-reached', onCapReached);
-  }, []);
+  }, [isPro]);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   // ── Auto-initialize SRS cards up to today's new-card budget ──
-  // The blue ("new") deck holds at most `dailyLimit` new cards per local day.
+  // The blue ("new") deck holds at most `newCardLimit` new cards per local day
+  // (the configured limit, bounded by the free daily allowance on the free tier).
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!settingsLoaded || !settingsCloudHydrated || !srsLoaded || !wordsLoaded) return;
@@ -339,7 +334,7 @@ export default function ReviewPage() {
     const budget = fsrs.getNewCardBudget(
       l2SavedWords,
       langCards,
-      dailyLimit,
+      newCardLimit,
       Date.now(),
       dayStartHour,
     );
@@ -347,13 +342,15 @@ export default function ReviewPage() {
     const plan = fsrs.planNewDeck(
       l2SavedWords,
       langCards,
-      dailyLimit,
+      newCardLimit,
       Date.now(),
       dayStartHour,
     );
     log('[SRS] planNewDeck', {
       l2: l2Code,
       dailyLimit,
+      newCardLimit,
+      isPro,
       dayStartHour,
       day,
       now: new Date().toISOString(),
@@ -391,7 +388,7 @@ export default function ReviewPage() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, dayStartHour, updateCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, newCardLimit, dailyLimit, isPro, dayStartHour, updateCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -448,7 +445,7 @@ export default function ReviewPage() {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const activeNewCardIds = new Set(
-      fsrs.getActiveNewCardIds(l2SavedWords, langCards, dailyLimit),
+      fsrs.getActiveNewCardIds(l2SavedWords, langCards, newCardLimit),
     );
     return l2SavedWords
       .filter((sw) => {
@@ -467,7 +464,7 @@ export default function ReviewPage() {
         word: sw,
         srs: langCards[sw.id] || fsrs.newCard(),
       }));
-  }, [l2SavedWords, store, l2Code, dailyLimit]);
+  }, [l2SavedWords, store, l2Code, newCardLimit]);
 
   // ── Pre-fetch dictionary entries for all due cards ──
   // This ensures entries are in the cache before the user reveals a card,
@@ -560,7 +557,6 @@ export default function ReviewPage() {
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
-    if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     testRequestVersionRef.current += 1;
     setShowDefinition(false); // hide answer immediately for next card
@@ -627,14 +623,6 @@ export default function ReviewPage() {
 
     updateCard(l2Code, card.word.id, updated, srsCardMeta);
 
-    if (!isPro) {
-      const next = reviewsDoneToday + 1;
-      setReviewsDoneToday(next);
-      if (reviewCounterKey) {
-        localStorage.setItem(reviewCounterKey, String(next));
-      }
-    }
-
     if (wasLastCard) {
       setJustCompleted(true);
     }
@@ -642,7 +630,7 @@ export default function ReviewPage() {
     setTimeout(() => {
       setRated(false);
     }, 400);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey, nextReviewLabelFor]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, nextReviewLabelFor]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -654,14 +642,8 @@ export default function ReviewPage() {
       ...(state.ratingId ? { voidRatingId: state.ratingId } : {}),
     }, srsCardMeta);
 
-    // Release the rating back to the free daily budget (SPEC-066 Phase 4).
-    if (!isPro && reviewsDoneToday > 0) {
-      const next = reviewsDoneToday - 1;
-      setReviewsDoneToday(next);
-      if (reviewCounterKey) {
-        localStorage.setItem(reviewCounterKey, String(next));
-      }
-    }
+    // The card stays in the deck, so undoing a rating releases no new-card
+    // allowance — only the rating itself is voided (ADR-0034 D4, revised).
 
     if (state.wasLastCard) {
       setJustCompleted(false);
@@ -673,7 +655,7 @@ export default function ReviewPage() {
 
     // No toast here — the undo action within the rating toast is
     // feedback enough, and a second toast would be redundant.
-  }, [l2Code, updateCard, isPro, reviewsDoneToday, reviewCounterKey]);
+  }, [l2Code, updateCard]);
 
   /**
    * Load (from the shared cache) or generate one test slot for the current
@@ -1227,8 +1209,7 @@ export default function ReviewPage() {
     if (!showDefinition || rated) return;
 
     const enabled = (q: Rating): boolean =>
-      !rated && (!suggestedRating || q === suggestedRating) &&
-      (isPro || reviewsDoneToday < FREE_SRS_DAILY_CAP);
+      !rated && (!suggestedRating || q === suggestedRating);
 
     const handler = (e: KeyboardEvent) => {
       // Don't intercept when typing in inputs
@@ -1243,14 +1224,14 @@ export default function ReviewPage() {
       else if (key === ' ' || key === 'Enter') rating = suggestedRating ?? 'good';
 
       if (rating && enabled(rating)) {
-        log('[SRS Review] keyboard rate', { rating, suggestedRating, reviewsDoneToday, isPro });
+        log('[SRS Review] keyboard rate', { rating, suggestedRating, isPro });
         handleRate(rating);
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [showDefinition, rated, suggestedRating, isPro, reviewsDoneToday, handleRate]);
+  }, [showDefinition, rated, suggestedRating, isPro, handleRate]);
 
   // ── Keyboard shortcuts (before reveal: Space/Enter to reveal) ──
   useEffect(() => {
@@ -1286,14 +1267,14 @@ export default function ReviewPage() {
   // Must be BEFORE any conditional returns (React hooks rule).
   const langCardsForCounts = store.cards[l2Code] ?? {};
   const cardCounts = useMemo(
-    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts, { dailyNewLimit: dailyLimit }),
-    [l2SavedWords, langCardsForCounts, dailyLimit],
+    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts, { dailyNewLimit: newCardLimit }),
+    [l2SavedWords, langCardsForCounts, newCardLimit],
   );
   useEffect(() => {
     const budget = fsrs.getNewCardBudget(
       l2SavedWords,
       langCardsForCounts,
-      dailyLimit,
+      newCardLimit,
       Date.now(),
       dayStartHour,
     );
@@ -1301,12 +1282,14 @@ export default function ReviewPage() {
       l2: l2Code,
       ...cardCounts,
       dailyLimit,
+      newCardLimit,
+      isPro,
       dayStartHour,
       remaining: budget.remaining,
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCardsForCounts).length,
     });
-  }, [cardCounts, dailyLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
+  }, [cardCounts, dailyLimit, newCardLimit, isPro, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
@@ -2275,23 +2258,15 @@ export default function ReviewPage() {
       {/* Rating buttons (only visible after reveal) */}
       {showDefinition && (
         <>
-          {!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP && (
-            <div className="mb-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-center">
-              <p className="text-sm font-medium">{t('msg.upgrade_to_pro_banner')}</p>
-              <Link
-                href={`/${l1.code}/${l2.code}/go-pro`}
-                className="mt-1 inline-block text-sm font-semibold text-primary underline"
-              >
-                {t('action.upgrade_to_pro')}
-              </Link>
-            </div>
-          )}
+          {/* Rating is never gated by plan: SRS review is a free feature, and
+              the free tier's only limit is how many NEW cards a deck may
+              introduce per day (ADR-0034 D4, revised 2026-09-16). */}
           <div className="grid grid-cols-4 gap-3">
             {RATING_LABELS.map(({ key, label, color, keyShortcut }) => (
               <button
                 key={key}
                 onClick={() => handleRate(key as 'again' | 'hard' | 'good' | 'easy')}
-                disabled={rated || (suggestedRating ? key !== suggestedRating : false) || (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP)}
+                disabled={rated || (suggestedRating ? key !== suggestedRating : false)}
                 className={`${color} text-white rounded-lg py-3 px-2 text-sm font-medium transition-all
                   hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
                   flex flex-col items-center gap-1`}

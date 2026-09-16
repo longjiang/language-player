@@ -3,6 +3,8 @@ import { State } from 'ts-fsrs';
 import {
   countDueCards,
   countDeckStates,
+  effectiveDailyNewLimit,
+  FREE_SRS_DAILY_NEW_CARDS,
   deserializeSrsCard,
   getActiveNewCardIds,
   getCardState,
@@ -553,5 +555,19 @@ describe('fsrs-scheduler: reconcile cards to server (SPEC-066)', () => {
     const local = { a: serverCard, phantom: newCard(NOW - 86_400_000) };
     const cleaned = reconcileCardsToServer(local, undefined, () => true);
     expect(cleaned).toBe(local); // no drop before hydration finishes
+  });
+});
+
+describe('effectiveDailyNewLimit (ADR-0034 D4, revised 2026-09-16)', () => {
+  it('gives Pro users their configured limit, up to 200', () => {
+    expect(effectiveDailyNewLimit(200, true)).toBe(200);
+    expect(effectiveDailyNewLimit(20, true)).toBe(20);
+  });
+
+  it('bounds the free tier at the free daily new-card allowance', () => {
+    expect(effectiveDailyNewLimit(20, false)).toBe(FREE_SRS_DAILY_NEW_CARDS);
+    expect(effectiveDailyNewLimit(200, false)).toBe(FREE_SRS_DAILY_NEW_CARDS);
+    // Free users may still choose a smaller deck.
+    expect(effectiveDailyNewLimit(5, false)).toBe(5);
   });
 });

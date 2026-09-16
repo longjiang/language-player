@@ -490,7 +490,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | C5 | Free tier gates after payment | Before purchase, transcript shows first 10 lines + 5 word-example hits; after grant, full transcript + up to 500 hits (50-hit fast default; Settings → Subtitles Search toggle is Pro-only, greyed out for free users) | Gates flip with subscription state on all frontends |
 | C6 | Cancel at period end (Stripe only) | Cancel subscription in Stripe test Dashboard or via cancel flow | `cancel_at_period_end` set; user keeps Pro until expiry, then falls back to free |
 | C7 | Success/error screens | Force each failure path (declined card, cancelled PayPal, bogus receipt, abandoned Payment Link) | `/go-pro-error` or inline error shown; no Pro grant; no stuck loading state |
-| C8 | SRS free daily cap | Free user completes 20 ratings → tap a 21st rating | Rating blocked with upgrade prompt; Pro/trial unlimited; undo releases a rating back to the cap; offline outbox replays do not double-count |
+| C8 | SRS free daily new-card allowance | Free user adds 20 new cards in a local day → rate a 21st *new* card; also drag Settings → Review above 20 | The 21st new card is refused server-side (`srs_cap_reached`) and the settings slider stays at 20 with `msg.free_new_cards_limit`. **Rating an existing card is never blocked** (work through 30+ cards of an existing deck) and no review screen shows an upgrade banner. Pro/trial unlimited. *(Revised 2026-09-16: was "free user completes 20 ratings → tap a 21st rating → rating blocked with upgrade prompt".)* |
 
 ---
 
