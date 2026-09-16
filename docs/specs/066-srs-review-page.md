@@ -908,9 +908,10 @@ choose mode.
   always-available submit path on both platforms.
 - **Where the input lives (mobile, 2026-09-17, ADR-0047)** — the answer row
   (prompt, character boxes, Submit, hint) is **not** part of the card's scroll
-  content. It is a sibling of the card, inside a keyboard-avoiding region, so
-  the card region shrinks to the space above the software keyboard and the
-  answer row sits directly on top of it. It was previously the last item inside
+  content. It is a sibling of the card in one column, and an `Animated.View`
+  whose height is the keyboard height closes the bottom of that column, so the
+  answer row sits directly on top of the software keyboard and the card region
+  (`flex-1`) shrinks into what is left. It was previously the last item inside
   a scroll view whose viewport was the full window height: iOS does not resize
   the window for the keyboard, so the maximum scroll offset placed the answer
   row *underneath* the keyboard and there was no scroll range left to reveal it
@@ -920,15 +921,25 @@ choose mode.
   behind the keyboard either. Submitting the answer dismisses the keyboard
   explicitly, so the graded feedback and the rating buttons are readable in the
   space it vacated.
-  - **The rating buttons sit inside the same keyboard-avoiding region.** They
-    are still pinned to the bottom (below), but a submit no longer leaves them
+  - **The lift is the keyboard's height, never an inferred frame.** A first
+    attempt wrapped the column in `KeyboardAvoidingView`, which derives its
+    padding from `frame.y + frame.height - keyboardTop`; the frame is
+    parent-relative whenever its native `viewPositionInWindow` lookup fails
+    (a failure the library swallows), which left the padding short by the app's
+    chrome — the prompt and boxes cleared the keyboard while Submit and the hint
+    did not. The spacer has no frame to get wrong (ADR-0047).
+  - **The rating buttons sit in the same column**, above the spacer. They are
+    still pinned to the bottom (below), but a submit no longer leaves them
     behind a keyboard that is still up.
   - **Scrabble is deliberately unchanged** — its tiles are dragged, not typed,
     and its hidden field never summons the soft keyboard, so it stays inside the
     scroll view with the card's native scroll-gesture blocking intact
     ([disparity 20](#web--mobile-disparities)).
-  - **Diagnostics** — `[LP Mobile] [srs]` logs the answer row's pinned state and
-    the keyboard height the library reports. A height of `0` is the one failure
+  - **Diagnostics** — `[LP Mobile] [srs]` logs the answer row's pinned state, the
+    keyboard height the library reports, the row's bottom edge measured against
+    the keyboard's top edge (`clearance`, where `>= 0` means it clears), and
+    React Native's own keyboard height as a cross-check of the height the spacer
+    is built from. A library height of `0` is the one failure
     mode that looks identical on screen to a covered layout (missing
     `KeyboardProvider`, or a dev build older than the library), so it is logged
     rather than inferred.
@@ -1196,10 +1207,10 @@ all key off the resolved mode rather than the raw selector value.
   only.
 - Rating buttons are pinned to the bottom with safe-area padding and are
   disabled + dimmed at the free cap.
-- The card region, the spell answer row and the rating buttons live inside one
-  keyboard-avoiding region (`KeyboardAvoidingView`, `behavior="padding"`), so
-  the card shrinks to the space above the software keyboard and both bottom
-  surfaces stay above it (ADR-0047). The card's own scroll view stays a plain
+- The card region, the spell answer row and the rating buttons are one column
+  closed at the bottom by a spacer of the keyboard's height, so the card shrinks
+  to the space above the software keyboard and both bottom surfaces stay above
+  it (ADR-0047). The card's own scroll view stays a plain
   `ScrollView` — it participates in the scrabble tiles' gesture blocking, which
   a composite scroll component would disturb.
 
@@ -1342,7 +1353,7 @@ orphaned.
 | 19 | Offline test generation | LLM only; a failed generation shows the error box with Retry/Skip | Programmatic fallback: pronunciation confounders from offline-dictionary readings, definition confounders from similar saved words' first definitions | Mobile-only by design (offline-first client); web is online-only (disparity 7) |
 | 19 | Scrabble keyboard-fill | Hidden `<input>`, reliable on any desktop keyboard | Hidden `TextInput` with `showSoftInputOnFocus={false}`; relies on hardware-keyboard support, whose availability/behaviour varies by device & OS | Both gate on `supportsScrabbleKeyboard` and use a hidden focused field that never summons the soft keyboard/IME; mobile is best-effort for physical keyboards (on-screen touch blocks remain the primary input there). Web's rate/reveal/undo shortcuts ignore this field's keystrokes. |
 | 20 | Scrabble tap/drag layer | Pointer events with pointer capture + a 5px drag threshold | `react-native-gesture-handler` `Exclusive(Pan(8px), Tap())` per tile, composed with the card's native scroll gesture | **Resolved (2026-09-15)** — the mobile tiles previously used `PanResponder`, which iOS cannot shield from the card's `ScrollView`: taps never reached a tile and a drag scrolled the card. Mobile now uses native recognizers and blocks the card's scroll gesture. |
-| 21 | Answer-input visibility with the software keyboard | Not applicable — a hardware keyboard has no overlay, and the browser scrolls a focused field into view | The spell answer row is pinned above the keyboard, inside a keyboard-avoiding region (ADR-0047) | **Mobile-only by design.** The constraint only exists on touch devices: the mobile card's scroll viewport is as tall as the window, which the software keyboard overlays. Mobile no longer puts a typed answer at the end of scroll content for that reason; scrabble keeps its in-card placement because its tiles are dragged and it never summons the soft keyboard (disparity 20). |
+| 21 | Answer-input visibility with the software keyboard | Not applicable — a hardware keyboard has no overlay, and the browser scrolls a focused field into view | The spell answer row is pinned above the keyboard by a spacer of the keyboard's height (ADR-0047) | **Mobile-only by design.** The constraint only exists on touch devices: the mobile card's scroll viewport is as tall as the window, which the software keyboard overlays. Mobile no longer puts a typed answer at the end of scroll content for that reason; scrabble keeps its in-card placement because its tiles are dragged and it never summons the soft keyboard (disparity 20). |
 
 ## Implementation Status (2026-08-11)
 
@@ -1635,15 +1646,19 @@ orphaned.
   Shared helper: `spellHintPlaceholder` in `packages/utils/src/srs-test-mode.ts`.
 - ✅ **Mobile spell answer row pinned above the software keyboard** —
   implemented (2026-09-17, ADR-0047). The answer row left the card's scroll
-  content and became a footer sibling inside a `KeyboardAvoidingView`
-  (`behavior="padding"`, `automaticOffset`), with the rating buttons in the same
-  region; the keyboard is dismissed on submit. The review card's scroll view
-  stays a plain `ScrollView` so the scrabble gesture blocking (disparity 20) is
-  untouched, and scrabble keeps its in-card placement. Verified against the
-  platform behaviour in the React Native 0.86 sources, not from memory: iOS's
-  `automaticallyAdjustKeyboardInsets` does scroll a focused responder into view
-  (`RCTScrollView.m`) but has no Android counterpart, which is why the fix is
-  structural (pin) rather than an inset.
+  content and became a footer sibling in a column closed by a keyboard-height
+  spacer, with the rating buttons in the same column; the keyboard is dismissed
+  on submit. A first attempt used `KeyboardAvoidingView`
+  (`behavior="padding"`, `automaticOffset`) and lifted the row only as far as
+  the prompt and boxes — its padding is derived from an inferred frame, which
+  came out short by the app's chrome height, leaving Submit and the hint behind
+  the keyboard; the spacer carries no such inference. The review card's scroll
+  view stays a plain `ScrollView` so the scrabble gesture blocking
+  (disparity 20) is untouched, and scrabble keeps its in-card placement.
+  Verified against the platform behaviour in the React Native 0.86 sources, not
+  from memory: iOS's `automaticallyAdjustKeyboardInsets` does scroll a focused
+  responder into view (`RCTScrollView.m`) but has no Android counterpart, which
+  is why the fix is structural (pin) rather than an inset.
 
 ## Known Issues & Resolutions (2026-08-13)
 
