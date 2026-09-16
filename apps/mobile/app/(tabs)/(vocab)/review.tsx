@@ -1791,6 +1791,41 @@ export default function ReviewScreen() {
 
   // ── Render states ──
 
+/** True while the spell answer row is showing. It is rendered as a footer
+   *  pinned above the software keyboard rather than inside the card's scroll
+   *  view: the card region is as tall as the window, so content at the bottom
+   *  of it (the answer row) ended up behind the keyboard with no scroll range
+   *  left to reveal it (SPEC-066). */
+  const spellAnswerPinned = effectiveMode === 'spell' && !showTabs && !spellSubmitted && testStartedAt !== null;
+
+  // Diagnostic (SPEC-066 spell-input visibility): log when the pinned answer row
+  // appears/disappears and what height the keyboard reports. The height is the
+  // one value that cannot be inferred from a screenshot — a `0` here means the
+  // keyboard metrics never arrived (KeyboardProvider missing, or a dev build
+  // older than the library), which looks identical on screen to a layout that
+  // is simply covered. Info-level, like every other `log()` on this screen.
+  //
+  // These two effects live here, above the early returns below, because hooks
+  // must run in the same order on every render: declared after `if (isLoading)
+  // return …` they were skipped while hydrating and ran once the deck loaded,
+  // which React reports as "Rendered more hooks than during the previous
+  // render" and which crashed the screen via the root error boundary.
+  useEffect(() => {
+    log('[srs-spell] answer row pinned', { pinned: spellAnswerPinned, mode: effectiveMode, testStartedAt: testStartedAt !== null });
+  }, [spellAnswerPinned, effectiveMode, testStartedAt]);
+  useEffect(() => {
+    const showSub = KeyboardEvents.addListener('keyboardWillShow', (e) => {
+      log('[srs-spell] keyboard will show', { height: e.height });
+    });
+    const hideSub = KeyboardEvents.addListener('keyboardDidHide', (e) => {
+      log('[srs-spell] keyboard did hide', { height: e.height });
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const isLoading = !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded || initializing || (user && (!savedWordsCloudHydrated || !srsCloudHydrated));
 
   // ── Log the loaded review deck once per language ──
@@ -1940,34 +1975,6 @@ export default function ReviewScreen() {
           || spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code),
       ).length
     : 0;
-  /** True while the spell answer row is showing. It is rendered as a footer
-   *  pinned above the software keyboard rather than inside the card's scroll
-   *  view: the card region is as tall as the window, so content at the bottom
-   *  of it (the answer row) ended up behind the keyboard with no scroll range
-   *  left to reveal it (SPEC-066). */
-  const spellAnswerPinned = effectiveMode === 'spell' && !showTabs && !spellSubmitted && testStartedAt !== null;
-
-  // Diagnostic (SPEC-066 spell-input visibility): log when the pinned answer row
-  // appears/disappears and what height the keyboard reports. The height is the
-  // one value that cannot be inferred from a screenshot — a `0` here means the
-  // keyboard metrics never arrived (KeyboardProvider missing, or a dev build
-  // older than the library), which looks identical on screen to a layout that
-  // is simply covered. Info-level, like every other `log()` on this screen.
-  useEffect(() => {
-    log('[srs-spell] answer row pinned', { pinned: spellAnswerPinned, mode: effectiveMode, testStartedAt: testStartedAt !== null });
-  }, [spellAnswerPinned, effectiveMode, testStartedAt]);
-  useEffect(() => {
-    const showSub = KeyboardEvents.addListener('keyboardWillShow', (e) => {
-      log('[srs-spell] keyboard will show', { height: e.height });
-    });
-    const hideSub = KeyboardEvents.addListener('keyboardDidHide', (e) => {
-      log('[srs-spell] keyboard did hide', { height: e.height });
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
   /** The correct scrabble answer — the scrabble mode derives its letter blocks
    *  (and shuffle) from this exact string, so the block count matches the
    *  spelling test. For a single-character answer this is the matched entry's
