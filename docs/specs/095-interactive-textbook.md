@@ -6,13 +6,14 @@
 - **Feature**: Hierarchical interactive textbook (`book > unit > lesson > task`) — tokenized L2 text with inline interactive blanks, audio playback, and per-activity stimulus widgets
 - **Status**: implemented (phases 0–3), with every requirement in this spec built — see
   [Known Gaps Against This Spec](#known-gaps-against-this-spec), which is where anything
-  outstanding would be listed
+  outstanding would be listed. The mobile task body scrolls keyboard-aware since
+  2026-09-17 (ADR-0047)
 - **Created**: 2026-09-11
 - **ROADMAP Phase**: Phase 5 (Content Features)
 - **Web ref**: `apps/web/src/app/[l1]/[l2]/tasks/` (new), `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/app/docs/doc-sidebar.tsx` (TOC pattern)
 - **Mobile ref**: `apps/mobile/app/(tabs)/(vocab)/tasks.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
 - **Source content**: `tmp/interactive-text/` (workbook PDF, answer key PDF, audio transcript PDF, 47 mp3)
-- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
+- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0047 (mobile keyboard-aware inputs), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
 
 > **Note on scope**: Classic/Nuxt (`zerotohero-nuxt/`) is treated as **out of scope** for this feature by explicit product decision. This spec is grounded in the source workbook and the active web/mobile codebase only.
 
@@ -1069,6 +1070,7 @@ has no room for a persistent sidebar beside the task.
 - Rename the group label to `Study` and add the `Tasks` link below `review` in **both** `apps/mobile/components/layout/NavBar.tsx` (`NAV_GROUPS`, tablets/MD) and `HamburgerDrawer.tsx` (phones), with an `sf` symbol and a `NAV_ICONS` entry in each.
 - **L2 gate.** Routes here carry no language segment, so the book is checked against `useLanguage().l2Lang.code` instead of a URL param: `useBookTree` and `TaskView` in `apps/mobile/components/textbook/TaskView.tsx` yield `null` for a book that does not teach the current L2, which the screens already render as `msg.no_results`, and the picker lists `booksForL2(l2Lang.code)` only. Mobile keeps the empty state rather than gaining a redirect — the app has no `<Redirect>` precedent, and Tasks is not reachable by URL (`web-url-mapper.ts` has no `tasks` entry).
 - **Not a bottom tab.** The mobile app has no bottom tab bar: `apps/mobile/app/(tabs)/_layout.tsx` renders a `Stack` despite the directory name, and navigation is the top `Header` plus those two menus. `Tasks` follows the existing pattern rather than introducing a new navigation shell.
+- **The task body scrolls keyboard-aware (2026-09-17, ADR-0047).** A task puts text fields inline — fill-in blanks inside a passage, dictation boxes, free-write areas — and a task is routinely taller than the screen, so the focused field has to be kept visible: `TaskShell` uses `KeyboardAwareScrollView` (react-native-keyboard-controller, reached through `apps/mobile/components/ui/keyboard-aware-scroll-view.tsx`) with `keyboardShouldPersistTaps="handled"`. Pinning is deliberately **not** used here: a blank belongs where it is in the passage, so unlike the SRS answer row (SPEC-066) it cannot be lifted out of the flow — the scroll view insets itself and scrolls the focused field into view instead.
 
 ### Initial L2 scope
 
