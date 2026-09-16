@@ -9,6 +9,8 @@ import React, {
 } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { getConnectivity } from '@/lib/connectivity';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import {
   runSyncNow,
   setEngineOfflineMode,
@@ -24,21 +26,33 @@ interface SyncStatusContextValue {
 
 const SyncStatusContext = createContext<SyncStatusContextValue | null>(null);
 
-const INITIAL_STATUS: SyncStatusSnapshot = {
-  connectivity: 'unknown',
-  offlineMode: false,
-  effectiveOffline: true,
-  syncing: false,
-  pendingCount: 0,
-  errorCount: 0,
-  lastSyncAt: null,
-  lastError: null,
-};
+/**
+ * Status before the engine has published anything.
+ *
+ * `effectiveOffline` must reflect what we actually know: the manual Offline
+ * Mode override (already loaded from SecureStore before the providers mount)
+ * or an already-detected disconnection. It used to be hardcoded `true`, so the
+ * header cloud icon claimed "offline" from the very first frame on a perfectly
+ * good connection.
+ */
+function initialStatus(): SyncStatusSnapshot {
+  const offlineMode = isOfflineModeEnabled();
+  return {
+    connectivity: getConnectivity(),
+    offlineMode,
+    effectiveOffline: offlineMode || getConnectivity() === 'offline',
+    syncing: false,
+    pendingCount: 0,
+    errorCount: 0,
+    lastSyncAt: null,
+    lastError: null,
+  };
+}
 
 export function SyncStatusProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { offlineMode } = useSettingsContext();
-  const [status, setStatus] = useState<SyncStatusSnapshot>(INITIAL_STATUS);
+  const [status, setStatus] = useState<SyncStatusSnapshot>(initialStatus);
   const userIdRef = useRef<string | null>(user?.id ?? null);
   userIdRef.current = user?.id ?? null;
 
