@@ -48,3 +48,4 @@ NNNN-title-with-dashes.md
 | 0044 | Textbook exercise state is local-only, with an append-only attempt log in SRS's shape | accepted | 2026-09-11 |
 | 0045 | Mock apps are sandboxed, self-contained HTML behind a frozen bridge | accepted | 2026-09-11 |
 | 0046 | The web app loads no third-party host that mainland China blocks | accepted | 2026-09-15 |
+| 0047 | Mobile inputs stay visible: keyboard-aware layout, not a bigger scroll area | accepted | 2026-09-17 |

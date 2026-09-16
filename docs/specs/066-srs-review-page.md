@@ -10,7 +10,9 @@
   of phonetics-scrabble (2026-09-10); the spell answer is resolved through the
   context highlight's own phrase merge so it can no longer be graded as a
   fragment (2026-09-10); spell/scrabble card fronts show the quick gloss after
-  the blank and the entry's definitions under the translation (2026-09-10)
+  the blank and the entry's definitions under the translation (2026-09-10);
+  the mobile spell answer row is pinned above the software keyboard instead of
+  sitting at the end of the card's scroll content (2026-09-17, ADR-0047)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -904,6 +906,32 @@ choose mode.
   Native's `TextInput` does not expose `isComposing`, so Enter is left off to
   avoid the same accidental submission). Only the **Submit** button is the
   always-available submit path on both platforms.
+- **Where the input lives (mobile, 2026-09-17, ADR-0047)** — the answer row
+  (prompt, character boxes, Submit, hint) is **not** part of the card's scroll
+  content. It is a sibling of the card, inside a keyboard-avoiding region, so
+  the card region shrinks to the space above the software keyboard and the
+  answer row sits directly on top of it. It was previously the last item inside
+  a scroll view whose viewport was the full window height: iOS does not resize
+  the window for the keyboard, so the maximum scroll offset placed the answer
+  row *underneath* the keyboard and there was no scroll range left to reveal it
+  — "scrolling doesn't help" was the symptom, not the bug. Pinning it is the
+  only arrangement that holds for any context length, any IME size, and both
+  platforms; the card above stays fully scrollable, so nothing else can hide
+  behind the keyboard either. Submitting the answer dismisses the keyboard
+  explicitly, so the graded feedback and the rating buttons are readable in the
+  space it vacated.
+  - **The rating buttons sit inside the same keyboard-avoiding region.** They
+    are still pinned to the bottom (below), but a submit no longer leaves them
+    behind a keyboard that is still up.
+  - **Scrabble is deliberately unchanged** — its tiles are dragged, not typed,
+    and its hidden field never summons the soft keyboard, so it stays inside the
+    scroll view with the card's native scroll-gesture blocking intact
+    ([disparity 20](#web--mobile-disparities)).
+  - **Diagnostics** — `[LP Mobile] [srs]` logs the answer row's pinned state and
+    the keyboard height the library reports. A height of `0` is the one failure
+    mode that looks identical on screen to a covered layout (missing
+    `KeyboardProvider`, or a dev build older than the library), so it is logged
+    rather than inferred.
 - **Correct answer derivation (2026-09-06; highlight-aligned 2026-09-10)** — the
   correct answer is the exact text blanked in the context sentence, derived with
   the **same forms the context highlight matches** (`spellBlankText` in
@@ -1168,6 +1196,12 @@ all key off the resolved mode rather than the raw selector value.
   only.
 - Rating buttons are pinned to the bottom with safe-area padding and are
   disabled + dimmed at the free cap.
+- The card region, the spell answer row and the rating buttons live inside one
+  keyboard-avoiding region (`KeyboardAvoidingView`, `behavior="padding"`), so
+  the card shrinks to the space above the software keyboard and both bottom
+  surfaces stay above it (ADR-0047). The card's own scroll view stays a plain
+  `ScrollView` — it participates in the scrabble tiles' gesture blocking, which
+  a composite scroll component would disturb.
 
 ### Empty states
 
@@ -1308,6 +1342,7 @@ orphaned.
 | 19 | Offline test generation | LLM only; a failed generation shows the error box with Retry/Skip | Programmatic fallback: pronunciation confounders from offline-dictionary readings, definition confounders from similar saved words' first definitions | Mobile-only by design (offline-first client); web is online-only (disparity 7) |
 | 19 | Scrabble keyboard-fill | Hidden `<input>`, reliable on any desktop keyboard | Hidden `TextInput` with `showSoftInputOnFocus={false}`; relies on hardware-keyboard support, whose availability/behaviour varies by device & OS | Both gate on `supportsScrabbleKeyboard` and use a hidden focused field that never summons the soft keyboard/IME; mobile is best-effort for physical keyboards (on-screen touch blocks remain the primary input there). Web's rate/reveal/undo shortcuts ignore this field's keystrokes. |
 | 20 | Scrabble tap/drag layer | Pointer events with pointer capture + a 5px drag threshold | `react-native-gesture-handler` `Exclusive(Pan(8px), Tap())` per tile, composed with the card's native scroll gesture | **Resolved (2026-09-15)** — the mobile tiles previously used `PanResponder`, which iOS cannot shield from the card's `ScrollView`: taps never reached a tile and a drag scrolled the card. Mobile now uses native recognizers and blocks the card's scroll gesture. |
+| 21 | Answer-input visibility with the software keyboard | Not applicable — a hardware keyboard has no overlay, and the browser scrolls a focused field into view | The spell answer row is pinned above the keyboard, inside a keyboard-avoiding region (ADR-0047) | **Mobile-only by design.** The constraint only exists on touch devices: the mobile card's scroll viewport is as tall as the window, which the software keyboard overlays. Mobile no longer puts a typed answer at the end of scroll content for that reason; scrabble keeps its in-card placement because its tiles are dragged and it never summons the soft keyboard (disparity 20). |
 
 ## Implementation Status (2026-08-11)
 
@@ -1598,6 +1633,17 @@ orphaned.
   `firstCharPlaceholder`) and is replaced once the learner types. A
   pronunciation/reading hint (different script) is never used as a placeholder.
   Shared helper: `spellHintPlaceholder` in `packages/utils/src/srs-test-mode.ts`.
+- ✅ **Mobile spell answer row pinned above the software keyboard** —
+  implemented (2026-09-17, ADR-0047). The answer row left the card's scroll
+  content and became a footer sibling inside a `KeyboardAvoidingView`
+  (`behavior="padding"`, `automaticOffset`), with the rating buttons in the same
+  region; the keyboard is dismissed on submit. The review card's scroll view
+  stays a plain `ScrollView` so the scrabble gesture blocking (disparity 20) is
+  untouched, and scrabble keeps its in-card placement. Verified against the
+  platform behaviour in the React Native 0.86 sources, not from memory: iOS's
+  `automaticallyAdjustKeyboardInsets` does scroll a focused responder into view
+  (`RCTScrollView.m`) but has no Android counterpart, which is why the fix is
+  structural (pin) rather than an inset.
 
 ## Known Issues & Resolutions (2026-08-13)
 
