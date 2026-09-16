@@ -3,6 +3,11 @@ import { View, Text, ScrollView, ActivityIndicator, Platform } from 'react-nativ
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  KeyboardAvoidingView,
+  KeyboardController,
+  KeyboardEvents,
+} from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -1235,6 +1240,12 @@ export default function ReviewScreen() {
     setSpellResult({ correct, answer: correctAnswer, submitted });
     testSessionStartRef.current = 0;
     setTestStartedAt(null);
+    // The answer row unmounts on submit (it is keyed on the un-submitted
+    // state), and what must be readable next is the graded feedback plus the
+    // rating buttons — both of which would otherwise land behind the keyboard
+    // that is still up (SPEC-066). Ask for it explicitly rather than relying on
+    // the blur that removing the focused field happens to cause.
+    void KeyboardController.dismiss();
     setShowTabs(true);
     log('[srs-spell] answer submitted', { l2Code, word: wordForm, submitted, correct: correctAnswer, correctMatch: correct, totalMs, rating });
   }, [cards, currentIndex, spellSubmitted, wordForm, l2Code]);
@@ -1929,6 +1940,34 @@ export default function ReviewScreen() {
           || spellBlankText(spellContextText, currentCard.word, wordForm, entry, l2Code),
       ).length
     : 0;
+  /** True while the spell answer row is showing. It is rendered as a footer
+   *  pinned above the software keyboard rather than inside the card's scroll
+   *  view: the card region is as tall as the window, so content at the bottom
+   *  of it (the answer row) ended up behind the keyboard with no scroll range
+   *  left to reveal it (SPEC-066). */
+  const spellAnswerPinned = effectiveMode === 'spell' && !showTabs && !spellSubmitted && testStartedAt !== null;
+
+  // Diagnostic (SPEC-066 spell-input visibility): log when the pinned answer row
+  // appears/disappears and what height the keyboard reports. The height is the
+  // one value that cannot be inferred from a screenshot — a `0` here means the
+  // keyboard metrics never arrived (KeyboardProvider missing, or a dev build
+  // older than the library), which looks identical on screen to a layout that
+  // is simply covered. Info-level, like every other `log()` on this screen.
+  useEffect(() => {
+    log('[srs-spell] answer row pinned', { pinned: spellAnswerPinned, mode: effectiveMode, testStartedAt: testStartedAt !== null });
+  }, [spellAnswerPinned, effectiveMode, testStartedAt]);
+  useEffect(() => {
+    const showSub = KeyboardEvents.addListener('keyboardWillShow', (e) => {
+      log('[srs-spell] keyboard will show', { height: e.height });
+    });
+    const hideSub = KeyboardEvents.addListener('keyboardDidHide', (e) => {
+      log('[srs-spell] keyboard did hide', { height: e.height });
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
   /** The correct scrabble answer — the scrabble mode derives its letter blocks
    *  (and shuffle) from this exact string, so the block count matches the
    *  spelling test. For a single-character answer this is the matched entry's
@@ -2009,6 +2048,14 @@ export default function ReviewScreen() {
         </View>
       </View>
 
+      {/* Keyboard-aware region (SPEC-066): while the software keyboard is up,
+          this region shrinks to the space above it, so the card stays fully
+          scrollable and the spell answer footer below sits directly on top of
+          the keyboard. `automaticOffset` lets the view resolve its own screen
+          position — this screen sits under the app's custom Header, not a
+          react-navigation header, so a hand-computed vertical offset would be a
+          guess. */}
+      <KeyboardAvoidingView behavior="padding" automaticOffset style={{ flex: 1 }}>
       {/* Flashcard — only as tall as content, max height fills remaining space */}
       <View className="px-4 mb-2 flex-1">
         <View className={`max-h-full rounded-xl border border-border bg-card ${isSm ? 'p-8' : 'p-4'}`}>
@@ -2238,32 +2285,10 @@ export default function ReviewScreen() {
                 </Button>
               )
             ) : effectiveMode === 'spell' ? (
-              <View className="mt-2 w-full gap-2">
-                <Text className="text-center text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
-                <SpellCharInput
-                  value={spellText}
-                  onChange={setSpellText}
-                  expectedLength={spellExpectedLen}
-                  autoFocus
-                  label={t('review.spell_prompt')}
-                  firstCharPlaceholder={spellPlaceholder ?? undefined}
-                />
-                <View className="w-full items-center">
-                  <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full" style={{ maxWidth: 384 }}>
-                    <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
-                  </Button>
-                </View>
-                {spellHint && spellHintInfoValue && (
-                  <Text className="text-center text-xs text-muted-foreground">
-                    {t(
-                      spellHintInfoValue.kind === 'phonetic'
-                        ? 'review.spell_hint_phonetic'
-                        : 'review.spell_hint_orthographic',
-                      { char: spellHint },
-                    )}
-                  </Text>
-                )}
-              </View>
+              // The spell answer row is deliberately NOT rendered inside the
+              // card: it is pinned above the keyboard as the footer below, so
+              // no amount of context text can push it out of reach.
+              null
             ) : (
               // Scrabble: no hint, no submit button — filling the last slot
               // auto-submits (the component calls handleScrabbleSubmit).
@@ -2332,6 +2357,42 @@ export default function ReviewScreen() {
         </View>
       </View>
 
+      {/* Spell answer row — pinned above the software keyboard (SPEC-066). It is
+          a sibling of the card rather than part of its scroll content, so it is
+          always visible however long the context is: the card scrolls
+          independently in the space above it. Same visual language as the card
+          so it reads as the bottom of the same flashcard. */}
+      {spellAnswerPinned && (
+        <View className="mx-4 mb-2 rounded-xl border border-border bg-card p-3">
+          <View className="w-full gap-2">
+            <Text className="text-center text-sm font-medium text-foreground">{t('review.spell_prompt')}</Text>
+            <SpellCharInput
+              value={spellText}
+              onChange={setSpellText}
+              expectedLength={spellExpectedLen}
+              autoFocus
+              label={t('review.spell_prompt')}
+              firstCharPlaceholder={spellPlaceholder ?? undefined}
+            />
+            <View className="w-full items-center">
+              <Button onPress={handleSpellSubmit} disabled={!spellText.trim()} variant="default" className="w-full" style={{ maxWidth: 384 }}>
+                <Text className={buttonTextClass('default')}>{t('review.submit')}</Text>
+              </Button>
+            </View>
+            {spellHint && spellHintInfoValue && (
+              <Text className="text-center text-xs text-muted-foreground">
+                {t(
+                  spellHintInfoValue.kind === 'phonetic'
+                    ? 'review.spell_hint_phonetic'
+                    : 'review.spell_hint_orthographic',
+                  { char: spellHint },
+                )}
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Rating buttons — pinned to bottom with safe area.
           Only shown once the card back is revealed (web parity, SPEC-066):
           recall mode reveals via Show Definition; test mode reveals after the
@@ -2361,6 +2422,7 @@ export default function ReviewScreen() {
           </View>
         </View>
       )}
+      </KeyboardAvoidingView>
     </PageContainer>
   );
 }
