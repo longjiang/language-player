@@ -341,8 +341,25 @@ localized text shown to TestFlight testers for a specific build.
 The current `scripts/upload.mjs ios` command only sends the IPA through
 Transporter. The `appstore prepare` / `appstore metadata` commands update
 App Store version metadata, not TestFlight build metadata. Therefore, after
-Apple finishes processing the IPA, use the App Store Connect API (or the
-equivalent TestFlight UI) to complete this step:
+Apple finishes processing the IPA, set the build's tester note:
+
+```bash
+# Draft the note from the actual commit range first (see the example below),
+# then write it — inline, or @path/to/note.txt for multi-line text:
+node scripts/appstore-beta-note.mjs 3.6.1 23 --whats-new @/tmp/whats-new.txt --dry-run
+node scripts/appstore-beta-note.mjs 3.6.1 23 --whats-new @/tmp/whats-new.txt
+```
+
+`scripts/appstore-beta-note.mjs` uses the same App Store Connect API key as
+`upload.mjs appstore …` (`LP_ASC_KEY_PATH` / `LP_ASC_KEY_ID` /
+`LP_ASC_ISSUER_ID`; app ID from `LP_ASC_APP_ID`, default `6520385296`). It finds
+the build by marketing version + build number, refuses to write anything unless
+the build is in state `VALID` (an upload that is still processing is not
+returned by the API, which is why it must run *after* processing), patches the
+`en-CA` localization — creating it if the build has none — and reads the note
+back before reporting success. Override the locale with `--locale`.
+
+The manual equivalent, if the script is unavailable:
 
 1. Find the processed build by app ID `6520385296`, marketing version, and
    build number `N`.
