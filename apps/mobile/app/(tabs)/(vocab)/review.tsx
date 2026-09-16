@@ -48,6 +48,7 @@ import {
   type ReviewMode,
 } from '@langplayer/utils';
 import { getSrsTestManager } from '@/lib/srs-test-manager';
+import { createSrsTestFallback, resolveSavedWordEntry } from '@/lib/srs-test-fallback';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
@@ -884,6 +885,15 @@ export default function ReviewScreen() {
     const manager = getSrsTestManager();
     const cardKey = `${l2Code}:${baseCode(l1Lang.code)}:${card.word.id}`;
     const context = (card.word.context?.text as string | undefined) ?? '';
+    // Offline fallback (SPEC-066 § "Offline test generation"): if the LLM call
+    // fails — Offline Mode, no network, a failing endpoint — the manager builds
+    // the question from local data instead of showing the error box.
+    const fallback = createSrsTestFallback({
+      targetWordId: card.word.id,
+      savedWords: l2SavedWords.map((word) => ({ id: word.id, form: wordLabel(word) })),
+      definitionQuestionText: t('review.test_definition_prompt'),
+      resolveEntry: (wordId) => resolveSavedWordEntry(l2Code, wordId),
+    });
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     // The pronunciation test targets the LEMMA (dictionary form), never the
     // inflected surface form; the definition test keeps the surface form.
@@ -919,6 +929,7 @@ export default function ReviewScreen() {
           ? pronunciationReadingOf(entryForQuestion, l2Code)
           : entryForQuestion?.pronunciation,
       },
+      fallback,
       onRetry: () => {
         if (sessionVersion !== testRequestVersionRef.current) return;
         setTestSlots((prev) => prev.map((slot, i) => (i === index ? { ...slot, status: 'retrying' } : slot)));
@@ -930,8 +941,16 @@ export default function ReviewScreen() {
       if (result.ok) return { kind, status: 'ready', question: result.question };
       return { kind, status: 'error', diagnostic: result.diagnostic };
     }));
-    log('[srs-test] slot load settled', { l2Code, word: targetWord, kind, index, ok: result.ok });
-  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
+    log('[srs-test] slot load settled', {
+      l2Code,
+      word: targetWord,
+      kind,
+      index,
+      ok: result.ok,
+      // 'fallback' = built locally because generation failed (offline).
+      source: result.ok ? result.source : 'error',
+    });
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, l2SavedWords, t]);
 
   /**
    * Start the current card's test. The pronunciation test is loaded first (an

@@ -1352,6 +1352,7 @@
         "srs_review": "{count, plural, other {已複習 # 次}}",
         "start_test": "開始測試",
         "submit": "提交",
+        "test_definition_prompt": "「{word}」在這句話裡是什麼意思？",
         "test_error": "生成此測試時出現問題。",
         "test_skipped": "已跳過",
         "trying_again": "出現問題，正在重試…"

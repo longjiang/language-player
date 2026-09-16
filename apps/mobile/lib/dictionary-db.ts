@@ -952,6 +952,58 @@ export async function autocompleteOffline(
  * Fetch one entry by its raw scoped ID from the offline dictionary. Used by
  * the word detail page so deep links and suggestion taps work offline.
  */
+/**
+ * Entries whose headword contains `char` — the source of plausible reading
+ * confounders for the offline pronunciation test (SPEC-066 § "Offline test
+ * generation"): 一番's いちばん can be confounded with another 一 word's reading.
+ *
+ * `instr()` cannot use the head index, so this is a bounded scan: the caller
+ * asks for a small limit, and the query is only issued for the characters of the
+ * word under test.
+ */
+export async function lookupEntriesSharingChar(
+  l2: string,
+  char: string,
+  limit = 80,
+): Promise<DictionaryEntry[]> {
+  const table = dictTableName(l2);
+  if (!char) return [];
+  const query = async (db: SQLite.SQLiteDatabase) => {
+    // `instr` cannot use the head index, so this is a bounded scan (the caller
+    // keeps `limit` small and stops asking once it has enough readings).
+    const rows = await db.getAllAsync<{ entry_json: string }>(
+      `SELECT entry_json FROM ${table} WHERE instr(head, ?) > 0 LIMIT ?`,
+      [char, limit],
+    );
+    const out: DictionaryEntry[] = [];
+    for (const row of rows) {
+      try {
+        out.push(JSON.parse(row.entry_json) as DictionaryEntry);
+      } catch {
+        // Corrupt row — skip.
+      }
+    }
+    return out;
+  };
+
+  let l2Db: SQLite.SQLiteDatabase | null = null;
+  try {
+    l2Db = await openOfflineDictionaryDB(l2);
+  } catch {
+    l2Db = null;
+  }
+  if (l2Db) {
+    try {
+      const entries = await query(l2Db);
+      log('[DictDB] head-char rows — l2:', l2, 'char:', char, 'rows:', entries.length);
+      return entries;
+    } catch (e) {
+      logwarn('[DictDB] head-char lookup failed — l2:', l2, 'char:', char, 'error:', (e as Error)?.message ?? e);
+    }
+  }
+  return [];
+}
+
 export async function getOfflineEntryById(
   l2: string,
   entryId: string,

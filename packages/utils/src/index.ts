@@ -41,6 +41,12 @@ export {
 } from './pronunciation';
 export { rawByeonggi, normalizeByeonggi, resolveByeonggi } from './han-script';
 export {
+  buildFallbackTestQuestion,
+  japaneseReadingVariants,
+  rankSimilarWords,
+} from './srs-test-fallback';
+export type { SrsFallbackInput } from './srs-test-fallback';
+export {
   classifySubscriptionResponse,
   parseSubscriptionBody,
 } from './subscription-check';
@@ -169,6 +175,7 @@ export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
 export type {
   SrsTestCacheStorage,
   SrsTestDiagnostic,
+  SrsTestFallback,
   SrsTestGenerationInput,
   SrsTestManagerOptions,
   SrsTestPriority,

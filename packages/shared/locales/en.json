@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, one {reviewed once} other {reviewed # times}}",
         "start_test": "Start test",
         "submit": "Submit",
+        "test_definition_prompt": "What does “{word}” mean in this sentence?",
         "test_error": "There was a problem generating this test.",
         "test_skipped": "Skipped",
         "trying_again": "There was a problem, trying again..."

@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, other {ทบทวนแล้ว # ครั้ง}}",
         "start_test": "เริ่มการทดสอบ",
         "submit": "ส่ง",
+        "test_definition_prompt": "“{word}” ในประโยคนี้หมายความว่าอะไร?",
         "test_error": "เกิดปัญหาในการสร้างแบบทดสอบนี้",
         "test_skipped": "ข้ามแล้ว",
         "trying_again": "เกิดปัญหาขึ้น กำลังลองอีกครั้ง..."

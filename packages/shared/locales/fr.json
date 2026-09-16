@@ -1389,6 +1389,7 @@
         "srs_review": "{count, plural, one {révisé # fois} other {révisé # fois}}",
         "start_test": "Commencer le test",
         "submit": "Envoyer",
+        "test_definition_prompt": "Que signifie « {word} » dans cette phrase ?",
         "test_error": "Un problème est survenu lors de la génération de ce test.",
         "test_skipped": "Ignorée",
         "trying_again": "Un problème est survenu, nouvelle tentative..."
