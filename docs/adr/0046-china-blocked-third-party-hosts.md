@@ -174,6 +174,111 @@ Two things to carry forward:
   on cached responses.** A response must not be made cacheable unless its URL
   alone fully determines it.
 
+### Amendment — 2026-09-20: our own apex domain is blocked, at DNS and at SNI
+
+Everything above audits third-party hosts the app *loads*. It never asked whether
+`languageplayer.io` — the origin the app is served from — is reachable from
+mainland China. It is not. Verified on 2026-09-20 from the development machine,
+and there are two independent layers, either of which alone is fatal.
+
+**Layer 1 — DNS poisoning.** Every plaintext resolver reachable from that network
+returned a forged address drawn from the GFW's known poison pool (Twitter,
+Facebook and Dropbox ranges):
+
+| Resolver | Answer for `languageplayer.io` |
+|---|---|
+| `223.5.5.5` / `223.6.6.6` (AliDNS) | `104.244.46.5` |
+| `119.29.29.29` (DNSPod) | `108.160.167.158` |
+| `180.76.76.76` (Baidu) | `108.160.163.112` |
+| `1.2.4.8` (CNNIC) | `104.244.46.185` |
+| `101.226.4.6` / `218.30.118.6` (360) | `199.59.149.239` / `103.252.115.221` |
+| `117.50.10.10` | `98.159.108.58` |
+| `180.184.1.1` | `31.13.87.9` |
+| `8.8.8.8` / `1.1.1.1` / `208.67.222.222` | `50.117.117.42` / `199.59.149.236` / `157.240.17.41` |
+| `114.114.114.114` | no answer |
+
+Two of those are properties of the poisoning rather than anecdotes, and both are
+cheap to re-check:
+
+- **The answers move.** Six repeats against a single resolver alternated between
+  `162.125.80.5` and `104.244.46.5`, while `example.com` was stable across the
+  same repeats. A record that changes between identical queries is injection, not
+  a zone file.
+- **A genuinely absent name is not forged.** A random `<junk>.io` returned a clean
+  NXDOMAIN with no wildcard, so the forgery is keyed to this name specifically.
+
+China's own DoH endpoints do not escape it — `dns.alidns.com` answered
+`104.244.46.5`, `doh.pub` `199.59.148.7`, `doh.360.cn` `103.252.115.221` —
+because what gets injected is their *outbound recursion*, not the client hop.
+Every foreign DoH/DoT endpoint tried (`1.1.1.1`, `dns.google`,
+`cloudflare-dns.com`, `doh.opendns.com`, `dns.quad9.net`, `doh.dns.sb`,
+`dns.adguard-dns.com`) was transport-blocked outright. There is no encrypted
+resolver reachable from here to ask.
+
+The real record, read from outside the GFW:
+
+```
+languageplayer.io.       A     75.2.60.5
+languageplayer.io.       NS    dns1.iwantmyname.com. dns2.iwantmyname.com. dns3.iwantmyname.com.
+www.languageplayer.io.   CNAME zerotohero-nuxt.netlify.app.
+v2.languageplayer.io.    CNAME zerotohero-nuxt.netlify.app.
+```
+
+**Do not expect this to match `language-player.netlify.app`.** They are different
+Netlify front doors, by design:
+
+| Hostname | Resolves to | Which front door |
+|---|---|---|
+| `languageplayer.io` (apex) | `75.2.60.5` | the **shared** load balancer — the A record Netlify documents for apex domains |
+| `language-player.netlify.app` | `52.74.6.109`, `13.215.239.219` | the **regional** ALB, chosen by GeoDNS; asked from an EU vantage the same name gave `35.157.26.135`, `63.176.8.218` |
+
+So "it should resolve to the same IP" is not a test of anything: the apex LB and
+the per-site GeoDNS ALB differ by design, and a `*.netlify.app` answer depends on
+where you ask from.
+
+**Layer 2 — the SNI is reset.** This is the layer that makes DNS work beside the
+point: handed the correct address, the connection still dies. `TCP:443` was open
+to all five candidate IPs, and the reset lands inside the TLS ClientHello:
+
+| SNI sent to `52.74.6.109:443` | Result |
+|---|---|
+| `language-player.netlify.app` | TLSv1.3 handshake completes |
+| `totally-unrelated-xyz.example.com` | TLSv1.3 handshake completes |
+| `languageplayer.io` | `write:errno=54` — reset while sending ClientHello |
+| `www.languageplayer.io` | `write:errno=54` |
+
+The unrelated-SNI control is the load-bearing one: an unknown name handshakes
+fine, so Netlify is not rejecting anything — the `RST` is injected on-path by a
+filter matching the literal string `languageplayer.io`. Identical against
+`75.2.60.5`.
+
+**What this rules out.** A `hosts` entry, a different resolver, `dig @<ns>`, DoH
+to a Chinese provider, `curl --resolve` — every one of those is a DNS-side or
+address-side fix, and the connection dies at the ClientHello regardless. Both
+`--resolve` attempts (the real `75.2.60.5` and the netlify.app ALB IP) returned
+`http=000`. A proxy or VPN whose tunnel carries the TLS is the only client-side
+fix; nothing in this repository can change it.
+
+**The reachable name for this deploy is `https://language-player.netlify.app/`.**
+Verified `200` from the same machine on the same network, serving the same
+deployment (`<title>Language Player — Learn languages through video</title>`).
+Use that for any manual check from mainland China — `languageplayer.io` will fail
+for reasons that have nothing to do with the code under test.
+
+Three things to carry forward:
+
+- **Test reachability by connecting, not by comparing resolved addresses.** An
+  address comparison is both a false positive (the apex/ALB split above looks
+  like a mismatch while being perfectly correct) and a false negative (it cannot
+  see the SNI layer at all).
+- **Correct DNS is not evidence of reachability.** A name can resolve perfectly
+  and still be unroutable; "it resolved fine" means nothing until a request
+  completes. This ADR's own audit only ever confirmed surfaces by completing one.
+- **Our own origin is not exempt from the constraint this document is about.**
+  The ADR is written as though only *third-party* hosts are at risk. The apex is
+  blocked at both layers, so any future China-facing check that starts from
+  `https://languageplayer.io` starts from a broken URL.
+
 ## Consequences
 
 ### Positive
