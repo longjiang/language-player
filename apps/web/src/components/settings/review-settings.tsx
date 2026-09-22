@@ -7,6 +7,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useLanguage } from '@/providers/language-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
+import { SaleNotice } from '@/components/sale-notice';
 import { SliderRow } from '@/components/settings/SliderRow';
 import { log } from '@/lib/logger';
 import { effectiveDailyNewLimit, FREE_SRS_DAILY_NEW_CARDS } from '@langplayer/utils';
@@ -84,6 +85,7 @@ export function ReviewSettings() {
       {showFreeLimitNotice && (
         <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-center">
           <p className="text-xs font-medium">{t('msg.free_new_cards_limit')}</p>
+          <SaleNotice className="mt-1" />
           <Link
             href={`/${l1.code}/${l2.code}/go-pro`}
             className="mt-1 inline-block text-xs font-semibold text-primary underline"
