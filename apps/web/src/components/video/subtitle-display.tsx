@@ -9,6 +9,7 @@ import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/us
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
+import { SaleNotice } from '@/components/sale-notice';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -763,6 +764,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tok
       {!isPro && syncedLines.length > FREE_TRANSCRIPT_LINES && (
         <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
           <p className="text-sm font-medium">{t('msg.upgrade_to_pro_banner')}</p>
+          <SaleNotice className="mt-2" />
           <a
             href={`/${l1.code}/${l2.code}/go-pro`}
             className="mt-2 inline-block text-sm font-semibold text-primary underline"

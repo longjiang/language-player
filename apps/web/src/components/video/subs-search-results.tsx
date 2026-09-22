@@ -7,6 +7,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
+import { SaleNotice } from '@/components/sale-notice';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { baseCode, languageName } from '@/lib/language-data';
 import { stripSubtitleDurationPrefix, extractSubtitleDuration } from '@/lib/subtitle-csv';
@@ -1174,9 +1175,12 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
         <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
-          <p className="text-xs text-muted-foreground">
-            {t('msg.upgrade_to_pro_banner')}
-          </p>
+          <div>
+            <p className="text-xs text-muted-foreground">
+              {t('msg.upgrade_to_pro_banner')}
+            </p>
+            <SaleNotice className="mt-1" />
+          </div>
           <Link
             href={`/${l1.code}/${l2.code}/go-pro`}
             className="shrink-0 text-xs font-semibold text-primary underline"
