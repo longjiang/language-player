@@ -17,6 +17,7 @@ import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { baseCode, translationSizeFactor } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, VideoNote } from '@langplayer/shared';
+import { SaleNotice } from '@/components/SaleNotice';
 
 /** ADR-0034: free users see the first 10 transcript lines. */
 const FREE_TRANSCRIPT_LINES = 10;
@@ -399,6 +400,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
             <Text className="text-sm text-center text-muted-foreground">
               {t('msg.upgrade_to_pro_banner')}
             </Text>
+            <SaleNotice className="mt-2 items-center" />
             <Button
               onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
               className="mt-3"
