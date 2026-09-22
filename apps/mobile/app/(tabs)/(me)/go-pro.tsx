@@ -10,9 +10,11 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { IAP_AVAILABLE, ANDROID_IAP_PRODUCT_ID, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
-import { isSaleActive, getSaleDiscount, findUsdPrice, CONTENT_L2_COUNT } from '@langplayer/shared';
+import { IAP_AVAILABLE, ANDROID_IAP_PRODUCT_ID, getStorePrice, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler, type StorePrice } from '@/lib/iap';
+import { SALE_DISCOUNT, findRegularPrice, formatPriceAmount, getSaleDiscount, hasStoreDiscount, isPlanOnSale, CONTENT_L2_COUNT } from '@langplayer/shared';
 import type { StripePrice } from '@langplayer/shared';
+import { useSaleWindow, formatSaleDate } from '@/hooks/use-sale';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw, CreditCard } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -68,18 +70,66 @@ const _processedTransactions = new Set<string>();
 
 // ── Helpers ──
 
-/** Get the display price for a plan card from fetched prices or fallback to default. */
+/** Regular (non-sale) USD price for a plan card, from the fetched price rows,
+ *  falling back to the hardcoded default before the fetch resolves.
+ *
+ *  Uses `findRegularPrice` rather than the loose `findUsdPrice`, because the
+ *  latter matches any `status=current` row for the currency — including a sale
+ *  row if ops ever flips one to `current`. A fallback that renders the regular
+ *  price must never accidentally render a discounted one. */
 function displayPrice(prices: StripePrice[], planKey: string, defaultPrice: string): string {
-  const usd = findUsdPrice(prices, planKey);
-  if (usd) return `$${usd.amount}`;
+  const regular = findRegularPrice(prices, planKey, 'usd');
+  if (regular) return `$${formatPriceAmount(regular.amount)}`;
   return defaultPrice;
 }
 
-/** Get the sale price for a plan (if active), or null. */
-function salePrice(prices: StripePrice[], planKey: string): string | null {
-  const sale = findUsdPrice(prices, planKey, 'sale');
-  if (!sale) return null;
-  return `$${sale.amount}`;
+/** Our own regular price, formatted for the currency the store reported, for
+ *  the struck-through reference beside a discounted store price. Only used when
+ *  a real discount has been proven (see `planPrice`), so it is never shown next
+ *  to a full price. */
+function regularReference(prices: StripePrice[], storeCurrency: string): string | null {
+  const currency = storeCurrency?.toLowerCase();
+  if (currency !== 'usd' && currency !== 'cny') return null;
+  const regular = findRegularPrice(prices, 'lifetime', currency);
+  if (!regular) return null;
+  return `${currency === 'usd' ? '$' : '¥'}${formatPriceAmount(regular.amount)}`;
+}
+
+/**
+ * The price a plan card (and the IAP button) shows.
+ *
+ * ⚠️ On mobile the ONLY purchase path is store billing, so for lifetime the
+ * authoritative price is whatever StoreKit / Play Billing reports — never a
+ * price this app computed. During a sale the store price is changed by hand in
+ * App Store Connect / Play Console, and reading it back here means the button
+ * can only ever display what the purchase sheet will charge.
+ *
+ * `regular` (the struck-through reference) is populated ONLY while the sale
+ * window is open AND the store's own number proves a reduction
+ * (`hasStoreDiscount`). So the sale chrome can never appear outside the sale,
+ * and an unchanged console price can never be paired with a "50% off" claim.
+ * When the store cannot be queried at all (Expo Go, offline, SKU not
+ * configured) this falls back to the regular USD price, which makes no discount
+ * claim either — the displayed `current` price is always the truth about what
+ * will be charged.
+ */
+function planPrice(
+  prices: StripePrice[],
+  planKey: string,
+  defaultPrice: string,
+  storePrice: StorePrice | null,
+  saleOpen: boolean,
+): { current: string; regular: string | null } {
+  if (planKey === 'lifetime' && storePrice?.displayPrice) {
+    return {
+      current: storePrice.displayPrice,
+      regular:
+        saleOpen && hasStoreDiscount(prices, planKey, storePrice)
+          ? regularReference(prices, storePrice.currency)
+          : null,
+    };
+  }
+  return { current: displayPrice(prices, planKey, defaultPrice), regular: null };
 }
 
 /** Check if a non-lifetime plan is gated on store-billing platforms
@@ -150,6 +200,7 @@ export default function GoProScreen() {
   const [error, setError] = useState<string | null>(null);
   const [iapResult, setIapResult] = useState<{ purchase: any; receipt?: string; jws?: string } | null>(null);
   const [iapErrorCode, setIapErrorCode] = useState<string | null>(null);
+  const [storePrice, setStorePrice] = useState<StorePrice | null>(null);
 
   // Fetch Stripe prices from backend
   useEffect(() => {
@@ -159,6 +210,22 @@ export default function GoProScreen() {
       .catch(() => setError(t('msg.price_load_error')))
       .finally(() => setLoadingPrices(false));
   }, [t]);
+
+  // The live store price is what an IAP button may display (see `planPrice`).
+  useEffect(() => {
+    let cancelled = false;
+    getStorePrice()
+      .then((price) => {
+        if (!cancelled) setStorePrice(price);
+      })
+      .catch(() => {
+        /* getStorePrice never rejects, but a null result is handled by
+           `planPrice` falling back to the regular price. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ── IAP Purchase Listener ──
   const mountedRef = useRef(true);
@@ -242,9 +309,19 @@ export default function GoProScreen() {
     })();
   }, [iapResult, user?.id, fetchSubscription, router, t]);
 
-  const saleActive = isSaleActive(prices);
-  const saleDiscount = getSaleDiscount(prices, 'lifetime');
-  const lifetimeSalePrice = saleActive ? salePrice(prices, 'lifetime') : null;
+  // ── Sale ──
+  // The window is the authority for WHEN the sale runs (Classic's
+  // `SALE` constant); the price rows remain the authority for HOW MUCH.
+  const { open: saleOpen, endsAt } = useSaleWindow();
+  const { l1Lang } = useLanguage();
+  const lifetimePriced = planPrice(prices, 'lifetime', '$169', storePrice, saleOpen);
+  /** Whether the store has confirmed the discount — see `showSale` below. */
+  const storeDiscountConfirmed =
+    saleOpen && hasStoreDiscount(prices, 'lifetime', storePrice);
+  // Percentage from the price rows, falling back to the declared constant so
+  // the banner still reads correctly before `/stripe-prices` resolves.
+  const salePct =
+    getSaleDiscount(prices, 'lifetime') ?? Math.round((1 - SALE_DISCOUNT) * 100);
 
   const selectedPlanData = PLANS.find((p) => p.planKey === selectedPlan);
   // Purchase gating (ARCH-022): an active auto-renewing subscription blocks
@@ -257,6 +334,17 @@ export default function GoProScreen() {
     !!sub && sub.type !== 'trial' && !!sub.payment_customer_id && !isExpired;
   /** User already owns lifetime (IAP/Stripe/PayPal) — no repurchase possible. */
   const isLifetimeOwner = !!sub && sub.type === 'lifetime';
+
+  /** Whether to render the sale banner at all. Classic hides it for lifetime
+   *  owners (`components/Sale.vue`: `subscription.type !== 'lifetime'`).
+   *
+   *  ⚠️ `storeDiscountConfirmed` gates the *discount claim* separately. Mobile
+   *  has no non-store purchase path, so until the App Store Connect / Play
+   *  Console price is lowered, an in-app "50% off" would be a promise the
+   *  purchase sheet cannot keep. The banner then degrades to the headline and
+   *  the deadline, and the card shows the full store price with no
+   *  strike-through. */
+  const showSale = saleOpen && isPlanOnSale('lifetime') && !isLifetimeOwner;
 
   // ── IAP Purchase (iOS only) ──
   const handleIapPurchase = useCallback(async () => {
@@ -337,19 +425,24 @@ export default function GoProScreen() {
         </Text>
       </View>
 
-      {/* ── Sale Banner ── */}
-      {saleActive && (
+      {/* ── Sale Banner (Mid-Autumn) ── */}
+      {showSale && (
         <View className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3">
           <Text className="text-center text-sm font-bold text-amber-900 dark:text-amber-100">
-            🔥 {t('msg.sale_active')}
+            🥮 {t('msg.sale_mid_autumn')}
           </Text>
-          {saleDiscount !== null && (
+          {/* The discount is only claimed once the store price proves it — see
+              `showSale`. Because mobile has no non-store purchase path, the
+              banner never quotes a price: the card and the IAP button show the
+              store's own localized price string. */}
+          {storeDiscountConfirmed && (
             <Text className="mt-1 text-center text-xs text-amber-700 dark:text-amber-300">
-              {lifetimeSalePrice
-                ? t('msg.sale_lifetime_price', { pct: saleDiscount, price: lifetimeSalePrice })
-                : t('msg.sale_discount', { pct: saleDiscount })}
+              {t('msg.sale_discount', { pct: salePct })}
             </Text>
           )}
+          <Text className="mt-0.5 text-center text-xs text-amber-700 dark:text-amber-300">
+            {t('msg.sale_offer_ends', { date: formatSaleDate(endsAt, l1Lang.code) })}
+          </Text>
         </View>
       )}
 
@@ -404,8 +497,16 @@ export default function GoProScreen() {
             const isSelected = selectedPlan === plan.planKey;
             const isCurrent = isCurrentPlan(plan.planKey, planType);
             const restrictedOnStore = isStoreGatedPlan(plan.planKey);
-            const planDisplayPrice = displayPrice(prices, plan.planKey, plan.defaultPrice);
-            const planSalePrice = saleActive ? salePrice(prices, plan.planKey) : null;
+            // Store price for lifetime (the only purchase path on mobile);
+            // regular USD row otherwise.
+            const { current: planDisplayPrice, regular: planRegularPrice } = planPrice(
+              prices,
+              plan.planKey,
+              plan.defaultPrice,
+              storePrice,
+              saleOpen,
+            );
+            const planOnSale = !!planRegularPrice;
 
             return (
               <Pressable
@@ -444,10 +545,10 @@ export default function GoProScreen() {
                     )}
                   </View>
                   <View className="items-end">
-                    {planSalePrice ? (
+                    {planOnSale ? (
                       <View className="flex-row items-center gap-1">
-                        <Text className="text-sm text-muted-foreground line-through">{planDisplayPrice}</Text>
-                        <Text className="text-2xl font-bold text-foreground">{planSalePrice}</Text>
+                        <Text className="text-sm text-muted-foreground line-through">{planRegularPrice}</Text>
+                        <Text className="text-2xl font-bold text-foreground">{planDisplayPrice}</Text>
                       </View>
                     ) : (
                       <Text className="text-2xl font-bold text-foreground">{planDisplayPrice}</Text>
@@ -534,7 +635,7 @@ export default function GoProScreen() {
                   ) : (
                     <View className="flex-row items-center gap-1">
                       <Text className="text-sm text-white/70">
-                        {lifetimeSalePrice ?? displayPrice(prices, 'lifetime', '$169')}
+                        {lifetimePriced.current}
                       </Text>
                       <ArrowRight size={14} color={ICON_ON_PRIMARY} />
                     </View>
