@@ -42,6 +42,7 @@ import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { X, ChevronDown, ChevronRight, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
+import { SaleNotice } from '@/components/SaleNotice';
 
 interface SubsSearchResultsProps {
   term: string;
@@ -1048,9 +1049,12 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
         <View className="flex-row items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
-          <Text className="flex-1 text-xs text-muted-foreground">
-            {t('msg.upgrade_to_pro_banner')}
-          </Text>
+          <View className="flex-1">
+            <Text className="text-xs text-muted-foreground">
+              {t('msg.upgrade_to_pro_banner')}
+            </Text>
+            <SaleNotice className="mt-1" />
+          </View>
           <Button
             variant="link"
             size="sm"

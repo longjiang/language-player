@@ -8,6 +8,7 @@ import { SliderRow } from '@/components/settings/SliderRow';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { log } from '@/lib/logger';
 import { effectiveDailyNewLimit, FREE_SRS_DAILY_NEW_CARDS } from '@langplayer/utils';
+import { SaleNotice } from '@/components/SaleNotice';
 
 export function ReviewSettings() {
   const { review, updateReview } = useSettingsContext();
@@ -65,6 +66,7 @@ export function ReviewSettings() {
             <Text className="text-xs text-center font-medium text-foreground">
               {t('msg.free_new_cards_limit')}
             </Text>
+            <SaleNotice className="mt-1 items-center" />
             <Button
               onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
               variant="link"
