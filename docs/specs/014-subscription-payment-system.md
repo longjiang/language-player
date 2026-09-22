@@ -304,6 +304,14 @@ state to forget to revert.
   `/create-stripe-checkout-session`.
 - **Changing the dates needs a deploy** — the window is a client constant. Web
   needs a deploy; mobile needs a build (or an OTA update for the shared package).
+- **Storefronts outside USD and CNY get no discount claim on mobile.**
+  `hasStoreDiscount()` can only compare the store's amount against a regular row
+  we hold, and `prices.csv` has USD and CNY only. In a EUR, GBP, JPY, … storefront
+  the mobile UI therefore shows the store price with no strike-through and the
+  banner shows no percentage — conservative and never wrong, but the discount is
+  invisible in those storefronts even when the console price has been lowered.
+  Adding regular rows for those currencies, or a per-storefront regular-price
+  source, is what would close it.
 
 ### Deliberate non-goals
 
