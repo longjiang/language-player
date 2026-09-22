@@ -1114,6 +1114,8 @@
         "sale_active": "🎉 Sale is active!",
         "sale_discount": "Save {pct}% on select plans!",
         "sale_lifetime_price": "Save {pct}% — get lifetime for only {price}!",
+        "sale_mid_autumn": "Mid-Autumn Festival Sale!",
+        "sale_offer_ends": "Offer ends {date}",
         "save_more_words": "Save more words to continue learning.",
         "save_word_hint": "Click the bookmark icon next to any word to save it.",
         "save_words_to_build_deck": "Save words while watching videos to build your review deck. Tap any word in the subtitles to save it.",

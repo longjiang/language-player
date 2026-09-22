@@ -1096,6 +1096,8 @@
         "sale_active": "🎉 促销活动进行中！",
         "sale_discount": "精选方案节省 {pct}%！",
         "sale_lifetime_price": "节省 {pct}% — 仅需 {price} 获得终身访问！",
+        "sale_mid_autumn": "中秋节大促！",
+        "sale_offer_ends": "优惠截止 {date}",
         "save_more_words": "收藏更多单词以继续学习。",
         "save_word_hint": "点击任意单词旁边的书签图标即可保存。",
         "save_words_to_build_deck": "观看视频时收藏单词以建立复习卡组。点击字幕中的任意单词即可查询并收藏。",

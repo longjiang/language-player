@@ -1114,6 +1114,8 @@
         "sale_active": "🎉 A promoção está ativa!",
         "sale_discount": "Economize {pct}% em planos selecionados!",
         "sale_lifetime_price": "Economize {pct}% — obtenha acesso vitalício por apenas {price}!",
+        "sale_mid_autumn": "Promoção do Festival do Meio do Outono!",
+        "sale_offer_ends": "A oferta termina em {date}",
         "save_more_words": "Salve mais palavras para continuar aprendendo.",
         "save_word_hint": "Clique no ícone de marcador ao lado de qualquer palavra para salvá-la.",
         "save_words_to_build_deck": "Salve palavras enquanto assiste a vídeos para criar seu baralho de revisão. Toque em qualquer palavra nas legendas para salvá-la.",

@@ -1114,6 +1114,8 @@
         "sale_active": "🎉 세일 중입니다!",
         "sale_discount": "선택 요금제 {pct}% 할인!",
         "sale_lifetime_price": "{pct}% 절약 — {price}으로 평생 이용권!",
+        "sale_mid_autumn": "중추절 세일!",
+        "sale_offer_ends": "{date}까지 진행",
         "save_more_words": "학습을 계속하려면 더 많은 단어를 저장하세요.",
         "save_word_hint": "단어 옆에 있는 북마크 아이콘을 클릭하여 저장하세요.",
         "save_words_to_build_deck": "동영상을 시청하는 동안 단어를 저장하여 복습 덱을 만드세요. 자막에서 단어를 탭하여 저장하세요.",

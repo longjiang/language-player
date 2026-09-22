@@ -1114,6 +1114,8 @@
         "sale_active": "🎉 İndirim aktif!",
         "sale_discount": "Seçili planlarda %{pct} tasarruf edin!",
         "sale_lifetime_price": "%{pct} tasarruf edin — sadece {price} karşılığında ömür boyu erişim!",
+        "sale_mid_autumn": "Sonbahar Ortası Festivali İndirimi!",
+        "sale_offer_ends": "Teklif {date} tarihinde sona eriyor",
         "save_more_words": "Öğrenmeye devam etmek için daha fazla kelime kaydedin.",
         "save_word_hint": "Herhangi bir kelimenin yanındaki yer imi simgesine tıklayarak kaydedin.",
         "save_words_to_build_deck": "Tekrar destenizi oluşturmak için video izlerken kelimeler kaydedin. Kaydetmek için altyazılardaki herhangi bir kelimeye dokunun.",
