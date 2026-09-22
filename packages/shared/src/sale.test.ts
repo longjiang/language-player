@@ -5,11 +5,13 @@ import {
   SALE_PLANS,
   findRegularPrice,
   findSalePrice,
+  formatPriceAmount,
   getSaleDiscount,
   hasStoreDiscount,
   isPlanOnSale,
   isSaleWindowOpen,
   resolvePlanPrice,
+  resolvePlanPriceForWindow,
   saleWindowEnd,
   saleWindowStart,
   type StripePrice,
@@ -168,6 +170,46 @@ describe('resolvePlanPrice', () => {
     const { price } = resolvePlanPrice(PRICES, 'lifetime', 'cny', during);
     expect(price?.paymentLink).toBe('https://buy.stripe.com/sale');
     expect(findRegularPrice(PRICES, 'lifetime', 'cny')?.paymentLink).toBe('https://buy.stripe.com/l');
+  });
+});
+
+describe('resolvePlanPriceForWindow', () => {
+  it('matches resolvePlanPrice for the same resolved window state', () => {
+    const during = local(2026, 8, 24);
+    const after = local(2026, 8, 28);
+    for (const now of [during, after]) {
+      const fromDate = resolvePlanPrice(PRICES, 'lifetime', 'usd', now);
+      const fromBool = resolvePlanPriceForWindow(
+        PRICES,
+        'lifetime',
+        'usd',
+        isSaleWindowOpen(now) && isPlanOnSale('lifetime', now),
+      );
+      expect(fromBool.price?.id).toBe(fromDate.price?.id);
+      expect(fromBool.onSale).toBe(fromDate.onSale);
+    }
+  });
+
+  it('charges the sale price only when the caller says the window is open', () => {
+    expect(resolvePlanPriceForWindow(PRICES, 'lifetime', 'usd', true).price?.amount).toBe(84.5);
+    expect(resolvePlanPriceForWindow(PRICES, 'lifetime', 'usd', false).price?.amount).toBe(169);
+  });
+
+  it('never discounts a store-gated non-lifetime plan', () => {
+    expect(resolvePlanPriceForWindow(PRICES, 'annual', 'usd', true).onSale).toBe(false);
+  });
+});
+
+describe('formatPriceAmount', () => {
+  it('pads a fractional sale amount to two decimals', () => {
+    expect(formatPriceAmount(84.5)).toBe('84.50');
+  });
+
+  it('leaves whole amounts whole', () => {
+    expect(formatPriceAmount(169)).toBe('169');
+    expect(formatPriceAmount(608)).toBe('608');
+    expect(formatPriceAmount(1227)).toBe('1227');
+    expect(formatPriceAmount(10)).toBe('10');
   });
 });
 

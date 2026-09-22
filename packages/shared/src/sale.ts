@@ -224,21 +224,63 @@ export function getSaleDiscount(
   return Math.round((1 - sale.amount / regular.amount) * 100);
 }
 
-/** The price a plan should be charged/displayed at, honouring the sale window.
+/** The price a plan should be charged/displayed at, given an already-resolved
+ *  window state.
  *
- *  Returns the sale row while the window is open (falling back to the regular
- *  row when no usable sale row exists), and the regular row otherwise. The
+ *  Returns the sale row while the sale applies (falling back to the regular row
+ *  when no usable sale row exists — e.g. Stripe test mode, which has no
+ *  `test_price_id` for the sale rows), and the regular row otherwise. The
  *  returned row's `id` / `paymentLink` is what the checkout must use so the
- *  charged amount matches the displayed one. */
+ *  charged amount matches the displayed one.
+ *
+ *  Prefer this over `resolvePlanPrice()` from a component, passing the boolean
+ *  its own clock hook resolved after mount — that keeps the displayed price and
+ *  the charged price derived from ONE decision, and keeps SSR out of the
+ *  timezone question entirely.
+ */
+export function resolvePlanPriceForWindow(
+  prices: StripePrice[],
+  plan: string,
+  currency: SaleCurrency,
+  saleOpen: boolean,
+): { price: StripePrice | undefined; onSale: boolean } {
+  if (saleOpen && (SALE_PLANS as readonly string[]).includes(plan)) {
+    const sale = findSalePrice(prices, plan, currency);
+    if (sale) return { price: sale, onSale: true };
+  }
+  return { price: findRegularPrice(prices, plan, currency), onSale: false };
+}
+
+/** `resolvePlanPriceForWindow()` with the window resolved from `now`.
+ *  Convenience for non-component callers; components should use the boolean
+ *  form so nothing is resolved during SSR. */
 export function resolvePlanPrice(
   prices: StripePrice[],
   plan: string,
   currency: SaleCurrency,
   now: Date = new Date(),
 ): { price: StripePrice | undefined; onSale: boolean } {
-  const sale = findSalePrice(prices, plan, currency);
-  if (isPlanOnSale(plan, now) && sale) return { price: sale, onSale: true };
-  return { price: findRegularPrice(prices, plan, currency), onSale: false };
+  return resolvePlanPriceForWindow(prices, plan, currency, isPlanOnSale(plan, now));
+}
+
+// ──────────────────────────────────────────────
+// Price display
+// ──────────────────────────────────────────────
+
+/**
+ * Format a price amount for display.
+ *
+ * `prices.csv` stores the sale amounts with a trailing half (USD `84.5`), which
+ * `String()` would render as "$84.5" — money is written with two decimals, so
+ * fractional amounts are padded. Whole amounts stay whole (169, 608, 1227)
+ * because "US$169.00" is noisier than "US$169" for the regular plans.
+ *
+ * The currency symbol is the caller's job: the web page prefixes "$"/"¥"
+ * itself, and the mobile app uses whatever StoreKit / Play Billing returns as
+ * the localised `displayPrice`.
+ */
+export function formatPriceAmount(amount: number): string {
+  return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
 }
 
 // ──────────────────────────────────────────────
