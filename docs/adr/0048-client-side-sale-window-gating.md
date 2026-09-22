@@ -149,6 +149,11 @@ answer it.**
   test ids for the sale rows is the fix if sale testing in test mode is wanted.
 - The store-price step is manual and outside this repository. Its failure mode
   is designed to be safe (no discount claimed) rather than loud.
+- `hasStoreDiscount()` needs a regular row in the storefront's own currency, and
+  `prices.csv` holds USD and CNY only. In a EUR/GBP/JPY/… storefront the mobile
+  UI shows the store price with no strike-through and claims no percentage, even
+  if the console price was lowered. Conservative — it cannot overclaim — but the
+  discount is invisible there until regular rows for more currencies exist.
 
 ## Alternatives considered
 
