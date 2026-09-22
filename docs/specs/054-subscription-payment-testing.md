@@ -479,11 +479,49 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 ---
 
+### 2.8 Sale pricing (Mid-Autumn 2026)
+
+See [SPEC-014 § Mid-Autumn sale](014-subscription-payment-system.md) and
+[ADR-0048](../adr/0048-client-side-sale-window-gating.md).
+
+> ⚠️ **The sale cannot be exercised in Stripe test mode.** `prices.csv` has no
+> `test_price_id` for the `type=sale` rows, so `findSalePrice()` returns nothing
+> and checkout falls back to the regular price (logged as
+> `[LP Web] sale: no usd test price id for "lifetime" — using the regular price`).
+> Run MA1–MA2 **live**, with a real card, and refund. MA3–MA9 need no payment.
+
+| # | App | Check | Steps | Expected result |
+|---|---|---|---|---|
+| MA1 | Web | Sale checkout (USD) | During the window, go-pro → Lifetime → Credit Card | Card shows struck-through $169 and $84.50; Stripe Checkout displays **$84.50**; the log line shows `amount=84.5`; grant is `type=lifetime` |
+| MA2 | Web | Sale checkout (CNY) | During the window, go-pro → Lifetime → WeChat/Alipay | The link is the **sale** Payment Link (`.../9AQ3fD2krfM7aKk7sM`) and the amount is ¥608 |
+| MA3 | Web | Window closed | Move the device clock outside Sep 21–27 | No banner, no badge, no strike-through; card shows $169; Stripe Checkout displays **$169** |
+| MA4 | Web | Window boundaries | Set the clock to Sep 21 00:00 and Sep 27 23:59, then Sep 20 23:59 and Sep 28 00:00 | Sale open at both inclusive bounds; closed one minute outside each |
+| MA5 | Web | Landing section | Open `/` during the window | Sale banner above the plans table; lifetime row shows struck-through US$169 + US$84.50 and a sale badge |
+| MA6 | Web | Upgrade prompts | With a free account: past 10 transcript lines, past 5 subs-search hits, and Settings → Review | Sale headline + offer-end date in all three; nothing when the window is closed |
+| MA7 | Mobile | Store price is authoritative | Go-pro and profile → Lifetime, during the window, **before** the consoles are repriced | The displayed price is the store price ($169). The banner shows the headline and the deadline but **claims no discount**, and there is no strike-through |
+| MA8 | Mobile | Store price after repricing | Lower `pro_go` in App Store Connect (and publish the change for Play), then reopen go-pro | The displayed price is the store's new localized price; the discount line and the struck-through regular price appear; the Apple/Google purchase sheet shows the same amount the button displayed |
+| MA9 | Mobile | Store price unavailable | Run in Expo Go, or with the store unreachable | Price falls back to the regular USD row; no discount claim; no crash |
+| MA10 | All | No display/charge mismatch | Any row above | The amount on the card/button equals the amount the payment sheet or Stripe Checkout charges |
+
+**Regression guard:** confirm `findSalePrice()` still ignores `status`. The sale
+rows are `archived` in `prices.csv`, and re-adding a `status === 'current'` check
+there makes the entire sale silently disappear — the pre-existing bug ADR-0048
+fixed.
+
+### Post-sale teardown (Sep 28)
+
+- [ ] Restore `pro_go` to the 169-equivalent price in **App Store Connect**.
+- [ ] Restore `pro_go` to the 169-equivalent price in **Play Console** and publish.
+- [ ] Confirm no surface still claims a discount: web chrome ends with the
+      window, mobile chrome ends with the window.
+
+---
+
 ## 3. Cross-app checks
 
 | # | Check | Steps | Expected result |
 |---|---|---|---|
-| C1 | Price parity | Load go-pro on all three apps in test mode | Same plans/amounts (USD + CNY); sale lifetime price appears only when `SALE`/`status=sale` applies consistently |
+| C1 | Price parity | Load go-pro on all three apps in test mode | Same plans/amounts (USD + CNY). Sale rows are covered by § 2.8 (MA1–MA10) — the sale window is client-gated on the device clock, not on `status=sale`, and the sale cannot be exercised in Stripe test mode (see the note there) |
 | C2 | Subscription sync | Purchase monthly via Stripe on Web → open Mobile with same user | Mobile shows Pro with matching expiry; profile shows processor `stripe` |
 | C3 | Purchase on iOS device → same account on Android/Web | Buy IAP lifetime on iOS → log into Web | Lifetime Pro active everywhere; profile shows `app-store` processor |
 | C4 | Existing subscription not overwritten | Have an active annual subscription → complete a second purchase of the same plan | Same row updated, no duplicate. **Expiry resets to now + 32/367d** (B32 — intentional: purchases happen after expiry, and each period is a fresh same-day cadence with a 1-day grace; stacking is not a supported flow). |
