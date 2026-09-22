@@ -7,7 +7,16 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { getStripePrices, findUsdPrice, findCnyPrice, type StripePrice } from '@/lib/prices';
+import { getStripePrices, isStripeTestMode, type StripePrice } from '@/lib/prices';
+import {
+  findRegularPrice,
+  findSalePrice,
+  formatPriceAmount,
+  getSaleDiscount,
+  resolvePlanPriceForWindow,
+} from '@langplayer/shared';
+import { useSaleWindow, formatSaleDate } from '@/hooks/use-sale';
+import { log } from '@/lib/logger';
 import {
   Crown,
   Check,
@@ -65,6 +74,44 @@ const PLANS: PlanCard[] = [
   },
 ];
 
+// ── Sale helpers ──
+
+/** The price row the checkout must send: the sale row while the sale applies,
+ *  else the regular row.
+ *
+ *  ⚠️ In Stripe test mode `findSalePrice()` finds nothing, because the sale
+ *  rows in `prices.csv` carry no `test_price_id`. `resolvePlanPriceForWindow`
+ *  then falls back to the regular price — logged here so the fallback is
+ *  visible instead of silently charging more than the UI advertised. */
+function checkoutPrice(
+  prices: StripePrice[],
+  plan: string,
+  currency: 'usd' | 'cny',
+  saleOpen: boolean,
+): StripePrice | undefined {
+  const { price, onSale } = resolvePlanPriceForWindow(prices, plan, currency, saleOpen);
+  if (saleOpen && !onSale && isStripeTestMode()) {
+    log(`[LP Web] sale: no ${currency} test price id for "${plan}" — using the regular price`);
+  }
+  return price;
+}
+
+/** Card display prices for a plan, derived from the fetched rows so the card
+ *  can never disagree with the checkout. The hardcoded `PLANS[].price` is only
+ *  the pre-fetch fallback. */
+function cardPrices(
+  prices: StripePrice[],
+  plan: string,
+  saleOpen: boolean,
+): { regular?: string; sale?: string } {
+  const regularRow = findRegularPrice(prices, plan, 'usd');
+  const saleRow = saleOpen ? findSalePrice(prices, plan, 'usd') : undefined;
+  return {
+    regular: regularRow ? `$${formatPriceAmount(regularRow.amount)}` : undefined,
+    sale: saleRow ? `$${formatPriceAmount(saleRow.amount)}` : undefined,
+  };
+}
+
 export default function GoProPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -78,6 +125,16 @@ export default function GoProPage() {
   const [loadingPrices, setLoadingPrices] = useState(true);
   const [checkingOut, setCheckingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sale window, resolved against the device clock after mount (never during
+  // SSR — see useSaleWindow). `saleOpen` drives both the banner and which
+  // price id the checkout sends, so the two can never disagree.
+  const { open: saleOpen, endsAt } = useSaleWindow();
+  const saleDiscountPct = saleOpen ? getSaleDiscount(prices, 'lifetime') : null;
+  const lifetimeSaleUsd = saleOpen ? findSalePrice(prices, 'lifetime', 'usd') : undefined;
+  // Classic hides the sale when the viewer already owns lifetime
+  // (`components/Sale.vue`: `subscription.type !== 'lifetime'`).
+  const showSale = saleOpen && subscription?.type !== 'lifetime';
 
   // Redirect unauthenticated
   useEffect(() => {
@@ -117,12 +174,15 @@ export default function GoProPage() {
     setError(null);
 
     try {
-      const usdPrice = findUsdPrice(prices, selectedPlan);
+      // Sale-aware: sends the sale price id while the window is open, so the
+      // amount Stripe charges matches the card and the banner.
+      const usdPrice = checkoutPrice(prices, selectedPlan, 'usd', saleOpen);
       if (!usdPrice) {
         setError(t('msg.no_usd_price'));
         setCheckingOut(false);
         return;
       }
+      log(`[LP Web] checkout: plan=${selectedPlan} price=${usdPrice.id} amount=${usdPrice.amount} sale=${saleOpen}`);
 
       // Ask the Python backend to create a Stripe Checkout Session
       const res = await fetch(`${PYTHON_API_URL}/create-stripe-checkout-session`, {
@@ -154,13 +214,19 @@ export default function GoProPage() {
       setError(err?.message ?? t('msg.unexpected_error'));
       setCheckingOut(false);
     }
-  }, [selectedPlan, userId, prices]);
+  }, [selectedPlan, userId, prices, saleOpen, t]);
 
   // ── WeChat / Alipay (CNY Payment Link) ──
-  const cnyPrice = selectedPlan ? findCnyPrice(prices, selectedPlan) : undefined;
+  // Sale-aware: the CNY sale row carries its own Payment Link, and the Stripe
+  // Payment Link is what fixes the amount charged — so the link must be the
+  // sale link for the amount to match the displayed sale price.
+  const cnyPrice = selectedPlan ? checkoutPrice(prices, selectedPlan, 'cny', saleOpen) : undefined;
   const cnyPaymentLink = cnyPrice?.paymentLink
     ? `${cnyPrice.paymentLink}?client_reference_id=${userId ?? ''}`
     : null;
+
+  // Card (USD) checkout price — the same row `handleStripeCheckout` sends.
+  const usdPrice = selectedPlan ? checkoutPrice(prices, selectedPlan, 'usd', saleOpen) : undefined;
 
   // ── Loading / unauthenticated states ──
   if (status === 'loading') {
@@ -184,10 +250,34 @@ export default function GoProPage() {
         </p>
       </div>
 
+      {/* ── Sale Banner (Mid-Autumn) ── */}
+      {showSale && (
+        <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-800 dark:bg-amber-950">
+          <p className="text-base font-bold text-amber-900 dark:text-amber-100">
+            🥮 {t('msg.sale_mid_autumn')}
+          </p>
+          {saleDiscountPct !== null && (
+            <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+              {lifetimeSaleUsd
+                ? t('msg.sale_lifetime_price', {
+                    pct: saleDiscountPct,
+                    price: `$${formatPriceAmount(lifetimeSaleUsd.amount)}`,
+                  })
+                : t('msg.sale_discount', { pct: saleDiscountPct })}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+            {t('msg.sale_offer_ends', { date: formatSaleDate(endsAt, l1.code) })}
+          </p>
+        </div>
+      )}
+
       {/* ── Plan Selection ── */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         {PLANS.map((plan) => {
           const isSelected = selectedPlan === plan.planKey;
+          const { regular, sale } = cardPrices(prices, plan.planKey, showSale);
+          const regularDisplay = regular ?? plan.price;
           return (
             <button
               key={plan.planKey}
@@ -198,11 +288,25 @@ export default function GoProPage() {
                   : 'border-border bg-card hover:border-primary/30'
               }`}
             >
+              {sale && (
+                <span className="mb-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-xs font-bold text-destructive-foreground">
+                  {t('msg.sale_mid_autumn')}
+                </span>
+              )}
               <p className="text-lg font-bold">{t(plan.nameKey)}</p>
-              <p className="mt-1 text-2xl font-bold">
-                {plan.price}
-                {plan.intervalKey && <span className="text-sm font-normal text-muted-foreground">{t(plan.intervalKey)}</span>}
-              </p>
+              {sale ? (
+                <p className="mt-1 flex items-baseline gap-2">
+                  <span className="text-sm font-normal text-muted-foreground line-through">
+                    {regularDisplay}
+                  </span>
+                  <span className="text-2xl font-bold text-red-600 dark:text-red-400">{sale}</span>
+                </p>
+              ) : (
+                <p className="mt-1 text-2xl font-bold">
+                  {regularDisplay}
+                  {plan.intervalKey && <span className="text-sm font-normal text-muted-foreground">{t(plan.intervalKey)}</span>}
+                </p>
+              )}
               <p className="mt-1 text-xs text-muted-foreground">{t(plan.descKey)}</p>
               <ul className="mt-3 space-y-1">
                 {plan.benefitKeys.map((key) => (
@@ -249,7 +353,7 @@ export default function GoProPage() {
           ) : (
           <div className="space-y-3">
             {/* Credit Card (USD) */}
-            {findUsdPrice(prices, selectedPlan) && (
+            {usdPrice && (
               <Button
                 onClick={handleStripeCheckout}
                 disabled={checkingOut || loadingPrices}
@@ -264,7 +368,7 @@ export default function GoProPage() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <span className="flex items-center gap-1 text-sm opacity-70">
-                    {selectedPlanData.price}{selectedPlanData.intervalKey ? ` ${t(selectedPlanData.intervalKey)}` : ''}
+                    ${formatPriceAmount(usdPrice.amount)}{selectedPlanData.intervalKey ? ` ${t(selectedPlanData.intervalKey)}` : ''}
                     <ArrowRight className="h-3 w-3" />
                   </span>
                 )}
@@ -282,7 +386,7 @@ export default function GoProPage() {
                   {t('payment.wechat_pay')}
                 </span>
                 <span className="text-sm opacity-80">
-                  ¥{cnyPrice?.amount} <ArrowRight className="inline h-3 w-3" />
+                  ¥{formatPriceAmount(cnyPrice!.amount)} <ArrowRight className="inline h-3 w-3" />
                 </span>
               </a>
             )}
@@ -298,7 +402,7 @@ export default function GoProPage() {
                   {t('payment.alipay')}
                 </span>
                 <span className="text-sm opacity-80">
-                  ¥{cnyPrice?.amount} <ArrowRight className="inline h-3 w-3" />
+                  ¥{formatPriceAmount(cnyPrice!.amount)} <ArrowRight className="inline h-3 w-3" />
                 </span>
               </a>
             )}
