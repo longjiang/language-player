@@ -49,3 +49,4 @@ NNNN-title-with-dashes.md
 | 0045 | Mock apps are sandboxed, self-contained HTML behind a frozen bridge | accepted | 2026-09-11 |
 | 0046 | The web app loads no third-party host that mainland China blocks | accepted | 2026-09-15 |
 | 0047 | Mobile inputs stay visible: keyboard-aware layout, not a bigger scroll area | accepted | 2026-09-17 |
+| 0048 | Sale windows gated on the client clock; sale amounts stay in the price rows | accepted | 2026-09-22 |

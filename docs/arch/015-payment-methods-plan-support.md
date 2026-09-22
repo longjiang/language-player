@@ -191,3 +191,22 @@ All methods create a subscription record in the Directus `subscriptions` collect
 - **React Native mobile has Apple IAP on iOS** (`pro_go`, lifetime). Its
   non-IAP in-app browser checkout is being removed (SPEC-014); Android gets
   Play Billing later.
+
+---
+
+## Sale pricing
+
+Promotional pricing (currently the Mid-Autumn sale: 50% off lifetime) is
+described in [SPEC-014 § Mid-Autumn sale](../specs/014-subscription-payment-system.md)
+and [ADR-0048](../adr/0048-client-side-sale-window-gating.md). Two points matter
+for the plan/payment-method matrix above:
+
+- **A sale never changes which plans or payment methods are available.** It only
+  changes the amount. Lifetime remains the only discounted plan, and the payment
+  methods available per platform are unchanged.
+- **A sale cannot apply to Apple IAP or Google Play Billing**, because those
+  prices live in App Store Connect / Play Console and the app cannot change them.
+  On mobile the app therefore reports the store's own price instead of a
+  discounted one; during a sale the console price itself is repriced by hand.
+  Classic had the same constraint — see the commented-out notice in
+  `zerotohero-nuxt/components/PaymentMethods.vue`.
