@@ -1114,6 +1114,8 @@
         "sale_active": "🎉 Penjualan sedang aktif!",
         "sale_discount": "Hemat {pct}% pada paket terpilih!",
         "sale_lifetime_price": "Hemat {pct}% — dapatkan akses seumur hidup hanya {price}!",
+        "sale_mid_autumn": "Promo Festival Pertengahan Musim Gugur!",
+        "sale_offer_ends": "Promo berakhir {date}",
         "save_more_words": "Simpan lebih banyak kata untuk melanjutkan belajar.",
         "save_word_hint": "Klik ikon penanda di samping kata apa pun untuk menyimpannya.",
         "save_words_to_build_deck": "Simpan kata saat menonton video untuk membangun tumpukan ulasan Anda. Ketuk kata mana pun di subtitle untuk menyimpannya.",

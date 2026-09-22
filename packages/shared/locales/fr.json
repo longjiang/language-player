@@ -1114,6 +1114,8 @@
         "sale_active": "🎉 La promotion est active !",
         "sale_discount": "Économisez {pct}% sur les forfaits sélectionnés !",
         "sale_lifetime_price": "Économisez {pct}% — obtenez l'accès à vie pour seulement {price} !",
+        "sale_mid_autumn": "Promo du Festival de la Mi-Automne !",
+        "sale_offer_ends": "L'offre se termine le {date}",
         "save_more_words": "Sauvegardez plus de mots pour continuer à apprendre.",
         "save_word_hint": "Cliquez sur l'icône de signet à côté d'un mot pour l'enregistrer.",
         "save_words_to_build_deck": "Sauvegardez des mots en regardant des vidéos pour constituer votre liste de révision. Appuyez sur n'importe quel mot dans les sous-titres pour le sauvegarder.",
