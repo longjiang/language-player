@@ -42,9 +42,10 @@ import {
   getAvailablePurchases,
   requestPurchase,
   finishTransaction,
+  fetchProducts,
 } from 'expo-iap';
 import type { Purchase } from 'expo-iap';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 
 /** Product ID — must match App Store Connect.
  *  "pro_go" is the GO listing's non-consumable product (shipped with the GO
@@ -239,6 +240,97 @@ export async function finishPurchaseTransaction(purchase: Purchase): Promise<voi
   } catch (err) {
     logwarn('[IAP] finishTransaction failed:', err);
   }
+}
+
+// ── Store price ──
+
+/** The price the store will actually charge, as reported by StoreKit / Play
+ *  Billing. Mirrors `StorePrice` in `@langplayer/shared`. */
+export interface StorePrice {
+  /** Product the price belongs to (`pro_go`). */
+  productId: string;
+  /** The store's own localised formatting — "$84.50", "84,50 €", "¥608".
+   *  This is the ONLY price string safe to show on an IAP button: it is what
+   *  the purchase sheet will display. */
+  displayPrice: string;
+  /** ISO currency code reported by the store, e.g. "USD". */
+  currency: string;
+  /** Numeric amount, or null when the store reported none. Used to detect
+   *  whether the store price is genuinely discounted (see
+   *  `hasStoreDiscount` in @langplayer/shared). */
+  price: number | null;
+}
+
+/** Cached in-flight/settled store-price lookup — the go-pro screen and the
+ *  profile plan list both need it, and StoreKit returns the same answer. */
+let _storePricePromise: Promise<StorePrice | null> | null = null;
+
+/**
+ * Read the live `pro_go` price from the platform store.
+ *
+ * ⚠️ App Store Connect and Play Console prices cannot be changed by the app,
+ * so the app must never invent an IAP price. During a sale the store price is
+ * set in those consoles by hand, and this function is how the UI reports it —
+ * meaning the button can only ever display what the user will be charged.
+ *
+ * Returns null when the platform cannot be queried (Expo Go, offline, a SKU
+ * that is not configured yet). Callers must fall back to a price that makes no
+ * discount claim rather than guessing.
+ */
+export async function getStorePrice(): Promise<StorePrice | null> {
+  if (!IAP_AVAILABLE) return null;
+  if (_storePricePromise) return _storePricePromise;
+
+  _storePricePromise = (async (): Promise<StorePrice | null> => {
+    const productId =
+      Platform.OS === 'android' ? ANDROID_IAP_PRODUCT_ID : IOS_IAP_PRODUCT_ID;
+    try {
+      await connectIap();
+      const result = await fetchProducts({ skus: [productId], type: 'in-app' });
+      const products = Array.isArray(result) ? (result as ProductLike[]) : [];
+      const product = products.find((p) => p.id === productId);
+      if (!product?.displayPrice) {
+        logwarn(
+          `[IAP] store returned no price for "${productId}" — got ${products.length} product(s)`,
+        );
+        return null;
+      }
+      const price: StorePrice = {
+        productId,
+        displayPrice: product.displayPrice,
+        currency: product.currency ?? '',
+        price: typeof product.price === 'number' ? product.price : null,
+      };
+      log(
+        `[IAP] store price: ${price.displayPrice} (${price.currency}, numeric=${price.price})`,
+      );
+      return price;
+    } catch (err) {
+      // Don't cache a failure — a later mount may succeed once the store is
+      // reachable again.
+      _storePricePromise = null;
+      logwarn('[IAP] getStorePrice failed:', err);
+      return null;
+    }
+  })();
+
+  return _storePricePromise;
+}
+
+/** The subset of a store product this module reads. `fetchProducts` is typed
+ *  as a union of product and subscription arrays, and only `pro_go`
+ *  (a non-consumable, `type: 'in-app'`) is ever requested here. */
+interface ProductLike {
+  id?: string;
+  displayPrice?: string;
+  currency?: string;
+  price?: number | null;
+}
+
+/** Drop the cached store price, so the next `getStorePrice()` re-queries the
+ *  store. Exposed for tests and for a manual refresh after a purchase. */
+export function clearStorePriceCache(): void {
+  _storePricePromise = null;
 }
 
 // ── Restore ──
