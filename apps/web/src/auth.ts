@@ -1,9 +1,20 @@
 import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log, logerr } from '@/lib/logger';
 
 class EmailNotConfirmedError extends CredentialsSignin {
   code = 'email_not_confirmed';
+}
+
+/**
+ * The auth backend (Flask → Supabase GoTrue) could not be reached, or returned
+ * a server error. This is NOT a credential problem, so it must never surface as
+ * "invalid email or password" — that sends people hunting for a password bug
+ * when the real cause is a network/proxy/backend outage.
+ */
+class AuthBackendError extends CredentialsSignin {
+  code = 'auth_unreachable';
 }
 
 function tokenExpiry(token: string): number {
@@ -43,9 +54,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
           if (!res.ok) {
             const errorData = await res.json().catch(() => null);
-            if (errorData?.errors?.[0]?.code === 'email_not_confirmed') {
+            const backendCode = errorData?.errors?.[0]?.code;
+            // Log the real status/code so a failed login is diagnosable without
+            // guessing whether the password or the backend was at fault.
+            log('auth backend rejected login', { status: res.status, code: backendCode });
+            if (backendCode === 'email_not_confirmed') {
               throw new EmailNotConfirmedError();
             }
+            // 5xx = Flask or GoTrue failed (e.g. Supabase unreachable), not bad
+            // credentials. 4xx = the credentials really were rejected (Flask
+            // passes GoTrue's status through: 400 invalid, 429 rate limited).
+            if (res.status >= 500) throw new AuthBackendError();
             return null;
           }
           const data = await res.json();
@@ -63,8 +82,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             refreshToken: data?.refreshToken ?? null,
             tokenExpiresAt: tokenExpiry(token),
           };
-        } catch {
-          return null;
+        } catch (error) {
+          // Rethrow the NextAuth error codes. The previous bare `catch { return
+          // null; }` swallowed `throw new EmailNotConfirmedError()` above, so
+          // the login page's email_not_confirmed redirect could never fire.
+          if (error instanceof EmailNotConfirmedError || error instanceof AuthBackendError) {
+            throw error;
+          }
+          logerr('auth backend unreachable', error); // non-info-level: caught network exception — stack trace needed
+          throw new AuthBackendError();
         }
       },
     }),
