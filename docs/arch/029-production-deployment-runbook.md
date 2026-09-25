@@ -7,15 +7,16 @@
 - **Type**: runbook / reference
 - **Status**: draft
 - **Created**: 2026-08-14
-- **Last Updated**: 2026-09-01
+- **Last Updated**: 2026-09-25
 - **ROADMAP Phase**: Cross-cutting (all phases)
-- **Scope**: Classic web (v2), Next.js web (v3), iOS App Store, Google Play, Chrome Web Store, Flask backend
+- **Scope**: Classic web (v2), Next.js web (v3), admin console (`apps/admin`), iOS App Store, Google Play, Chrome Web Store, Flask backend
 - **See also**:
   - [ARCH-028 — Local Development Runbook](028-local-development-runbook.md)
   - [ARCH-001 — Classic App Architecture](001-classic-app-architecture.md)
   - [ARCH-003 — Python Backend Architecture](003-python-backend-architecture.md)
   - [ARCH-019 — Chrome Extension Architecture](019-chrome-extension-architecture.md)
   - [SPEC-048 — Mobile Release Plan](../specs/048-mobile-release-plan.md)
+  - [SPEC-060 — Admin Console: User Management](../specs/060-admin-console-user-management.md)
   - [SPEC-067 — Google Play Release Runbook](../specs/067-google-play-release-runbook.md)
   - [SPEC-074 — Chrome Web Store Deployment](../specs/074-chrome-web-store-deployment.md)
   - [SPEC-076 — Versioning & Build Number Strategy](../specs/076-versioning-strategy.md)
@@ -34,6 +35,7 @@ to check after deploy.
 |---|---|---|---|---|
 | **Classic web (v2)** | `zerotohero-nuxt` (separate repo, reference-only in monorepo) | `zerotohero-nuxt.netlify.app` · `v2.languageplayer.io` · `beta.languageplayer.io` (domain alias) | Git push to Classic repo's production branch → Netlify | § 1 |
 | **Web (v3)** | `apps/web` (monorepo) | `language-player.netlify.app` · `languageplayer.io` | Git push to monorepo production branch → Netlify (`netlify.toml`) | § 2 |
+| **Admin console** | `apps/admin` (monorepo) | `language-player-admin.netlify.app` | `cd apps/admin && npx netlify deploy --build --prod` (CLI; site linked) | § 11 |
 | **Flask backend** | `zerotohero-python-server` (local checkout of `zerotohero-python`) | `https://pythonvps.zerotohero.ca` | SSH to DreamHost VPS → `git pull` → restart gunicorn | § 3 |
 | **iOS app** | `apps/mobile` (Expo/React Native) | App Store Connect app ID `6520385296`, bundle `ca.zerotohero.go` | Build IPA → `scripts/upload.mjs ios` (or Xcode Organizer / Transporter) | § 4 |
 | **Android app** | `apps/mobile` (Expo/React Native) | Google Play app ID `4975392680448759197`, package `ca.zerotohero.go` | Build AAB → `scripts/upload.mjs android` (or Play Console) | § 5 |
@@ -781,3 +783,126 @@ node scripts/tag-release.mjs --extension
   installable.
 - **The AAB/IPA must embed the production API URL** and never
   `localhost`/`127.0.0.1` — check before upload (SPEC-048 § 3.2, SPEC-067 § 3.6).
+
+## 11. Netlify — Admin (`apps/admin`)
+
+### 11.1 Site & domains
+
+- Source: `apps/admin` (monorepo). Feature spec: SPEC-060.
+- Netlify site **`language-player-admin`** →
+  **`https://language-player-admin.netlify.app`**.
+  The preferred name `lp-admin.netlify.app` is already registered to a
+  **different** Netlify account, so the name follows the
+  `language-player.netlify.app` convention instead.
+- **The repo root `netlify.toml` is the trap.** It builds the public web app
+  (`--filter=@langplayer/web`, publish `apps/web/.next`) and belongs to the
+  `language-player` site. Any build for *this* site that resolves its base to
+  the repo root reads that file and **deploys the web app here instead** — which
+  happened repeatedly while setting the site up. `/api/auth/providers` is the
+  fast way to tell the two apart: the web app exposes two providers
+  (`credentials` **and** `link-token`), the console exposes only `credentials`.
+- The console is server-rendered — NextAuth runs on the server — so it needs
+  `@netlify/plugin-nextjs`, exactly like `apps/web`.
+
+### 11.2 Build & config (committed in `apps/admin/netlify.toml`)
+
+```toml
+[build]
+  command = "cd ../.. && npm install && npx turbo build --filter=@langplayer/admin"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+```
+
+npm workspaces hoist `node_modules` to the repo root, so the command walks back
+up. `publish` resolves from the **base directory**, not the repo root, which is
+why it is `.next` rather than `apps/admin/.next`.
+
+### 11.3 Environment variables
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | `https://pythonvps.zerotohero.ca` |
+| `AUTH_URL` | `https://language-player-admin.netlify.app` |
+| `AUTH_SECRET` | random ≥ 32 chars, stored as a Netlify **secret** |
+| `AUTH_TRUST_HOST` | `true` — NextAuth sits behind Netlify's proxy |
+
+`NEXT_PUBLIC_API_URL` is inlined at **build** time, so its scope must include
+`builds` and changing it needs a **redeploy**, not a function restart.
+
+### 11.4 Backend CORS prerequisite
+
+`zerotohero-python-server/app.py` must list
+`https://language-player-admin.netlify.app` among its CORS origins (added
+2026-09-25). Login itself is unaffected — NextAuth calls Flask **server-side** —
+so when this is missing, **sign-in appears to succeed and then every admin API
+call fails with a CORS error**. Deploy the Flask change to the VPS before
+treating such an error as a frontend bug (SPEC-060 § "Flask CORS must allow the
+admin origin").
+
+### 11.5 Deploy
+
+**Deploy from a directory outside the repo.** A CLI deploy run from inside the
+monorepo resolves its base to the git root and picks up the root
+`netlify.toml`, which builds the web app (§ 11.1). Neither `--filter
+@langplayer/admin` nor the site's `base` setting changes that for CLI deploys.
+The layout that works puts the config and a symlink outside the repo:
+
+```bash
+mkdir -p /tmp/lp-admin-deploy/apps
+ln -sfn /Users/longjiang/Projects/language-player/apps/admin \
+        /tmp/lp-admin-deploy/apps/admin
+cat > /tmp/lp-admin-deploy/netlify.toml <<'EOF'
+[build]
+  command = "cd /Users/longjiang/Projects/language-player && npm install && npx turbo build --filter=@langplayer/admin"
+  publish = "apps/admin/.next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+EOF
+
+cd /tmp/lp-admin-deploy && nvm use 22
+npx netlify link --id 5b05fa26-63d1-4105-a9a6-1bab15408fb8   # once
+npx netlify deploy --build --prod
+```
+
+Three details are easy to get wrong:
+
+- `publish` must be **relative** to the deploy directory and must resolve
+  through the symlink (`apps/admin/.next`). Netlify joins an absolute `publish`
+  onto the base directory, yielding
+  `/private/tmp/lp-admin-deploy/Users/longjiang/...` and failing with
+  "Your publish directory was not found".
+- The site's `base` must be **empty** for this path. With `base: apps/admin` the
+  CLI looks for `<deploy-dir>/apps/admin`, which does not exist, and fails with
+  "Base directory does not exist".
+- `netlify link` is required. With no `.netlify/state.json`, `@netlify/build`
+  fails with `Failed retrieving site data for site <name>: Not Found` even
+  though the site exists and is healthy (passing `--site` does not fix it).
+
+**Preferred long-term setup** — removes the outside-the-repo scaffold: commit
+and **push** `apps/admin/netlify.toml`, set the site's base directory to
+`apps/admin`, and re-enable automatic builds. A push then deploys the console
+from Netlify's own builders. Until that file exists in the repo, automatic
+builds on this site are deliberately **stopped** (`stop_builds: true`), because
+a push-triggered build would otherwise deploy the web app to this URL.
+
+### 11.6 Verify
+
+```bash
+# /login renders, and / bounces an unauthenticated visitor to it
+curl -sSI https://language-player-admin.netlify.app/login | head -5
+curl -sS -o /dev/null -w "%{http_code}\n" https://language-player-admin.netlify.app/
+```
+
+Then log in for real and confirm the browser console shows **no CORS error** on
+the first `/admin/users/search` call — that is the step § 11.4 can silently
+break.
+
