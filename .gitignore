@@ -76,3 +76,6 @@ docs/to-do.md
 # media that must not be committed (ADR-0043). The path itself is absolute and
 # machine-specific, so the link is ignored rather than tracked.
 zerotohero-server-data
+
+# Local Netlify folder
+.netlify
