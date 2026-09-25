@@ -116,6 +116,7 @@ decision rather than a client-side change:
 | Reader article images keep their original hosts (`html-to-markdown.ts` `resolveImgSrc`) | Arbitrary third-party hosts; `upload.wikimedia.org` and Wikimedia article images are blocked, other hosts vary | An image proxy that accepts arbitrary hosts (needs the SSRF design this ADR deliberately avoided), or rewriting known-blocked hosts to a proxy |
 | Live TV `logo`/HLS URLs are data-driven per channel (iptv-org) | Cannot be allowlisted statically; some channels are geo-blocked regardless | A per-channel proxy, or dropping the Chinese-blocked channels from the source list |
 | Legacy Classic rewrite (`v2.languageplayer.io`) | `zerotohero-nuxt` loads Noto Serif SC from `fonts.gstatic.com` (194 refs, reference-only repo) | Vendoring those woff2 files locally — only matters if the legacy site is still served |
+| **Supabase Auth (`*.supabase.co`)** — the credential check behind `POST /auth/login` | It is not browser-loaded, so this audit never saw it: the browser calls Flask, Flask calls GoTrue (ADR-0023). The block lands on the machine running Flask instead. See the 2026-09-25 amendment. | Nothing client-side. A proxy/VPN on the host running Flask, or a China-reachable identity provider |
 
 ### The relay only works because our server is not in China
 
@@ -278,6 +279,65 @@ Three things to carry forward:
   The ADR is written as though only *third-party* hosts are at risk. The apex is
   blocked at both layers, so any future China-facing check that starts from
   `https://languageplayer.io` starts from a broken URL.
+
+### Amendment — 2026-09-25: Supabase Auth (`*.supabase.co`) is blocked
+
+Every audit above covers hosts the *browser* loads, plus our own apex. None of
+them covers `*.supabase.co`, which is where credentials are actually verified
+(ADR-0023: Flask proxies GoTrue). It is blocked — and unlike the entries in the
+table above, this one breaks **sign-in**, not a rendered asset.
+
+Found by diagnosing an admin-console login that reported `Invalid email or
+password. Please try again.` for a correct email and password. The chain:
+
+1. Browser: `POST /api/auth/callback/credentials` returned
+   `{"url":"http://localhost:3100/login?error=CredentialsSignin&code=credentials"}`.
+   The code is `credentials`, **not** `admin_only` — so `authorize()` had
+   already failed before it ever evaluated the admin claim.
+2. Flask: the same credentials sent straight to `POST /auth/login` returned
+   `502` with
+   `Supabase Auth unreachable: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))`.
+
+**The address was not the problem.** Unlike `languageplayer.io` above, DNS here
+is clean — `tfugoojrqybaoukgpqza.supabase.co` resolved to genuine Cloudflare
+addresses (`104.18.38.10`, `172.64.149.246`), so the DNS-poisoning layer is
+absent and only the SNI layer applies. The same SNI control as before, against a
+single edge IP:
+
+| SNI sent to `104.18.38.10:443` | Result |
+|---|---|
+| `api.supabase.com` | HTTP 404 — TLS handshake completes |
+| `tfugoojrqybaoukgpqza.supabase.co` | ClientHello written, then `Recv failure: Connection reset by peer` |
+
+One IP answering a different SNI rules out "Cloudflare is rejecting us": the
+`RST` arrives mid-handshake, injected on-path by a filter matching the literal
+hostname. `supabase.com` and `vercel.com` loaded from the same machine, while
+`github.com` and `google.com` timed out on it — the ordinary signature of this
+network, not of a Supabase outage.
+
+**Limitation, stated so it is not over-read.** A second *real* `*.supabase.co`
+project could not be used as a control (a random name simply returned NXDOMAIN),
+so the evidence shows this host is filtered; that the whole wildcard is filtered
+is inferred from the pattern rather than measured. The practical conclusion is
+unaffected either way: this project's auth host is unreachable here.
+
+**What this changes about the ADR's premise.** Supabase Auth looked immune to
+this document for a structural reason — the browser never contacts it — but the
+constraint is about *any host the request path must reach*, and the request path
+here ends at GoTrue. The relay remedy above does not help: Flask either runs on
+a host inside the block or it does not. **On a development machine in mainland
+China, every login flow proxied through a local Flask needs a proxy or VPN whose
+tunnel carries the TLS; no code change substitutes for one.** Whether the
+*deployed* Flask and `python.zerotohero.ca` are themselves China-reachable was
+not tested here — this ADR already lists "our own hosts" as untested, and that
+still stands.
+
+One durable fix did come out of this, on the client side: `authorize()` in both
+`apps/admin` and `apps/web` used to map every non-OK Flask response to `null`,
+so a `502` and a wrong password were indistinguishable to the user. They now
+raise `auth_unreachable` for `5xx` and report an unreachable auth server, while
+`4xx` (GoTrue's `400` for a bad password, `429` for rate limiting) still means
+the credentials were rejected.
 
 ## Consequences
 
