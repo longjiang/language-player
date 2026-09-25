@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Esta cuenta no es de administrador.",
+        "auth_unreachable": "No se puede acceder al servidor de autenticación. Comprueba tu red o VPN e inténtalo de nuevo.",
         "cannot_open_url": "No se puede abrir la página de contraseña olvidada",
         "create_account_failed": "No se pudo crear la cuenta. Inténtelo de nuevo.",
         "email_exists": "Ya existe una cuenta con este correo electrónico.",

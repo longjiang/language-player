@@ -247,6 +247,7 @@
     },
     "error": {
         "admin_only": "此帳戶不是管理員帳戶。",
+        "auth_unreachable": "無法連線至驗證伺服器。請檢查網路或 VPN，然後重試。",
         "cannot_open_url": "無法打開忘記密碼頁面",
         "create_account_failed": "建立帳戶失敗，請重試。",
         "email_exists": "該電子郵件已註冊帳戶。",

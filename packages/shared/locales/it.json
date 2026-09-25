@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Questo account non è un account amministratore.",
+        "auth_unreachable": "Impossibile raggiungere il server di autenticazione. Controlla la rete o la VPN e riprova.",
         "cannot_open_url": "Impossibile aprire la pagina della password dimenticata",
         "create_account_failed": "Creazione account fallita. Per favore riprova.",
         "email_exists": "Un account con questa email esiste già.",

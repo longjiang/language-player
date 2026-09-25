@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Dieses Konto ist kein Administratorkonto.",
+        "auth_unreachable": "Der Authentifizierungsserver ist nicht erreichbar. Prüfe dein Netzwerk oder VPN und versuche es erneut.",
         "cannot_open_url": "Die Seite zum Zurücksetzen des Passworts kann nicht geöffnet werden",
         "create_account_failed": "Konto konnte nicht erstellt werden. Bitte versuche es erneut.",
         "email_exists": "Ein Konto mit dieser E-Mail existiert bereits.",

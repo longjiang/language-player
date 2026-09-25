@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Tài khoản này không phải tài khoản quản trị viên.",
+        "auth_unreachable": "Không thể kết nối tới máy chủ xác thực. Hãy kiểm tra mạng hoặc VPN rồi thử lại.",
         "cannot_open_url": "Không thể mở trang quên mật khẩu",
         "create_account_failed": "Tạo tài khoản thất bại. Vui lòng thử lại.",
         "email_exists": "Tài khoản với email này đã tồn tại.",
