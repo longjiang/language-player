@@ -1,0 +1,31 @@
+# Netlify config for the admin console — deployed to
+# language-player-admin.netlify.app. (`lp-admin.netlify.app` was the preferred
+# name but is registered to another Netlify account, so the site name follows
+# the `language-player.netlify.app` convention instead.)
+#
+# This is a SECOND site on the same monorepo. The public web app owns the root
+# `netlify.toml` (build `@langplayer/web`, publish `apps/web/.next`, plus the
+# `/api/python/*` and `/api/directus/*` rewrites). Netlify reads only the
+# `netlify.toml` inside the site's **base directory**, so this site's base
+# directory must be set to `apps/admin` — otherwise it would pick up the root
+# file and build the web app instead.
+#
+# Setting the base directory also means every path below is resolved from
+# `apps/admin`, not from the repo root: the build command walks back up to the
+# workspace root (npm workspaces hoist `node_modules` there), and `publish` is
+# relative to this directory.
+#
+# Like apps/web, the admin console is a server-rendered Next.js app (NextAuth
+# runs on the server), so it needs the Next.js runtime plugin.
+#
+# See ARCH-029 § 11 — Netlify: Admin (apps/admin).
+
+[build]
+  command = "cd ../.. && npm install && npx turbo build --filter=@langplayer/admin"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
