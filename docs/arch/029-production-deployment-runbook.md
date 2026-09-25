@@ -229,7 +229,11 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.4.6 build 20 → App Store Connect / TestFlight (2026-09-01).
+**last upload:** 3.7.0 build 25 → App Store Connect / TestFlight (2026-09-21) ·
+**in review:** 3.7.0 build 25 submitted for App Review (2026-09-25, review
+submission `6b81745f`). Release type is `AFTER_APPROVAL`, so approval publishes
+it. Note 3.5.0–3.6.2 were TestFlight-only: the previous **public** version is
+3.4.0, so the 3.7.0 listing copy covers everything since then.
 
 ### 4.1 Version gate
 
