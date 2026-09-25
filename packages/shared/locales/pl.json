@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "To konto nie jest kontem administratora.",
+        "auth_unreachable": "Nie można połączyć się z serwerem uwierzytelniania. Sprawdź sieć lub VPN i spróbuj ponownie.",
         "cannot_open_url": "Nie można otworzyć strony zapomnianego hasła",
         "create_account_failed": "Nie udało się utworzyć konta. Spróbuj ponownie.",
         "email_exists": "Konto z tym adresem e-mail już istnieje.",

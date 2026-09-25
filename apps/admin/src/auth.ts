@@ -1,9 +1,20 @@
 import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log, logerr } from '@/lib/logger';
 
 class AdminOnlyError extends CredentialsSignin {
   code = 'admin_only';
+}
+
+/**
+ * The auth backend (Flask → Supabase GoTrue) could not be reached, or returned
+ * a server error. This is NOT a credential problem, so it must never surface as
+ * "invalid email or password" — that sends people hunting for a password bug
+ * when the real cause is a network/proxy/backend outage.
+ */
+class AuthBackendError extends CredentialsSignin {
+  code = 'auth_unreachable';
 }
 
 function tokenExpiry(token: string): number {
@@ -33,11 +44,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: credentials.email, password: credentials.password }),
           });
-          if (!res.ok) return null;
+
+          if (!res.ok) {
+            const body = await res.text();
+            // Log the real status/body so a failed login is diagnosable without
+            // guessing whether the password or the backend was at fault.
+            log('auth backend rejected login', { status: res.status, body: body.slice(0, 300) });
+            // 5xx = Flask or GoTrue failed (e.g. Supabase unreachable), not bad
+            // credentials. 4xx = the credentials really were rejected.
+            if (res.status >= 500) throw new AuthBackendError();
+            return null;
+          }
+
           const data = await res.json();
           const token = data?.token;
           const user = data?.user;
-          if (!token || !user) return null;
+          if (!token || !user) {
+            log('auth response missing token/user', { keys: Object.keys(data ?? {}) });
+            return null;
+          }
 
           // Only administrators may use the admin console.
           if (!user.isAdmin) throw new AdminOnlyError();
@@ -52,8 +77,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             tokenExpiresAt: tokenExpiry(token),
           };
         } catch (error) {
-          if (error instanceof AdminOnlyError) throw error;
-          return null;
+          if (error instanceof AdminOnlyError || error instanceof AuthBackendError) throw error;
+          logerr('auth backend unreachable', error); // non-info-level: caught network exception — stack trace needed
+          throw new AuthBackendError();
         }
       },
     }),

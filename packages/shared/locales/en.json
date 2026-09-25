@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "This account is not an administrator.",
+        "auth_unreachable": "Cannot reach the authentication server. Check your network or VPN and try again.",
         "cannot_open_url": "Cannot open the forgot password page",
         "create_account_failed": "Failed to create account. Please try again.",
         "email_exists": "An account with this email already exists.",

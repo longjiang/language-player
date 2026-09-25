@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Ce compte n'est pas un compte administrateur.",
+        "auth_unreachable": "Impossible de joindre le serveur d'authentification. Vérifiez votre réseau ou votre VPN, puis réessayez.",
         "cannot_open_url": "Impossible d'ouvrir la page de mot de passe oublié",
         "create_account_failed": "Échec de la création du compte. Veuillez réessayer.",
         "email_exists": "Un compte avec cet email existe déjà.",

@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Dit account is geen beheerdersaccount.",
+        "auth_unreachable": "Kan de authenticatieserver niet bereiken. Controleer je netwerk of VPN en probeer het opnieuw.",
         "cannot_open_url": "Kan de pagina voor vergeten wachtwoord niet openen",
         "create_account_failed": "Account aanmaken mislukt. Probeer het opnieuw.",
         "email_exists": "Er bestaat al een account met dit e-mailadres.",

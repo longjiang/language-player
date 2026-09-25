@@ -29,9 +29,13 @@ function LoginForm() {
         redirect: false,
       });
       if (result?.error) {
-        setError(
-          result.code === 'admin_only' ? t('error.admin_only') : t('error.invalid_credentials'),
-        );
+        if (result.code === 'admin_only') {
+          setError(t('error.admin_only'));
+        } else if (result.code === 'auth_unreachable') {
+          setError(t('error.auth_unreachable'));
+        } else {
+          setError(t('error.invalid_credentials'));
+        }
       } else if (result?.ok) {
         router.push(callbackUrl ?? '/');
         router.refresh();

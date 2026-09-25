@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Bu hesap bir yönetici hesabı değil.",
+        "auth_unreachable": "Kimlik doğrulama sunucusuna ulaşılamıyor. Ağınızı veya VPN'inizi kontrol edip tekrar deneyin.",
         "cannot_open_url": "Unutulan şifre sayfası açılamıyor",
         "create_account_failed": "Hesap oluşturulamadı. Lütfen tekrar deneyin.",
         "email_exists": "Bu e-postaya sahip bir hesap zaten var.",

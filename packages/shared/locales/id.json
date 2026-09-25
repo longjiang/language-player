@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "Akun ini bukan akun administrator.",
+        "auth_unreachable": "Tidak dapat menjangkau server autentikasi. Periksa jaringan atau VPN Anda, lalu coba lagi.",
         "cannot_open_url": "Tidak dapat membuka halaman lupa kata sandi",
         "create_account_failed": "Gagal membuat akun. Silakan coba lagi.",
         "email_exists": "Akun dengan email ini sudah ada.",

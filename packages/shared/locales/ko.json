@@ -254,6 +254,7 @@
     },
     "error": {
         "admin_only": "이 계정은 관리자 계정이 아닙니다.",
+        "auth_unreachable": "인증 서버에 연결할 수 없습니다. 네트워크 또는 VPN을 확인한 후 다시 시도해 주세요.",
         "cannot_open_url": "비밀번호 찾기 페이지를 열 수 없습니다",
         "create_account_failed": "계정 생성에 실패했습니다. 다시 시도해 주세요.",
         "email_exists": "이 이메일로 이미 계정이 존재합니다.",
