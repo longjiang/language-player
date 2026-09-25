@@ -81,6 +81,13 @@ and the existing `user_subscriptions` row shape are preserved.
   Flask `POST /auth/login`; the authorize step rejects any user whose
   `isAdmin` claim is false (`admin_only` error), so only administrators can
   establish a session.
+- Login separates **"the backend failed"** from **"the credentials were
+  rejected"**. A `5xx` from Flask (or a network failure reaching it) raises
+  `auth_unreachable`; only a `4xx` renders `error.invalid_credentials`. This
+  is safe because Flask passes GoTrue's status through — a bad password is
+  `400` and a rate limit is `429`, never a `5xx`. Before this, every non-OK
+  response was `return null`, so an unreachable Supabase Auth (`502`) was
+  displayed as a wrong password; see ADR-0046 § Amendment 2026-09-25.
 - `src/proxy.ts` (Next.js 16 proxy, the renamed middleware) protects every
   route and redirects unauthenticated visitors to `/login`.
 - `next-intl` with `useT()` for every UI string. Admin-only keys live in
@@ -92,7 +99,8 @@ and the existing `user_subscriptions` row shape are preserved.
 ### Pages
 
 - `/login` — credentials form; shows a specific message when the account is
-  valid but not an administrator.
+  valid but not an administrator, and a distinct one when the auth backend
+  (Flask → GoTrue) cannot be reached.
 - `/` — user search dashboard. One query box searches all supported fields;
   results show name, email, plan/admin badges, saved-word count, watch count,
   hours, and creation date. Rows link to the user page.
@@ -118,10 +126,15 @@ summary badges stay correct.
 
 ## i18n
 
-69 admin keys were added through `scripts/add-translation-key.mjs` with all
-31 locales supplied, then `scripts/sync-translations.mjs csv-to-json`
-regenerated `packages/shared/locales/*.json`. Existing keys (`action.search`,
+69 admin keys were added through `scripts/add-translation-key.mjs`, then
+`scripts/sync-translations.mjs csv-to-json` regenerated
+`packages/shared/locales/*.json`. Existing keys (`action.search`,
 `title.subscription`, `subscription.monthly`, …) are reused where possible.
+
+`error.auth_unreachable` was added later by the same route, with all 18
+locales (the list was trimmed 31 → 18 by SPEC-063). It is app-agnostic and is
+reused by `apps/web` for the same condition, so it lives in the shared locale
+files rather than in an admin-only namespace.
 
 ## Deployment & Run
 
