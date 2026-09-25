@@ -37,6 +37,10 @@ function LoginForm() {
           router.push(`/register?verifyEmail=${encodeURIComponent(email)}`);
           return;
         }
+        if (result.code === 'auth_unreachable') {
+          setError(t('error.auth_unreachable'));
+          return;
+        }
         setError(t('error.invalid_credentials'));
       } else if (result?.ok) {
         // Immediately after login, land on the last-used L1/L2 pair across
