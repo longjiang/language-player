@@ -79,3 +79,6 @@ zerotohero-server-data
 
 # Local Netlify folder
 .netlify
+
+# Netlify CLI edge-bundler (Deno) writes this during a local deploy
+deno.lock
