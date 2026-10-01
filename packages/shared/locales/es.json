@@ -1103,6 +1103,7 @@
         "reader_empty_state": "Crea una nota, pega texto y toca cualquier palabra para ver su significado.",
         "ready_to_start": "¿Listo para empezar a aprender?",
         "receipt_validation_failed": "La validación del recibo falló. Por favor, contacta con soporte.",
+        "recognizing_text": "Reconociendo el texto…",
         "redirecting_to_language_selection": "Te llevamos a la selección de idioma...",
         "remove_admin_confirm": "¿Eliminar el acceso de administrador de este usuario? Ya no podrá iniciar sesión en la consola de administración.",
         "remove_subscription_confirm": "¿Eliminar esta suscripción? Esta acción no se puede deshacer.",

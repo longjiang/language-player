@@ -1103,6 +1103,7 @@
         "reader_empty_state": "ノートを作成し、テキストを貼り付けて、任意の単語をタップすると意味が表示されます。",
         "ready_to_start": "学習を始める準備はできましたか？",
         "receipt_validation_failed": "レシートの検証に失敗しました。サポートにお問い合わせください。",
+        "recognizing_text": "テキストを認識しています…",
         "redirecting_to_language_selection": "言語選択へ移動しています...",
         "remove_admin_confirm": "このユーザーの管理者権限を削除しますか？管理者コンソールにログインできなくなります。",
         "remove_subscription_confirm": "このサブスクリプションを削除しますか？この操作は元に戻せません。",

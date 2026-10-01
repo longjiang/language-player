@@ -363,7 +363,7 @@ export function PdfReaderPanel({
           {converting ? (
             <div className="flex min-h-[40vh] flex-1 items-center justify-center gap-2">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{t('msg.making_words_interactive')}</span>
+              <span className="text-sm text-muted-foreground">{t('msg.recognizing_text')}</span>
             </div>
           ) : (
             <PaginatedReader

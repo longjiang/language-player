@@ -428,6 +428,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.quiz_mode_desc` | Hide saved words as blanks to test your recall. Tap a blank to reveal the word. |
 | `msg.reader_empty_state` | Paste {l2} text, load a URL, or open from an AI explanation. Tap any word to see its dictionary entry. |
 | `msg.ready_to_start` | Ready to start learning? |
+| `msg.recognizing_text` | Recognizing text... |
 | `msg.renewal_failed_contact_support` | Renewal failed. Please contact customer support. |
 | `msg.renews_today` | Renews today |
 | `msg.result_count` | {count, plural, one {# result} other {# results}} |

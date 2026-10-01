@@ -1103,6 +1103,7 @@
         "reader_empty_state": "Create a Note, paste in some text, then tap on any word to see its meaning.",
         "ready_to_start": "Ready to start learning?",
         "receipt_validation_failed": "Receipt validation failed. Please contact support.",
+        "recognizing_text": "Recognizing text…",
         "redirecting_to_language_selection": "Redirecting you to language selection...",
         "remove_admin_confirm": "Remove this user's administrator access? They will no longer be able to sign in to the admin console.",
         "remove_subscription_confirm": "Remove this subscription? This action cannot be undone.",

@@ -1085,6 +1085,7 @@
         "reader_empty_state": "新建一条笔记，粘贴文本，然后点击任意单词查看释义。",
         "ready_to_start": "准备好开始学习了吗？",
         "receipt_validation_failed": "收据验证失败。请联系支持。",
+        "recognizing_text": "正在识别文字…",
         "redirecting_to_language_selection": "正在带你前往语言选择...",
         "remove_admin_confirm": "移除该用户的管理员权限？他们将无法再登录管理后台。",
         "remove_subscription_confirm": "确定移除该订阅吗？此操作无法撤销。",

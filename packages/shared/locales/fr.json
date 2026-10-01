@@ -1103,6 +1103,7 @@
         "reader_empty_state": "Créez une note, collez-y du texte, puis appuyez sur n'importe quel mot pour voir sa signification.",
         "ready_to_start": "Prêt à commencer l'apprentissage ?",
         "receipt_validation_failed": "La validation du reçu a échoué. Veuillez contacter le support.",
+        "recognizing_text": "Reconnaissance du texte…",
         "redirecting_to_language_selection": "Redirection vers la sélection de la langue...",
         "remove_admin_confirm": "Retirer les droits d'administrateur de cet utilisateur ? Il ne pourra plus se connecter à la console d'administration.",
         "remove_subscription_confirm": "Supprimer cet abonnement ? Cette action est irréversible.",
