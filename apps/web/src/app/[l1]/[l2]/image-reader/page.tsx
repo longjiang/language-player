@@ -354,7 +354,7 @@ export default function ImageReaderPage() {
           className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Upload className="h-3.5 w-3.5" />
-          {t('action.select_files')}
+          {t('action.select_images')}
         </button>
         <button
           type="button"
@@ -380,7 +380,7 @@ export default function ImageReaderPage() {
           className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Upload className="h-3 w-3" />
-          {t('action.select_files')}
+          {t('action.select_images')}
         </button>
         <button
           type="button"

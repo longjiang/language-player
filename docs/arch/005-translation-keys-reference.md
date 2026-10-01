@@ -103,6 +103,8 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.search` | Search |
 | `action.search_images` | Search images |
 | `action.see_all` | See All |
+| `action.select_files` | Select files |
+| `action.select_images` | Select images |
 | `action.send_reset_link` | Send Reset Link |
 | `action.share` | Share |
 | `action.show_less` | Show less |
