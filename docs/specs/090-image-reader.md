@@ -30,12 +30,27 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
    latency:
    - **Web**: `apps/web/src/lib/downscale-image.ts` (browser `Image` + canvas).
    - **Mobile**: `apps/mobile/lib/downscale-image.ts` via `expo-image-manipulator`.
-   - Longest side capped at `IMAGE_OCR_MAX_DIM` (1600px) and re-encoded to JPEG
-     `IMAGE_OCR_QUALITY` (0.9); web preserves PNG for transparent images. The
-     thumbnail and preview still use the full-resolution original — only the
-     copy sent for OCR is downscaled.
+   - Longest side capped at `IMAGE_OCR_MAX_DIM` (1600px); PNG sources are kept
+     lossless PNG (sharp text, preserved alpha) and photographic JPEG sources
+     are re-encoded at `IMAGE_OCR_QUALITY` (0.9); web preserves PNG for
+     transparent images. The thumbnail and preview still use the
+     full-resolution original — only the copy sent for OCR is downscaled.
+   - **Payload budget (mobile).** The production front end drops a request body
+     of roughly **2.5 MiB or more**: a `/vision` POST that big answers
+     `400 {"message":"Missing image (base64 data URL)"}` because the truncated
+     body never parses as JSON — while a local Flask server accepts the same
+     request at any size. A full-resolution PNG screenshot exceeds that, which
+     is why OCR worked in Debug (localhost) and silently produced a blank
+     reader in Release (production) for large images. The mobile encoder
+     therefore steps down until the encoded data URL is under
+     `IMAGE_OCR_MAX_PAYLOAD_BYTES` (2 MB): preferred encoding at the cap →
+     same size as JPEG → progressively smaller JPEGs (×0.75) down to
+     `IMAGE_OCR_MIN_DIM` (800px) → JPEG at `IMAGE_OCR_FLOOR_QUALITY` (0.6). If
+     nothing fits, the smallest payload produced is sent anyway. Longest side,
+     format and byte size of every attempt are logged.
 2. **`POST /vision`** (`deepseek-v4-flash-vision-exp`), cached server-side by
-   prompt + image bytes.
+   prompt + image bytes. The request is aborted after 90s (`OCR_TIMEOUT_MS`) so
+   the spinner can never hang forever.
 3. **OCR prompt** requests clean markdown in the original language that emits
    **only** the text literally present in the image and reflows like normal
    reading while preserving structure. Each logical element (a paragraph, a
@@ -127,18 +142,42 @@ Keys: `title.image_reader`, `msg.drop_images_here`, `msg.image_reader_supported`
 `msg.image_reader_empty`, `msg.image_reader_ocr_error`,
 `msg.no_image_in_clipboard`, `action.select_files`, `action.paste`. (All locales.)
 
+The in-progress spinner uses `msg.recognizing_text` ("Recognizing text…") on all
+three vision-OCR call sites — mobile image reader, web image reader, and the web
+PDF page→markdown panel — because that is what is actually happening while the
+model reads the image. (`msg.making_words_interactive`, "Making words
+interactive…", is the older wording; it is no longer used by the OCR spinners
+but is kept in the CSV.)
+
+The OCR failure state renders `msg.image_reader_ocr_error` plus an
+**untranslated** diagnostic line (`detail`): `HTTP <status> — <server message>`,
+the caught error message, or a timeout notice. That line exists so a
+Release-build failure can be reported from a screenshot without a device-console
+capture.
+
 ## Logging
 
-Gated: web `epubLog` (flip `EPUB_LOGS_ENABLED`), mobile `log` / `logwarn`
-(app-wide `LOG_LEVEL`). Logs the **exact prompt sent** to `/vision` and the
-**full markdown response** (in addition to its length, the extracted title,
+Gated: web `epubLog` (flip `EPUB_LOGS_ENABLED`), mobile `log` / `logwarn` /
+`logerr` (app-wide `LOG_LEVEL`). Logs the **exact prompt sent** to `/vision` and
+the **full markdown response** (in addition to its length, the extracted title,
 and the downscaled payload byte size), so OCR reflow/accuracy issues can be
 confirmed directly from the logs.
+
+For request failures the mobile path logs on the **error channel** — which
+prints in a Release build, where `LOG_LEVEL` defaults to 1 — the resolved
+`PYTHON_API_URL`, the encoded payload size, the HTTP status, the server's
+`message`, and the first 300 bytes of the body. Each payload-ladder attempt
+(size, format, quality, byte count, budget) is logged on the info channel.
 
 ## Verification
 
 - Load images via picker / drop / paste (OS file-open is unimplemented) →
-  thumbnails appear, the current one opens and OCRs.
+  thumbnails appear, the first new image opens **and starts OCR immediately**
+  (no thumbnail tap needed), and blocks render in the paginated reader.
+- The in-progress indicator reads "Recognizing text…".
+- A failed `/vision` call (HTTP error, empty response, or timeout) shows
+  `msg.image_reader_ocr_error` plus the diagnostic detail — never a blank
+  reader.
 - Title bar shows the human-readable title; saved-word context uses it.
 - Sidebar collapses on desktop / sheets on mobile; the add-next tile adds
   images.
@@ -148,6 +187,31 @@ confirmed directly from the logs.
 
 ## Revision
 
+- **OCR starts on paste/pick; failures are reported (2026-10-01)**: three bugs
+  fixed together. (1) `append` called `runOcr` with only an id, and the lookup
+  went through `imagesRef`, which only catches up with `setImages` on the next
+  render — so the immediate OCR no-op'd and the image sat unread until the user
+  tapped its thumbnail; `runOcr` now takes the entry from the caller and an
+  in-flight set prevents a duplicate request from a fast tap. (2) A non-OK
+  `/vision` response was swallowed (`res.ok ? … : null` → empty markdown) and
+  left a **blank reader with no error**, which is how the mobile Release-only
+  failure presented; non-OK/empty responses now set the error state with an
+  HTTP status + server-message detail, the request is aborted after 90s, and
+  the failure is logged on the error channel (visible in Release, where the log
+  level defaults to 1). (3) **Release-only OCR failure root cause**: the
+  production front end drops a request body of ~2.5 MiB or more — a `/vision`
+  POST that big returns `400 Missing image (base64 data URL)` because the
+  truncated body never parses as JSON — while the Debug build's localhost Flask
+  accepts any size. Mobile's lossless-PNG-for-text encoding at 1600px can
+  exceed that, so the mobile encoder now enforces
+  `IMAGE_OCR_MAX_PAYLOAD_BYTES` (see § Vision pipeline). Verified by direct
+  request against production (2.54 MB body → 500 from the model; 2.62 MB body →
+  `400 Missing image`; the same 2.62 MB body against local Flask → parsed
+  normally).
+- **Spinner wording**: the vision-OCR spinner now says `msg.recognizing_text`
+  ("Recognizing text…") instead of `msg.making_words_interactive` ("Making words
+  interactive…") on all three call sites (mobile image reader, web image
+  reader, web PDF panel).
 - **Retroactive spec**: written to describe the as-built standalone image
   reader (routes, entry surfaces, vision pipeline incl. downscaling, LLM title,
   block-breaking, sidebar, preview/zoom, persistence, i18n, logging). Supersedes
