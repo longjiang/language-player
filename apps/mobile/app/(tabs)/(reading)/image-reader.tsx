@@ -18,7 +18,7 @@ import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/ut
 import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log, logwarn } from '@/lib/logger';
+import { log, logerr, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X } from 'lucide-react-native';
 
@@ -36,6 +36,11 @@ interface ImageEntry {
   title: string | null;
   converting: boolean;
   error?: boolean;
+  /** Why the OCR failed — the HTTP status + server message, the caught error,
+   *  or a timeout. Rendered under the error text so a Release-build report is
+   *  actionable without a device-console capture (diagnostic text, not prose:
+   *  deliberately untranslated). */
+  detail?: string;
 }
 
 let counter = 0;
@@ -65,6 +70,22 @@ function mimeFor(name: string): string {
   if (/\.png$/i.test(name)) return 'image/png';
   if (/\.(gif|webp|heic)$/i.test(name)) return 'image/webp';
   return 'image/jpeg';
+}
+
+/** One OCR request must not spin forever. The vision model can take ~30s for a
+ *  dense page and the production front end gives up around 100s. */
+const OCR_TIMEOUT_MS = 90_000;
+
+/** Best-effort human-readable reason from a failed `/vision` response body
+ *  (Flask answers `{ status, message }`). Empty string when there is none. */
+function serverMessage(body: string): string {
+  try {
+    const parsed = JSON.parse(body) as { message?: unknown } | null;
+    if (parsed && typeof parsed.message === 'string') return parsed.message.slice(0, 160);
+  } catch {
+    // Not JSON (or truncated JSON) — fall through to the raw-body case.
+  }
+  return '';
 }
 
 export default function ImageReaderScreen() {
@@ -106,29 +127,73 @@ export default function ImageReaderScreen() {
     if (!entry || entry.md || entry.converting) return;
     if (ocrInFlight.current.has(id)) return;
     ocrInFlight.current.add(id);
-    setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
-    log('[image-reader] OCR start', { name: entry.name });
+    setImages((prev) => prev.map((im) => (
+      im.id === id ? { ...im, converting: true, error: false, detail: undefined } : im
+    )));
+    const url = `${PYTHON_API_URL}/vision`;
+    log('[image-reader] OCR start', { name: entry.name, url });
+    /** Put the image into the failed state, keeping the reason for the UI. */
+    const fail = (detail: string) => {
+      setImages((prev) => prev.map((im) => (
+        im.id === id ? { ...im, converting: false, error: true, detail } : im
+      )));
+    };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
     try {
       const payload = await downscaleImage(entry.dataUrl);
-      const res = await fetch(`${PYTHON_API_URL}/vision`, {
+      log(`[image-reader] OCR payload bytes=${payload.length}`);
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: payload, prompt: IMAGE_OCR_PROMPT }),
+        signal: controller.signal,
       });
-      const data = res.ok ? await res.json() : null;
-      const md = typeof data?.response === 'string' ? data.response : '';
+      // Read the body once, as text. A failed request must be reported, never
+      // swallowed into empty markdown: that used to leave a blank reader with
+      // no explanation (which is how the Release-only OCR failure presented).
+      const bodyText = await res.text();
+      if (!res.ok) {
+        const message = serverMessage(bodyText);
+        const detail = `HTTP ${res.status}${message ? ` — ${message}` : ''}`;
+        // non-info-level: the request itself failed and this status/body line is
+        // the only record of why; it is what a Release-build report needs.
+        logerr(`[image-reader] OCR HTTP ${res.status} — ${message || '(no message)'} body=${bodyText.slice(0, 300)}`);
+        fail(detail);
+        return;
+      }
+      let data: unknown = null;
+      try {
+        data = JSON.parse(bodyText);
+      } catch {
+        data = null;
+      }
+      const md = typeof (data as { response?: unknown } | null)?.response === 'string'
+        ? (data as { response: string }).response
+        : '';
+      if (!md) {
+        // non-info-level: the server answered 200 with nothing usable — a real
+        // failure whose body is needed to tell "cached empty" from "model gave up".
+        logerr(`[image-reader] OCR empty response body=${bodyText.slice(0, 300)}`);
+        fail('Empty OCR response');
+        return;
+      }
       // Diagnostics: log the exact prompt sent and the full markdown returned.
       log('[image-reader] OCR prompt: ' + IMAGE_OCR_PROMPT);
       log('[image-reader] OCR response:\n' + md);
       const { title, body } = extractTitle(md);
       log(`[image-reader] OCR md length=${md.length} title=${title ?? '(none)'}`);
       setImages((prev) => prev.map((im) => (
-        im.id === id ? { ...im, md: body, title: title ?? im.title, converting: false } : im
+        im.id === id ? { ...im, md: body, title: title ?? im.title, converting: false, detail: undefined } : im
       )));
     } catch (err) {
+      const detail = (err as Error)?.name === 'AbortError'
+        ? `Timed out after ${Math.round(OCR_TIMEOUT_MS / 1000)}s`
+        : String((err as Error)?.message ?? err).slice(0, 200);
       logwarn('[image-reader] OCR failed:', (err as Error)?.message ?? err);
-      setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: false, error: true } : im)));
+      fail(detail);
     } finally {
+      clearTimeout(timer);
       ocrInFlight.current.delete(id);
     }
   }, []);
@@ -388,6 +453,9 @@ export default function ImageReaderScreen() {
         ) : current.error ? (
           <View className="flex-1 items-center justify-center px-8">
             <Text className="text-center text-sm text-destructive">{t('msg.image_reader_ocr_error')}</Text>
+            {current.detail && (
+              <Text className="mt-2 text-center text-xs text-muted-foreground">{current.detail}</Text>
+            )}
           </View>
         ) : (
           <PaginatedReader
