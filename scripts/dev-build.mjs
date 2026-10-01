@@ -52,6 +52,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { parseLedger, parseDevCell, writeLedger } from './version-lib.mjs';
+import { preferredHost, readMetroRuntime } from './network-lib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
@@ -122,11 +123,10 @@ if (!platform) {
 const metroHost = (() => {
   const i = args.indexOf('--metro-host');
   if (i >= 0 && args[i + 1]) return args[i + 1];
-  try {
-    return sh('ipconfig getifaddr en0 || ipconfig getifaddr en1').split('\n')[0];
-  } catch {
-    return null;
-  }
+  // Same detector the installer uses, so the ip.txt cross-check below compares
+  // against the interface that can actually reach the device (en0 is wrong
+  // whenever the device is on a bridge or a tethered link).
+  return preferredHost({ hintIp: readMetroRuntime()?.deviceHint ?? null })?.host ?? null;
 })();
 
 const keep = (() => {
