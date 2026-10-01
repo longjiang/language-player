@@ -71,7 +71,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 52 | c1ae1557 | 2026-09-03 | — | dev 35 (Debug; archived; lp-dev-35-android-c1ae1557790c.apk; 3e7aa4c0a81e36158ba0f3c2fbc7323dbc0682e1405248d8012990772cb389a2) |
 | 53 | 19d8369b | 2026-09-08 | — | dev 36 (Debug; archived; lp-dev-36-ios-device-19d8369b980a.zip; 8add57b6c8f7db5611c502f4db44b30142b319ba9ee5d95d6f8e12ad04452c47) |
 | 54 | 7806009c | 2026-09-08 | — | dev 37 (Debug; archived; lp-dev-37-android-7806009cc5ec.apk; 65dc0d395fbbdea417f0c16e2c17d52f7c75ffba6a2eba50808d07925b692731) |
-| 55 | 74395962 | 2026-09-08 | — | dev 38 (Debug; active; lp-dev-38-ios-device-7439596290e6.zip; 7d9901363582b6d562535e0618479e33c1c437a85c17f5812bad110ebdf8b03a) |
+| 55 | 74395962 | 2026-09-08 | — | dev 38 (Debug; archived; lp-dev-38-ios-device-7439596290e6.zip; 7d9901363582b6d562535e0618479e33c1c437a85c17f5812bad110ebdf8b03a) |
 | 56 | ffac75ce | 2026-09-08 | 3.5.0 — iOS TestFlight (b21, consumed) · 3.5.0 — Android Internal testing (b21, consumed) | — |
 | 57 | f6c7ab27 | 2026-09-16 | 3.6.0 — iOS TestFlight (b22, consumed) | — |
 | 58 | c9634ffb | 2026-09-16 | — | dev 39 (Debug; active; lp-dev-39-ios-device-c9634ffb9b32.zip; 4161a8881db30bbf8c48f12966e05c0bf0d7caa9082b87299bc22069bbc9fdd0) |
@@ -80,6 +80,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 61 | 35db1b6b | 2026-09-17 | 3.6.2 — iOS TestFlight (b24, consumed) | — |
 | 62 | 102a7c1d | 2026-09-22 | 3.7.0 — iOS TestFlight (b25, consumed) · iOS App Store (b25, in review since 2026-09-25; releaseType AFTER_APPROVAL) | — |
 | 63 | d6f93e7a | 2026-10-01 | 3.7.1 — iOS TestFlight (b26, consumed) | — |
+| 64 | cb1a3618 | 2026-10-01 | — | dev 41 (Debug; deleted; lp-dev-41-ios-device-cb1a3618e1d6.zip; 701a965cc793cc4091e580f245574b92036c82a6336e9916afd96f422f7fc596) — broken: crashed at launch, `dyld: Library not loaded: @rpath/React.framework/React` |
 
 ## Preserved working builds (deleted 2026-08-29)
 
@@ -124,3 +125,29 @@ descriptions are kept as a historical record of what they were.
   change requiring a native `CFBundleDocumentTypes` rebuild) was **discarded** (revert
   `0b0480ef`), and the docs/arch-013 + specs-089/090 mark it **unimplemented**. Re-adding the
   feature must be revalidated against a Release build before shipping.
+- **2026-10-01 — `pod install` silently produced a launch-crashing dev build (dev 41; cause found & fixed).**
+  Adding `expo-image-picker` meant re-running `pod install`; the resulting dev 41 installed and launched
+  but died immediately — `dyld: Library not loaded: @rpath/React.framework/React`, referenced from
+  `Frameworks/ExpoVideo.framework/ExpoVideo`, `App terminated due to signal 6`. The installed app had
+  **no `Frameworks/React.framework`** (dev 40, built 2026-09-17, had it). Cause: `rncore.rb`
+  (`ReactNativeCoreUtils.artifact_exists`, and the same code in `rndependencies.rb`) decides
+  prebuilt-vs-source with a **live `curl` to Maven Central** and requires exactly `200`; the check that
+  run returned a redirect/failed, so both pods logged
+  `No prebuilt artifacts found, reverting to building from source` / `Building from source: true`.
+  React then built as a *static* core while Expo's `EXPO_USE_PRECOMPILED_MODULES` frameworks stayed
+  *dynamic* and still linked `@rpath/React.framework` → dyld abort before any JS ran (so the app never
+  reached Metro, which is why the installer reported "no device reached Metro"). The check is flaky
+  from this network: the same core URL answered `200` once and `301` minutes later.
+  **Workaround (used for dev 42):** serve the already-cached tarballs as a local Maven mirror
+  (`Pods/ReactNativeCore-artifacts/*.tar.gz`, `Pods/ReactNativeDependencies-artifacts/*.tar.gz`, fetched
+  2026-09-17) at the Maven path shape and run `ENTERPRISE_REPOSITORY=http://127.0.0.1:8099 pod install`
+  — RN supports that env var in exactly these two files. Both pods then logged
+  `Building from source: false` and `Podspec source: …-debug.tar.gz`. **Then re-check the flavors**
+  (ARCH-028 § "re-check the prebuilt flavors after `pod install`"): this `pod install` left
+  `React.xcframework` Debug (`getDebugPropsDescription` = 11) but **ExpoModulesCore's device slice
+  Release while its marker said `debug`**, so the markers were forced to disagree
+  (`React-Core-prebuilt/.last_build_configuration` = `Release`; every `*/artifacts/.last_build_configuration` = `release`)
+  to make the Debug build swap in the debug tarballs. Verification before install: the staged zip must
+  contain `Frameworks/React.framework` (dev 41 had 0 entries, dev 40 had 9), and
+  `nm -u …/ExpoModulesCore.framework/ExpoModulesCore | grep -c getDebugPropsDescription` must be `1`.
+  dev 41's artifact was deleted; the number is not reused.
