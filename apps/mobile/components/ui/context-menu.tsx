@@ -52,6 +52,13 @@ export interface ContextMenuProps {
    *  the default icon button and is given the menu's press handler, so the
    *  caller keeps control of how the trigger looks. */
   trigger?: React.ReactElement<{ onPress?: (e?: unknown) => void }>;
+
+  /** Wait this long (ms) after the sheet closes before running an item's
+   *  action. Needed by items that present a native picker: `Modal` dismissal is
+   *  animated, and iOS silently drops a presentation that starts while another
+   *  one is still in flight (the picker never appears and its promise resolves
+   *  as cancelled). Opt-in, because most items have nothing to wait for. */
+  itemPressDelayMs?: number;
 }
 
 // ── Component ────────────────────────────────
@@ -101,6 +108,7 @@ export function ContextMenu({
   triggerHitSlop = 6,
   stopPropagation = true,
   trigger,
+  itemPressDelayMs = 0,
 }: ContextMenuProps) {
   const { isMd } = useResponsive();
   // ── Internal state (uncontrolled mode) ──
@@ -136,10 +144,19 @@ export function ContextMenu({
   const handleItemPress = useCallback(
     (item: ContextMenuItem) => {
       if (item.loading || item.disabled) return;
+      if (itemPressDelayMs > 0) {
+        // Close the sheet first, then act once it has gone: presenting a native
+        // picker (photo library / document browser / camera) while this modal is
+        // still dismissing makes iOS drop the presentation silently. See the
+        // prop's docs.
+        setOpen(false);
+        setTimeout(() => item.onPress(), itemPressDelayMs);
+        return;
+      }
       item.onPress();
       setOpen(false);
     },
-    [setOpen],
+    [setOpen, itemPressDelayMs],
   );
 
   // ── Render ──

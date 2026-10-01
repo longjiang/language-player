@@ -97,6 +97,13 @@ async function entryFromAsset(asset: ImagePicker.ImagePickerAsset): Promise<Imag
  *  dense page and the production front end gives up around 100s. */
 const OCR_TIMEOUT_MS = 90_000;
 
+/** How long the "Select images" sheet is given to finish dismissing before a
+ *  picker is presented. iOS drops a presentation that starts while another one
+ *  is still in flight, which shows up as "tapping Photo Library / Choose Files
+ *  does nothing" (the picker resolves as cancelled without ever appearing). The
+ *  camera path never hit this because it awaits the permission prompt first. */
+const SOURCE_SHEET_DISMISS_MS = 400;
+
 /** Best-effort human-readable reason from a failed `/vision` response body
  *  (Flask answers `{ status, message }`). Empty string when there is none. */
 function serverMessage(body: string): string {
@@ -239,11 +246,15 @@ export default function ImageReaderScreen() {
 
   /** Open image files with a document picker. */
   const addFromPicker = useCallback(async () => {
+    log('[image-reader] source: choose files');
     const pick = await DocumentPicker.getDocumentAsync({
       type: ['image/*'],
       copyToCacheDirectory: true,
       multiple: true,
     });
+    // An immediate `canceled` means the picker never appeared (the system
+    // dropped its presentation), not that the user backed out.
+    log('[image-reader] choose files result', { canceled: pick.canceled, assets: pick.assets?.length ?? 0 });
     if (pick.canceled || !pick.assets?.length) return;
     const entries: ImageEntry[] = [];
     for (const asset of pick.assets) {
@@ -274,6 +285,7 @@ export default function ImageReaderScreen() {
    *  process and only hands back the items the user chose. */
   const addFromLibrary = useCallback(async () => {
     try {
+      log('[image-reader] source: photo library');
       const res = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsMultipleSelection: true,
@@ -281,6 +293,9 @@ export default function ImageReaderScreen() {
         // re-encodes anyway; this keeps the thumbnail data URL small too.
         quality: 0.9,
       });
+      // An immediate `canceled` means the picker never appeared (the system
+      // dropped its presentation), not that the user backed out.
+      log('[image-reader] photo library result', { canceled: res.canceled, assets: res.assets?.length ?? 0 });
       if (res.canceled || !res.assets?.length) return;
       append(await Promise.all(res.assets.map(entryFromAsset)));
     } catch (err) {
@@ -292,12 +307,14 @@ export default function ImageReaderScreen() {
    *  the expo-image-picker config plugin adds (app.config.js). */
   const addFromCamera = useCallback(async () => {
     try {
+      log('[image-reader] source: camera');
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) {
         setNotice(t('msg.camera_permission_denied'));
         return;
       }
       const res = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9 });
+      log('[image-reader] camera result', { canceled: res.canceled, assets: res.assets?.length ?? 0 });
       if (res.canceled || !res.assets?.length) return;
       append(await Promise.all(res.assets.map(entryFromAsset)));
     } catch (err) {
@@ -409,6 +426,7 @@ export default function ImageReaderScreen() {
             <View className="flex-row items-center gap-2">
               <ContextMenu
                 items={imageSourceItems}
+                itemPressDelayMs={SOURCE_SHEET_DISMISS_MS}
                 trigger={(
                   <Pressable
                     className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
@@ -454,6 +472,7 @@ export default function ImageReaderScreen() {
         </Text>
         <ContextMenu
           items={imageSourceItems}
+          itemPressDelayMs={SOURCE_SHEET_DISMISS_MS}
           trigger={(
             <Pressable
               className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
