@@ -1084,6 +1084,7 @@
         "reader_empty_state": "新建一條筆記，貼上文本，然後點擊任意單詞查看釋義。",
         "ready_to_start": "準備好開始學習了嗎？",
         "receipt_validation_failed": "收據驗證失敗。請聯繫支援。",
+        "recognizing_text": "正在辨識文字…",
         "redirecting_to_language_selection": "正在帶你前往語言選擇...",
         "remove_admin_confirm": "移除該使用者的管理員權限？他們將無法再登入管理後台。",
         "remove_subscription_confirm": "確定要移除這個訂閱嗎？此操作無法復原。",

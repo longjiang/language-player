@@ -1103,6 +1103,7 @@
         "reader_empty_state": "노트를 만들고 텍스트를 붙여넣은 다음 아무 단어나 탭하면 뜻을 볼 수 있습니다.",
         "ready_to_start": "학습을 시작할 준비가 되셨나요?",
         "receipt_validation_failed": "영수증 확인에 실패했습니다. 지원팀에 문의해 주세요.",
+        "recognizing_text": "텍스트를 인식하는 중…",
         "redirecting_to_language_selection": "언어 선택으로 이동하는 중입니다...",
         "remove_admin_confirm": "이 사용자의 관리자 권한을 제거할까요? 더 이상 관리자 콘솔에 로그인할 수 없습니다.",
         "remove_subscription_confirm": "이 구독을 제거할까요? 이 작업은 취소할 수 없습니다.",

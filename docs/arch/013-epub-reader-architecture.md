@@ -560,7 +560,7 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 | `action.close` | "Close" |
 | `action.previous_chapter` / `action.next_chapter` | Prev/next chapter |
 | `msg.chapters` | "{n} chapters" |
-| `msg.making_words_interactive` | "Making words interactive…" |
+| `msg.recognizing_text` | "Recognizing text…" (vision OCR in progress: PDF page → markdown, image reader) |
 
 ---
 

@@ -368,7 +368,7 @@ export default function ImageReaderScreen() {
         {current ? (current.converting ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={ICON_MUTED} />
-            <Text className="mt-3 text-sm text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+            <Text className="mt-3 text-sm text-muted-foreground">{t('msg.recognizing_text')}</Text>
           </View>
         ) : current.error ? (
           <View className="flex-1 items-center justify-center px-8">
