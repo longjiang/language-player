@@ -79,6 +79,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 60 | af7921ce | 2026-09-17 | 3.6.1 — iOS TestFlight (b23, consumed) | — |
 | 61 | 35db1b6b | 2026-09-17 | 3.6.2 — iOS TestFlight (b24, consumed) | — |
 | 62 | 102a7c1d | 2026-09-22 | 3.7.0 — iOS TestFlight (b25, consumed) · iOS App Store (b25, in review since 2026-09-25; releaseType AFTER_APPROVAL) | — |
+| 63 | d6f93e7a | 2026-10-01 | 3.7.1 — iOS TestFlight (b26, consumed) | — |
 
 ## Preserved working builds (deleted 2026-08-29)
 

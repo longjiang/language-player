@@ -229,7 +229,9 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.7.0 build 25 → App Store Connect / TestFlight (2026-09-21) ·
+**last upload:** 3.7.1 build 26 → App Store Connect / TestFlight (2026-10-01;
+TestFlight-only — the image-reader fixes, and it does not touch the in-review
+3.7.0 binary) ·
 **in review:** 3.7.0 build 25 submitted for App Review (2026-09-25, review
 submission `6b81745f`). Release type is `AFTER_APPROVAL`, so approval publishes
 it. Note 3.5.0–3.6.2 were TestFlight-only: the previous **public** version is
