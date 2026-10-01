@@ -6,7 +6,7 @@
 - **Type**: reference
 - **Status**: draft
 - **Created**: 2026-08-13
-- **Last Updated**: 2026-09-15
+- **Last Updated**: 2026-10-01
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (active), Admin (active), Mobile (active), Chrome Extension (active), Classic Nuxt (reference), Flask backend
 - **See also**:
@@ -36,7 +36,7 @@ Flask backend that most of the others depend on.
 |---|---|---|---|
 | **Web** | `apps/web` | `3000` | `npm run dev -w apps/web` |
 | **Admin** | `apps/admin` | `3100` | `npm run dev -w apps/admin` |
-| **Mobile (Metro)** | `apps/mobile` | `8081` | `cd apps/mobile && npx expo start --ios` (see [Mobile](#mobile-appsmobile)) |
+| **Mobile (Metro)** | `apps/mobile` | `8081` | `scripts/start-metro.sh` (physical device) · `npx expo start --ios` (simulator) — see [Mobile](#mobile-appsmobile) |
 | **Chrome Extension** | `apps/chrome-extension` | — (no server) | `node apps/chrome-extension/build.mjs`, then load unpacked (see [Chrome Extension](#chrome-extension-appschrome-extension)) |
 | **Classic (Nuxt)** | `zerotohero-nuxt` | `3001` | `cd zerotohero-nuxt && npm run dev -- --port 3001` |
 | **Flask backend** | `zerotohero-python-server` | `5001` | `cd zerotohero-python-server && FLASK_ENV=development python3.10 app.py` |
@@ -369,14 +369,98 @@ Only run the build commands below if no usable build exists.
 
 #### Start Metro
 
+For a **physical device**, use the tracked launcher. It derives the host from
+the interface that can actually reach the device, exports a matching
+`EXPO_PUBLIC_API_URL`, proves the prerequisites before starting, and records the
+session for the installer:
+
+```bash
+scripts/start-metro.sh                        # auto-detect host + API URL
+scripts/start-metro.sh --check                # preflight only, starts nothing
+scripts/start-metro.sh --device <udid>        # also prints the install command
+scripts/start-metro.sh --host bridge100       # force an interface name or IP
+scripts/start-metro.sh --tunnel --api-url https://<flask-tunnel>
+```
+
+For the **simulator** (Expo Go), the manual recipe still applies:
+
 ```bash
 cd apps/mobile
 source ~/.nvm/nvm.sh && nvm use 22
-ulimit -n 65536 && npx expo start   # ulimit avoids EMFILE watcher crashes
+ulimit -n 65536 && npx expo start --ios   # ulimit avoids EMFILE watcher crashes
 ```
 
 Start Metro before building/installing so the app can connect as soon as it
-opens.
+opens. The script refuses to start a second instance when `8081` is taken, and
+warns — never starts — when Flask is not answering on `5001`, because Flask is
+user-managed.
+
+#### Networking conditions — how the Metro host is chosen
+
+The device must reach Metro at *some* address, and the right address changes
+with the network. `ipconfig getifaddr en0` is the wrong answer in two common
+cases: when the Mac is tethered to an iPhone (the route lives on another
+interface) and when Internet Sharing is on (the device is on a `bridge*`
+interface while `en0` still holds the venue Wi-Fi address).
+
+`scripts/network-lib.mjs` is the single source of truth for this; the launcher,
+the installer and `dev-build.mjs` all call it. It ranks candidates as:
+
+1. **The device's last-seen address**, when the device is on a local subnet —
+   the only candidate *known* to work. It is remembered in the session record
+   (below) and observed live from Metro's open sockets.
+2. **A `bridge*` interface** — macOS Internet Sharing, a link created for the
+   device on purpose.
+3. **The default-route interface** — venue Wi-Fi, or a tethered iPhone.
+4. Any other routable physical interface; link-local (`169.254.x.x`) last.
+
+Override the choice with `--host <ip|iface>`, and inspect it with:
+
+```bash
+node scripts/network-lib.mjs pick                # the choice, and why
+node scripts/network-lib.mjs candidates          # every candidate interface
+node scripts/network-lib.mjs device-local <ip>   # is the device on my subnet?
+```
+
+**The isolating-network case — the one thing no detection can fix.** Public,
+hotel and guest Wi-Fi commonly isolate clients from one another (AP isolation),
+so the device has no route to the Mac at *any* address. The symptom is an app
+that opens to the redbox "No script URL provided … unsanitizedScriptURLString =
+(null)" while Metro is running happily. `install-dev-build.mjs` detects this
+after launching and says so (see below). Workable links, most preferred first:
+
+| Condition | What carries the traffic | What to do |
+|---|---|---|
+| Home/office Wi-Fi, no isolation | the LAN | nothing — auto-detected |
+| Venue Wi-Fi, the Mac's address changed | the LAN | nothing — the host is derived at run time, never baked in |
+| Mac tethered to an iPhone (USB or Wi-Fi) | the tethered interface | nothing — it is the default route |
+| macOS Internet Sharing | the Mac's own `bridge*` link | nothing — bridges are preferred |
+| **Public Wi-Fi with client isolation** | nothing on the LAN | put **both** devices on your iPhone's Personal Hotspot, then re-run `scripts/start-metro.sh`; or tunnel (below) |
+| Device asleep / CoreDevice tunnel down | — | wake and unlock; `error 4000` is a transport failure, not a signing one. USB-C gives the most reliable tunnel, and it is what the `usbmuxd` tools (`idevicescreenshot`, `idevicesyslog`) need — they saw nothing over a Wi-Fi-only `localNetwork` tunnel in this setup |
+
+**Tunnel mode** (`--tunnel`) serves Metro through ngrok, so the device needs
+internet access rather than a shared network. It requires `@expo/ngrok` (Expo
+offers to install it on first run), and the app is pointed at the tunnel with
+`-RCT_jsLocation <tunnel-host>:443 -RCT_packager_scheme https`. React Native
+honours that scheme key (`RCTBundleURLProvider.mm`, `packagerScheme`), which is
+the only way an https bundle URL is expressible at all. Two caveats:
+
+- **Tunnel Metro only tunnels Metro.** The app still calls Flask for its data,
+  so that URL has to be reachable too: tunnel Flask separately and pass
+  `--api-url https://<flask-tunnel>`. Otherwise the app loads and every API
+  call fails.
+- Device reachability **cannot be verified** in tunnel mode — the tunnel agent
+  dials Metro over loopback, so the device is indistinguishable from any other
+  local client. Confirm on the device itself.
+
+**The session record.** `start-metro.sh` writes
+`.dev-builds/metro-runtime.json` (gitignored) describing the Metro it started:
+`host`, `port` (what the device dials), `localPort` (what Metro listens on —
+`8081` even when the device dials `443`), `scheme`, `mode`, `apiUrl`, the
+recording `pid`, and the device's last-seen address. The installer trusts it
+**only while it is fresh** — recording process still alive *and* the port still
+listening — so a record left behind by a killed session can never point the app
+at a dead host.
 
 #### iOS (iPhone/iPad)
 
@@ -493,6 +577,21 @@ than one iOS device is reachable (the script lists the candidates by UDID when
 you omit it). The steps below are the same procedure by hand — read them to
 understand or debug what the script does.
 
+**Which host it launches against.** The installer prefers the session recorded
+by `scripts/start-metro.sh` (`.dev-builds/metro-runtime.json`) while that record
+is fresh, and otherwise detects the host itself, biased by the device's
+last-seen address. The recorded session wins because it is the only source that
+knows whether Metro is on the LAN or behind a tunnel, and on which port. Force
+it with `--metro-host <ip>` or `--metro-scheme <http|https>`.
+
+**It then verifies the device actually connected.** After launching, it waits up
+to 60 s (`--verify-timeout <s>`) for a non-loopback peer on the Metro port — the
+dev client holds sockets open for HMR, so a peer means the bundle loaded. If
+none appears, the device has no route to this host and the redbox is on screen;
+the script says so and lists the ways out instead of reporting a clean install.
+In tunnel mode the check is skipped, for the reason given in
+[Networking conditions](#networking-conditions--how-the-metro-host-is-chosen).
+
 **The two values that go stale when the LAN changes**
 
 | Value | Set when | Stale symptom | Fix without a rebuild |
@@ -592,6 +691,10 @@ changes again, at which point this section takes a minute to redo.
   contains an `RCTView` (`React/CoreModules/RCTDevMenu.mm:234-248`), which
   requires a rendered bundle. So with no bundle there is no way in from the
   UI; the launch argument is the fix, not the menu.
+- **Installer reports "No device reached Metro"** — the device has no route to
+  the Metro host, usually AP isolation on public/guest Wi-Fi. Metro itself is
+  fine; the link is not. See
+  [Networking conditions](#networking-conditions--how-the-metro-host-is-chosen).
 - **Never edit `ip.txt` inside the `.app`** — it is covered by the code
   signature (`_CodeSignature/CodeResources`), so the install is rejected.
 - **`A connection to this device could not be established`
@@ -910,8 +1013,9 @@ npm run dev -w apps/admin
 # 4. Classic (reference, only when needed)
 cd zerotohero-nuxt && npm run dev -- --port 3001
 
-# 5. Mobile — Metro + Expo Go (iOS Simulator)
-cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
+# 5. Mobile — Metro (physical device: scripts/start-metro.sh · simulator: --ios)
+scripts/start-metro.sh                 # device: derives host + EXPO_PUBLIC_API_URL
+# cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios   # simulator
 
 # 6. Chrome extension
 node apps/chrome-extension/build.mjs   # then Load unpacked at chrome://extensions
