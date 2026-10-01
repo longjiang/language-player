@@ -88,6 +88,20 @@ module.exports = {
       'expo-sqlite',
       'expo-splash-screen',
       'expo-web-browser',
+      // Image reader (SPEC-090): "Select images" offers camera, photo library
+      // and files. Photos only — no video capture — so the microphone
+      // permission is switched off instead of being requested (it would
+      // otherwise appear in the iOS usage strings and the Play privacy report).
+      [
+        'expo-image-picker',
+        {
+          photosPermission:
+            'Language Player opens the photo you pick so it can read the text in it.',
+          cameraPermission:
+            'Language Player uses the camera so you can photograph a page and read its text.',
+          microphonePermission: false,
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

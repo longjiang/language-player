@@ -81,8 +81,18 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
 
 ## Entry surfaces
 
-- **Multi-file** drag & drop (web) or **multi-file picker** (web + mobile
-  `DocumentPicker`).
+- **Multi-file** drag & drop (web) or **multi-file picker** (web + mobile).
+  Every "**Select images**" button (web: empty-state drop zone + sidebar
+  "add next image" tile; mobile: empty state + reader header) opens the OS file
+  browser on web, and on mobile a **source menu** with the same three choices a
+  Safari file input offers: **Take Photo** (`expo-image-picker`
+  `launchCameraAsync`), **Photo Library** (`launchImageLibraryAsync`), and
+  **Choose Files** (`expo-document-picker`). The photo-library picker is the
+  system one — no permission prompt (PHPicker on iOS 14+, the Android photo
+  picker on 13+); the camera asks for camera access and shows
+  `msg.camera_permission_denied` when it is refused. Photos only: the
+  `expo-image-picker` plugin is configured with `microphonePermission: false`,
+  so no RECORD_AUDIO / NSMicrophoneUsageDescription is added.
 - **Paste** button + global **Ctrl/Cmd+V** clipboard-image paste: web `paste`
   event / `navigator.clipboard.read()`; mobile `expo-clipboard` `getImageAsync`.
 - **OS file-open** routing — **unimplemented / removed.** Previously the mobile
@@ -141,6 +151,12 @@ bytes), so re-opening an image is instant and free.
 Keys: `title.image_reader`, `msg.drop_images_here`, `msg.image_reader_supported`,
 `msg.image_reader_empty`, `msg.image_reader_ocr_error`,
 `msg.no_image_in_clipboard`, `action.select_images`, `action.paste`. (All locales.)
+
+Mobile-only keys (the source menu): `action.take_photo`,
+`action.photo_library`, `action.choose_files`, and
+`msg.camera_permission_denied`. `action.select_files` ("Select files") is the
+previous label for the same buttons — it stays in the CSV but the image readers
+no longer use it.
 
 The in-progress spinner uses `msg.recognizing_text` ("Recognizing text…") on all
 three vision-OCR call sites — mobile image reader, web image reader, and the web
@@ -212,6 +228,18 @@ prints in a Release build, where `LOG_LEVEL` defaults to 1 — the resolved
   ("Recognizing text…") instead of `msg.making_words_interactive` ("Making words
   interactive…") on all three call sites (mobile image reader, web image
   reader, web PDF panel).
+- **"Select images" + a mobile source menu (2026-10-01)**: the buttons that load
+  images are labelled `action.select_images` ("Select images") on web (empty
+  state + sidebar add-next tile) and mobile (empty state + reader header) — they
+  only ever accepted images. On mobile the button now opens a source menu
+  (`ContextMenu`, given a labelled custom trigger via the new `trigger` prop)
+  with Take Photo / Photo Library / Choose Files, the three choices a Safari
+  file input offers. This adds the native module `expo-image-picker` (with
+  `microphonePermission: false`) plus `NSCameraUsageDescription` /
+  `NSPhotoLibraryUsageDescription`, so the mobile app needs a **native rebuild**
+  — `pod install` then `scripts/dev-build.mjs ios-device` for a dev build, and a
+  normal archive for a store build. `mimeFor()` no longer reports a HEIC file as
+  `image/webp`, and picker assets use the `mimeType` the system reports.
 - **Retroactive spec**: written to describe the as-built standalone image
   reader (routes, entry surfaces, vision pipeline incl. downscaling, LLM title,
   block-breaking, sidebar, preview/zoom, persistence, i18n, logging). Supersedes

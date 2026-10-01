@@ -336,6 +336,12 @@ simulator / iPhone / iPad). You do **not** run the full checklist twice:
      the 1.2 checklist no longer has a separate iPad row).
   + app icon.
 - **App Privacy / Data Safety** answers (accounts, usage, purchases, etc.).
+  The image reader's "Select images" sources add **Photos** — used for app
+  functionality (the picked image is sent to `/vision` for OCR, not stored on
+  our servers) — plus camera access, with the matching usage strings
+  (`NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, configured in
+  `apps/mobile/app.config.js`). Keep the iOS App Privacy answers and the Play
+  Data safety form in step with those (SPEC-090 § Entry surfaces).
 - **TestFlight** build for beta testers before submitting for review.
 - Submit for review with **review notes**: demo account, sample video IDs,
   and a note that the app hits a real backend.
@@ -669,6 +675,12 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
 - App name, subtitle, description, keywords, category, and **screenshots**
   (6.7" iPhone + iPad) + app icon.
 - **App Privacy / Data Safety** answers (accounts, usage, purchases, etc.).
+  The image reader's "Select images" sources add **Photos** — used for app
+  functionality (the picked image is sent to `/vision` for OCR, not stored on
+  our servers) — plus camera access, with the matching usage strings
+  (`NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, configured in
+  `apps/mobile/app.config.js`). Keep the iOS App Privacy answers and the Play
+  Data safety form in step with those (SPEC-090 § Entry surfaces).
 - **TestFlight** build for beta testers before submitting for review.
 - Submit for review with **review notes**: demo account, sample video IDs,
   and a note that the app hits a real backend.

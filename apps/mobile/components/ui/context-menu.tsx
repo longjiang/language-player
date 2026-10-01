@@ -47,6 +47,11 @@ export interface ContextMenuProps {
   triggerHitSlop?: number;
   /** If true, calls stopPropagation on the trigger press event. Default: true. */
   stopPropagation?: boolean;
+
+  /** Custom trigger element (e.g. a labelled button). When provided it replaces
+   *  the default icon button and is given the menu's press handler, so the
+   *  caller keeps control of how the trigger looks. */
+  trigger?: React.ReactElement<{ onPress?: (e?: unknown) => void }>;
 }
 
 // ── Component ────────────────────────────────
@@ -77,6 +82,13 @@ export interface ContextMenuProps {
  *   triggerSize={20}
  *   triggerClassName="rounded-lg p-2"
  * />
+ *
+ * @example
+ * // Custom labelled trigger (the caller styles it; the menu handles the press):
+ * <ContextMenu
+ *   items={items}
+ *   trigger={<Pressable className="..."><Text>Select images</Text></Pressable>}
+ * />
  */
 export function ContextMenu({
   items,
@@ -88,6 +100,7 @@ export function ContextMenu({
   triggerClassName,
   triggerHitSlop = 6,
   stopPropagation = true,
+  trigger,
 }: ContextMenuProps) {
   const { isMd } = useResponsive();
   // ── Internal state (uncontrolled mode) ──
@@ -133,14 +146,18 @@ export function ContextMenu({
 
   return (
     <>
-      {/* Trigger button */}
-      <Pressable
-        onPress={openMenu}
-        className={triggerClassName ?? 'h-7 w-7 items-center justify-center rounded-md active:bg-muted'}
-        hitSlop={triggerHitSlop}
-      >
-        <TriggerIcon size={triggerSize} color={triggerColor} />
-      </Pressable>
+      {/* Trigger — the caller's element when given, else the default icon button */}
+      {trigger ? (
+        React.cloneElement(trigger, { onPress: openMenu })
+      ) : (
+        <Pressable
+          onPress={openMenu}
+          className={triggerClassName ?? 'h-7 w-7 items-center justify-center rounded-md active:bg-muted'}
+          hitSlop={triggerHitSlop}
+        >
+          <TriggerIcon size={triggerSize} color={triggerColor} />
+        </Pressable>
+      )}
 
       {/* Bottom sheet menu on narrow screens; centered dialog on md+ */}
       <Modal

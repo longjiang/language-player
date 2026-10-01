@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, ActivityIndicator, Pressable, Image, Linking,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -14,13 +15,16 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
+import { ContextMenu } from '@/components/ui/context-menu';
 import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
 import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logerr, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X } from 'lucide-react-native';
+import {
+  ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X, Camera, Images, FolderOpen,
+} from 'lucide-react-native';
 
 /** One loaded image and its vision-OCR result (lazy, per selection). */
 interface ImageEntry {
@@ -68,8 +72,25 @@ function extractTitle(md: string): { title: string | null; body: string } {
 
 function mimeFor(name: string): string {
   if (/\.png$/i.test(name)) return 'image/png';
-  if (/\.(gif|webp|heic)$/i.test(name)) return 'image/webp';
+  if (/\.(gif|webp)$/i.test(name)) return 'image/webp';
+  // HEIC/HEIF is what an iPhone/iPad photo picker hands back, and neither the
+  // vision API nor <Image> wants it called "webp"; downscaleImage re-encodes it
+  // (not a PNG source, so to JPEG) before /vision.
+  if (/\.(heic|heif)$/i.test(name)) return 'image/heic';
   return 'image/jpeg';
+}
+
+/** Build an ImageEntry from a system picker asset (camera or photo library),
+ *  reading the file into a data URL the same way the document-picker path
+ *  does. The picker's own `mimeType` wins when it reports one. */
+async function entryFromAsset(asset: ImagePicker.ImagePickerAsset): Promise<ImageEntry> {
+  const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+  const name = asset.fileName ?? `photo-${Date.now()}.jpg`;
+  const mime = asset.mimeType ?? mimeFor(name);
+  const dataUrl = `data:${mime};base64,${base64}`;
+  return { id: nextId(), name, dataUrl, uri: dataUrl, md: '', title: null, converting: false };
 }
 
 /** One OCR request must not spin forever. The vision model can take ~30s for a
@@ -248,6 +269,51 @@ export default function ImageReaderScreen() {
     append(entries);
   }, [append]);
 
+  /** Pick images from the photo library (camera roll). No permission prompt is
+   *  needed on iOS 14+/Android 13+ — the system photo picker runs out of
+   *  process and only hands back the items the user chose. */
+  const addFromLibrary = useCallback(async () => {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        // quality < 1 makes iOS re-encode a HEIC pick as JPEG. downscaleImage
+        // re-encodes anyway; this keeps the thumbnail data URL small too.
+        quality: 0.9,
+      });
+      if (res.canceled || !res.assets?.length) return;
+      append(await Promise.all(res.assets.map(entryFromAsset)));
+    } catch (err) {
+      logwarn('[image-reader] photo library failed:', (err as Error)?.message ?? err);
+    }
+  }, [append]);
+
+  /** Photograph a page with the camera. Needs NSCameraUsageDescription, which
+   *  the expo-image-picker config plugin adds (app.config.js). */
+  const addFromCamera = useCallback(async () => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        setNotice(t('msg.camera_permission_denied'));
+        return;
+      }
+      const res = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9 });
+      if (res.canceled || !res.assets?.length) return;
+      append(await Promise.all(res.assets.map(entryFromAsset)));
+    } catch (err) {
+      logwarn('[image-reader] camera failed:', (err as Error)?.message ?? err);
+    }
+  }, [append, t]);
+
+  /** Sources offered by every "Select images" button — the same three choices a
+   *  Safari file input offers: take a photo, pick from the photo library, or
+   *  browse files. */
+  const imageSourceItems = useMemo(() => [
+    { key: 'camera', icon: Camera, label: t('action.take_photo'), onPress: () => void addFromCamera() },
+    { key: 'library', icon: Images, label: t('action.photo_library'), onPress: () => void addFromLibrary() },
+    { key: 'files', icon: FolderOpen, label: t('action.choose_files'), onPress: () => void addFromPicker() },
+  ], [t, addFromCamera, addFromLibrary, addFromPicker]);
+
   /** Paste an image from the OS clipboard. */
   const pasteFromClipboard = useCallback(async () => {
     try {
@@ -341,14 +407,20 @@ export default function ImageReaderScreen() {
             </Text>
             {notice && <Text className="text-center text-xs text-destructive">{notice}</Text>}
             <View className="flex-row items-center gap-2">
-              <Pressable
-                onPress={() => void addFromPicker()}
-                className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
-                accessibilityRole="button"
-                accessibilityLabel={t('action.select_files')}
-              >
-                <Text className="text-xs font-medium text-primary-foreground">{t('action.select_files')}</Text>
-              </Pressable>
+              <ContextMenu
+                items={imageSourceItems}
+                trigger={(
+                  <Pressable
+                    className="flex-row items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 active:opacity-90"
+                    accessibilityRole="button"
+                    accessibilityLabel={t('action.select_images')}
+                  >
+                    <Text className="text-xs font-medium text-primary-foreground">
+                      {t('action.select_images')}
+                    </Text>
+                  </Pressable>
+                )}
+              />
               <Pressable
                 onPress={() => void pasteFromClipboard()}
                 className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
@@ -380,14 +452,18 @@ export default function ImageReaderScreen() {
         <Text numberOfLines={1} className="flex-1 text-lg font-bold text-foreground">
           {current?.title || current?.name || t('title.image_reader')}
         </Text>
-        <Pressable
-          onPress={() => void addFromPicker()}
-          className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
-          accessibilityRole="button"
-          accessibilityLabel={t('action.select_files')}
-        >
-          <Text className="text-xs font-medium text-foreground">{t('action.select_files')}</Text>
-        </Pressable>
+        <ContextMenu
+          items={imageSourceItems}
+          trigger={(
+            <Pressable
+              className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
+              accessibilityRole="button"
+              accessibilityLabel={t('action.select_images')}
+            >
+              <Text className="text-xs font-medium text-foreground">{t('action.select_images')}</Text>
+            </Pressable>
+          )}
+        />
         <Pressable
           onPress={() => void pasteFromClipboard()}
           className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5 active:bg-muted"
