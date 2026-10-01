@@ -90,10 +90,22 @@ export default function ImageReaderScreen() {
     [images, currentId],
   );
 
-  /** OCR a single image (idempotent — no-op if already OCR'd / converting). */
-  const runOcr = useCallback(async (id: string) => {
-    const entry = imagesRef.current.find((im) => im.id === id);
+  /** Ids with an OCR request in flight. The `converting` flag lives in state
+   *  (and in the `imagesRef` mirror, which lags a render behind), so a tap on a
+   *  thumbnail moments after it was added could otherwise start a second
+   *  request for the same image. */
+  const ocrInFlight = useRef<Set<string>>(new Set());
+
+  /** OCR a single image (idempotent — no-op if already OCR'd / converting).
+   *  `known` lets a caller that just created the entry pass it directly:
+   *  `imagesRef` only catches up with `setImages` after the next render, so a
+   *  ref lookup from `append` no-ops and the image stays unread until the user
+   *  taps its thumbnail. */
+  const runOcr = useCallback(async (id: string, known?: ImageEntry) => {
+    const entry = known ?? imagesRef.current.find((im) => im.id === id);
     if (!entry || entry.md || entry.converting) return;
+    if (ocrInFlight.current.has(id)) return;
+    ocrInFlight.current.add(id);
     setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
     log('[image-reader] OCR start', { name: entry.name });
     try {
@@ -116,6 +128,8 @@ export default function ImageReaderScreen() {
     } catch (err) {
       logwarn('[image-reader] OCR failed:', (err as Error)?.message ?? err);
       setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: false, error: true } : im)));
+    } finally {
+      ocrInFlight.current.delete(id);
     }
   }, []);
 
@@ -126,14 +140,15 @@ export default function ImageReaderScreen() {
     if (entry && !entry.md && !entry.converting) void runOcr(id);
   }, [runOcr]);
 
-  /** Append entries, select the first new one, and OCR the selection. */
+  /** Append entries, select the first new one, and OCR it immediately. */
   const append = useCallback((entries: ImageEntry[]) => {
     if (entries.length === 0) return;
     setNotice(null);
     setImages((prev) => [...prev, ...entries]);
     const first = entries[0]!;
     setCurrentId(first.id);
-    void runOcr(first.id);
+    // Hand over the entry itself — see `runOcr`'s `known` argument.
+    void runOcr(first.id, first);
   }, [runOcr]);
 
   /** Open image files with a document picker. */
