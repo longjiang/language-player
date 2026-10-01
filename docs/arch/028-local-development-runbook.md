@@ -554,6 +554,66 @@ prompted it, and it survives until something forces the swap — a Release build
 (or `EXPO_PRECOMPILED_FLAVOR=release`) flips the markers back, and the next Debug
 build is then fine.
 
+#### `pod install` can silently drop the prebuilt React core (app dies at launch)
+
+`rncore.rb` and `rndependencies.rb` choose prebuilt-vs-source with a **live
+`curl` to Maven Central that must return exactly `200`**. A redirect, a timeout
+or a blocked host makes `pod install` print
+
+```text
+[ReactNativeCore] No prebuilt artifacts found, reverting to building from source.
+[ReactNativeCore] Building from source: true
+```
+
+…and continue *successfully*. React is then a **static** core while Expo's
+`EXPO_USE_PRECOMPILED_MODULES` frameworks stay **dynamic** and still link
+`@rpath/React.framework`. The app installs, launches, and dies before any JS
+runs:
+
+```text
+dyld: Library not loaded: @rpath/React.framework/React
+  Referenced from: …/LanguagePlayer3.app/Frameworks/ExpoVideo.framework/ExpoVideo
+App terminated due to signal 6.
+```
+
+Because nothing ever reaches Metro, `install-dev-build.mjs` reports *"No device
+reached Metro … the device has no route"* — misleading here; the network is
+fine. Get the real reason from the app's own console:
+
+```bash
+xcrun devicectl device process launch --device <udid> --terminate-existing --console \
+  ca.zerotohero.go -- -RCT_jsLocation <lan-ip>:8081
+```
+
+**Always read the two `Building from source:` lines** in the `pod install`
+output (both must be `false`), and confirm the staged artifact contains
+`Frameworks/React.framework` **before** installing it (`unzip -l <zip> | grep -c
+'Frameworks/React.framework'`) — a build without it is broken no matter what
+else succeeded.
+
+The check is flaky from some networks (the same core URL answered `200` and then
+`301` minutes apart). The deterministic fix needs no network at all: serve the
+already-cached tarballs as a local Maven mirror and point RN at it with
+`ENTERPRISE_REPOSITORY` (honoured by exactly those two files):
+
+```bash
+V=0.86.0                       # react-native version
+M=/tmp/maven-mirror/com/facebook/react/react-native-artifacts/$V
+mkdir -p "$M"
+P=apps/mobile/ios/Pods
+ln "$P/ReactNativeCore-artifacts/reactnative-core-$V-debug.tar.gz"               "$M/react-native-artifacts-$V-reactnative-core-debug.tar.gz"
+ln "$P/ReactNativeCore-artifacts/reactnative-core-$V-release.tar.gz"             "$M/react-native-artifacts-$V-reactnative-core-release.tar.gz"
+ln "$P/ReactNativeDependencies-artifacts/reactnative-dependencies-$V-debug.tar.gz"   "$M/react-native-artifacts-$V-reactnative-dependencies-debug.tar.gz"
+ln "$P/ReactNativeDependencies-artifacts/reactnative-dependencies-$V-release.tar.gz" "$M/react-native-artifacts-$V-reactnative-dependencies-release.tar.gz"
+(cd /tmp/maven-mirror && python3.10 -m http.server 8099 --bind 127.0.0.1 &)
+cd apps/mobile/ios && ENTERPRISE_REPOSITORY=http://127.0.0.1:8099 pod install
+```
+
+Both pods then log `Building from source: false`, and the pods reuse the cached
+tarballs (`Tarball … already exists in Pods. Skipping download.`). Re-check the
+flavors afterwards as described above — the run that fixes the prebuilt path can
+also leave an Expo artifact in the Release flavor with a `debug` marker.
+
 #### Install a retained dev build onto the device (LAN-change-proof)
 
 This is the routine path: the artifact already exists in `.dev-builds/`, so
