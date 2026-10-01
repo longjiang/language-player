@@ -43,7 +43,7 @@ text** in the paginated reader, with a **thumbnail sidebar on the right**
 (current image highlighted) that is **collapsible** like every other standard
 sidebar (desktop persistent panel + mobile slide-in sheet). Below the last
 thumbnail the sidebar shows a dashed **"add next image"** tile with
-"Select files" and "Paste" buttons. OCR is lazy per selection; results are
+"Select images" and "Paste" buttons. OCR is lazy per selection; results are
 cached server-side. The first pasted/dropped/picked image is opened by
 default and OCR'd immediately. The title bar no longer carries a back arrow
 or the select/paste actions (they moved into the sidebar).

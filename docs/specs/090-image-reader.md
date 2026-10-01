@@ -101,7 +101,7 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
   inner padding, **current image highlighted**. Clicking a non-current
   thumbnail selects it; clicking the **current** thumbnail opens the preview.
 - Below the last thumbnail, a dashed **"add next image"** tile holding
-  **Select files** and **Paste** buttons.
+  **Select images** and **Paste** buttons.
 - Title bar: title (LLM title → file name) + sidebar toggle + close. There is
   **no** back arrow and no select/paste in the title bar (those live in the
   sidebar).
@@ -140,7 +140,7 @@ bytes), so re-opening an image is instant and free.
 
 Keys: `title.image_reader`, `msg.drop_images_here`, `msg.image_reader_supported`,
 `msg.image_reader_empty`, `msg.image_reader_ocr_error`,
-`msg.no_image_in_clipboard`, `action.select_files`, `action.paste`. (All locales.)
+`msg.no_image_in_clipboard`, `action.select_images`, `action.paste`. (All locales.)
 
 The in-progress spinner uses `msg.recognizing_text` ("Recognizing text…") on all
 three vision-OCR call sites — mobile image reader, web image reader, and the web
