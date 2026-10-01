@@ -42,6 +42,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.browse` | Browse |
 | `action.cancel` | Cancel |
 | `action.cancel_auto_renewal` | Cancel Auto-Renewal |
+| `action.choose_files` | Choose Files |
 | `action.clear_all` | Clear All |
 | `action.clear_recent_searches` | Clear |
 | `action.clear_words` | Clear Words |
@@ -84,6 +85,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.next_chapter` | Next |
 | `action.not_interested` | Not Interested |
 | `action.open_in_reader` | Open in Reader |
+| `action.photo_library` | Photo Library |
 | `action.previous_chapter` | Previous |
 | `action.read` | Read |
 | `action.regenerate` | Regenerate |
@@ -119,6 +121,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.stop` | Stop |
 | `action.subscribe` | Subscribe |
 | `action.table_of_contents` | Table of Contents |
+| `action.take_photo` | Take Photo |
 | `action.tokenize` | Tokenize |
 | `action.translation` | Translation |
 | `action.try_again` | Try Again |
@@ -306,6 +309,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.already_have_account` | Already have an account? |
 | `msg.auto_renews_in` | Auto-renews in {days} days |
 | `msg.cancelling` | Cancelling... |
+| `msg.camera_permission_denied` | Camera access is off. Turn it on in Settings to take a photo. |
 | `msg.chapters` | chapters |
 | `msg.character_set_desc` | Choose between simplified and traditional Chinese characters for dictionary lookups. |
 | `msg.choose_action` | Choose an action |
