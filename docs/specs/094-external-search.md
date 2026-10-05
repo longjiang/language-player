@@ -14,8 +14,8 @@
 
 The popup dictionary today shows a single "Search Google Images" button (icon-only). This spec replaces that button with an **"External Search"** button (globe icon + label + downward chevron) that toggles a panel below it. The panel lists curated external lookup links grouped under three headings:
 
-1. **Images** — Google Images and similar image search.
-2. **Reference** — Wikipedia, Baidu Baike (for Chinese/han-script), usage trends (Google Ngrams), grammar wikis, etymology, etc.
+1. **Images** — Bing Images and Google Images. Both serve the same term, each scoped to the target language.
+2. **Reference** — Wikipedia, Baidu Baike (for Chinese/han-script), grammar wikis, etymology, etc.
 3. **Dictionaries** — Wiktionary plus language-specific dictionaries (Jisho, 汉典 ZDIC, Cambridge, Naver, etc.).
 
 Every link is a button that shows the site's **favicon**, a **title**, and an **external-link icon**. Clicking opens the target in a new tab (web) or the in-app browser (mobile). The panel has the same collapsible toggle behavior as the existing "Context Sentence" button, so the popup stays compact until the user expands it.
@@ -42,10 +42,10 @@ Sources and their availability (L2 = target language, L1 = native language, `han
 
 | Source | Group | Available when | URL template |
 |---|---|---|---|
-| Google Images | Images | always | `https://www.google.com/search?q={term}&tbm=isch` |
+| Bing Images | Images | always | `https://www.bing.com/images/search?q={term}&mkt={l2Market}&setlang={l2}` (`mkt` omitted when the L2 has no Bing market) |
+| Google Images | Images | always | `https://www.google.com/search?q={term}&udm=2&hl={l2}&lr=lang_{l2OrZhCN}` |
 | Wikipedia | Reference | always | `https://{l2Sub}.m.wikipedia.org/w/index.php?search={term}` |
 | Baidu Baike | Reference | `l2.han` | `https://baike.baidu.com/item/{term}` |
-| Usage Trends (Google Ngrams) | Reference | l2 ∈ {en, zh, fr, de, he, it, ru, es} | `https://books.google.com/ngrams/graph?content={term}&year_start={zh?1900:1800}&year_end=2019&corpus={langCorpus}&smoothing=3` |
 | Grammar Wiki (AllSet) | Reference | `l2 === 'zh'` | `https://resources.allsetlearning.com/gramwiki/?search={term}` |
 | 萌典 MOEDICT | Reference | `l2.han` | `https://www.moedict.tw/{traditional \| tify(term)}` |
 | Etymology | Reference | `l2 === 'en'` | `https://www.etymonline.com/word/{term}` |
@@ -83,7 +83,7 @@ type ExternalSearchGroup = 'images' | 'reference' | 'dictionaries';
 
 interface ExternalSearchLink {
   key: string;          // stable id for React keys
-  title: string;        // i18n key or raw label
+  titleKey: string;     // i18n key resolved with t()
   url: string;          // full URL with the term substituted
   domain: string;       // e.g. "wikipedia.org" — used to build the favicon URL
 }
@@ -100,38 +100,91 @@ interface ExternalSearchOptions {
 }
 
 function buildExternalSearchLinks(opts: ExternalSearchOptions): ExternalSearchLink[] { ... }
+
+// The Images group's two links, both scoped to the L2 (see below).
+function buildImageSearchUrls(term: string, l2Code: string): { bing: string; google: string } { ... }
 ```
 
 The builder groups links by the three headings and preserves insertion order (images → reference → dictionaries). It filters out inapplicable sources using the same availability predicates as Classic. The title is an i18n key (e.g. `external.wiktionary`) so both apps localize it independently.
 
+### Language-scoped image search (2026-10-05)
+
+A same-spelling word is not the same word across languages — `pies` is pastry in
+English, *feet* in Spanish and *dog* in Polish — so the Images links must not
+send the bare term and let the engine guess from the visitor's location. Both
+engines are scoped through `buildImageSearchUrls(term, l2Code)`:
+
+| Engine | URL | Scoping |
+|---|---|---|
+| Bing | `https://www.bing.com/images/search?q={term}&mkt={market}&setlang={l2}` | `mkt` from `BING_MARKETS`, `setlang` = L2 |
+| Google | `https://www.google.com/search?q={term}&udm=2&hl={l2}&lr=lang_{x}` | `hl` = L2, `lr` = `lang_{l2}` |
+
+Rules the builder follows:
+
+- **`mkt` only for languages Bing publishes a market for.** The rest get
+  `setlang` alone. Verified 2026-10-05: Bing accepts and ignores an unknown
+  value (`setlang=yue` → `200`) rather than failing, but an invented market is a
+  silent no-op, so it is omitted instead.
+- **Han languages map to the Chinese market** (`zh-CN` for `lzh`, `nan`, `hak`,
+  …); `yue` keeps its own documented `zh-HK` market.
+- **Google's `lr` uses `lang_zh-CN` for Han languages.** Google lists no bare
+  `lang_zh`, and it files Cantonese under Chinese, so `lang_yue` would be
+  ignored.
+- **Google uses `udm=2`, not `tbm=isch`.** Verified 2026-10-05: `tbm=isch` now
+  answers with a `302` to `udm=2`.
+
+**This biases the result language; it does not filter it.** ADR-0024 measured
+that Bing's `mkt` is not a true language filter, and that still holds on
+re-measurement: for `pies`, `mkt=en-US` returns pastry pages, `mkt=es-ES`
+returns Spanish *feet* pages — but `mkt=pl-PL` mixes Polish and leftover Spanish
+results. The parameters fix the failure mode this section exists for (a bare
+`pies` returning pastry for a Spanish learner) without making the result set
+single-language. See the 2026-10-05 amendments to
+[ADR-0024](../adr/0024-use-bing-image-search.md) and
+[ADR-0046](../adr/0046-china-blocked-third-party-hosts.md).
+
+**Bing is first, and both engines are always present.** ADR-0046 (2026-10-05
+amendment) allows a blocked link only as a secondary option behind a reachable
+equivalent: from mainland China the Google link does not open, while the Bing
+link does.
+
 ### Favicons
 
-Use the Google favicon service, which works for any domain without per-site assets:
+Each site's own `/favicon.ico`:
 
 ```
-https://www.google.com/s2/favicons?sz=64&domain={domain}
+https://{domain}/favicon.ico
 ```
+
+Not Google's `s2/favicons` service: that service is blocked in mainland China
+(ADR-0046 rule 3), so it rendered blank for exactly the learners the panel is
+also for. A site without a root favicon shows no icon, which is what both apps
+already do on error — including `www.google.com`'s, which is blank in China
+alongside the dead link.
 
 ### Web (`apps/web`)
 
 - `apps/web/src/components/dictionary-popup.tsx` — replace the icon-only image button with an **External Search** button (globe + `t('action.external_search')` + chevron). Clicking toggles the panel below, matching the Context Sentence button's expand/collapse. The panel renders the shared list. Web links open in a new tab (`target="_blank" rel="noopener noreferrer"`).
 - Remove the old `<a href={googleImagesUrl}>` image button (Google Images is now one item inside the Images group).
 - The panel renders only when there is at least one applicable link.
+- `apps/web/src/components/dictionary-entry-card.tsx` — the source line's single "Search images" link (which hardcoded an unscoped `google.com/search?tbm=isch&q=…`) becomes one link per engine, labeled with its own title key (`external.bing_images` / `external.google_images`) and built by `buildImageSearchUrls`. The line is `flex-wrap` so the second link wraps on the compact popup card. The L2 is the card's `l2Code` prop, falling back to the routed L2 from the language context (the prop is optional on several call sites).
 
 ### Mobile (`apps/mobile`)
 
 - `apps/mobile/components/dictionary/DictionaryPopup.tsx` — same button in place of the icon-only image button. Toggling expands a panel. Links open via `Linking.openURL(url)` (or the existing `WebViewSheet`/in-app browser pattern).
 - Remove the old image-button `ImageIcon` path.
+- `apps/mobile/components/dictionary/DictionaryEntryCard.tsx` — mirrors the web entry card: two engine links in the source row, and the single `showImageSearch` boolean becomes `imageSearch: { url, titleKey } | null` so the one `WebViewSheet` serves either engine and titles itself accordingly.
 
 ### i18n
 
-New keys (all 18 locales): `action.external_search` ("External Search"). Group headings reuse `title.external_images` / `title.external_reference` / `title.external_dictionaries` or add new keys. The per-source titles come from existing keys where available (`category.music` etc. are unrelated); otherwise add per-source keys (e.g. `external.wiktionary`) following the CSV workflow in `AGENTS.md`.
+New keys (all 18 locales): `action.external_search` ("External Search") and `external.google_images` ("Google Images") — the latter re-added after the 2026-10-05 amendment to ADR-0046, having been deleted by that ADR. Group headings reuse `title.external_images` / `title.external_reference` / `title.external_dictionaries` or add new keys. The per-source titles come from existing keys where available (`category.music` etc. are unrelated); otherwise add per-source keys (e.g. `external.wiktionary`) following the CSV workflow in `AGENTS.md`.
 
 ## States
 
 - **Collapsed** — only the External Search button shows; the panel is hidden.
-- **Expanded** — the panel lists grouped links. A group with no applicable links is omitted entirely. If no links apply at all (unlikely — Google Images and Wikipedia always apply), the button is hidden.
+- **Expanded** — the panel lists grouped links. A group with no applicable links is omitted entirely. If no links apply at all (unlikely — Bing Images and Wikipedia always apply), the button is hidden.
 - **Loading / error** — none; the list is computed synchronously from static templates.
+- **Unreachable target** — from mainland China the Google Images link does not open and its favicon is blank; the Bing Images link beside it works. Bing is first for that reason (ADR-0046, 2026-10-05 amendment).
 
 ## Dependencies
 
@@ -141,6 +194,6 @@ New keys (all 18 locales): `action.external_search` ("External Search"). Group h
 
 ## Open Questions
 
-- Favicon proxy: Google's `s2/favicons` service is used; confirm it's reachable and acceptable (a handful of regional sources like Baidu/Naver do expose favicons through it).
+- ~~Favicon proxy: Google's `s2/favicons` service is used; confirm it's reachable and acceptable~~ **Resolved** — favicons come from each site's own `/favicon.ico` (ADR-0046 rule 3), which is reachable from China but absent for sites without a root favicon.
 - Moedict/Youdao URLs use an aggressive/legacy URL shape; keep them as Classic does for faithfulness.
 - ~~Should the panel pre-fill the L2 language on Wikipedia (like the Wiktionary fragment) rather than always the L1 wiki?~~ **Resolved** — the panel links the L2 Wikipedia (see the note on the Wikipedia row above). This intentionally differs from Classic, which uses the L1 wiki.

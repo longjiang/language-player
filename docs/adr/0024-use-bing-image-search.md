@@ -72,6 +72,66 @@ as the backend engine from production; DDG is used instead.
 
 ## Consequences
 
+### 2026-10-05 amendment: outbound image links are scoped with engine locale parameters
+
+Decision 6 above says *"Disambiguation stays at query-build time. No
+engine-side language filtering is attempted."* That is **reversed for the
+outbound image links** (the External Search panel's `Images` group and the
+dictionary entry cards' image links), which now pass each engine its own locale
+parameters instead of relying on a query hint.
+
+Why the earlier decision does not carry over:
+
+- Decision 6 and the `buildImageQuery` it named belonged to the Flask/Openverse
+  gallery, which was retired on 2026-08-30. `buildImageQuery` — the
+  "append the target language's native name" mechanism — was **deleted with
+  it**; `grep` finds it only in stale `.next` build output, never in source. So
+  the mechanism decision 6 retained no longer exists to be "the" mechanism.
+- The surface is also different in kind. A gallery sends the term to *our*
+  backend, which can rewrite the query; these are outbound links, where the
+  only lever available is the URL.
+
+What is sent now (`buildImageSearchUrls` in
+`packages/shared/src/external-search.ts`):
+
+| Engine | Parameters | Notes |
+|---|---|---|
+| Bing Images | `mkt={lang}-{REGION}`, `setlang={lang}` | `mkt` only for languages in Bing's documented market list; everything else gets `setlang` alone rather than a fabricated market. Han languages fall back to `zh-CN`, except `yue` → `zh-HK`. |
+| Google Images | `hl={lang}`, `lr=lang_{lang}`, `udm=2` | `lr` uses `lang_zh-CN` for Han languages — Google lists no bare `lang_zh`. `udm=2` is the current images vertical; `tbm=isch` now answers with a `302` to it. |
+
+**Live verification (2026-10-05), and the caveat this ADR already recorded.**
+The table above is not a guarantee, and this ADR's own measurement is why. It
+found that *"neither Bing's `mkt` nor DDG's `region` is a true language filter:
+searching 'pie' with `es-ES`/`es-es` still returns English dessert pies."* That
+still holds. Re-measured against Bing's image results endpoint for the term
+`pies`:
+
+- `mkt=en-US` → pastry source pages (`Meat Pie`, `Australian Beef Party Pies`,
+  `Assorted Pies on Table`).
+- `mkt=es-ES` → Spanish pages where `pies` means *feet* (`Cómo Puedo Calcular
+  Los Pies Cúbicos`, `Dolor en la planta del pie`, `Pies suaves y cuidados`).
+- `mkt=pl-PL` → Polish pages (`Biszkoptowy pies…`) mixed with leftover Spanish
+  results.
+
+So `mkt` **biases** the result language enough to fix exactly the failure mode
+this change is about — the bare "pies" query returning pastry for a Spanish
+learner — but it does not filter cleanly, and a minority of off-language
+results remains. Do not read the parameters as a filter in a later decision.
+
+Also verified: the served page locale follows the parameters (`<html lang>` is
+`es`/`pl` for `mkt=es-ES`/`pl-PL`; the baseline from this machine was `zh`), and
+an unknown code degrades instead of failing (`setlang=yue` → 200, `lr=lang_yue`
+→ 200), which is why the builder prefers omitting `mkt` to inventing one.
+
+**Google Images is also back in the link set**, which ADR-0046 decided against
+for mainland China. See the 2026-10-05 amendment to
+[ADR-0046](./0046-china-blocked-third-party-hosts.md) for the rule change, the
+unchanged China behaviour, and why Bing stays first.
+
+**Still true, unchanged:** this ADR's decision that Flask is the image-search
+gateway for the *in-app gallery* stands as retired-but-retained, and none of the
+above re-enables those endpoints. It concerns outbound links only.
+
 ### 2026-08-30 amendment: feature retired — image galleries removed, endpoints disabled
 
 The in-app **dictionary image gallery / image search feature was retired**
