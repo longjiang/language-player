@@ -2,12 +2,12 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { buildPlaybackVideoFromContext, formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
+import { buildImageSearchUrls, buildPlaybackVideoFromContext, formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, Circle, ExternalLink, Play, Video } from 'lucide-react';
 import { SubsSearchPlaybackModal } from '@/components/video/subs-search-playback-modal';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
-import { formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
+import { baseCode, formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
@@ -107,7 +107,7 @@ export function DictionaryEntryCard({
   headingLevel = 'h1',
 }: DictionaryEntryCardProps) {
   const t = useT();
-  const { l1 } = useLanguage();
+  const { l1, l2 } = useLanguage();
   const { getSavedWords } = useSavedWordsContext();
   const { getCard } = useSrs();
   const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
@@ -257,9 +257,14 @@ export function DictionaryEntryCard({
   // ── Shared: source line ──
   const sourceName = entry.dictionary?.name ?? entry.source;
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM' ? t('label.ai_generated') : sourceName;
-  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`;
+  // Language-scoped image search (SPEC-094). The card's own `l2Code` prop is
+  // optional on several call sites, so fall back to the routed L2 from the
+  // language context — scoping the term to the wrong language is exactly the
+  // bug this exists to prevent ("pies" is pastry in English, feet in Spanish).
+  const imageSearchL2 = baseCode(l2Code || l2.code);
+  const imageSearch = buildImageSearchUrls(entry.head, imageSearchL2);
   const sourceLine = (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <BookOpen className="h-3 w-3" />
       <span>{displaySource}</span>
       {isFull && onClick && (
@@ -273,17 +278,25 @@ export function DictionaryEntryCard({
           <span>{t('action.open_in_dictionary')}</span>
         </button>
       )}
-      <a
-        href={googleImagesUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-        title={t('action.search_images')}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <ExternalLink className="h-3 w-3" />
-        <span>{t('action.search_images')}</span>
-      </a>
+      {/* Both engines, each scoped to the L2 (ADR-0046 2026-10-05 amendment).
+          Bing first: it is reachable from mainland China, where Google is not. */}
+      {([['bing-images', imageSearch.bing, 'external.bing_images'],
+         ['google-images', imageSearch.google, 'external.google_images']] as const).map(
+        ([key, href, titleKey]) => (
+          <a
+            key={key}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+            title={t(titleKey)}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="h-3 w-3" />
+            <span>{t(titleKey)}</span>
+          </a>
+        ),
+      )}
       {entry.match_type && entry.match_type !== 'exact' && (
         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
           {entry.match_type}
