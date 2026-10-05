@@ -4,8 +4,8 @@ import { Pressable } from '@/components/ui/pressable';
 import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { buildPlaybackVideoFromContext, formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
+import { buildImageSearchUrls, buildPlaybackVideoFromContext, formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
+import { baseCode, formatPronunciation, getSrsReviewStatus } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
@@ -110,7 +110,9 @@ export function DictionaryEntryCard({
   const t = useT();
   const { user, loading: authLoading } = useAuth();
   const { l2Lang } = useLanguage();
-  const [showImageSearch, setShowImageSearch] = useState(false);
+  // Which engine's image search the sheet is showing, if any (SPEC-094: both
+  // Bing and Google are offered, each scoped to the target language).
+  const [imageSearch, setImageSearch] = useState<{ url: string; titleKey: string } | null>(null);
   const { hasWord, savedWords, saveWord, removeWord } = useSavedWords(l2Lang.code);
   const { getCard } = useSrs();
   const [wordSaved, setWordSaved] = React.useState(false);
@@ -249,22 +251,37 @@ export function DictionaryEntryCard({
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM'
     ? t('label.ai_generated')
     : sourceName;
-  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`;
+  // Language-scoped image search (SPEC-094). The card's own `l2Code` prop is
+  // optional on several call sites, so fall back to the routed L2 from the
+  // language context — scoping the term to the wrong language is exactly the
+  // bug this exists to prevent ("pies" is pastry in English, feet in Spanish).
+  const imageSearchUrls = buildImageSearchUrls(entry.head, baseCode(l2Code || l2Lang.code));
+  const imageSearchLinks = [
+    { key: 'bing-images', url: imageSearchUrls.bing, titleKey: 'external.bing_images' },
+    { key: 'google-images', url: imageSearchUrls.google, titleKey: 'external.google_images' },
+  ] as const;
   const sourceLine = (
-    <View className="flex-row items-center gap-2">
+    <View className="flex-row flex-wrap items-center gap-2">
       <Text className="text-xs text-muted-foreground/50">
         {displaySource}
         {entry.match_type && entry.match_type !== 'exact' && (
           <Text className="text-xs text-amber-600"> · {entry.match_type}</Text>
         )}
       </Text>
-      <Pressable
-        onPress={() => setShowImageSearch(true)}
-        className="flex-row items-center gap-0.5"
-      >
-        <ExternalLink size={10} color={ICON_MUTED} />
-        <Text className="text-xs text-muted-foreground/50 underline">{t('action.search_images')}</Text>
-      </Pressable>
+      {/* Both engines, each scoped to the L2 (ADR-0046 2026-10-05 amendment).
+          Bing first: it is reachable from mainland China, where Google is not. */}
+      {imageSearchLinks.map(({ key, url, titleKey }) => (
+        <Pressable
+          key={key}
+          onPress={() => setImageSearch({ url, titleKey })}
+          className="flex-row items-center gap-0.5"
+          accessibilityRole="link"
+          accessibilityLabel={t(titleKey)}
+        >
+          <ExternalLink size={10} color={ICON_MUTED} />
+          <Text className="text-xs text-muted-foreground/50 underline">{t(titleKey)}</Text>
+        </Pressable>
+      ))}
     </View>
   );
 
@@ -425,10 +442,10 @@ export function DictionaryEntryCard({
 
         {/* Image Search Sheet — full-screen modal (also works in compact cards) */}
         <WebViewSheet
-          visible={showImageSearch}
-          url={googleImagesUrl}
-          title={t('action.search_images')}
-          onClose={() => setShowImageSearch(false)}
+          visible={imageSearch !== null}
+          url={imageSearch?.url ?? ''}
+          title={t(imageSearch?.titleKey ?? 'action.search_images')}
+          onClose={() => setImageSearch(null)}
         />
       </CardRoot>
     );
@@ -577,10 +594,10 @@ export function DictionaryEntryCard({
 
       {/* Image Search Sheet */}
       <WebViewSheet
-        visible={showImageSearch}
-        url={googleImagesUrl}
-        title={t('action.search_images')}
-        onClose={() => setShowImageSearch(false)}
+        visible={imageSearch !== null}
+        url={imageSearch?.url ?? ''}
+        title={t(imageSearch?.titleKey ?? 'action.search_images')}
+        onClose={() => setImageSearch(null)}
       />
     </View>
   );
