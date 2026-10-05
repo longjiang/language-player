@@ -7,6 +7,9 @@
  * `zerotohero-nuxt/components/EntryExternal.vue`), the source of truth for
  * which external references the app offers per language. Both apps share this
  * builder so the option set stays consistent.
+ *
+ * The Images group offers both Bing and Google, each scoped to the target
+ * language — see `buildImageSearchUrls` for the mechanism and its limits.
  */
 
 import { wikipediaSubdomain } from './reading-suggestions/wiki';
@@ -63,6 +66,89 @@ export function faviconUrl(domain: string): string {
   return `https://${domain}/favicon.ico`;
 }
 
+const enc = encodeURIComponent;
+
+/**
+ * Language → Bing market (`mkt`) for the languages Bing publishes a market for.
+ * Codes absent here get `setlang` alone: Bing ignores an unknown market rather
+ * than failing, but inventing one would be a silent no-op either way, and this
+ * table is the documented `mkt` value list.
+ *
+ * `pt` maps to `pt-BR` (the larger Portuguese image corpus); `no` shares
+ * `nb-NO` because Bing publishes no separate `nn`/`no` market.
+ */
+const BING_MARKETS: Record<string, string> = {
+  ar: 'ar-SA', bg: 'bg-BG', ca: 'ca-ES', cs: 'cs-CZ', da: 'da-DK', de: 'de-DE',
+  el: 'el-GR', en: 'en-US', es: 'es-ES', et: 'et-EE', fi: 'fi-FI', fr: 'fr-FR',
+  he: 'he-IL', hi: 'hi-IN', hr: 'hr-HR', hu: 'hu-HU', id: 'id-ID', it: 'it-IT',
+  ja: 'ja-JP', ko: 'ko-KR', lt: 'lt-LT', lv: 'lv-LV', ms: 'ms-MY', nb: 'nb-NO',
+  nl: 'nl-NL', no: 'nb-NO', pl: 'pl-PL', pt: 'pt-BR', ro: 'ro-RO', ru: 'ru-RU',
+  sk: 'sk-SK', sl: 'sl-SI', sv: 'sv-SE', th: 'th-TH', tr: 'tr-TR', uk: 'uk-UA',
+  vi: 'vi-VN', yue: 'zh-HK', zh: 'zh-CN',
+};
+
+/** Bing market for an L2, falling back to the Chinese market for the Han
+ *  languages Bing has no market of their own for (`lzh`, `nan`, `hak`, …). */
+function bingMarket(l2Code: string): string | undefined {
+  return BING_MARKETS[l2Code] ?? (isHanScript(l2Code) ? 'zh-CN' : undefined);
+}
+
+/** Google's `lr` (result-language restrict) value. Google lists no bare
+ *  `lang_zh`, so Han languages — including Cantonese `yue`, which Google files
+ *  under Chinese — restrict to `lang_zh-CN`. */
+function googleLangRestrict(l2Code: string): string {
+  return `lang_${isHanScript(l2Code) ? 'zh-CN' : l2Code}`;
+}
+
+/** Language-scoped image-search URLs, one per engine. */
+export interface ImageSearchUrls {
+  bing: string;
+  google: string;
+}
+
+/**
+ * Language-scoped image-search URLs for `term`.
+ *
+ * Scoping uses each engine's own locale parameters — Bing's `mkt` (market) and
+ * `setlang`, Google's `hl` (interface language) and `lr` (result-language
+ * restrict). Without them a same-spelling word resolves in whatever language
+ * the engine guesses from the visitor's location: "pies" is pastry in English,
+ * feet in Spanish and a dog in Polish.
+ *
+ * ADR-0024 measured that Bing's `mkt` is not a *true* language filter — a
+ * Spanish market still returns some English dessert pies for "pies" — so this
+ * biases the guess rather than guaranteeing it (see SPEC-094). `mkt` is emitted
+ * only for languages in `BING_MARKETS`; everything else gets `setlang` alone,
+ * which Bing accepts and degrades from, instead of a fabricated market.
+ *
+ * Google's `udm=2` is the current images vertical: `tbm=isch` now answers with
+ * a `302` to `udm=2`, so the link skips that redirect hop.
+ */
+export function buildImageSearchUrls(term: string, l2Code: string): ImageSearchUrls {
+  const termEnc = enc(term);
+  const market = bingMarket(l2Code);
+
+  const bingQuery = [
+    `q=${termEnc}`,
+    market ? `mkt=${enc(market)}` : null,
+    `setlang=${enc(l2Code)}`,
+  ]
+    .filter((p): p is string => p !== null)
+    .join('&');
+
+  const googleQuery = [
+    `q=${termEnc}`,
+    'udm=2',
+    `hl=${enc(l2Code)}`,
+    `lr=${enc(googleLangRestrict(l2Code))}`,
+  ].join('&');
+
+  return {
+    bing: `https://www.bing.com/images/search?${bingQuery}`,
+    google: `https://www.google.com/search?${googleQuery}`,
+  };
+}
+
 /** The per-language `{l2}/KO` Naver dictionaries Classic generates. */
 const NAVER_KO_PAIRS: string[] = [
   'fr', 'es', 'de', 'vi', 'ne', 'lo', 'my', 'sw', 'ar', 'ur', 'uz', 'id', 'km',
@@ -76,8 +162,6 @@ const NAVER_EN_PAIRS: Record<string, string> = {
   ru: 'russian', vi: 'vietnamese', es: 'spanish', id: 'indonesian', ja: 'japanese',
   zh: 'chinese', pt: 'portuguese',
 };
-
-const enc = encodeURIComponent;
 
 function hanBridge(l2Code: string, l2Han: boolean, l1Code: string, l1Han: boolean): boolean {
   // Classic: "Naver Ko/Zh" when (L2 han && L1 ko) OR (L2 ko && L1 han).
@@ -103,16 +187,25 @@ export function buildExternalSearchLinks(opts: ExternalSearchOptions): ExternalS
 
   // ── Images ─────────────────────────────────────────────────────
 
-  // Bing Images, not Google Images: google.com is blocked in mainland China, so
-  // the link was dead for a large share of learners (ADR-0046). Bing is
-  // reachable from China and from everywhere else, so no second variant is
-  // needed. (`bing.com` also serves `cn.bing.com`, which redirects for Chinese
-  // visitors on its own.)
+  // Both engines, each scoped to the target language (see
+  // `buildImageSearchUrls`). Bing stays first: it is reachable from mainland
+  // China where google.com is not, so the default link keeps working there.
+  // Google Images was removed outright by ADR-0046 for that reason and is
+  // offered again by product decision — as one item in this group, with Bing
+  // still the China-safe first entry. The reversal is recorded in that ADR's
+  // 2026-10-05 amendment rather than left to contradict it silently.
+  const images = buildImageSearchUrls(term, l2Code);
   links.push({
     key: 'bing-images',
     titleKey: 'external.bing_images',
-    url: `https://www.bing.com/images/search?q=${termEnc}`,
+    url: images.bing,
     domain: 'www.bing.com',
+  });
+  links.push({
+    key: 'google-images',
+    titleKey: 'external.google_images',
+    url: images.google,
+    domain: 'www.google.com',
   });
 
   // ── Reference ──────────────────────────────────────────────────
@@ -362,6 +455,7 @@ export function groupExternalSearchLinks(
  *  unambiguous regardless of insertion order. */
 const GROUP_BY_KEY: Record<string, ExternalSearchGroup> = {
   'bing-images': 'images',
+  'google-images': 'images',
   wikipedia: 'reference',
   'baidu-baike': 'reference',
   'grammar-wiki': 'reference',
