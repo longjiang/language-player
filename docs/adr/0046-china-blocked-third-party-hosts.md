@@ -339,6 +339,60 @@ raise `auth_unreachable` for `5xx` and report an unreachable auth server, while
 `4xx` (GoTrue's `400` for a bad password, `429` for rate limiting) still means
 the credentials were rejected.
 
+### Amendment — 2026-10-05: Google Images is offered again, as a secondary entry beside Bing
+
+Rule 4 above removed Google Images and deleted `external.google_images` from
+`translations.csv`. **That is reversed**: the dictionary's image links now offer
+Google Images again, as one item in the same `Images` group as Bing.
+
+What changed:
+
+- `packages/shared/src/external-search.ts` builds **both** links
+  (`buildImageSearchUrls`). Bing is pushed first, Google second, so the
+  China-safe engine is still the one a learner reaches without thinking about
+  it. Both apps' entry cards and the External Search panel render the pair.
+- `external.google_images` is back in `translations.csv` (all 18 locales) and
+  the locale JSONs are re-synced.
+- Both engines' links are now **scoped to the target language** — Bing via
+  `mkt` + `setlang`, Google via `hl` + `lr` — so a same-spelling term is not
+  left to whichever language the engine guesses from the visitor's location
+  ("pies" is pastry in English, feet in Spanish, a dog in Polish). That
+  mechanism, its limits, and the live verification are recorded in the
+  2026-10-05 amendment to [ADR-0024](./0024-use-bing-image-search.md).
+- Google's link uses `udm=2`. Verified 2026-10-05: `tbm=isch` now answers with
+  a `302` to `udm=2`, so every hardcoded `tbm=isch` link in the repo was paying
+  a redirect hop.
+
+**How this sits with rule 4.** The rule as written is "a blocked link is
+replaced if a reachable equivalent exists, and removed if it does not". Google
+Images does have a reachable equivalent — that is why it was removed — so
+read literally, rule 4 still forbids this. The rule is therefore amended to:
+
+> **A blocked link may be kept as a secondary option when a reachable
+> equivalent is also offered, and that equivalent is first.** A blocked link
+> must never be the *only* way to reach a feature, and must never be the
+> default.
+
+**What this costs, measured against this ADR's own constraint.** Nothing above
+changes for a learner in mainland China:
+
+- The Google Images link does not open. `google.com` is blocked at both DNS and
+  SNI (see the 2026-09-20 amendment), and this is an outbound link, so no relay
+  can help: the request is the browser's, to Google, from inside the block.
+- Its favicon goes blank. Rule 3 switched favicons to the site's own
+  `/favicon.ico`, so `www.google.com/favicon.ico` fails exactly where the link
+  does — the "reachable-and-blank" tradeoff already listed under Consequences.
+  A blank icon beside a dead link is at least consistent, and this is the same
+  outcome the panel had for Google sources before this ADR.
+- Bing remains first and fully reachable, so the feature is not lost — which is
+  the condition the amended rule imposes.
+
+**Not changed, and worth knowing:** `apps/chrome-extension` still hardcodes
+`google.com/search?tbm=isch` at two call sites
+(`src/components/DictionaryCard.tsx:545`, `:942`). It is outside this change
+and outside this amendment's scope, so the extension has the unscoped Google
+link and no Bing alternative.
+
 ## Consequences
 
 ### Positive
