@@ -14,13 +14,55 @@ looked-up word.
 
 - Each assistant reply has icon-only regenerate and copy buttons beneath it. They stay visible while a reply is streaming but are disabled until it finishes.
 - Follow-up buttons are styled as rounded boxes with a sharp bottom-right corner and stay pinned at the bottom of the card.
-- Once a follow-up button is pressed, it disappears from the list for the rest of the conversation (each follow-up can be used once per transcript).
+- Once a follow-up button is pressed, it disappears from the list for the rest of the conversation (each follow-up can be used once per transcript). That state is derived from the live transcript, so a preset consumed by a turn that a regenerate later removed becomes available again (see below).
 - The card renders as a chat transcript. The initial explanation appears as the first assistant bubble on the left.
 - Clicking a follow-up appends a user chat bubble on the right (labelled with the button, e.g. "Inflection"), then streams the DeepSeek reply into a new assistant bubble below it.
 - **Free-form follow-up (multi-turn):** a text input at the bottom of the card lets the user type anything. Submitting appends a user bubble with the typed text and streams the reply. Follow-up turns (free-form and preset) send the prior conversation to the backend so the model keeps the word/context grounding; the initial explanation is a single-turn request.
-- Regenerate re-runs that reply's prompt in place (cache bypassed); copy copies that reply's text.
+- Regenerate re-runs that reply's prompt **as the end of the conversation**: every
+  later message is removed first, then the reply is re-streamed with the turns
+  that survive as history. A one-line notice reports how many later replies were
+  removed. Copy copies that reply's text.
 - Preset prompts reuse the same backtick formatting instruction as the main prompt, so L2 words and examples stay tokenized and clickable.
 - When there is a context sentence, it is included in the prompt; the dictionary entry page (no context) uses the generic variants.
+
+### Regenerate rewrites history (one live branch)
+
+Regenerate is **not** an in-place edit of a single bubble. Clicking it on reply
+*N*:
+
+1. Removes every message after reply *N* (permanently — the transcript keeps one
+   live branch, so no reply is left on screen that no longer follows from its
+   context).
+2. Re-streams reply *N* with the **surviving** turns as the multi-turn history
+   (`messages`), the same shape a follow-up sends, with the server-side cache
+   bypassed for that turn.
+3. Shows a one-line notice (`msg.regenerate_removed_turns`) reporting how many
+   later replies were removed, so the truncation is visible rather than looking
+   like data loss.
+
+**Context is never lost.** The history sent with a follow-up — and with a
+regenerated reply — is reconstructed from the live transcript:
+
+- Each assistant turn contributes `{ role: 'assistant', content }` (its rendered
+  text, or the serialized pattern + example explanations for an "Examples from
+  Videos" turn — see below).
+- Its user turn is the exact request that produced it (the stored prompt), which
+  is what makes the **original prompt** part of every later request rather than a
+  flat re-prompt. Restored turns (whose prompt is not persisted, see the storage
+  note) fall back to the bubble label/text.
+- The initial explanation is streamed **single-turn** (no history), and stays
+  single-turn when regenerated, so it keeps hitting the existing `md5(prompt)`
+  cache path.
+- An "Examples from Videos" reply **is** included in the history, serialized to
+  plain text (pattern heading + pattern + each matched line and its explanation).
+  Omitting it left two consecutive `user` turns — a question with no reply before
+  the next question — which broke the context outright.
+- A free-form turn in the reader/video surfaces stores its typed question
+  separately from the preloaded-content preamble, so regenerating it re-issues
+  the question against the **current** surface content instead of a stale frozen
+  copy.
+- Preset buttons' used-once state is derived from the live transcript, so a
+  preset spent by a turn the regenerate removed is offered again.
 
 ### Configurable presets (`followUpPresets` prop)
 
@@ -182,6 +224,11 @@ New keys:
 - Labels: `action.inflection`, `action.morphemes`, `action.etymology`, `action.syntax`, `action.synonyms`
 - Prompts: `prompt.followup_inflection`, `prompt.followup_inflection_context`, `prompt.followup_inflection_context_form`, `prompt.followup_morphemes`, `prompt.followup_morphemes_context`, `prompt.followup_etymology`, `prompt.followup_syntax`, `prompt.followup_syntax_context`, `prompt.followup_synonyms`, `prompt.followup_synonyms_context`
 - Free-form input: `placeholder.ask_follow_up` (input placeholder), `action.send` (send button label)
+- Regenerate truncation notice: `msg.regenerate_removed_turns` — an ICU plural
+  (`{n, plural, one {…} other {…}}`) counting the removed later replies. ICU
+  keywords (`plural`, `one`, `other`, `#`) must stay untranslated; web renders it
+  through next-intl, mobile through `intl.formatMessage` (its `useT` routes
+  plural/select messages there).
 
 All keys are translated in all 18 locales via `translations.csv` (header order: en, zh-Hans, zh-Hant, ar, de, es, fr, id, it, ja, ko, nl, pl, pt, ru, th, tr, vi), then regenerated to `packages/shared/locales/*.json` with:
 
@@ -227,3 +274,41 @@ node scripts/sync-translations.mjs csv-to-json
 ### 8. Verification
 
 - `npx turbo typecheck` from the repo root (safe with dev servers running). No production builds unless explicitly requested.
+
+### 9. Regenerate rewrites history (2026-10-06)
+
+Supersedes the original "regenerate re-runs that reply's prompt in place"
+behavior documented above (SPEC-035 line 21 before this change), which sent the
+bare prompt with no `messages` — dropping the conversation context — and left
+every later reply on screen.
+
+- **Shared logic — `packages/utils/src/ai-chat-history.ts`** (exported from
+  `@langplayer/utils` as `buildAiChatHistory`, `serializeExamplesTurn`,
+  `buildFreeFormPrompt`, plus the `AiVideoExampleData` /
+  `AiChatHistoryMessage` types), used by web and mobile alike so the two apps
+  cannot drift the way they once did on the explain prompts. Unit-tested in
+  `packages/utils/src/ai-chat-history.test.ts` (14 cases: prompt-pairing,
+  original-prompt retention, the examples turn, `count` truncation, empty
+  placeholders, restored-turn fallback, and the free-form request variants).
+  - `buildAiChatHistory(messages, count)` takes the number of transcript entries
+    to walk, so regenerate can rebuild the history of the turns its truncation
+    keeps without waiting for a React state commit. "Examples from Videos" turns
+    are included via `serializeExamplesTurn` (pattern heading + pattern + each
+    matched line and its explanation) instead of being skipped.
+  - The opening user turn of each reply is the stored prompt, falling back to the
+    user bubble above it (a preset's label) and then to `text` for restored
+    turns — the prompt is not persisted (see the storage note; a large book
+    context would blow the quota).
+- **Web** (`apps/web/src/components/ai-explanation.tsx`) and **mobile**
+  (`apps/mobile/components/dictionary/AiExplanation.tsx`), in lockstep:
+  - `handleRegenerate` slices to `[0 … target]`, rebuilds the prompt (for a
+    free-form reader/video turn, from the typed question plus the CURRENT
+    preloaded content — hence `buildFreeFormPrompt`), re-streams with
+    `{ regenerate: true, messages: history }` (omitting `messages` for the
+    initial single-turn explanation), and reports the drop count in
+    `droppedByRegenerate` for the `msg.regenerate_removed_turns` notice.
+  - Preset used-once state moved from a `usedFollowUps` Set to the derived
+    `usedPresetKeys` (scanning `ChatMessage.presetKey`, now persisted), so a
+    dropped turn frees its button again.
+- **Not changed:** the Chrome extension's `DictionaryCard` AI chat has no
+  regenerate control and no multi-turn `messages` history, so it is unaffected.
