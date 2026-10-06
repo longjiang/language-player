@@ -543,8 +543,8 @@ export default function ReviewScreen() {
     pruneOrphans(l2Code, savedWordIds, { allowWholeDeckPurge: false });
   }, [srsLoaded, wordsLoaded, user, savedWordsCloudHydrated, srsCloudHydrated, l2SavedWords, l2Code, pruneOrphans, reconcileOrphans, getPendingPutWordIds]);
 
-  // ── Compute due cards ──
-  const dueCards = useMemo(() => {
+  // ── Compute the live due deck ──
+  const liveDueCards = useMemo(() => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const activeNewCardIds = new Set(
@@ -565,8 +565,85 @@ export default function ReviewScreen() {
       });
   }, [l2SavedWords, store, l2Code, newCardLimit]);
 
+  // ── Session deck — syncing must never disturb the card on screen ──
+  // The deck the learner walks is a SNAPSHOT, not a live derivation. The mobile
+  // sync engine runs pull → merge → push every few seconds and notifies its
+  // entity subscribers for every applied change — including this device's own
+  // acked writes, which come back through `user_sync_log`. `refreshFromCache`
+  // (srs_card) and `applyCache` (saved_word) therefore call setState here on
+  // every sync action, and each one used to rebuild the deck array: the card at
+  // `cards[currentIndex]` changed, the mixed-mode test was re-resolved from the
+  // merged card's `reps`, and the card (and its half-finished test) remounted
+  // under the learner.
+  //
+  // The snapshot is re-derived from the live deck only when the learner
+  // advances:
+  //   • a rating (`advanceDeck()` in handleRate) or an undo (handleUndo);
+  //   • the displayed card's word is no longer saved (the unsave effect below);
+  //   • the language pair changes;
+  //   • the session deck was empty and cards appeared (first hydration, or new
+  //     cards becoming due after the all-done state).
+  // Each entry snapshots the word AND its SRS state: mixed mode resolves the
+  // test from `reps`/`state`, so a background merge that rewrote a card's state
+  // mid-test would otherwise swap the test out from under the learner. The
+  // header counts stay live on purpose.
+  const [deckGen, setDeckGen] = useState(0);
+  const [adoptedDeckGen, setAdoptedDeckGen] = useState(-1);
+  const [sessionDeck, setSessionDeck] = useState<Array<{ word: SavedWordMeta; srs: SrsFields }>>([]);
+  const advanceDeck = useCallback(() => setDeckGen((gen) => gen + 1), []);
+  const liveDeckCards = useMemo(() => liveDueCards.map((word) => ({
+    word,
+    srs: (store.cards[l2Code] ?? {})[word.id] || fsrs.newCard(),
+  })), [liveDueCards, store, l2Code]);
+  const deckIsStale = adoptedDeckGen !== deckGen;
+  const deckIsEmptyButLive = sessionDeck.length === 0 && liveDeckCards.length > 0;
+  const deckAdopted = deckIsStale || deckIsEmptyButLive;
+  // Adopt the live deck in-render when it is stale, so an advance shows the next
+  // card in the same commit (never a flash of the rated card); other renders
+  // walk the frozen snapshot.
+  const dueCards = deckAdopted ? liveDeckCards : sessionDeck;
+  useEffect(() => {
+    if (!deckAdopted) return;
+    setSessionDeck(liveDeckCards);
+    setAdoptedDeckGen(deckGen);
+  }, [deckAdopted, deckGen, liveDeckCards]);
+
+  // Diagnostic (SPEC-066 sync isolation): what the session walks vs what the
+  // live store holds. `adopted` is the only moment a background change may
+  // enter the session deck; while a card is on screen the two are expected to
+  // diverge (the live deck may hold cards the learner has not advanced to yet).
+  useEffect(() => {
+    log('[srs] session deck', {
+      l2: l2Code,
+      gen: deckGen,
+      adopted: deckAdopted,
+      session: { count: dueCards.length, first: dueCards[0]?.word.id ?? null },
+      live: { count: liveDeckCards.length, first: liveDeckCards[0]?.word.id ?? null },
+      currentIndex,
+    });
+  }, [deckGen, deckAdopted, dueCards, liveDeckCards, l2Code, currentIndex]);
+
+  // Diagnostic: a live deck whose card at the current index differs from the
+  // card the session is walking IS the reported bug's input — the session must
+  // hold it. Adoption renders are excluded: those are deliberate advances.
+  useEffect(() => {
+    if (deckAdopted) return;
+    const shownCardId = dueCards[currentIndex]?.word.id ?? null;
+    const liveCardId = liveDeckCards[currentIndex]?.word.id ?? null;
+    if (shownCardId && liveCardId !== shownCardId) {
+      log('[srs] session deck held through a background deck change', {
+        l2: l2Code,
+        index: currentIndex,
+        shownCardId,
+        liveCardId,
+        shownCards: dueCards.length,
+        liveCards: liveDeckCards.length,
+      });
+    }
+  }, [deckAdopted, dueCards, liveDeckCards, currentIndex, l2Code]);
+
   // ── Derive entry for the current card from the reactive ID cache ──
-  const currentDueCard = dueCards[currentIndex];
+  const currentDueCard = dueCards[currentIndex]?.word;
   const wordForm = currentDueCard ? firstLookupForm(currentDueCard) : '';
   // The ID cache stores entries by their raw `entry.id` from the dictionary
   // API response — EDICT entries use bare numeric IDs ("73458"), LLM entries
@@ -585,14 +662,15 @@ export default function ReviewScreen() {
 
   // A single-char scrabble card waits for its entry's phonetics before the
   // scramble runs; the exact-id fetch (the only path to an LLM entry) must fire
-  // before reveal, so it is gated on this too — not just on showTabs.
-  const currentScrabbleCard = currentDueCard
-    ? (store.cards[l2Code] ?? {})[currentDueCard.id] ?? null
-    : null;
+  // before reveal, so it is gated on this too — not just on showTabs. The SRS
+  // state comes from the frozen session card, so this decision always agrees
+  // with `effectiveMode` (resolved from the same snapshot) — a background merge
+  // must not make the two disagree mid-card (SPEC-066 sync isolation).
+  const currentScrabbleSrs = dueCards[currentIndex]?.srs ?? null;
   const currentScrabbleSingleChar = Boolean(
     currentDueCard &&
-    currentScrabbleCard &&
-    resolveReviewMode(reviewMode, fsrs.getCardState(currentScrabbleCard), currentScrabbleCard.reps ?? 0) === 'scrabble' &&
+    currentScrabbleSrs &&
+    resolveReviewMode(reviewMode, fsrs.getCardState(currentScrabbleSrs), currentScrabbleSrs.reps ?? 0) === 'scrabble' &&
     scrabbleNeedsEntryFetch(
       reviewContextText(currentDueCard),
       currentDueCard,
@@ -730,11 +808,14 @@ export default function ReviewScreen() {
   ]);
 
   // ── Merge due cards with the reactive entry ──
-  const cards = useMemo(() => dueCards.map((word) => ({
+  // `dueCards` is the frozen session deck, so this memo (and the card subtree it
+  // renders) keeps its identity across background syncs; only the current
+  // card's entry is attached reactively (SPEC-066 sync isolation).
+  const cards = useMemo(() => dueCards.map(({ word, srs }) => ({
     word,
-    srs: (store.cards[l2Code] ?? {})[word.id] || fsrs.newCard(),
+    srs,
     entry: word.id === currentDueCard?.id ? currentEntry : null,
-  })), [dueCards, store, l2Code, currentDueCard?.id, currentEntry]);
+  })), [dueCards, currentDueCard?.id, currentEntry]);
 
   // Resolve the blanked surface for a card from its tokenized context. Used by
   // the spell/scrabble answer, box count, hint, and scrabble blocks so a
@@ -1443,6 +1524,15 @@ export default function ReviewScreen() {
     });
     updateCard(l2Code, card.word.id, updated, srsCardMeta);
 
+    // The learner advanced: re-derive the session deck from the live store so
+    // the rated card leaves the deck and anything background syncing brought in
+    // (newly minted new cards, a card whose learning step came due) takes over.
+    // This — with undo, an unsave of the current card, and a language change —
+    // is the ONLY path that may change the card on screen (SPEC-066 sync
+    // isolation). The store no longer drives the deck directly, so without this
+    // the rated card would stay on screen.
+    advanceDeck();
+
     if (wasLastCard) {
       log('[srs] complete', {
         wordId: card.word.id,
@@ -1470,13 +1560,10 @@ export default function ReviewScreen() {
     }
 
     // Brief pause so the user sees the settled card before buttons reappear.
-    // No index advancement needed — updateCard mutates the store, which
-    // recomputes dueCards with the rated card filtered out. The array
-    // shifts left, so currentIndex naturally points to the next card.
     setTimeout(() => {
       setRated(false);
     }, 600);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t, nextReviewLabelFor]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, nextReviewLabelFor, advanceDeck]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -1496,11 +1583,13 @@ export default function ReviewScreen() {
       setJustCompleted(false);
     }
 
-    // Reset currentIndex so the undone card reappears at the top
+    // Reset currentIndex so the undone card reappears at the top, and re-derive
+    // the session deck so it is actually in it again.
     setCurrentIndex(0);
+    advanceDeck();
     setRated(false);
     undoRef.current = null;
-  }, [l2Code, updateCard]);
+  }, [l2Code, updateCard, advanceDeck]);
 
   // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
   useEffect(() => {
@@ -1508,6 +1597,25 @@ export default function ReviewScreen() {
       setCurrentIndex(cards.length - 1);
     }
   }, [cards.length, currentIndex]);
+
+  // ── The displayed card's word is no longer saved → advance ──
+  // The session deck is frozen against background syncing, so the card can no
+  // longer change under the learner for any other reason. An unsave from another
+  // surface (saved-words list, dictionary popup, another device's pull) is still
+  // a genuine reason to move on: re-derive the session deck so the card drops
+  // out. The effect below then resets the test state for the new card.
+  useEffect(() => {
+    const currentId = cards[currentIndex]?.word.id;
+    if (!currentId) return;
+    if (l2SavedWords.some((w) => w.id === currentId)) return;
+    log('[srs] displayed card was unsaved — advancing the session deck', {
+      l2: l2Code,
+      wordId: currentId,
+      index: currentIndex,
+      totalCards: cards.length,
+    });
+    advanceDeck();
+  }, [cards, currentIndex, l2SavedWords, l2Code, advanceDeck]);
 
   // ── When card changes (rate/unsave), log the advance ──
   useEffect(() => {
@@ -1787,7 +1895,11 @@ export default function ReviewScreen() {
     undoRef.current = null;
     lastCardInfoRef.current = null;
     deckLoggedKeyRef.current = null;
-  }, [l2Code]);
+    // The new language pair has its own deck: drop the previous snapshot and
+    // re-derive it from the new language's live deck.
+    setSessionDeck([]);
+    advanceDeck();
+  }, [l2Code, advanceDeck]);
 
   // ── Anki-style card counts (new / again / review) ──
   const langCardsForCounts = store.cards[l2Code] ?? {};
@@ -1886,7 +1998,15 @@ export default function ReviewScreen() {
     };
   }, [windowHeight]);
 
-  const isLoading = !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded || initializing || (user && (!savedWordsCloudHydrated || !srsCloudHydrated));
+  // `initializing` (the auto-init loop minting today's new cards) only gates
+  // the loading state while there is NOTHING to show. It used to gate
+  // unconditionally, so a background sync action that minted a card — or the
+  // pull-merge that re-created one (SPEC-066 sync isolation) — replaced the
+  // whole review surface with a spinner and unmounted the card the learner was
+  // answering. New cards join the session deck when the learner advances.
+  const isLoading = !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded
+    || (initializing && cards.length === 0)
+    || Boolean(user && (!savedWordsCloudHydrated || !srsCloudHydrated));
 
   // ── Log the loaded review deck once per language ──
   useEffect(() => {
