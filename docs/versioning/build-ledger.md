@@ -83,6 +83,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 64 | cb1a3618 | 2026-10-01 | — | dev 41 (Debug; deleted; lp-dev-41-ios-device-cb1a3618e1d6.zip; 701a965cc793cc4091e580f245574b92036c82a6336e9916afd96f422f7fc596) — broken: crashed at launch, `dyld: Library not loaded: @rpath/React.framework/React` |
 | 65 | f2a134e1 | 2026-10-01 | — | dev 42 (Debug; active; lp-dev-42-ios-device-f2a134e1ff99.zip; 5d6120a94189fd2e26f33d171e4a0ef17c24a5ea75daf483b6a453ab158cbccd) |
 | 66 | 1af62494 | 2026-10-01 | 3.7.2 — iOS TestFlight (b27, consumed) | — |
+| 67 | c44aafd2 | 2026-10-06 | 3.7.3 — iOS TestFlight (b28, consumed) | — |
 
 ## Preserved working builds (deleted 2026-08-29)
 
