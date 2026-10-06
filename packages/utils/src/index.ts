@@ -257,6 +257,16 @@ export {
 } from './ai-follow-ups';
 export type { AiFollowUpPreset, ReaderAiContent } from './ai-follow-ups';
 export {
+  serializeExamplesTurn,
+  buildAiChatHistory,
+  buildFreeFormPrompt,
+} from './ai-chat-history';
+export type {
+  AiVideoExampleData,
+  AiChatHistoryMessage,
+  AiChatHistoryTurn,
+} from './ai-chat-history';
+export {
   parseAiQuotes,
   splitAiQuotes,
   normalizeQuoteBlocks,
