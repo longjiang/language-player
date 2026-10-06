@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Receipt validation failed. Please contact support.",
         "recognizing_text": "Recognizing text…",
         "redirecting_to_language_selection": "Redirecting you to language selection...",
+        "regenerate_removed_turns": "{n, plural, one {Regenerating removed # later reply, so the conversation continues from here.} other {Regenerating removed # later replies, so the conversation continues from here.}}",
         "remove_admin_confirm": "Remove this user's administrator access? They will no longer be able to sign in to the admin console.",
         "remove_subscription_confirm": "Remove this subscription? This action cannot be undone.",
         "renewal_failed_contact_support": "Renewal failed. Please contact customer support.",

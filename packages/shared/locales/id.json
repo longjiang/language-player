@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Validasi tanda terima gagal. Silakan hubungi dukungan.",
         "recognizing_text": "Mengenali teks…",
         "redirecting_to_language_selection": "Mengalihkan Anda ke pemilihan bahasa...",
+        "regenerate_removed_turns": "{n, plural, other {Regenerasi menghapus # balasan berikutnya, percakapan dilanjutkan dari sini.}}",
         "remove_admin_confirm": "Hapus akses admin pengguna ini? Mereka tidak akan bisa lagi masuk ke konsol admin.",
         "remove_subscription_confirm": "Hapus langganan ini? Tindakan ini tidak dapat dibatalkan.",
         "renewal_failed_contact_support": "Pembaruan gagal. Silakan hubungi dukungan pelanggan.",

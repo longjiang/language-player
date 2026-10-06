@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "La validation du reçu a échoué. Veuillez contacter le support.",
         "recognizing_text": "Reconnaissance du texte…",
         "redirecting_to_language_selection": "Redirection vers la sélection de la langue...",
+        "regenerate_removed_turns": "{n, plural, one {La régénération a supprimé # réponse ultérieure, la conversation reprend à partir d'ici.} other {La régénération a supprimé # réponses ultérieures, la conversation reprend à partir d'ici.}}",
         "remove_admin_confirm": "Retirer les droits d'administrateur de cet utilisateur ? Il ne pourra plus se connecter à la console d'administration.",
         "remove_subscription_confirm": "Supprimer cet abonnement ? Cette action est irréversible.",
         "renewal_failed_contact_support": "Le renouvellement a échoué. Veuillez contacter le support client.",

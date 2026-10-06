@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "レシートの検証に失敗しました。サポートにお問い合わせください。",
         "recognizing_text": "テキストを認識しています…",
         "redirecting_to_language_selection": "言語選択へ移動しています...",
+        "regenerate_removed_turns": "{n, plural, other {再生成により以降の返信 # 件が削除され、会話はここから続きます。}}",
         "remove_admin_confirm": "このユーザーの管理者権限を削除しますか？管理者コンソールにログインできなくなります。",
         "remove_subscription_confirm": "このサブスクリプションを削除しますか？この操作は元に戻せません。",
         "renewal_failed_contact_support": "更新に失敗しました。カスタマーサポートにお問い合わせください。",

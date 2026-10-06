@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Weryfikacja paragonu nie powiodła się. Skontaktuj się z pomocą techniczną.",
         "recognizing_text": "Rozpoznawanie tekstu…",
         "redirecting_to_language_selection": "Przekierowujemy cię do wyboru języka...",
+        "regenerate_removed_turns": "{n, plural, one {Ponowne wygenerowanie usunęło # późniejszą odpowiedź, rozmowa jest kontynuowana od tego miejsca.} few {Ponowne wygenerowanie usunęło # późniejsze odpowiedzi, rozmowa jest kontynuowana od tego miejsca.} many {Ponowne wygenerowanie usunęło # późniejszych odpowiedzi, rozmowa jest kontynuowana od tego miejsca.} other {Ponowne wygenerowanie usunęło # późniejszych odpowiedzi, rozmowa jest kontynuowana od tego miejsca.}}",
         "remove_admin_confirm": "Usunąć temu użytkownikowi dostęp administratorski? Nie będzie już mógł logować się do konsoli administracyjnej.",
         "remove_subscription_confirm": "Usunąć tę subskrypcję? Tej czynności nie można cofnąć.",
         "renewal_failed_contact_support": "Odnowienie nie powiodło się. Prosimy o kontakt z obsługą klienta.",
