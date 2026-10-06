@@ -440,8 +440,8 @@ export default function ReviewPage() {
     pruneOrphans(l2Code, savedWordIds, { allowWholeDeckPurge: false });
   }, [srsLoaded, wordsLoaded, status, cloudHydrated, srsCloudHydrated, l2SavedWords, l2Code, pruneOrphans, reconcileOrphans, getPendingPutWordIds]);
 
-  // ── Compute due cards ──
-  const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
+  // ── Compute the live due deck ──
+  const liveDueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const activeNewCardIds = new Set(
@@ -465,6 +465,74 @@ export default function ReviewPage() {
         srs: langCards[sw.id] || fsrs.newCard(),
       }));
   }, [l2SavedWords, store, l2Code, newCardLimit]);
+
+  // ── Session deck — syncing must never disturb the card on screen ──
+  // The deck the learner walks is a SNAPSHOT of the live deck, not a live
+  // derivation. Background syncing keeps changing the live deck — a saved-word
+  // pull, an SRS card merge, orphan reconciliation, and the new-card mint loop
+  // all call setState in the stores below this page — and every one of those
+  // used to rebuild the deck array, which moved `cards[currentIndex]` to a
+  // different card and remounted the card (and its half-finished test) under
+  // the learner. Instead the snapshot is re-derived from the live deck only when
+  // the learner advances:
+  //   • a rating (`advanceDeck()` in handleRate) or an undo (handleUndo);
+  //   • the displayed card's word is no longer saved (the unsave effect below);
+  //   • the language pair changes;
+  //   • the session deck was empty and cards appeared (first hydration, or new
+  //     cards becoming due after the all-done state) — the day's first new card
+  //     still starts a session, it just cannot interrupt one in progress.
+  // The header counts stay live on purpose: Anki-style counts are progress
+  // information, the card is the learner's working state.
+  const [deckGen, setDeckGen] = useState(0);
+  const [adoptedDeckGen, setAdoptedDeckGen] = useState(-1);
+  const [sessionDeck, setSessionDeck] = useState<Omit<ReviewCard, 'entry'>[]>([]);
+  const advanceDeck = useCallback(() => setDeckGen((gen) => gen + 1), []);
+  const deckIsStale = adoptedDeckGen !== deckGen;
+  const deckIsEmptyButLive = sessionDeck.length === 0 && liveDueCards.length > 0;
+  const deckAdopted = deckIsStale || deckIsEmptyButLive;
+  // Adopt the live deck in-render when it is stale, so an advance shows the next
+  // card in the same commit (never a flash of the rated card); other renders
+  // walk the frozen snapshot.
+  const dueCards = deckAdopted ? liveDueCards : sessionDeck;
+  useEffect(() => {
+    if (!deckAdopted) return;
+    setSessionDeck(liveDueCards);
+    setAdoptedDeckGen(deckGen);
+  }, [deckAdopted, deckGen, liveDueCards]);
+
+  // Diagnostic (SPEC-066 sync isolation): what the session walks vs what the
+  // live store holds. `adopted` is the only moment a background change may
+  // enter the session deck; while a card is on screen the two are expected to
+  // diverge (the live deck may hold cards the learner has not advanced to yet).
+  useEffect(() => {
+    log('[SRS] session deck', {
+      l2: l2Code,
+      gen: deckGen,
+      adopted: deckAdopted,
+      session: { count: dueCards.length, first: dueCards[0]?.word.id ?? null },
+      live: { count: liveDueCards.length, first: liveDueCards[0]?.word.id ?? null },
+      currentIndex,
+    });
+  }, [deckGen, deckAdopted, dueCards, liveDueCards, l2Code, currentIndex]);
+
+  // Diagnostic: a live deck whose card at the current index differs from the
+  // card the session is walking IS the reported bug's input — the session must
+  // hold it. Adoption renders are excluded: those are deliberate advances.
+  useEffect(() => {
+    if (deckAdopted) return;
+    const shownCardId = dueCards[currentIndex]?.word.id ?? null;
+    const liveCardId = liveDueCards[currentIndex]?.word.id ?? null;
+    if (shownCardId && liveCardId !== shownCardId) {
+      log('[SRS] session deck held through a background deck change', {
+        l2: l2Code,
+        index: currentIndex,
+        shownCardId,
+        liveCardId,
+        shownCards: dueCards.length,
+        liveCards: liveDueCards.length,
+      });
+    }
+  }, [deckAdopted, dueCards, liveDueCards, currentIndex, l2Code]);
 
   // ── Pre-fetch dictionary entries for all due cards ──
   // This ensures entries are in the cache before the user reveals a card,
@@ -623,6 +691,14 @@ export default function ReviewPage() {
 
     updateCard(l2Code, card.word.id, updated, srsCardMeta);
 
+    // The learner advanced: re-derive the session deck from the live store so
+    // the rated card leaves the deck and anything background syncing brought in
+    // (newly minted new cards, a card whose learning step came due) takes over.
+    // This — with undo, an unsave of the current card, and a language change —
+    // is the ONLY path that may change the card on screen (SPEC-066 sync
+    // isolation).
+    advanceDeck();
+
     if (wasLastCard) {
       setJustCompleted(true);
     }
@@ -630,7 +706,7 @@ export default function ReviewPage() {
     setTimeout(() => {
       setRated(false);
     }, 400);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t, nextReviewLabelFor]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, nextReviewLabelFor, advanceDeck]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -649,13 +725,15 @@ export default function ReviewPage() {
       setJustCompleted(false);
     }
 
-    // Reset currentIndex so the undone card reappears at the top
+    // Reset currentIndex so the undone card reappears at the top, and re-derive
+    // the session deck so it is actually in it again.
     setCurrentIndex(0);
+    advanceDeck();
     undoRef.current = null;
 
     // No toast here — the undo action within the rating toast is
     // feedback enough, and a second toast would be redundant.
-  }, [l2Code, updateCard]);
+  }, [l2Code, updateCard, advanceDeck]);
 
   /**
    * Load (from the shared cache) or generate one test slot for the current
@@ -1151,38 +1229,54 @@ export default function ReviewPage() {
     }
   }, [cards.length, currentIndex]);
 
-  // ── When card changes without a rating (e.g. unsave), reset to front ──
+  // ── When the displayed card's word is no longer saved, advance ──
+  // The session deck is frozen against background syncing, so the card can no
+  // longer change under the learner for any other reason. An unsave from
+  // another surface (saved-words list, dictionary popup, another device's pull)
+  // is still a genuine reason to move on: drop it from the session deck and
+  // reset the test to the front.
   useEffect(() => {
     const card = cards[currentIndex];
     const currentId = card?.word.id ?? null;
-    if (currentId && currentId !== lastCardIdRef.current) {
-      // The first card is not a change. The auto-loader effect runs before
-      // this effect on the initial render, so invalidating here would discard
-      // the first request and leave its spinner stuck on a stale response.
-      if (lastCardIdRef.current === null) {
-        lastCardIdRef.current = currentId;
-        return;
-      }
+    if (!currentId) return;
+    // The first card is not a change. The auto-loader effect runs before this
+    // effect on the initial render, so invalidating here would discard the
+    // first request and leave its spinner stuck on a stale response.
+    if (lastCardIdRef.current === null) {
       lastCardIdRef.current = currentId;
-      if (!rated) {
-        testRequestVersionRef.current += 1;
-        setShowDefinition(false);
-        setTestSlots([]);
-        setTestAnswers([]);
-        setTestQuestionIndex(0);
-        setTestStartedAt(null);
-        setTestSelectedAnswer(null);
-        setTestAnswerCorrect(null);
-        setTestScores([]);
-        setSuggestedRating(null);
-        setRegeneratingKind(null);
-        setSpellText('');
-        setSpellArrange(0);
-        setSpellSubmitted(false);
-        setSpellResult(null);
-      }
+      return;
     }
-  }, [cards, currentIndex, showDefinition, rated]);
+    const stillSaved = l2SavedWords.some((sw) => sw.id === currentId);
+    if (currentId === lastCardIdRef.current && stillSaved) return;
+    lastCardIdRef.current = currentId;
+    if (!stillSaved) {
+      log('[SRS] displayed card was unsaved — advancing the session deck', {
+        l2: l2Code,
+        wordId: currentId,
+        index: currentIndex,
+        remaining: cards.length - 1,
+      });
+      // Re-derive the session deck: the live deck no longer contains this card.
+      advanceDeck();
+    }
+    if (!rated) {
+      testRequestVersionRef.current += 1;
+      setShowDefinition(false);
+      setTestSlots([]);
+      setTestAnswers([]);
+      setTestQuestionIndex(0);
+      setTestStartedAt(null);
+      setTestSelectedAnswer(null);
+      setTestAnswerCorrect(null);
+      setTestScores([]);
+      setSuggestedRating(null);
+      setRegeneratingKind(null);
+      setSpellText('');
+      setSpellArrange(0);
+      setSpellSubmitted(false);
+      setSpellResult(null);
+    }
+  }, [cards, currentIndex, rated, l2SavedWords, l2Code, advanceDeck]);
 
   // ── Reset justCompleted when new cards become due ──
   useEffect(() => {
@@ -1197,7 +1291,11 @@ export default function ReviewPage() {
   useEffect(() => {
     setJustCompleted(false);
     setCurrentIndex(0);
-  }, [l2Code]);
+    // The new language pair has its own deck: drop the previous snapshot and
+    // re-derive it from the new language's live deck.
+    setSessionDeck([]);
+    advanceDeck();
+  }, [l2Code, advanceDeck]);
 
   // ── Keyboard shortcuts (after reveal: rate with 1-4, Space/Enter = Good) ──
   // Keys map to the four rating buttons, but respect the enabled state: in
@@ -1699,7 +1797,15 @@ export default function ReviewPage() {
   // For authenticated users, wait for the row-API hydration to finish
   // (even when the account is genuinely empty) so we don't flash a false
   // "no cards to review" state while the cloud store is still loading.
-  const isLoading = status === 'loading' || !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded || initializing
+  //
+  // `initializing` (the auto-init loop minting today's new cards) only gates
+  // the loading state while there is NOTHING to show. It used to gate
+  // unconditionally, so a background sync that minted a card — or the mobile
+  // pull-merge that re-created one — replaced the whole review surface with a
+  // spinner and unmounted the card the learner was answering (SPEC-066 sync
+  // isolation). New cards join the session deck when the learner advances.
+  const isLoading = status === 'loading' || !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded
+    || (initializing && cards.length === 0)
     || (status === 'authenticated' && (!cloudHydrated || !srsCloudHydrated));
 
   if (isLoading) {
