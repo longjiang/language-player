@@ -8,6 +8,7 @@ import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity, subscribeEntityConfirmed, subscribeSrsCapRejection } from '@/lib/sync-engine';
 import { getEntityCache, listOutbox, upsertEntityCache } from '@/lib/sync-db';
+import { reconcileLocalSrsCards } from '@/lib/srs-reconcile';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { getConnectivity } from '@/lib/connectivity';
 
@@ -104,23 +105,21 @@ export function useSrs() {
         for (const [lang, cacheCards] of Object.entries(cardStates)) {
           mergedCards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cacheCards);
         }
-        // Reconcile stale local-only cards (bugfix): keep a card if the server
-        // deck has it, there is unsynced local work, or the server confirmed a
-        // push for it this session. Skip languages whose server deck we haven't
-        // loaded, so we never drop legitimate offline cards before hydration.
+        // Reconcile stale local-only cards: keep a card if the server deck has
+        // it, there is unsynced local work, or the server confirmed a push for
+        // it this session. Languages whose server deck we haven't loaded are
+        // skipped, so we never drop legitimate offline cards before hydration.
+        // (Pure rule + rationale: lib/srs-reconcile.ts.)
         let droppedCount = 0;
         for (const [lang, langCards] of Object.entries(mergedCards)) {
-          const serverLang = serverDeck[lang];
-          if (!serverLang) continue;
-          const cleaned: Record<string, SrsFields> = {};
-          for (const [id, card] of Object.entries(langCards)) {
-            const key = `${lang}::${id}`;
-            const onServer = !!serverLang[id];
-            const localWork = outboxKeys.has(key);
-            if (onServer || localWork || confirmed.has(key)) cleaned[id] = card;
-            else droppedCount++;
-          }
-          mergedCards[lang] = cleaned;
+          const result = reconcileLocalSrsCards(lang, {
+            localCards: langCards,
+            serverCards: serverDeck[lang],
+            outboxKeys,
+            confirmedKeys: confirmed,
+          });
+          mergedCards[lang] = result.cards;
+          droppedCount += result.dropped.length;
         }
         if (droppedCount > 0) {
           log(`[srs] pull merge dropped ${droppedCount} server-absent local card(s) — no pending op, no session confirmation`);
