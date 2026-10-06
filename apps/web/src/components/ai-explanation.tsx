@@ -35,6 +35,9 @@ import {
   buildAiExamplesPayload,
   buildAiExamplesPrompt,
   parseAiExamplesResponse,
+  buildAiChatHistory,
+  buildFreeFormPrompt,
+  type AiVideoExampleData,
 } from '@langplayer/utils';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import {
@@ -48,13 +51,9 @@ import {
   Trash2,
 } from 'lucide-react';
 
-/** One AI-selected video example: the search result (for the chip) plus the
- *  LLM's explanation of the word's usage in that line. */
-interface AiVideoExampleData {
-  video: SubsSearchVideo;
-  explanation: string;
-}
-
+/** The chat transcript entry. `examples` carries the LLM's video-example picks
+ *  (`AiVideoExampleData`, shared with mobile via `@langplayer/utils` so the
+ *  history serializes identically on both platforms — SPEC-035). */
 interface ChatMessage {
   id: number;
   role: 'user' | 'assistant';
@@ -148,52 +147,6 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
     .map((f) => f.trim())
     .filter(Boolean)
     .find((f) => lower.includes(f.toLowerCase()));
-}
-
-/**
- * Serialize an "Examples from Videos" reply into a plain assistant turn so it
- * can be carried in the multi-turn history. That turn has no streamed `.text`
- * (it renders as a pattern header plus example chips), so without this the
- * history would silently skip it and leave two consecutive user turns.
- */
-function serializeExamplesTurn(message: ChatMessage): string {
-  if (!message.examples || message.examples.length === 0) return message.text;
-  const parts: string[] = [];
-  if (message.text) parts.push(message.text);
-  if (message.pattern) {
-    parts.push(
-      message.pattern.pattern
-        ? `${message.pattern.heading} (${message.pattern.pattern})`
-        : message.pattern.heading,
-    );
-  }
-  for (const ex of message.examples) {
-    const line = ex.video.subs_l2[ex.video.matchLineIndex]?.line ?? '';
-    const title = ex.video.title ? `${ex.video.title}: ` : '';
-    parts.push(`- ${title}${line}${ex.explanation ? ` — ${ex.explanation}` : ''}`);
-  }
-  return parts.join('\n');
-}
-
-/**
- * Assemble a free-form turn's request. Shared by the send handler and by
- * regenerate (which rebuilds the request from the question the user typed, so
- * a reader/video turn is never re-issued against a stale copy of the surface).
- */
-function buildFreeFormPrompt(
-  question: string,
-  readerText: string,
-  quoteChips: boolean,
-  onTimestampPress?: (timeSeconds: number) => void,
-): string {
-  const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
-  const tsInstr = onTimestampPress ? `\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}` : '';
-  if (readerText) {
-    return `Here is the complete text to use as context when answering:\n\n${readerText}\n\nQuestion: ${question}${quoteInstr}${tsInstr}`;
-  }
-  if (quoteChips) return `${question}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
-  if (onTimestampPress) return `${question}\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}`;
-  return question;
 }
 
 /**
@@ -610,38 +563,17 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   }, [stream, buildPrompt, buildPresetPrompt, initialPreset, word, appendMessage, updateMessage]);
 
   // Reconstruct the prior conversation as {role, content} turns for the
-  // multi-turn endpoint. Every streamed assistant message stores the exact
-  // prompt that produced it (.prompt), so its user turn is reconstructed from
-  // that prompt; restored turns (whose prompt is not persisted) fall back to
-  // the bubble label/text, which still carries the question.
+  // multi-turn endpoint. The walk is shared with mobile (`buildAiChatHistory`
+  // in `@langplayer/utils`, SPEC-035) so the two apps cannot diverge — see that
+  // module for why "Examples from Videos" turns are serialized rather than
+  // skipped, and why restored turns fall back to the bubble label/text.
   //
-  // "Examples from Videos" turns ARE included: skipping them left the history
-  // with two consecutive user turns (the model saw a question with no reply
-  // before the next question) — i.e. the context was broken, not just
-  // incomplete. Their rendered content (pattern header + per-example
-  // explanations) has no streamed `.text`, so it is serialized into a short
-  // assistant turn instead.
-  //
-  // Still-empty in-flight placeholders are skipped. Takes the slice to walk
-  // explicitly so regenerate can rebuild the history of the turns that SURVIVE
-  // its truncation without waiting for a state commit.
-  const buildHistory = useCallback((list: ChatMessage[] = messages): StreamHistoryTurn[] => {
-    const turns: StreamHistoryTurn[] = [];
-    for (const m of list) {
-      if (m.role !== 'assistant') continue;
-      const isExamplesTurn = (m.examples?.length ?? 0) > 0;
-      const content = isExamplesTurn ? serializeExamplesTurn(m) : m.text;
-      // A still-empty placeholder has nothing to contribute (and an empty
-      // assistant turn is rejected by the API) — skip it entirely.
-      if (!content) continue;
-      // The user turn that opened this reply: the exact request that produced
-      // it when known, else the bubble label/text.
-      const ask = m.prompt || m.label;
-      if (ask) turns.push({ role: 'user', content: ask });
-      turns.push({ role: 'assistant', content });
-    }
-    return turns;
-  }, [messages]);
+  // Passed an explicit length so regenerate can rebuild the history of the
+  // turns that SURVIVE its truncation without waiting for a state commit.
+  const buildHistory = useCallback(
+    (count: number): StreamHistoryTurn[] => buildAiChatHistory(messages, count),
+    [messages],
+  );
 
   /**
    * The request to re-issue when a reply is regenerated.
@@ -681,7 +613,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // original prompt plus every earlier exchange, never a flat re-prompt. The
     // initial explanation stays a single-turn request (no history), exactly as
     // when it was first streamed.
-    const history = buildHistory(kept.slice(0, index));
+    const history = buildHistory(index);
     const prompt = buildRegeneratePrompt(target, messages[index - 1]);
     setMessages(kept.map((m) => (m.id === messageId ? { ...m, text: '', prompt } : m)));
     setStreamingId(messageId);
@@ -695,7 +627,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       promptRebuilt: prompt !== target.prompt,
     });
     stream(prompt, { regenerate: true, ...(history.length > 0 ? { messages: history } : {}) });
-  }, [stream, buildPrompt, buildHistory, word, messages]);
+  }, [stream, buildHistory, buildRegeneratePrompt, word, messages]);
 
   // Reader "Ask AI": stable config for rendering [[original||translation]]
   // quote chips inline. Memoized (not recreated per message/effect) so the
@@ -851,7 +783,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // Reuse the buildHistory computed before this follow-up's bubbles are
     // appended — it reconstructs the prior conversation (assistant replies
     // with their prompts), not the turn we're about to start.
-    const history = buildHistory();
+    const history = buildHistory(messages.length);
     askAiLogger.log('AI explain follow-up prompt', {
       labelKey: preset.labelKey,
       promptKey: preset.promptKey,
@@ -882,7 +814,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     const text = raw.trim();
     if (!text) return;
     setFreeFormText('');
-    const history = buildHistory();
+    const history = buildHistory(messages.length);
     // Reader "Ask AI": preload the full text/book as follow-up context so the
     // model grounds the answer in the whole surface, not just the prior turns.
     const contextText = readerContent?.text ?? '';
