@@ -86,6 +86,17 @@ export interface OutboxSnapshot {
 
 const statusListeners = new Set<(s: SyncStatusSnapshot) => void>();
 const entityListeners = new Map<string, Set<(entityId: string) => void>>();
+/**
+ * Rows the SERVER confirmed this session (a push ack that was not dropped).
+ * Separate from `entityListeners`, which the pull path fires for every applied
+ * change: subscribers that reconcile local state against an authoritative
+ * snapshot need "the server has this row" as a fact, not "a change arrived".
+ * `useSrs` uses it so a card minted this session is never treated as
+ * server-absent just because the snapshot it holds predates the ack (SPEC-066).
+ */
+const entityConfirmedListeners = new Set<
+  (entity: string, entityId: string) => void
+>();
 const srsCapListeners = new Set<(entityId: string) => void>();
 const remapListeners = new Set<
   (entity: string, tempId: string, serverId: string, l2Code?: string) => void
@@ -151,6 +162,10 @@ async function refreshPendingCount(): Promise<void> {
 
 function notifyEntity(entity: string, entityId: string): void {
   entityListeners.get(entity)?.forEach((cb) => cb(entityId));
+}
+
+function notifyEntityConfirmed(entity: string, entityId: string): void {
+  entityConfirmedListeners.forEach((cb) => cb(entity, entityId));
 }
 
 function notifyRemap(
@@ -356,6 +371,12 @@ async function pushOutbox(): Promise<number> {
           log(`[sync] push dropped ${row.entity}:${row.entity_id} idem=${row.idempotency_key} — no-op`);
         } else {
           log(`[sync] push ok ${row.entity}:${row.entity_id} idem=${row.idempotency_key}`);
+          // The server holds this row now. Told apart from the pull-path
+          // notification (which also fires for this device's own writes coming
+          // back through user_sync_log and says nothing about server presence).
+          if (row.op === 'upsert') {
+            notifyEntityConfirmed(row.entity, result.entity_id ?? row.entity_id);
+          }
         }
         acked.push(row.id);
         // Temp-ID remap for offline note creates (and any future temp-ID flow).
@@ -495,6 +516,20 @@ export function subscribeSrsCapRejection(
 ): () => void {
   srsCapListeners.add(cb);
   return () => srsCapListeners.delete(cb);
+}
+
+/**
+ * Subscribe to SERVER CONFIRMATIONS of pushed rows: `entity:entityId` was
+ * accepted (not dropped) by `/sync/push`, so the server holds it now. Unlike
+ * `subscribeEntity` — fired by the pull path for every applied change, including
+ * this device's own writes echoed back through `user_sync_log` — this is a fact
+ * about server presence, which is what reconciliation against a snapshot needs.
+ */
+export function subscribeEntityConfirmed(
+  cb: (entity: string, entityId: string) => void,
+): () => void {
+  entityConfirmedListeners.add(cb);
+  return () => entityConfirmedListeners.delete(cb);
 }
 
 export function subscribeRemap(

@@ -6,7 +6,7 @@ import { reconcileSrsCards, useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore, fsrs, mergeSrsCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { syncLogger } from '@/lib/logger';
-import { enqueueSyncOp, subscribeEntity, subscribeSrsCapRejection } from '@/lib/sync-engine';
+import { enqueueSyncOp, subscribeEntity, subscribeEntityConfirmed, subscribeSrsCapRejection } from '@/lib/sync-engine';
 import { getEntityCache, listOutbox, upsertEntityCache } from '@/lib/sync-db';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { getConnectivity } from '@/lib/connectivity';
@@ -41,6 +41,17 @@ export function useSrs() {
    *  hydration). Used by the pull-merge bridge to drop stale server-absent
    *  local cards. */
   const serverDeckRef = useRef<Record<string, Record<string, SrsFields>>>({});
+  /**
+   * `l2::wordId` keys the server has confirmed this session (an accepted,
+   * non-dropped `/sync/push` upsert). The reconcile below compares the local
+   * deck against `serverDeckRef`, which is a snapshot captured at hydration — a
+   * card minted after it (the review page's auto-init) is not in the snapshot
+   * but IS on the server, and treating it as server-absent dropped it from the
+   * local deck on the very next sync action. The review page's auto-init then
+   * re-minted it, so the deck churned on every sync (and the re-minted "new"
+   * card could overwrite the real server row). SPEC-066.
+   */
+  const serverConfirmedRef = useRef(new Set<string>());
 
   /**
    * Pull-merge bridge: apply remote SRS changes from another device by merging
@@ -54,6 +65,13 @@ export function useSrs() {
    * server (so web, which is server-authoritative, doesn't show them) and have
    * no pending op, so nothing is waiting to push them. Keeping them inflates the
    * mobile deck vs web. Drop them here so the two decks converge after hydration.
+   *
+   * A card the server confirmed THIS SESSION (`serverConfirmedRef`) is kept as
+   * well, even though the hydration snapshot predates it. Without that third
+   * keep-condition, every sync action dropped the cards the review page had just
+   * minted (their op was already acked, so no outbox row was left) and the
+   * auto-init re-minted them on the next render — a deck that churned on every
+   * sync action (SPEC-066 sync isolation).
    */
   const refreshFromCache = useCallback(async () => {
     try {
@@ -80,25 +98,32 @@ export function useSrs() {
         };
       }
       const serverDeck = serverDeckRef.current;
+      const confirmed = serverConfirmedRef.current;
       setStore((prev) => {
         const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
         for (const [lang, cacheCards] of Object.entries(cardStates)) {
           mergedCards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cacheCards);
         }
-        // Reconcile stale local-only cards (bugfix): keep a card only if the
-        // server has it or there is unsynced local work. Skip languages whose
-        // server deck we haven't loaded, so we never drop legitimate offline
-        // cards before cloud hydration.
+        // Reconcile stale local-only cards (bugfix): keep a card if the server
+        // deck has it, there is unsynced local work, or the server confirmed a
+        // push for it this session. Skip languages whose server deck we haven't
+        // loaded, so we never drop legitimate offline cards before hydration.
+        let droppedCount = 0;
         for (const [lang, langCards] of Object.entries(mergedCards)) {
           const serverLang = serverDeck[lang];
           if (!serverLang) continue;
           const cleaned: Record<string, SrsFields> = {};
           for (const [id, card] of Object.entries(langCards)) {
+            const key = `${lang}::${id}`;
             const onServer = !!serverLang[id];
-            const localWork = outboxKeys.has(`${lang}::${id}`);
-            if (onServer || localWork) cleaned[id] = card;
+            const localWork = outboxKeys.has(key);
+            if (onServer || localWork || confirmed.has(key)) cleaned[id] = card;
+            else droppedCount++;
           }
           mergedCards[lang] = cleaned;
+        }
+        if (droppedCount > 0) {
+          log(`[srs] pull merge dropped ${droppedCount} server-absent local card(s) — no pending op, no session confirmation`);
         }
         for (const entityId of deletedIds) {
           const sep = entityId.indexOf('::');
@@ -141,7 +166,10 @@ export function useSrs() {
         if (cancelled) return;
         const cloud = { cards: res.cards ?? {} };
         // Capture the authoritative server deck for pull-merge reconciliation.
+        // The snapshot now contains every card confirmed so far, so the
+        // session-confirmation set has nothing left to add for those.
         serverDeckRef.current = cloud.cards;
+        serverConfirmedRef.current.clear();
         setStore((prev) => {
           const cards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
           for (const [lang, cloudCards] of Object.entries(cloud.cards)) {
@@ -183,6 +211,10 @@ export function useSrs() {
       cloudLoadedUserId.current = null;
       setCloudHydrated(false);
       setStore(createSrsStore());
+      // The previous user's authoritative deck and confirmations must not leak
+      // into the next user's reconcile.
+      serverDeckRef.current = {};
+      serverConfirmedRef.current.clear();
     }
   }, [user?.id, loading]);
 
@@ -357,6 +389,19 @@ export function useSrs() {
       unsubCard();
     };
   }, [refreshFromCache]);
+
+  // ── Server confirmations: remember which cards the server actually holds ──
+  // The pull path notifies for this device's OWN acked writes too (they come
+  // back through `user_sync_log`), which is why `refreshFromCache` used to drop
+  // cards the server had just accepted: the snapshot it reconciles against was
+  // captured at hydration and predates them. Track the acks instead.
+  useEffect(() => {
+    return subscribeEntityConfirmed((entity, entityId) => {
+      if (entity !== 'srs_card') return;
+      serverConfirmedRef.current.add(entityId);
+      log(`[srs] server confirmed card ${entityId}`);
+    });
+  }, []);
 
   return {
     store,
