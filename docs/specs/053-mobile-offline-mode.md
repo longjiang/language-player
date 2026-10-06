@@ -576,6 +576,13 @@ subject to `updated_at` timestamp ties.
   for notes, exponential retries capped at 5 (then `error` status), and
   triggers: connectivity regained, app foreground, mutation debounce
   (1.5 s), periodic retry (30 s), and manual "Sync now".
+  - Two subscription channels: `subscribeEntity(entity, cb)` fires for every
+    change the PRECEDING pull applies — including this device's own acked
+    writes, which come back through `user_sync_log` — and
+    `subscribeEntityConfirmed(entity, entityId)` fires only for an accepted
+    (non-dropped) `/sync/push` upsert, i.e. "the server holds this row now".
+    Consumers that reconcile local state against a snapshot captured at
+    hydration need the second one (SPEC-066 sync isolation, 2026-10-06).
 - `lib/connectivity.ts` — NetInfo auto-detection (debounced ~1.5 s offline,
   immediate online) with the existing API health probe as fallback. The
   manual Offline Mode toggle remains a separate persisted override;
