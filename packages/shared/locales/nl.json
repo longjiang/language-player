@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Betalingsbewijsvalidatie mislukt. Neem contact op met de ondersteuning.",
         "recognizing_text": "Tekst wordt herkend…",
         "redirecting_to_language_selection": "We sturen je door naar de taalkeuze...",
+        "regenerate_removed_turns": "{n, plural, one {Opnieuw genereren heeft # later antwoord verwijderd, het gesprek gaat hier verder.} other {Opnieuw genereren heeft # latere antwoorden verwijderd, het gesprek gaat hier verder.}}",
         "remove_admin_confirm": "Beheerdersrechten van deze gebruiker intrekken? Hij kan dan niet meer inloggen op de beheerdersconsole.",
         "remove_subscription_confirm": "Dit abonnement verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
         "renewal_failed_contact_support": "Verlenging mislukt. Neem contact op met de klantenondersteuning.",

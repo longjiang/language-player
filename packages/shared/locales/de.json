@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Quittungsvalidierung fehlgeschlagen. Bitte kontaktieren Sie den Support.",
         "recognizing_text": "Text wird erkannt…",
         "redirecting_to_language_selection": "Wir leiten dich zur Sprachauswahl weiter...",
+        "regenerate_removed_turns": "{n, plural, one {Durch die Neugenerierung wurde # spätere Antwort entfernt, die Unterhaltung wird hier fortgesetzt.} other {Durch die Neugenerierung wurden # spätere Antworten entfernt, die Unterhaltung wird hier fortgesetzt.}}",
         "remove_admin_confirm": "Diesem Benutzer die Admin-Rechte entziehen? Er kann sich dann nicht mehr an der Admin-Konsole anmelden.",
         "remove_subscription_confirm": "Dieses Abonnement entfernen? Diese Aktion kann nicht rückgängig gemacht werden.",
         "renewal_failed_contact_support": "Erneuerung fehlgeschlagen. Bitte kontaktieren Sie den Kundensupport.",

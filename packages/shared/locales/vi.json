@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Xác thực biên lai thất bại. Vui lòng liên hệ hỗ trợ.",
         "recognizing_text": "Đang nhận dạng văn bản…",
         "redirecting_to_language_selection": "Đang chuyển bạn đến trang chọn ngôn ngữ...",
+        "regenerate_removed_turns": "{n, plural, other {Tạo lại đã xóa # phản hồi phía sau, cuộc trò chuyện tiếp tục từ đây.}}",
         "remove_admin_confirm": "Gỡ quyền quản trị của người dùng này? Họ sẽ không thể đăng nhập vào bảng điều khiển quản trị nữa.",
         "remove_subscription_confirm": "Xóa đăng ký này? Hành động này không thể hoàn tác.",
         "renewal_failed_contact_support": "Gia hạn thất bại. Vui lòng liên hệ bộ phận hỗ trợ khách hàng.",

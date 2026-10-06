@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "A validação do recibo falhou. Entre em contato com o suporte.",
         "recognizing_text": "Reconhecendo o texto…",
         "redirecting_to_language_selection": "A redirecionar para a seleção de idioma...",
+        "regenerate_removed_turns": "{n, plural, one {A regeneração removeu # resposta posterior, a conversa continua a partir daqui.} other {A regeneração removeu # respostas posteriores, a conversa continua a partir daqui.}}",
         "remove_admin_confirm": "Remover o acesso de administrador deste usuário? Ele não poderá mais entrar no console de administração.",
         "remove_subscription_confirm": "Remover esta assinatura? Esta ação não pode ser desfeita.",
         "renewal_failed_contact_support": "A renovação falhou. Por favor, contate o suporte ao cliente.",

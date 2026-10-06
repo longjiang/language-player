@@ -1111,6 +1111,7 @@
         "receipt_validation_failed": "Makbuz doğrulaması başarısız oldu. Lütfen destekle iletişime geçin.",
         "recognizing_text": "Metin tanınıyor…",
         "redirecting_to_language_selection": "Dil seçimine yönlendiriliyorsunuz...",
+        "regenerate_removed_turns": "{n, plural, one {Yeniden oluşturma sonraki # yanıtı kaldırdı, sohbet buradan devam ediyor.} other {Yeniden oluşturma sonraki # yanıtı kaldırdı, sohbet buradan devam ediyor.}}",
         "remove_admin_confirm": "Bu kullanıcının yönetici erişimini kaldırmak istiyor musunuz? Artık yönetici konsoluna giriş yapamayacaklar.",
         "remove_subscription_confirm": "Bu abonelik kaldırılsın mı? Bu işlem geri alınamaz.",
         "renewal_failed_contact_support": "Yenileme başarısız oldu. Lütfen müşteri desteğiyle iletişime geçin.",
