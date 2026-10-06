@@ -46,6 +46,16 @@ interface ChatMessage {
   /** True while the "Examples from Videos" follow-up is fetching/analyzing
    *  (non-streaming request — shows a spinner in the assistant bubble). */
   loading?: boolean;
+  /** `presetKey()` of the one-tap preset that opened this turn (user bubble).
+   *  The used-once-per-transcript state is DERIVED from the live transcript by
+   *  scanning for these, so removing a turn (regenerate truncates every turn
+   *  after the regenerated one) automatically frees its preset button again. */
+  presetKey?: string;
+  /** User bubble only, free-form turns: the preloaded reader/video context that
+   *  accompanies the question. Stored so regenerate can rebuild `prompt` from
+   *  the question the user actually typed instead of reusing one stale request
+   *  string. */
+  contextPrompt?: string;
 }
 
 // ── Subs-search helpers (mirror SubsSearchResults.tsx) ──
@@ -119,6 +129,52 @@ interface AiExplanationProps {
  * follow-up input, and optional configurable one-tap preset buttons.
  */
 /**
+ * Serialize an "Examples from Videos" reply into a plain assistant turn so it
+ * can be carried in the multi-turn history. That turn has no streamed `.text`
+ * (it renders as a pattern header plus example chips), so without this the
+ * history would silently skip it and leave two consecutive user turns.
+ */
+function serializeExamplesTurn(message: ChatMessage): string {
+  if (!message.examples || message.examples.length === 0) return message.text;
+  const parts: string[] = [];
+  if (message.text) parts.push(message.text);
+  if (message.pattern) {
+    parts.push(
+      message.pattern.pattern
+        ? `${message.pattern.heading} (${message.pattern.pattern})`
+        : message.pattern.heading,
+    );
+  }
+  for (const ex of message.examples) {
+    const line = ex.video.subs_l2[ex.video.matchLineIndex]?.line ?? '';
+    const title = ex.video.title ? `${ex.video.title}: ` : '';
+    parts.push(`- ${title}${line}${ex.explanation ? ` — ${ex.explanation}` : ''}`);
+  }
+  return parts.join('\n');
+}
+
+/**
+ * Assemble a free-form turn's request. Shared by the send handler and by
+ * regenerate (which rebuilds the request from the question the user typed, so
+ * a reader/video turn is never re-issued against a stale copy of the surface).
+ */
+function buildFreeFormPrompt(
+  question: string,
+  readerText: string,
+  quoteChips: boolean,
+  onTimestampPress?: (timeSeconds: number) => void,
+): string {
+  const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
+  const tsInstr = onTimestampPress ? `\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}` : '';
+  if (readerText) {
+    return `Here is the complete text to use as context when answering:\n\n${readerText}\n\nQuestion: ${question}${quoteInstr}${tsInstr}`;
+  }
+  if (quoteChips) return `${question}\n\n${READER_AI_QUOTE_INSTRUCTION}`;
+  if (onTimestampPress) return `${question}\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}`;
+  return question;
+}
+
+/**
  * Persisted Ask-AI chat transcript shape (subset of `ChatMessage` sufficient to
  * rebuild a session — `examples` and transient fields are dropped).
  */
@@ -127,6 +183,7 @@ interface PersistedAiMessage {
   text: string;
   label?: string;
   prompt?: string;
+  presetKey?: string;
 }
 
 async function loadPersistedMessages(storageKey: string): Promise<PersistedAiMessage[]> {
@@ -205,8 +262,18 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const [showAi, setShowAi] = useState(demandMode);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingId, setStreamingId] = useState<number | null>(null);
-  const [usedFollowUps, setUsedFollowUps] = useState<Set<string>>(new Set());
   const [freeFormText, setFreeFormText] = useState('');
+  /** Presets already spent in the LIVE transcript. Derived (not accumulated in
+   *  state) so that regenerating a turn — which drops every turn after it —
+   *  automatically makes the presets those dropped turns consumed available
+   *  again, instead of leaving permanently dead buttons. */
+  const usedPresetKeys = useMemo(
+    () => new Set(messages.map((m) => m.presetKey).filter((k): k is string => !!k)),
+    [messages],
+  );
+  /** How many turns the last regenerate removed from the end of the
+   *  transcript. Surfaced as a one-line notice so the drop is not silent. */
+  const [droppedByRegenerate, setDroppedByRegenerate] = useState(0);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   /** True once the persisted transcript for the current `storageKey` has been
    *  loaded (or determined to be empty). The save effect skips persisting
@@ -247,11 +314,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         text: m.text,
         label: m.label,
         prompt: m.prompt,
+        presetKey: m.presetKey,
       }));
       messageIdRef.current = restored.length;
       setMessages(restored);
       setStreamingId(null);
-      setUsedFollowUps(new Set());
+      setDroppedByRegenerate(0);
       reset();
       setRestoreComplete(true);
       askAiLogger.log('session restore: restored messages into state', {
@@ -301,7 +369,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const handleClear = useCallback(() => {
     setMessages([]);
     setStreamingId(null);
-    setUsedFollowUps(new Set());
+    setDroppedByRegenerate(0);
     setFreeFormText('');
     setRestoreComplete(true);
     askAiLogger.log('session clear: user cleared the chat', { storageKey });
@@ -437,14 +505,33 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   // Reconstruct the prior conversation as {role, content} turns for the
   // multi-turn endpoint. Every streamed assistant message stores the exact
   // prompt that produced it (.prompt), so its user turn is reconstructed from
-  // that prompt. "Examples from Videos" turns (no streaming prompt) and any
-  // still-empty in-flight placeholder are skipped.
-  const buildHistory = useCallback((): StreamHistoryTurn[] => {
+  // that prompt; restored turns (whose prompt is not persisted) fall back to
+  // the bubble label/text, which still carries the question.
+  //
+  // "Examples from Videos" turns ARE included: skipping them left the history
+  // with two consecutive user turns (the model saw a question with no reply
+  // before the next question) — i.e. the context was broken, not just
+  // incomplete. Their rendered content (pattern header + per-example
+  // explanations) has no streamed `.text`, so it is serialized into a short
+  // assistant turn instead.
+  //
+  // Still-empty in-flight placeholders are skipped. Takes the slice to walk
+  // explicitly so regenerate can rebuild the history of the turns that SURVIVE
+  // its truncation without waiting for a state commit.
+  const buildHistory = useCallback((list: ChatMessage[] = messages): StreamHistoryTurn[] => {
     const turns: StreamHistoryTurn[] = [];
-    for (const m of messages) {
-      if (m.role !== 'assistant' || m.examples || !m.text) continue;
-      if (m.prompt) turns.push({ role: 'user', content: m.prompt });
-      turns.push({ role: 'assistant', content: m.text });
+    for (const m of list) {
+      if (m.role !== 'assistant') continue;
+      const isExamplesTurn = (m.examples?.length ?? 0) > 0;
+      const content = isExamplesTurn ? serializeExamplesTurn(m) : m.text;
+      // A still-empty placeholder has nothing to contribute (and an empty
+      // assistant turn is rejected by the API) — skip it entirely.
+      if (!content) continue;
+      // The user turn that opened this reply: the exact request that produced
+      // it when known, else the bubble label/text.
+      const ask = m.prompt || m.label;
+      if (ask) turns.push({ role: 'user', content: ask });
+      turns.push({ role: 'assistant', content });
     }
     return turns;
   }, [messages]);
@@ -459,13 +546,59 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     startStream(initialPreset ? buildPresetPrompt(initialPreset) : buildPrompt());
   }, [startStream, buildPrompt, buildPresetPrompt, initialPreset]);
 
+  /**
+   * The request to re-issue when a reply is regenerated.
+   *
+   * The assistant bubble's stored `.prompt` is already the exact request, with
+   * one exception: a free-form turn in the reader/video surfaces wraps the
+   * user's typed question in a large preloaded-content preamble. Reusing that
+   * frozen string would re-issue a stale copy of the surface; rebuilding it
+   * around the question the user actually typed keeps the regenerated turn
+   * grounded in the CURRENT content. Falls back to the word-explain prompt for
+   * the initial explanation.
+   */
+  const buildRegeneratePrompt = useCallback(
+    (target: ChatMessage, preceding: ChatMessage | undefined): string => {
+      const question = preceding?.role === 'user' ? preceding.text : '';
+      if (question && preceding?.contextPrompt !== undefined) {
+        return buildFreeFormPrompt(question, preceding.contextPrompt, quoteChips, onTimestampPress);
+      }
+      return target.prompt ?? buildPrompt();
+    },
+    [buildPrompt, quoteChips, onTimestampPress],
+  );
+
+  /**
+   * Regenerate a reply: drop every turn after it, then re-stream it with the
+   * surviving conversation as context. History is rewritten rather than
+   * appended, so the transcript always describes exactly one live branch —
+   * leaving later replies would strand answers that no longer follow from
+   * their context.
+   */
   const handleRegenerate = useCallback((messageId: number) => {
-    const target = messages.find((m) => m.id === messageId);
-    if (!target) return;
-    updateMessage(messageId, { text: '', prompt: target.prompt ?? buildPrompt() });
+    const index = messages.findIndex((m) => m.id === messageId);
+    const target = messages[index];
+    if (index < 0 || !target) return;
+    const kept = messages.slice(0, index + 1);
+    // The prior turns that survive are the regenerated turn's grounding — the
+    // original prompt plus every earlier exchange, never a flat re-prompt. The
+    // initial explanation stays a single-turn request (no history), exactly as
+    // when it was first streamed.
+    const history = buildHistory(kept.slice(0, index));
+    const prompt = buildRegeneratePrompt(target, messages[index - 1]);
+    setMessages(kept.map((m) => (m.id === messageId ? { ...m, text: '', prompt } : m)));
     setStreamingId(messageId);
-    void stream(target.prompt ?? buildPrompt(), { regenerate: true });
-  }, [messages, updateMessage, buildPrompt, stream]);
+    const dropped = messages.length - kept.length;
+    setDroppedByRegenerate(dropped);
+    log('AI explain stream start (regenerate)', {
+      word,
+      messageId,
+      dropped,
+      history: history.length,
+      promptRebuilt: prompt !== target.prompt,
+    });
+    void stream(prompt, { regenerate: true, ...(history.length > 0 ? { messages: history } : {}) });
+  }, [messages, buildPrompt, buildHistory, buildRegeneratePrompt, word, stream]);
 
   // ── "Examples from Videos" follow-up (web parity) ──
   // 1. Search subtitles (limit 50) for the word being explained.
@@ -510,8 +643,8 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     [l2Lang.code],
   );
 
-  const handleExamplesFollowUp = useCallback(async () => {
-    appendMessage({ role: 'user', text: '', label: t('title.examples_from_videos') });
+  const handleExamplesFollowUp = useCallback(async (presetKeyValue: string) => {
+    appendMessage({ role: 'user', text: '', label: t('title.examples_from_videos'), presetKey: presetKeyValue });
     const aiId = appendMessage({ role: 'assistant', text: '', loading: true });
     log('AI examples follow-up start', { word });
     try {
@@ -597,14 +730,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   }, [word, contextForm, contextText, searchTerms, t, appendMessage, updateMessage, fetchSubsSearch]);
 
   const handleFollowUp = useCallback((preset: AiFollowUpPreset) => {
-    // Mark used once-per-transcript for every preset kind (incl. examples).
-    setUsedFollowUps((prev) => {
-      const next = new Set(prev);
-      next.add(presetKey(preset));
-      return next;
-    });
+    // Preset buttons are used-once-per-transcript. The used set is DERIVED from
+    // the transcript (see `usedPresetKeys`), so tagging the user bubble is all
+    // that's needed — and a turn dropped by regenerate frees its button again.
+    const key = presetKey(preset);
     if (preset.kind === 'examples') {
-      void handleExamplesFollowUp();
+      void handleExamplesFollowUp(key);
       return;
     }
     const prompt = buildPresetPrompt(preset);
@@ -626,6 +757,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
       role: 'user',
       text: '',
       label: t(preset.labelKey),
+      presetKey: key,
     });
     startStream(prompt, { messages: history });
   }, [appendMessage, startStream, buildPresetPrompt, t, handleExamplesFollowUp, buildHistory]);
@@ -638,15 +770,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     // Reader "Ask AI": preload the full text/book as follow-up context so the
     // model grounds the answer in the whole surface, not just the prior turns.
     const contextText = readerContent?.text ?? '';
-    const quoteInstr = quoteChips ? `\n\n${READER_AI_QUOTE_INSTRUCTION}` : '';
-    const tsInstr = onTimestampPress ? `\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}` : '';
-    const prompt = contextText
-      ? `Here is the complete text to use as context when answering:\n\n${contextText}\n\nQuestion: ${text}${quoteInstr}${tsInstr}`
-      : quoteChips
-        ? `${text}\n\n${READER_AI_QUOTE_INSTRUCTION}`
-        : onTimestampPress
-          ? `${text}\n\n${VIDEO_AI_TIMESTAMP_INSTRUCTION}`
-          : text;
+    const prompt = buildFreeFormPrompt(text, contextText, quoteChips, onTimestampPress);
     askAiLogger.log('AI explain free-form prompt', {
       questionChars: text.length,
       readerTextChars: contextText.length,
@@ -657,7 +781,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     });
     // Send the typed message as the new user turn; the prior conversation
     // (reconstructed above) grounds it in the word/context already discussed.
-    appendMessage({ role: 'user', text, label: text, prompt });
+    // `contextPrompt` holds the non-question part so regenerate can rebuild the
+    // request around the question the user actually typed.
+    appendMessage({ role: 'user', text, label: text, prompt, contextPrompt: contextText });
     startStream(prompt, { messages: history });
   }, [startStream, appendMessage, buildHistory, quoteChips, readerContent, onTimestampPress]);
 
@@ -907,6 +1033,14 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           ) : null}
         </View>
 
+        {droppedByRegenerate > 0 ? (
+          <View className="mb-2 rounded-md border border-border bg-muted/60 px-3 py-2">
+            <Text className="text-xs text-muted-foreground">
+              {t('msg.regenerate_removed_turns', { n: droppedByRegenerate })}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Chat transcript — explicit per-message margins (mb-3) so the gap
             between a user follow-up bubble and the AI response that follows
             is always visible, independent of container space-y support. */}
@@ -1008,10 +1142,10 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           <ErrorNotice message={localizedError(t, error)} className="mt-2" />
         )}
 
-        {followUpPresets.filter((p) => !usedFollowUps.has(presetKey(p))).length > 0 && (
+        {followUpPresets.filter((p) => !usedPresetKeys.has(presetKey(p))).length > 0 && (
           <View className="mt-3 flex-row flex-wrap justify-end gap-2">
             {followUpPresets
-              .filter((p) => !usedFollowUps.has(presetKey(p)))
+              .filter((p) => !usedPresetKeys.has(presetKey(p)))
               .map((p) => (
                 <Pressable
                   key={presetKey(p)}
