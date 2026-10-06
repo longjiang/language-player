@@ -511,10 +511,13 @@ snapshot**:
   including a sync — could inject it); and a card whose SRS state a concurrent
   device rewrote is still rated from the state on screen, so last-write-wins
   applies as usual when the rating is pushed.
-- **Diagnostics:** both pages log `[SRS] session deck` (session vs live count and
-  first card at every adoption) and `[SRS] session deck held through a
-  background deck change` (a live deck whose current-index card differs from the
-  one being walked — the input this behavior exists for).
+- **Diagnostics:** both pages log one `[SRS] session deck` line per session/live
+  deck **shape change** (session and live count/first/current card, generation,
+  adoption, `held`) — not on every store update, because a background sync that
+  leaves the shape identical is the expected case. `held: true` is the reported
+  bug's input: the live deck's card at the current index differs from the one
+  being walked and the session kept it (grep `'[SRS] session deck'` together
+  with `'"held": true'`).
 
 ### Card front
 
@@ -1960,7 +1963,9 @@ with the per-card SRS state snapshotted too, and `initializing` gating the
 loading state only when there is nothing to show. Mobile's sync engine emits a
 server-confirmation event for accepted upserts and `useSrs` keeps those cards
 (see [Storage & sync](#storage--sync)), so the deck no longer churns at all.
-Both pages log the session-vs-live deck and any held-through background change.
+Both pages log a single `[SRS] session deck` line per deck-shape change, with
+`held: true` when the session kept the card on screen through a background deck
+change.
 
 ## Stale Related Docs
 

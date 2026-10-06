@@ -500,39 +500,35 @@ export default function ReviewPage() {
     setAdoptedDeckGen(deckGen);
   }, [deckAdopted, deckGen, liveDueCards]);
 
-  // Diagnostic (SPEC-066 sync isolation): what the session walks vs what the
-  // live store holds. `adopted` is the only moment a background change may
-  // enter the session deck; while a card is on screen the two are expected to
-  // diverge (the live deck may hold cards the learner has not advanced to yet).
+  // Diagnostic (SPEC-066 sync isolation): the session-vs-live deck shape, logged
+  // only when it CHANGES. A background sync that leaves the shape identical —
+  // the common case, and the point of the isolation — must not emit a line; the
+  // effect still runs on every store update so a change that matters is caught.
+  // `held: true` marks the reported bug's input: the live deck's card at the
+  // current index differs from the one being walked and the session kept it.
+  const lastDeckLogRef = useRef('');
   useEffect(() => {
+    const shownCardId = dueCards[currentIndex]?.word.id ?? null;
+    const liveCardId = liveDueCards[currentIndex]?.word.id ?? null;
+    const shape = [
+      deckGen,
+      deckAdopted ? 'adopt' : 'hold',
+      dueCards.length, dueCards[0]?.word.id ?? '-',
+      liveDueCards.length, liveDueCards[0]?.word.id ?? '-',
+      currentIndex, shownCardId ?? '-', liveCardId ?? '-',
+    ].join('|');
+    if (shape === lastDeckLogRef.current) return;
+    lastDeckLogRef.current = shape;
     log('[SRS] session deck', {
       l2: l2Code,
       gen: deckGen,
       adopted: deckAdopted,
-      session: { count: dueCards.length, first: dueCards[0]?.word.id ?? null },
-      live: { count: liveDueCards.length, first: liveDueCards[0]?.word.id ?? null },
+      held: !deckAdopted && !!shownCardId && liveCardId !== shownCardId,
+      session: { count: dueCards.length, first: dueCards[0]?.word.id ?? null, current: shownCardId },
+      live: { count: liveDueCards.length, first: liveDueCards[0]?.word.id ?? null, current: liveCardId },
       currentIndex,
     });
-  }, [deckGen, deckAdopted, dueCards, liveDueCards, l2Code, currentIndex]);
-
-  // Diagnostic: a live deck whose card at the current index differs from the
-  // card the session is walking IS the reported bug's input — the session must
-  // hold it. Adoption renders are excluded: those are deliberate advances.
-  useEffect(() => {
-    if (deckAdopted) return;
-    const shownCardId = dueCards[currentIndex]?.word.id ?? null;
-    const liveCardId = liveDueCards[currentIndex]?.word.id ?? null;
-    if (shownCardId && liveCardId !== shownCardId) {
-      log('[SRS] session deck held through a background deck change', {
-        l2: l2Code,
-        index: currentIndex,
-        shownCardId,
-        liveCardId,
-        shownCards: dueCards.length,
-        liveCards: liveDueCards.length,
-      });
-    }
-  }, [deckAdopted, dueCards, liveDueCards, currentIndex, l2Code]);
+  }, [deckGen, deckAdopted, dueCards, liveDueCards, currentIndex, l2Code]);
 
   // ── Pre-fetch dictionary entries for all due cards ──
   // This ensures entries are in the cache before the user reveals a card,
