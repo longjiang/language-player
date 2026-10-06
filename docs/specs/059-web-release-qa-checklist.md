@@ -142,8 +142,11 @@ comments go in brackets.
   interactive tokenized text, bookmark related words, corpus source shown
 - ⬜ Image search — Openverse grid with skeletons, query relaxation,
   compact strip in the popup dictionary
-- ⬜ AI Explain — Pro-gated; streams explanation, follow-up buttons
-  (inflection/morphemes/etymology/syntax/synonyms), copy
+- ⬜ AI Explain — Pro-gated; streams explanation, configurable follow-up buttons
+  (inflection/morphemes/etymology/syntax/synonyms + Examples from Videos),
+  free-form follow-up input, copy, and **regenerate** (removes every later
+  reply, re-streams that turn with the surviving conversation as context, and
+  shows how many replies were removed)
 - ⬜ Subs-search — show-all list with translations, target form highlighted
 - ⬜ Saved Words page — today/earlier groups, filter, entry cards with
   source/context/form, SRS status, export CSV, clear all (with confirm)
