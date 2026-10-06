@@ -12,7 +12,9 @@
   fragment (2026-09-10); spell/scrabble card fronts show the quick gloss after
   the blank and the entry's definitions under the translation (2026-09-10);
   the mobile spell answer row is pinned above the software keyboard instead of
-  sitting at the end of the card's scroll content (2026-09-17, ADR-0047)
+  sitting at the end of the card's scroll content (2026-09-17, ADR-0047);
+  the session deck is frozen against background syncing so a sync can no longer
+  swap or remount the card being answered (2026-10-06)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -326,7 +328,11 @@ described in [Intended SRS Algorithm](#intended-srs-algorithm).
 
 The 60-second re-queue means a failed card leaves the current queue with
 `nextReview = now + 60s`. It is technically due again a minute later; the UI
-recomputes the queue on the next store change (rating, removal) or page reload.
+recomputes the session deck when the learner **advances** (rating, undo, the
+displayed card's word being unsaved, a language change) or on page reload — not
+on an arbitrary store change, because a background sync must never swap the card
+on screen (see [Session deck
+isolation](#session-deck-isolation--syncing-never-disturbs-the-card-on-screen)).
 
 ### Deck construction
 
@@ -418,18 +424,34 @@ today" message.
 - `useSubscription()` — `isPro` for the free cap.
 - `useOfflineDictionaryAvailable()` / `getOfflineEntryById()` — offline
   dictionary resolution.
-- **Pull-merge reconciliation (2026-08-30):** `useSrs.refreshFromCache()`
-  merges offline `entity_cache` rows back into the deck so another device's
-  changes apply on load, but it now keeps an `srs_card` row only if the
-  authoritative `GET /srs` deck contains the card **or** a pending/error outbox
-  op exists for it (unsynced local work). Rows that are neither — stale
-  local-only cards never persisted to the server and with nothing queued to push
-  them — are dropped. This stops mobile from retaining server-absent cards that
-  web (server-authoritative) never shows, so the new/again/review header counts
-  converge between platforms after hydration. The server deck is captured during
-  row-API hydration and the reconcile re-runs right after it; it's skipped
-  per-language until that language's server deck has loaded, so legitimate
-  offline cards are never dropped before cloud hydration.
+- **Pull-merge reconciliation (2026-08-30; session-confirmation keep added
+  2026-10-06):** `useSrs.refreshFromCache()` merges offline `entity_cache` rows
+  back into the deck so another device's changes apply on load, but it now keeps
+  an `srs_card` row only if the authoritative `GET /srs` deck contains the card
+  **or** a pending/error outbox op exists for it (unsynced local work) **or** the
+  server confirmed a push for it this session. Rows that are none of the three —
+  stale local-only cards never persisted to the server and with nothing queued to
+  push them — are dropped (and logged). This stops mobile from retaining
+  server-absent cards that web (server-authoritative) never shows, so the
+  new/again/review header counts converge between platforms after hydration. The
+  server deck is captured during row-API hydration and the reconcile re-runs right
+  after it; it's skipped per-language until that language's server deck has
+  loaded, so legitimate offline cards are never dropped before cloud hydration.
+  - **Why the third keep-condition (2026-10-06):** the sync engine runs
+    pull → merge → push, and `POST /sync/push` appends every applied op to
+    `user_sync_log`, so **this device's own acked writes come back on its own
+    pull** and fire `notifyEntity('srs_card')` → `refreshFromCache()`. The deck
+    the reconcile compares against is the hydration snapshot, which predates any
+    card minted later in the session — and that card's outbox row is already gone
+    once the push is acked, so both original keep-conditions were false and the
+    card was dropped from local state on the next sync action. The review page's
+    auto-init then re-minted it (a fresh `newCard()` with a newer `lastReview`,
+    which could overwrite the real server row), so the deck churned on every
+    sync. `pushOutbox` now emits an accepted (non-dropped) upsert through
+    `subscribeEntityConfirmed(entity, entityId)` — server presence as a fact,
+    distinct from the pull path's "a change arrived" event — and `useSrs` keeps
+    those cards. The set is cleared when a fresh server deck is captured and when
+    the authenticated user changes.
 
 ## Intended Page Behavior (both platforms)
 
@@ -451,6 +473,48 @@ today" message.
   hydration finished).
 - Cards are served oldest-due-first, with a small reveal delay so the previous
   card settles before the next appears.
+
+### Session deck isolation — syncing never disturbs the card on screen
+
+Review is a foreground, stateful task: the learner may be mid-question, with a
+generated test, a typed answer, or an arranged scrabble word on screen.
+Everything that can change the deck in the background — a saved-word pull, an
+SRS card merge from another device, orphan reconciliation, and the auto-init
+loop minting today's new cards — must therefore never touch the card already
+shown. Implemented on both platforms (2026-10-06) as a **session deck
+snapshot**:
+
+- The deck the session walks (`dueCards` / `cards`) is a snapshot of the live
+  deck, not a live derivation. The live deck still updates continuously from the
+  stores, and with it the blue/red/green header counts (progress information is
+  live on purpose).
+- The snapshot is re-derived from the live deck **only when the learner
+  advances**:
+  - a rating (`advanceDeck()` in `handleRate`) or an undo (`handleUndo`);
+  - the displayed card's word is no longer saved (an unsave from another
+    surface) — the card drops out and the test resets to the front;
+  - the language pair changes;
+  - the session deck was **empty** and cards appeared (first hydration, or new
+    cards becoming due after the all-done state). The day's first new card still
+    starts a session — it just cannot interrupt one in progress.
+- Each snapshot entry carries the card's **SRS state** as well as its word:
+  mixed mode resolves the test from `reps`/`state`, so a background merge that
+  rewrote a card mid-test would otherwise swap the test out from under the
+  learner. The rating is applied to the state the learner actually saw.
+- `initializing` (the auto-init loop minting cards) gates the loading state only
+  while there is **nothing to show**. It used to gate unconditionally, so a
+  background sync that minted a card replaced the whole review surface with a
+  spinner and unmounted the card.
+- **Consequences (accepted):** a learning/relearning card that becomes due
+  *during* a card is served at the next advance rather than instantly (Anki
+  behaves the same way between reviews per card; previously any store change —
+  including a sync — could inject it); and a card whose SRS state a concurrent
+  device rewrote is still rated from the state on screen, so last-write-wins
+  applies as usual when the rating is pushed.
+- **Diagnostics:** both pages log `[SRS] session deck` (session vs live count and
+  first card at every adoption) and `[SRS] session deck held through a
+  background deck change` (a live deck whose current-index card differs from the
+  one being walked — the input this behavior exists for).
 
 ### Card front
 
@@ -1349,7 +1413,7 @@ orphaned.
 | 15 | Language code | `baseCode(l2.code)` for SRS/saved-word keys | Raw `l2Lang.code` | No practical difference today (L2 codes are already base codes) |
 | 16 | Unused/dead code | Cleaned up in Phase 6 (`fetchingEntries`, `handleSpeak`, unused imports removed) | `removeWord` intentionally unused: unsaving happens from saved-words/dictionary surfaces, not Review (2026-08-11) | Intended — no delete control on the card; orphan pruning removes the card (disparity 4) |
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
-| 18 | Reconcile local-only cards | `useSrs` dropped local-only cards against the server deck (2026-09-07) | `refreshFromCache()` does the same | **Resolved (2026-09-07)** — web now reconciles stale server-absent local cards against the authoritative deck, matching the mobile pull-merge reconcile, so the new/again/review header counts converge across devices/browsers |
+| 18 | Reconcile local-only cards | `useSrs` dropped local-only cards against the server deck (2026-09-07) | `refreshFromCache()` does the same, plus a session-confirmation keep (2026-10-06) | **Resolved (2026-09-07)** — web now reconciles stale server-absent local cards against the authoritative deck, matching the mobile pull-merge reconcile, so the new/again/review header counts converge across devices/browsers. Mobile additionally keeps cards whose push the server confirmed this session, because its reconcile re-runs on every pull (including this device's own acked writes echoed back through `user_sync_log`) while its snapshot is captured once at hydration |
 | 19 | Offline test generation | LLM only; a failed generation shows the error box with Retry/Skip | Programmatic fallback: pronunciation confounders from offline-dictionary readings, definition confounders from similar saved words' first definitions | Mobile-only by design (offline-first client); web is online-only (disparity 7) |
 | 19 | Scrabble keyboard-fill | Hidden `<input>`, reliable on any desktop keyboard | Hidden `TextInput` with `showSoftInputOnFocus={false}`; relies on hardware-keyboard support, whose availability/behaviour varies by device & OS | Both gate on `supportsScrabbleKeyboard` and use a hidden focused field that never summons the soft keyboard/IME; mobile is best-effort for physical keyboards (on-screen touch blocks remain the primary input there). Web's rate/reveal/undo shortcuts ignore this field's keystrokes. |
 | 20 | Scrabble tap/drag layer | Pointer events with pointer capture + a 5px drag threshold | `react-native-gesture-handler` `Exclusive(Pan(8px), Tap())` per tile, composed with the card's native scroll gesture | **Resolved (2026-09-15)** — the mobile tiles previously used `PanResponder`, which iOS cannot shield from the card's `ScrollView`: taps never reached a tile and a drag scrolled the card. Mobile now uses native recognizers and blocks the card's scroll gesture. |
@@ -1865,6 +1929,38 @@ in ADR-0040:
 5. **`removeCardFromStorage` left ghost cards in mounted hook stores** —
    unsave paths now dispatch `lp:srs-card-removed`; `useSrs` listens and
    drops the card, so the persist effect can't resurrect it.
+
+### Background syncing remounted the card being answered (2026-10-06)
+
+Reported on both apps: while saved words or review cards synced, the deck
+updated on every sync action and the whole card was remounted, so the learner
+lost the test in progress. Two independent causes:
+
+1. **The card on screen was derived live from the stores.** Every sync-driven
+   `setState` rebuilt the deck array, which moved `cards[currentIndex]` to a
+   different card and remounted it (and its half-finished test/arrangement);
+   `initializing` — set whenever the auto-init loop minted a card — additionally
+   replaced the whole review surface with a spinner. On mobile the effect was
+   guaranteed on every sync action: the engine's pull path fires
+   `notifyEntity` for **this device's own acked writes** (they come back through
+   `user_sync_log`), and both SRS (`refreshFromCache`) and saved words
+   (`applyCache`) subscribe to it.
+2. **Mobile's reconcile dropped cards the server had just accepted.** The deck
+   it reconciles against is captured once at `GET /srs` hydration; a card minted
+   later in the session is absent from that snapshot, and once its push is acked
+   its outbox row is gone — so both keep-conditions failed, the card was dropped
+   from local state, and the auto-init re-minted it (a fresh `newCard()` with a
+   newer `lastReview`, which could also overwrite the real server row). That loop
+   ran once per sync action.
+
+✅ **Fixed (2026-10-06):** both review pages now walk a **session deck snapshot**
+re-derived only when the learner advances (see [Session deck
+isolation](#session-deck-isolation--syncing-never-disturbs-the-card-on-screen)),
+with the per-card SRS state snapshotted too, and `initializing` gating the
+loading state only when there is nothing to show. Mobile's sync engine emits a
+server-confirmation event for accepted upserts and `useSrs` keeps those cards
+(see [Storage & sync](#storage--sync)), so the deck no longer churns at all.
+Both pages log the session-vs-live deck and any held-through background change.
 
 ## Stale Related Docs
 
