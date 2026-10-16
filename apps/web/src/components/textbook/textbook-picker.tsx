@@ -29,8 +29,16 @@ export function TextbookPicker({ l1, l2 }: { l1: string; l2: string }) {
     // Counted from the local state itself rather than loading the book: the picker
     // renders before any task is opened, and a book's content is a lazy chunk.
     const next: Record<string, ProgressSummary> = {};
+    // A throwing `localStorage` (a hardened browser, a full quota) must not
+    // break the picker: it just shows no progress instead.
+    let keys: string[] = [];
+    try {
+      keys = Object.keys(window.localStorage);
+    } catch {
+      keys = [];
+    }
     for (const entry of books) {
-      const states = Object.keys(window.localStorage)
+      const states = keys
         .filter((key) => key.startsWith(`${TEXTBOOK_STORAGE_PREFIX}${entry.id}.`))
         .map((key) => loadPersistedTask(key.slice(TEXTBOOK_STORAGE_PREFIX.length)));
       next[entry.id] = summarizeProgress(states, entry.taskCount);

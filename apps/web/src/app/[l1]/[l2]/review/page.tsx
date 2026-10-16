@@ -216,7 +216,14 @@ export default function ReviewPage() {
   const [showDefinition, setShowDefinition] = useState(false);
   const [reviewMode, setReviewMode] = useState<ReviewMode>(() => {
     if (typeof window === 'undefined') return 'mixed';
-    const stored = window.localStorage.getItem('lp:srs-review-mode');
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem('lp:srs-review-mode');
+    } catch {
+      // A throwing `localStorage` used to break the whole render: fall back to
+      // the default mode instead.
+      return 'mixed';
+    }
     // Migrate the pre-rename 'test' value to 'choose'.
     if (stored === 'test' || stored === 'choose') return 'choose';
     if (stored === 'scrabble') return 'scrabble';
@@ -237,7 +244,11 @@ export default function ReviewPage() {
   const changeReviewMode = useCallback((mode: ReviewMode) => {
     testRequestVersionRef.current += 1;
     setReviewMode(mode);
-    window.localStorage.setItem('lp:srs-review-mode', mode);
+    try {
+      window.localStorage.setItem('lp:srs-review-mode', mode);
+    } catch {
+      // Preference only — the mode still applies for this session.
+    }
     setTestSlots([]);
     setTestAnswers([]);
     setTestStartedAt(null);
