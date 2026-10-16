@@ -36,12 +36,15 @@ const SEARCH_INDEX_VERSION = 3;
 const LEGACY_KEY = 'current';
 
 /**
- * Small-value metadata mirror. It lives in its OWN database (not a new object
- * store on `lp-epub-store`) on purpose: bumping that database's version would
- * make an old tab's open connection block the upgrade and hang every read
- * (see `openDB`'s `onblocked` handler). The values copied here are tiny
- * (a file name, a data-URL cover, progress numbers), so they stay inline in
- * LevelDB and survive the blob-file deletion described above.
+ * Metadata mirror. It lives in its OWN database (not a new object store on
+ * `lp-epub-store`) on purpose: bumping that database's version would make an
+ * old tab's open connection block the upgrade and hang every read (see
+ * `openDB`'s `onblocked` handler).
+ *
+ * It holds two rows per book — `meta:<id>` with the essential (tiny) metadata
+ * and `cover:<id>` with the cover data URL, which is large enough to become an
+ * external blob file of its own. Keeping them apart is what lets a deleted blob
+ * file cost a cover instead of the book's name (see the key helpers below).
  */
 const META_DB_NAME = 'lp-epub-meta';
 const META_STORE_NAME = 'epub-meta';
