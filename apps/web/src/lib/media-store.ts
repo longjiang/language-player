@@ -11,7 +11,7 @@
  * reused directly. Otherwise, the user is prompted to re-select the file.
  */
 
-import { logwarn } from '@/lib/logger';
+import { logwarn, logerr } from '@/lib/logger';
 
 const DB_NAME = 'lp-media-store';
 const DB_VERSION = 1;
@@ -23,8 +23,21 @@ function openDB(): Promise<IDBDatabase> {
     req.onupgradeneeded = () => {
       req.result.createObjectStore(STORE_NAME);
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      // Never hold a connection that blocks another tab's upgrade.
+      db.onversionchange = () => db.close();
+      resolve(db);
+    };
     req.onerror = () => reject(req.error);
+    // Another tab holding an older version open would otherwise leave this
+    // request pending forever: the restore effect that awaits it would never
+    // settle, and its `catch` could not fire (a promise that never settles
+    // cannot be caught) — the page would sit on its loading spinner.
+    req.onblocked = () => {
+      logerr(`📼 media store: IndexedDB open blocked by another tab`); // non-info-level: real error, no stack of its own
+      reject(new DOMException('IndexedDB open blocked by another tab', 'BlockedError'));
+    };
   });
 }
 
