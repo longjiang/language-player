@@ -22,8 +22,9 @@ Chrome 132+ reports this as `NotReadableError`; 130/131 used `NotFoundError`
 with the message `Failed to read large IndexedDB value`. Chrome's documented
 guidance for such a record is to delete the entry, tell the user, and re-fetch
 the data — the record can never be read again. (Chromium's threshold for
-external blob storage is well below 1 MB: an ordinary 268 KB novel and a 394 KB
-book both produced a blob file in a reproduction.)
+external blob storage is well below 1 MB: in a reproduction, an ordinary 268 KB
+novel's binary, its search index, a 114 KB cover row and a synthetic 8 MB value
+each produced a blob file.)
 
 The bug (reported 2026-10-16): opening `/zh-Hans/ja/epub` with one such book
 showed **only a spinner, forever**, plus an uncaught rejection. The chain was:
@@ -55,6 +56,18 @@ showed **only a spinner, forever**, plus an uncaught rejection. The chain was:
      the upgrade, and a blocked `indexedDB.open` never settles (the same class of
      hang). The mirror is created at version 1 and never versioned against the
      library DB.
+   - **Two rows per book**, because a mirror row is only safe while it stays
+     small: `meta:<id>` holds the essential metadata (name, progress, location)
+     and `cover:<id>` holds the cover data URL. Measured on a real 268 KB novel,
+     the cover is 114,515 bytes of base64 — a combined row is written to an
+     external blob file (114,619 bytes on disk) and dies in exactly the cleanup
+     the mirror exists to survive, while the split `meta:` row is **431 bytes**
+     and stays inline in LevelDB. Losing the cover row costs a cover, never the
+     book's name; the essential row is written first, in its own transaction, so
+     a cover that fails to store cannot take it down.
+   - Mirror rows are read **one key at a time** (`getAllKeys()` then `get()`) so
+     a single unreadable row cannot abort the walk and hide the books after it;
+     cover rows are read only for books whose metadata row was found.
    - Mirror reads and writes are **best effort**: if the mirror is unavailable,
      the shelf falls back to reading the records (the pre-ADR behavior) and logs
      once on the error channel.
@@ -93,7 +106,10 @@ existing record as absent, so re-importing the file is a complete repair.
   up. Verified in headless Chromium by deleting the record's blob file from the
   profile exactly as a cleanup tool does.
 - Rendering the shelf no longer reads book binaries at all, so it is faster and
-  immune to the whole class of large-value read failures.
+  immune to the whole class of large-value read failures. The data loss does not
+  have to spare the mirror either: with a real book whose binary **and** cover
+  blob files were deleted, the shelf still showed the book by name and offered
+  the one-click recovery (verified).
 - A record that can never be read is distinguishable from a parse failure, a
   transient read error, and a missing record — in the UI and in the logs.
 - `openDB` can no longer hang on a version upgrade blocked by another tab.
@@ -103,7 +119,10 @@ existing record as absent, so re-importing the file is a complete repair.
 - Two databases to keep in sync. A mirror write that fails silently degrades to
   the old (record-reading) shelf behavior; the log line says so once per session.
 - The mirror duplicates metadata, so a book's metadata can outlive its binary
-  (that is the point) and a stale mirror row is only pruned when the shelf loads.
+  (that is the point) and stale mirror rows are only pruned when the shelf loads.
+- A mirrored cover is a second copy of the cover (up to ~150 KB per book) that
+  can be lost independently; a book whose cover row is gone shows the placeholder
+  icon rather than a broken image.
 - One more store to wipe for a "delete all local data" feature: `deleteEpub`
   removes the mirror row, so per-book removal is covered, but a bulk wipe must
   delete both databases.

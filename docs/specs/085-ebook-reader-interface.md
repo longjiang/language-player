@@ -567,7 +567,7 @@ even express "this file is gone".
 
 | Piece | Where |
 |---|---|
-| Classification + mirror + per-record listing | `lib/epub-store.ts` (`isUnreadableRecordError`, `unavailable`, `lp-epub-meta`) |
+| Classification + mirror (`meta:`/`cover:` rows) + per-record listing | `lib/epub-store.ts` (`isUnreadableRecordError`, `unavailable`, `lp-epub-meta`) |
 | `unreadable` badge map + `openFailureId` | `hooks/use-epub.ts` |
 | Recovery notice, error-before-spinner ordering, one-click Remove | `app/[l1]/[l2]/epub/page.tsx` |
 | Badged card + inline Remove | `components/reader/epub-bookshelf.tsx` |
@@ -590,5 +590,9 @@ profile and reloading `/[l1]/[l2]/epub`:
    <id> could not read the stored record (unreadable): NotReadableError: …`.
 2. Clicking Remove empties both `lp-epub-store` and `lp-epub-meta` and returns
    the shelf to its empty state.
-3. Regression: a real 268 KB EPUB imports, opens and resumes after a reload, and
-   a real PDF imports and opens in the PDF reader — with no recovery notice.
+3. Same again with a **real 268 KB EPUB** whose every blob file is deleted (the
+   binary *and* its 115 KB mirrored cover): the card still shows the real book
+   name `2016 村田沙耶香 - コンビニ人間` (from the 431-byte inline `meta:` row) with
+   the recovery notice, and the cover degrades to the placeholder icon.
+4. Regression: that same EPUB imports, opens and resumes after a reload, and a
+   real PDF imports and opens in the PDF reader — with no recovery notice.

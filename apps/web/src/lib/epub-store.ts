@@ -93,67 +93,155 @@ function openMetaDB(): Promise<IDBDatabase> {
 /** Throttle for mirror-failure logs (a broken mirror fails on every write). */
 let metaMirrorWarned = false;
 
-/** Best-effort metadata mirror read. Never rejects — returns an empty map. */
+/**
+ * Mirror row keys. The mirror holds TWO rows per book:
+ *
+ * - `meta:<id>` — the small, essential metadata (name, progress, last location).
+ *   Tiny enough to stay inline in LevelDB, so it survives the blob-file
+ *   deletion that makes large values unreadable.
+ * - `cover:<id>` — the cover data URL, which is **large** (a real 268 KB novel's
+ *   cover measured 114,515 bytes of base64 — enough to push a combined row into
+ *   an external blob file, defeating the whole point of the mirror). Keeping it
+ *   in its own row means losing it costs a cover, never the book's name.
+ */
+const META_PREFIX = 'meta:';
+const COVER_PREFIX = 'cover:';
+const metaKey = (id: string) => `${META_PREFIX}${id}`;
+const coverKey = (id: string) => `${COVER_PREFIX}${id}`;
+
+/** All keys of a small-value store. Keys never live in a blob file. */
+function keysOf(db: IDBDatabase, store: string): Promise<IDBValidKey[]> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAllKeys();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    tx.onabort = () => reject(tx.error ?? new Error('key listing aborted'));
+  });
+}
+
+/** Read one value. Rejects when that row cannot be read (isolated per row). */
+function valueOf(db: IDBDatabase, store: string, key: IDBValidKey): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => resolve(req.result ?? null);
+    req.onerror = () => reject(req.error);
+    tx.onabort = () => reject(tx.error ?? req.error ?? new Error('read aborted'));
+  });
+}
+
+/**
+ * Best-effort metadata mirror read. Never rejects.
+ *
+ * Keys are listed first and each row is read on its own, so one unreadable row
+ * (e.g. a cover whose blob file was deleted) costs only that row instead of
+ * aborting the walk and losing every book after it. Cover rows are read only
+ * for books whose metadata row was found, so an orphaned cover (a large value)
+ * is never read.
+ */
 async function readAllMeta(): Promise<Map<string, EpubMeta>> {
   const out = new Map<string, EpubMeta>();
   let db: IDBDatabase | null = null;
   try {
     db = await openMetaDB();
-    await new Promise<void>((resolve) => {
-      const tx = db!.transaction(META_STORE_NAME, 'readonly');
-      const req = tx.objectStore(META_STORE_NAME).openCursor();
-      req.onsuccess = () => {
-        const cursor = req.result;
-        if (!cursor) { resolve(); return; }
-        const value = cursor.value as EpubMeta | undefined;
-        if (value?.id) out.set(value.id, value);
-        cursor.continue();
-      };
-      // A mirror read failure is not fatal: the caller falls back to reading
-      // the book records (and to a name-less card for an unreadable one).
-      req.onerror = () => resolve();
-    });
-  } catch (err) {
-    if (!metaMirrorWarned) {
-      metaMirrorWarned = true;
-      epubStorageErr(`metadata mirror unavailable — shelf falls back to the book records: ${errText(err)}`);
+    const keys = (await keysOf(db, META_STORE_NAME)).map(String);
+    const coverKeys = keys.filter((k) => k.startsWith(COVER_PREFIX));
+    const metaKeys = keys.filter((k) => !k.startsWith(COVER_PREFIX));
+
+    for (const key of metaKeys) {
+      try {
+        const meta = (await valueOf(db, META_STORE_NAME, key)) as EpubMeta | null;
+        if (meta?.id) out.set(meta.id, meta);
+      } catch (err) {
+        // Not fatal: the caller falls back to reading that book's record.
+        warnMirrorOnce(`metadata mirror row "${key}" could not be read — falling back to the book records: ${errText(err)}`);
+      }
     }
+
+    for (const key of coverKeys) {
+      const id = key.slice(COVER_PREFIX.length);
+      if (!out.has(id)) continue;
+      try {
+        const row = (await valueOf(db, META_STORE_NAME, key)) as { coverUrl?: string } | null;
+        const meta = out.get(id);
+        if (row?.coverUrl && meta && !meta.coverUrl) meta.coverUrl = row.coverUrl;
+      } catch (err) {
+        warnMirrorOnce(`mirrored cover for ${id} could not be read (shelf shows a placeholder): ${errText(err)}`);
+      }
+    }
+  } catch (err) {
+    warnMirrorOnce(`metadata mirror unavailable — shelf falls back to the book records: ${errText(err)}`);
   } finally {
     db?.close();
   }
   return out;
 }
 
-/** Best-effort metadata mirror write (never rejects, never blocks a save). */
-async function writeMetaRow(meta: EpubMeta): Promise<void> {
-  let db: IDBDatabase | null = null;
+/** Log the first mirror problem of the session (one is enough to diagnose). */
+function warnMirrorOnce(message: string): void {
+  if (metaMirrorWarned) return;
+  metaMirrorWarned = true;
+  epubStorageErr(message);
+}
+
+/** Write one mirror row in its own transaction (best effort). */
+async function putMirrorRow(
+  db: IDBDatabase,
+  key: string,
+  value: unknown,
+  onError: (err: unknown) => void,
+): Promise<void> {
   try {
-    db = await openMetaDB();
     await new Promise<void>((resolve, reject) => {
-      const tx = db!.transaction(META_STORE_NAME, 'readwrite');
-      tx.objectStore(META_STORE_NAME).put(meta, meta.id);
+      const tx = db.transaction(META_STORE_NAME, 'readwrite');
+      tx.objectStore(META_STORE_NAME).put(value, key);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error);
     });
   } catch (err) {
-    if (!metaMirrorWarned) {
-      metaMirrorWarned = true;
-      epubStorageErr(`could not write the metadata mirror (shelf falls back to the book records): ${errText(err)}`);
+    onError(err);
+  }
+}
+
+/**
+ * Best-effort metadata mirror write (never rejects, never blocks a save).
+ *
+ * The essential row is written first, in its own transaction, so a cover that
+ * fails to store (quota, or the store refusing a large value) cannot take it
+ * down.
+ */
+async function writeMetaRow(meta: EpubMeta): Promise<void> {
+  let db: IDBDatabase | null = null;
+  try {
+    db = await openMetaDB();
+    await putMirrorRow(db, metaKey(meta.id), { ...meta, coverUrl: null }, (err) => {
+      warnMirrorOnce(`could not write the metadata mirror (shelf falls back to the book records): ${errText(err)}`);
+    });
+    if (meta.coverUrl) {
+      await putMirrorRow(db, coverKey(meta.id), { id: meta.id, coverUrl: meta.coverUrl }, (err) => {
+        warnMirrorOnce(`could not mirror a cover image (the shelf shows a placeholder): ${errText(err)}`);
+      });
     }
+  } catch (err) {
+    warnMirrorOnce(`metadata mirror unavailable — shelf falls back to the book records: ${errText(err)}`);
   } finally {
     db?.close();
   }
 }
 
-/** Best-effort metadata mirror delete. */
+/** Best-effort metadata mirror delete (the book row and its cover row). */
 async function deleteMetaRow(id: string): Promise<void> {
   let db: IDBDatabase | null = null;
   try {
     db = await openMetaDB();
     await new Promise<void>((resolve) => {
       const tx = db!.transaction(META_STORE_NAME, 'readwrite');
-      tx.objectStore(META_STORE_NAME).delete(id);
+      const store = tx.objectStore(META_STORE_NAME);
+      store.delete(metaKey(id));
+      store.delete(coverKey(id));
+      store.delete(id); // legacy bare-id row, if one exists
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
       tx.onabort = () => resolve();
