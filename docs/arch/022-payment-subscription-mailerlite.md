@@ -388,6 +388,23 @@ The Stripe subscription continues until the paid period ends; the local row stop
 
 `/go-pro-success` (web and mobile) polls `GET /user-subscription` up to 10 times with a 2-second interval to confirm the webhook/redirect grant landed, then shows success or a "still processing" state.
 
+### Purchase user binding (SPEC-097)
+
+The four endpoints that act on a purchase's account —
+`POST /create-stripe-checkout-session`, `POST /create-paypal-order`,
+`POST /in_app_purchase_success`, `POST /play_billing_success` — used to take
+`user_id` from the request body and trust it. `_bind_payment_user()` now
+requires the caller's JWT `sub` to match it (401 without a token, 403 on
+mismatch). Stripe enforces this unconditionally; the other three are behind
+`ENFORCE_PURCHASE_USER_BINDING` (default off) until a mobile build and the
+Classic deploy that send the token are live.
+
+`GET /paypal_checkout_success` cannot use a JWT (it is PayPal's cross-site
+redirect back to the server), so it is bound by the order instead: the grant
+uses the order's own `custom_id`/`reference_id`, never the `user_id` in the
+redirect query string, which closes a replay of a completed order id for a
+different account. See [SPEC-097](../specs/097-payment-user-binding.md).
+
 ### Admin management
 
 - **Legacy Classic admin** (`zerotohero-nuxt/pages/admin/manage-subscriptions.vue`) uses `POST /admin/update_or_add_subscription` and `GET /admin/check_user_subscription?email=`. Both require an admin JWT (`require_admin()`, added in `73d6bd6`); Classic works because it calls them through its authenticated `$axios` instance.
