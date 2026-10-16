@@ -23,6 +23,11 @@ const eslintConfig = [
       "node_modules/**",
       ".next/**",
       ".next-check/**",
+      // Netlify's local deploy output is gitignored build artifacts (bundled
+      // JS), but without this entry `npm run lint` (eslint .) walks it and
+      // reports ~400 errors from minified third-party code, drowning out the
+      // real ones.
+      ".netlify/**",
       "out/**",
       "build/**",
       "next-env.d.ts",

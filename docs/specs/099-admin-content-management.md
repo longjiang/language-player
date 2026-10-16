@@ -6,8 +6,13 @@
 - **Feature**: The `apps/admin` content-management surface: discover, import,
   and manage videos, channels, TV shows and talks per language (L2), plus a
   two-group navigation shell (Users / Content)
-- **Status**: in-progress
+- **Status**: complete (2026-10-16)
 - **Created**: 2026-10-16
+- **Implemented**: 2026-10-16. `apps/admin` — `defc95bc` (shell + `/users`),
+  `7ab9ee4e` (content API + types), `fd2fb6aa` (i18n keys), `02bf34e4`
+  (videos), `a0ec0e5d` (import), `f0c9c909` (discover), `324f41d7` (shows),
+  `e9a72137` (channels + sweep). `zerotohero-python-server` — `de20196`
+  (`_show_dict`), `4af6f33` (`q` filter).
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - [ADR-0032 — Admin Console as a Separate Next.js App](<../adr/0032-admin-console-app.md>)
@@ -211,10 +216,13 @@ stopping early loses nothing. Failure of a page surfaces the Flask error body
   *Skipped* breakdown (`already_stored`, `unavailable`, `not_embeddable`,
   `region_restricted`, `locale_mismatch`, `channel_diversity`) and the
   scraped count so "the scraper returned nothing" is visible.
-- *Import selected* / *Import all* → same endpoint with `import: true`,
-  `limit` = selection size, `talk` (default `Discover Content`), plus the
-  shared import options. The response's `import.import` result is rendered
-  with the same summary + per-video table as the import screen.
+- Two import paths, labelled so neither over-promises:
+  - *Import selected (N)* sends exactly the ticked candidates to the **batch
+    importer** (`POST /admin/videos/add-batch`, 50 per call), so the review
+    selection is honoured literally;
+  - *Import top results* re-runs the discovery call with `import: true` and
+    `limit` = the N in the box, letting the backend import its best N.
+  Both render the shared summary chips and per-video result table.
 
 ### `/content/shows`
 
@@ -341,12 +349,16 @@ No other route changes. Documented in
 | `apps/admin/src/app/content/shows/page.tsx` | TV shows + talks manager |
 | `apps/admin/src/app/content/channels/page.tsx` | Channels browser + resolve + import |
 | `apps/admin/src/app/content/sweep/page.tsx` | Unavailable sweep |
-| `apps/admin/src/components/content/*` | Video form dialog, show form dialog, import log, candidate table, bulk bar, L2 select |
-| `apps/admin/src/lib/admin-api.ts` | Typed clients for every route above |
-| `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, import/discovery result types |
+| `apps/admin/src/components/content/video-dialog.tsx` | Create/edit one video (all `ADMIN_VIDEO_WRITABLE` fields) |
+| `apps/admin/src/components/content/show-dialog.tsx` | Create/edit one TV show or talk |
+| `apps/admin/src/components/content/{l2-select,field,confirm-dialog}.tsx` | L2 picker, labelled field/section, destructive-action confirm |
+| `apps/admin/src/hooks/use-auth-ready.ts` | Wait for the mirrored access token before the first fetch |
+| `apps/admin/src/lib/content-api.ts` | Typed clients for every content route |
+| `apps/admin/src/lib/video-ids.ts` | Extract ids from pasted ids/URLs |
+| `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, import/discovery/sweep result types |
 | `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)` |
 | `zerotohero-python-server/routes/admin.py` | `q` query parameter |
-| `zerotohero-python-server/test_admin_video_import.py` | `q` filter route test |
+| `zerotohero-python-server/test_admin_videos_list.py` | `q` filter + escaping + route tests |
 | `zerotohero-python-server/test_content_shows.py` | `_show_dict` regression test (`l2Code` present, keys preserved) |
 
 ## i18n
@@ -375,15 +387,33 @@ these are `log()` (info, `LOG_LEVEL=3`) per the project's
 
 ## Testing & verification
 
-- Backend: `python3.10 -m pytest test_admin_video_import.py test_content_shows.py`
-  from `zerotohero-python-server/` (the existing suite fakes the DB, YouTube
-  API and NLP so the tests assert decisions, not I/O).
-- Admin app: `npx turbo typecheck --filter=@langplayer/admin` (or
-  `npm run typecheck -w apps/admin`) and `npm run lint -w apps/admin`.
-- Manual: with the Flask dev server running and a logged-in admin, exercise
-  each screen against a real language. Login requires
-  `app_metadata.is_admin = true`; Flask's CORS allowlist already contains
-  `http://localhost:3100` (ARCH-029 § 11).
+What was run when this shipped:
+
+- Backend, from `zerotohero-python-server/`:
+  `python3.10 -m pytest test_content_shows.py test_admin_videos_list.py
+  test_admin_video_import.py test_video_discovery.py` — 86 passed. The new
+  cases cover the `_show_dict` union shape, one-definition-by-AST, `l2Code`
+  on the public getters, the episodes route working without `?l2=`, and the
+  `q` filter (escaping, composition with the other filters, blank `q`,
+  route pass-through, 401 without a token).
+- `test_app.py` still has its pre-existing failures (golden-output drift in
+  lemmatize/translate/GA endpoints and data files absent from a clean
+  checkout). Verified by running the same file in a worktree of the commit
+  before this work: the current failures are a strict subset of that
+  baseline, i.e. nothing here introduced one.
+- Admin app: `npx turbo typecheck --filter=@langplayer/admin` and
+  `npx turbo lint --filter=@langplayer/admin` both pass. Lint needed
+  `apps/admin/eslint.config.mjs` to ignore `.netlify/**` — the gitignored
+  Netlify output made `eslint .` report ~400 errors from bundled JS over
+  clean source.
+- Not yet done: a production build (`npm run build:check -w apps/admin`) and
+  a live click-through against a running Flask server, which need the
+  user's go-ahead for a build and a running backend.
+
+Manual check when the backend is up: log in as an admin and exercise
+videos / import / discover / shows / channels / sweep against a real
+language. Login requires `app_metadata.is_admin = true`; Flask's CORS
+allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
 
 ## Known limitations
 
@@ -409,8 +439,16 @@ these are `log()` (info, `LOG_LEVEL=3`) per the project's
   parsing, no line-breaking/normalising tools, no `POST /sync-srt` caller.
   `subs_l2` is editable as raw text on the video dialog.
 - **`POST /admin/videos` (create) bypasses `next_video_id()`**, so a
-  hand-created row can land in another language's id block. The console warns
-  when creating and prefers the import screen (which allocates correctly).
+  hand-created row can land in another language's id block. The console does
+  not attempt to fix or hide that: the import screens (which do allocate
+  correctly) are the intended path, and the create dialog exists for rows the
+  importer cannot produce.
+- **Editing cannot clear a text field.** Flask's `_clean_video_payload`
+  drops `null` for every column except `tv_show` / `talk` (which are
+  explicit-unassign), so an emptied input is omitted rather than written as
+  NULL.
+- **The shows table's title filter is client-side** over the loaded page
+  (up to 1000 rows); the public listing has no search parameter.
 
 ## Open Questions
 
