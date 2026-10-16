@@ -20,6 +20,7 @@
   - [ARCH-032 — YouTube Video Difficulty](../arch/032-youtube-video-difficulty.md) — how `lex_div` / `word_freq` / `difficulty` are defined
   - [ARCH-033 — Difficulty → Level Bucketing](../arch/033-difficulty-level-bucketing.md) — the thresholds those numbers feed
   - [ARCH-034 — Video Lemmatization Cache](../arch/034-video-lemmatization-cache.md) — the cache this pipeline writes
+  - [ARCH-035 — Caption Selection](../arch/035-caption-selection.md) — which transcript track the import stores
   - [SPEC-038 — Video Content Supabase Migration](038-video-content-supabase.md) — the consolidated id contract
   - [SPEC-039 — Full Database Migration](039-full-database-migration-supabase.md) — § 5.8 added the existing `/admin/*` routes
   - [SPEC-061 — Supabase Video Lemmatization + Cache ID Rebinding](061-video-lemmatization-supabase-cache.md)
@@ -45,7 +46,8 @@ YouTube id / channel / playlist
    ├─ videos.list (batches of 50)  ── metadata (title, channel, date, tags,
    │                                     category, locale, duration, madeForKids,
    │                                     views / likes / comments)
-   ├─ eligibility                  ── unavailable / not embeddable / region-restricted
+   ├─ eligibility                  ── unavailable / not embeddable /
+   │                                   region-restricted / locale-mismatch
    ├─ caption pipeline             ── subs_l2 CSV (starttime,duration,line)
    ├─ lemmatize_video()            ── lemmatized_subs cache entry (ARCH-034)
    ├─ score_lemmas()               ── lex_div / word_freq / difficulty (ARCH-032)
@@ -111,7 +113,19 @@ the entire batch with `400 invalid`.
 | `unavailable` | the API did not return the id | no |
 | `not_embeddable` | `status.embeddable` is false | no |
 | `region_restricted` | `contentDetails.regionRestriction` is present (either `blocked` or `allowed`) | **yes** |
+| `locale_mismatch` | `snippet.defaultAudioLanguage` is present and outside the target language's locales | **yes** |
 | `no_transcript` | no transcript in the L2 or one of its locales | no |
+
+`force` bypasses the two *soft* checks; it never bypasses `unavailable` or
+`not_embeddable`, which would store a video the player cannot show at all.
+
+The locale check uses `utils_youtube.l2_locales()` — the same helper
+`filter_youtube(filter_l2_code=…)` uses — so the crawler and the importer
+agree on what "in this language" means. A video that declares **no** audio
+language is accepted: YouTube only sets `defaultAudioLanguage` for some
+uploads, so the check can reject only a video that positively declares a
+different language. It runs before the transcript download, so a rejected
+video costs no caption request.
 
 Only *new* inserts are filtered. An existing row under the same `l2` is
 refreshed regardless, because the rule is "do not add", not "do not update".
@@ -129,8 +143,10 @@ ever adds a real flag.
 
 `app_youtubecaptions.get_best_l2_subs_with_meta(youtube_id, l2)` resolves the
 caption in the L2 (or one of its locale variants, via `LOCALES`), using the
-Webshare proxy and the caption cache. The result is stored as the same
-`subs_l2` CSV shape the rest of the catalog uses:
+Webshare proxy and the caption cache. Which track that picks — manual vs
+auto-generated, and how the locale list is applied — is documented in
+[ARCH-035 — Caption Selection](../arch/035-caption-selection.md). The result
+is stored as the same `subs_l2` CSV shape the rest of the catalog uses:
 
 ```csv
 starttime,duration,line
@@ -356,8 +372,8 @@ just loop over.
 
 `python3.10 -m pytest test_admin_video_import.py` covers:
 
-- eligibility matrix (unavailable / not embeddable / region-restricted, and
-  `force` overriding the region check),
+- eligibility matrix (unavailable / not embeddable / region-restricted /
+  locale-mismatch, and `force` overriding the two soft checks),
 - id allocation and the payload written for a new video,
 - refresh-only semantics (`refresh_existing: false`), metadata refresh, and
   the arithmetic difficulty backfill that needs no transcript,
@@ -374,7 +390,12 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
 - **Members-only videos are not filtered** (see § 2). They will be added, and
   will fail to play for non-members.
 - **Region restriction is "any `regionRestriction`"**, which is stricter than
-  the crawler's old "blocked in US/GB/CA" rule. `force: true` overrides it.
+  the crawler's old "blocked in US/GB/CA" rule. `force: true` overrides it,
+  as it does the declared-locale check.
+- **The declared-locale check only sees `defaultAudioLanguage`** (or
+  `defaultLanguage`). YouTube omits it for many uploads, so a video whose
+  audio is in a different language is still imported whenever it declares
+  nothing; the transcript requirement is the only other guard.
 - **The ngram subtitle index is not refreshed.** The `subs_l2` trigger nulls
   `subs_ngram_tsv` on write, so newly imported videos are not reachable
   through the PGroonga ngram path until `backfill_subs_ngram_tsv.py` runs.
