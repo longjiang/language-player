@@ -31,7 +31,7 @@ The design follows the patterns the project already uses:
 
 | Area | Current behavior | Source |
 |---|---|---|
-| Web EPUB storage | IndexedDB `lp-epub-store`; `id` = SHA-256 of the EPUB bytes; `EpubMeta` has `lastLocation`, `readChars`, `totalChars`, `lastReadAt`, `addedAt` | `apps/web/src/lib/epub-store.ts`, `apps/web/src/hooks/use-epub.ts` |
+| Web EPUB storage | IndexedDB `lp-epub-store`; `id` = SHA-256 of the EPUB bytes; `EpubMeta` has `lastLocation`, `readChars`, `totalChars`, `lastReadAt`, `addedAt`. Every metadata write is mirrored into `lp-epub-meta` (small values) so the shelf can still list a book whose binary can no longer be read (ADR-0049) | `apps/web/src/lib/epub-store.ts`, `apps/web/src/hooks/use-epub.ts` |
 | Mobile EPUB storage | AsyncStorage `lp_epub_library_v1` + files under `epub_library/`; `id` = sanitized file name; `EpubMeta` has the same progress fields | `apps/mobile/lib/epub-store.ts`, `apps/mobile/hooks/use-epub.ts` |
 | Mobile location | Global `{ blockIndex, offset }` over the whole-book block stream | `apps/mobile/lib/epub-book.ts` |
 | Web location | `{ spineIndex, blockIndex, offset }` per spine item | `apps/web/src/lib/epub-book-types.ts` |

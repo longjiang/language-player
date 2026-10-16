@@ -14,7 +14,7 @@ The EPUB Reader lets users upload `.epub` ebooks, navigate their table of conten
 
 > **SPEC-032 (2026-08-02)** — The web reader was re-engineered from "chapter at a time" to the whole-book model: TOC entries are bookmarks into the spine flow, every navigation/search/restore action resolves to a `BookLocation { spineIndex, blockIndex, offset }`, and pagination is continuous across the entire book. The spine-range concatenation algorithm below is **obsolete on web** (kept for historical context; mobile still uses it).
 
-Every book the user opens gets its own persistent handle on web (an IndexedDB record keyed by a SHA-256 hash of the file), so returning to the reader shows a **bookshelf** of covers sorted by last read, each with a percentage-completed indicator derived from character counts. Opening a book resumes at its saved chapter and page instead of reopening the same book automatically. Mobile still stores a single `epub_state.json` — the bookshelf is a web-only feature for now.
+Every book the user opens gets its own persistent handle on web (an IndexedDB record keyed by a SHA-256 hash of the file), so returning to the reader shows a **bookshelf** of covers sorted by last read, each with a percentage-completed indicator derived from character counts. Opening a book resumes at its saved chapter and page instead of reopening the same book automatically. Mobile has the same per-book bookshelf (`epub_library/` files + AsyncStorage `lp_epub_library_v1`, migrated once from the legacy single-book `epub_state.json`), but no metadata mirror: its books are sandbox files, not IndexedDB blobs.
 
 ---
 
@@ -266,7 +266,7 @@ The cover is shown full-frame (mobile) or centered (web). Tapping anywhere on th
 | **EPUB Parsing** | `epubjs` ^0.3.93 | `jszip` ^3.10.1 + hand-rolled XML parser |
 | **HTML→Text** | `DOMParser` + `turndown` (→ Markdown) | Regex-based tag stripping |
 | **Markdown→Blocks** | `marked` + `parseMarkdown` | `marked` ^18.0.7 + `parseMarkdown` |
-| **Persistence** | IndexedDB (`epub-store.ts`) | `FileSystem` JSON file (`epub_state.json`) |
+| **Persistence** | IndexedDB (`epub-store.ts` + the `lp-epub-meta` mirror) | `FileSystem` library files + AsyncStorage `lp_epub_library_v1` |
 | **File Picker** | `<input type="file">` + drag-and-drop | `expo-document-picker` ^57 |
 | **Lemmatization** | `POST /lemmatize-normalized/batch` | Same Python endpoint |
 | **Translation** | `POST /translate_array` | Same Python endpoint |
@@ -474,10 +474,16 @@ To avoid unnecessary API calls, only the visible page's text blocks are sent for
 
 | Aspect | Web | Mobile |
 |---|---|---|
-| **Storage** | IndexedDB (`lp-epub-store`, store `epubs`, key `"current"`) | `FileSystem.documentDirectory/epub_state.json` |
-| **What's stored** | Full EPUB binary (ArrayBuffer) + metadata | File URI + metadata (binary stays in app cache) |
-| **Position** | Last chapter href + text anchor (~40 chars of first visible text block) | Last chapter href + text anchor (~40 chars of first visible text block) |
-| **Restore behavior** | On mount: reload binary from IndexedDB → navigate to last chapter → seek to anchor page | On mount: check if file still exists → load from URI → navigate to last chapter → seek to anchor page |
+| **Storage** | IndexedDB `lp-epub-store` v3 (one record per book, keyed by content hash; store `epubs`) + a small-value **metadata mirror** in `lp-epub-meta` (store `epub-meta`) | `FileSystem.documentDirectory/epub_library/<id>` + metadata in AsyncStorage `lp_epub_library_v1` |
+| **What's stored** | Full EPUB/PDF binary (ArrayBuffer) + metadata, per book | The copied file + metadata (the picker URI is never persisted) |
+| **Position** | `lastLocation { spineIndex, blockIndex, offset }` in the book metadata | Same `BookLocation` model |
+| **Restore behavior** | On mount: list the shelf from the metadata mirror → auto-open the last-read book of the current L2 → resume at its saved location | On mount: `getInfoAsync` the library file → open it → resume at its saved location |
+| **When the file is gone** | The book is listed (from the mirror), badged "could not read this file", and offers a one-click Remove — see § "Unreadable stored records" | `openBook` reports `Book file missing` and returns to the shelf |
+
+The `epubs` store keeps the **binary** inline-or-external; Chromium writes large
+values (any real book) to a separate file in the profile, so a record can become
+permanently unreadable if that file is deleted. Never render a shelf card from
+the binary — use the mirror (ADR-0049).
 
 ### Reading Mode
 
@@ -546,6 +552,46 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 
 ---
 
+## Unreadable stored records (web)
+
+A stored book's binary is a *large* IndexedDB value, which Chromium keeps in a
+separate file in the profile rather than inline in LevelDB. Disk-cleanup tools
+delete those files while the reference survives, after which every read of the
+record fails with a DOMException — Chrome 132+:
+`NotReadableError: Data lost due to missing file. Affected record should be
+considered irrecoverable`; Chrome 130/131: `NotFoundError` +
+`Failed to read large IndexedDB value`. The record can never be read again
+(ADR-0049).
+
+As built:
+
+| Layer | Behavior |
+|---|---|
+| **Classification** | `isUnreadableRecordError()` in `lib/epub-store.ts`: `NotReadableError`, or the 130/131 `NotFoundError` pair → `'unreadable'` (irrecoverable). Anything else (`UnknownError`, `DataError`) → `'error'` (possibly transient). A transient failure is never presented as lost data. |
+| **Metadata mirror** | `lp-epub-meta` (store `epub-meta`), a **separate, version-1 database** holding the small per-book metadata. Written by `saveEpub` / `updateEpubMeta`, deleted by `deleteEpub`, backfilled the first time a pre-mirror record is listed. Separate on purpose: bumping `lp-epub-store`'s version could be blocked by another tab's connection, and a blocked `indexedDB.open` never settles. |
+| **Shelf listing** | `listEpubs()` reads the mirror first and renders cards from it — **no blob is read to list the shelf**. Only records the mirror does not know are read, one transaction each, with the failure isolated to that record (`unavailable: 'unreadable' \| 'error'`). If the library DB cannot be opened at all, the shelf is still listed from the mirror. |
+| **Opening** | `useEpub.openBook` catches the read failure, sets `error = 'msg.epub_file_unreadable'`, records the id in `unreadable` (badge) and `openFailureId` (recovery notice). A missing record and an unparsable stored PDF report the same way. `openFailureId` — not a null return — is the failure signal, because a PDF open also resolves to a null location. |
+| **UI** | Shelf: a recovery notice above the grid (message + book name + Remove/Close) and a badged card (warning icon, destructive tint, one-click Remove). Remove deletes the record, its mirror row and its search index; the user then imports the file again. The app never deletes a book on its own. |
+| **Repair** | Writes replace an unreadable record: `saveEpub` retries without the merge-read (the read abort takes the `put` with it), and imports treat an unreadable existing record as absent — so re-importing the file is a complete fix. |
+| **Robustness** | The page's mount effect sets `initialized` in `finally`; the error branch renders before the cover/locating spinners; `openDB()` rejects on `blocked` and closes on `versionchange` so it can never await forever; `loadBookIndex` drops an unreadable index row and reports "not indexed" so the next search rebuilds it. |
+| **Observability** | `epubStorageErr()` (`lib/epub-log.ts`) logs on the app-wide error channel — **not** gated by the reader's verbose switch `EPUB_LOGS_ENABLED` — so `[LP Web] EPUB storage: openBook <id> could not read the stored record (unreadable): NotReadableError: …` prints at the default log level (1 in production, 2 in web dev). |
+
+Verified by deleting the record's blob file out of a Chromium profile
+(`Default/IndexedDB/<origin>.indexeddb.blob/<db>/<shard>/<n>`) and reloading
+`/[l1]/[l2]/epub`: the shelf renders with the badged card and the recovery
+notice, no spinner, one diagnostic log line, and Remove clears both the record
+and the mirror row. `lib/epub-store.test.ts` covers the same paths against a
+fake IndexedDB (injected request error + transaction abort).
+
+Mobile is not covered yet: its books are sandbox files with metadata in
+AsyncStorage, and `useEpub.openBook` already checks `getInfoAsync` before
+opening — but it stores the raw string `'Book file missing'` in `error`, which
+the screen then renders as the generic `msg.epub_parse_error`. Surfacing an
+i18n'd "file missing" state with the same Remove/re-import recovery there is a
+tracked follow-up (ADR-0049, Neutral).
+
+---
+
 ## Translation Keys
 
 | Key | English |
@@ -553,7 +599,8 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 | `title.epub_reader` | "EBook Reader" |
 | `msg.drop_epub_here` | "Drop an EPUB file here, or click to browse" |
 | `msg.epub_not_supported` | "Only .epub files are supported." |
-| `msg.epub_parse_error` / `msg.epub_file_unreadable` | "Could not open this EPUB file." |
+| `msg.epub_parse_error` | "Could not open this EPUB file." (the stored file could not be parsed) |
+| `msg.epub_file_unreadable` | "Could not read this file. It may be offline or inaccessible." (an import whose bytes could not be read **and** a stored record that can no longer be read) |
 | `msg.epub_chapter_error` | "Failed to load chapter." |
 | `msg.last_epub` | "Last opened: {name}" |
 | `action.browse` | "Browse" |
@@ -569,7 +616,7 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 1. **No image support on mobile** — Images in EPUB content are not rendered. The regex-based HTML-to-text extraction strips all tags including `<img>`.
 2. **No RTL support on mobile** — The web app detects `page-progression-direction="rtl"` from OPF metadata (reversed page-turn semantics); mobile does not.
 3. **No ruby preservation** — Both platforms strip furigana/ruby annotations. This is intentional for language learning (user sees only base text, not pronunciation helpers), but means annotated Japanese texts lose furigana.
-4. **Position restore (web: locations; mobile: text anchors)** — Web (SPEC-032) restores via `lastLocation { spineIndex, blockIndex, offset }`, no text guessing. Mobile still restores via a ~40-char text anchor and remains a migration target.
+4. **Position restore (locations on both platforms)** — Web (SPEC-032) restores via `lastLocation { spineIndex, blockIndex, offset }`; mobile stores the same `BookLocation` shape (`{ blockIndex, offset }`) in its AsyncStorage metadata. The legacy ~40-char text anchor (`lastAnchor`) survives only as a migration field on pre-bookshelf records.
 5. **epubjs TOC parsing gaps (web)** — epubjs never resolves nav-document hrefs against the nav doc's directory (fixed by `EpubBook`'s canonical hrefs) and drops TOC entries whose `<a>` isn't a direct `<li>` child (rare).
 6. **Whole-book pagination is lazy** — Page breaks are computed around the current page; the displayed total is an estimate until the full pagination pass runs (background).
 7. **No embedded font support** — EPUBs with embedded fonts for CJK characters won't render correctly.
@@ -672,11 +719,13 @@ session. OCR is lazy per image and cached server-side by `/vision`.
 
 Clicking the **current** image thumbnail opens a full-size **preview dialog**:
 click/pinch (mobile) or Ctrl+wheel (web) toggles/zooms, and dragging pans while
-zoomed; clicking a different thumbnail selects it. The gallery itself
-**persists** across navigation/refresh and is restored on mount — web via an
-IndexedDB store (`apps/web/src/lib/image-reader-store.ts`), mobile via a JSON
-file in the app documents (`apps/mobile/lib/image-reader-store.ts`). Images
-with no stored OCR result are re-OCR'd lazily on restore (server-cached).
+zoomed; clicking a different thumbnail selects it. The gallery
+**persists across navigation/refresh on web only** — an IndexedDB store
+(`apps/web/src/lib/image-reader-store.ts`, store `lp-image-reader`); images with
+no stored OCR result are re-OCR'd lazily on restore (server-cached). Mobile has
+**no** image-reader store: `apps/mobile/lib/image-reader-store.ts` does not
+exist and the mobile gallery lives in component state, so it is lost on restart
+(SPEC-090 § Persistence is the authority here).
 
 ### Epub-like formats (.fb2 / .mobi / .azw3)
 `packages/utils/src/alt-formats.ts` (pure TS, shared) converts FictionBook
