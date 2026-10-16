@@ -323,7 +323,7 @@ export default function DiscoverPage() {
                     </th>
                     <th className="px-3 py-2">{t('label.title')}</th>
                     <th className="px-3 py-2">{t('label.youtube_id')}</th>
-                    <th className="px-3 py-2">{t('title.views')}</th>
+                    <th className="px-3 py-2">{t('label.views')}</th>
                     <th className="px-3 py-2">{t('label.search_terms')}</th>
                   </tr>
                 </thead>

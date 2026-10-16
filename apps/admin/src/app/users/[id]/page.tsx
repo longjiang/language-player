@@ -212,7 +212,7 @@ function SavedWordsTab({ detail }: { detail: UserDetail }) {
         <Card>
           <CardContent className="py-4">
             <div className="text-2xl font-bold">{savedWords.totalWords}</div>
-            <div className="text-sm text-muted-foreground">{t('label.words')}</div>
+            <div className="text-sm text-muted-foreground">{t('label.words', { count: savedWords.totalWords })}</div>
           </CardContent>
         </Card>
         <Card>

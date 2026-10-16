@@ -322,7 +322,7 @@ export function VideoDialog({
 
           <FormSection title={t('label.metrics')}>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Field label={t('title.views')}>
+              <Field label={t('label.views')}>
                 <Input value={form.views} onChange={(e) => set('views', e.target.value)} />
               </Field>
               <Field label={t('title.likes')}>

@@ -226,7 +226,7 @@ export default function ChannelsPage() {
                   {t('label.subscribers')}: {resolved.subscribers ?? '—'}
                 </span>
                 <span>
-                  {t('title.video_count')}: {resolved.video_count ?? '—'}
+                  {t('label.videos')}: {resolved.video_count ?? '—'}
                 </span>
                 <span className="font-mono">{resolved.uploads_playlist_id}</span>
               </div>
@@ -361,7 +361,7 @@ export default function ChannelsPage() {
                 <th className="px-3 py-2">{t('label.title')}</th>
                 <th className="px-3 py-2">{t('label.channel_id')}</th>
                 <th className="px-3 py-2">{t('label.subscribers')}</th>
-                <th className="px-3 py-2">{t('title.video_count')}</th>
+                <th className="px-3 py-2">{t('label.videos')}</th>
                 <th className="px-3 py-2">{t('label.country')}</th>
                 <th className="px-3 py-2">{t('label.description')}</th>
                 <th className="px-3 py-2 text-right">{t('label.actions')}</th>
@@ -447,7 +447,7 @@ export default function ChannelsPage() {
                               <span className="flex items-center gap-3 text-xs text-muted-foreground">
                                 <span className="font-mono">{video.youtube_id}</span>
                                 <span>
-                                  {t('title.views')}: {video.views ?? '—'}
+                                  {t('label.views')}: {video.views ?? '—'}
                                 </span>
                               </span>
                             </li>

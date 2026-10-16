@@ -376,6 +376,17 @@ wherever they already say the right thing (`action.search`, `action.save`,
 i18n); the keys exist so the convention holds and a future locale toggle
 works.
 
+**Watch out when reusing a key: placeholder keys need their arguments.**
+Ten call sites initially reused an existing key purely for its English text
+and threw `IntlError: FORMATTING_ERROR` in the console — `title.views` is
+`"{numViews} Views"`, `title.video_count` is `"Video {index} of {total}"`,
+`placeholder.filter_videos` is `"Filter {n} videos"`, and the pre-existing
+`label.words` is an ICU plural needing `{count}`. Two placeholder-free keys
+were added (`label.views`, `placeholder.filter_by_title`) and the plural
+call site now passes `count`. A whole-tree check — for every `t('key')`,
+compare the ICU variables in the resolved English value against the
+arguments at the call site — is worth automating (Open Questions).
+
 ## Logging
 
 `apps/admin/src/lib/logger.ts` (`[LP Admin]`, `NEXT_PUBLIC_LOG_LEVEL`) is used
@@ -406,9 +417,21 @@ What was run when this shipped:
   `apps/admin/eslint.config.mjs` to ignore `.netlify/**` — the gitignored
   Netlify output made `eslint .` report ~400 errors from bundled JS over
   clean source.
-- Not yet done: a production build (`npm run build:check -w apps/admin`) and
-  a live click-through against a running Flask server, which need the
-  user's go-ahead for a build and a running backend.
+- `npm run build:check -w apps/admin`: **pass** (11 routes, isolated
+  `.next-check`, cleaned up).
+- Live against the running Flask dev server (public routes, so no admin
+  session needed):
+  - `GET /tv-shows?l2=en` and `GET /talks?l2=en` now return `l2Code` — and
+    still return `status` / `created_on` / `year`, so no key the old shape
+    produced disappeared;
+  - `GET /tv-shows/307/episodes` **without** `?l2=` returns `200` with 367
+    episodes (the pre-fix behaviour was `500 "TV show has no l2"`);
+  - `GET /channels?l2=en` returns the channels listing the console renders;
+  - a **non-admin** token gets `403` on `GET /admin/videos?q=hello`, and the
+    write-only admin routes answer `405` to `GET` — i.e. they exist and are
+    gated, not missing.
+- Remaining manual check (needs an admin account, which no test user has):
+  reload `/content/videos` in the browser and click through the six screens.
 
 Manual check when the backend is up: log in as an admin and exercise
 videos / import / discover / shows / channels / sweep against a real

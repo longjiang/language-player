@@ -232,7 +232,7 @@ export default function VideosPage() {
                 <Input
                   value={pendingQuery}
                   onChange={(e) => setPendingQuery(e.target.value)}
-                  placeholder={t('placeholder.filter_videos')}
+                  placeholder={t('placeholder.filter_by_title')}
                 />
               </div>
               <Button type="submit" variant="outline">
@@ -415,7 +415,7 @@ export default function VideosPage() {
                 <th className="px-3 py-2">{t('label.title')}</th>
                 <th className="px-3 py-2">{t('label.youtube_id')}</th>
                 <th className="px-3 py-2">{t('label.level')}</th>
-                <th className="px-3 py-2">{t('title.views')}</th>
+                <th className="px-3 py-2">{t('label.views')}</th>
                 <th className="px-3 py-2">{t('label.difficulty')}</th>
                 <th className="px-3 py-2">{t('label.status')}</th>
                 <th className="px-3 py-2">{t('label.assignment')}</th>
