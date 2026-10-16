@@ -149,6 +149,22 @@ archived GO app use.
    `TokenCache`; `TokenizedText` looks up `md5(lineText)` and only falls back to
    the batch pipeline on a miss.
 
+### The second writer: admin video import (SPEC-096)
+
+`POST /admin/videos/add` (and its batch / channel / playlist siblings) writes
+a whole-video entry at **insert time**, before the video is ever watched:
+
+- the id is allocated by the importer (SPEC-038 prefix block), and the cache
+  key is `cache_video_id(new_id)` — the legacy Directus id — so the first
+  watch-page request hits the entry instead of re-lemmatizing the transcript;
+- `utils_video_lemma.get_lemmas_from_video()` was changed to translate the
+  key the same way. It used the raw `video['id']`, so a consolidated id would
+  have been written (and looked up) under the *new* id, and every lookup from
+  the watch page — which translates the id back — would have missed;
+- the write goes through the same `save_to_lemmatized_subs_cache()`, so it is
+  local-only and the offload job owns the shared host.
+
+
 ### Key Design Decisions
 
 | Decision | Rationale |
@@ -454,6 +470,8 @@ remote latency.
 | File | Role |
 |---|---|
 | `zerotohero-python-server/routes/text_routes.py` | `/lemmatize-video`, `/lemmatize-video-legacy`, `/lemmatize-video-normalized`, `/lemmatize-normalized[/batch]` handlers |
+| `zerotohero-python-server/utils_video_import.py` | Second writer: populates the cache when an admin imports a video (SPEC-096) |
+| `zerotohero-python-server/routes/admin.py` | `/admin/videos/add[-batch]`, `/admin/channels/add`, `/admin/playlists/add` |
 | `zerotohero-python-server/app_directus.py` | `_fetch_video_with_subs()`, `get_and_lemmatize_video_by_id[_normalized]()` — fetch, key rebinding, normalization |
 | `zerotohero-python-server/utils_video_lemma.py` | `cache_video_id()`, `lemmatize_video()` — cache read/write, entity decode, md5 keying |
 | `zerotohero-python-server/utils_cache.py` | Bucket wrappers; `_lemmatized_subs_key()` owns the `v2/` namespacing rule |
