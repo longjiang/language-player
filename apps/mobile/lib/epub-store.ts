@@ -295,6 +295,8 @@ export async function deleteEpub(meta: EpubMeta): Promise<void> {
 /** Remove the library file and cover (best effort). */
 export async function deleteEpubFiles(meta: EpubMeta): Promise<void> {
   try { await FileSystem.deleteAsync(libraryFileUri(meta.id)); } catch { /* already gone */ }
+  // A staged copy left behind by an interrupted import (see the import path).
+  try { await FileSystem.deleteAsync(`${libraryFileUri(meta.id)}.importing`, { idempotent: true }); } catch { /* already gone */ }
   if (meta.coverUrl?.startsWith('file://')) {
     // coverUrl is a full file:// URI — pass it through as-is (slice(7) would
     // strip the scheme and make the delete target a bare path).
