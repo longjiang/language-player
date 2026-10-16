@@ -376,11 +376,17 @@ export async function downloadKuromojiData(
   signal?: AbortSignal,
 ): Promise<boolean> {
   const dir = new Directory(`${TOKENIZER_DIR}${l2}/`);
+  // Extract into a staging directory and swap at the end: the previous
+  // implementation deleted the target directory on ANY failure, so a failed
+  // re-download destroyed a pack that was working (the tokenizer then fell back
+  // to regex for good). Same rule as the precompiled dictionary save.
+  const stagingDir = new Directory(`${TOKENIZER_DIR}${l2}.partial/`);
   const zipPath = `${TOKENIZER_DIR}${l2}.zip`;
 
   try {
-    // Ensure the target directory exists
-    dir.create({ intermediates: true, idempotent: true });
+    // Start from a clean staging directory
+    if (stagingDir.exists) stagingDir.delete();
+    stagingDir.create({ intermediates: true, idempotent: true });
 
     // Download the zip archive from the server
     const zipFile = new File(zipPath);
@@ -408,19 +414,38 @@ export async function downloadKuromojiData(
     const { unzipSync } = await import('fflate');
     const unzipped = unzipSync(zipData);
 
-    // Write each extracted file to the tokenizer directory
+    // Write each extracted file into the STAGING directory
     const files = Object.entries(unzipped).filter(([filePath]) =>
       KROMOJI_DICT_FILES.includes(filePath)
     );
+    if (files.length === 0) throw new Error('Tokenizer pack contains no dictionary files');
     for (let i = 0; i < files.length; i++) {
       // Only extract known .dat.gz files (ignore metadata/readme)
       if (signal?.aborted) throw new Error('Download cancelled');
       const [filePath, content] = files[i]!;
-      const fullPath = `${dir.uri}${filePath}`;
+      const fullPath = `${stagingDir.uri}${filePath}`;
       const out = new File(fullPath);
       out.create({ intermediates: true, overwrite: true });
       out.write(content);
       onProgress?.(0.9 + 0.1 * ((i + 1) / files.length));
+    }
+
+    // Swap: stage the old pack aside, promote the new one, then drop the old.
+    // The complete pack is on disk before anything is removed.
+    if (dir.exists) {
+      const oldDir = new Directory(`${TOKENIZER_DIR}${l2}.old/`);
+      if (oldDir.exists) oldDir.delete();
+      dir.move(oldDir);
+      try {
+        stagingDir.move(dir);
+      } catch (e) {
+        // Put the previous pack back before reporting the failure.
+        try { if (oldDir.exists) oldDir.move(dir); } catch { /* best effort */ }
+        throw e;
+      }
+      try { if (oldDir.exists) oldDir.delete(); } catch { /* best effort */ }
+    } else {
+      stagingDir.move(dir);
     }
 
     // Clean up the zip file
@@ -428,9 +453,9 @@ export async function downloadKuromojiData(
 
     return true;
   } catch (e) {
-    // Clean up partial extraction so hasKuromojiData doesn't report success
+    // Drop the partial extraction, keep whatever pack was already there.
     try {
-      if (dir.exists) dir.delete();
+      if (stagingDir.exists) stagingDir.delete();
       const zipFile = new File(zipPath);
       if (zipFile.exists) zipFile.delete();
     } catch {}
@@ -448,7 +473,12 @@ export async function downloadKuromojiData(
 export async function deleteKuromojiData(l2: string): Promise<void> {
   const dir = new Directory(`${TOKENIZER_DIR}${l2}/`);
   if (dir.exists) dir.delete();
-  // Also clean up any leftover zip
+  // Also clean up any leftover zip and staging/rollback directories from an
+  // interrupted download.
   const zipFile = new File(`${TOKENIZER_DIR}${l2}.zip`);
   if (zipFile.exists) zipFile.delete();
+  for (const suffix of ['.partial', '.old']) {
+    const leftover = new Directory(`${TOKENIZER_DIR}${l2}${suffix}/`);
+    if (leftover.exists) leftover.delete();
+  }
 }
