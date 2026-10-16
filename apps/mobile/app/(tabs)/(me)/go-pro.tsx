@@ -10,6 +10,7 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { IAP_AVAILABLE, ANDROID_IAP_PRODUCT_ID, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
 import { isPlanOnSale, CONTENT_L2_COUNT } from '@langplayer/shared';
 import { useSalePricing } from '@/hooks/use-sale-pricing';
@@ -98,7 +99,10 @@ async function sendPurchaseForValidation(
         product_id: ANDROID_IAP_PRODUCT_ID,
       }
     : { user_id: String(userId), receipt, jws };
-  const res = await fetch(
+  // Must be authenticated: the backend binds `user_id` to the caller's JWT
+  // `sub` once ENFORCE_PURCHASE_USER_BINDING is on, so the token is sent now
+  // (builds that predate this keep working while the flag is off).
+  const res = await authenticatedFetch(
     isAndroid
       ? `${PYTHON_API_URL}/play_billing_success`
       : `${PYTHON_API_URL}/in_app_purchase_success`,
