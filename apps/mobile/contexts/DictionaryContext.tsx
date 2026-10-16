@@ -178,22 +178,35 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     setDictAvailable(null);
-    void hasOfflineDictionaryByL2(l2Code).then((value) => {
-      if (!cancelled) setDictAvailable(value);
-      // Warm the per-language SQLite handle in the background so the first
-      // popup tap doesn't pay the open + one-time migration cost.
-      if (value) {
-        void openOfflineDictionaryDB(l2Code).catch(() => {});
-      }
-    });
+    void hasOfflineDictionaryByL2(l2Code)
+      .then((value) => {
+        if (!cancelled) setDictAvailable(value);
+        // Warm the per-language SQLite handle in the background so the first
+        // popup tap doesn't pay the open + one-time migration cost.
+        if (value) {
+          void openOfflineDictionaryDB(l2Code).catch(() => {});
+        }
+      })
+      .catch((err) => {
+        // Settle the gate (never leave it at null) — an unopenable central DB
+        // means the offline dictionary is not usable right now.
+        logwarn(`offline dictionary availability check failed for ${l2Code}: ${(err as Error)?.message ?? err}`);
+        if (!cancelled) setDictAvailable(false);
+      });
     return () => {
       cancelled = true;
     };
   }, [l2Code, downloadStatesVersion]);
 
-  // Init DB on mount
+  // Init DB on mount. A failure is logged and retried by the next open (the
+  // memoized rejection is cleared in openDictionaryDB), so it must not become an
+  // unhandled rejection here.
   useEffect(() => {
-    openDictionaryDB().then((db) => { dbRef.current = db; });
+    openDictionaryDB()
+      .then((db) => { dbRef.current = db; })
+      .catch((err) => {
+        logwarn(`dictionary DB warm-up failed: ${(err as Error)?.message ?? err}`);
+      });
   }, []);
 
   // Load recent on mount and when L2 changes; clear session cache
