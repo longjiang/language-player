@@ -801,6 +801,13 @@ and content reads):
 - `/video-tags` was ported from Directus to `youtube_videos.tags` (search tag
   cloud on all three apps).
 
+**Added later (2026-10-16, SPEC-096):** `routes/admin.py` also carries the
+video *ingestion* endpoints — `/admin/videos/add`, `/admin/videos/add-batch`,
+`/admin/channels/resolve`, `/admin/channels/add`, `/admin/playlists/add` —
+which fetch YouTube metadata, download the L2 transcript, populate the
+lemmatization cache and score difficulty before writing the row. See
+[SPEC-096](096-admin-video-ingestion.md).
+
 Classic side: the `$directus` adapter is Flask-only (content/classicDict/stats/
 adminVideo*/createShow/patchShow/deleteShow/postFeedback/deleteAccount helpers,
 Flask-retargeted password reset); raw `get/post/patch/delete`, blob machinery,

@@ -51,6 +51,7 @@ register_routes(MyApp)       # 10 blueprints
 | **payments_bp** | `routes/payments.py` | `/paypal_checkout_success`, `/in_app_purchase_success`, `/stripe_checkout_success`, Stripe webhooks |
 | **subscriptions_bp** | `routes/subscriptions.py` | `/admin/update_or_add_subscription`, `/admin/check_user_subscription`, `/cancel-subscription-at-end-of-period`, `/verification_email`, `/acquisition_survey` |
 | **saved_words_bp** | `routes/saved_words.py` | `/saved-words` (GET/PUT), `/saved-words/<l2>/<id>` (DELETE) — row-level saved words (SPEC-034) |
+| **admin_bp** | `routes/admin.py` | `/admin/videos` (GET/POST), `/admin/videos/<id>` (PATCH/DELETE), `/admin/tv-shows`, `/admin/talks`, plus the SPEC-096 ingestion endpoints `/admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/resolve`, `/admin/channels/add`, `/admin/playlists/add` — all `is_admin`-gated |
 
 ---
 
@@ -649,6 +650,9 @@ The Next.js app currently uses this Python backend. Important notes:
 | `lemmatize_subs_lines_and_store_in_hash_table(lines, lang_code)` | Lemmatize subtitle lines |
 | `get_lemmas_from_video(video, lang_code, iso_639_3, lemmatizer)` | Extract lemmas from video |
 | `word_freq_from_lemmas(lemmas, lang_code, low_zipf_freq)` | Compute word frequencies |
+| `compute_lex_div(lemmas)` / `compute_word_freq(lemmas, lang_code)` | Pure MTLD / Zipf helpers shared by both scoring paths |
+| `score_lemmas(lemmas, lang_code, lex_div, word_freq)` | Fill the missing half and derive `difficulty` (no DB access) |
+| `lemmatize_and_score_video(video, l2_code, ...)` | Cache + score one video (SPEC-096 import path) |
 | `generate_update_sql(video, suffix, row_id, lex_div, word_freq)` | Build UPDATE SQL |
 | `add_lex_div_and_word_freq_to_video(video, lang_code, iso_639_3, lemmatizer, suffix)` | Compute + store difficulty |
 | `add_lex_div_and_word_freq_to_videos(videos, lang_code, total_count, done_count)` | Batch difficulty scoring |
@@ -666,6 +670,12 @@ The Next.js app currently uses this Python backend. Important notes:
 |---|---|
 | `filter_youtube(v, ...)` | Filter YouTube videos by criteria |
 | `get_info_from_youtube(youtube_ids)` | Get basic video info from YouTube API |
+| `youtube_videos_list(ids, part)` | Low-level `videos.list`; returns `(items, error)` so a quota/auth failure is not mistaken for missing videos |
+| `get_video_details_batched(youtube_ids)` | Batch `videos.list` at the API max of 50; returns `(details, unavailable, error)` |
+| `normalize_video_ids(ids)` | Split input ids into `(valid, invalid)` by the 11-char id shape (one bad id rejects a whole API batch) |
+| `video_import_block_reason(video, force)` | `unavailable` / `not_embeddable` / `region_restricted` / None |
+| `parse_channel_reference(ref)` / `channel_from_reference(ref)` | Handle / `UC…` id / channel URL → normalized channel (raises `ChannelNotFoundError` / `YouTubeChannelError`) |
+| `parse_playlist_reference(ref)` | Playlist id from an id or any URL with `list=` |
 | `get_full_details_of_videos(video_ids)` | Get full video details |
 | `check_and_filter_youtube(youtube_ids, ...)` | Validate + filter YouTube IDs |
 | `list_captions(video_id, l2_code)` | List available captions |
@@ -677,3 +687,18 @@ The Next.js app currently uses this Python backend. Important notes:
 | `find_unavailable_videos(youtube_ids)` | Detect deleted/private videos |
 | `get_channel_thumbnail(channel_id)` | Get channel thumbnail URL |
 | `get_channel_avatar_bytes(channel_id)` | Download channel avatar |
+
+### `utils_video_import.py` — Admin video ingestion (SPEC-096)
+
+| Function | Purpose |
+|---|---|
+| `normalize_l2(l2)` / `require_l2(l2)` | Canonical ISO code for an l2 input (codes, glottolog, legacy Directus ids) |
+| `metadata_from_api(video)` | videos.list resource → `youtube_videos` column payload (only fields the API returned) |
+| `transcript_csv(youtube_id, l2_code)` | Download the L2 transcript as a `subs_l2` CSV |
+| `import_video(conn, youtube_id, l2_code, ...)` | Add or refresh one video (allocate id, cache, score, insert) |
+| `import_videos(conn, ids, l2_code, limit, offset)` | Add a list of ids; commits per video, returns results + `next_cursor` |
+| `playlist_video_ids(playlist_id, cursor, limit)` | Page a playlist's video ids with an opaque `(page_token, skip)` cursor |
+| `import_playlist(conn, ref, l2_code, ...)` | Import a playlist (paged) |
+| `import_channel(conn, ref, l2_code, ...)` | Import a channel's uploads playlist (paged) |
+| `YouTubeApiError` / `PlaylistFetchError` / `UnknownLanguageError` | Mapped to 502 / 502 / 400 by the routes |
+

@@ -91,6 +91,25 @@ computes whichever of `lex_div` / `word_freq` is still NULL (keeping existing
 values), then writes all three. Batch entry point:
 `add_lex_div_and_word_freq_to_all_videos(lang_code)`.
 
+### 6. Second writer: the admin import path (SPEC-096)
+
+`POST /admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/add`
+and `/admin/playlists/add` write the same three columns for newly ingested
+videos. They do **not** go through the Directus/MySQL batch functions above:
+
+- the math lives in pure helpers used by both paths —
+  `compute_lex_div(lemmas)`, `compute_word_freq(lemmas, lang)`,
+  `score_lemmas(lemmas, lang, lex_div, word_freq)` — so the two writers
+  cannot drift apart;
+- `lemmatize_and_score_video(video, l2_code, …)` scores one video and
+  populates the whole-video lemmatization cache on the way (ARCH-034);
+- the Supabase write is an `INSERT` (new video) or an `UPDATE` of whichever
+  of the three columns is missing (existing video), so the incremental rule
+  holds there too.
+
+Because a new row's id is allocated by the importer, the cache key is derived
+from that id via `cache_video_id()` — see ARCH-034.
+
 ## Level bucketing (difficulty → 1–7)
 
 Detailed threshold-generation algorithm and the `growth_factor` decision: see
@@ -237,6 +256,8 @@ re-scored videos than the current archive values.
 | File | Role |
 |---|---|
 | `zerotohero-python-server/utils_video_lemma.py` | Lemmatize, fold, zipf, lex_div, difficulty, level mapping, profile generation |
+| `zerotohero-python-server/utils_video_import.py` | Admin import path: scores new/backfilled videos into Supabase (SPEC-096) |
+| `zerotohero-python-server/routes/admin.py` | `/admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/add`, `/admin/playlists/add` |
 | `zerotohero-python-server/utils_nlp.py` | `mtld_from_lemmas`, lemmatizer registry |
 | `zerotohero-python-server/utils_language.py` | `DIFFICULTY_PROFILE` (single source of truth) |
 | `zerotohero-python-server/level_mapping.py` | `LEVELS` exam mapping |
@@ -248,6 +269,9 @@ re-scored videos than the current archive values.
 
 ## Notes
 
+- Videos added through the admin import endpoints (SPEC-096) are scored at
+  insert time, so they never enter the "needs scoring" backlog the runbook
+  below exists to drain.
 - Runbook: `lemmatize_all_videos(lang)` then
   `add_lex_div_and_word_freq_to_all_videos(lang)`, then
   `create_difficulty_profile_csv()` and a regenerated `DIFFICULTY_PROFILE`.
