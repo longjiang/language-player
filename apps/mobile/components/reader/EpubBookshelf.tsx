@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Animated, Platform, TextInput } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { BookOpen, MoreVertical, Search, TriangleAlert, Upload, X } from 'lucide-react-native';
+import { BookOpen, MoreVertical, Search, Trash2, TriangleAlert, Upload, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import type { EpubSummary } from '@/lib/epub-store';
 
 interface EpubBookshelfProps {
@@ -18,6 +19,8 @@ interface EpubBookshelfProps {
   l2Name: string;
   /** Id of the book currently being opened (spinner on its card). */
   openingId: string | null;
+  /** Remove several books at once (the bulk unreadable recovery). */
+  onRemoveBooks: (ids: string[]) => void;
   /** Books currently being imported — one pulsating skeleton card each. */
   importing?: Array<{ id: string; fileName: string; phase: number }>;
   /** Localized import/parse error to display. */
@@ -49,6 +52,7 @@ export function EpubBookshelf({
   error,
   onOpenBook,
   onRemoveBook,
+  onRemoveBooks,
   onAddBook,
   loading = false,
 }: EpubBookshelfProps) {
@@ -93,6 +97,9 @@ export function EpubBookshelf({
   }
 
   // The "no books yet" empty states must not hide in-flight import skeletons.
+  // Books on screen whose stored file can no longer be read.
+  const unreadableIds = filteredBooks.filter((b) => b.unavailable).map((b) => b.id);
+
   const showEmptyState = books.length === 0 && importing.length === 0;
   const showNoLanguage = !showEmptyState && books.length > 0 && visibleBooks.length === 0 && importing.length === 0;
 
@@ -165,6 +172,22 @@ export function EpubBookshelf({
             )}
           </View>
 
+          {/* Bulk recovery: a library that lost its bytes can be cleared in one
+              action instead of one card at a time. Only for two or more — a
+              single broken book has its own Remove in the card menu. */}
+          {unreadableIds.length >= 2 && (
+            <View className="mb-3 flex-row items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+              <TriangleAlert size={16} color={ICON_DESTRUCTIVE} />
+              <Text className="flex-1 text-xs text-destructive">
+                {t('msg.epub_unreadable_books', { n: unreadableIds.length })}
+              </Text>
+              <Button variant="outline" size="sm" onPress={() => onRemoveBooks(unreadableIds)}>
+                <Trash2 size={14} color={ICON_DESTRUCTIVE} />
+                <Text className={buttonTextClass('outline')}>{t('action.remove')}</Text>
+              </Button>
+            </View>
+          )}
+
           {q && filteredBooks.length === 0 ? (
             <Text className="py-8 text-center text-sm text-muted-foreground">{t('msg.no_results')}</Text>
           ) : (
@@ -223,7 +246,7 @@ export function EpubBookshelf({
                         className={`min-w-0 flex-1 truncate pr-7 text-sm font-medium ${book.unavailable ? 'text-destructive' : 'text-foreground'}`}
                         numberOfLines={1}
                       >
-                        {book.fileName.replace(/\.(epub|pdf)$/i, '')}
+                        {book.fileName ? book.fileName.replace(/\.(epub|pdf)$/i, '') : t('msg.epub_unreadable_book')}
                       </Text>
                     </View>
 

@@ -389,6 +389,11 @@ export default function EpubReaderScreen() {
     void e.resolveHref(href, fromHref).then(jumpToBlock);
   }, [pushHistory, jumpToBlock]);
 
+  // Remove every unreadable book on the shelf in one go (one shelf reload).
+  const handleRemoveBooks = useCallback((ids: string[]) => {
+    void epub.removeBooks(ids);
+  }, [epub]);
+
   const handleRemoveBook = useCallback((id: string) => {
     void epub.removeBook(id);
   }, [epub]);
@@ -498,6 +503,7 @@ export default function EpubReaderScreen() {
           error={errorText}
           onOpenBook={handleOpenBook}
           onRemoveBook={handleRemoveBook}
+          onRemoveBooks={handleRemoveBooks}
           onAddBook={handleAddBook}
         />
       </View>
