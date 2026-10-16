@@ -285,8 +285,12 @@ function seedRecordWithoutMirror(id: string, meta: EpubMeta): void {
   db.data.get('epubs')!.set(id, { id, data: new ArrayBuffer(8), meta });
 }
 
+const mirrorStore = () => databases.get(META_DB)!.data.get('epub-meta')!;
+const mirrorKeys = () => [...mirrorStore().keys()];
+
 function forgetMirrorRow(id: string): void {
-  databases.get(META_DB)!.data.get('epub-meta')!.delete(id);
+  mirrorStore().delete(`meta:${id}`);
+  mirrorStore().delete(`cover:${id}`);
 }
 
 beforeEach(() => {
@@ -352,7 +356,7 @@ describe('listEpubs with an unreadable record', () => {
 
     const first = await listEpubs();
     expect(first.map((b) => b.fileName)).toEqual(['old.epub']);
-    expect(databases.get(META_DB)!.data.get('epub-meta')!.has('legacy-1')).toBe(true);
+    expect(mirrorStore().has('meta:legacy-1')).toBe(true);
 
     // A second load is served entirely from the mirror.
     getCalls = [];
@@ -396,7 +400,7 @@ describe('mirror upkeep', () => {
       lastLocation: { spineIndex: 0, blockIndex: 2, offset: 3 },
     });
 
-    const row = databases.get(META_DB)!.data.get('epub-meta')!.get('b1') as EpubMeta;
+    const row = mirrorStore().get('meta:b1') as EpubMeta;
     expect(row.readChars).toBe(42);
     expect(row.lastLocation).toEqual({ spineIndex: 0, blockIndex: 2, offset: 3 });
   });
@@ -406,7 +410,7 @@ describe('mirror upkeep', () => {
     await deleteEpub('b1');
 
     expect(databases.get(STORE_DB)!.data.get('epubs')!.has('b1')).toBe(false);
-    expect(databases.get(META_DB)!.data.get('epub-meta')!.has('b1')).toBe(false);
+    expect(mirrorKeys().filter((k) => k.endsWith('b1'))).toEqual([]);
     expect(await listEpubs()).toEqual([]);
   });
 
@@ -415,7 +419,42 @@ describe('mirror upkeep', () => {
     databases.get(STORE_DB)!.data.get('epubs')!.delete('b1');
 
     expect(await listEpubs()).toEqual([]);
-    expect(databases.get(META_DB)!.data.get('epub-meta')!.has('b1')).toBe(false);
+    expect(mirrorKeys().filter((k) => k.endsWith('b1'))).toEqual([]);
+  });
+});
+
+describe('the mirror keeps the cover out of the metadata row', () => {
+  const bigCover = `data:image/jpeg;base64,${'A'.repeat(120_000)}`;
+
+  it('writes the metadata row without the cover and the cover in its own row', async () => {
+    await saveEpub('b1', new ArrayBuffer(8), { id: 'b1', fileName: 'b.epub', coverUrl: bigCover });
+
+    const meta = mirrorStore().get('meta:b1') as EpubMeta;
+    expect(meta.coverUrl).toBeNull();
+    // The essential row must stay small enough to remain inline in LevelDB —
+    // a real cover alone measured 114 KB, which pushed a combined row into an
+    // external blob file (the very thing the mirror must survive losing).
+    expect(JSON.stringify(meta).length).toBeLessThan(1000);
+    expect((mirrorStore().get('cover:b1') as { coverUrl: string }).coverUrl).toBe(bigCover);
+  });
+
+  it('merges the cover back into the shelf summary', async () => {
+    await saveEpub('b1', new ArrayBuffer(8), { id: 'b1', fileName: 'b.epub', coverUrl: bigCover });
+    getCalls = [];
+
+    const books = await listEpubs();
+    expect(books[0]!.coverUrl).toBe(bigCover);
+    expect(getCalls.filter((c) => c.db === STORE_DB)).toHaveLength(0);
+  });
+
+  it('loses only the cover when the cover row is unreadable, and keeps listing other books', async () => {
+    await saveEpub('b1', new ArrayBuffer(8), { id: 'b1', fileName: 'with-cover.epub', coverUrl: bigCover });
+    await saveEpub('b2', new ArrayBuffer(8), { id: 'b2', fileName: 'plain.epub' });
+    failures.push({ db: META_DB, store: 'epub-meta', key: 'cover:b1', mode: 'unreadable' });
+
+    const books = await listEpubs();
+    expect(books.map((b) => b.fileName).sort()).toEqual(['plain.epub', 'with-cover.epub']);
+    expect(books.find((b) => b.id === 'b1')!.coverUrl).toBeNull();
   });
 });
 
