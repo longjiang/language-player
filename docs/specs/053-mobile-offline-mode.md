@@ -378,6 +378,15 @@ sync_meta(device_id, last_pull_cursor, last_sync_at, last_error)
   ── per-device sync position
 ```
 
+A **single unreadable outbox payload is isolated** (2026-10-16):
+`splitOutboxRows()` (`lib/outbox-payload.ts`) splits the queue into rows whose
+`payload` parses to a JSON object and rows that do not. `pushOutbox` marks a
+corrupt row as failed (attempts incremented, `last_error` set, visible on the
+Sync Status screen) and pushes the rest — previously one bad row rejected the
+whole `Promise.all` that built the request, so **no** op synced again. The same
+split keeps `getOutboxSnapshot` usable, so one bad row no longer hides every
+pending marker and the pending count.
+
 A **failed open is retried, never memoized** (2026-10-16): `openSyncDB()`
 memoizes its open promise so concurrent callers share one connection, but a
 rejection used to be memoized too — one failure (a corrupt or unreadable
