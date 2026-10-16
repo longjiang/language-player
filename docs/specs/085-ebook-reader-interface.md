@@ -560,11 +560,14 @@ even express "this file is gone".
   log line) — not by a notice about a book the user did not choose (which, when the
   record's metadata is gone too, cannot even be named). A nameless tombstone card
   is titled `error.loading_failed` ("Loading failed"), not the full sentence.
-- **One log line per shelf load.** Detail per record is info-level; a load that
-  found unreadable books emits a single error-channel line — `N of M stored
-  book(s) can no longer be read … first: book <id>: <error>` — because a swept
-  profile can have dozens and the repeat count is not the signal. (In dev the
-  mount effect runs twice, so it prints twice.)
+- **Each new loss is logged once.** Per-record detail is info-level; the first
+  load that finds a book unreadable emits ONE error-channel line — `N of M stored
+  book(s) can no longer be read … first: book <id>: <error>`. Later loads, and the
+  count dropping as the user removes them, stay at info level: a swept profile can
+  have dozens, the badges already say it, and a line per load (or per removal)
+  reads as "the app keeps erroring". A book that becomes readable (re-imported) is
+  forgotten, so losing it again is reported afresh; tapping a card that cannot
+  open logs once, because that failure is the direct result of the user's action.
 - **Remove is the recovery** (one click): it deletes the record, its mirror row
   and its search index. The user then imports the file again — an import
   replaces an unreadable record, so re-importing is a complete repair. The app

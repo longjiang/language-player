@@ -97,6 +97,13 @@ function openMetaDB(): Promise<IDBDatabase> {
 let metaMirrorWarned = false;
 
 /**
+ * Books already reported as unreadable in this session. Each new loss is
+ * reported once on the error channel; later loads (and the count dropping after
+ * a removal) stay at info level — the shelf badges are the user-facing signal.
+ */
+const reportedUnreadable = new Set<string>();
+
+/**
  * Mirror row keys. The mirror holds TWO rows per book:
  *
  * - `meta:<id>` — the small, essential metadata (name, progress, last location).
@@ -570,13 +577,30 @@ export async function listEpubs(): Promise<EpubSummary[]> {
   }
 
   if (unreadable.length > 0) {
-    // An actual, irrecoverable condition the user needs to understand ("my
-    // shelf is full of unavailable books") — worth the error channel, once.
-    epubStorageErr(
+    const message =
       `${unreadable.length} of ${bookCount} stored book(s) can no longer be read ` +
       `(marked unavailable; the user can remove them and import the files again) — ` +
-      `first: book ${unreadable[0]!.id}: ${errText(unreadable[0]!.err)}`,
-    );
+      `first: book ${unreadable[0]!.id}: ${errText(unreadable[0]!.err)}`;
+    const ids = unreadable.map((u) => u.id);
+    // Report each NEW loss once per session, on the error channel. The shelf
+    // already shows the condition as badges, so repeating it on every load (and
+    // again after each removal, when the count merely drops) is noise a user
+    // reads as "the app keeps erroring". Repeat loads keep the detail at info
+    // level, which is where diagnostics belong.
+    const fresh = ids.filter((id) => !reportedUnreadable.has(id));
+    if (fresh.length > 0) {
+      epubStorageErr(message);
+      for (const id of fresh) reportedUnreadable.add(id);
+    } else {
+      epubLog(message);
+    }
+    // Forget books that are readable (or gone) again, so a later loss of the
+    // same book is reported afresh.
+    for (const id of [...reportedUnreadable]) {
+      if (!ids.includes(id)) reportedUnreadable.delete(id);
+    }
+  } else {
+    reportedUnreadable.clear();
   }
 
   // Prune mirror rows whose book record no longer exists (best effort).
