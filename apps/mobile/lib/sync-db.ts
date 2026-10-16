@@ -14,7 +14,7 @@ import * as SQLite from 'expo-sqlite';
 import { canCoalesceOps, coalesceSyncPayload, validateSyncPayload } from '@langplayer/utils';
 import { syncLogger } from '@/lib/logger';
 
-const { log } = syncLogger;
+const { log, logerr } = syncLogger;
 
 const DB_NAME = 'sync.db';
 
@@ -94,7 +94,17 @@ export async function openSyncDB(): Promise<SQLite.SQLiteDatabase> {
     _db = db;
     return db;
   })();
-  return _dbPromise;
+
+  try {
+    return await _dbPromise;
+  } catch (err) {
+    // Same rule as the dictionary DB: a failed open (a corrupt sync.db) must not
+    // be memoized, or every sync call rejects for the rest of the session.
+    _db = null;
+    _dbPromise = null;
+    logerr(`📚 sync DB could not be opened — it will be retried on the next sync: ${(err as Error)?.message ?? err}`); // non-info-level: caught storage exception — stack trace needed
+    throw err;
+  }
 }
 
 export async function getEntityCache(

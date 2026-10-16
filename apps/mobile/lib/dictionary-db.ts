@@ -18,7 +18,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { dictDbLogger } from '@/lib/logger';
 
-const { log, logwarn } = dictDbLogger;
+const { log, logwarn, logerr } = dictDbLogger;
 
 // ── Constants ────────────────────────────────
 
@@ -123,7 +123,18 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
     return _db;
   })();
 
-  return _dbPromise;
+  try {
+    return await _dbPromise;
+  } catch (err) {
+    // A failed open (a corrupt or unreadable dictionary.db, a full disk, a
+    // locked file) must NOT be memoized: the next call would hand back the same
+    // rejected promise for the rest of the session, permanently disabling the
+    // offline dictionary with no way to recover but a relaunch.
+    _db = null;
+    _dbPromise = null;
+    logerr(`📚 dictionary DB could not be opened — it will be retried on the next lookup: ${(err as Error)?.message ?? err}`); // non-info-level: caught storage exception — stack trace needed
+    throw err;
+  }
 }
 
 /**
@@ -188,10 +199,16 @@ async function shrinkDictionaryDB(db: SQLite.SQLiteDatabase): Promise<void> {
  * Close the dictionary database. Useful for cleanup or testing.
  */
 export async function closeDictionaryDB(): Promise<void> {
-  if (_db) {
-    await _db.closeAsync();
-    _db = null;
-    _dbPromise = null;
+  const db = _db;
+  // Reset first: a failing close must not leave a dead handle memoized.
+  _db = null;
+  _dbPromise = null;
+  if (db) {
+    try {
+      await db.closeAsync();
+    } catch (err) {
+      logwarn(`📚 closing the dictionary DB failed: ${(err as Error)?.message ?? err}`);
+    }
   }
 }
 
