@@ -73,6 +73,9 @@ docs/
 | 022 | [Payment, Subscription & MailerLite](arch/022-payment-subscription-mailerlite.md) | End-to-end payment/subscription flows, free trial, renewal, subscription management, and MailerLite group sync |
 | 025 | [Language Content Audit](arch/025-language-content-audit.md) | Aggregated L2 content library, study activity, and popular-L2 picker evidence |
 | 031 | [TTS Voice Selection](arch/031-tts-voice-selection.md) | Cross-platform voice quality research + quality-ranked auto-select algorithm (web + mobile) |
+| 032 | [YouTube Video Difficulty](arch/032-youtube-video-difficulty.md) | How the `difficulty = lex_div / word_freq` score is computed and mapped to a 1–7 level badge |
+| 033 | [Difficulty → Level Bucketing](arch/033-difficulty-level-bucketing.md) | How per-language level thresholds are derived from the catalog via geometric bucketing |
+| 034 | [Video Lemmatization Cache](arch/034-video-lemmatization-cache.md) | Whole-video token cache: two-tier server storage, cache-ID rebinding, offload job, client `TokenCache` |
 
 ## Quick Reference
 
