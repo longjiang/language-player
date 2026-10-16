@@ -270,6 +270,11 @@ export interface DiscoverResponse {
 
 // ── Sweep ───────────────────────────────────────────────────────────────
 
+/** The sweep's keyset cursor is its own shape, not the importer's. */
+export interface SweepCursor {
+  after_id: number;
+}
+
 export interface SweepRow {
   youtube_id: string;
   id: number | null;
@@ -280,6 +285,6 @@ export interface SweepResponse {
   unavailable: SweepRow[];
   deleted: SweepRow[];
   invalid?: string[];
-  next_cursor: { after_id: number } | null;
+  next_cursor: SweepCursor | null;
   l2: string;
 }

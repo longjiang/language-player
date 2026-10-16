@@ -17,13 +17,13 @@ import type {
   ChannelVideo,
   DiscoverResponse,
   EpisodeVideo,
-  ImportCursor,
   ImportOptions,
   ImportResponse,
   ImportVideoResult,
   ResolvedChannel,
   ShowInput,
   ShowKind,
+  SweepCursor,
   SweepResponse,
   VideoInput,
 } from '@/types/content';
@@ -265,7 +265,7 @@ export async function discover(input: DiscoverOptions): Promise<DiscoverResponse
 export interface SweepOptions {
   l2: string;
   youtube_ids?: string[];
-  cursor?: ImportCursor | null;
+  cursor?: SweepCursor | null;
   limit?: number;
   delete?: boolean;
 }
