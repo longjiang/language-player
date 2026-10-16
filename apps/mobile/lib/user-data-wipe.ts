@@ -2,16 +2,26 @@
  * Logout user-data wipe.
  *
  * Removes every account-scoped local store (notes, saved words, progress,
- * SRS, settings, recent searches, sync.db) so switching users never leaks
- * the previous user's data. Also turns OFF the device-local Offline Mode
- * toggle so the next login isn't blocked by the network gate. Deliberately
- * KEEPS: language preference, offline dictionaries, tokenizer packs, and
- * tokenizer caches.
+ * SRS, settings, recent searches, sync.db, Ask-AI transcripts) and the content
+ * directories those stores describe (imported books, local media) so switching
+ * users never leaks the previous user's data. Also turns OFF the device-local
+ * Offline Mode toggle so the next login isn't blocked by the network gate.
+ *
+ * Deliberately KEEPS: language preference, offline dictionaries, tokenizer
+ * packs, tokenizer caches, and the study-mode preference. Textbook exercise
+ * state (`lp:textbook:*`) is also kept: it is device-local with no server copy,
+ * so wiping it would destroy the returning user's answers with nothing to
+ * restore them from.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
+import * as FileSystem from 'expo-file-system/legacy';
 import { log } from '@/lib/logger';
+import { LIBRARY_DIR } from '@/lib/epub-store';
+
+/** Local media sandbox — mirrors `MEDIA_DIR` in hooks/use-local-media.ts. */
+const LOCAL_MEDIA_DIR = `${FileSystem.documentDirectory}local-media/`;
 import { openSyncDB } from '@/lib/sync-db';
 import { resetSyncEngineForLogout } from '@/lib/sync-engine';
 import { clearRecentSearchesStorage } from '@/lib/recent-searches-storage';
@@ -31,7 +41,8 @@ const SECURE_KEYS = [
 const ASYNC_EXACT_KEYS = [
   'notes_active_note',         // last-open note
   'notes_sync_queue',          // legacy notes queue (pre-sync.db)
-  'lp_epub_library_v1',        // bookshelf metadata (book files stay on disk)
+  'lp_epub_library_v1',        // bookshelf metadata
+  'lp:srs-test-cache',         // per-card test results (derived from SRS cards)
 ];
 
 const ASYNC_PREFIXES = [
@@ -39,6 +50,7 @@ const ASYNC_PREFIXES = [
   'note_',                     // note body cache per id
   'reader_anchor_note_',       // notes reader page anchors
   'reader_anchor_url_',        // web reader page anchors
+  'lp-ask-ai:',                // Ask-AI transcripts (keyed by video/book/image/note)
 ];
 
 /** Remove all account-scoped local user data. */
@@ -82,6 +94,21 @@ export async function wipeUserData(): Promise<void> {
     );
   } catch (e) {
     log('[LP Mobile] logout wipe — sync.db cleanup failed:', (e as Error)?.message ?? e);
+  }
+
+  // Content directories. The metadata wiped above is what made these files
+  // reachable, so leaving them behind leaks the previous user's content as
+  // orphaned bytes — and for local media it is worse: `state.json` (a file, not
+  // a key) would restore the previous user's video into the next user's player.
+  // This is not a loss for the returning user: the metadata needed to use them
+  // is already gone.
+  for (const dir of [LIBRARY_DIR, LOCAL_MEDIA_DIR]) {
+    try {
+      await FileSystem.deleteAsync(dir, { idempotent: true });
+      log(`[LP Mobile] logout wipe — removed ${dir}`);
+    } catch (e) {
+      log(`[LP Mobile] logout wipe — could not remove ${dir}: ${(e as Error)?.message ?? e}`);
+    }
   }
 
   await resetSyncEngineForLogout();

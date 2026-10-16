@@ -294,8 +294,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     // Remove the previous user's local data (notes, saved words, progress,
-    // SRS, settings, recents, sync db). Offline dictionaries/tokenizers and
-    // the device-local Offline Mode toggle stay.
+    // SRS, settings, recents, sync db, Ask-AI transcripts) **and** the content
+    // directories it describes (imported books, local media). Offline
+    // dictionaries/tokenizers, the device-local Offline Mode toggle, the
+    // language preference and device-local textbook state stay.
     // Dynamic import avoids a module cycle (sync-engine → authenticated-fetch
     // → AuthContext).
     const { wipeUserData } = await import('@/lib/user-data-wipe');
