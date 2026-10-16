@@ -151,7 +151,7 @@
   sweep; discovery from search terms (SPEC-096, SPEC-098)
 - ✅ Legacy crawler removed — the Directus/MySQL crawl path and its storage
   layer are deleted; the import API replaces them
-- 🔄 Content management (videos / shows / talks / channels by L2) in the admin
+- ✅ Content management (videos / shows / talks / channels by L2) in the admin
   console — Users/Content nav shell, videos manager (search, edit, create,
   delete, bulk assign), importer with cursor paging, discovery review,
   shows & talks CRUD with member videos, channels browser, unavailable sweep
@@ -175,4 +175,5 @@
 
 ## Currently Working On
 - Phase 7: Mobile Integration — porting all Next.js pages to React Native
-- Phase 10: Admin Console — user management shipped; next surfaces TBD
+- Phase 10: Admin Console — user and content management shipped (SPEC-060,
+  SPEC-099); payment log viewer and account actions are next
