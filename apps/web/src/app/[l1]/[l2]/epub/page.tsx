@@ -30,9 +30,9 @@ import { CONTENT_CONTAINER_WIDTH, READER_DEFAULT_LEADING, readerLeadingPx } from
 import { Header } from '@/components/layout/header';
 import { ReaderChromeProvider, useReaderChrome } from '@/providers/reader-chrome-provider';
 import {
-  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelTopOpen, X,
+  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelTopOpen, Trash2, TriangleAlert, X,
 } from 'lucide-react';
-import { epubLog } from '@/lib/epub-log';
+import { epubLog, epubStorageErr } from '@/lib/epub-log';
 import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
 
 /** Height of the app header (h-14 content + border-b) — the reader's top
@@ -51,8 +51,13 @@ const TOP_CHROME_RESERVE = HEADER_HEIGHT + 32; // 89
  *  (counter line bottom = BOTTOM_BAR_HEIGHT + 8 above the screen bottom). */
 const BOTTOM_CHROME_RESERVE = BOTTOM_BAR_HEIGHT + 32; // 73
 
-/** Vision-OCR prompt for the EPUB + PDF readers — the model returns the
- *  image's text as clean markdown (deepseek-v4-flash-vision-exp via /vision). */
+/** `Name: message` for a caught error, for the storage error log. */
+function errMsg(err: unknown): string {
+  if (!err || typeof err !== 'object') return String(err);
+  const e = err as { name?: unknown; message?: unknown };
+  return `${String(e.name ?? 'Error')}: ${String(e.message ?? '')}`;
+}
+
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -91,6 +96,11 @@ export default function EpubPage() {
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const openingIdRef = useRef<string | null>(null);
+  /** Book whose open attempt failed (owned by `useEpub` — a PDF open also
+   *  resolves to a null location, so the hook is the only reliable signal).
+   *  Drives the shelf's recovery notice: remove the unreadable record and
+   *  import the file again. */
+  const failedOpenId = epub.openFailureId;
   const [importFailures, setImportFailures] = useState<EpubFileError[]>([]);
   const [location, setLocation] = useState<BookLocation | null>(null);
   /** Active search-match highlight (block + char range), if any. */
@@ -191,18 +201,31 @@ export default function EpubPage() {
   // filter the bookshelf uses) instead of landing on the shelf. Opens
   // straight to the content (skipCover), like a bookshelf card tap; the shelf
   // only appears when no book matches the current L2.
+  //
+  // The whole flow is guarded: a storage failure here (e.g. a record whose
+  // binary file was deleted from disk) must never leave the page on its
+  // loading spinner — `setInitialized` runs in `finally`, and `handleOpenBook`
+  // reports the failure on the shelf instead of rejecting.
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const list = await epub.refreshBooks();
-      const l2Primary = normalizeLanguageCode(l2.code);
-      const last = [...list]
-        .sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0))
-        .find((b) => !b.language || normalizeLanguageCode(b.language) === l2Primary);
-      if (last) {
-        await handleOpenBook(last.id);
+      try {
+        const list = await epub.refreshBooks();
+        if (cancelled) return;
+        const l2Primary = normalizeLanguageCode(l2.code);
+        const last = [...list]
+          .sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0))
+          .find((b) => !b.language || normalizeLanguageCode(b.language) === l2Primary);
+        if (last) {
+          await handleOpenBook(last.id);
+        }
+      } catch (err) {
+        epubStorageErr(`bookshelf load failed — showing an empty shelf: ${errMsg(err)}`);
+      } finally {
+        if (!cancelled) setInitialized(true);
       }
-      setInitialized(true);
     })();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -211,6 +234,15 @@ export default function EpubPage() {
     if (!epub.markers || !location) return null;
     return markerForLocation(epub.markers, location)?.node.label ?? null;
   }, [epub.markers, location]);
+
+  /** Display name of the book whose open attempt failed (for the recovery
+   *  notice); null when its name is unknown. */
+  const failedBookName = useMemo(() => {
+    if (!failedOpenId) return null;
+    const book = epub.books.find((b) => b.id === failedOpenId);
+    if (!book?.fileName) return null;
+    return book.fileName.replace(/\.(epub|pdf)$/i, '');
+  }, [failedOpenId, epub.books]);
 
   // Canonical href of the current spine item — base for in-content links.
   const currentSpineHref = useMemo(() => {
@@ -248,12 +280,18 @@ export default function EpubPage() {
     if (openingIdRef.current !== null) return;
     openingIdRef.current = id;
     setOpeningId(id);
+    epub.clearError();
     try {
       // Bookshelf clicks go straight to the content — skip the cover tap.
       const start = await epub.openBook(id, { skipCover: true });
       pendingStartRef.current = start;
       // Resume is applied reactively: immediately when there is no cover,
-      // or on cover tap otherwise.
+      // or on cover tap otherwise. `useEpub` records the failure itself.
+    } catch (err) {
+      // Never let a storage failure strand the page: report it on the shelf
+      // (the record can be removed and the file imported again).
+      epubStorageErr(`opening book ${id} failed: ${errMsg(err)}`);
+      pendingStartRef.current = null;
     } finally {
       openingIdRef.current = null;
       setOpeningId(null);
@@ -320,13 +358,21 @@ export default function EpubPage() {
     void epub.resolveHref(href, currentSpineHref).then(gotoLocation);
   }, [router, l1.code, l2.code, epub, currentSpineHref, gotoLocation, pushHistory, location]);
 
-  // File upload(s) — add to the shelf without opening.
+  // File upload(s) — add to the shelf without opening. Each file is isolated:
+  // a file that cannot be read or stored (e.g. a moved/deleted drag source, or
+  // a storage write failure) is reported in the import dialog instead of
+  // silently aborting the whole batch.
   const handleFilesProcessed = useCallback(async ({ files, failures }: EpubUploadResult) => {
     const failed: EpubFileError[] = [...failures];
     for (const file of files) {
-      const added = await epub.addBook(file.data, file.fileName, l2.code);
-      if (!added) {
-        failed.push({ fileName: file.fileName, fileSize: file.fileSize, reasonKey: 'msg.epub_parse_error' });
+      try {
+        const added = await epub.addBook(file.data, file.fileName, l2.code);
+        if (!added) {
+          failed.push({ fileName: file.fileName, fileSize: file.fileSize, reasonKey: 'msg.epub_parse_error' });
+        }
+      } catch (err) {
+        epubStorageErr(`import of "${file.fileName}" failed: ${errMsg(err)}`);
+        failed.push({ fileName: file.fileName, fileSize: file.fileSize, reasonKey: 'msg.epub_file_unreadable' });
       }
     }
     epub.clearError();
@@ -388,9 +434,20 @@ export default function EpubPage() {
     }
   }, [gotoLocation, handleClose]);
 
-  // Remove a book from the shelf.
+  // Remove a book from the shelf (also the recovery action for a book whose
+  // stored record can no longer be read).
   const handleRemoveBook = useCallback(async (id: string) => {
-    await epub.removeBook(id);
+    try {
+      await epub.removeBook(id);
+    } catch (err) {
+      epubStorageErr(`could not remove book ${id}: ${errMsg(err)}`);
+    }
+  }, [epub]);
+
+  // Dismiss the recovery notice without removing the book.
+  const dismissOpenFailure = useCallback(() => {
+    epub.clearOpenFailure();
+    epub.clearError();
   }, [epub]);
 
   // Page turns keep the position in sync and persist it.
@@ -631,6 +688,30 @@ export default function EpubPage() {
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
+            {/* Recovery notice: a stored book could not be read (its binary
+                file is gone, or the read failed). Shown above the shelf so the
+                user keeps their library while being offered the fix. */}
+            {failedOpenId && (
+              <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+                <TriangleAlert className="h-5 w-5 flex-shrink-0 text-destructive" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-destructive">
+                    {t('msg.epub_file_unreadable')}
+                  </p>
+                  {failedBookName && (
+                    <p className="truncate text-xs font-medium text-foreground">{failedBookName}</p>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={() => handleRemoveBook(failedOpenId)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {t('action.remove')}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={dismissOpenFailure}>
+                  {t('action.close')}
+                </Button>
+              </div>
+            )}
+
             {!epub.openBookId ? (
               <EpubBookshelf
                 books={epub.books}
@@ -639,11 +720,32 @@ export default function EpubPage() {
                 onRemoveBook={handleRemoveBook}
                 onFilesProcessed={handleFilesProcessed}
                 openingId={openingId}
-                error={epub.error ? t(epub.error) : null}
+                unreadable={epub.unreadable}
+                error={failedOpenId ? null : epub.error ? t(epub.error) : null}
               />
             ) : openingId ? (
               <div className="flex min-h-[40vh] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : epub.error ? (
+              /* An open failed *after* the book id was set (e.g. the model
+                 could not be re-parsed) — report it instead of spinning. */
+              <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
+                <p className="text-sm text-destructive">{t(epub.error)}</p>
+                <div className="flex items-center gap-2">
+                  {failedOpenId && (
+                    <Button variant="outline" size="sm" onClick={() => handleRemoveBook(failedOpenId)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {t('action.remove')}
+                    </Button>
+                  )}
+                  <button
+                    onClick={handleClose}
+                    className="rounded px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    {t('action.close')}
+                  </button>
+                </div>
               </div>
             ) : !epub.coverTapped && epub.coverUrl && epub.book ? (
               /* ── Cover ── */
@@ -661,16 +763,6 @@ export default function EpubPage() {
                  blank page. */
               <div className="flex min-h-[40vh] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : epub.error ? (
-              <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
-                <p className="text-sm text-destructive">{t(epub.error)}</p>
-                <button
-                  onClick={handleClose}
-                  className="rounded px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                >
-                  {t('action.close')}
-                </button>
               </div>
             ) : null}
           </div>

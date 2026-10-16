@@ -5,9 +5,10 @@ import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { BookOpen, Loader2, MoreVertical, Search, Trash2, X } from 'lucide-react';
+import { BookOpen, Loader2, MoreVertical, Search, Trash2, TriangleAlert, X } from 'lucide-react';
 import type { EpubSummary } from '@/lib/epub-store';
 import type { EpubUploadResult } from '@/components/reader/epub-upload';
+import type { EpubUnavailableKind } from '@/hooks/use-epub';
 import { normalizeLanguageCode } from '@/lib/epub-book';
 import { displayLanguageName } from '@/lib/language-data';
 
@@ -24,6 +25,9 @@ interface EpubBookshelfProps {
   onFilesProcessed: (result: EpubUploadResult) => void;
   /** Id of the book currently being opened (shows a spinner on its card). */
   openingId: string | null;
+  /** Books whose stored record could not be read, keyed by id — badged as
+   *  "no longer readable" with a one-click Remove. */
+  unreadable?: Record<string, EpubUnavailableKind>;
   /** Error message to display (e.g. parse failure from parent). */
   error?: string | null;
 }
@@ -75,6 +79,7 @@ export function EpubBookshelf({
   onRemoveBook,
   onFilesProcessed,
   openingId,
+  unreadable,
   error,
 }: EpubBookshelfProps) {
   const t = useT();
@@ -162,14 +167,19 @@ export function EpubBookshelf({
               const pct = book.totalChars > 0
                 ? Math.min(100, Math.round((book.readChars / book.totalChars) * 100))
                 : null;
-              const displayName = book.fileName.replace(/\.epub$/i, '');
+              const unavailable = unreadable?.[book.id] ?? book.unavailable;
+              // A book whose stored record is unreadable may have no name of its
+              // own (the name lived in the record that cannot be read).
+              const displayName = book.fileName
+                ? book.fileName.replace(/\.(epub|pdf)$/i, '')
+                : t('msg.epub_file_unreadable');
               return (
                 <div
                   key={book.id}
                   role="button"
                   tabIndex={0}
                   aria-disabled={openingId !== null}
-                  title={book.fileName}
+                  title={book.fileName || displayName}
                   onClick={() => { if (openingId === null) onOpenBook(book.id); }}
                   onKeyDown={(e) => {
                     if (openingId !== null) return;
@@ -178,10 +188,10 @@ export function EpubBookshelf({
                       onOpenBook(book.id);
                     }
                   }}
-                  className={`group flex cursor-pointer flex-col items-start gap-2 rounded-lg p-2 transition-colors hover:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${openingId !== null ? 'opacity-70' : ''}`}
+                  className={`group flex cursor-pointer flex-col items-start gap-2 rounded-lg p-2 transition-colors hover:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${openingId !== null ? 'opacity-70' : ''} ${unavailable ? 'border border-destructive/40 bg-destructive/5' : ''}`}
                 >
                   <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md border border-border bg-muted">
-                    {book.coverUrl ? (
+                    {book.coverUrl && !unavailable ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={book.coverUrl}
@@ -190,7 +200,11 @@ export function EpubBookshelf({
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
-                        <BookOpen className="h-8 w-8 text-muted-foreground/50" />
+                        {unavailable ? (
+                          <TriangleAlert className="h-8 w-8 text-destructive/70" />
+                        ) : (
+                          <BookOpen className="h-8 w-8 text-muted-foreground/50" />
+                        )}
                       </div>
                     )}
                     {openingId === book.id && (
@@ -208,7 +222,20 @@ export function EpubBookshelf({
                     <BookActionsMenu onRemove={() => onRemoveBook(book.id)} />
                   </div>
 
-                  {pct !== null && (
+                  {/* Unreadable record: the card is badged (warning icon +
+                      destructive tint) and offers the single recovery step
+                      (remove, then import the file again). The explanation
+                      lives in the shelf's recovery notice. */}
+                  {unavailable ? (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onRemoveBook(book.id); }}
+                      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      {t('action.remove')}
+                    </button>
+                  ) : pct !== null && (
                     <span className="w-full">
                       <span className="mb-1 block text-xs text-muted-foreground">
                         {t('msg.epub_progress', { pct })}

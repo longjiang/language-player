@@ -21,12 +21,25 @@ import {
   deleteBookIndex,
   listEpubs,
   sha256Hex,
+  isUnreadableRecordError,
   type EpubSummary,
   type SpineIndexRecord,
+  type StoredEpub,
 } from '@/lib/epub-store';
 import { pdfInfo, renderPdfPage, type PdfOutlineItem } from '@/lib/pdf-book';
 import { convertAltBookFormat, buildMinimalEpub } from '@langplayer/utils';
-import { epubLog, epubWarn, epubErr } from '@/lib/epub-log';
+import { epubLog, epubWarn, epubErr, epubStorageErr } from '@/lib/epub-log';
+
+/** How a stored book failed to read: irrecoverable (`unreadable`) or a read
+ *  error that may succeed again later (`error`). */
+export type EpubUnavailableKind = 'unreadable' | 'error';
+
+/** `Name: message` for a caught error, for the storage error log. */
+function errMessage(err: unknown): string {
+  if (!err || typeof err !== 'object') return String(err);
+  const e = err as { name?: unknown; message?: unknown };
+  return `${String(e.name ?? 'Error')}: ${String(e.message ?? '')}`;
+}
 
 /** A single in-book search hit, located in the book flow. */
 export interface EpubSearchResult {
@@ -72,6 +85,17 @@ export interface UseEpubReturn {
   pageProgressionDir: 'ltr' | 'rtl';
   /** Bookshelf entries (metadata only), sorted by last read. */
   books: EpubSummary[];
+  /** Books whose stored record failed to read, keyed by id — drives the shelf's
+   *  "no longer readable" badge. Survives a shelf refresh (the refresh itself
+   *  cannot re-detect the failure, because it does not read the blob). */
+  unreadable: Record<string, EpubUnavailableKind>;
+  /** Id of the book whose most recent open attempt failed, or null. Distinguishes
+   *  a failed open from a PDF open (which also resolves to a null location). */
+  openFailureId: string | null;
+  /** Clear a book's unavailable mark (used by the recovery Remove action). */
+  clearUnreadable: (id: string) => void;
+  /** Dismiss the open-failure notice (keeps the book on the shelf). */
+  clearOpenFailure: () => void;
   /** Id of the currently open book, or null when showing the bookshelf. */
   openBookId: string | null;
   /** PDF reading session (format: 'pdf' entries): the binary + page/outline
@@ -169,6 +193,8 @@ export function useEpub(): UseEpubReturn {
   const [error, setError] = useState<string | null>(null);
   const [pageProgressionDir, setPageProgressionDir] = useState<'ltr' | 'rtl'>('ltr');
   const [books, setBooks] = useState<EpubSummary[]>([]);
+  const [unreadable, setUnreadable] = useState<Record<string, EpubUnavailableKind>>({});
+  const [openFailureId, setOpenFailureId] = useState<string | null>(null);
   const [openBookId, setOpenBookId] = useState<string | null>(null);
   const [pdfDoc, setPdfDoc] = useState<{
     id: string;
@@ -183,10 +209,40 @@ export function useEpub(): UseEpubReturn {
   const indexRef = useRef<SpineIndexRecord[] | null>(null);
   const indexingRef = useRef<Map<string, Promise<void>>>(new Map());
 
-  /** Reload the bookshelf list from IndexedDB. */
+  /** Mark a book whose stored record could not be read. */
+  const markUnreadable = useCallback((id: string, kind: EpubUnavailableKind) => {
+    setUnreadable((prev) => (prev[id] === kind ? prev : { ...prev, [id]: kind }));
+  }, []);
+
+  /** Clear a book's unavailable mark (successful open/re-import, or removal). */
+  const clearUnreadable = useCallback((id: string) => {
+    setUnreadable((prev) => {
+      if (!(id in prev)) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
+  /**
+   * Reload the bookshelf list from IndexedDB.
+   *
+   * `listEpubs` never fails because one record is unreadable — it reports those
+   * as `unavailable` summaries. Marks are merged into the shelf's state (and
+   * kept for books still listed), so a book that failed to open keeps its badge
+   * across a refresh even though the refresh does not read the blob.
+   */
   const refreshBooks = useCallback(async (): Promise<EpubSummary[]> => {
     const list = await listEpubs();
     setBooks(list);
+    setUnreadable((prev) => {
+      const next: Record<string, EpubUnavailableKind> = {};
+      for (const book of list) {
+        const kind = book.unavailable ?? prev[book.id];
+        if (kind) next[book.id] = kind;
+      }
+      return next;
+    });
     return list;
   }, []);
 
@@ -206,13 +262,19 @@ export function useEpub(): UseEpubReturn {
       indexRef.current = records;
       await saveBookIndex(id, records);
       epubLog(`search index complete: ${records.length} spines, ${totalChars} chars`);
-      const stored = await loadEpub(id);
-      if (stored) {
-        const meta = stored.meta;
-        const readChars = meta.lastLocation
-          ? charsBeforeLocation(records, meta.lastLocation)
-          : meta.readChars ?? 0;
-        await updateEpubMeta(id, { totalChars, readChars });
+      // The record may itself be unreadable (its blob file is gone): the index
+      // is still persisted, only the progress recomputation is skipped.
+      try {
+        const stored = await loadEpub(id);
+        if (stored) {
+          const meta = stored.meta;
+          const readChars = meta.lastLocation
+            ? charsBeforeLocation(records, meta.lastLocation)
+            : meta.readChars ?? 0;
+          await updateEpubMeta(id, { totalChars, readChars });
+        }
+      } catch (err) {
+        epubStorageErr(`could not update progress for ${id} after indexing: ${errMessage(err)}`);
       }
       await refreshBooks();
     })();
@@ -247,6 +309,8 @@ export function useEpub(): UseEpubReturn {
     void b.tocMarkers().then(m => {
       markersRef.current = m;
       setMarkers(m);
+    }).catch((err) => {
+      epubWarn(`toc markers failed: ${errMessage(err)}`);
     });
   }, []);
 
@@ -267,7 +331,14 @@ export function useEpub(): UseEpubReturn {
     // Content-hash dedupe (import path only): if the book is already in the
     // library, skip re-parsing/re-saving. openBook does NOT pass skipExisting,
     // because opening a stored book must re-parse the model to resume.
-    const existing = await loadEpub(id);
+    // A record that cannot be read is treated as absent: the import then
+    // overwrites it with fresh, readable bytes (the recovery path).
+    let existing: StoredEpub | null = null;
+    try {
+      existing = await loadEpub(id);
+    } catch (err) {
+      epubWarn(`import "${fName}": existing record ${id} is unreadable (${errMessage(err)}) — replacing it`);
+    }
     if (existing && opts?.skipExisting) {
       epubLog(`import "${fName}" — already in library, skipped (${id})`);
       return { b: null, id, existing: true };
@@ -292,18 +363,47 @@ export function useEpub(): UseEpubReturn {
       lastReadAt: Date.now(),
     });
     // Warm the search index in the background unless a fresh one is cached.
+    // Failure is non-fatal (the search rebuilds on demand), but it must not
+    // become an unhandled rejection.
     const cachedIndex = await loadBookIndex(id);
-    if (!cachedIndex) void computeAndPersistIndex(b, id);
+    if (!cachedIndex) {
+      void computeAndPersistIndex(b, id).catch((err) => {
+        epubStorageErr(`search index build failed for ${id}: ${errMessage(err)}`);
+      });
+    }
+    clearUnreadable(id); // a fresh, readable record replaces any bad one
     return { b, id, existing: !!existing };
-  }, [computeAndPersistIndex]);
+  }, [computeAndPersistIndex, clearUnreadable]);
 
   /** Open a stored book, resuming at its saved location (with migration). */
   const openBook = useCallback(async (
     id: string,
     opts?: { skipCover?: boolean },
   ): Promise<BookLocation | null> => {
-    const stored = await loadEpub(id);
-    if (!stored) return null;
+    let stored: StoredEpub | null;
+    try {
+      stored = await loadEpub(id);
+    } catch (err) {
+      // The record cannot be read: most often its binary file was deleted from
+      // disk, which Chrome reports as an irrecoverable `NotReadableError`. The
+      // metadata mirror still names it, so the card can offer the recovery
+      // (Remove → import the file again) instead of failing silently.
+      const kind: EpubUnavailableKind = isUnreadableRecordError(err) ? 'unreadable' : 'error';
+      epubStorageErr(`openBook ${id} could not read the stored record (${kind}): ${errMessage(err)}`);
+      markUnreadable(id, kind);
+      setOpenFailureId(id);
+      setError('msg.epub_file_unreadable');
+      return null;
+    }
+    if (!stored) {
+      // Metadata without a record (e.g. an interrupted delete): nothing to open.
+      epubStorageErr(`openBook ${id}: no stored record — marking it unavailable`);
+      markUnreadable(id, 'unreadable');
+      setOpenFailureId(id);
+      setError('msg.epub_file_unreadable');
+      return null;
+    }
+    clearUnreadable(id);
     currentBookIdRef.current = id;
     setOpenBookId(id);
     setFileName(stored.meta.fileName);
@@ -325,17 +425,31 @@ export function useEpub(): UseEpubReturn {
             ? { ...prev, pageCount: info.pageCount, outline: info.outline }
             : prev,
         );
+      }).catch((err) => {
+        // The stored PDF could not be parsed — same recovery as an unreadable
+        // record (Remove from the shelf, then import the file again).
+        epubStorageErr(`openBook ${id}: stored PDF could not be parsed: ${errMessage(err)}`);
+        markUnreadable(id, 'unreadable');
+        setPdfDoc(null);
+        setOpenBookId(null);
+        setOpenFailureId(id);
+        setError('msg.epub_file_unreadable');
       });
       setBook(null);
       setToc([]);
       setMarkers(null);
       setCoverTapped(true);
+      setOpenFailureId(null);
       await updateEpubMeta(id, { lastReadAt: Date.now() });
       return null;
     }
 
     const parsed = await parseAndStore(stored.data, stored.meta.fileName);
-    if (!parsed?.b) return null;
+    if (!parsed?.b) {
+      // `parseAndStore` already set the error ('msg.epub_parse_error').
+      setOpenFailureId(id);
+      return null;
+    }
     const { b } = parsed;
     setPdfDoc(null);
     setOpenBook(b);
@@ -351,6 +465,7 @@ export function useEpub(): UseEpubReturn {
     }
     if (!start) start = { spineIndex: 0, blockIndex: 0, offset: 0 };
     epubLog(`openBook "${stored.meta.fileName}" → resume spine=${start.spineIndex} block=${start.blockIndex} offset=${start.offset}`);
+    setOpenFailureId(null);
     setCoverTapped(opts?.skipCover || !b.coverUrl);
     await updateEpubMeta(id, {
       lastLocation: start,
@@ -361,7 +476,7 @@ export function useEpub(): UseEpubReturn {
       lastReadAt: Date.now(),
     });
     return start;
-  }, [parseAndStore, setOpenBook]);
+  }, [parseAndStore, setOpenBook, markUnreadable, clearUnreadable]);
 
   /** Add a file to the bookshelf without opening it. */
   const addBook = useCallback(async (
@@ -378,7 +493,14 @@ export function useEpub(): UseEpubReturn {
       } catch {
         id = `fn-${fName}-${data.byteLength}`;
       }
-      const existing = await loadEpub(id);
+      // An unreadable existing record is treated as absent — the save below
+      // replaces it (same recovery as the EPUB import path).
+      let existing: StoredEpub | null = null;
+      try {
+        existing = await loadEpub(id);
+      } catch (err) {
+        epubWarn(`import "${fName}": existing PDF ${id} is unreadable (${errMessage(err)}) — replacing it`);
+      }
       // Content-hash dedupe: a PDF already in the library is skipped (no
       // duplicate handle, no re-cover render).
       if (existing) {
@@ -406,6 +528,7 @@ export function useEpub(): UseEpubReturn {
         coverUrl,
         lastReadAt: Date.now(),
       });
+      clearUnreadable(id);
       await refreshBooks();
       return { id };
     }
@@ -424,7 +547,7 @@ export function useEpub(): UseEpubReturn {
     if (!parsed) return null;
     await refreshBooks();
     return { id: parsed.id };
-  }, [parseAndStore, refreshBooks]);
+  }, [parseAndStore, refreshBooks, clearUnreadable]);
 
   /** Search the whole book; results navigate by location. */
   const searchBook = useCallback(async (query: string): Promise<EpubSearchResult[]> => {
@@ -491,11 +614,17 @@ export function useEpub(): UseEpubReturn {
     if (!id) return;
     const records = indexRef.current ?? [];
     const readChars = records.length ? charsBeforeLocation(records, location) : undefined;
-    await updateEpubMeta(id, {
-      lastLocation: location,
-      lastReadAt: Date.now(),
-      ...(readChars !== undefined ? { readChars } : {}),
-    });
+    try {
+      await updateEpubMeta(id, {
+        lastLocation: location,
+        lastReadAt: Date.now(),
+        ...(readChars !== undefined ? { readChars } : {}),
+      });
+    } catch (err) {
+      // Called fire-and-forget on every page turn: a failed progress save must
+      // not become an unhandled rejection (the reader keeps working).
+      epubStorageErr(`could not save the reading position for ${id}: ${errMessage(err)}`);
+    }
   }, []);
 
   /** Close book and return to the bookshelf (the handle is kept). */
@@ -513,12 +642,22 @@ export function useEpub(): UseEpubReturn {
     setFileName(null);
     setError(null);
     setOpenBookId(null);
-    await refreshBooks();
+    setOpenFailureId(null);
+    try {
+      await refreshBooks();
+    } catch (err) {
+      epubStorageErr(`could not reload the bookshelf after closing the book: ${errMessage(err)}`);
+    }
   }, [refreshBooks]);
 
   /** Clear the current error message. */
   const clearError = useCallback(() => {
     setError(null);
+  }, []);
+
+  /** Dismiss the open-failure notice (the book stays on the shelf, marked). */
+  const clearOpenFailure = useCallback(() => {
+    setOpenFailureId(null);
   }, []);
 
   /** Dismiss the cover and enter the reader. */
@@ -528,11 +667,19 @@ export function useEpub(): UseEpubReturn {
 
   /** Remove a stored book from the bookshelf. */
   const removeBook = useCallback(async (id: string) => {
-    await deleteEpub(id);
+    try {
+      await deleteEpub(id);
+    } catch (err) {
+      // Log, but still clear the local state: leaving a card the user asked to
+      // remove is worse than a stale record that the next load prunes.
+      epubStorageErr(`could not delete book ${id}: ${errMessage(err)}`);
+    }
     await deleteBookIndex(id).catch(() => {});
+    clearUnreadable(id);
+    setOpenFailureId((current) => (current === id ? null : current));
     if (currentBookIdRef.current === id) currentBookIdRef.current = null;
     await refreshBooks();
-  }, [refreshBooks]);
+  }, [refreshBooks, clearUnreadable]);
 
   return {
     book,
@@ -545,6 +692,10 @@ export function useEpub(): UseEpubReturn {
     error,
     pageProgressionDir,
     books,
+    unreadable,
+    openFailureId,
+    clearUnreadable,
+    clearOpenFailure,
     openBookId,
     pdfDoc,
     refreshBooks,
