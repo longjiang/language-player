@@ -42,7 +42,8 @@ No route changes — `SubsSearchResults` is embedded in the dictionary entry tab
 
 ### Data Flow
 1. `/subs-search` already returns `category` and `tv_show` columns per row
-   (`zerotohero-python-server/app_subs_search.py` SELECT). The client previously
+   (the Postgres query in `utils_content.py`; the MySQL
+   `app_subs_search.py` it replaced was deleted on 2026-10-16). The client previously
    dropped them; now the fetch maps them onto `SubsSearchVideo` via `Number()`.
 2. The pills set a `videoFilter` state (`'all' | 'nonMusic' | 'music' |
    'tvShows'`); `applyVideoFilter` narrows the fetched pool before the free-user
