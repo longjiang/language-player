@@ -151,7 +151,11 @@
   sweep; discovery from search terms (SPEC-096, SPEC-098)
 - ✅ Legacy crawler removed — the Directus/MySQL crawl path and its storage
   layer are deleted; the import API replaces them
-- ⬜ Content moderation (videos / shows / talks) in the admin console
+- 🔄 Content management (videos / shows / talks / channels by L2) in the admin
+  console — Users/Content nav shell, videos manager (search, edit, create,
+  delete, bulk assign), importer with cursor paging, discovery review,
+  shows & talks CRUD with member videos, channels browser, unavailable sweep
+  (SPEC-099)
 - ⬜ Payment log viewer and account actions (delete / reset / demote admin)
 
 ## Known Issues
