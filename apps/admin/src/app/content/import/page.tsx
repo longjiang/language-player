@@ -17,8 +17,13 @@ import {
   importChannel,
   importPlaylist,
   importSingle,
+  languageMismatches,
+  mergePreflight,
+  preflightVideos,
   resolveChannel,
 } from '@/lib/content-api';
+import { LanguageCheckNotice, useMismatchDescription } from '@/components/content/language-check';
+import { ConfirmDialog } from '@/components/content/confirm-dialog';
 import { log, logerr } from '@/lib/logger';
 import { parseVideoIds } from '@/lib/video-ids';
 import type {
@@ -26,6 +31,7 @@ import type {
   ImportResponse,
   ImportSummary,
   ImportVideoResult,
+  PreflightResponse,
   ResolvedChannel,
 } from '@/types/content';
 import {
@@ -71,7 +77,9 @@ export default function ImportPage() {
   const authReady = useAuthReady();
 
   const [mode, setMode] = useState<Mode>('single');
-  const [l2, setL2] = useState<string | null>('en');
+  // Deliberately unset: a defaulted language is how content gets
+  // imported into the wrong one (SPEC-099).
+  const [l2, setL2] = useState<string | null>(null);
 
   // Shared import options.
   const [force, setForce] = useState(false);
@@ -101,6 +109,14 @@ export default function ImportPage() {
   const [error, setError] = useState('');
   const stopRef = useRef(false);
 
+  // Pre-import language check (SPEC-099): the backend's own verdict, never a
+  // client-side guess, so locale variants (zh-Hant under zh) are not flagged.
+  const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
+  const [preflightError, setPreflightError] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [confirm, setConfirm] = useState<{ description: string; run: () => void } | null>(null);
+  const mismatchDescription = useMismatchDescription();
+
   function options() {
     return {
       force,
@@ -121,6 +137,46 @@ export default function ImportPage() {
     setPages(0);
     setPendingCursor(null);
     setError('');
+    // Note: the language-check panel is NOT cleared here — for a single import
+    // the check runs immediately before this, and wiping it would hide the
+    // very warning the admin just saw. startLoop clears it for the walked
+    // modes, and checkLanguages overwrites it for the guarded ones.
+  }
+
+  /** Run the backend's metadata-only verdict for `ids` and show it. */
+  async function checkLanguages(ids: string[]): Promise<PreflightResponse | null> {
+    if (!l2 || ids.length === 0) return null;
+    setChecking(true);
+    setPreflightError('');
+    try {
+      const response = await preflightVideos(l2, ids);
+      setPreflight(response);
+      return response;
+    } catch (err) {
+      logerr('language preflight failed', err);
+      setPreflightError(err instanceof Error ? err.message : t('error.general'));
+      return null;
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  /** Gate an import on the language check; ask before a known mismatch. */
+  async function guard(candidateIds: string[], run: () => void | Promise<void>) {
+    const response = await checkLanguages(candidateIds);
+    if (response && languageMismatches(response).length > 0) {
+      setConfirm({ description: mismatchDescription(response), run: () => void run() });
+      return;
+    }
+    await run();
+  }
+
+  async function startSingle() {
+    if (!l2 || !youtubeId.trim()) {
+      toast.error(t('msg.video_id_and_language_required'));
+      return;
+    }
+    await guard([youtubeId.trim()], runSingle);
   }
 
   async function runSingle() {
@@ -163,6 +219,29 @@ export default function ImportPage() {
    * circuit break trips, the page cap is hit, or the user stops. Each page
    * commits server-side, so stopping early never loses work.
    */
+  async function startLoop() {
+    if (!l2) {
+      toast.error(t('msg.language_required'));
+      return;
+    }
+    if (mode === 'batch') {
+      const ids = parseVideoIds(idsText);
+      if (ids.length === 0) {
+        toast.error(t('msg.ids_required'));
+        return;
+      }
+      // Known up front, so check the whole list before anything is written.
+      await guard(ids, () => runLoop(null));
+      return;
+    }
+    // Channel / playlist ids are only known as the walk returns them, so the
+    // check happens per page instead (see runLoop). Start from a clean panel
+    // so the previous run's findings cannot masquerade as this one's.
+    setPreflight(null);
+    setPreflightError('');
+    await runLoop(null);
+  }
+
   async function runLoop(cursor: ImportCursor | null) {
     if (!l2) {
       toast.error(t('msg.language_required'));
@@ -219,6 +298,18 @@ export default function ImportPage() {
         if (response.channel) setResolved(response.channel);
         page += 1;
         setPages(page);
+
+        // A walked page is already committed, so audit what it stored and
+        // report mismatches instead of silently moving on (SPEC-099).
+        if (mode !== 'batch') {
+          const stored = (response.results ?? [])
+            .filter((r) => r.status === 'added' || r.status === 'updated')
+            .map((r) => r.youtube_id);
+          if (stored.length > 0) {
+            const audited = await checkLanguages(stored);
+            if (audited) setPreflight((prev) => mergePreflight(prev, audited));
+          }
+        }
 
         const next = response.next_cursor;
         if (!next || response.circuit_broken) {
@@ -281,6 +372,9 @@ export default function ImportPage() {
             {t('label.language')}
           </span>
           <L2Select value={l2} onChange={setL2} className="w-full" />
+          {!l2 && (
+            <span className="mt-1 block text-xs text-amber-600">{t('msg.choose_language_first')}</span>
+          )}
         </div>
       </div>
 
@@ -303,7 +397,7 @@ export default function ImportPage() {
                     placeholder="dQw4w9WgXcQ"
                   />
                 </Field>
-                <Button disabled={busy} onClick={() => void runSingle()}>
+                <Button disabled={busy || !l2} onClick={() => void startSingle()}>
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                   {t('action.import')}
                 </Button>
@@ -318,7 +412,7 @@ export default function ImportPage() {
                     className="font-mono text-xs"
                   />
                 </Field>
-                <Button disabled={busy} onClick={() => void runLoop(null)}>
+                <Button disabled={busy || !l2} onClick={() => void startLoop()}>
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   {t('action.start_import')}
                 </Button>
@@ -366,7 +460,7 @@ export default function ImportPage() {
                     </div>
                   </div>
                 )}
-                <Button disabled={busy} onClick={() => void runLoop(null)}>
+                <Button disabled={busy || !l2} onClick={() => void startLoop()}>
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   {t('action.import_uploads')}
                 </Button>
@@ -383,7 +477,7 @@ export default function ImportPage() {
                     placeholder="PL… / https://www.youtube.com/playlist?list=…"
                   />
                 </Field>
-                <Button disabled={busy} onClick={() => void runLoop(null)}>
+                <Button disabled={busy || !l2} onClick={() => void startLoop()}>
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                   {t('action.start_import')}
                 </Button>
@@ -484,6 +578,15 @@ export default function ImportPage() {
         </div>
       )}
 
+      <div className="mt-5">
+        <LanguageCheckNotice
+          response={preflight}
+          checking={checking}
+          error={preflightError}
+          extraNote={mode === 'batch' ? undefined : t('msg.language_check_channel_note')}
+        />
+      </div>
+
       {(pages > 0 || summary.total > 0) && (
         <Card className="mt-5">
           <CardContent className="pt-6">
@@ -551,6 +654,18 @@ export default function ImportPage() {
           </CardContent>
         </Card>
       )}
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(open) => !open && setConfirm(null)}
+        title={t('msg.language_mismatch_title')}
+        description={confirm?.description ?? ''}
+        confirmLabel={t('action.import_anyway')}
+        onConfirm={() => {
+          const run = confirm?.run;
+          setConfirm(null);
+          void run?.();
+        }}
+      />
     </AdminShell>
   );
 }

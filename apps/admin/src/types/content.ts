@@ -268,6 +268,43 @@ export interface DiscoverResponse {
   import?: ImportResponse;
 }
 
+// ── Preflight (SPEC-099) ────────────────────────────────────────────────
+
+/** Metadata-only verdicts from `video_import_block_reason()`. */
+export type PreflightBlockReason =
+  | 'unavailable'
+  | 'not_embeddable'
+  | 'region_restricted'
+  | 'locale_mismatch';
+
+export interface PreflightRow {
+  youtube_id: string;
+  title: string | null;
+  /** `snippet.defaultAudioLanguage` — absent on many uploads. */
+  declared_locale: string | null;
+  /** `null` when YouTube returned no video, so "no verdict" ≠ compatible. */
+  matches_l2: boolean | null;
+  block_reason: PreflightBlockReason | null;
+}
+
+export interface PreflightSummary {
+  total: number;
+  mismatched: number;
+  unavailable: number;
+  not_embeddable: number;
+  region_restricted: number;
+  invalid: number;
+}
+
+export interface PreflightResponse {
+  l2: string;
+  /** Every locale the importer accepts for this L2 (`utils_youtube.l2_locales`). */
+  l2_locales: string[];
+  results: PreflightRow[];
+  invalid: string[];
+  summary: PreflightSummary;
+}
+
 // ── Sweep ───────────────────────────────────────────────────────────────
 
 /** The sweep's keyset cursor is its own shape, not the importer's. */

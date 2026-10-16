@@ -20,6 +20,9 @@ import type {
   ImportOptions,
   ImportResponse,
   ImportVideoResult,
+  PreflightResponse,
+  PreflightRow,
+  PreflightSummary,
   ResolvedChannel,
   ShowInput,
   ShowKind,
@@ -258,6 +261,82 @@ export async function discover(input: DiscoverOptions): Promise<DiscoverResponse
     ),
   });
   return response;
+}
+
+// ── Preflight (SPEC-099) ────────────────────────────────────────────────
+
+const PREFLIGHT_BATCH = 50;
+
+function emptyPreflightSummary(): PreflightSummary {
+  return { total: 0, mismatched: 0, unavailable: 0, not_embeddable: 0, region_restricted: 0, invalid: 0 };
+}
+
+/**
+ * Ask the backend what the importer would decide about these ids *without
+ * importing them* — the admin console's language-mismatch warning.
+ *
+ * The rule (`video_import_block_reason` + `l2_locales`) lives server-side on
+ * purpose: re-implementing it here would produce false mismatches for real
+ * locale variants (`zh-Hant` under `zh`, `pt-BR` under `pt`, `nb` under `no`).
+ * Ids are chunked at the YouTube API's 50-per-request limit.
+ */
+export async function preflightVideos(
+  l2: string,
+  youtubeIds: string[],
+): Promise<PreflightResponse> {
+  const unique = [...new Set(youtubeIds.filter(Boolean))];
+  let l2_locales: string[] = [];
+  const results: PreflightRow[] = [];
+  const invalid: string[] = [];
+  const summary = emptyPreflightSummary();
+
+  for (let start = 0; start < unique.length; start += PREFLIGHT_BATCH) {
+    const slice = unique.slice(start, start + PREFLIGHT_BATCH);
+    const response = await request<PreflightResponse>(
+      '/admin/videos/preflight',
+      jsonInit('POST', { l2, youtube_ids: slice }),
+      { l2, youtube_ids: slice },
+    );
+    l2_locales = response.l2_locales ?? l2_locales;
+    results.push(...(response.results ?? []));
+    invalid.push(...(response.invalid ?? []));
+    for (const key of Object.keys(summary) as (keyof PreflightSummary)[]) {
+      summary[key] += response.summary?.[key] ?? 0;
+    }
+  }
+
+  log('content-api preflight', {
+    l2,
+    checked: results.length,
+    mismatched: summary.mismatched,
+    unavailable: summary.unavailable,
+    invalid: invalid.length,
+  });
+  return { l2, l2_locales, results, invalid, summary };
+}
+
+/** Fold a later preflight page into the accumulated one. */
+export function mergePreflight(
+  previous: PreflightResponse | null,
+  next: PreflightResponse,
+): PreflightResponse {
+  if (!previous) return next;
+  const summary = { ...previous.summary };
+  for (const key of Object.keys(summary) as (keyof PreflightSummary)[]) {
+    summary[key] += next.summary?.[key] ?? 0;
+  }
+  return {
+    l2: next.l2 || previous.l2,
+    l2_locales: next.l2_locales?.length ? next.l2_locales : previous.l2_locales,
+    results: [...previous.results, ...next.results],
+    invalid: [...previous.invalid, ...next.invalid],
+    summary,
+  };
+}
+
+/** Rows whose declared language is outside the target's locales. */
+export function languageMismatches(response: PreflightResponse | null): PreflightRow[] {
+  return (response?.results ?? []).filter((row) => row.block_reason === 'locale_mismatch');
 }
 
 // ── Unavailable sweep ───────────────────────────────────────────────────
