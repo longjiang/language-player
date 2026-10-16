@@ -116,6 +116,9 @@ export interface UseEpubReturn {
   addBook: (data: ArrayBuffer, fileName: string, importLanguage?: string | null) => Promise<{ id: string } | null>;
   /** Remove a stored book from the bookshelf (deletes its handle + index). */
   removeBook: (id: string) => Promise<void>;
+  /** Remove several books with ONE shelf reload (the "remove all unreadable"
+   *  recovery; N single removals would re-list the shelf N times). */
+  removeBooks: (ids: string[]) => Promise<void>;
   /** Close the book and return to the bookshelf (the handle is kept). */
   close: () => Promise<void>;
   /** Dismiss the cover and enter the reader at the current location. */
@@ -681,25 +684,33 @@ export function useEpub(): UseEpubReturn {
     setCoverTapped(true);
   }, []);
 
-  /** Remove a stored book from the bookshelf. */
-  const removeBook = useCallback(async (id: string) => {
-    try {
-      await deleteEpub(id);
-    } catch (err) {
-      // Log, but still clear the local state: leaving a card the user asked to
-      // remove is worse than a stale record that the next load prunes.
-      epubStorageErr(`could not delete book ${id}: ${errMessage(err)}`);
+  /** Remove several stored books, reloading the shelf once at the end. */
+  const removeBooks = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      try {
+        await deleteEpub(id);
+      } catch (err) {
+        // Log, but still clear the local state: leaving a card the user asked to
+        // remove is worse than a stale record that the next load prunes.
+        epubStorageErr(`could not delete book ${id}: ${errMessage(err)}`);
+      }
+      await deleteBookIndex(id).catch(() => {});
+      clearUnreadable(id);
+      if (currentBookIdRef.current === id) currentBookIdRef.current = null;
     }
-    await deleteBookIndex(id).catch(() => {});
-    clearUnreadable(id);
-    // Drop the failure state WITH the book. Leaving `error` set made the
+    // Drop the failure state WITH the books. Leaving `error` set made the
     // recovery message reappear in the shelf's import-error slot (under the drop
     // zone) as soon as the notice went away.
     setOpenFailureId(null);
     setError(null);
-    if (currentBookIdRef.current === id) currentBookIdRef.current = null;
     await refreshBooks();
   }, [refreshBooks, clearUnreadable]);
+
+  /** Remove a stored book from the bookshelf. */
+  const removeBook = useCallback(async (id: string) => {
+    await removeBooks([id]);
+  }, [removeBooks]);
 
   return {
     book,
@@ -723,6 +734,7 @@ export function useEpub(): UseEpubReturn {
     searchBook,
     addBook,
     removeBook,
+    removeBooks,
     close,
     clearError,
     dismissCover,
