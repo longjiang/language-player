@@ -43,7 +43,9 @@ export default function ChannelsPage() {
   const t = useT();
   const authReady = useAuthReady();
 
-  const [l2, setL2] = useState<string | null>('en');
+  // Deliberately unset: a defaulted language is how content gets
+  // imported or edited in the wrong one (SPEC-099).
+  const [l2, setL2] = useState<string | null>(null);
   const [channels, setChannels] = useState<AdminChannel[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -189,6 +191,11 @@ export default function ChannelsPage() {
             {t('label.language')}
           </span>
           <L2Select value={l2} onChange={setL2} className="w-full" />
+          {!l2 && (
+            <span className="mt-1 block text-xs text-amber-600">
+              {t('msg.choose_language_first')}
+            </span>
+          )}
         </div>
       </div>
 
@@ -267,7 +274,7 @@ export default function ChannelsPage() {
               />
               {t('label.use_circuit_break')}
             </label>
-            <Button disabled={running || !authReady} onClick={() => void runImport()}>
+            <Button disabled={running || !authReady || !l2} onClick={() => void runImport()}>
               {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               {t('action.import_uploads')}
             </Button>
@@ -345,7 +352,15 @@ export default function ChannelsPage() {
         </div>
       )}
 
-      {!loading && channels.length === 0 && !error && (
+      {!l2 && !loading && (
+        <Card className="mt-6">
+          <CardContent className="py-12 text-center">
+            <p className="font-medium">{t('msg.choose_language_first')}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {l2 && !loading && channels.length === 0 && !error && (
         <Card className="mt-6">
           <CardContent className="py-12 text-center">
             <p className="font-medium">{t('msg.no_channels_found')}</p>

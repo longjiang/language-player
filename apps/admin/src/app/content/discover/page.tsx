@@ -11,9 +11,22 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthReady } from '@/hooks/use-auth-ready';
 import { useT } from '@/hooks/use-t';
-import { discover, importBatch, type BatchImportOptions } from '@/lib/content-api';
+import {
+  discover,
+  importBatch,
+  languageMismatches,
+  preflightVideos,
+  type BatchImportOptions,
+} from '@/lib/content-api';
+import { ConfirmDialog } from '@/components/content/confirm-dialog';
+import { LanguageCheckNotice, useMismatchDescription } from '@/components/content/language-check';
 import { log, logerr } from '@/lib/logger';
-import type { DiscoverResponse, ImportSummary, ImportVideoResult } from '@/types/content';
+import type {
+  DiscoverResponse,
+  ImportSummary,
+  ImportVideoResult,
+  PreflightResponse,
+} from '@/types/content';
 import { AlertCircle, Compass, Loader2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -25,7 +38,9 @@ export default function DiscoverPage() {
   const t = useT();
   const authReady = useAuthReady();
 
-  const [l2, setL2] = useState<string | null>('en');
+  // Deliberately unset: a defaulted language is how candidates get
+  // imported into the wrong one (SPEC-099).
+  const [l2, setL2] = useState<string | null>(null);
   const [terms, setTerms] = useState('');
   const [termLimit, setTermLimit] = useState<number | ''>('');
   const [pages, setPages] = useState(1);
@@ -44,6 +59,14 @@ export default function DiscoverPage() {
   const [importSummary, setImportSummary] = useState<ImportSummary>(EMPTY_SUMMARY);
   const [error, setError] = useState('');
   const stopRef = useRef(false);
+  const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
+  // The top-results path re-runs the search, so the caveat about checked ids
+  // differing from imported ids only applies once it has been used.
+  const [topNUsed, setTopNUsed] = useState(false);
+  const [preflightError, setPreflightError] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [confirm, setConfirm] = useState<{ description: string; run: () => void } | null>(null);
+  const mismatchDescription = useMismatchDescription();
 
   function importOptions(): Omit<BatchImportOptions, 'youtube_ids' | 'l2'> {
     return {
@@ -75,6 +98,13 @@ export default function DiscoverPage() {
       setReport(response);
       setSelected(new Set(response.candidates.map((c) => c.youtube_id)));
       setTopN(response.candidates.length || '');
+      setPreflight(null);
+      setPreflightError('');
+      // Candidates come from a Google scrape, so check their declared language
+      // before anything can be imported.
+      if (response.candidates.length > 0) {
+        void checkLanguages(response.candidates.map((c) => c.youtube_id));
+      }
     } catch (err) {
       logerr('discover failed', err);
       setReport(null);
@@ -82,6 +112,35 @@ export default function DiscoverPage() {
     } finally {
       setSearching(false);
     }
+  }
+
+  async function checkLanguages(ids: string[]): Promise<PreflightResponse | null> {
+    if (!l2 || ids.length === 0) return null;
+    setChecking(true);
+    setPreflightError('');
+    try {
+      const response = await preflightVideos(l2, ids);
+      setPreflight(response);
+      return response;
+    } catch (err) {
+      logerr('language preflight failed', err);
+      setPreflightError(err instanceof Error ? err.message : t('error.general'));
+      return null;
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  /** Ask before importing candidates that declare another language. */
+  async function startImportSelected() {
+    if (!l2 || selected.size === 0) return;
+    const ids = [...selected];
+    const response = await checkLanguages(ids);
+    if (response && languageMismatches(response).length > 0) {
+      setConfirm({ description: mismatchDescription(response), run: () => void importSelected() });
+      return;
+    }
+    await importSelected();
   }
 
   /** Import exactly the reviewed candidates, through the batch importer. */
@@ -124,6 +183,7 @@ export default function DiscoverPage() {
   /** Let the backend re-run the search and import its best N candidates. */
   async function importTopN() {
     if (!l2) return;
+    setTopNUsed(true);
     setImporting(true);
     setError('');
     try {
@@ -168,7 +228,10 @@ export default function DiscoverPage() {
       <Card className="mt-5">
         <CardContent className="pt-6">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label={t('label.language')}>
+            <Field
+              label={t('label.language')}
+              hint={!l2 ? t('msg.choose_language_first') : undefined}
+            >
               <L2Select value={l2} onChange={setL2} className="w-full" />
             </Field>
             <Field label={t('label.term_limit')} hint={t('msg.term_limit_hint')}>
@@ -230,7 +293,7 @@ export default function DiscoverPage() {
           </div>
 
           <div className="mt-4 flex flex-wrap items-end gap-3">
-            <Button disabled={busy} onClick={() => void runSearch()}>
+            <Button disabled={busy || !l2} onClick={() => void runSearch()}>
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Compass className="h-4 w-4" />}
               {t('action.find_candidates')}
             </Button>
@@ -251,15 +314,15 @@ export default function DiscoverPage() {
             </div>
             <Button
               variant="secondary"
-              disabled={busy || !report || report.candidates.length === 0}
-              onClick={() => void importSelected()}
+              disabled={busy || !l2 || !report || report.candidates.length === 0}
+              onClick={() => void startImportSelected()}
             >
               <Upload className="h-4 w-4" />
               {t('action.import_selected', { count: selected.size })}
             </Button>
             <Button
               variant="outline"
-              disabled={busy || !report || report.candidates.length === 0}
+              disabled={busy || !l2 || !report || report.candidates.length === 0}
               onClick={() => void importTopN()}
             >
               {t('action.import_top_n')}
@@ -366,6 +429,15 @@ export default function DiscoverPage() {
         </>
       )}
 
+      <div className="mt-5">
+        <LanguageCheckNotice
+          response={preflight}
+          checking={checking}
+          error={preflightError}
+          extraNote={topNUsed ? t('msg.language_check_top_n_caveat') : undefined}
+        />
+      </div>
+
       {(results.length > 0 || importSummary.total > 0) && (
         <Card className="mt-5">
           <CardContent className="pt-6">
@@ -414,6 +486,18 @@ export default function DiscoverPage() {
           </CardContent>
         </Card>
       )}
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(open) => !open && setConfirm(null)}
+        title={t('msg.language_mismatch_title')}
+        description={confirm?.description ?? ''}
+        confirmLabel={t('action.import_anyway')}
+        onConfirm={() => {
+          const run = confirm?.run;
+          setConfirm(null);
+          void run?.();
+        }}
+      />
     </AdminShell>
   );
 }

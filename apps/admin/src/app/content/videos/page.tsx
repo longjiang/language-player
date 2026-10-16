@@ -51,7 +51,9 @@ export default function VideosPage() {
   const t = useT();
   const authReady = useAuthReady();
 
-  const [l2, setL2] = useState<string | null>('en');
+  // Deliberately unset: a defaulted language is how content gets
+  // imported or edited in the wrong one (SPEC-099).
+  const [l2, setL2] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [pendingQuery, setPendingQuery] = useState('');
   const [assignment, setAssignment] = useState<Assignment>('all');

@@ -24,7 +24,9 @@ export default function SweepPage() {
   const t = useT();
   const authReady = useAuthReady();
 
-  const [l2, setL2] = useState<string | null>('en');
+  // Deliberately unset: this screen deletes, so the language must be chosen
+  // on purpose (SPEC-099).
+  const [l2, setL2] = useState<string | null>(null);
   const [idsText, setIdsText] = useState('');
   const [limit, setLimit] = useState(50);
   const [checked, setChecked] = useState(0);
@@ -120,7 +122,10 @@ export default function SweepPage() {
         <CardContent className="space-y-4 pt-6">
           <div className="flex flex-wrap items-end gap-3">
             <div className="w-40">
-              <Field label={t('label.language')}>
+              <Field
+                label={t('label.language')}
+                hint={!l2 ? t('msg.choose_language_first') : undefined}
+              >
                 <L2Select value={l2} onChange={setL2} className="w-full" />
               </Field>
             </div>
@@ -135,7 +140,7 @@ export default function SweepPage() {
                 />
               </Field>
             </div>
-            <Button disabled={running || !authReady} onClick={() => void runCheck(true)}>
+            <Button disabled={running || !authReady || !l2} onClick={() => void runCheck(true)}>
               {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               {t('action.check')}
             </Button>
