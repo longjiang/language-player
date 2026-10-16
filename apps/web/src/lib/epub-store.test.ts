@@ -392,6 +392,41 @@ describe('listEpubs with an unreadable record', () => {
   });
 });
 
+describe('unreadable-book logging', () => {
+  it('reports a new loss once, then stays quiet on later loads', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const aggregateCalls = () =>
+      spy.mock.calls.filter((c) => String(c[0]).includes('can no longer be read')).length;
+
+    await saveEpub('agg-1', new ArrayBuffer(8), { id: 'agg-1', fileName: 'agg.epub' });
+    forgetMirrorRow('agg-1');
+    failures.push({ db: STORE_DB, store: 'epubs', key: 'agg-1', mode: 'unreadable' });
+
+    // First discovery of the loss → one error-channel line.
+    await listEpubs();
+    expect(aggregateCalls()).toBe(1);
+
+    // Same condition on later loads (mount, refreshes) → not repeated: the shelf
+    // badges already say it.
+    await listEpubs();
+    await listEpubs();
+    expect(aggregateCalls()).toBe(1);
+
+    // The book is readable again (re-imported) → the book is forgotten…
+    failures = [];
+    await listEpubs();
+    expect(aggregateCalls()).toBe(1);
+
+    // …so losing it again is reported afresh.
+    forgetMirrorRow('agg-1');
+    failures.push({ db: STORE_DB, store: 'epubs', key: 'agg-1', mode: 'unreadable' });
+    await listEpubs();
+    expect(aggregateCalls()).toBe(2);
+
+    spy.mockRestore();
+  });
+});
+
 describe('mirror upkeep', () => {
   it('keeps progress in the mirror across an update', async () => {
     await saveEpub('b1', new ArrayBuffer(8), { id: 'b1', fileName: 'b.epub' });

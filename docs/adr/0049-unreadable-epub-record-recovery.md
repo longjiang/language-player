@@ -89,10 +89,13 @@ showed **only a spinner, forever**, plus an uncaught rejection. The chain was:
      a notice about a book the user never chose, which (when the record's metadata
      died with it) cannot even be named, reads as noise. For the same reason a
      nameless card is titled "Loading failed" rather than repeating the sentence.
-   - **Volume matters in logs and on screen.** The per-record detail is info-level
-     and each shelf load emits ONE error-channel line summarising how many books
-     are unreadable; a swept profile can have dozens, and a user's screenshot of
-     thirty identical stack traces says less than one line with the count.
+   - **Volume matters in logs and on screen.** Per-record detail is info-level and
+     each *new* loss is reported once on the error channel (a summary with the
+     count); later loads and the count dropping as books are removed stay quiet at
+     info level, because the shelf badges are the user-facing signal and a swept
+     profile would otherwise re-print the same line on every load and every
+     removal. A book that becomes readable again is forgotten, so losing it later
+     is reported afresh; a card tap that fails logs once, as the user's own action.
 5. **Nothing may strand the page.** The mount effect's `setInitialized(true)` is
    in `finally`; the error branch renders before the cover/locating spinners;
    `openDB()` rejects on `blocked` (instead of awaiting forever) and closes its
