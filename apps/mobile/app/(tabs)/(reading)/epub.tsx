@@ -20,9 +20,9 @@ import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
 import { READER_ASK_AI_EPUB_PRESETS, type ReaderAiContent } from '@langplayer/utils';
 import { Header } from '@/components/layout/Header';
 import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
-import { PanelTopOpen, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react-native';
+import { PanelTopOpen, X, ChevronLeft, ChevronRight, ArrowLeft, Trash2 } from 'lucide-react-native';
 import { baseCode } from '@langplayer/utils';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { translationLogger, log, logwarn } from '@/lib/logger';
 import { isReaderTapSuppressed, suppressReaderTap } from '@/lib/reader-tap-guard';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -418,7 +418,9 @@ export default function EpubReaderScreen() {
     };
   }, [location, epub.markers]);
 
-  const errorText = epub.error ? t('msg.epub_parse_error') : null;
+  // `epub.error` is a translation KEY (see use-epub.ts) — render it directly so
+  // "the file is gone" is distinguishable from "this EPUB cannot be parsed".
+  const errorText = epub.error ? t(epub.error) : null;
 
   // The book reader is active — the final render path after the bookshelf,
   // opening, error and cover screens.
@@ -521,6 +523,25 @@ export default function EpubReaderScreen() {
         </View>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
           <Text className="text-sm text-destructive">{errorText}</Text>
+          {/* Recovery: the stored file is gone (deleted from the sandbox, or the
+              library metadata cannot be read) — drop the dead entry and let the
+              user import the file again. Removing also returns to the shelf,
+              because the open-failure flag is cleared with it. */}
+          {epub.openFailureId && (
+            <View className="mt-3 flex-row items-center gap-2">
+              <Button
+                onPress={() => handleRemoveBook(epub.openFailureId!)}
+                variant="outline"
+                size="sm"
+              >
+                <Trash2 size={14} color={ICON_DESTRUCTIVE} />
+                <Text className={buttonTextClass('outline')}>{t('action.remove')}</Text>
+              </Button>
+              <Button onPress={epub.clearOpenFailure} variant="ghost" size="sm">
+                <Text className={buttonTextClass('ghost')}>{t('action.close')}</Text>
+              </Button>
+            </View>
+          )}
         </View>
       </View>
     );
