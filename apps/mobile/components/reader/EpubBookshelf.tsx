@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Animated, Platform, TextInput } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { BookOpen, MoreVertical, Search, Upload, X } from 'lucide-react-native';
+import { BookOpen, MoreVertical, Search, TriangleAlert, Upload, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { baseCode } from '@langplayer/utils';
@@ -96,6 +96,8 @@ export function EpubBookshelf({
   const showEmptyState = books.length === 0 && importing.length === 0;
   const showNoLanguage = !showEmptyState && books.length > 0 && visibleBooks.length === 0 && importing.length === 0;
 
+  /** One-click recovery for a book whose file can no longer be read: remove
+   *  the entry (the file is already gone), then import it again. */
   const confirmRemove = (book: EpubSummary) => {
     Alert.alert(
       book.fileName,
@@ -177,9 +179,18 @@ export function EpubBookshelf({
                     onPress={() => { if (openingId === null) onOpenBook(book.id); }}
                     className={`rounded-lg p-2 active:bg-muted ${openingId !== null ? 'opacity-70' : ''}`}
                   >
-                    {/* Cover */}
-                    <View className="relative w-full overflow-hidden rounded-md border border-border bg-muted" style={{ aspectRatio: 2 / 3 }}>
-                      {book.coverUrl && !coverFailedIds.has(book.id) ? (
+                    {/* Cover. A book whose stored file can no longer be read is
+                        badged (warning icon + destructive tint) and never shows a
+                        cover: the file it came from is gone. */}
+                    <View
+                      className={`relative w-full overflow-hidden rounded-md border bg-muted ${book.unavailable ? 'border-destructive/40 bg-destructive/5' : 'border-border'}`}
+                      style={{ aspectRatio: 2 / 3 }}
+                    >
+                      {book.unavailable ? (
+                        <View className="h-full w-full items-center justify-center">
+                          <TriangleAlert size={32} color={ICON_DESTRUCTIVE} />
+                        </View>
+                      ) : book.coverUrl && !coverFailedIds.has(book.id) ? (
                         <Image
                           source={{ uri: book.coverUrl }}
                           className="h-full w-full"
@@ -208,12 +219,19 @@ export function EpubBookshelf({
                         clear of the "…" button, which floats above as a
                         sibling of the opening Pressable (see below). */}
                     <View className="mt-2 flex-row items-center">
-                      <Text className="min-w-0 flex-1 truncate pr-7 text-sm font-medium text-foreground" numberOfLines={1}>
-                        {book.fileName.replace(/\.epub$/i, '')}
+                      <Text
+                        className={`min-w-0 flex-1 truncate pr-7 text-sm font-medium ${book.unavailable ? 'text-destructive' : 'text-foreground'}`}
+                        numberOfLines={1}
+                      >
+                        {book.fileName.replace(/\.(epub|pdf)$/i, '')}
                       </Text>
                     </View>
 
-                    {pct !== null && (
+                    {book.unavailable ? (
+                      <Text className="mt-1 text-xs text-destructive" numberOfLines={2}>
+                        {t('msg.epub_file_unreadable')}
+                      </Text>
+                    ) : pct !== null && (
                       <View className="mt-2 w-full">
                         <Text className="mb-1 text-xs text-muted-foreground">
                           {t('msg.epub_progress', { pct })}

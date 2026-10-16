@@ -10,7 +10,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 import type { BookLocation } from '@/lib/epub-book';
-import { log } from '@/lib/logger';
+import { log, logerr } from '@/lib/logger';
+
+/**
+ * Storage failures go to the error channel, not the verbose one: they present
+ * as "my library is empty" / "this book vanished" and are only diagnosable with
+ * a stack trace, so they must print at the default log level (1 in Release).
+ */
+function epubStoreErr(message: string, ...args: unknown[]): void {
+  logerr(`📚 EPUB storage: ${message}`, ...args); // non-info-level: caught storage exception — stack trace needed
+}
 
 export interface EpubMeta {
   /** Stable id derived from the file name (re-import updates the handle). */
@@ -41,7 +50,31 @@ export interface EpubMeta {
 }
 
 /** Bookshelf view — metadata only. */
-export type EpubSummary = EpubMeta;
+export interface EpubSummary extends EpubMeta {
+  /**
+   * Set when the book's library file can no longer be read (deleted from the
+   * sandbox, or the file system refused it). The card is badged and offers the
+   * recovery: remove the entry, then import the file again.
+   */
+  unavailable?: 'unreadable' | 'error';
+}
+
+/**
+ * The stored library metadata could not be read.
+ *
+ * This is deliberately an error and not an empty list: `readAll()` used to
+ * return `[]` on any failure, so a transient `AsyncStorage` read failure showed
+ * an empty shelf — and the next write then persisted that empty list, wiping
+ * every stored book. Writers now fail instead of overwriting a list they could
+ * not read.
+ */
+export class EpubLibraryUnreadableError extends Error {
+  constructor(cause?: unknown) {
+    const detail = cause instanceof Error ? cause.message : String(cause ?? 'unknown error');
+    super(`EPUB library metadata could not be read: ${detail}`);
+    this.name = 'EpubLibraryUnreadableError';
+  }
+}
 
 const STORAGE_KEY = 'lp_epub_library_v1';
 
@@ -142,35 +175,64 @@ async function reanchorCoverUrl(coverUrl: string | null): Promise<string | null>
   return coverUrl;
 }
 
+/**
+ * Read the whole library list.
+ *
+ * Throws `EpubLibraryUnreadableError` when the stored value cannot be read, so
+ * callers never mistake "I could not read it" for "there are no books" — a
+ * write on top of that mistake would destroy the library (see the class docs).
+ * Only a genuinely absent key or unparseable content yields an empty list.
+ */
 async function readAll(): Promise<EpubMeta[]> {
+  let raw: string | null;
   try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(arr)) return [];
-    const out: EpubMeta[] = [];
-    let persisted = false;
-    for (const b of arr) {
-      // Normalize the legacy doubled scheme, then re-anchor a stale absolute
-      // path onto the current app container (iOS container UUID changes on
-      // reinstall/update — see reanchorCoverUrl). Per-book try/catch: one
-      // broken record must never blank the whole shelf.
-      let coverUrl: string | null = null;
-      try {
-        coverUrl = await reanchorCoverUrl(normalizeCoverUrl(b?.coverUrl ?? null));
-      } catch {
-        coverUrl = normalizeCoverUrl(b?.coverUrl ?? null);
-      }
-      if (coverUrl !== b?.coverUrl) persisted = true; // persist the fix below
-      out.push({ ...b, coverUrl });
-    }
-    if (persisted) {
-      log('[LP Mobile] 📖 persisting re-anchored cover URIs to storage');
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(out));
-    }
-    return out;
-  } catch {
+    raw = await AsyncStorage.getItem(STORAGE_KEY);
+  } catch (err) {
+    // Transient storage failure — the stored list may be perfectly intact.
+    throw new EpubLibraryUnreadableError(err);
+  }
+  if (!raw) return [];
+
+  let arr: unknown;
+  try {
+    arr = JSON.parse(raw);
+  } catch (err) {
+    // Torn/corrupt metadata: there is nothing usable to keep, so start empty
+    // (the book files are still on disk and re-import fine) — but say so.
+    epubStoreErr(`library metadata is corrupt (${err instanceof Error ? err.message : String(err)}) — starting from an empty library`);
     return [];
   }
+  if (!Array.isArray(arr)) {
+    epubStoreErr(`library metadata is not a list (${typeof arr}) — starting from an empty library`);
+    return [];
+  }
+
+  const out: EpubMeta[] = [];
+  let persisted = false;
+  for (const b of arr) {
+    // Normalize the legacy doubled scheme, then re-anchor a stale absolute
+    // path onto the current app container (iOS container UUID changes on
+    // reinstall/update — see reanchorCoverUrl). Per-book try/catch: one
+    // broken record must never blank the whole shelf.
+    let coverUrl: string | null = null;
+    try {
+      coverUrl = await reanchorCoverUrl(normalizeCoverUrl(b?.coverUrl ?? null));
+    } catch {
+      coverUrl = normalizeCoverUrl(b?.coverUrl ?? null);
+    }
+    if (coverUrl !== b?.coverUrl) persisted = true; // persist the fix below
+    out.push({ ...b, coverUrl });
+  }
+  if (persisted) {
+    log('[LP Mobile] 📖 persisting re-anchored cover URIs to storage');
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+    } catch (err) {
+      // Not fatal: the in-memory list is correct and the next write retries.
+      epubStoreErr(`could not persist re-anchored cover URIs: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  return out;
 }
 
 async function writeAll(items: EpubMeta[]): Promise<void> {

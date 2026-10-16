@@ -29,9 +29,9 @@ import {
 } from '@/lib/epub-store';
 import type { TocItem } from '@/lib/epub-parser';
 import type { ContentBlock } from '@/lib/parse-markdown';
-import { log } from '@/lib/logger';
+import { log, logerr } from '@/lib/logger';
 import { useT } from '@/hooks/use-t';
-import { localizedError } from '@/lib/errors';
+import { isOfflineModeError } from '@/lib/offline-mode';
 
 /** Reuse the persisted cover only while its file still exists; otherwise
  *  return null so openEpubBook re-extracts the cover from the EPUB. */
@@ -125,6 +125,11 @@ export interface UseEpubReturn {
   resolveHref: (href: string, fromHref?: string) => Promise<BookLocation | null>;
   /** Remove a book from the shelf (deletes its stored handle + files). */
   removeBook: (id: string) => Promise<void>;
+  /** Id of the book whose most recent open attempt failed, or null. Drives the
+   *  recovery notice + one-click Remove on the reader's error state. */
+  openFailureId: string | null;
+  /** Dismiss the open-failure notice (the book stays on the shelf, badged). */
+  clearOpenFailure: () => void;
 }
 
 export function useEpub(l2Code?: string): UseEpubReturn {
@@ -138,6 +143,9 @@ export function useEpub(l2Code?: string): UseEpubReturn {
    *  callback, so finer granularity isn't available. */
   const [importing, setImporting] = useState<Array<{ id: string; fileName: string; phase: number }>>([]);
   const [error, setError] = useState<string | null>(null);
+  /** Set when an open attempt failed — a null `openBook` result alone is not a
+   *  failure signal (a re-open of the already-open book also returns null). */
+  const [openFailureId, setOpenFailureId] = useState<string | null>(null);
   const [model, setModel] = useState<EpubBookModel | null>(null);
   const [coverTapped, setCoverTapped] = useState(false);
   const [initialLocation, setInitialLocation] = useState<BookLocation | null>(null);
@@ -176,6 +184,59 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     setCoverTapped(skipCover);
     setInitialLocation(resume);
     setError(null);
+    setOpenFailureId(null);
+  }, []);
+
+  /**
+   * List the shelf, flagging the books whose library file is gone.
+   *
+   * A metadata read failure is *reported*, never rendered as an empty library
+   * (and the stat pass is skipped: with the list unknown there is nothing to
+   * flag).
+   */
+  const loadBooks = useCallback(async () => {
+    let list: EpubSummary[];
+    try {
+      list = await listEpubs();
+    } catch (err) {
+      // non-info-level: caught storage exception — the stack trace is what
+      // identifies why the library could not be read.
+      logerr(`[LP Mobile] 📚 could not read the book library: ${(err as Error)?.message ?? err}`);
+      setError('msg.epub_file_unreadable');
+      setBooks([]);
+      return;
+    }
+    const flagged: EpubSummary[] = [];
+    for (const book of list) {
+      try {
+        const info = await FileSystem.getInfoAsync(libraryFileUri(book.id));
+        flagged.push(info.exists ? book : { ...book, unavailable: 'unreadable' as const });
+      } catch (err) {
+        // The file system could not answer — do not claim the book is broken.
+        log(`[LP Mobile] 📚 could not stat "${book.fileName}": ${(err as Error)?.message ?? err}`);
+        flagged.push(book);
+      }
+    }
+    setBooks(flagged);
+  }, []);
+
+  /** Badge a book whose stored file/record cannot be read. */
+  const markUnavailable = useCallback((id: string, kind: 'unreadable' | 'error') => {
+    setBooks((prev) => prev.map((b) => (
+      b.id === id && b.unavailable !== kind ? { ...b, unavailable: kind } : b
+    )));
+  }, []);
+
+  /** Clear a book's badge (a successful open, a re-import, or a removal). */
+  const clearUnavailable = useCallback((id: string) => {
+    setBooks((prev) => {
+      const idx = prev.findIndex((b) => b.id === id);
+      if (idx === -1 || !prev[idx]!.unavailable) return prev;
+      const next = [...prev];
+      const { unavailable: _dropped, ...rest } = next[idx]!;
+      next[idx] = rest;
+      return next;
+    });
   }, []);
 
   /** Reload the bookshelf list + migrate the pre-bookshelf single-book state. */
@@ -234,9 +295,9 @@ export function useEpub(l2Code?: string): UseEpubReturn {
         await clearLegacyState();
       }
     }
-    setBooks(await listEpubs());
+    await loadBooks();
     setReady(true);
-  }, []);
+  }, [loadBooks]);
 
   useEffect(() => {
     void refreshBooks();
@@ -245,19 +306,28 @@ export function useEpub(l2Code?: string): UseEpubReturn {
   /** Import one or more EPUBs from the document picker. A single selection
    *  opens immediately; multiple selections are added to the bookshelf. */
   const pickFile = useCallback(async (importLanguage?: string) => {
-    const result = await DocumentPicker.getDocumentAsync({
-      // Some EPUBs (especially older ones like 鲁迅's 呐喊) are reported with
-      // nonstandard MIME types; accept any file so they can be selected.
-      type: '*/*',
-      copyToCacheDirectory: true,
-      multiple: true,
-    });
+    let result: DocumentPicker.DocumentPickerResult;
+    try {
+      result = await DocumentPicker.getDocumentAsync({
+        // Some EPUBs (especially older ones like 鲁迅's 呐喊) are reported with
+        // nonstandard MIME types; accept any file so they can be selected.
+        type: '*/*',
+        copyToCacheDirectory: true,
+        multiple: true,
+      });
+    } catch (e) {
+      // Presenting the picker itself failed (no rejection may escape to the
+      // screen's onPress): report it like any other import failure.
+      // non-info-level: caught exception from a native module — stack needed.
+      logerr(`[LP Mobile] 📚 document picker failed: ${(e as Error)?.message ?? e}`);
+      setError('msg.epub_file_unreadable');
+      return;
+    }
     if (result.canceled || !result.assets?.length) return;
     const assets = result.assets;
     setError(null);
 
     let importedCount = 0;
-    let firstError: string | null = null;
     // Content digests already seen in this batch, so two identical files picked
     // together only import once (same as re-importing a shelf book).
     const importedBookIds = new Set<string>();
@@ -398,13 +468,13 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           // Web parity (SPEC-049 §7): publish each book to the shelf as soon
           // as it is imported, so a multi-file pick shows books appearing one
           // at a time instead of a single long spinner.
-          setBooks(await listEpubs());
+          await loadBooks();
           dropSkeleton();
           await m.cleanup();
           importedCount++;
           log(`[LP Mobile] 📚 import done "${asset.name}" total=${Date.now() - assetStart}ms (copy+unwrap+inspect+cover+save)`);
         } catch (e: any) {
-          firstError ??= e?.message ?? String(e);
+          // Log the real reason; the user-facing string is a translation key.
           log(`[LP Mobile] 📚 import FAILED "${asset.name}" elapsed=${Date.now() - assetStart}ms err=${e?.message ?? e}`);
           setImporting((prev) => prev.filter((it) => it.fileName !== asset.name && it.id !== skeletonId));
         }
@@ -413,7 +483,9 @@ export function useEpub(l2Code?: string): UseEpubReturn {
       // Importing only adds to the bookshelf (web parity) — it never opens the
       // book. The user taps a card (or the mount auto-open) to open it.
       if (importedCount === 0) {
-        setError(firstError ?? 'Failed to import EPUB');
+        // `error` holds a translation KEY (the screen renders `t(epub.error)`);
+        // the raw failure is logged above per asset.
+        setError('msg.epub_file_unreadable');
       }
     } finally {
       setImporting([]);
@@ -445,16 +517,44 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     setError(null);
     log('[epub] openBook start', { id });
     try {
-      const meta = books.find((b) => b.id === id) ?? (await listEpubs()).find((b) => b.id === id);
-      if (!meta) { setError('Book not found'); return null; }
+      let meta = books.find((b) => b.id === id) ?? null;
+      if (!meta) {
+        try {
+          meta = (await listEpubs()).find((b) => b.id === id) ?? null;
+        } catch (err) {
+          // The library metadata itself could not be read — there is nothing to
+          // open, and the shelf must say so rather than look empty.
+          // non-info-level: caught storage exception — stack trace needed.
+          logerr(`[LP Mobile] 📚 could not read the book library while opening ${id}: ${(err as Error)?.message ?? err}`);
+          setError('msg.epub_file_unreadable');
+          setOpenFailureId(id);
+          return null;
+        }
+      }
+      if (!meta) {
+        // Metadata for a book that is no longer in the library (e.g. removed on
+        // another screen): report it instead of silently doing nothing.
+        setError('msg.epub_file_unreadable');
+        setOpenFailureId(id);
+        return null;
+      }
       const fileUri = libraryFileUri(id);
       const info = await FileSystem.getInfoAsync(fileUri);
-      if (!info.exists) { setError('Book file missing'); return null; }
+      if (!info.exists) {
+        // The sandbox file is gone (user deleted it, or the OS reclaimed it):
+        // report + badge it, and offer the recovery (remove, then re-import).
+        logerr(`[LP Mobile] 📚 book file missing for "${meta.fileName}": ${fileUri}`); // non-info-level: real error with no stack of its own
+        markUnavailable(id, 'unreadable');
+        setError('msg.epub_file_unreadable');
+        setOpenFailureId(id);
+        return null;
+      }
       const m = await openEpubBook(fileUri, meta.fileName, { coverUri: await coverUriIfExists(meta.coverUrl) });
       const resume = meta.lastLocation && meta.lastLocation.blockIndex < m.blocks.length
         ? meta.lastLocation
         : (m.markers[0]?.location ?? (m.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null));
       setCurrentModel(m, id, skipCover, resume);
+      clearUnavailable(id);
       // totalChars is only known here (full openEpubBook conversion); the lazy
       // import set it to 0, so persist it now so the shelf's progress bar works.
       await updateEpubMeta(id, { lastReadAt: Date.now(), totalChars: m.totalChars });
@@ -463,13 +563,15 @@ export function useEpub(l2Code?: string): UseEpubReturn {
       return resume;
     } catch (e: any) {
       log('[epub] openBook error', { id, message: e?.message ?? String(e) });
-      setError(localizedError(t, e, 'error.general'));
+      // Keys only: the screen renders `t(epub.error)`.
+      setError(isOfflineModeError(e) ? 'error.offline_mode_blocked' : 'msg.epub_parse_error');
+      setOpenFailureId(id);
       return null;
     } finally {
       openLoadingRef.current = false;
       setLoading(false);
     }
-  }, [books, initialLocation, setCurrentModel]);
+  }, [books, initialLocation, setCurrentModel, markUnavailable, clearUnavailable]);
 
   const close = useCallback(async () => {
     log('[epub] close() — reset open book', { openBookIdRef: openBookIdRef.current });
@@ -485,9 +587,15 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     setCoverTapped(false);
     setInitialLocation(null);
     setError(null);
+    setOpenFailureId(null);
   }, []);
 
   const dismissCover = useCallback(() => setCoverTapped(true), []);
+
+  /** Dismiss the open-failure notice (the book stays on the shelf, badged). */
+  const clearOpenFailure = useCallback(() => {
+    setOpenFailureId(null);
+  }, []);
 
   /** Persist the current reading location + progress (chars before block). */
   const saveLocation = useCallback(async (loc: BookLocation) => {
@@ -498,7 +606,14 @@ export function useEpub(l2Code?: string): UseEpubReturn {
       m.totalChars,
       (m.prefixChars[loc.blockIndex] ?? 0) + loc.offset,
     );
-    await updateEpubMeta(id, { lastLocation: loc, readChars, lastReadAt: Date.now() });
+    try {
+      await updateEpubMeta(id, { lastLocation: loc, readChars, lastReadAt: Date.now() });
+    } catch (err) {
+      // Called fire-and-forget on every page turn: a failed progress write must
+      // not become an unhandled rejection (the reader keeps working).
+      logerr(`[LP Mobile] 📚 could not save the reading position: ${(err as Error)?.message ?? err}`); // non-info-level: caught storage exception — stack needed
+      return;
+    }
     setBooks(prev => prev.map((b) =>
       b.id === id ? { ...b, lastLocation: loc, readChars, lastReadAt: Date.now() } : b,
     ));
@@ -510,10 +625,18 @@ export function useEpub(l2Code?: string): UseEpubReturn {
 
   const removeBook = useCallback(async (id: string) => {
     const meta = books.find((b) => b.id === id);
-    if (meta) await deleteEpub(meta);
+    try {
+      if (meta) await deleteEpub(meta);
+    } catch (err) {
+      // Log, but still drop the card locally: leaving a card the user asked to
+      // remove is worse than a stale record the next load prunes.
+      logerr(`[LP Mobile] 📚 could not delete "${meta?.fileName ?? id}": ${(err as Error)?.message ?? err}`); // non-info-level: caught storage exception — stack needed
+    }
     if (openBookIdRef.current === id) await close();
-    setBooks(await listEpubs());
-  }, [books, close]);
+    clearUnavailable(id);
+    setOpenFailureId((current) => (current === id ? null : current));
+    await loadBooks();
+  }, [books, close, loadBooks, clearUnavailable]);
 
   return {
     books,
@@ -544,5 +667,7 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     saveLocation,
     resolveHref,
     removeBook,
+    openFailureId,
+    clearOpenFailure,
   };
 }
