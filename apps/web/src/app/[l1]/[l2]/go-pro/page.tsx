@@ -7,6 +7,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { getStripePrices, isStripeTestMode, type StripePrice } from '@/lib/prices';
 import {
   findRegularPrice,
@@ -184,8 +185,10 @@ export default function GoProPage() {
       }
       log(`[LP Web] checkout: plan=${selectedPlan} price=${usdPrice.id} amount=${usdPrice.amount} sale=${saleOpen}`);
 
-      // Ask the Python backend to create a Stripe Checkout Session
-      const res = await fetch(`${PYTHON_API_URL}/create-stripe-checkout-session`, {
+      // Ask the Python backend to create a Stripe Checkout Session.
+      // Must be authenticated: the endpoint binds `user_id` to the caller's
+      // JWT `sub`, so an anonymous call is refused (401/403).
+      const res = await authenticatedFetch(`${PYTHON_API_URL}/create-stripe-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
