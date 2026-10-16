@@ -50,3 +50,4 @@ NNNN-title-with-dashes.md
 | 0046 | The web app loads no third-party host that mainland China blocks | accepted | 2026-09-15 |
 | 0047 | Mobile inputs stay visible: keyboard-aware layout, not a bigger scroll area | accepted | 2026-09-17 |
 | 0048 | Sale windows gated on the client clock; sale amounts stay in the price rows | accepted | 2026-09-22 |
+| 0049 | An unreadable EPUB/PDF record is badged and removed, never silently deleted (metadata mirror) | accepted | 2026-10-16 |

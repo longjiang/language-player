@@ -526,3 +526,69 @@ closeButtonRight = max(L, (screen width − CONTENT_CONTAINER_WIDTH) / 2)
   (`epub.tsx`, `right = closeRightMargin`), recomputed on window resize
   (web) / from `useWindowDimensions` (mobile). The "show toolbars" button sits
   to the left of the close button; both share the same right-anchored row.
+
+## 18. Revision (2026-10-16) — a book that can no longer be read says so, and can be removed
+
+### 18.1 The problem
+
+A stored book is one IndexedDB record: the file's bytes plus its metadata.
+Chromium keeps a large value in a **separate file** in the profile, so a
+disk-cleanup tool can delete the bytes while the reference survives. Every read
+of that record then fails (`NotReadableError: Data lost due to missing file.
+Affected record should be considered irrecoverable`), and the reader rendered
+**only the loading spinner, forever** — the mount effect awaited the shelf load
+and the auto-open with nothing to catch a storage failure, and the line that
+cleared the loading flag was after the failing call. Nothing in the UI could
+even express "this file is gone".
+
+### 18.2 The interface contract
+
+- **The shelf always renders.** A book whose record cannot be read is listed
+  from the mirrored metadata (name, cover, progress) and badged: warning icon
+  over the cover, destructive border/tint on the card, and a **Remove** action on
+  the card itself. A book whose name was never mirrored shows the
+  "could not read this file" message as its title.
+- **Opening it explains, and offers the fix.** An open failure shows a recovery
+  notice above the shelf: `msg.epub_file_unreadable` + the book's name +
+  **Remove** (`action.remove`) + **Close** (`action.close`). The notice is
+  dismissible without removing anything; re-tapping the card brings it back.
+- **Remove is the recovery** (one click): it deletes the record, its mirror row
+  and its search index. The user then imports the file again — an import
+  replaces an unreadable record, so re-importing is a complete repair. The app
+  never deletes a book on its own.
+- **No spinner may outlive the failure.** If an open fails *after* the book id is
+  set (e.g. the stored bytes cannot be re-parsed), the error state renders
+  *instead of* the "book open, locating the resume point" spinner; the mount
+  effect's loading flag is cleared in `finally`.
+- **A parse failure is not a read failure.** A book that opens but cannot be
+  parsed keeps the existing `msg.epub_parse_error` path.
+
+### 18.3 Web implementation
+
+| Piece | Where |
+|---|---|
+| Classification + mirror + per-record listing | `lib/epub-store.ts` (`isUnreadableRecordError`, `unavailable`, `lp-epub-meta`) |
+| `unreadable` badge map + `openFailureId` | `hooks/use-epub.ts` |
+| Recovery notice, error-before-spinner ordering, one-click Remove | `app/[l1]/[l2]/epub/page.tsx` |
+| Badged card + inline Remove | `components/reader/epub-bookshelf.tsx` |
+| Storage-failure log (error channel, not the reader's verbose switch) | `lib/epub-log.ts` (`epubStorageErr`) |
+
+### 18.4 Not covered
+
+Mobile keeps its current behavior (a generic `msg.epub_parse_error` banner when
+the sandbox file is missing) — see ADR-0049. Moving it onto an i18n'd
+"file missing" state with the same Remove/re-import recovery is a follow-up.
+
+### 18.5 Verification
+
+Reproduced in headless Chromium by deleting the record's external blob file
+(`Default/IndexedDB/<origin>.indexeddb.blob/<db>/<shard>/<n>`) out of the
+profile and reloading `/[l1]/[l2]/epub`:
+
+1. The shelf renders with the badged card and the recovery notice, **zero**
+   spinners, and exactly one console line — `[LP Web] EPUB storage: openBook
+   <id> could not read the stored record (unreadable): NotReadableError: …`.
+2. Clicking Remove empties both `lp-epub-store` and `lp-epub-meta` and returns
+   the shelf to its empty state.
+3. Regression: a real 268 KB EPUB imports, opens and resumes after a reload, and
+   a real PDF imports and opens in the PDF reader — with no recovery notice.
