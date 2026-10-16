@@ -934,6 +934,8 @@
         "epub_not_supported": "Seuls les fichiers .epub sont pris en charge.",
         "epub_parse_error": "Impossible d'ouvrir ce fichier EPUB.",
         "epub_progress": "{pct}% lu",
+        "epub_unreadable_book": "Ce livre n'est plus lisible",
+        "epub_unreadable_books": "{n, plural, one {# livre n'est plus lisible} other {# livres ne sont plus lisibles}}",
         "everything_you_need": "Tout ce dont vous avez besoin pour apprendre",
         "exact_match_searching": "Recherche dans {n} formes — cliquer pour correspondance exacte",
         "exact_match_searching_only": "Recherche seulement \"{term}\" — cliquer pour chercher dans {n} formes",

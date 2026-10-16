@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { BookOpen, Loader2, MoreVertical, Search, Trash2, TriangleAlert, X } from 'lucide-react';
 import type { EpubSummary } from '@/lib/epub-store';
 import type { EpubUploadResult } from '@/components/reader/epub-upload';
@@ -21,6 +22,9 @@ interface EpubBookshelfProps {
   onOpenBook: (id: string) => void;
   /** Remove a book from the shelf (deletes its stored handle). */
   onRemoveBook: (id: string) => void;
+  /** Remove several books at once — the "remove every unreadable book" recovery,
+   *  so a library that lost its bytes can be cleared without N clicks. */
+  onRemoveBooks: (ids: string[]) => void;
   /** Called with readable .epub files plus any files that failed up front. */
   onFilesProcessed: (result: EpubUploadResult) => void;
   /** Id of the book currently being opened (shows a spinner on its card). */
@@ -77,6 +81,7 @@ export function EpubBookshelf({
   l2Code,
   onOpenBook,
   onRemoveBook,
+  onRemoveBooks,
   onFilesProcessed,
   openingId,
   unreadable,
@@ -105,6 +110,12 @@ export function EpubBookshelf({
       })
     : visibleBooks;
 
+  // Books on screen whose record cannot be read. The bulk action only appears
+  // for two or more: a single broken book has its own Remove on the card.
+  const unreadableIds = filteredBooks
+    .filter((b) => unreadable?.[b.id] ?? b.unavailable)
+    .map((b) => b.id);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-auto">
       {books.length === 0 ? (
@@ -125,6 +136,19 @@ export function EpubBookshelf({
         </>
       ) : (
         <section>
+          {unreadableIds.length >= 2 && (
+            <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+              <TriangleAlert className="h-4 w-4 flex-shrink-0 text-destructive" />
+              <p className="min-w-0 flex-1 text-xs text-destructive">
+                {t('msg.epub_unreadable_books', { n: unreadableIds.length })}
+              </p>
+              <Button variant="outline" size="sm" onClick={() => onRemoveBooks(unreadableIds)}>
+                <Trash2 className="h-3.5 w-3.5" />
+                {t('action.remove')}
+              </Button>
+            </div>
+          )}
+
           {/* Filter the shelf by book name — full width, standard shadcn-styled
               input. Password-manager autofill is suppressed (this is a book
               filter, not a credential field). */}
@@ -175,7 +199,7 @@ export function EpubBookshelf({
               // card says nothing about which book is which.
               const displayName = book.fileName
                 ? book.fileName.replace(/\.(epub|pdf)$/i, '')
-                : t('error.loading_failed');
+                : t('msg.epub_unreadable_book');
               return (
                 <div
                   key={book.id}

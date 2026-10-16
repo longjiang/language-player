@@ -572,6 +572,14 @@ even express "this file is gone".
   and its search index. The user then imports the file again — an import
   replaces an unreadable record, so re-importing is a complete repair. The app
   never deletes a book on its own.
+- **Two or more unreadable books get a bulk action.** A bar above the grid reads
+  `msg.epub_unreadable_books` ("{n, plural, …}") with a **Remove** button that
+  deletes every unreadable book on screen and reloads the shelf once (a swept
+  profile can have dozens; clicking each card is not a recovery). It only appears
+  for two or more, counts the *visible* books (so a name filter can't promise to
+  remove something off screen), and — like the per-card Remove — needs no
+  confirmation, because those records are already unreadable: only their
+  metadata (name, progress) is being dropped.
 - **No spinner may outlive the failure.** If an open fails *after* the book id is
   set (e.g. the stored bytes cannot be re-parsed), the error state renders
   *instead of* the "book open, locating the resume point" spinner; the mount
@@ -586,7 +594,7 @@ even express "this file is gone".
 | Classification + mirror (`meta:`/`cover:` rows) + per-record listing | `lib/epub-store.ts` (`isUnreadableRecordError`, `unavailable`, `lp-epub-meta`) |
 | `unreadable` badge map + `openFailureId` | `hooks/use-epub.ts` |
 | Recovery notice, error-before-spinner ordering, one-click Remove | `app/[l1]/[l2]/epub/page.tsx` |
-| Badged card + inline Remove | `components/reader/epub-bookshelf.tsx` |
+| Badged card + inline Remove + the bulk bar (`msg.epub_unreadable_books`) | `components/reader/epub-bookshelf.tsx` |
 | Storage-failure log (error channel, not the reader's verbose switch) | `lib/epub-log.ts` (`epubStorageErr`) |
 
 ### 18.4 Mobile
@@ -595,7 +603,8 @@ Mobile has the same contract (`apps/mobile/app/(tabs)/(reading)/epub.tsx`,
 `hooks/use-epub.ts`, `components/reader/EpubBookshelf.tsx`):
 
 - The shelf always renders and badges a book whose library file is gone (a
-  `getInfoAsync` pass on every load), with the existing one-click Remove.
+  `getInfoAsync` pass on every load), with the existing one-click Remove, plus the
+  same two-or-more **Remove** bulk bar (one shelf reload for all of them).
 - `openBook` reports `msg.epub_file_unreadable` (missing file, missing record, or
   an unreadable library) versus `msg.epub_parse_error` (unparsable book); the
   screen renders `t(epub.error)`, so the message is the real reason.

@@ -920,6 +920,8 @@
         "epub_not_supported": "仅支持 .epub 文件。",
         "epub_parse_error": "无法打开此 EPUB 文件。",
         "epub_progress": "已读 {pct}%",
+        "epub_unreadable_book": "图书已无法读取",
+        "epub_unreadable_books": "{n, plural, other {# 本图书已无法读取}}",
         "everything_you_need": "学习所需的一切",
         "exact_match_searching": "正在搜索{n}种形式 — 点击仅精确匹配",
         "exact_match_searching_only": "仅搜索\"{term}\" — 点击搜索{n}种形式",

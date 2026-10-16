@@ -447,6 +447,15 @@ export default function EpubPage() {
     }
   }, [epub]);
 
+  // Remove every unreadable book on the shelf in one go (one shelf reload).
+  const handleRemoveBooks = useCallback(async (ids: string[]) => {
+    try {
+      await epub.removeBooks(ids);
+    } catch (err) {
+      epubStorageErr(`could not remove ${ids.length} book(s): ${errMsg(err)}`);
+    }
+  }, [epub]);
+
   // Dismiss the recovery notice without removing the book.
   const dismissOpenFailure = useCallback(() => {
     epub.clearOpenFailure();
@@ -699,6 +708,9 @@ export default function EpubPage() {
                 <TriangleAlert className="h-5 w-5 flex-shrink-0 text-destructive" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-destructive">
+                    {t('msg.epub_unreadable_book')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
                     {t('msg.epub_file_unreadable')}
                   </p>
                   {failedBookName && (
@@ -721,6 +733,7 @@ export default function EpubPage() {
                 l2Code={l2.code}
                 onOpenBook={handleOpenBook}
                 onRemoveBook={handleRemoveBook}
+                onRemoveBooks={handleRemoveBooks}
                 onFilesProcessed={handleFilesProcessed}
                 openingId={openingId}
                 unreadable={epub.unreadable}

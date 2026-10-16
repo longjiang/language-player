@@ -83,12 +83,16 @@ showed **only a spinner, forever**, plus an uncaught rejection. The chain was:
    records `openFailureId`; the page shows a recovery notice above the shelf, which
    Remove clears together with the book. Removal deletes the record, its mirror row
    and its search index; the user then imports the file again. The app never
-   deletes a user's book on its own.
+   deletes a user's book on its own. Two or more unreadable books also get a
+   **bulk Remove** above the grid (`msg.epub_unreadable_books`, "{n, plural, …}",
+   counted over the books on screen and removed with one shelf reload): a swept
+   profile can lose dozens at once, and clicking each card is not a recovery.
    - The **mount auto-open is quiet**: it is a convenience (open the last-read
      book), so a failure there badges the card and logs, but raises no notice —
      a notice about a book the user never chose, which (when the record's metadata
      died with it) cannot even be named, reads as noise. For the same reason a
-     nameless card is titled "Loading failed" rather than repeating the sentence.
+     nameless card is titled `msg.epub_unreadable_book` ("Book no longer readable")
+     rather than repeating the sentence.
    - **Volume matters in logs and on screen.** Per-record detail is info-level and
      each *new* loss is reported once on the error channel (a summary with the
      count); later loads and the count dropping as books are removed stay quiet at

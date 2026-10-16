@@ -13,7 +13,7 @@
  * Chromium's does — request error + transaction abort.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   deleteEpub,
   isUnreadableRecordError,
@@ -396,7 +396,7 @@ describe('unreadable-book logging', () => {
   it('reports a new loss once, then stays quiet on later loads', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const aggregateCalls = () =>
-      spy.mock.calls.filter((c) => String(c[0]).includes('can no longer be read')).length;
+      spy.mock.calls.filter((c: unknown[]) => String(c[0]).includes('can no longer be read')).length;
 
     await saveEpub('agg-1', new ArrayBuffer(8), { id: 'agg-1', fileName: 'agg.epub' });
     forgetMirrorRow('agg-1');
