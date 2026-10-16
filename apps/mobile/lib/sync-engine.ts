@@ -13,6 +13,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { isExpectedSyncRejection } from '@/lib/sync-rejection';
+import { splitOutboxRows } from '@/lib/outbox-payload';
 import {
   getConnectivity,
   subscribeConnectivity,
@@ -36,7 +37,7 @@ import {
   type OutboxOp,
 } from '@/lib/sync-db';
 
-const { log, logwarn } = syncLogger;
+const { log, logwarn, logerr } = syncLogger;
 
 const MAX_PUSH_ATTEMPTS = 5;
 const FLUSH_DEBOUNCE_MS = 1500;
@@ -303,42 +304,67 @@ async function pushOutbox(): Promise<number> {
   inFlightOutboxIds.clear();
   for (const r of rows) inFlightOutboxIds.add(r.id);
 
+  // Split out the rows whose payload cannot be read BEFORE building the request.
+  // A corrupt payload used to reject the whole `Promise.all` that built the body,
+  // so a single bad row stopped every other op from syncing — for good. Such a
+  // row is marked failed instead (visible on the Sync Status screen, and no
+  // longer blocking the queue).
+  const { usable, corrupt } = splitOutboxRows(rows);
+  for (const r of corrupt) {
+    logerr(`[sync] outbox row ${r.entity}:${r.entity_id} has a corrupt payload — marking it failed`); // non-info-level: caught exception — stack trace needed
+    await markOutboxError(r.id, 'corrupt payload: not valid JSON', r.attempts + 1, 'error');
+  }
+
+  const prepared: Array<{
+    idempotency_key: string;
+    entity: string;
+    entity_id: string;
+    op: string;
+    payload: Record<string, unknown>;
+    updated_at: number;
+  }> = [];
+  for (const r of usable) {
+    let payload = r.parsedPayload;
+    // Self-heal legacy partial payloads (queued before the whole-row contract)
+    // so strict server validation can't strand them forever.
+    if (r.op === 'upsert') {
+      try {
+        const cached = await getEntityCacheRow(r.entity, r.entity_id);
+        const source = cached && cached.deleted_at == null
+          ? JSON.parse(cached.payload) as Record<string, unknown>
+          : null;
+        const repaired = repairSyncPayload(r.entity, payload, source);
+        if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
+          log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
+        }
+        payload = repaired;
+      } catch {
+        // Unrepairable — leave as-is; the server will reject loudly.
+      }
+    }
+    prepared.push({
+      idempotency_key: r.idempotency_key,
+      entity: r.entity,
+      entity_id: r.entity_id,
+      op: r.op,
+      payload,
+      updated_at: r.updated_at,
+    });
+  }
+
+  if (prepared.length === 0) {
+    log('[sync] push skip — no row with a readable payload');
+    await refreshPendingCount();
+    return 0;
+  }
+
   try {
     const res = await fetchWithTimeout(
       `${PYTHON_API_URL}/sync/push`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ops: await Promise.all(rows.map(async (r) => {
-            let payload = JSON.parse(r.payload) as Record<string, unknown>;
-            // Self-heal legacy partial payloads (queued before the whole-row
-            // contract) so strict server validation can't strand them forever.
-            if (r.op === 'upsert') {
-              try {
-                const cached = await getEntityCacheRow(r.entity, r.entity_id);
-                const source = cached && cached.deleted_at == null
-                  ? JSON.parse(cached.payload) as Record<string, unknown>
-                  : null;
-                const repaired = repairSyncPayload(r.entity, payload, source);
-                if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
-                  log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
-                }
-                payload = repaired;
-              } catch {
-                // Unrepairable — leave as-is; the server will reject loudly.
-              }
-            }
-            return {
-              idempotency_key: r.idempotency_key,
-              entity: r.entity,
-              entity_id: r.entity_id,
-              op: r.op,
-              payload,
-              updated_at: r.updated_at,
-            };
-          })),
-        }),
+        body: JSON.stringify({ ops: prepared }),
       },
       'push',
     );
@@ -546,12 +572,18 @@ export function getEntityCacheRows(entity: string) {
 export async function getOutboxSnapshot(): Promise<OutboxSnapshot[]> {
   const { listOutbox } = await import('@/lib/sync-db');
   const rows = await listOutbox();
-  return rows.map((r) => ({
+  // One corrupt payload must not hide every other pending op (this feeds the
+  // notes list's pending markers and the pending count).
+  const { usable, corrupt } = splitOutboxRows(rows);
+  for (const r of corrupt) {
+    logerr(`[sync] outbox row ${r.entity}:${r.entity_id} could not be read — skipping it in the snapshot`); // non-info-level: caught exception — stack trace needed
+  }
+  return usable.map((r) => ({
     id: r.id,
     entity: r.entity,
     entity_id: r.entity_id,
     op: r.op,
-    payload: JSON.parse(r.payload) as Record<string, unknown>,
+    payload: r.parsedPayload,
     created_at: r.created_at,
     updated_at: r.updated_at,
     attempts: r.attempts,
