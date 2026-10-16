@@ -77,6 +77,11 @@ and what it costs.
   what was added, skipped and why.
 - As an admin, I want discovery to show me candidates before they are
   imported, so the fragile Google scrape can't silently fill the catalogue.
+- As an admin, I want to be warned when the content I am importing declares a
+  language other than the one I selected, so nothing lands in the wrong
+  language by accident.
+- As an admin, I want the language to start empty, so I can never import into
+  English (or any other language) just because a form had a default.
 - As an admin, I want to create, rename, hide, re-cover and delete a TV show
   or talk and see its member videos, so the catalogue keeps its shape.
 - As an admin, I want to find videos YouTube no longer serves and delete them
@@ -142,8 +147,8 @@ dashboard) moves to `/users`; `/` becomes a redirect to `/users`.
 | `/users` | user search (moved from `/`) | `GET /admin/users/search` |
 | `/users/[id]` | user detail (unchanged) | `GET /admin/users/<id>` + subscription/admin mutations |
 | `/content/videos` | video manager: filter by L2, search by title, sort, page; edit / create / delete / bulk assign / bulk delete | `GET /admin/videos`, `POST /admin/videos`, `PATCH /admin/videos/<id>`, `DELETE /admin/videos/<id>` |
-| `/content/import` | import: single · batch · channel · playlist, with cursor paging and a live result log | `POST /admin/videos/add`, `/admin/videos/add-batch`, `GET /admin/channels/resolve`, `POST /admin/channels/add`, `POST /admin/playlists/add` |
-| `/content/discover` | discovery: generate/review candidates, then import selected | `POST /admin/videos/discover` |
+| `/content/import` | import: single · batch · channel · playlist, with cursor paging, a live result log and the language check | `POST /admin/videos/preflight`, `POST /admin/videos/add`, `/admin/videos/add-batch`, `GET /admin/channels/resolve`, `POST /admin/channels/add`, `POST /admin/playlists/add` |
+| `/content/discover` | discovery: generate/review candidates, then import selected | `POST /admin/videos/preflight`, `POST /admin/videos/discover` |
 | `/content/shows` | TV shows + talks: list by L2 (incl. hidden), create / edit / delete, member videos | `GET /tv-shows`, `GET /talks`, `GET /tv-shows|/talks/<id>/episodes`, `POST|PATCH|DELETE /admin/tv-shows|/admin/talks` |
 | `/content/channels` | channels: list by L2, resolve a handle, view channel videos, import uploads | `GET /channels`, `GET /channels/<id>/videos`, `GET /admin/channels/resolve`, `POST /admin/channels/add` |
 | `/content/sweep` | unavailable sweep: check, review, opt-in delete | `POST /admin/videos/sweep-unavailable` |
@@ -153,6 +158,51 @@ component) driven by `apps/admin/src/components/layout/nav-items.ts`, and uses
 `usePathname()` for the active item. Every page renders `<AdminShell>` instead
 of the bare `<AppHeader>`; `/login` keeps its own layout. UI primitives stay
 inside `apps/admin` (ADR-0003: UI components are not shared between apps).
+
+## Language safety
+
+Two rules, both aimed at the same failure: content filed under the wrong
+language without anyone noticing.
+
+### 1. The language never defaults
+
+Every content screen starts with **no language selected** (`useState(null)`).
+Nothing is written until an admin picks one:
+
+- import / discover / channels / sweep — the run button is disabled and the
+  picker shows *"Choose a language first"*; the backend's own
+  `require_l2()` also rejects a missing language with 400.
+- videos / shows — empty means *all languages* for a **filter**, which is a
+  read, and the picker can no longer silently show `en`.
+
+A default of `en` was how an admin could paste a Japanese channel and import
+it into English without ever choosing a language.
+
+### 2. Warn before (and while) importing
+
+`POST /admin/videos/preflight` returns the **importer's own** metadata verdict
+for a set of ids — `declared_locale` (`snippet.defaultAudioLanguage`),
+`matches_l2`, and `block_reason` (`unavailable` / `not_embeddable` /
+`region_restricted` / `locale_mismatch`) — computed with the same
+`video_import_block_reason()` and `l2_locales()` the importer applies. The
+console never re-implements the rule: doing that client-side would flag real
+locale variants (`zh-Hant` under `zh`, `pt-BR` under `pt`, `nb` under `no`).
+
+Wiring:
+
+| Where | When | What the admin sees |
+|---|---|---|
+| Import → single | before `add` | the check panel; a confirm dialog if the id declares another language |
+| Import → batch | before the first page, for the whole list | same, with the mismatch count and a sample of ids |
+| Import → channel / playlist | after **each** page (the ids only exist as the walk returns them) | the panel grows per page; the header note says the walk is checked page by page |
+| Discover | after *Find candidates*, and again before importing the selection | the check panel; confirm before importing a mismatching selection |
+| Discover → Import top results | advisory only | a caveat note, because that path re-runs the search and may import different ids |
+
+The confirm dialog exists because `Force` legitimately overrides
+`locale_mismatch`: the console explains that the importer will **skip** the
+videos as `locale_mismatch` unless Force is on, and lets the admin proceed
+deliberately. The panel always adds the honest caveat — YouTube omits
+`defaultAudioLanguage` on many uploads, so a clean check is not a guarantee.
 
 ## Screen designs
 
@@ -209,7 +259,7 @@ stopping early loses nothing. Failure of a page surfaces the Flask error body
 
 ### `/content/discover`
 
-- Inputs: L2, `terms` (empty = the shipped popular-topics + Google-Trends
+- Inputs: L2 (required, no default), `terms` (empty = the shipped popular-topics + Google-Trends
   terms), `term_limit`, `pages` (1–5), `max_per_channel`.
 - *Find candidates* → report-only call. Renders the candidate table
   (checkbox, title, channel, views, term) **best-first as returned**, plus a
@@ -331,6 +381,40 @@ paging. Add:
 `routes/admin.py` reads `request.args.get('q')`. The same filter is what
 Classic's db-audit and video list approximated client-side.
 
+### 3. `POST /admin/videos/preflight` (new)
+
+The language warning needs the importer's locale rule, which lives in
+`utils_youtube.l2_locales()` → `caption_selection.l2_locale_priority()`. The
+console must not approximate it, so one small admin route exposes the
+metadata-only verdict:
+
+```json
+POST /admin/videos/preflight   { "l2": "ja", "youtube_ids": ["dQw4w9WgXcQ"] }
+{
+  "l2": "ja",
+  "l2_locales": ["ja", "ja-JP"],
+  "results": [{ "youtube_id": "dQw4w9WgXcQ", "title": "…",
+                "declared_locale": "en", "matches_l2": false,
+                "block_reason": "locale_mismatch" }],
+  "invalid": [],
+  "summary": { "total": 1, "mismatched": 1, "unavailable": 0,
+               "not_embeddable": 0, "region_restricted": 0, "invalid": 0 }
+}
+```
+
+- Metadata only. The transcript checks (`no_transcript`,
+  `transcript_too_short`, `caption_service_unavailable`) are deliberately not
+  run — each needs a caption download, which is the import itself.
+- `matches_l2` is `null` (not `true`) when YouTube returned no video, so "no
+  verdict" cannot be read as "compatible".
+- No database access: it is a pure read of the YouTube API plus the locale
+  map. `test_admin_video_preflight.py` asserts that by failing if
+  `get_conn()` is called.
+- A failed `videos.list` is a `502`, never a silent all-clear.
+- Admin-only by construction (the blueprint's `before_request` hook); the
+  existing structural test enumerates every rule on the blueprint and
+  requires 401/403, so it covers this route too.
+
 No other route changes. Documented in
 [ARCH-003](../arch/003-python-backend-architecture.md) and in the SPEC-039
 § 5.8 route list note.
@@ -352,14 +436,16 @@ No other route changes. Documented in
 | `apps/admin/src/components/content/video-dialog.tsx` | Create/edit one video (all `ADMIN_VIDEO_WRITABLE` fields) |
 | `apps/admin/src/components/content/show-dialog.tsx` | Create/edit one TV show or talk |
 | `apps/admin/src/components/content/{l2-select,field,confirm-dialog}.tsx` | L2 picker, labelled field/section, destructive-action confirm |
+| `apps/admin/src/components/content/language-check.tsx` | The pre-import language-check panel and its confirm-dialog copy |
 | `apps/admin/src/hooks/use-auth-ready.ts` | Wait for the mirrored access token before the first fetch |
 | `apps/admin/src/lib/content-api.ts` | Typed clients for every content route |
 | `apps/admin/src/lib/video-ids.ts` | Extract ids from pasted ids/URLs |
 | `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, import/discovery/sweep result types |
 | `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)` |
-| `zerotohero-python-server/routes/admin.py` | `q` query parameter |
+| `zerotohero-python-server/routes/admin.py` | `q` query parameter, `POST /admin/videos/preflight` |
 | `zerotohero-python-server/test_admin_videos_list.py` | `q` filter + escaping + route tests |
 | `zerotohero-python-server/test_content_shows.py` | `_show_dict` regression test (`l2Code` present, keys preserved) |
+| `zerotohero-python-server/test_admin_video_preflight.py` | Preflight decisions and validation (no DB access) |
 
 ## i18n
 
@@ -479,6 +565,14 @@ allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
   NULL.
 - **The shows table's title filter is client-side** over the loaded page
   (up to 1000 rows); the public listing has no search parameter.
+- **The language warning is only as good as YouTube's declaration.**
+  `defaultAudioLanguage` is absent on many uploads, and the check says so —
+  a clean panel means "nothing declared otherwise", not "verified". Channel
+  and playlist walks are audited *after* each page commits, because their ids
+  do not exist before the walk; a mismatch there is reported, not prevented.
+- **A batch preflight costs one request per 50 ids** (plus a YouTube
+  `videos.list` call server-side). A 500-id paste therefore spends 10
+  preflight calls before the first import page.
 
 ## Open Questions
 
