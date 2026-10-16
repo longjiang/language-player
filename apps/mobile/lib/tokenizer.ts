@@ -604,6 +604,10 @@ function backgroundDownloadLemmaTable(l2: string, apiUrl: string): void {
     } catch {
       // Non-fatal — the next local fallback retries after the throttle window.
     }
+  }).catch((e) => {
+    // Non-fatal: `hasLemmaTable` rejects when dictionary.db cannot be opened.
+    // The next lemmatization retries after the throttle window.
+    logwarn('[lemmatize] background lemma-table check failed:', (e as Error)?.message ?? e);
   });
 }
 

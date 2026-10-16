@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { logwarn } from '@/lib/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from '@langplayer/api-client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -166,9 +167,19 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
       if (mountedRef.current) setNotesLoading(false);
     }
 
-    // 3. Try to process any pending sync operations
-    await processSyncQueue();
-    await refreshPendingCount();
+    // 3. Try to process any pending sync operations. Guarded: `processSyncQueue`
+    // rejects when sync.db cannot be opened or a queued payload is unreadable,
+    // and this ran AFTER the try/finally above — so a failure escaped as an
+    // unhandled rejection and the reader showed no explanation at all.
+    try {
+      await processSyncQueue();
+      await refreshPendingCount();
+    } catch (e) {
+      logwarn('[notes] sync queue could not be processed:', (e as Error)?.message ?? e);
+      if (mountedRef.current) {
+        setNotesError(localizedError(t, e, 'msg.failed_to_load_notes'));
+      }
+    }
     // Re-annotate after processing queue
     if (mountedRef.current) {
       setNotes(prev => prev.map(n => ({
