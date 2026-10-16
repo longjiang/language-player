@@ -552,7 +552,7 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 
 ---
 
-## Unreadable stored records (web)
+## Unreadable stored records (web and mobile)
 
 A stored book's binary is a *large* IndexedDB value, which Chromium keeps in a
 separate file in the profile rather than inline in LevelDB. Disk-cleanup tools
@@ -575,6 +575,18 @@ As built:
 | **Repair** | Writes replace an unreadable record: `saveEpub` retries without the merge-read (the read abort takes the `put` with it), and imports treat an unreadable existing record as absent — so re-importing the file is a complete fix. |
 | **Robustness** | The page's mount effect sets `initialized` in `finally`; the error branch renders before the cover/locating spinners; `openDB()` rejects on `blocked` and closes on `versionchange` so it can never await forever; `loadBookIndex` drops an unreadable index row and reports "not indexed" so the next search rebuilds it. |
 | **Observability** | `epubStorageErr()` (`lib/epub-log.ts`) logs on the app-wide error channel — **not** gated by the reader's verbose switch `EPUB_LOGS_ENABLED` — so `[LP Web] EPUB storage: openBook <id> could not read the stored record (unreadable): NotReadableError: …` prints at the default log level (1 in production, 2 in web dev). |
+
+Mobile (same contract, different storage — sandbox files + AsyncStorage, so no
+mirror and no blob files):
+
+| Layer | Behavior |
+|---|---|
+| **Metadata read** | `readAll()` throws `EpubLibraryUnreadableError` when the stored library cannot be read. It used to return `[]`, which rendered an empty shelf **and** let the next write persist that empty list — wiping every stored book. Writers now fail instead of overwriting a list they could not read; only an absent key or unparseable content yields `[]` (the corrupt value is logged and replaced on the next save). |
+| **File check** | `loadBooks()` stats each book's library file (`getInfoAsync`) and badges the ones that are gone (`unavailable: 'unreadable'`), so a deleted book is visible before it is tapped. |
+| **Opening** | `openBook` reports `msg.epub_file_unreadable` for a missing file, a missing record and an unreadable library, and records `openFailureId`; a parse failure keeps `msg.epub_parse_error`. `error` therefore always holds a **translation key** (the screen renders `t(epub.error)`), where it previously stored raw English strings that the screen discarded for a generic parse-error message. |
+| **UI** | The shelf badges the card (warning icon, destructive title + `msg.epub_file_unreadable`) beside the existing one-click Remove in the card menu, and the error state offers Remove (drops the dead entry and returns to the shelf) + Close. |
+| **Removals/updates that fail** | `removeBook` logs and still drops the card; `saveLocation` no longer rejects unhandled on every page turn (progress is lost for that turn, not the session); the document picker is inside the try so its rejection cannot escape to `onPress`. |
+| **Not covered** | There is no metadata mirror on mobile (the metadata is already in AsyncStorage, which the loss of a book *file* cannot damage), and no end-to-end device verification of these paths — they are covered by unit tests against a mocked AsyncStorage. |
 
 Verified by deleting the record's blob file out of a Chromium profile
 (`Default/IndexedDB/<origin>.indexeddb.blob/<db>/<shard>/<n>`) and reloading
