@@ -4,9 +4,26 @@
  * can be resumed from the bookshelf. Each book is keyed by a stable id derived
  * from the file contents (SHA-256), so re-uploading the same file updates the
  * same handle instead of creating a duplicate.
+ *
+ * A book's binary is a *large* value, which Chromium keeps in a separate file
+ * on disk rather than inline in LevelDB. Disk-cleanup tools delete those files
+ * while the LevelDB reference survives, which makes the record permanently
+ * unreadable: `get()` fails with a DOMException named `NotReadableError`
+ * ("Data lost due to missing file. Affected record should be considered
+ * irrecoverable"). Two consequences are designed for here:
+ *
+ * 1. The **metadata mirror** (`lp-epub-meta`) keeps the small per-book metadata
+ *    in a separate database, so the bookshelf can still list (and name, and
+ *    badge) a book whose binary is gone. The shelf must never read the blob to
+ *    render a card.
+ * 2. A failed per-record read is **isolated**: it marks that one book as
+ *    unavailable instead of rejecting the whole list (which used to leave the
+ *    reader on a spinner forever) and is classified as irrecoverable vs
+ *    transient, so the UI can offer the recovery (Remove → re-import).
  */
 
 import type { BookLocation } from '@/lib/epub-book-types';
+import { epubStorageErr, epubWarn } from '@/lib/epub-log';
 
 const DB_NAME = 'lp-epub-store';
 const DB_VERSION = 3;
@@ -18,6 +35,17 @@ const SEARCH_INDEX_VERSION = 3;
 /** Key used by the previous single-book version — migrated to a per-book key. */
 const LEGACY_KEY = 'current';
 
+/**
+ * Small-value metadata mirror. It lives in its OWN database (not a new object
+ * store on `lp-epub-store`) on purpose: bumping that database's version would
+ * make an old tab's open connection block the upgrade and hang every read
+ * (see `openDB`'s `onblocked` handler). The values copied here are tiny
+ * (a file name, a data-URL cover, progress numbers), so they stay inline in
+ * LevelDB and survive the blob-file deletion described above.
+ */
+const META_DB_NAME = 'lp-epub-meta';
+const META_STORE_NAME = 'epub-meta';
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -26,10 +54,142 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
       if (!db.objectStoreNames.contains(INDEX_STORE_NAME)) db.createObjectStore(INDEX_STORE_NAME);
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      // Never hold a connection that blocks another tab's upgrade.
+      db.onversionchange = () => db.close();
+      resolve(db);
+    };
     req.onerror = () => reject(req.error);
+    // Another tab is holding an older version open: without this the request
+    // never settles and every storage read awaits forever (the spinner hang).
+    req.onblocked = () => {
+      epubStorageErr('library DB open blocked by another tab (close other Language Player tabs and reload)');
+      reject(new DOMException('IndexedDB open blocked by another tab', 'BlockedError'));
+    };
   });
 }
+
+/** Open the small-value metadata mirror DB. */
+function openMetaDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(META_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(META_STORE_NAME)) db.createObjectStore(META_STORE_NAME);
+    };
+    req.onsuccess = () => {
+      const db = req.result;
+      db.onversionchange = () => db.close();
+      resolve(db);
+    };
+    req.onerror = () => reject(req.error);
+    req.onblocked = () => {
+      reject(new DOMException('IndexedDB metadata open blocked by another tab', 'BlockedError'));
+    };
+  });
+}
+
+/** Throttle for mirror-failure logs (a broken mirror fails on every write). */
+let metaMirrorWarned = false;
+
+/** Best-effort metadata mirror read. Never rejects — returns an empty map. */
+async function readAllMeta(): Promise<Map<string, EpubMeta>> {
+  const out = new Map<string, EpubMeta>();
+  let db: IDBDatabase | null = null;
+  try {
+    db = await openMetaDB();
+    await new Promise<void>((resolve) => {
+      const tx = db!.transaction(META_STORE_NAME, 'readonly');
+      const req = tx.objectStore(META_STORE_NAME).openCursor();
+      req.onsuccess = () => {
+        const cursor = req.result;
+        if (!cursor) { resolve(); return; }
+        const value = cursor.value as EpubMeta | undefined;
+        if (value?.id) out.set(value.id, value);
+        cursor.continue();
+      };
+      // A mirror read failure is not fatal: the caller falls back to reading
+      // the book records (and to a name-less card for an unreadable one).
+      req.onerror = () => resolve();
+    });
+  } catch (err) {
+    if (!metaMirrorWarned) {
+      metaMirrorWarned = true;
+      epubStorageErr(`metadata mirror unavailable — shelf falls back to the book records: ${errText(err)}`);
+    }
+  } finally {
+    db?.close();
+  }
+  return out;
+}
+
+/** Best-effort metadata mirror write (never rejects, never blocks a save). */
+async function writeMetaRow(meta: EpubMeta): Promise<void> {
+  let db: IDBDatabase | null = null;
+  try {
+    db = await openMetaDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db!.transaction(META_STORE_NAME, 'readwrite');
+      tx.objectStore(META_STORE_NAME).put(meta, meta.id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  } catch (err) {
+    if (!metaMirrorWarned) {
+      metaMirrorWarned = true;
+      epubStorageErr(`could not write the metadata mirror (shelf falls back to the book records): ${errText(err)}`);
+    }
+  } finally {
+    db?.close();
+  }
+}
+
+/** Best-effort metadata mirror delete. */
+async function deleteMetaRow(id: string): Promise<void> {
+  let db: IDBDatabase | null = null;
+  try {
+    db = await openMetaDB();
+    await new Promise<void>((resolve) => {
+      const tx = db!.transaction(META_STORE_NAME, 'readwrite');
+      tx.objectStore(META_STORE_NAME).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    });
+  } catch {
+    /* nothing to clean up */
+  } finally {
+    db?.close();
+  }
+}
+
+function errText(err: unknown): string {
+  if (!err || typeof err !== 'object') return String(err);
+  const e = err as { name?: unknown; message?: unknown };
+  return `${String(e.name ?? 'Error')}: ${String(e.message ?? '')}`;
+}
+
+/**
+ * Whether an IndexedDB error means the record can never be read again.
+ *
+ * Chrome 132+ reports a large-value read failure whose blob file is missing
+ * from disk as `NotReadableError` — "Data lost due to missing file. Affected
+ * record should be considered irrecoverable". Chrome 130/131 reported the same
+ * condition as `NotFoundError` with the older "Failed to read large IndexedDB
+ * value" message. Everything else (`UnknownError` / `DataError` — a transient
+ * read failure, or a generic failure) is retryable, never treated as lost data.
+ */
+export function isUnreadableRecordError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { name?: unknown; message?: unknown };
+  const name = typeof e.name === 'string' ? e.name : '';
+  if (name === 'NotReadableError') return true;
+  const message = typeof e.message === 'string' ? e.message : '';
+  return name === 'NotFoundError' && /Failed to read large IndexedDB value/i.test(message);
+}
+
 
 export interface EpubMeta {
   /** Stable id derived from the file contents (SHA-256 hex). */
@@ -70,7 +230,50 @@ export interface StoredEpub {
 }
 
 /** Bookshelf view — metadata only, no binary data. */
-export type EpubSummary = EpubMeta;
+export interface EpubSummary extends EpubMeta {
+  /**
+   * Set when the book's stored record could not be read at all (its binary
+   * file is gone, or the read failed). The card is rendered as a recoverable
+   * tombstone: it can be opened (which reports the error) or removed.
+   *
+   * `'unreadable'` — the record is irrecoverable (Chrome `NotReadableError`, or
+   * the pre-132 `NotFoundError` equivalent); `'error'` — the read failed for
+   * some other (possibly transient) reason.
+   */
+  unavailable?: 'unreadable' | 'error';
+}
+
+/** Placeholder metadata for a record we know exists but cannot read. */
+function unavailableSummary(id: string, err: unknown): EpubSummary {
+  const now = Date.now();
+  return {
+    id,
+    fileName: '',
+    fileSize: 0,
+    format: 'epub',
+    language: null,
+    coverUrl: null,
+    lastLocation: null,
+    locationFormatVersion: 1,
+    lastChapterHref: null,
+    lastChapterTitle: null,
+    lastAnchor: null,
+    lastAnchorOffset: 0,
+    totalChars: 0,
+    readChars: 0,
+    lastReadAt: 0,
+    addedAt: now,
+    unavailable: isUnreadableRecordError(err) ? 'unreadable' : 'error',
+  };
+}
+
+/** Clear `blob:` covers (they die on refresh) before a summary is returned. */
+function normalizeSummary(meta: EpubMeta, unavailable?: 'unreadable' | 'error'): EpubSummary {
+  const summary: EpubSummary = { ...meta };
+  if (summary.coverUrl?.startsWith('blob:')) summary.coverUrl = null;
+  if (unavailable) summary.unavailable = unavailable;
+  return summary;
+}
 
 /** Whole-book search index record — one per spine item. */
 export interface SpineIndexRecord {
@@ -126,26 +329,64 @@ export async function saveEpub(
   arrayBuffer: ArrayBuffer,
   meta: Partial<EpubMeta>,
 ): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
+  let merged: EpubMeta | null;
+  try {
+    merged = await writeEpubRecord(id, arrayBuffer, meta, true);
+  } catch (err) {
+    // Reading the existing record failed — most often because its blob file is
+    // gone (NotReadableError), which aborts the whole transaction and takes the
+    // `put` with it. The save is a *replacement*, so retry without the merge:
+    // the incoming bytes and metadata are authoritative.
+    epubWarn(`saveEpub: could not merge with the existing record (${errText(err)}) — writing a fresh one`);
+    merged = await writeEpubRecord(id, arrayBuffer, meta, false);
+  }
+  // Mirror after the record is durably written (best effort — see writeMetaRow).
+  if (merged) await writeMetaRow(merged);
+}
+
+/**
+ * One write attempt. `merge` reads the existing record first so progress
+ * fields survive a re-upload; the read can fail (see `saveEpub`) which aborts
+ * the transaction, so the caller retries with `merge = false`.
+ */
+function writeEpubRecord(
+  id: string,
+  arrayBuffer: ArrayBuffer,
+  meta: Partial<EpubMeta>,
+  merge: boolean,
+): Promise<EpubMeta> {
+  return openDB().then((db) => new Promise<EpubMeta>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    const getReq = store.get(id);
-    getReq.onsuccess = () => {
-      const existing = getReq.result as StoredEpub | undefined;
+    let out: EpubMeta | null = null;
+    let readError: unknown = null;
+
+    const put = (existing?: StoredEpub) => {
       const base = existing?.meta ?? baseMeta(id, meta.fileName ?? 'book.epub', arrayBuffer.byteLength);
-      const merged: EpubMeta = {
+      out = {
         ...base,
         ...meta,
         id,
         fileName: meta.fileName ?? base.fileName,
         fileSize: arrayBuffer.byteLength,
       };
-      store.put({ id, data: arrayBuffer, meta: merged }, id);
+      store.put({ id, data: arrayBuffer, meta: out }, id);
     };
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
+
+    if (merge) {
+      const getReq = store.get(id);
+      getReq.onsuccess = () => put(getReq.result as StoredEpub | undefined);
+      getReq.onerror = () => { readError = getReq.error; };
+    } else {
+      put(undefined);
+    }
+
+    tx.oncomplete = () => { db.close(); resolve(out!); };
+    tx.onerror = tx.onabort = () => {
+      db.close();
+      reject(tx.error ?? readError ?? new Error('EPUB save failed'));
+    };
+  }));
 }
 
 /** Load a stored EPUB by id. */
@@ -155,102 +396,199 @@ export async function loadEpub(id: string): Promise<StoredEpub | null> {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const req = tx.objectStore(STORE_NAME).get(id);
     req.onsuccess = () => { db.close(); resolve(req.result ?? null); };
+    // `NotReadableError` here means the record's blob file is gone — the
+    // caller classifies it with `isUnreadableRecordError`.
     req.onerror = () => { db.close(); reject(req.error); };
+    tx.onabort = () => { db.close(); reject(tx.error ?? req.error ?? new Error('read aborted')); };
   });
 }
 
 /**
  * List all stored books (metadata only), sorted by last read (most recent
  * first). Migrates records written by the previous single-book version.
+ *
+ * Never fails because ONE record is unreadable. The metadata mirror is read
+ * first (small values — a book whose binary file was deleted still lists,
+ * names, and keeps its progress); only records that predate the mirror (or
+ * whose mirror row was lost) are read out of the big store, one transaction at
+ * a time, with the failure isolated to that record and surfaced as an
+ * `unavailable` summary the shelf can badge and remove.
  */
 export async function listEpubs(): Promise<EpubSummary[]> {
-  const db = await openDB();
-  const records: Array<{ key: IDBValidKey; value: StoredEpub }> = await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.openCursor();
-    const out: Array<{ key: IDBValidKey; value: StoredEpub }> = [];
-    req.onsuccess = () => {
-      const cursor = req.result;
-      if (cursor) {
-        out.push({ key: cursor.key, value: cursor.value as StoredEpub });
-        cursor.continue();
-      } else {
-        resolve(out);
-      }
-    };
-    req.onerror = () => reject(req.error);
-  });
-  db.close();
-
+  const mirror = await readAllMeta();
   const summaries: EpubSummary[] = [];
-  for (const rec of records) {
-    const isLegacy = rec.key === LEGACY_KEY || !rec.value?.meta?.id;
-    if (isLegacy) {
-      try {
-        const value = rec.value;
-        const id = await sha256Hex(value.data);
-        const old = value.meta ?? {};
-        await saveEpub(id, value.data, {
-          ...old,
-          id,
-          fileName: old.fileName ?? 'book.epub',
-          coverUrl: old.coverUrl ?? null,
-          lastLocation: old.lastLocation ?? null,
-          locationFormatVersion: old.locationFormatVersion ?? 1,
-          lastAnchorOffset: old.lastAnchorOffset ?? 0,
-          totalChars: old.totalChars ?? 0,
-          readChars: old.readChars ?? 0,
-          lastReadAt: old.lastReadAt ?? Date.now(),
-          addedAt: old.addedAt ?? Date.now(),
-        });
-        await deleteEpub(rec.key as string);
-        const stored = await loadEpub(id);
-        if (stored) {
-          const meta = { ...stored.meta };
-          if (meta.coverUrl?.startsWith('blob:')) meta.coverUrl = null;
-          summaries.push(meta);
-        }
-      } catch { /* skip unreadable legacy record */ }
-    } else {
-      const meta = { ...rec.value.meta };
-      // blob: URLs die on refresh — treat any leftover as no cover.
-      if (meta.coverUrl?.startsWith('blob:')) meta.coverUrl = null;
-      summaries.push(meta);
+  const seen = new Set<string>();
+  let db: IDBDatabase | null = null;
+
+  try {
+    db = await openDB();
+  } catch (err) {
+    // The library DB itself could not be opened (e.g. blocked by another tab).
+    // Still show the shelf from the mirror so the reader is never a spinner.
+    epubStorageErr(`could not open the library DB — listing from the metadata mirror instead: ${errText(err)}`);
+    for (const meta of mirror.values()) summaries.push(normalizeSummary(meta));
+    return summaries.sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0));
+  }
+
+  try {
+    const keys = await listKeys(db);
+    for (const key of keys) {
+      if (typeof key === 'string') seen.add(key);
     }
+
+    for (const key of keys) {
+      const id = String(key);
+      if (key === LEGACY_KEY) {
+        const migrated = await migrateLegacyEpub(db, id);
+        if (migrated) {
+          summaries.push(migrated);
+          seen.delete(LEGACY_KEY);
+          seen.add(migrated.id);
+        }
+        continue;
+      }
+      const mirrored = mirror.get(id);
+      if (mirrored) {
+        // Fast path — and the only path that survives a deleted blob file.
+        summaries.push(normalizeSummary(mirrored));
+        continue;
+      }
+      // Pre-mirror record: read its metadata out of the big store once.
+      try {
+        const rec = await readRecord(db, key);
+        if (!rec?.meta) continue;
+        // Mirror it before returning, so the next load never has to read the
+        // blob again (and survives that blob being deleted).
+        await writeMetaRow(rec.meta);
+        summaries.push(normalizeSummary(rec.meta));
+      } catch (err) {
+        epubStorageErr(`book ${id} could not be listed — marking it unavailable: ${errText(err)}`);
+        summaries.push(unavailableSummary(id, err));
+      }
+    }
+  } finally {
+    db.close();
+  }
+
+  // Prune mirror rows whose book record no longer exists (best effort).
+  for (const id of mirror.keys()) {
+    if (!seen.has(id)) await deleteMetaRow(id);
   }
 
   summaries.sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0));
   return summaries;
 }
 
+/** All book ids in the library store. Keys are small — no blob reads. */
+function listKeys(db: IDBDatabase): Promise<IDBValidKey[]> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAllKeys();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    tx.onabort = () => reject(tx.error ?? new Error('listKeys aborted'));
+  });
+}
+
+/**
+ * Read one record on the given connection. Rejects with the request's error —
+ * callers classify it (`isUnreadableRecordError`) and keep the failure local to
+ * that record.
+ */
+function readRecord(db: IDBDatabase, key: IDBValidKey): Promise<StoredEpub | null> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(key);
+    req.onsuccess = () => resolve((req.result as StoredEpub | undefined) ?? null);
+    req.onerror = () => reject(req.error);
+    tx.onabort = () => reject(tx.error ?? req.error ?? new Error('read aborted'));
+  });
+}
+
+/**
+ * Migrate the pre-v3 single-book record (`key === 'current'`) to a per-book
+ * handle. Returns its summary, or an `unavailable` tombstone when the record
+ * cannot be read; never throws.
+ */
+async function migrateLegacyEpub(db: IDBDatabase, key: string): Promise<EpubSummary | null> {
+  let value: StoredEpub | undefined;
+  try {
+    value = (await readRecord(db, key)) ?? undefined;
+  } catch (err) {
+    epubStorageErr(`legacy book record could not be read — marking it unavailable: ${errText(err)}`);
+    return unavailableSummary(key, err);
+  }
+  if (!value?.data) return null;
+  try {
+    const id = await sha256Hex(value.data);
+    const old = value.meta ?? ({} as Partial<EpubMeta>);
+    await saveEpub(id, value.data, {
+      ...old,
+      id,
+      fileName: old.fileName ?? 'book.epub',
+      coverUrl: old.coverUrl ?? null,
+      lastLocation: old.lastLocation ?? null,
+      locationFormatVersion: old.locationFormatVersion ?? 1,
+      lastAnchorOffset: old.lastAnchorOffset ?? 0,
+      totalChars: old.totalChars ?? 0,
+      readChars: old.readChars ?? 0,
+      lastReadAt: old.lastReadAt ?? Date.now(),
+      addedAt: old.addedAt ?? Date.now(),
+    });
+    await deleteEpub(key);
+    const stored = await loadEpub(id);
+    return stored ? normalizeSummary(stored.meta) : null;
+  } catch (err) {
+    epubStorageErr(`legacy book record could not be migrated: ${errText(err)}`);
+    return null;
+  }
+}
+
 /** Update metadata without rewriting the binary blob. */
 export async function updateEpubMeta(id: string, meta: Partial<EpubMeta>): Promise<void> {
   if (!id) return;
   const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const getReq = store.get(id);
-    getReq.onsuccess = () => {
-      const existing = getReq.result as StoredEpub | undefined;
-      if (!existing) { db.close(); resolve(); return; }
-      store.put({ ...existing, meta: { ...existing.meta, ...meta } }, id);
-    };
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
+  const captured: { meta: EpubMeta | null } = { meta: null };
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const getReq = store.get(id);
+      getReq.onsuccess = () => {
+        const existing = getReq.result as StoredEpub | undefined;
+        if (!existing) { resolve(); return; }
+        captured.meta = { ...existing.meta, ...meta };
+        store.put({ ...existing, meta: captured.meta }, id);
+      };
+      // A record whose blob is unreadable keeps its (mirrored) metadata only:
+      // the progress patch is applied to the mirror row instead of failing.
+      getReq.onerror = () => { resolve(); };
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+  const base = captured.meta ?? (await readAllMeta()).get(id);
+  if (base) await writeMetaRow({ ...base, ...meta, id });
 }
 
 /** Delete a stored EPUB by id. */
 export async function deleteEpub(id: string): Promise<void> {
   const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).delete(id);
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+  await deleteMetaRow(id);
 }
 
 /** Store the whole-book search index keyed by book id. */
@@ -267,20 +605,30 @@ export async function saveBookIndex(id: string, spine: SpineIndexRecord[]): Prom
 /** Load a book's whole-book search index, or null if not indexed yet. */
 export async function loadBookIndex(id: string): Promise<SpineIndexRecord[] | null> {
   const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(INDEX_STORE_NAME, 'readonly');
-    const req = tx.objectStore(INDEX_STORE_NAME).get(id);
-    req.onsuccess = () => {
-      const rec = req.result as { v?: number; spine?: SpineIndexRecord[] } | null;
-      db.close();
-      if (!rec || rec.v !== SEARCH_INDEX_VERSION || !rec.spine?.length) {
-        resolve(null);
-        return;
-      }
-      resolve(rec.spine);
-    };
-    req.onerror = () => { db.close(); reject(req.error); };
-  });
+  try {
+    return await new Promise<SpineIndexRecord[] | null>((resolve, reject) => {
+      const tx = db.transaction(INDEX_STORE_NAME, 'readonly');
+      const req = tx.objectStore(INDEX_STORE_NAME).get(id);
+      req.onsuccess = () => {
+        const rec = req.result as { v?: number; spine?: SpineIndexRecord[] } | null;
+        if (!rec || rec.v !== SEARCH_INDEX_VERSION || !rec.spine?.length) {
+          resolve(null);
+          return;
+        }
+        resolve(rec.spine);
+      };
+      req.onerror = () => reject(req.error);
+      tx.onabort = () => reject(tx.error ?? req.error ?? new Error('index read aborted'));
+    });
+  } catch (err) {
+    // The index is a cache: an unreadable row is dropped so the next search
+    // rebuilds it, instead of failing the search that asked for it.
+    epubStorageErr(`book search index for ${id} could not be read — rebuilding it: ${errText(err)}`);
+    await deleteBookIndex(id).catch(() => {});
+    return null;
+  } finally {
+    db.close();
+  }
 }
 
 /** Remove a book's search index. */
