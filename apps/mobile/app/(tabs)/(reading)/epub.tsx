@@ -240,7 +240,7 @@ export default function EpubReaderScreen() {
     jumpToBlock(marker.location);
   }, [pushHistory, jumpToBlock]);
 
-  const handleOpenBook = useCallback(async (id: string) => {
+  const handleOpenBook = useCallback(async (id: string, opts?: { quiet?: boolean }) => {
     // Ref guard (not just the `openingId` state) so a tap racing the
     // mount-time auto-open can't launch two concurrent opens (web parity).
     if (openingIdRef.current) {
@@ -255,7 +255,7 @@ export default function EpubReaderScreen() {
     setCanJumpBack(false);
     log('[epub] handleOpenBook start', { id, label: epub.books.find((b) => b.id === id)?.fileName ?? null });
     try {
-      const start = await epub.openBook(id, { skipCover: true });
+      const start = await epub.openBook(id, { skipCover: true, quiet: opts?.quiet });
       log('[epub] handleOpenBook finish', { id, gotStart: Boolean(start) });
       if (start) setLocation(start);
     } finally {
@@ -293,7 +293,9 @@ export default function EpubReaderScreen() {
       lastLabel: last?.fileName ?? null,
       books: epub.books.length,
     });
-    if (last) void handleOpenBook(last.id);
+    // Quiet: a failure badges the card (and is logged) instead of raising a
+    // banner about a book the user did not ask for.
+    if (last) void handleOpenBook(last.id, { quiet: true });
   }, [epub.ready, epub.books, epub.openBookId, epub.readerClosed, l2Lang.code, handleOpenBook]);
 
   const handleAddBook = useCallback(async () => {
