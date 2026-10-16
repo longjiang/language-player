@@ -352,6 +352,9 @@ export function useEpub(l2Code?: string): UseEpubReturn {
       for (const asset of assets) {
         const assetStart = Date.now();
         log(`[LP Mobile] 📚 import start "${asset.name}" t=${assetStart}`);
+        /** Staged copy for this asset, removed if the import fails (the
+         *  destination file is only touched once the copy is verified). */
+        let stagingPath: string | null = null;
         // Skeleton id is derived from the picked name (before any zip
         // unwrap) — hoisted so the catch block can drop the card on failure.
         const skeletonId = sanitizeEpubId(
@@ -375,21 +378,25 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           phaseOf(skeletonId, 0.15);
           const assetInfo = await FileSystem.getInfoAsync(asset.uri);
           const existing = await FileSystem.getInfoAsync(dest);
-          if (existing.exists) {
-            await FileSystem.deleteAsync(dest);
-          }
+          // Copy into a staging path first: the destination may already hold
+          // this book's file (a re-import targets the same name-derived id), and
+          // deleting it before the new copy succeeds destroyed a working copy
+          // when the picked file had vanished or the disk was full.
+          const staging = `${dest}.importing`;
+          stagingPath = staging;
+          await FileSystem.deleteAsync(staging, { idempotent: true }).catch(() => {});
           if (assetInfo.isDirectory) {
-            await FileSystem.makeDirectoryAsync(dest, { intermediates: true });
+            await FileSystem.makeDirectoryAsync(staging, { intermediates: true });
             await copyDirectoryContents(
               asset.uri.endsWith('/') ? asset.uri : `${asset.uri}/`,
-              dest.endsWith('/') ? dest : `${dest}/`,
+              staging.endsWith('/') ? staging : `${staging}/`,
             );
           } else {
-            await FileSystem.copyAsync({ from: asset.uri, to: dest });
+            await FileSystem.copyAsync({ from: asset.uri, to: staging });
           }
 
           if (isZipName) {
-            const unwrappedName = await unwrapEpubZipFile(dest, asset.name, dest);
+            const unwrappedName = await unwrapEpubZipFile(staging, asset.name, staging);
             if (!unwrappedName) {
               throw new Error('Not an EPUB zip');
             }
@@ -404,16 +411,27 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           // over the content that will actually be stored. On a duplicate the
           // just-written file is removed and we move on — no re-parse, no new
           // shelf entry.
-          const contentHash = await hashBookContent(dest);
+          const contentHash = await hashBookContent(staging);
           const duplicate = contentHash
             ? books.some((b) => b.bookId === contentHash) || importedBookIds.has(contentHash)
             : false;
           if (duplicate) {
             log(`[LP Mobile] ⏭️ skipping "${asset.name}" — already in library (${contentHash})`);
-            await FileSystem.deleteAsync(dest, { idempotent: true }).catch(() => {});
+            // Drop the staged copy only: `dest` is the previously imported file
+            // (the same path when this is the same book), and deleting it left
+            // the shelf entry without its file.
+            await FileSystem.deleteAsync(staging, { idempotent: true }).catch(() => {});
             dropSkeleton();
             continue;
           }
+
+          // Promote the staged copy over the destination (now that the bytes are
+          // verified and the file is known not to be a duplicate).
+          if (existing.exists) {
+            await FileSystem.deleteAsync(dest, { idempotent: true }).catch(() => {});
+          }
+          await FileSystem.moveAsync({ from: staging, to: dest });
+          stagingPath = null;
           if (contentHash) importedBookIds.add(contentHash);
 
           // Diagnostic (import perf): attribute copy+unwrap vs parse. The
@@ -476,6 +494,11 @@ export function useEpub(l2Code?: string): UseEpubReturn {
         } catch (e: any) {
           // Log the real reason; the user-facing string is a translation key.
           log(`[LP Mobile] 📚 import FAILED "${asset.name}" elapsed=${Date.now() - assetStart}ms err=${e?.message ?? e}`);
+          // Never leave a half-copied staging file behind (the destination file,
+          // if any, is untouched until the promote step).
+          if (stagingPath) {
+            await FileSystem.deleteAsync(stagingPath, { idempotent: true }).catch(() => {});
+          }
           setImporting((prev) => prev.filter((it) => it.fileName !== asset.name && it.id !== skeletonId));
         }
       }
