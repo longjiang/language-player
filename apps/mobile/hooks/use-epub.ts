@@ -130,6 +130,9 @@ export interface UseEpubReturn {
   resolveHref: (href: string, fromHref?: string) => Promise<BookLocation | null>;
   /** Remove a book from the shelf (deletes its stored handle + files). */
   removeBook: (id: string) => Promise<void>;
+  /** Remove several books with ONE shelf reload (the "remove all unreadable"
+   *  recovery; N single removals would re-list the shelf N times). */
+  removeBooks: (ids: string[]) => Promise<void>;
   /** Id of the book whose most recent open attempt failed, or null. Drives the
    *  recovery notice + one-click Remove on the reader's error state. */
   openFailureId: string | null;
@@ -667,23 +670,30 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     return modelRef.current?.resolveHref(href, fromHref) ?? null;
   }, []);
 
-  const removeBook = useCallback(async (id: string) => {
-    const meta = books.find((b) => b.id === id);
-    try {
-      if (meta) await deleteEpub(meta);
-    } catch (err) {
-      // Log, but still drop the card locally: leaving a card the user asked to
-      // remove is worse than a stale record the next load prunes.
-      logerr(`[LP Mobile] 📚 could not delete "${meta?.fileName ?? id}": ${(err as Error)?.message ?? err}`); // non-info-level: caught storage exception — stack needed
+  const removeBooks = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      const meta = books.find((b) => b.id === id);
+      try {
+        if (meta) await deleteEpub(meta);
+      } catch (err) {
+        // Log, but still drop the card locally: leaving a card the user asked to
+        // remove is worse than a stale record the next load prunes.
+        logerr(`[LP Mobile] 📚 could not delete "${meta?.fileName ?? id}": ${(err as Error)?.message ?? err}`); // non-info-level: caught storage exception — stack needed
+      }
+      if (openBookIdRef.current === id) await close();
+      clearUnavailable(id);
     }
-    if (openBookIdRef.current === id) await close();
-    clearUnavailable(id);
-    // Drop the failure state with the book: keeping `error` set made the shelf's
-    // banner keep showing the removed book's message.
+    // Drop the failure state with the books: keeping `error` set made the shelf's
+    // banner keep showing a removed book's message.
     setOpenFailureId(null);
     setError(null);
     await loadBooks();
   }, [books, close, loadBooks, clearUnavailable]);
+
+  const removeBook = useCallback(async (id: string) => {
+    await removeBooks([id]);
+  }, [removeBooks]);
 
   return {
     books,
@@ -714,6 +724,7 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     saveLocation,
     resolveHref,
     removeBook,
+    removeBooks,
     openFailureId,
     clearOpenFailure,
   };
