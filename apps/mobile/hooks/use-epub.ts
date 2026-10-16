@@ -113,8 +113,13 @@ export interface UseEpubReturn {
   refreshBooks: () => Promise<void>;
   /** Import one EPUB from the document picker and open it at its cover. */
   pickFile: (importLanguage?: string) => Promise<void>;
-  /** Open a stored book; returns the location to resume at. */
-  openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
+  /** Open a stored book; returns the location to resume at.
+   *
+   *  `quiet` reports a failure through the book's shelf badge only — no error
+   *  banner. The mount-time auto-open uses it: the user did not ask for that
+   *  book, so a banner about it (naming nothing, when its metadata is gone) is
+   *  noise on top of the badges. */
+  openBook: (id: string, opts?: { skipCover?: boolean; quiet?: boolean }) => Promise<BookLocation | null>;
   /** Close the book and return to the bookshelf (the handle is kept). */
   close: () => Promise<void>;
   /** Enter the reader after the cover has been tapped. */
@@ -517,8 +522,20 @@ export function useEpub(l2Code?: string): UseEpubReturn {
   }, [books]);
 
   /** Open a stored book; returns the location to resume at. */
-  const openBook = useCallback(async (id: string, opts?: { skipCover?: boolean }): Promise<BookLocation | null> => {
+  const openBook = useCallback(async (id: string, opts?: { skipCover?: boolean; quiet?: boolean }): Promise<BookLocation | null> => {
     const skipCover = opts?.skipCover ?? false;
+    /**
+     * Report an open failure. Always badges the book; shows the message and the
+     * recovery notice unless this open was quiet (the mount auto-open).
+     */
+    const failOpen = (kind: 'unreadable' | 'error') => {
+      markUnavailable(id, kind);
+      if (!opts?.quiet) {
+        setOpenFailureId(id);
+        // A translation key: the screen renders `t(epub.error)`.
+        setError('msg.epub_file_unreadable');
+      }
+    };
     // Opening a book clears the persisted "reader closed" latch — from here
     // on, leaving and returning resumes normally (until the next explicit
     // close).
@@ -549,16 +566,14 @@ export function useEpub(l2Code?: string): UseEpubReturn {
           // open, and the shelf must say so rather than look empty.
           // non-info-level: caught storage exception — stack trace needed.
           logerr(`[LP Mobile] 📚 could not read the book library while opening ${id}: ${(err as Error)?.message ?? err}`);
-          setError('msg.epub_file_unreadable');
-          setOpenFailureId(id);
+          failOpen('error');
           return null;
         }
       }
       if (!meta) {
         // Metadata for a book that is no longer in the library (e.g. removed on
         // another screen): report it instead of silently doing nothing.
-        setError('msg.epub_file_unreadable');
-        setOpenFailureId(id);
+        failOpen('unreadable');
         return null;
       }
       const fileUri = libraryFileUri(id);
@@ -566,10 +581,12 @@ export function useEpub(l2Code?: string): UseEpubReturn {
       if (!info.exists) {
         // The sandbox file is gone (user deleted it, or the OS reclaimed it):
         // report + badge it, and offer the recovery (remove, then re-import).
-        logerr(`[LP Mobile] 📚 book file missing for "${meta.fileName}": ${fileUri}`); // non-info-level: real error with no stack of its own
-        markUnavailable(id, 'unreadable');
-        setError('msg.epub_file_unreadable');
-        setOpenFailureId(id);
+        // The interactive case is a real error the user just hit; a quiet
+        // (auto-open) attempt only needs the detail, next to the card badge.
+        const detail = `[LP Mobile] 📚 book file missing for "${meta.fileName}": ${fileUri}`;
+        if (opts?.quiet) log(detail);
+        else logerr(detail); // non-info-level: real error with no stack of its own
+        failOpen('unreadable');
         return null;
       }
       const m = await openEpubBook(fileUri, meta.fileName, { coverUri: await coverUriIfExists(meta.coverUrl) });
@@ -587,8 +604,12 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     } catch (e: any) {
       log('[epub] openBook error', { id, message: e?.message ?? String(e) });
       // Keys only: the screen renders `t(epub.error)`.
-      setError(isOfflineModeError(e) ? 'error.offline_mode_blocked' : 'msg.epub_parse_error');
-      setOpenFailureId(id);
+      if (opts?.quiet) {
+        markUnavailable(id, 'error');
+      } else {
+        setError(isOfflineModeError(e) ? 'error.offline_mode_blocked' : 'msg.epub_parse_error');
+        setOpenFailureId(id);
+      }
       return null;
     } finally {
       openLoadingRef.current = false;
@@ -657,7 +678,10 @@ export function useEpub(l2Code?: string): UseEpubReturn {
     }
     if (openBookIdRef.current === id) await close();
     clearUnavailable(id);
-    setOpenFailureId((current) => (current === id ? null : current));
+    // Drop the failure state with the book: keeping `error` set made the shelf's
+    // banner keep showing the removed book's message.
+    setOpenFailureId(null);
+    setError(null);
     await loadBooks();
   }, [books, close, loadBooks, clearUnavailable]);
 
