@@ -51,7 +51,8 @@ register_routes(MyApp)       # 10 blueprints
 | **payments_bp** | `routes/payments.py` | `/paypal_checkout_success`, `/in_app_purchase_success`, `/stripe_checkout_success`, Stripe webhooks |
 | **subscriptions_bp** | `routes/subscriptions.py` | `/admin/update_or_add_subscription`, `/admin/check_user_subscription`, `/cancel-subscription-at-end-of-period`, `/verification_email`, `/acquisition_survey` |
 | **saved_words_bp** | `routes/saved_words.py` | `/saved-words` (GET/PUT), `/saved-words/<l2>/<id>` (DELETE) — row-level saved words (SPEC-034) |
-| **admin_bp** | `routes/admin.py` | `/admin/videos` (GET/POST), `/admin/videos/<id>` (PATCH/DELETE), `/admin/tv-shows`, `/admin/talks`, plus the SPEC-096 ingestion endpoints `/admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/resolve`, `/admin/channels/add`, `/admin/playlists/add`. Every route on this blueprint is gated by a blueprint-level `before_request` hook (`require_admin()`), so a new route is admin-only by construction; CORS preflight (`OPTIONS`) is exempt |
+| **admin_bp** | `routes/admin.py` | `/admin/videos` (GET/POST), `/admin/videos/<id>` (PATCH/DELETE), `POST /admin/tv-shows`, `PATCH|DELETE /admin/tv-shows/<id>`, `POST /admin/talks`, `PATCH|DELETE /admin/talks/<id>`, plus the SPEC-096 ingestion endpoints `/admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/resolve`, `/admin/channels/add`, `/admin/playlists/add` and the SPEC-098 `/admin/videos/discover`; `POST /admin/videos/sweep-unavailable` reports first. `GET /admin/videos` takes `l2`, `q` (title, SPEC-099), `sort`, `limit`, `offset`, `tv_show`, `talk` and the `filter[…][nnull]` flags. Every route on this blueprint is gated by a blueprint-level `before_request` hook (`require_admin()`), so a new route is admin-only by construction; CORS preflight (`OPTIONS`) is exempt |
+| **tv_shows_bp** | `routes/tv_shows.py` | `GET /tv-shows`, `/tv-shows/<id>`, `/tv-shows/<id>/episodes`, `GET /talks`, `/talks/<id>`, `/talks/<id>/episodes` — **public**, read-only. There is no admin list route for shows/talks; the admin console reads these |
 
 ---
 
@@ -165,6 +166,15 @@ connection pool in the request path.
 
 `utils_db.py` (the MySQL pool and `execute_sql`) is still present for the
 remaining batch/notebook tooling, but no live route depends on it.
+
+`utils_content._show_dict()` is the single show/talk row shaper for both the
+public getters (`get_tv_shows` / `get_tv_show` / `get_talks` / `get_talk`) and
+the admin getters (`get_show` / `get_show_by_title`). It was accidentally
+defined twice (the SPEC-039 § 5.8 admin definition shadowed the public one),
+which dropped `l2Code` from `GET /tv-shows` and made
+`GET /tv-shows/<id>/episodes` return `500 "TV show has no l2"` unless `?l2=`
+was passed; SPEC-099 collapsed it back into one definition that returns the
+union of both key sets.
 
 ### SQLite (Local Dictionary)
 

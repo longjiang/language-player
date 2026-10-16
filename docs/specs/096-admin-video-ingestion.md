@@ -13,9 +13,7 @@
   (`zerotohero-python-server`)
 - **ROADMAP Phase**: Phase 9: Backend Consolidation
 - **Scope**: Flask backend (`zerotohero-python-server/`). The admin console UI
-  that would call these endpoints is **not** part of this spec (ROADMAP:
-  "Content moderation (videos / shows / talks) in the admin console" is still
-  open).
+  that calls these endpoints is [SPEC-099](099-admin-content-management.md).
 - **See also**:
   - [ARCH-032 — YouTube Video Difficulty](../arch/032-youtube-video-difficulty.md) — how `lex_div` / `word_freq` / `difficulty` are defined
   - [ARCH-033 — Difficulty → Level Bucketing](../arch/033-difficulty-level-bucketing.md) — the thresholds those numbers feed
@@ -447,8 +445,10 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
 - **The ngram subtitle index is not refreshed.** The `subs_l2` trigger nulls
   `subs_ngram_tsv` on write, so newly imported videos are not reachable
   through the PGroonga ngram path until `backfill_subs_ngram_tsv.py` runs.
-- **No admin console UI yet** — the endpoints are called directly (curl or
-  the admin app once it grows the screen).
+- **No admin console UI in this spec** — it shipped separately as
+  [SPEC-099](099-admin-content-management.md), which drives these endpoints
+  from `apps/admin` (single / batch / channel / playlist, cursor paging and a
+  live result log).
 - **`duration` is stored as the raw ISO-8601 string** (`PT3M44S`), matching
   every existing row; nothing parses it at write time.
 - **Transcript downloads are serial** within a page. `limit` keeps a call
@@ -471,5 +471,8 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   one video) and stay false for bulk?
 - Is a members-only heuristic worth adding as an *advisory* flag (e.g.
   `warnings: ["possible_members_only"]`) rather than a rejection?
-- Should the admin console expose these endpoints, and if so does it need a
-  job/progress view rather than the cursor loop?
+- ~~Should the admin console expose these endpoints, and if so does it need a
+  job/progress view rather than the cursor loop?~~ Resolved by
+  [SPEC-099](099-admin-content-management.md): the console drives the cursor
+  loop from the browser (one page per request) and keeps no server-side job
+  registry.

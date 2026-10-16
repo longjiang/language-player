@@ -101,9 +101,11 @@ and the existing `user_subscriptions` row shape are preserved.
 - `/login` — credentials form; shows a specific message when the account is
   valid but not an administrator, and a distinct one when the auth backend
   (Flask → GoTrue) cannot be reached.
-- `/` — user search dashboard. One query box searches all supported fields;
-  results show name, email, plan/admin badges, saved-word count, watch count,
-  hours, and creation date. Rows link to the user page.
+- `/users` — user search dashboard (was `/` until SPEC-099 added the
+  Users/Content navigation shell; `/` now redirects here). One query box
+  searches all supported fields; results show name, email, plan/admin badges,
+  saved-word count, watch count, hours, and creation date. Rows link to the
+  user page.
 - `/users/[id]` — user detail page with four tabs:
   - **Overview**: profile (email, phone, IDs, dates, acquisition source),
     subscription manager (grant/edit/remove dialogs), SRS summary, settings
@@ -214,3 +216,5 @@ self-demotion so the last admin can't lock themselves out.
   now, or after Classic is archived? (Tracked in ADR-0032.)
 - Which admin surfaces should come next: content moderation (videos/shows),
   dictionary health, payment logs, or user account actions (delete/reset)?
+  — content management shipped as [SPEC-099](099-admin-content-management.md);
+  payment logs and account actions are still open.
