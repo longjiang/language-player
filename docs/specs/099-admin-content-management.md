@@ -430,8 +430,15 @@ What was run when this shipped:
   - a **non-admin** token gets `403` on `GET /admin/videos?q=hello`, and the
     write-only admin routes answer `405` to `GET` — i.e. they exist and are
     gated, not missing.
-- Remaining manual check (needs an admin account, which no test user has):
+- Remaining manual check (needs an admin account, which no test user has —
+  both `tester.mary` and `tester.bob` report `isAdmin: false`):
   reload `/content/videos` in the browser and click through the six screens.
+- **Restart `next dev` after regenerating locale JSONs.** The admin app's
+  `src/i18n.ts` imports `packages/shared/locales/en.json`, which sits outside
+  the app directory, so Turbopack serves a stale messages module: the i18n
+  fix above looked unfixed in the browser (as `MISSING_MESSAGE` for the
+  newly added keys) until the dev server was restarted, even though the file
+  on disk was correct. Noted in the file itself too.
 
 Manual check when the backend is up: log in as an admin and exercise
 videos / import / discover / shows / channels / sweep against a real
