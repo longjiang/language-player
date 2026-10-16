@@ -1,6 +1,6 @@
 'use client';
 
-import { AppHeader } from '@/components/admin/app-header';
+import { AdminShell } from '@/components/layout/admin-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -486,38 +486,31 @@ export default function UserDetailPage() {
 
   if (authStatus === 'loading') {
     return (
-      <div className="min-h-screen">
-        <AppHeader />
-        <main className="mx-auto max-w-6xl px-4 py-8">
-          <div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            {t('msg.loading')}
-          </div>
-        </main>
-      </div>
+      <AdminShell>
+        <div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          {t('msg.loading')}
+        </div>
+      </AdminShell>
     );
   }
 
   if (authStatus === 'unauthenticated') {
     // The proxy normally redirects here; render a safe error just in case.
     return (
-      <div className="min-h-screen">
-        <AppHeader />
-        <main className="mx-auto max-w-6xl px-4 py-8">
-          <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            {t('error.general')}
-          </div>
-        </main>
-      </div>
+      <AdminShell>
+        <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          {t('error.general')}
+        </div>
+      </AdminShell>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <AppHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="mb-4 -ml-2">
+    <AdminShell>
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => router.push('/users')} className="mb-4 -ml-2">
           <ArrowLeft className="h-4 w-4" />
           {t('action.back_to_search')}
         </Button>
@@ -572,7 +565,7 @@ export default function UserDetailPage() {
             </Tabs>
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </AdminShell>
   );
 }
