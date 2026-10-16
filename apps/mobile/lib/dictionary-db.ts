@@ -368,48 +368,88 @@ export async function closeOfflineDictionaryDB(l2: string): Promise<void> {
 }
 
 /**
- * Atomically replace a language's dictionary file. The gzipped payload has
- * already been decompressed by the caller; this writes to a temp file, then
- * moves it over the destination so a failed write never corrupts the
- * previously downloaded dictionary.
+ * Replace a language's dictionary file **after validating the replacement**.
+ *
+ * The gzipped payload has already been decompressed by the caller. This writes
+ * it to a temp file, validates that temp file (opens it, checks the table and
+ * `dict_meta`), and only then moves it over the destination — so a failed write
+ * *or a corrupt payload* leaves the previously downloaded dictionary in place.
+ *
+ * The previous implementation moved the temp file over the destination first and
+ * then deleted the destination when validation failed, which destroyed a working
+ * dictionary and left the user with none (the docstring claimed the opposite).
  */
 export async function savePrecompiledDictionary(
   l2: string,
   dbBytes: Uint8Array,
 ): Promise<DictMeta> {
   await ensureDictionariesDir();
+  // The cached handle points at the file being replaced.
   await closeOfflineDictionaryDB(l2);
 
   const finalFile = dictionaryDbFile(l2);
-  const tmpFile = new File(
-    DICTIONARIES_DIR_URI,
-    `${dictionaryDbFileName(l2)}.tmp`,
-  );
+  const tmpName = `${dictionaryDbFileName(l2)}.tmp`;
+  const tmpFile = new File(DICTIONARIES_DIR_URI, tmpName);
   if (tmpFile.exists) tmpFile.delete();
 
-  tmpFile.write(dbBytes);
   try {
-    await tmpFile.move(finalFile, { overwrite: true });
-    log('[DictDB] 💾 saved precompiled dict — l2:', l2, 'file:', dictionaryDbFileName(l2), 'bytes:', dbBytes.length);
+    tmpFile.write(dbBytes);
   } catch (e) {
-    try { tmpFile.delete(); } catch { /* best effort */ }
+    deleteTempArtifacts(tmpFile);
     throw e;
   }
 
-  let db: SQLite.SQLiteDatabase | null = null;
+  // Validate the temp file BEFORE touching the existing dictionary.
+  let meta: DictMeta;
   try {
-    db = await openOfflineDictionaryDB(l2);
-  } catch {
-    await closeOfflineDictionaryDB(l2);
-    try { finalFile.delete(); } catch { /* best effort */ }
-    throw new Error('Precompiled dictionary could not be opened');
+    meta = await readPrecompiledMeta(tmpName, l2, dbBytes.length);
+  } catch (e) {
+    deleteTempArtifacts(tmpFile);
+    throw e;
   }
-  if (!db) {
-    await closeOfflineDictionaryDB(l2);
-    try { finalFile.delete(); } catch { /* best effort */ }
-    throw new Error('Precompiled dictionary could not be opened');
-  }
+  deleteTempSidecars(tmpName);
 
+  await tmpFile.move(finalFile, { overwrite: true });
+  // The new file must be migrated on its first open (the memo is per language,
+  // and the replaced file may already have been through it).
+  l2MigratedDefs.delete(l2);
+  log('[DictDB] 💾 saved precompiled dict — l2:', l2, 'file:', dictionaryDbFileName(l2), 'bytes:', dbBytes.length);
+
+  meta.size_bytes = finalFile.size;
+  return meta;
+}
+
+/** Temp-file sidecar journals (`-wal` / `-shm`) left by opening it. */
+function deleteTempSidecars(tmpName: string): void {
+  for (const suffix of ['-wal', '-shm']) {
+    try {
+      const sidecar = new File(DICTIONARIES_DIR_URI, `${tmpName}${suffix}`);
+      if (sidecar.exists) sidecar.delete();
+    } catch { /* best effort */ }
+  }
+}
+
+/** Remove the temp file and its sidecars (validation failed). */
+function deleteTempArtifacts(tmpFile: File): void {
+  try { if (tmpFile.exists) tmpFile.delete(); } catch { /* best effort */ }
+  deleteTempSidecars(tmpFile.name);
+}
+
+/**
+ * Open a candidate dictionary file by name and read its metadata, throwing when
+ * it is not a usable dictionary. Closes the handle before returning.
+ */
+async function readPrecompiledMeta(
+  name: string,
+  l2: string,
+  sizeBytes: number,
+): Promise<DictMeta> {
+  let db: SQLite.SQLiteDatabase;
+  try {
+    db = await SQLite.openDatabaseAsync(name, {}, DICTIONARIES_DIR_PATH);
+  } catch (e) {
+    throw new Error(`Precompiled dictionary could not be opened (${(e as Error)?.message ?? e})`);
+  }
   try {
     const table = dictTableName(l2);
     const tableCheck = await db.getFirstAsync<{ cnt: number }>(
@@ -418,21 +458,15 @@ export async function savePrecompiledDictionary(
     if (tableCheck === undefined) {
       throw new Error(`Precompiled dictionary is missing table ${table}`);
     }
-
     const meta = await db.getFirstAsync<DictMeta>(
       'SELECT l2, downloaded_at, entry_count, size_bytes, version FROM dict_meta WHERE l2 = ?',
       [l2],
     );
-    if (!meta) {
-      throw new Error('Precompiled dictionary is missing dict_meta');
-    }
-    meta.size_bytes = finalFile.size;
+    if (!meta) throw new Error('Precompiled dictionary is missing dict_meta');
+    meta.size_bytes = sizeBytes;
     return meta;
-  } catch (e) {
-    // Don't leave a corrupt file in place when validation fails.
-    await closeOfflineDictionaryDB(l2);
-    try { finalFile.delete(); } catch { /* best effort */ }
-    throw e;
+  } finally {
+    try { await db.closeAsync(); } catch { /* already closed */ }
   }
 }
 
