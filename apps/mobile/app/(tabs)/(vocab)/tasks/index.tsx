@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { logwarn } from '@/lib/logger';
 import { Pressable, Text, View } from 'react-native';
 import { BookOpen } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -38,8 +39,17 @@ export default function TasksIndexScreen() {
     let cancelled = false;
     const load = async () => {
       const next: Record<string, ProgressSummary> = {};
+      // A throwing/unavailable AsyncStorage must not reject out of this effect:
+      // the list simply shows no progress (it used to fail with an unhandled
+      // rejection and nothing on screen).
+      let allKeys: readonly string[] = [];
+      try {
+        allKeys = await AsyncStorage.getAllKeys();
+      } catch (e) {
+        logwarn('[tasks] progress keys could not be read:', (e as Error)?.message ?? e);
+      }
       for (const book of books) {
-        const keys = (await AsyncStorage.getAllKeys()).filter((k) =>
+        const keys = allKeys.filter((k) =>
           k.startsWith(`${TEXTBOOK_STORAGE_PREFIX}${book.id}.`),
         );
         const states = await Promise.all(

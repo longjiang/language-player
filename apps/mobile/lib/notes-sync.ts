@@ -12,6 +12,8 @@ import type { Note } from '@langplayer/shared';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { probeOnline } from '@/lib/connectivity';
 import { syncLogger } from '@/lib/logger';
+
+const { logwarn: notesLogWarn } = syncLogger;
 import {
   enqueueSyncOp,
   getOutboxSnapshot,
@@ -121,13 +123,21 @@ export async function enqueue(
     translation,
   };
   log(`[notes-sync] enqueue ${action} note ${entityId}`);
-  await enqueueSyncOp({
-    entity: 'note',
-    entityId,
-    op,
-    payload,
-    updatedAt: Date.now(),
-  });
+  // Guarded: `enqueueSyncOp` rejects when sync.db cannot be opened. Callers are
+  // UI handlers (save/rename/delete a note) that do not await this, so a
+  // rejection used to vanish — the note stayed in the AsyncStorage cache and
+  // would be queued by a later successful write.
+  try {
+    await enqueueSyncOp({
+      entity: 'note',
+      entityId,
+      op,
+      payload,
+      updatedAt: Date.now(),
+    });
+  } catch (e) {
+    notesLogWarn(`[notes-sync] could not queue ${action} for note ${entityId}:`, (e as Error)?.message ?? e);
+  }
 }
 
 /** Pending/error status per note id (server id or temp id as shown in UI). */

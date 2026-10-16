@@ -508,7 +508,14 @@ export async function runSyncNow(): Promise<void> {
     clearTimeout(cycleTimer);
     syncing = false;
     status.syncing = false;
-    await refreshPendingCount();
+    // Best effort: a rejecting `refreshPendingCount` here (sync.db unopenable)
+    // used to make `runSyncNow` reject AFTER clearing the spinner, and every
+    // caller uses `void runSyncNow()` — so it surfaced as an unhandled rejection.
+    try {
+      await refreshPendingCount();
+    } catch (e) {
+      logwarn('[sync] could not refresh the pending count:', (e as Error)?.message ?? e);
+    }
   }
 }
 
