@@ -14,6 +14,14 @@ import {
   type StoredMedia,
 } from '@/lib/media-store';
 import { parseSubtitles } from '@langplayer/utils';
+import { logerr } from '@/lib/logger';
+
+/** Storage failures reach the error channel: they present as "nothing happens"
+ *  or "my file vanished" and need the stack trace to diagnose. */
+function mediaStorageErr(message: string, err: unknown): void {
+  const detail = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+  logerr(`custom media: ${message} — ${detail}`); // non-info-level: caught storage exception — stack trace needed
+}
 
 export interface UseCustomMediaReturn {
   /** Object URL for the current media file (for <video>/<audio> src). */
@@ -44,6 +52,14 @@ export interface UseCustomMediaReturn {
   savePosition: (seconds: number) => void;
   /** Request permission to re-access a stored file handle. */
   requestPermission: () => Promise<void>;
+  /** Whether the stored pick could not be restored (its record or source file
+   *  can no longer be read) — the user is offered the same recovery as a
+   *  revoked permission: pick the file again, or remove the entry. */
+  restoreFailed: boolean;
+  /** Translation key of the last failure, or null (for the caller to render). */
+  error: string | null;
+  /** Dismiss the current error message. */
+  clearError: () => void;
 }
 
 export function useCustomMedia(): UseCustomMediaReturn {
@@ -54,6 +70,8 @@ export function useCustomMedia(): UseCustomMediaReturn {
   const [hasMedia, setHasMedia] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [needsPermission, setNeedsPermission] = useState(false);
+  const [restoreFailed, setRestoreFailed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [savedPosition, setSavedPosition] = useState(0);
 
   const storedRef = useRef<StoredMedia | null>(null);
@@ -93,13 +111,24 @@ export function useCustomMedia(): UseCustomMediaReturn {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const stored = await loadMedia();
-      if (cancelled) return;
-
-      if (!stored) {
-        setInitializing(false);
+      let stored: StoredMedia | null = null;
+      try {
+        stored = await loadMedia();
+      } catch (err) {
+        // A large stored value whose Chromium blob file was deleted fails with
+        // an irrecoverable `NotReadableError`; every other failure means the
+        // same thing to the user: this pick cannot be restored. Either way the
+        // reader must not stay on its spinner.
+        mediaStorageErr('the stored pick could not be read', err);
+        if (!cancelled) {
+          setRestoreFailed(true);
+          setError('msg.epub_file_unreadable');
+        }
         return;
+      } finally {
+        if (!cancelled) setInitializing(false);
       }
+      if (cancelled || !stored) return;
 
       storedRef.current = stored;
 
@@ -108,7 +137,6 @@ export function useCustomMedia(): UseCustomMediaReturn {
         const file = await restoreFileFromHandle(stored.fileHandle);
         if (file) {
           if (!cancelled) loadFileData(file, stored);
-          setInitializing(false);
           return;
         }
         // Permission needed — show re-open prompt
@@ -118,7 +146,6 @@ export function useCustomMedia(): UseCustomMediaReturn {
           setNeedsPermission(true);
           setHasMedia(false);
         }
-        setInitializing(false);
         return;
       }
 
@@ -127,12 +154,15 @@ export function useCustomMedia(): UseCustomMediaReturn {
         const blob = new Blob([stored.fileData], { type: stored.mimeType });
         const file = new File([blob], stored.fileName, { type: stored.mimeType });
         if (!cancelled) loadFileData(file, stored);
-        setInitializing(false);
-        return;
       }
-
-      setInitializing(false);
-    })();
+    })().catch((err) => {
+      // Belt and braces: `loadFileData`/`new File` must not leave the spinner up.
+      mediaStorageErr('restoring the stored pick failed', err);
+      if (!cancelled) {
+        setRestoreFailed(true);
+        setError('msg.epub_file_unreadable');
+      }
+    });
     return () => { cancelled = true; };
   }, [loadFileData]);
 
@@ -141,20 +171,43 @@ export function useCustomMedia(): UseCustomMediaReturn {
     const stored = storedRef.current;
     if (!stored?.fileHandle) return;
 
-    const file = await restoreFileFromHandle(stored.fileHandle);
-    if (file) {
-      loadFileData(file, stored);
+    let file: File | null = null;
+    try {
+      file = await restoreFileFromHandle(stored.fileHandle);
+    } catch (err) {
+      mediaStorageErr('re-opening the stored file failed', err);
     }
+    if (file) {
+      setRestoreFailed(false);
+      setError(null);
+      loadFileData(file, stored);
+      return;
+    }
+    // The handle is dead (the file was moved or deleted): say so — a tap that
+    // silently does nothing reads as a broken button.
+    mediaStorageErr(`"${stored.fileName}" can no longer be opened — pick it again`, new Error('handle unavailable'));
+    setRestoreFailed(true);
+    setError('msg.epub_file_unreadable');
   }, [loadFileData]);
+
+  const clearError = useCallback(() => setError(null), []);
 
   // ── Open file picker ──
   const openFile = useCallback(async () => {
-    const result = await openMediaFile();
+    let result: Awaited<ReturnType<typeof openMediaFile>> = null;
+    try {
+      result = await openMediaFile();
+    } catch (err) {
+      // Picker failures (a SecurityError, or a cancelled `<input>` in a browser
+      // without the File System Access API) must not leave the caller hanging.
+      mediaStorageErr('the file picker failed', err);
+      setError('msg.epub_file_unreadable');
+      return;
+    }
     if (!result) return;
 
     const { file, handle } = result;
 
-    // Save to IndexedDB
     const stored: StoredMedia = {
       fileName: file.name,
       mimeType: file.type || 'video/mp4',
@@ -167,18 +220,44 @@ export function useCustomMedia(): UseCustomMediaReturn {
       captionFormat: null,
     };
 
-    // Fallback: store file data if no File System Access handle
+    // Fallback: store file data if no File System Access handle. Reading the
+    // bytes can itself fail when the file was moved/deleted after the pick.
     if (!handle) {
-      stored.fileData = await file.arrayBuffer();
+      try {
+        stored.fileData = await file.arrayBuffer();
+      } catch (err) {
+        mediaStorageErr(`"${file.name}" could not be read`, err);
+        setError('msg.epub_file_unreadable');
+        return;
+      }
     }
 
-    await saveMedia(stored);
+    // Load first, persist second: a storage failure must not hide the file the
+    // user just picked (it used to no-op silently when `saveMedia` rejected).
     storedRef.current = stored;
     loadFileData(file, stored);
+    setError(null);
+    setRestoreFailed(false);
+    try {
+      await saveMedia(stored);
+    } catch (err) {
+      mediaStorageErr('the pick could not be saved (it will not survive a reload)', err);
+      setError('msg.epub_file_unreadable');
+    }
   }, [loadFileData]);
 
   // ── Load dropped file (no FileSystemFileHandle available) ──
   const loadDroppedFile = useCallback(async (file: File) => {
+    let fileData: ArrayBuffer;
+    try {
+      // No file handle from drop — always store raw data as fallback. A dropped
+      // file can be gone by the time it is read (moved/deleted mid-drag).
+      fileData = await file.arrayBuffer();
+    } catch (err) {
+      mediaStorageErr(`dropped file "${file.name}" could not be read`, err);
+      setError('msg.epub_file_unreadable');
+      return;
+    }
     const stored: StoredMedia = {
       fileName: file.name,
       mimeType: file.type || 'video/mp4',
@@ -186,15 +265,21 @@ export function useCustomMedia(): UseCustomMediaReturn {
       fileSize: file.size,
       lastOpened: Date.now(),
       position: 0,
-      // No file handle from drop — always store raw data as fallback
-      fileData: await file.arrayBuffer(),
+      fileData,
       captionText: '',
       captionFormat: null,
     };
 
-    await saveMedia(stored);
     storedRef.current = stored;
     loadFileData(file, stored);
+    setError(null);
+    setRestoreFailed(false);
+    try {
+      await saveMedia(stored);
+    } catch (err) {
+      mediaStorageErr('the dropped file could not be saved (it will not survive a reload)', err);
+      setError('msg.epub_file_unreadable');
+    }
   }, [loadFileData]);
 
   // ── Load captions ──
@@ -202,14 +287,27 @@ export function useCustomMedia(): UseCustomMediaReturn {
     const result = await openCaptionFile();
     if (!result) return;
 
-    const lines = parseSubtitles(result.text, result.format);
+    let lines: ReturnType<typeof parseSubtitles>;
+    try {
+      lines = parseSubtitles(result.text, result.format);
+    } catch (err) {
+      mediaStorageErr(`"${result.fileName}" is not a readable subtitle file`, err);
+      setError('msg.epub_file_unreadable');
+      return;
+    }
+    // Show them first: persisting is best-effort, and a storage failure used to
+    // reject here after the captions were already visible.
     setSubtitleLines(lines);
-
-    // Persist captions
-    await updateMediaMeta({
-      captionText: result.text,
-      captionFormat: result.format,
-    });
+    setError(null);
+    try {
+      await updateMediaMeta({
+        captionText: result.text,
+        captionFormat: result.format,
+      });
+    } catch (err) {
+      mediaStorageErr('the captions could not be saved (they will not survive a reload)', err);
+      setError('msg.epub_file_unreadable');
+    }
   }, []);
 
   // ── Clear ──
@@ -223,7 +321,14 @@ export function useCustomMedia(): UseCustomMediaReturn {
     setNeedsPermission(false);
     setSavedPosition(0);
     storedRef.current = null;
-    await deleteMedia();
+    setRestoreFailed(false);
+    setError(null);
+    try {
+      await deleteMedia();
+    } catch (err) {
+      mediaStorageErr('the stored pick could not be deleted', err);
+      setError('msg.epub_file_unreadable');
+    }
   }, [revokeUrl]);
 
   // ── Save position (throttled by caller) ──
@@ -252,5 +357,8 @@ export function useCustomMedia(): UseCustomMediaReturn {
     clear,
     savePosition: savePositionFn,
     requestPermission,
+    restoreFailed,
+    error,
+    clearError,
   };
 }
