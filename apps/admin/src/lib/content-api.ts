@@ -1,0 +1,386 @@
+/**
+ * Typed clients for the content-management routes (SPEC-099).
+ *
+ * Everything here goes through `authenticatedFetch`, which attaches the
+ * Supabase access token mirrored by `SessionTokenMirror`; the Flask
+ * `admin_bp` blueprint rejects anything without a verified
+ * `app_metadata.is_admin` claim.
+ */
+
+import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { log, logerr } from '@/lib/logger';
+import type {
+  AdminChannel,
+  AdminShow,
+  AdminVideo,
+  ChannelVideo,
+  DiscoverResponse,
+  EpisodeVideo,
+  ImportCursor,
+  ImportOptions,
+  ImportResponse,
+  ImportVideoResult,
+  ResolvedChannel,
+  ShowInput,
+  ShowKind,
+  SweepResponse,
+  VideoInput,
+} from '@/types/content';
+
+// ── Plumbing ────────────────────────────────────────────────────────────
+
+async function readError(res: Response): Promise<string> {
+  try {
+    const data = await res.json();
+    return data?.error || data?.message || `HTTP ${res.status}`;
+  } catch {
+    return `HTTP ${res.status}`;
+  }
+}
+
+/** A `subs_l2` CSV can be megabytes — never log it whole. */
+function redact(body: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (typeof value === 'string' && value.length > 120) {
+      out[key] = `<string:${value.length}>`;
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  body?: Record<string, unknown>,
+): Promise<T> {
+  log('content-api request', { method: init.method ?? 'GET', path, body: body ? redact(body) : undefined });
+  const res = await authenticatedFetch(`${PYTHON_API_URL}${path}`, init);
+  if (!res.ok) {
+    const message = await readError(res);
+    logerr('content-api failed', { path, status: res.status, message });
+    throw new Error(message || `HTTP ${res.status}`);
+  }
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+function jsonInit(method: string, body: Record<string, unknown>): RequestInit {
+  return {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  };
+}
+
+function query(params: Record<string, string | number | boolean | null | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null || value === undefined || value === '') continue;
+    search.set(key, String(value));
+  }
+  const qs = search.toString();
+  return qs ? `?${qs}` : '';
+}
+
+// ── Videos (`/admin/videos`) ────────────────────────────────────────────
+
+export interface VideoListParams {
+  l2?: string | null;
+  /** SPEC-099: case-insensitive title search. */
+  q?: string | null;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+  tv_show?: number | null;
+  talk?: number | null;
+  tvShowNotNull?: boolean;
+  talkNotNull?: boolean;
+}
+
+export async function listVideos(params: VideoListParams): Promise<AdminVideo[]> {
+  const data = await request<{ data: AdminVideo[] }>(
+    `/admin/videos${query({
+      l2: params.l2,
+      q: params.q,
+      sort: params.sort ?? '-id',
+      limit: params.limit ?? 50,
+      offset: params.offset ?? 0,
+      tv_show: params.tv_show,
+      talk: params.talk,
+      'filter[tv_show][nnull]': params.tvShowNotNull ? 1 : undefined,
+      'filter[talk][nnull]': params.talkNotNull ? 1 : undefined,
+    })}`,
+  );
+  return data.data ?? [];
+}
+
+export async function createVideo(input: VideoInput): Promise<number> {
+  const data = await request<{ id: number }>(
+    '/admin/videos',
+    jsonInit('POST', input as Record<string, unknown>),
+    input as Record<string, unknown>,
+  );
+  return data.id;
+}
+
+export async function updateVideo(id: number, input: VideoInput): Promise<AdminVideo> {
+  const data = await request<{ video: AdminVideo }>(
+    `/admin/videos/${id}`,
+    jsonInit('PATCH', input as Record<string, unknown>),
+    input as Record<string, unknown>,
+  );
+  return data.video;
+}
+
+export async function deleteVideo(id: number): Promise<void> {
+  await request<void>(`/admin/videos/${id}`, { method: 'DELETE' });
+}
+
+// ── Ingestion (SPEC-096) ────────────────────────────────────────────────
+
+export interface SingleImportOptions extends Omit<ImportOptions, 'l2' | 'cursor'> {
+  l2: string;
+  youtube_id: string;
+}
+
+/** `POST /admin/videos/add` answers with one per-video result, not a page. */
+export type SingleImportResult = ImportVideoResult & { l2: string };
+
+export async function importSingle(input: SingleImportOptions): Promise<SingleImportResult> {
+  const response = await request<SingleImportResult>(
+    '/admin/videos/add',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api import single', {
+    youtube_id: input.youtube_id,
+    status: response.status,
+    reason: response.reason,
+  });
+  return response;
+}
+
+export interface BatchImportOptions extends ImportOptions {
+  youtube_ids: string[] | string;
+}
+
+export async function importBatch(input: BatchImportOptions): Promise<ImportResponse> {
+  const response = await request<ImportResponse>(
+    '/admin/videos/add-batch',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api import page', {
+    endpoint: 'add-batch',
+    summary: response.summary,
+    next_cursor: response.next_cursor,
+  });
+  return response;
+}
+
+export async function resolveChannel(reference: string): Promise<ResolvedChannel> {
+  const data = await request<{ channel: ResolvedChannel }>(
+    `/admin/channels/resolve?channel=${encodeURIComponent(reference)}`,
+  );
+  return data.channel;
+}
+
+export interface ChannelImportOptions extends ImportOptions {
+  channel: string;
+}
+
+export async function importChannel(input: ChannelImportOptions): Promise<ImportResponse> {
+  const response = await request<ImportResponse>(
+    '/admin/channels/add',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api import page', {
+    endpoint: 'channels/add',
+    summary: response.summary,
+    next_cursor: response.next_cursor,
+    circuit_broken: response.circuit_broken,
+  });
+  return response;
+}
+
+export interface PlaylistImportOptions extends ImportOptions {
+  playlist: string;
+}
+
+export async function importPlaylist(input: PlaylistImportOptions): Promise<ImportResponse> {
+  const response = await request<ImportResponse>(
+    '/admin/playlists/add',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api import page', {
+    endpoint: 'playlists/add',
+    summary: response.summary,
+    next_cursor: response.next_cursor,
+  });
+  return response;
+}
+
+// ── Discovery (SPEC-098) ────────────────────────────────────────────────
+
+export interface DiscoverOptions {
+  l2: string;
+  terms?: string;
+  term_limit?: number;
+  pages?: number;
+  max_per_channel?: number;
+  import?: boolean;
+  limit?: number;
+  talk?: string;
+  force?: boolean;
+  clean_generated?: boolean;
+  refresh_existing?: boolean;
+}
+
+export async function discover(input: DiscoverOptions): Promise<DiscoverResponse> {
+  const response = await request<DiscoverResponse>(
+    '/admin/videos/discover',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api discover', {
+    l2: input.l2,
+    import: !!input.import,
+    scraped: response.scraped,
+    candidates: response.candidates?.length ?? 0,
+    skipped: Object.fromEntries(
+      Object.entries(response.skipped ?? {}).map(([k, v]) => [k, v?.length ?? 0]),
+    ),
+  });
+  return response;
+}
+
+// ── Unavailable sweep ───────────────────────────────────────────────────
+
+export interface SweepOptions {
+  l2: string;
+  youtube_ids?: string[];
+  cursor?: ImportCursor | null;
+  limit?: number;
+  delete?: boolean;
+}
+
+export async function sweepUnavailable(input: SweepOptions): Promise<SweepResponse> {
+  const response = await request<SweepResponse>(
+    '/admin/videos/sweep-unavailable',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api sweep', {
+    l2: input.l2,
+    delete: !!input.delete,
+    checked: response.checked,
+    unavailable: response.unavailable?.length ?? 0,
+    deleted: response.deleted?.length ?? 0,
+    next_cursor: response.next_cursor,
+  });
+  return response;
+}
+
+// ── Shows & talks ───────────────────────────────────────────────────────
+
+function showPath(kind: ShowKind, id?: number): string {
+  const base = kind === 'tv_shows' ? '/tv-shows' : '/talks';
+  return id === undefined ? base : `${base}/${id}`;
+}
+
+export async function listShows(
+  kind: ShowKind,
+  opts: { l2?: string | null; includeHidden?: boolean; limit?: number } = {},
+): Promise<AdminShow[]> {
+  return request<AdminShow[]>(
+    `${showPath(kind)}${query({
+      l2: opts.l2,
+      includeHidden: opts.includeHidden ? 1 : undefined,
+      limit: opts.limit ?? 1000,
+    })}`,
+  );
+}
+
+export async function createShow(kind: ShowKind, input: ShowInput): Promise<AdminShow> {
+  const data = await request<{ show: AdminShow }>(
+    `/admin${showPath(kind)}`,
+    jsonInit('POST', input as Record<string, unknown>),
+    input as Record<string, unknown>,
+  );
+  return data.show;
+}
+
+export async function updateShow(
+  kind: ShowKind,
+  id: number,
+  input: ShowInput,
+): Promise<AdminShow> {
+  const data = await request<{ show: AdminShow }>(
+    `/admin${showPath(kind, id)}`,
+    jsonInit('PATCH', input as Record<string, unknown>),
+    input as Record<string, unknown>,
+  );
+  return data.show;
+}
+
+export async function deleteShow(kind: ShowKind, id: number): Promise<void> {
+  await request<void>(`/admin${showPath(kind, id)}`, { method: 'DELETE' });
+}
+
+export async function listEpisodes(
+  kind: ShowKind,
+  id: number,
+  l2?: string | null,
+): Promise<EpisodeVideo[]> {
+  return request<EpisodeVideo[]>(
+    `${showPath(kind, id)}/episodes${query({ l2, limit: 100 })}`,
+  );
+}
+
+// ── Channels (read-only + import) ───────────────────────────────────────
+
+export async function listChannels(l2: string): Promise<AdminChannel[]> {
+  return request<AdminChannel[]>(`/channels?l2=${encodeURIComponent(l2)}`);
+}
+
+export interface ChannelVideos {
+  channel: { title: string; thumbnail: string } | null;
+  videos: ChannelVideo[];
+  page: number;
+  hasMore: boolean;
+}
+
+export async function listChannelVideos(
+  channelId: string,
+  l2: string,
+  page = 1,
+  pageSize = 24,
+): Promise<ChannelVideos> {
+  return request<ChannelVideos>(
+    `/channels/${encodeURIComponent(channelId)}/videos${query({
+      l2,
+      page,
+      page_size: pageSize,
+    })}`,
+  );
+}
+
+/** `/videos/count` answers `text/plain`, not JSON. */
+export async function countVideos(
+  l2: string,
+  type: 'new_videos' | 'tv_show' | 'talk' | 'all' = 'all',
+  id?: number,
+): Promise<number> {
+  const res = await authenticatedFetch(
+    `${PYTHON_API_URL}/videos/count${query({ l2, type, id })}`,
+  );
+  if (!res.ok) throw new Error(await readError(res));
+  const text = await res.text();
+  return Number.parseInt(text, 10) || 0;
+}
