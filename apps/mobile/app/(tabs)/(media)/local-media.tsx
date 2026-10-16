@@ -9,8 +9,8 @@ import { useLocalMedia } from '@/hooks/use-local-media';
 import type { SubtitleLine } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { ICON_ON_PRIMARY, ICON_MUTED } from '@/lib/theme-colors';
-import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, FileAudio } from 'lucide-react-native';
+import { ICON_ON_PRIMARY, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, FileAudio, TriangleAlert } from 'lucide-react-native';
 
 export default function LocalMediaScreen() {
   const t = useT();
@@ -237,6 +237,21 @@ export default function LocalMediaScreen() {
   return (
     <PageContainer maxWidth="7xl">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.local_media')}</Text>
+
+      {/* A file/state that can no longer be read (the remembered file was
+          deleted, or the pick could not be copied into the sandbox). The upload
+          area below is the recovery: pick the file again. */}
+      {localMedia.error && (
+        <View className="mx-4 mb-3 flex-row items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+          <TriangleAlert size={16} color={ICON_DESTRUCTIVE} />
+          <Text className="flex-1 text-xs text-destructive">
+            {t(localMedia.error)}
+          </Text>
+          <Pressable onPress={localMedia.clearError} className="rounded p-1 active:bg-muted">
+            <X size={14} color={ICON_MUTED} />
+          </Pressable>
+        </View>
+      )}
 
       {/* Upload state — matches web's dashed border upload area */}
       {!localMedia.hasMedia && (
