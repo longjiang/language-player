@@ -197,6 +197,37 @@ table.
 All five are registered on `routes/admin.py`'s blueprint and gated by
 `require_admin()` (Supabase JWT `app_metadata.is_admin`).
 
+### Authorization
+
+The gate is a **blueprint-level `before_request` hook**, not a call at the top
+of each handler, so every current route — and any route added to the module
+later — is admin-only by construction and cannot forget the check. The hook
+returns the same JSON error shape the handlers used to produce:
+
+| Request | Response |
+|---|---|
+| no / malformed `Authorization` header | `401 {"error": "Missing or invalid Authorization header"}` |
+| expired or invalid token | `401 {"error": "Token expired" / "Invalid token"}` |
+| valid token without `app_metadata.is_admin` | `403 {"error": "Admin token required"}` |
+| unreachable auth host (JWKS) | `503 {"error": "Auth server unreachable"}` |
+
+`app_metadata` lives inside the signed JWT and only GoTrue (service role) can
+set it, so the claim cannot be forged by a client. A user demoted while
+holding an unexpired token keeps access until that token expires — the known
+limitation recorded in ADR-0032, which also means every admin endpoint
+re-checks the live claim on every call.
+
+`OPTIONS` (CORS preflight) is deliberately exempt: the browser sends it before
+the real request and never attaches credentials to it, so authenticating it
+would fail the preflight and the real request would never be sent — a failure
+that surfaces as a CORS error (ADR-0032 / ARCH-029 § 11). Flask's automatic
+`OPTIONS` response only advertises allowed methods and headers and never runs
+a handler or touches the database.
+
+`test_admin_video_import.py` asserts this structurally: it enumerates every
+rule on the `admin` blueprint and requires `401` without a token and `403`
+with a non-admin token, so a new unguarded route fails the suite.
+
 | Endpoint | Method | Purpose |
 |---|---|---|
 | `/admin/videos/add` | POST | Add one video |
