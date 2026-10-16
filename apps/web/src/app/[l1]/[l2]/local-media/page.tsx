@@ -159,6 +159,8 @@ export default function CustomMediaPage() {
           hasSubtitles={customMedia.subtitleLines.length > 0}
           needsPermission={customMedia.needsPermission}
           hasMedia={customMedia.hasMedia}
+          error={customMedia.error}
+          restoreFailed={customMedia.restoreFailed}
         />
       </div>
     );

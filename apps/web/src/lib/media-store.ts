@@ -171,14 +171,34 @@ export async function openMediaFile(): Promise<{
   }
 
   // Fallback: use hidden <input>
+  const file = await pickFileViaInput('video/*,audio/*');
+  return file ? { file } : null;
+}
+
+/**
+ * Open the OS file dialog through a hidden `<input type="file">` and resolve
+ * with the picked file — or `null` when the user cancels.
+ *
+ * `<input type="file">` has no `cancel` event, so the promise used to stay
+ * pending forever when the dialog was dismissed (the caller then silently never
+ * continued). The window regains focus when the dialog closes, so a focus with
+ * no selection is treated as a cancel.
+ */
+function pickFileViaInput(accept: string): Promise<File | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'video/*,audio/*';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      resolve(file ? { file } : null);
+    input.accept = accept;
+    let settled = false;
+    const finish = (file: File | null) => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener('focus', onFocus);
+      resolve(file);
     };
+    const onFocus = () => { setTimeout(() => finish(input.files?.[0] ?? null), 300); };
+    input.onchange = () => finish(input.files?.[0] ?? null);
+    window.addEventListener('focus', onFocus);
     input.click();
   });
 }
@@ -191,27 +211,19 @@ export async function openCaptionFile(): Promise<{
   format: 'srt' | 'vtt';
   fileName: string;
 } | null> {
-  return new Promise((resolve) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.srt,.vtt';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) { resolve(null); return; }
+  const file = await pickFileViaInput('.srt,.vtt');
+  if (!file) return null;
 
-      const format = file.name.endsWith('.vtt') ? 'vtt' : 'srt';
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve({
-          text: reader.result as string,
-          format,
-          fileName: file.name,
-        });
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsText(file);
+  const format = file.name.endsWith('.vtt') ? 'vtt' : 'srt';
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve({ text: reader.result as string, format, fileName: file.name });
     };
-    input.click();
+    // A caption file that can no longer be read resolves to null, so the caller
+    // reports it instead of holding a pending promise.
+    reader.onerror = () => resolve(null);
+    reader.readAsText(file);
   });
 }
 

@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
-import { Upload, FileVideo, FileAudio, FileText, X, RefreshCw } from 'lucide-react';
+import { Upload, FileVideo, FileAudio, FileText, X, RefreshCw, TriangleAlert } from 'lucide-react';
 
 interface CustomMediaUploadProps {
   /** Called when user selects a media file via picker. */
@@ -26,6 +26,11 @@ interface CustomMediaUploadProps {
   needsPermission: boolean;
   /** Whether media is currently loaded. */
   hasMedia: boolean;
+  /** Translation key of the last file/storage failure, or null. */
+  error?: string | null;
+  /** Whether the stored pick could not be restored (its record or source file
+   *  can no longer be read). */
+  restoreFailed?: boolean;
 }
 
 export function CustomMediaUpload({
@@ -39,6 +44,8 @@ export function CustomMediaUpload({
   hasSubtitles,
   needsPermission,
   hasMedia,
+  error = null,
+  restoreFailed = false,
 }: CustomMediaUploadProps) {
   const t = useT();
   const [dragOver, setDragOver] = useState(false);
@@ -111,26 +118,43 @@ export function CustomMediaUpload({
 
   // ── Upload state ──
   return (
-    <div
-      onDrop={handleDrop}
-      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-      onDragLeave={() => setDragOver(false)}
-      className={`
-        flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition-all
-        ${dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/30'}
-      `}
-    >
-      <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
-      <p className="mb-2 text-sm text-muted-foreground">
-        {t('msg.drop_media_here')}
-      </p>
-      <p className="mb-4 text-xs text-muted-foreground/60">
-        {t('msg.supported_media_formats')}
-      </p>
-      <Button variant="outline" size="sm" onClick={onOpenFile}>
-        <Upload className="mr-1.5 h-4 w-4" />
-        {t('action.browse')}
-      </Button>
+    <div className="flex flex-col gap-3">
+      {/* The stored pick could not be read (deleted source, or a storage record
+          Chromium can no longer read). The drop zone below is the recovery:
+          pick the file again — or drop the dead entry. */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+          <TriangleAlert className="h-4 w-4 flex-shrink-0 text-destructive" />
+          <p className="min-w-0 flex-1 text-xs text-destructive">{t(error)}</p>
+          {restoreFailed && (
+            <Button variant="ghost" size="sm" onClick={onClear}>
+              <X className="mr-1 h-3.5 w-3.5" />
+              {t('action.remove')}
+            </Button>
+          )}
+        </div>
+      )}
+      <div
+        onDrop={handleDrop}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        className={`
+          flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition-all
+          ${dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/30'}
+        `}
+      >
+        <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
+        <p className="mb-2 text-sm text-muted-foreground">
+          {t('msg.drop_media_here')}
+        </p>
+        <p className="mb-4 text-xs text-muted-foreground/60">
+          {t('msg.supported_media_formats')}
+        </p>
+        <Button variant="outline" size="sm" onClick={onOpenFile}>
+          <Upload className="mr-1.5 h-4 w-4" />
+          {t('action.browse')}
+        </Button>
+      </div>
     </div>
   );
 }
