@@ -51,7 +51,7 @@ register_routes(MyApp)       # 10 blueprints
 | **payments_bp** | `routes/payments.py` | `/paypal_checkout_success`, `/in_app_purchase_success`, `/stripe_checkout_success`, Stripe webhooks |
 | **subscriptions_bp** | `routes/subscriptions.py` | `/admin/update_or_add_subscription`, `/admin/check_user_subscription`, `/cancel-subscription-at-end-of-period`, `/verification_email`, `/acquisition_survey` |
 | **saved_words_bp** | `routes/saved_words.py` | `/saved-words` (GET/PUT), `/saved-words/<l2>/<id>` (DELETE) — row-level saved words (SPEC-034) |
-| **admin_bp** | `routes/admin.py` | `/admin/videos` (GET/POST), `/admin/videos/<id>` (PATCH/DELETE), `/admin/tv-shows`, `/admin/talks`, plus the SPEC-096 ingestion endpoints `/admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/resolve`, `/admin/channels/add`, `/admin/playlists/add` — all `is_admin`-gated |
+| **admin_bp** | `routes/admin.py` | `/admin/videos` (GET/POST), `/admin/videos/<id>` (PATCH/DELETE), `/admin/tv-shows`, `/admin/talks`, plus the SPEC-096 ingestion endpoints `/admin/videos/add`, `/admin/videos/add-batch`, `/admin/channels/resolve`, `/admin/channels/add`, `/admin/playlists/add`. Every route on this blueprint is gated by a blueprint-level `before_request` hook (`require_admin()`), so a new route is admin-only by construction; CORS preflight (`OPTIONS`) is exempt |
 
 ---
 
