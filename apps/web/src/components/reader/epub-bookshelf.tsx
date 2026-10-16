@@ -169,10 +169,13 @@ export function EpubBookshelf({
                 : null;
               const unavailable = unreadable?.[book.id] ?? book.unavailable;
               // A book whose stored record is unreadable may have no name of its
-              // own (the name lived in the record that cannot be read).
+              // own (the name lived in the record that cannot be read). Keep the
+              // title SHORT — the explanation ("could not read this file…") is
+              // the recovery notice's job, and a long sentence repeated on every
+              // card says nothing about which book is which.
               const displayName = book.fileName
                 ? book.fileName.replace(/\.(epub|pdf)$/i, '')
-                : t('msg.epub_file_unreadable');
+                : t('error.loading_failed');
               return (
                 <div
                   key={book.id}

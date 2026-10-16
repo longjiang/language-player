@@ -23,7 +23,7 @@
  */
 
 import type { BookLocation } from '@/lib/epub-book-types';
-import { epubStorageErr, epubWarn } from '@/lib/epub-log';
+import { epubLog, epubStorageErr, epubWarn } from '@/lib/epub-log';
 
 const DB_NAME = 'lp-epub-store';
 const DB_VERSION = 3;
@@ -509,6 +509,9 @@ export async function listEpubs(): Promise<EpubSummary[]> {
   const mirror = await readAllMeta();
   const summaries: EpubSummary[] = [];
   const seen = new Set<string>();
+  /** Books whose record could not be read during this listing. */
+  const unreadable: Array<{ id: string; err: unknown }> = [];
+  let bookCount = 0;
   let db: IDBDatabase | null = null;
 
   try {
@@ -529,6 +532,7 @@ export async function listEpubs(): Promise<EpubSummary[]> {
 
     for (const key of keys) {
       const id = String(key);
+      bookCount++;
       if (key === LEGACY_KEY) {
         const migrated = await migrateLegacyEpub(db, id);
         if (migrated) {
@@ -553,12 +557,26 @@ export async function listEpubs(): Promise<EpubSummary[]> {
         await writeMetaRow(rec.meta);
         summaries.push(normalizeSummary(rec.meta));
       } catch (err) {
-        epubStorageErr(`book ${id} could not be listed — marking it unavailable: ${errText(err)}`);
+        // Detail on the info channel; the aggregate below is what goes to the
+        // error channel (one line per shelf load, not one per broken book —
+        // a profile whose blob files were cleaned up can easily have dozens).
+        epubLog(`book ${id} could not be read — marking it unavailable: ${errText(err)}`);
+        unreadable.push({ id, err });
         summaries.push(unavailableSummary(id, err));
       }
     }
   } finally {
     db.close();
+  }
+
+  if (unreadable.length > 0) {
+    // An actual, irrecoverable condition the user needs to understand ("my
+    // shelf is full of unavailable books") — worth the error channel, once.
+    epubStorageErr(
+      `${unreadable.length} of ${bookCount} stored book(s) can no longer be read ` +
+      `(marked unavailable; the user can remove them and import the files again) — ` +
+      `first: book ${unreadable[0]!.id}: ${errText(unreadable[0]!.err)}`,
+    );
   }
 
   // Prune mirror rows whose book record no longer exists (best effort).

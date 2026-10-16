@@ -217,7 +217,10 @@ export default function EpubPage() {
           .sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0))
           .find((b) => !b.language || normalizeLanguageCode(b.language) === l2Primary);
         if (last) {
-          await handleOpenBook(last.id);
+          // Quiet: a failure badges the card and is logged, but does not raise a
+          // recovery notice for a book the user did not ask for (that read as
+          // "cannot read this file" about nothing in particular).
+          await handleOpenBook(last.id, { quiet: true });
         }
       } catch (err) {
         epubStorageErr(`bookshelf load failed — showing an empty shelf: ${errMsg(err)}`);
@@ -273,7 +276,7 @@ export default function EpubPage() {
   }, [epub.markers, location]);
 
   // Open a stored book; returns the location to resume at.
-  const handleOpenBook = useCallback(async (id: string) => {
+  const handleOpenBook = useCallback(async (id: string, opts?: { quiet?: boolean }) => {
     // Ref guard (not just state) so rapid double-clicks can't open the same
     // book twice — two EpubBook instances would race and the paginator would
     // drop one fetch, leaving the spinner up forever.
@@ -283,7 +286,7 @@ export default function EpubPage() {
     epub.clearError();
     try {
       // Bookshelf clicks go straight to the content — skip the cover tap.
-      const start = await epub.openBook(id, { skipCover: true });
+      const start = await epub.openBook(id, { skipCover: true, quiet: opts?.quiet });
       pendingStartRef.current = start;
       // Resume is applied reactively: immediately when there is no cover,
       // or on cover tap otherwise. `useEpub` records the failure itself.

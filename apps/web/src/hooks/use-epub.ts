@@ -103,8 +103,13 @@ export interface UseEpubReturn {
   pdfDoc: { id: string; data: ArrayBuffer; pageCount: number; outline: PdfOutlineItem[] } | null;
   /** Reload the bookshelf list from IndexedDB. */
   refreshBooks: () => Promise<EpubSummary[]>;
-  /** Open a stored book; returns the location to resume at (or null). */
-  openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
+  /** Open a stored book; returns the location to resume at (or null).
+   *
+   *  `quiet` reports a failure through the book's shelf badge only — no recovery
+   *  notice and no error message. The mount-time auto-open uses it: the user did
+   *  not ask for that book, so a notice naming it (or, when its metadata is gone,
+   *  naming nothing) is noise on top of the badges. */
+  openBook: (id: string, opts?: { skipCover?: boolean; quiet?: boolean }) => Promise<BookLocation | null>;
   /** Search the open book's whole text, returning located snippets. */
   searchBook: (query: string) => Promise<EpubSearchResult[]>;
   /** Add a file to the bookshelf without opening it. */
@@ -378,8 +383,19 @@ export function useEpub(): UseEpubReturn {
   /** Open a stored book, resuming at its saved location (with migration). */
   const openBook = useCallback(async (
     id: string,
-    opts?: { skipCover?: boolean },
+    opts?: { skipCover?: boolean; quiet?: boolean },
   ): Promise<BookLocation | null> => {
+    /**
+     * Report an open failure. Always badges the book; shows the recovery notice
+     * and the message unless this open was quiet (the mount auto-open).
+     */
+    const failOpen = (kind: EpubUnavailableKind) => {
+      markUnreadable(id, kind);
+      if (!opts?.quiet) {
+        setOpenFailureId(id);
+        setError('msg.epub_file_unreadable');
+      }
+    };
     let stored: StoredEpub | null;
     try {
       stored = await loadEpub(id);
@@ -389,18 +405,19 @@ export function useEpub(): UseEpubReturn {
       // metadata mirror still names it, so the card can offer the recovery
       // (Remove → import the file again) instead of failing silently.
       const kind: EpubUnavailableKind = isUnreadableRecordError(err) ? 'unreadable' : 'error';
-      epubStorageErr(`openBook ${id} could not read the stored record (${kind}): ${errMessage(err)}`);
-      markUnreadable(id, kind);
-      setOpenFailureId(id);
-      setError('msg.epub_file_unreadable');
+      // The aggregate line from `listEpubs` already reports the shelf-level
+      // condition on the error channel; a quiet (auto-open) attempt only needs
+      // the detail, so it goes to the info channel.
+      const detail = `openBook ${id} could not read the stored record (${kind}): ${errMessage(err)}`;
+      if (opts?.quiet) epubLog(detail); else epubStorageErr(detail);
+      failOpen(kind);
       return null;
     }
     if (!stored) {
       // Metadata without a record (e.g. an interrupted delete): nothing to open.
-      epubStorageErr(`openBook ${id}: no stored record — marking it unavailable`);
-      markUnreadable(id, 'unreadable');
-      setOpenFailureId(id);
-      setError('msg.epub_file_unreadable');
+      const detail = `openBook ${id}: no stored record — marking it unavailable`;
+      if (opts?.quiet) epubLog(detail); else epubStorageErr(detail);
+      failOpen('unreadable');
       return null;
     }
     clearUnreadable(id);
@@ -429,11 +446,9 @@ export function useEpub(): UseEpubReturn {
         // The stored PDF could not be parsed — same recovery as an unreadable
         // record (Remove from the shelf, then import the file again).
         epubStorageErr(`openBook ${id}: stored PDF could not be parsed: ${errMessage(err)}`);
-        markUnreadable(id, 'unreadable');
         setPdfDoc(null);
         setOpenBookId(null);
-        setOpenFailureId(id);
-        setError('msg.epub_file_unreadable');
+        failOpen('unreadable');
       });
       setBook(null);
       setToc([]);
@@ -447,7 +462,7 @@ export function useEpub(): UseEpubReturn {
     const parsed = await parseAndStore(stored.data, stored.meta.fileName);
     if (!parsed?.b) {
       // `parseAndStore` already set the error ('msg.epub_parse_error').
-      setOpenFailureId(id);
+      if (!opts?.quiet) setOpenFailureId(id);
       return null;
     }
     const { b } = parsed;
@@ -466,6 +481,7 @@ export function useEpub(): UseEpubReturn {
     if (!start) start = { spineIndex: 0, blockIndex: 0, offset: 0 };
     epubLog(`openBook "${stored.meta.fileName}" → resume spine=${start.spineIndex} block=${start.blockIndex} offset=${start.offset}`);
     setOpenFailureId(null);
+    setError(null);
     setCoverTapped(opts?.skipCover || !b.coverUrl);
     await updateEpubMeta(id, {
       lastLocation: start,
@@ -676,7 +692,11 @@ export function useEpub(): UseEpubReturn {
     }
     await deleteBookIndex(id).catch(() => {});
     clearUnreadable(id);
-    setOpenFailureId((current) => (current === id ? null : current));
+    // Drop the failure state WITH the book. Leaving `error` set made the
+    // recovery message reappear in the shelf's import-error slot (under the drop
+    // zone) as soon as the notice went away.
+    setOpenFailureId(null);
+    setError(null);
     if (currentBookIdRef.current === id) currentBookIdRef.current = null;
     await refreshBooks();
   }, [refreshBooks, clearUnreadable]);
