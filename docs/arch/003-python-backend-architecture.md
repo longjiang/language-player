@@ -673,12 +673,13 @@ The Next.js app currently uses this Python backend. Important notes:
 | `youtube_videos_list(ids, part)` | Low-level `videos.list`; returns `(items, error)` so a quota/auth failure is not mistaken for missing videos |
 | `get_video_details_batched(youtube_ids)` | Batch `videos.list` at the API max of 50; returns `(details, unavailable, error)` |
 | `normalize_video_ids(ids)` | Split input ids into `(valid, invalid)` by the 11-char id shape (one bad id rejects a whole API batch) |
-| `video_import_block_reason(video, force)` | `unavailable` / `not_embeddable` / `region_restricted` / None |
+| `video_import_block_reason(video, force, l2_code)` | `unavailable` / `not_embeddable` / `region_restricted` / `locale_mismatch` / None (`force` bypasses the two soft checks) |
+| `l2_locales(l2_code)` / `video_locale_matches_l2(video, l2_code)` | Locale candidates for an L2, shared by the crawler's `filter_l2_code` and the importer |
+| `list_captions(video_id, l2_code)` | Caption track for an L2 — see [ARCH-035](035-caption-selection.md) for the two resolvers |
 | `parse_channel_reference(ref)` / `channel_from_reference(ref)` | Handle / `UC…` id / channel URL → normalized channel (raises `ChannelNotFoundError` / `YouTubeChannelError`) |
 | `parse_playlist_reference(ref)` | Playlist id from an id or any URL with `list=` |
 | `get_full_details_of_videos(video_ids)` | Get full video details |
 | `check_and_filter_youtube(youtube_ids, ...)` | Validate + filter YouTube IDs |
-| `list_captions(video_id, l2_code)` | List available captions |
 | `find_videos_with_transcripts(videos, l2_code, callback)` | Filter videos with transcripts |
 | `channel_id_to_playlist_id(channel_id)` | Convert channel ID to uploads playlist |
 | `videos_in_playlist(playlist_id, pageToken)` | List videos in playlist |
