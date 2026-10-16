@@ -360,7 +360,7 @@ export default function ImportPage() {
                         {t('label.subscribers')}: {resolved.subscribers ?? '—'}
                       </span>
                       <span>
-                        {t('title.video_count')}: {resolved.video_count ?? '—'}
+                        {t('label.videos')}: {resolved.video_count ?? '—'}
                       </span>
                       <span className="font-mono">{resolved.uploads_playlist_id}</span>
                     </div>

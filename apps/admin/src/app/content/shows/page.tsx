@@ -165,7 +165,7 @@ export default function ShowsPage() {
               <Input
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                placeholder={t('placeholder.filter_shows')}
+                placeholder={t('placeholder.filter_by_title')}
               />
             </div>
             <label className="flex items-center gap-2 pb-2 text-sm">
@@ -322,7 +322,7 @@ export default function ShowsPage() {
                                     <span className="flex items-center gap-3 text-xs text-muted-foreground">
                                       <span className="font-mono">{episode.youtube_id}</span>
                                       <span>
-                                        {t('title.views')}: {episode.views ?? '—'}
+                                        {t('label.views')}: {episode.views ?? '—'}
                                       </span>
                                       <span>
                                         {t('label.difficulty')}:{' '}
