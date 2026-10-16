@@ -461,10 +461,22 @@ export default function ReaderPage() {
   }, [l1.code, l2.code, router, t]);
 
   useEffect(() => {
-    const storedText = localStorage.getItem(READER_TEXT_KEY);
+    // Reading the handed-off text is best-effort: a throwing `localStorage`
+    // (quota, a hardened browser, a corrupt record) must not break the rest of
+    // the restore — there is still a URL param or a method/arg to fall back to.
+    let storedText: string | null = null;
+    let storedTitle = '';
+    try {
+      storedText = localStorage.getItem(READER_TEXT_KEY);
+      if (storedText) {
+        storedTitle = localStorage.getItem(READER_TITLE_KEY) || '';
+        localStorage.removeItem(READER_TEXT_KEY); localStorage.removeItem(READER_TITLE_KEY);
+      }
+    } catch (err) {
+      logwarn(`reader: handed-off text could not be read — ${err instanceof Error ? err.message : String(err)}`);
+    }
     if (storedText) {
-      setText(storedText); setTitle(localStorage.getItem(READER_TITLE_KEY) || '');
-      localStorage.removeItem(READER_TEXT_KEY); localStorage.removeItem(READER_TITLE_KEY);
+      setText(storedText); setTitle(storedTitle);
       setActiveTab('read'); setInitialLocation(null); return;
     }
     if (urlParam) { setInitialLocation(null); loadUrl(decodeURIComponent(urlParam), false); return; }

@@ -31,9 +31,14 @@ function loadRecent(l2Code: string): string[] {
 }
 
 function saveRecent(l2Code: string, term: string) {
-  const prev = loadRecent(l2Code).filter((t) => t !== term);
-  prev.unshift(term);
-  localStorage.setItem(RECENT_STORAGE_PREFIX + l2Code, JSON.stringify(prev.slice(0, MAX_RECENT)));
+  try {
+    const prev = loadRecent(l2Code).filter((t) => t !== term);
+    prev.unshift(term);
+    localStorage.setItem(RECENT_STORAGE_PREFIX + l2Code, JSON.stringify(prev.slice(0, MAX_RECENT)));
+  } catch {
+    // Recent searches are a convenience: a throwing/full `localStorage` must not
+    // abort the lookup that called this (it used to reject before the search).
+  }
 }
 
 // ── Sidebar content type ─────────────────────
@@ -228,7 +233,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   }, [router, l1.code, l2.code, searchParams]);
 
   const clearRecent = useCallback(() => {
-    localStorage.removeItem(RECENT_STORAGE_PREFIX + l2.code);
+    try {
+      localStorage.removeItem(RECENT_STORAGE_PREFIX + l2.code);
+    } catch {
+      // Clear the in-memory list regardless.
+    }
     setRecentSearches([]);
   }, [l2.code]);
 
