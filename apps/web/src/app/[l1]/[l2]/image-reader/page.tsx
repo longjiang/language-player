@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { ZoomableImage } from '@/components/reader/zoomable-image';
 import { epubLog } from '@/lib/epub-log';
 import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
+import { isUnreadableRecordError } from '@/lib/epub-store';
+import { epubStorageErr } from '@/lib/epub-log';
 import { downscaleImage } from '@/lib/downscale-image';
 import {
   ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose,
@@ -36,6 +38,13 @@ interface ImageEntry {
 
 function isSupportedImage(file: File): boolean {
   return /^image\/(png|jpeg|gif|webp)$/.test(file.type);
+}
+
+/** `Name: message` for a caught error, for the storage error log. */
+function errMsg(err: unknown): string {
+  if (!err || typeof err !== 'object') return String(err);
+  const e = err as { name?: unknown; message?: unknown };
+  return `${String(e.name ?? 'Error')}: ${String(e.message ?? '')}`;
 }
 
 function readAsDataUrl(file: File): Promise<string> {
@@ -132,11 +141,24 @@ export default function ImageReaderPage() {
         }
         setInitialized(true);
       } catch (err) {
-        epubLog(`image reader gallery restore failed: ${(err as Error)?.message ?? err}`);
+        // The stored gallery could not be read — most often Chromium's
+        // `NotReadableError` because the record's blob file was deleted from
+        // disk ("Data lost due to missing file…irrecoverable"). The images are
+        // gone, but the reader stays usable and the next save overwrites the
+        // dead record, so say what happened instead of showing an empty reader.
+        if (isUnreadableRecordError(err)) {
+          epubStorageErr(`image reader gallery is no longer readable (record lost on disk): ${errMsg(err)}`);
+          setNotice(t('msg.failed_to_load_images'));
+        } else {
+          epubStorageErr(`image reader gallery restore failed: ${errMsg(err)}`);
+          setNotice(t('msg.failed_to_load_images'));
+        }
         setInitialized(true);
       }
     })();
-  }, [initialized]);
+    // `t` only changes with the UI locale; the `initialized` guard makes a
+    // re-run a no-op.
+  }, [initialized, t]);
 
   // Persist the gallery whenever it changes (after the initial restore).
   useEffect(() => {
@@ -151,8 +173,13 @@ export default function ImageReaderPage() {
         error: e.error,
       })),
       currentId,
+    }).catch((err) => {
+      // Quota, a blocked DB, or an irrecoverable record: the in-memory gallery
+      // keeps working, but the user must know it will not survive a refresh.
+      epubStorageErr(`image reader gallery could not be saved: ${errMsg(err)}`);
+      setNotice(t('msg.failed_to_load_images'));
     });
-  }, [images, currentId, initialized]);
+  }, [images, currentId, initialized, t]);
 
   /** Run the vision OCR for an image entry (idempotent; no-op if already
    *  OCR'd). Takes the entry directly so a fresh add/paste can OCR immediately
@@ -224,10 +251,19 @@ export default function ImageReaderPage() {
       pending.push(p);
     }
     setNotice(null);
-    Promise.all(pending).then(() => {
-      setImages((prev) => [...prev, ...newEntries]);
+    // allSettled, not all: a file that can no longer be read (it was moved or
+    // deleted between the drop and the read) must not discard the whole batch.
+    void Promise.allSettled(pending).then((results) => {
+      const usable = newEntries.filter((e) => e.dataUrl);
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed > 0) {
+        epubStorageErr(`image reader: ${failed} of ${supported.length} file(s) could not be read`);
+        setNotice(t('msg.failed_to_load_images'));
+      }
+      if (usable.length === 0) return;
+      setImages((prev) => [...prev, ...usable]);
       // Open the first newly added image by default and kick off its OCR.
-      const first = newEntries[0];
+      const first = usable[0];
       if (first) {
         setCurrentId(first.id);
         void runOcr(first);
