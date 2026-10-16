@@ -80,9 +80,19 @@ showed **only a spinner, forever**, plus an uncaught rejection. The chain was:
 4. **Mark, don't auto-delete.** A book whose record cannot be read is badged on
    the shelf (warning icon, destructive tint) with a one-click **Remove**, and its
    card click reports the failure. `openBook` sets `msg.epub_file_unreadable` and
-   records `openFailureId`; the page shows a recovery notice above the shelf.
-   Removal deletes the record, its mirror row and its search index; the user then
-   imports the file again. The app never deletes a user's book on its own.
+   records `openFailureId`; the page shows a recovery notice above the shelf, which
+   Remove clears together with the book. Removal deletes the record, its mirror row
+   and its search index; the user then imports the file again. The app never
+   deletes a user's book on its own.
+   - The **mount auto-open is quiet**: it is a convenience (open the last-read
+     book), so a failure there badges the card and logs, but raises no notice —
+     a notice about a book the user never chose, which (when the record's metadata
+     died with it) cannot even be named, reads as noise. For the same reason a
+     nameless card is titled "Loading failed" rather than repeating the sentence.
+   - **Volume matters in logs and on screen.** The per-record detail is info-level
+     and each shelf load emits ONE error-channel line summarising how many books
+     are unreadable; a swept profile can have dozens, and a user's screenshot of
+     thirty identical stack traces says less than one line with the count.
 5. **Nothing may strand the page.** The mount effect's `setInitialized(true)` is
    in `finally`; the error branch renders before the cover/locating spinners;
    `openDB()` rejects on `blocked` (instead of awaiting forever) and closes its

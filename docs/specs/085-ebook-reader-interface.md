@@ -548,10 +548,23 @@ even express "this file is gone".
   over the cover, destructive border/tint on the card, and a **Remove** action on
   the card itself. A book whose name was never mirrored shows the
   "could not read this file" message as its title.
-- **Opening it explains, and offers the fix.** An open failure shows a recovery
-  notice above the shelf: `msg.epub_file_unreadable` + the book's name +
-  **Remove** (`action.remove`) + **Close** (`action.close`). The notice is
-  dismissible without removing anything; re-tapping the card brings it back.
+- **Opening it explains, and offers the fix.** An open failure the user started
+  (a card tap) shows a recovery notice above the shelf: `msg.epub_file_unreadable`
+  + the book's name when the mirror still has it + **Remove** (`action.remove`) +
+  **Close** (`action.close`). The notice is dismissible without removing anything;
+  re-tapping the card brings it back. **Remove clears the failure state with the
+  book** — leaving the message set made it reappear in the upload box's
+  import-error slot once the notice was gone.
+- **The mount auto-open is quiet.** It opens the most-recently-read book without
+  being asked, so a failure there is reported only by the card's badge (and one
+  log line) — not by a notice about a book the user did not choose (which, when the
+  record's metadata is gone too, cannot even be named). A nameless tombstone card
+  is titled `error.loading_failed` ("Loading failed"), not the full sentence.
+- **One log line per shelf load.** Detail per record is info-level; a load that
+  found unreadable books emits a single error-channel line — `N of M stored
+  book(s) can no longer be read … first: book <id>: <error>` — because a swept
+  profile can have dozens and the repeat count is not the signal. (In dev the
+  mount effect runs twice, so it prints twice.)
 - **Remove is the recovery** (one click): it deletes the record, its mirror row
   and its search index. The user then imports the file again — an import
   replaces an unreadable record, so re-importing is a complete repair. The app
