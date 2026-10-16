@@ -378,6 +378,14 @@ sync_meta(device_id, last_pull_cursor, last_sync_at, last_error)
   ── per-device sync position
 ```
 
+A **failed open is retried, never memoized** (2026-10-16): `openSyncDB()`
+memoizes its open promise so concurrent callers share one connection, but a
+rejection used to be memoized too — one failure (a corrupt or unreadable
+`sync.db`, a full disk, a locked file) made every later sync call return that
+same rejection for the rest of the session, with no recovery but a relaunch. It
+now clears the promise and the handle on failure, logs on the error channel, and
+the next call retries (ADR-0049).
+
 Existing AsyncStorage/SecureStore stores are migrated into `sync.db` once
 (idempotently, keeping the old keys until verified). SecureStore stays for
 secrets, auth tokens, and the Phase 1 Offline Mode toggle.

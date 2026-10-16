@@ -171,6 +171,25 @@ the caught error message, or a timeout notice. That line exists so a
 Release-build failure can be reported from a screenshot without a device-console
 capture.
 
+## A gallery or image that can no longer be read
+
+- **Gallery**: the gallery is a single IndexedDB record holding every image's
+  base64 data, so it is a large value — and Chromium keeps large values in a
+  separate file that disk-cleanup tools delete, after which the record can never
+  be read again (`NotReadableError: Data lost due to missing file…irrecoverable`).
+  A failed restore reports `msg.failed_to_load_images` ("Couldn't load images."),
+  logs on the error channel, and leaves the reader usable; the next gallery save
+  overwrites the dead record, so the reader recovers by itself. A failed **save**
+  is reported too (the in-memory gallery keeps working, but it will not survive a
+  refresh).
+- **Images**: a file that cannot be read when picked or dropped is counted and
+  reported (`msg.failed_to_load_images`) instead of being dropped in silence, and
+  the readable files in the same selection are still added (`allSettled` on
+  mobile, `allSettled` on web).
+- **OCR**: preparing an image (`downscaleImage`) has its own deadline on mobile
+  (30 s) because the 90 s request timeout does not cover it — a hung native
+  manipulator used to leave the image "converting" forever.
+
 ## Logging
 
 Gated: web `epubLog` (flip `EPUB_LOGS_ENABLED`), mobile `log` / `logwarn` /

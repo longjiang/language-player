@@ -614,6 +614,8 @@ All new keys follow the established naming conventions from `translations.csv`. 
 | **L2 switch during download** | Download continues for the original L2. UI shows separate status per language. |
 | **No frequency data for L2** | Language not shown in "Available" section. Only 40 languages have Zipf frequency data. |
 | **App restart during download** | Download is not resumable. On restart, partial data is detected and cleaned up. User must re-download. (Future: resumable downloads could use Range headers if needed.) |
+| **`dictionary.db` cannot be opened (corrupt, unreadable, disk full, locked)** | The failed open is **not** memoized: `openDictionaryDB()` clears the promise and the handle, logs on the error channel, and the next lookup retries the open. (Before 2026-10-16 a rejected open was memoized, so every later call returned the same rejection for the rest of the session — the offline dictionary stayed dead until the app was relaunched.) |
+| **Availability check cannot open the DB** | The check settles to `false` instead of staying `unknown`, so the "offline and no dictionary downloaded" notice is never silently disabled (ADR-0049). |
 | **Very large dictionary (en: 36K entries)** | Cap at 30,000. Chunked loading (500/tick) ensures UI stays responsive. |
 | **Multiple devices, same user** | Each device downloads dictionaries independently. No cloud sync of downloaded dictionaries (too large). |
 | **Dictionary update on server** | User sees "Update" button with last download date. Must manually re-download to get new entries. Server-side `version` hash changes. |

@@ -573,11 +573,23 @@ even express "this file is gone".
 | Badged card + inline Remove | `components/reader/epub-bookshelf.tsx` |
 | Storage-failure log (error channel, not the reader's verbose switch) | `lib/epub-log.ts` (`epubStorageErr`) |
 
-### 18.4 Not covered
+### 18.4 Mobile
 
-Mobile keeps its current behavior (a generic `msg.epub_parse_error` banner when
-the sandbox file is missing) — see ADR-0049. Moving it onto an i18n'd
-"file missing" state with the same Remove/re-import recovery is a follow-up.
+Mobile has the same contract (`apps/mobile/app/(tabs)/(reading)/epub.tsx`,
+`hooks/use-epub.ts`, `components/reader/EpubBookshelf.tsx`):
+
+- The shelf always renders and badges a book whose library file is gone (a
+  `getInfoAsync` pass on every load), with the existing one-click Remove.
+- `openBook` reports `msg.epub_file_unreadable` (missing file, missing record, or
+  an unreadable library) versus `msg.epub_parse_error` (unparsable book); the
+  screen renders `t(epub.error)`, so the message is the real reason.
+- The error state offers Remove (returns to the shelf) + Close.
+- A failed library **read** is an error, not an empty shelf: `readAll()` throws
+  instead of returning `[]`, because writing on top of that `[]` used to wipe
+  every stored book.
+
+There is no metadata mirror on mobile — its metadata lives in AsyncStorage, which
+losing a book file cannot damage.
 
 ### 18.5 Verification
 
@@ -596,3 +608,7 @@ profile and reloading `/[l1]/[l2]/epub`:
    the recovery notice, and the cover degrades to the placeholder icon.
 4. Regression: that same EPUB imports, opens and resumes after a reload, and a
    real PDF imports and opens in the PDF reader — with no recovery notice.
+5. Mobile: the store-level behavior (a failed metadata read reported, no writer
+   overwriting a list it could not read, the library still intact afterwards) is
+   pinned by unit tests against a mocked AsyncStorage; the UI paths are
+   typechecked and reviewed but **not** verified on a device/simulator.

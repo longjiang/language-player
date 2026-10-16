@@ -135,10 +135,19 @@ existing record as absent, so re-importing the file is a complete repair.
 
 - Nothing changes for a healthy library: import, open, resume, progress and the
   PDF path were re-verified end to end (real EPUB + real PDF) after the change.
-- `apps/mobile` is unaffected. Its books are sandbox files with metadata in
-  AsyncStorage, and it already checks `getInfoAsync` before opening; adopting the
-  same recovery UX there (an i18n'd "file missing" state instead of the generic
-  parse error) is a separate, tracked follow-up.
+- `apps/mobile` adopted the same contract without needing the mirror (2026-10-16):
+  its metadata is AsyncStorage rather than a large IndexedDB value, so losing a
+  book *file* cannot damage it. What it did need was the data-loss guard
+  (`readAll()` used to return `[]` on a failed read, and the next write then
+  persisted that empty list — wiping every stored book), a real file-existence
+  check on the shelf (badge + one-click Remove), and translation keys instead of
+  raw English error strings that the screen discarded. Its paths are covered by
+  unit tests, not by a device build.
+- The same "do not memoize a failed open" rule was applied to the mobile SQLite
+  stores (`dictionary.db`, `sync.db`): a rejected open promise was cached for the
+  session, permanently disabling the offline dictionary and sync. This is the
+  same class of bug (an unreadable file turning into a feature that never
+  recovers), fixed one layer down.
 
 ## Alternatives considered
 
