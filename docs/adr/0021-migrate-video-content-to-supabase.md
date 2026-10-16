@@ -230,5 +230,5 @@ subtitle FULLTEXT search.
 - `docs/arch/003-python-backend-architecture.md` — Flask backend architecture
 - `docs/arch/004-subs-search-architecture.md` — MySQL FULLTEXT subtitle search
 - `docs/arch/017-tokenization-batch-lookup-pipeline.md` — tokenization cache
-- `zerotohero-python-server/utils_directus.py` — shard suffix map
+- `zerotohero-python-server/utils_directus.py` — shard suffix map (deleted 2026-10-16; the map now lives in `utils_user_data.L2_PREFIX_BY_CODE`)
 - `tmp/supabase-test/supabase-migrate.py` — migration loader

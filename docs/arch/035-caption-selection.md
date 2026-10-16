@@ -53,7 +53,10 @@ Everything below is the detail behind those four lines.
 | `/get_best_l1_subs` | `get_best_l1_subs()` | the L2 track translated to L1 |
 | `/timedtext` | `caption()` (exact language + display name) | one named track |
 | Admin importer | `utils_video_import.transcript_for_import()` → the L2 resolver | `subs_l2` CSV |
-| Legacy crawler / backfill | `utils_youtube.list_captions()` | a `Transcript` object (`.fetch()`) |
+
+The crawler's adapter (`utils_youtube.list_captions()`) was deleted with the
+crawler (`dc7b212`); every remaining consumer goes through
+`select_best_l2_transcript()`.
 
 `get_best_l1_subs()` and `caption()` with `tlangs` are **serving-only**: a
 machine translation is never stored as a video's `subs_l2` (the importer
@@ -63,22 +66,17 @@ always resolves with `tlangs=None`).
                     YouTubeTranscriptApi(proxy=Webshare)
                     app_youtubecaptions.caption_api()
                               │
-        ┌─────────────────────┴──────────────────────┐
-        │                                            │
-  list_transcripts_result()                  list_captions()  (crawler)
-  → (metadata[], error)                       → Transcript object
-        │                                            │
-        └────────────► choose_best_transcript(candidates, locale_priority) ◄───┘
-                                    │
-                        select_best_l2_transcript()
-                                    │
-                 fetch_caption_track(video, name, code)   → (lines, error)
+                    list_transcripts_result()
+                     → (metadata[], error)
+                              │
+             choose_best_transcript(candidates, locale_priority)
+                              │
+                  select_best_l2_transcript()
+                              │
+           fetch_caption_track(video, name, code)   → (lines, error)
 ```
 
-`list_transcripts_result()` and `list_captions()` are two adapters over the
-same rule: one works on the cached metadata list, the other on the library's
-objects (so `.fetch()` keeps working for the crawler). Both go through the
-proxied client.
+Everything goes through the proxied client and the one rule.
 
 ## Locale candidates
 
@@ -219,9 +217,9 @@ Two consequences worth knowing:
    fallback for languages YouTube does not list), so the "spoken in these
    countries" expansion mostly helps languages whose own locale codes are not
    YouTube languages.
-4. **The legacy crawler writes to Directus** (`save_video_with_transcript`).
-   It shares the selection and minimum-length rules, but its storage path is
-   the retired CMS; the admin importer is the live ingestion path.
+4. **Only one ingestion path remains.** The legacy crawler and its caption
+   adapter were deleted (`cdfce67`, `dc7b212`); the admin importer is the
+   ingestion path, and it shares the selection and minimum-length rules.
 
 ### Fixed 2026-10-16
 

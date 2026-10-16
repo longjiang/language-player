@@ -421,8 +421,9 @@ language id; `owner` = Directus user id until the 5.7 remap).
    direct connection)**. Caption searches use the trigram index (verified via
    EXPLAIN; the 17-term ja conjugation query dropped from >90s timeout to
    ~1s). Classic is back on `/subs-search`; the temporary
-   `/subs-search-classic` (MySQL) route remains available but is no longer used
-   by any client.
+   `/subs-search-classic` (MySQL) route was retired on 2026-10-16 (`4f114f9`)
+   along with `app_subs_search.py`, once it was confirmed that no client
+   referenced it.
 8. ✅ **Vector recommendations switched on (2026-08-04).** `/recommend-videos`
    and `/recommend-music-entertainment` use the pgvector pipeline
    (`video_embeddings`, `gemini-embedding-2@1024`, HNSW cosine) ported from the

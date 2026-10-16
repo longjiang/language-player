@@ -146,6 +146,11 @@
   admin endpoints
 - ✅ Admin privilege management — grant/remove admin via the GoTrue admin API
   (self-demotion blocked)
+- ✅ Video ingestion API — add a video, a list, a whole channel or a whole
+  playlist; resolve channel handles; talk / TV-show assignment; unavailable
+  sweep; discovery from search terms (SPEC-096, SPEC-098)
+- ✅ Legacy crawler removed — the Directus/MySQL crawl path and its storage
+  layer are deleted; the import API replaces them
 - ⬜ Content moderation (videos / shows / talks) in the admin console
 - ⬜ Payment log viewer and account actions (delete / reset / demote admin)
 

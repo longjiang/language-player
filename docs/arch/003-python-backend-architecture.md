@@ -44,7 +44,7 @@ register_routes(MyApp)       # 10 blueprints
 |---|---|---|
 | **core_bp** | `routes/core.py` | `/`, `/chatgpt`, `/images/<term>`, `/img/<term>`, `/timedtext`, `/get_best_l1_subs`, `/get_best_l2_subs`, `/python_version` |
 | **text_bp** | `routes/text_routes.py` | `/lemmatize-spacy`, `/lemmatize-chinese`, `/lemmatize-japanese`, `/lemmatize-korean`, `/lemmatize-turkish`, `/lemmatize-arabic`, `/lemmatize-persian`, `/lemmatize-russian`, `/lemmatize-burmese`, `/lemmatize-simple`, `/lemmatize-lemmatization-lists`, `/lemmatize-unified`, `/inflect-pattern`, `/inflect-pymorphy` |
-| **translate_bp** | `routes/translate.py` | `/translate` (GET/POST), `/translate_array` (POST), `/translate_video_and_save` |
+| **translate_bp** | `routes/translate.py` | `/translate` (GET/POST), `/translate_array` (POST) |
 | **dictionary_bp** | `routes/dictionary.py` | `/dictionary/lookup` (POST) — server-side dictionary search with LLM fallback |
 | **video_bp** | `routes/video.py` | `/recommend-videos`, `/subs-search` |
 | **analytics_bp** | `routes/analytics.py` | `/ga-active-users-by-city`, `/ga-popular-language-pairs`, `/ga-popular-features`, `/video-tags` |
@@ -98,7 +98,6 @@ Each returns: `{ "md5_hash": [ {word, lemma, pos}, ... ] }`
 |---|---|---|
 | `/translate` | GET/POST | Translate text via ChatGPT. Params: `text`, `l1`, `l2`, `context`. |
 | `/translate_array` | POST | Batch-translate array of texts. |
-| `/translate_video_and_save` | GET | Translate video subtitles and save to DB. |
 
 Same-language pairs (`l1`/`l2` share a BCP-47 base subtag, e.g. `zh-Hans` ↔ `zh`) **modernize** instead of translating: archaic/literary/legalese/technical prose is rewritten as easy-to-read modern prose with no information loss (`is_same_language` in `utils_language.py`, prompt branch in `app_translator_chatgpt.py`, 2026-09-02). Long paragraphs get an input-scaled output-token budget (`_output_budget`) so the model never silently truncates the tail; the array path additionally splits >300-char texts at sentence boundaries and rejoins them. See SPEC-006 § "Same-Language / Long-Paragraph Translation".
 
@@ -155,22 +154,17 @@ were removed in SPEC-039 WS-8 (2026-08-10).
 
 ## Data Layer
 
-### MySQL (via Directus)
+### Postgres (Supabase) — the only content store
 
-The primary database is MySQL managed by Directus 8 (headless CMS). The backend accesses it through:
-- **Directus REST API** (`utils_directus.py`) — for CRUD operations via admin token
-- **Direct SQL** (`utils_db.py`) — for complex queries (subtitle search, recommendations)
+Content lives in Supabase Postgres and is reached through `utils_content.py`
+(SPEC-038/039). **The Directus layer is gone**: `utils_directus.py`,
+`utils_maintenance.py` and `utils_scout.py` were deleted in `cdfce67` /
+`dc7b212` once the import endpoints (SPEC-096) replaced the crawler, so there
+is no REST-CMS wrapper, no per-language MySQL shard suffix map, and no MySQL
+connection pool in the request path.
 
-**`utils_db.py`** provides:
-- MySQL connection pooling (20 connections, `mysql.connector.pooling`)
-- `execute_sql(sql, params)` — thread-safe, returns list of dicts
-- Auto-retry on lost connections (3 retries)
-
-**`utils_directus.py`** provides:
-- `get_items(table, params)` — fetch items from Directus
-- `get_video()`, `update_video()` — video CRUD
-- `get_tags_list()` — auto-tagging
-- `youtube_videos_suffix` map — per-language video table suffixes
+`utils_db.py` (the MySQL pool and `execute_sql`) is still present for the
+remaining batch/notebook tooling, but no live route depends on it.
 
 ### SQLite (Local Dictionary)
 
@@ -208,13 +202,14 @@ Each loader uses thread-local read-only SQLite connections (`threading.local()`)
 
 - `chatgpt_translate_text(text, l1, l2, context)` — single text translation
 - `chatgpt_translate_text_array(texts, l1, l2)` — batch translation
-- `translate_video_and_save(l1, l2, video_id)` — full video subtitle translation
 - Uses placeholder pattern to protect `{variables}` from translation
 - Cached in `cache/translation_chatgpt/`
 
 ### Azure Translator (`app_translator_azure.py`)
 
-- Alternative translation backend via Azure Cognitive Services
+- Alternative translation backend via Azure Cognitive Services.
+- Not imported by the app; its Directus-writing `translate_video_and_save`
+  was removed with the Directus layer, leaving the translator itself.
 
 ---
 
@@ -227,12 +222,11 @@ Each loader uses thread-local read-only SQLite connections (`threading.local()`)
 - Respects channel subscriptions and "not interested" preferences
 - Async with `aiohttp` for parallel processing
 
-### Subtitle Search (`app_subs_search.py`)
+### Subtitle Search (`app_subs_search.py`) — deleted
 
-- `subs_search(terms, l2_code, category, tv_show, limit, sort, context)`
-- Searches video subtitles in MySQL (large text columns)
-- Supports wildcards (`*`, `_`, `?`)
-- Context window around matched terms
+The MySQL ngram backend and its `/subs-search-classic` route were retired
+(`4f114f9`). Subtitle search is served by `utils_content.subs_search()`
+(Postgres trigram / tsvector) through `GET /subs-search`.
 - Results cached for performance
 
 ### YouTube Captions (`app_youtubecaptions.py`)
@@ -279,7 +273,6 @@ Each loader uses thread-local read-only SQLite connections (`threading.local()`)
 |---|---|
 | `utils_language.py` | Language codes, IDs, names, locales, difficulty profiles, continua language detection. Defines `lang_id_by_code()`, `language_name_by_code()`, `LANGUAGES_WITH_CONTENT`, `YOUTUBE_LANGS`. |
 | `utils_db.py` | MySQL connection pooling + `execute_sql()`. Thread-safe. |
-| `utils_directus.py` | Directus REST API wrapper. Video, tag, user data access. |
 | `utils_dictionary.py` | Local SQLite dictionary loaders (5 languages). Thread-local connections. |
 | `utils_csv.py` | CSV reading/writing for subtitle data. |
 | `utils_cache.py` | Disk-based caching for expensive operations. |
@@ -289,9 +282,10 @@ Each loader uses thread-local read-only SQLite connections (`threading.local()`)
 | `utils_video_lemma.py` | Video lemmatization pipeline. |
 | `utils_subscription.py` | Subscription management utilities. |
 | `utils_mailer_lite.py` | Email marketing integration. |
-| `utils_maintenance.py` | Database maintenance utilities. |
-| `utils_scout.py` | Scout/search utilities. |
-| `utils_youtube.py` | YouTube API helpers (`get_info_from_youtube`). |
+| `utils_youtube.py` | YouTube Data API helpers: batched `videos.list`, availability, `video_import_block_reason()`, channel/playlist reference resolution. |
+| `utils_video_import.py` | The admin ingestion pipeline (SPEC-096): single/list/channel/playlist, show assignment, unavailable sweep. |
+| `utils_video_discovery.py` | Candidate discovery from search terms (SPEC-098). |
+| `caption_selection.py` | The single caption-selection rule (ARCH-035). |
 
 ---
 
@@ -445,62 +439,13 @@ The Next.js app currently uses this Python backend. Important notes:
 | `WiktionaryLoader` | Wiktionary-based fallback loader |
 | `get_loader(l2_code)` | Get appropriate loader for language code |
 
-### `utils_directus.py` — Directus REST API wrapper
+### `utils_directus.py` — deleted
 
-| Function | Purpose |
-|---|---|
-| `suffix_has_only_one_l2(suffix)` | Check if video table suffix is unique to one language |
-| `get_items(table, params)` | Fetch items from any Directus collection |
-| `get_tv_show(tv_show_id)` | Get single TV show by ID |
-| `get_talk(talk_id)` | Get single talk by ID |
-| `get_talks(l2_id, extra_params)` | List talks for a language |
-| `get_tv_shows(l2_id, extra_params)` | List TV shows for a language |
-| `get_talks_by_title(title, l2_id)` | Find talk by title |
-| `get_tv_shows_by_title(title, l2_id)` | Find TV show by title |
-| `get_new_videos(l2_id, limit, offset)` | Get videos not in any show/talk |
-| `check_saved(suffix, ids)` | Check which YouTube IDs exist in DB |
-| `count_videos(suffix)` | Count videos in a language shard |
-| `delete_videos(suffix, videos)` | Delete videos by list |
-| `delete_videos_by_youtube_ids(l2_code, youtube_ids, batch_size)` | Batch-delete by YouTube IDs |
-| `nuke_talk(l2_id, talk_id)` | Delete talk + all its videos |
-| `nuke_channel(l2_id, channel_id)` | Delete channel + all its videos |
-| `nuke_tv_show(l2_id, tv_show_id)` | Delete TV show + all its videos |
-| `delete_talk(id)` | Delete single talk |
-| `delete_tv_show(id)` | Delete single TV show |
-| `delete_channel(channel_id, l2_id)` | Delete channel from DB |
-| `saved_videos_in_channels(l2_id, channel_ids, offset)` | Get videos matching channel IDs |
-| `delete_video(suffix, id)` | Delete single video |
-| `save_video(suffix, payload)` | Create video in Directus |
-| `create_talk(payload)` | Create talk entry |
-| `create_tv_show(payload)` | Create TV show entry |
-| `create_talk_or_tv_show_if_not_existing(cover_youtube_id, l2_id, talk, tv_show)` | Create talk/show if not exists |
-| `get_youtube_videos_suffix(l2_id)` | Get video table suffix for language |
-| `save_video_with_transcript(video, transcript, l2_id, tv_show, talk)` | Save video + subtitles |
-| `count_new_videos(l2_id)` | Count new (unclassified) videos |
-| `update_video(suffix, id, payload, verbose)` | Update video fields |
-| `get_videos_in_tv_show(l2_id, tv_show_id, limit, offset, subs_l2, sort)` | Get episodes in a TV show |
-| `get_videos_in_talk(l2_id, talk_id, ...)` | Get videos in a talk |
-| `get_videos_in_channel(l2_id, channel_id, ...)` | Get videos in a channel |
-| `update_talk(id, payload)` | Update talk fields |
-| `update_tv_show(id, payload)` | Update TV show fields |
-| `get_videos(l2_id, page, limit, offset, subs_l2, extra_params, with_count)` | Paginated video list |
-| `get_videos_sql(l2_id, page, limit, offset, subs_l2, with_count)` | Paginated video list via raw SQL |
-| `get_video(l2_id, video_id, subs_l2)` | Get single video by ID |
-| `get_subscription_by_payment_customer_id(payment_customer_id)` | Find subscription by Stripe/PayPal ID |
-| `get_users(params)` | Query Directus users |
-| `get_latest_user_sessions(limit)` | Get recent user sessions |
-| `get_recently_active_users(session_count_limit)` | Get active users with session counts |
-| `get_average_sessions_per_user()` | Average sessions per user |
-| `get_users_by_email(email)` | Find users by email |
-| `get_user_by_email(email)` | Get single user by email |
-| `update_user(user_id, payload)` | Update user fields |
-| `get_admin_and_pro_users()` | Get admin + pro users |
-| `get_users_by_ids(user_ids)` | Get users by list of IDs |
-| `get_user_by_id(user_id)` | Get single user by ID |
-| `get_data_of_users(user_ids)` | Get user_data records |
-| `get_user_viewed_ids(user_id, lang_id)` | Get user's viewed video IDs |
-| `save_user_channel_preference(user_id, channel_id, l2_id, status)` | Save channel subscription/block |
-| `get_tags_list(l2_code, min_count, limit)` | Compile tag frequency list for language |
+The Directus REST wrapper and its per-language `youtube_videos_suffix` shard
+map were removed with the legacy crawler (`cdfce67`). Content reads/writes go
+through `utils_content.py` (Supabase), and the one remaining need — "which
+prefix block does this language live in" — is `utils_user_data.L2_PREFIX_BY_CODE`
+(SPEC-038/061).
 
 ### `utils_env.py` — Environment helpers
 
@@ -554,38 +499,13 @@ The Next.js app currently uses this Python backend. Important notes:
 | `fetch_subscriber_by_email(email)` | Look up subscriber |
 | `assign_mailer_lite_subscriber_to_group(email, group_name)` | Add to group |
 
-### `utils_maintenance.py` — Database maintenance
+### `utils_maintenance.py` — deleted
 
-| Function | Purpose |
-|---|---|
-| `convert_tv_show_to_talk(tv_show_id)` | Change show type to talk |
-| `patch_made_for_kids_in_talks(talks)` | Update made_for_kids flag in talks |
-| `patch_made_for_kids_in_tv_shows(tv_shows)` | Update made_for_kids flag in shows |
-| `patch_made_for_kids_in_all_talks(l2_code)` | Batch update all talks |
-| `patch_made_for_kids_in_all_tv_shows(l2_code)` | Batch update all shows |
-| `add_info_to_talks_by_content_survey(talks)` | Enrich talks with YouTube metadata |
-| `get_videos_with_missing_subs(l2_id, limit, offset)` | Find videos without subtitles |
-| `add_missing_subs(db_video, l2_code)` | Fetch + save missing subtitles |
-| `add_missing_subs_to_all(l2_code)` | Batch fix all missing subs |
-| `search_and_destroy(suffix, offset)` | Find + delete bad videos |
-| `search_and_destroy_all(start, offset)` | Batch search and destroy |
-| `search_and_destroy_lang_mismatch(l2_id, offset)` | Delete videos with wrong language |
-| `add_average_view_count_to_tv_shows(l2_id)` | Update show avg views |
-| `add_average_view_count_to_talks(l2_id)` | Update talk avg views |
-| `add_info_to_tv_shows_by_content_survey(tv_shows)` | Enrich shows with YouTube data |
-| `add_info_to_all_tv_shows_by_content_survey(l2_code, extra_params)` | Batch enrich shows |
-| `add_info_to_all_talks_by_content_survey(l2_code, extra_params)` | Batch enrich talks |
-| `update_video_with_extra_info(suffix, video_id, video_from_youtube, verbose)` | Update video metadata |
-| `add_info_to_videos_and_remove_unfit(l2_id, offset, extra_params)` | Enrich + prune videos |
-| `delete_empty_talks(l2_code)` | Remove talks with no videos |
-| `delete_empty_tv_shows(l2_code)` | Remove shows with no episodes |
-| `add_info_to_videos(l2_id, offset, extra_params, remove_unavailable)` | Enrich videos with YouTube API |
-| `change_cover_of_tv_shows_to_first_episode(tv_shows)` | Set cover to first episode |
-| `change_cover_of_all_tv_shows_to_first_episode(l2_code, extra_params)` | Batch fix covers |
-| `change_cover_of_talks_to_first_episode(talks)` | Set talk cover to first video |
-| `change_cover_of_all_talks_to_first_episode(l2_code, extra_params)` | Batch fix talk covers |
-| `assign_videos_in_channel_to_talk(l2_id, channel_id, talk_id)` | Move channel videos to talk |
-| `mark_unavailable_videos_as_deleted(lang_code)` | Mark deleted/unavailable videos |
+Its jobs were re-homed before deletion (`dc7b212`): missing-subtitle backfill
+is the importer's refresh path (SPEC-096), the content survey and cover
+selection are `utils_content.summarize_show_from_member_videos()`, and the
+unavailable sweep is `POST /admin/videos/sweep-unavailable` — which reports
+before it deletes, unlike `search_and_destroy`.
 
 ### `utils_nlp.py` — NLP / lemmatization pipeline
 
@@ -599,24 +519,11 @@ The Next.js app currently uses this Python backend. Important notes:
 | `mtld_from_text(text, lang_code)` | MTLD from raw text |
 | `lemmatizer_by_lang(iso_639_3)` | Get lemmatizer for language |
 
-### `utils_scout.py` — Content discovery / crawling
+### `utils_scout.py` — deleted
 
-| Function | Purpose |
-|---|---|
-| `check_transcripts_and_save(youtube_ids, l2_code, talk, tv_show, locale_match)` | Check + save transcripts for videos |
-| `expand_show_to_include_all_in_channel(l2_id, l2_code, show_type, show_id)` | Add all channel videos to show |
-| `crawl_talks(l2_id, l2_code, start_from_id, skip_ids)` | Discover videos for talks |
-| `crawl_tv_shows(l2_id, l2_code, start_from_id, skip_ids)` | Discover videos for TV shows |
-| `save_videos_with_subs_in_playlist(l2_code, playlist_id, talk, tv_show, ...)` | Import playlist into talk/show |
-| `expand_videos_into_talks(videos, l2_id, l2_code, exclude_channel_ids)` | Group videos into talks by channel |
-| `expand_new_videos_into_talks(l2_code, l2_id)` | Classify new videos into talks |
-| `expand_videos_into_tv_shows(videos, l2_id, l2_code, exclude_channel_ids)` | Group videos into shows by channel |
-| `save_channel_into_talk(l2_code, channel_id, talk, ...)` | Import channel as talk |
-| `save_channel_into_tv_show(l2_code, channel_id, tv_show, ...)` | Import channel as TV show |
-| `get_google_trends_youtube_search_terms()` | Get trending search terms |
-| `get_translated_search_terms(filename)` | Load translated search terms |
-| `get_search_terms(lang_code)` | Get search terms for language |
-| `save_videos_to_discovery_content_talk(unique_videos, lang_code)` | Save discovery videos |
+The crawler (`save_videos_with_subs_in_playlist` → `check_transcripts_and_save`
+→ `save_video_with_transcript`) was deleted in `cdfce67`; its capabilities are
+the admin import endpoints (SPEC-096) and the discovery endpoint (SPEC-098).
 
 ### `utils_subscription.py` — Subscription management
 
@@ -668,24 +575,17 @@ The Next.js app currently uses this Python backend. Important notes:
 
 | Function | Purpose |
 |---|---|
-| `filter_youtube(v, ...)` | Filter YouTube videos by criteria |
 | `get_info_from_youtube(youtube_ids)` | Get basic video info from YouTube API |
 | `youtube_videos_list(ids, part)` | Low-level `videos.list`; returns `(items, error)` so a quota/auth failure is not mistaken for missing videos |
 | `get_video_details_batched(youtube_ids)` | Batch `videos.list` at the API max of 50; returns `(details, unavailable, error)` |
 | `normalize_video_ids(ids)` | Split input ids into `(valid, invalid)` by the 11-char id shape (one bad id rejects a whole API batch) |
 | `video_import_block_reason(video, force, l2_code)` | `unavailable` / `not_embeddable` / `region_restricted` / `locale_mismatch` / None (`force` bypasses the two soft checks) |
-| `l2_locales(l2_code)` / `video_locale_matches_l2(video, l2_code)` | Locale candidates for an L2, shared by the crawler's `filter_l2_code` and the importer |
-| `list_captions(video_id, l2_code)` | Caption track for an L2 (crawler adapter over the shared rule) — see [ARCH-035](035-caption-selection.md) |
+| `l2_locales(l2_code)` / `video_locale_matches_l2(video, l2_code)` | Locale candidates for an L2 — the single definition, used by the importer's eligibility check |
 | `parse_channel_reference(ref)` / `channel_from_reference(ref)` | Handle / `UC…` id / channel URL → normalized channel (raises `ChannelNotFoundError` / `YouTubeChannelError`) |
 | `parse_playlist_reference(ref)` | Playlist id from an id or any URL with `list=` |
-| `get_full_details_of_videos(video_ids)` | Get full video details |
-| `check_and_filter_youtube(youtube_ids, ...)` | Validate + filter YouTube IDs |
-| `find_videos_with_transcripts(videos, l2_code, callback)` | Filter videos with transcripts |
 | `channel_id_to_playlist_id(channel_id)` | Convert channel ID to uploads playlist |
-| `videos_in_playlist(playlist_id, pageToken)` | List videos in playlist |
-| `all_videos_in_playlist(playlist_id)` | Get all videos in playlist |
-| `check_youtube_channels(channel_ids)` | Validate channels exist |
-| `find_unavailable_videos(youtube_ids)` | Detect deleted/private videos |
+| `videos_in_playlist(playlist_id, pageToken)` | List videos in playlist (the pager the import walk uses) |
+| `search_youtube_by_google_video(...)` | Scraped Google video search — used only by discovery (SPEC-098) |
 | `get_channel_thumbnail(channel_id)` | Get channel thumbnail URL |
 | `get_channel_avatar_bytes(channel_id)` | Download channel avatar |
 
@@ -706,7 +606,11 @@ The Next.js app currently uses this Python backend. Important notes:
 | `transcript_csv(youtube_id, l2_code)` | Download the L2 transcript as a `subs_l2` CSV |
 | `import_video(conn, youtube_id, l2_code, ...)` | Add or refresh one video (allocate id, cache, score, insert) |
 | `import_videos(conn, ids, l2_code, limit, offset)` | Add a list of ids; commits per video, returns results + `next_cursor` |
-| `playlist_video_ids(playlist_id, cursor, limit)` | Page a playlist's video ids with an opaque `(page_token, skip)` cursor |
+| `playlist_video_ids(playlist_id, cursor, limit, match_keywords)` | Page a playlist's video ids with an opaque `(page_token, skip)` cursor; keyword filtering counts toward `limit` without moving the cursor off raw positions |
+| `compile_match_keywords(patterns)` / `title_matches_keywords(title, patterns)` | Case-insensitive regex title filters (the crawler's `match_keywords`) |
+| `_resolve_show` / `_ensure_show` / `_assign_to_show` / `refresh_show_after_walk` | Talk / TV-show resolution, lazy creation from the first imported video, assignment, and the end-of-walk content survey |
+| `sweep_unavailable(conn, l2_code, ..., delete)` | Find stored videos YouTube no longer serves (report-first; `delete` is opt-in) |
+| `transcript_for_import(youtube_id, l2_code)` | Vet a transcript for storage: shared minimum length, and `caption_service_unavailable` vs `no_transcript` |
 | `import_playlist(conn, ref, l2_code, ...)` | Import a playlist (paged) |
 | `import_channel(conn, ref, l2_code, ...)` | Import a channel's uploads playlist (paged) |
 | `YouTubeApiError` / `PlaylistFetchError` / `UnknownLanguageError` | Mapped to 502 / 502 / 400 by the routes |

@@ -37,8 +37,10 @@ and MySQL. That path no longer matches the stack: the content lives in
 Supabase (SPEC-038/039), it never scored difficulty, it created talk / TV-show
 rows as a side effect, and it cannot be called over HTTP.
 
-This spec adds five `is_admin`-gated Flask endpoints that ingest YouTube
-content directly into `public.youtube_videos` through one shared pipeline:
+This spec adds seven `is_admin`-gated Flask endpoints that ingest YouTube
+content directly into `public.youtube_videos` through one shared pipeline
+(the five below, plus `POST /admin/videos/sweep-unavailable` and
+`POST /admin/videos/discover` from [SPEC-098](098-video-discovery.md)):
 
 ```text
 YouTube id / channel / playlist
@@ -48,6 +50,7 @@ YouTube id / channel / playlist
    │                                     views / likes / comments)
    ├─ eligibility                  ── unavailable / not embeddable /
    │                                   region-restricted / locale-mismatch
+   ├─ talk / tv_show               ── assigned, created from the first video
    ├─ caption pipeline             ── subs_l2 CSV (starttime,duration,line)
    ├─ lemmatize_video()            ── lemmatized_subs cache entry (ARCH-034)
    ├─ score_lemmas()               ── lex_div / word_freq / difficulty (ARCH-032)
@@ -69,15 +72,31 @@ YouTube id / channel / playlist
 - As an admin, I want re-running an import to refresh metadata and backfill
   anything missing rather than creating duplicates, so that imports are
   idempotent.
+- As an admin, I want to filter a channel import by title and to stop once a
+  batch adds nothing new, so that re-importing a large channel is cheap.
+- As an admin, I want imported videos filed under a talk or TV show, so the
+  catalog keeps the shape the site's navigation expects.
+- As an admin, I want to find and remove entries whose video has disappeared
+  from YouTube, so the catalog does not advertise dead videos.
+- As an admin, I want to discover new videos from search terms, so the
+  catalog grows without me supplying every id.
 
 ## How It Worked Before (Classic / notebook)
 
-| Legacy piece | What it did | Why it is not reused |
+**The legacy crawler has been deleted** (`cdfce67`, `dc7b212`): its
+capabilities live here now. What it did and where each part went:
+
+| Legacy piece | What it did | Now |
 |---|---|---|
-| `utils_scout.save_videos_with_subs_in_playlist` | Walked a playlist, created talks / TV shows, saved videos | Writes Directus, creates show rows, no difficulty, no HTTP surface |
-| `utils_directus.save_video_with_transcript` | Built the Directus payload and POSTed it | Directus REST; the payload shape is now the Supabase column set |
-| `utils_youtube.check_and_filter_youtube` | Filtered embeddable / age / region / captions | Returned a bare `[]` for both "no videos" and "API error" |
-| `utils_video_lemma.add_lex_div_and_word_freq_to_video` | Scored one video | Wrote `UPDATE youtube_videos…` through the MySQL/Directus SQL helper |
+| `utils_scout.save_videos_with_subs_in_playlist` | Walked a playlist, created talks / TV shows, saved videos | `import_channel()` / `import_playlist()` + the `talk`/`tv_show` parameters |
+| `utils_directus.save_video_with_transcript` | Built the Directus payload and POSTed it | The importer's Supabase insert/update |
+| `utils_youtube.check_and_filter_youtube` | Filtered embeddable / age / region / captions | `video_import_block_reason()` — one rule, and a `[]` no longer doubles as "the API failed" |
+| `utils_video_lemma.add_lex_div_and_word_freq_to_video` | Scored one video | `lemmatize_and_score_video()` (ARCH-032) |
+| `utils_scout.get_search_terms` + `search_youtube_by_google_video_multiple_pages` | Found videos from Google-Trends terms | [SPEC-098](098-video-discovery.md) |
+| `utils_maintenance.search_and_destroy` | Deleted rows whose video had disappeared | `POST /admin/videos/sweep-unavailable` (report-first) |
+| `utils_maintenance.add_info_to_*_by_content_survey` + `change_cover_*_to_first_episode` | Aggregated a show's fields, set its cover | `summarize_show_from_member_videos()`, run when a walk completes |
+| `match_keywords` / `use_circuit_break` in the crawl loop | Title filters, stop when a page adds nothing | The same two parameters on the channel/playlist endpoints |
+| `utils_directus.youtube_videos_suffix` | Per-language MySQL shard suffix | Obsolete: one Supabase table (SPEC-038) |
 
 The reusable parts (the caption pipeline, `lemmatize_video`,
 `mtld_from_lemmas`, `zipf_frequency`, `cache_video_id`) are shared; the
@@ -261,6 +280,8 @@ with a non-admin token, so a new unguarded route fails the suite.
 | `/admin/channels/resolve` | GET | Handle / URL / id → channel id |
 | `/admin/channels/add` | POST | Add (or update) a whole channel's uploads |
 | `/admin/playlists/add` | POST | Add (or update) a whole playlist |
+| `/admin/videos/sweep-unavailable` | POST | Find (and optionally delete) stored videos YouTube no longer serves |
+| `/admin/videos/discover` | POST | Find candidates from search terms — [SPEC-098](098-video-discovery.md) |
 
 ### `POST /admin/videos/add`
 
@@ -331,6 +352,14 @@ Both walk a playlist (`channels/add` uses the channel's `UU…` uploads
 playlist) and run each video through the same pipeline, then add
 `"channel"` (channels only) and `"playlist_id"` to the batch response shape.
 
+**Walk options** (both endpoints, and `talk`/`tv_show` on `add-batch` too):
+
+| Field | Behaviour |
+|---|---|
+| `match_keywords` | list (or comma-separated string) of case-insensitive regexes; only videos whose *title* matches one are imported. Filtering happens before `limit` is counted, so a filtered import still returns a full page, and the cursor counts raw playlist positions so it can neither skip nor repeat entries. An invalid pattern is a `400`. |
+| `use_circuit_break` | stop paging when a call adds nothing new — the guard against re-walking an already-imported channel. Reported as `circuit_broken: true` so an early stop is never mistaken for the end of the playlist (`next_cursor: null`). |
+| `talk` / `tv_show` | an existing id, or a title matched case-insensitively in this language and **created from the first imported video** when missing. A video already belonging to a talk or show keeps it. When a walk reaches the end of the playlist, the show's `avg_views`, top-20 tags and most-common `made_for_kids`/`channel_id`/`category`/`locale` are recomputed from its videos, and its cover is set only if it has none (a curated cover survives). An unfinished walk deliberately does not summarise a partial show. |
+
 ## Paging contract
 
 A whole channel or playlist can be thousands of videos, each needing a
@@ -370,17 +399,20 @@ just loop over.
 
 | File | Role |
 |---|---|
-| `zerotohero-python-server/utils_video_import.py` | The ingestion pipeline (single, list, channel, playlist) |
-| `zerotohero-python-server/routes/admin.py` | The five endpoints |
-| `zerotohero-python-server/utils_youtube.py` | Batched `videos.list` + availability, eligibility, channel/playlist reference parsing and resolution |
+| `zerotohero-python-server/utils_video_import.py` | The ingestion pipeline (single, list, channel, playlist), show assignment, the unavailable sweep |
+| `zerotohero-python-server/utils_video_discovery.py` | Search terms, scraping, vetting — [SPEC-098](098-video-discovery.md) |
+| `zerotohero-python-server/routes/admin.py` | The seven endpoints |
+| `zerotohero-python-server/utils_youtube.py` | Batched `videos.list` + availability, `video_import_block_reason()`, `l2_locales()`, channel/playlist reference parsing and resolution |
 | `zerotohero-python-server/utils_video_lemma.py` | `compute_lex_div` / `compute_word_freq` / `score_lemmas` / `lemmatize_and_score_video`; cache-key translation in `get_lemmas_from_video` |
-| `zerotohero-python-server/utils_content.py` | `next_video_id()`, `get_videos_by_youtube_ids()` |
-| `zerotohero-python-server/app_youtubecaptions.py` | Transcript download (unchanged, now shared by the import path) |
-| `zerotohero-python-server/test_admin_video_import.py` | Unit + route tests (39 cases) |
+| `zerotohero-python-server/utils_content.py` | `next_video_id()`, `get_videos_by_youtube_ids()`, show lookup + survey, sweep paging |
+| `zerotohero-python-server/caption_selection.py` | The caption rule the transcript step uses (ARCH-035) |
+| `zerotohero-python-server/app_youtubecaptions.py` | Transcript download, shared with every other caption consumer |
+| `zerotohero-python-server/test_admin_video_import.py` | Importer unit + route tests (64 cases) |
+| `zerotohero-python-server/test_video_discovery.py` | Discovery tests (12 cases) |
 
 ## Testing
 
-`python3.10 -m pytest test_admin_video_import.py` covers:
+`python3.10 -m pytest test_admin_video_import.py test_video_discovery.py` covers:
 
 - eligibility matrix (unavailable / not embeddable / region-restricted /
   locale-mismatch, and `force` overriding the two soft checks),
@@ -389,6 +421,12 @@ just loop over.
   the arithmetic difficulty backfill that needs no transcript,
 - per-video failure isolation and per-page cursoring,
 - playlist `(page_token, skip)` paging and API-error propagation,
+- keyword filtering (including cursor honesty across a filtered page) and the
+  circuit break,
+- talk / TV-show resolution, lazy creation, assignment rules and the
+  end-of-walk aggregation,
+- the unavailable sweep (report-only default, opt-in delete, no deletion on an
+  API failure, keyset cursor),
 - route-level auth (403), validation (400), status codes (200/201), and
   error mapping (404/502).
 
