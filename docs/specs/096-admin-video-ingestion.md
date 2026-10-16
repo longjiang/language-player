@@ -115,13 +115,23 @@ the entire batch with `400 invalid`.
 | `region_restricted` | `contentDetails.regionRestriction` is present (either `blocked` or `allowed`) | **yes** |
 | `locale_mismatch` | `snippet.defaultAudioLanguage` is present and outside the target language's locales | **yes** |
 | `no_transcript` | no transcript in the L2 or one of its locales | no |
+| `transcript_too_short` | a transcript exists but has fewer than `MIN_TRANSCRIPT_LINES` (4) lines | no |
+| `caption_service_unavailable` | the caption lookup itself failed (IP block, rate limit) | no |
 
 `force` bypasses the two *soft* checks; it never bypasses `unavailable` or
 `not_embeddable`, which would store a video the player cannot show at all.
 
 The locale check uses `utils_youtube.l2_locales()` — the same helper
 `filter_youtube(filter_l2_code=…)` uses — so the crawler and the importer
-agree on what "in this language" means. A video that declares **no** audio
+agree on what "in this language" means.
+
+`transcript_too_short` applies the shared ingestion minimum
+(`caption_selection.MIN_TRANSCRIPT_LINES`, the same 4-line rule the legacy
+crawler used) and reports the actual line count.
+`caption_service_unavailable` is deliberately distinct from
+`no_transcript`: a blocked or rate-limited lookup must not be recorded as a
+video that has no captions. The batch summary counts both separately, and the
+failure message is passed through on the result. A video that declares **no** audio
 language is accepted: YouTube only sets `defaultAudioLanguage` for some
 uploads, so the check can reject only a video that positively declares a
 different language. It runs before the transcript download, so a rejected
