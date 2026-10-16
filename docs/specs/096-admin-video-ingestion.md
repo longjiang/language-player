@@ -353,6 +353,12 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   every existing row; nothing parses it at write time.
 - **Transcript downloads are serial** within a page. `limit` keeps a call
   inside the request timeout rather than relying on concurrency.
+- **A caption-service failure looks like "no transcript".** When YouTube
+  blocks or rate-limits the caption request (observed live on 2026-10-16:
+  `HTTPSConnectionPool … /sorry/index … too many 429 error responses`), the
+  caption pipeline returns no lines and the video is reported as
+  `no_transcript`. Re-running the import later is safe — existing rows are
+  refreshed and rows that were skipped for a missing transcript are retried.
 - **A new video added under a second language gets a second row** (ids are
   per-language-prefixed and dedupe is per `(youtube_id, l2)`), which is the
   documented behaviour: "already exists in the DB under the same l2".
