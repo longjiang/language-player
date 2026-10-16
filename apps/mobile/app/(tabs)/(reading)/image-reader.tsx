@@ -97,6 +97,25 @@ async function entryFromAsset(asset: ImagePicker.ImagePickerAsset): Promise<Imag
  *  dense page and the production front end gives up around 100s. */
 const OCR_TIMEOUT_MS = 90_000;
 
+/** Preparing the image (temp file + native re-encode) is a separate step from
+ *  the request, so the OCR timeout does not cover it: a manipulator that never
+ *  settles would leave the image "converting" forever. Bound it. */
+const DOWNSCALE_TIMEOUT_MS = 30_000;
+
+/** `downscaleImage` with a hard deadline (see DOWNSCALE_TIMEOUT_MS). */
+function downscaleWithTimeout(dataUrl: string, ms: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Timed out preparing the image after ${Math.round(ms / 1000)}s`)),
+      ms,
+    );
+    downscaleImage(dataUrl).then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (err) => { clearTimeout(timer); reject(err); },
+    );
+  });
+}
+
 /** How long the "Select images" sheet is given to finish dismissing before a
  *  picker is presented. iOS drops a presentation that starts while another one
  *  is still in flight, which shows up as "tapping Photo Library / Choose Files
@@ -169,7 +188,7 @@ export default function ImageReaderScreen() {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
     try {
-      const payload = await downscaleImage(entry.dataUrl);
+      const payload = await downscaleWithTimeout(entry.dataUrl, DOWNSCALE_TIMEOUT_MS);
       log(`[image-reader] OCR payload bytes=${payload.length}`);
       const res = await fetch(url, {
         method: 'POST',
@@ -233,16 +252,18 @@ export default function ImageReaderScreen() {
     if (entry && !entry.md && !entry.converting) void runOcr(id);
   }, [runOcr]);
 
-  /** Append entries, select the first new one, and OCR it immediately. */
-  const append = useCallback((entries: ImageEntry[]) => {
+  /** Append entries, select the first new one, and OCR it immediately.
+   *  `failedCount` counts the picked files that could not be read, so the reader
+   *  says how many were skipped instead of appearing to ignore the selection. */
+  const append = useCallback((entries: ImageEntry[], failedCount = 0) => {
+    setNotice(failedCount > 0 ? t('msg.failed_to_load_images') : null);
     if (entries.length === 0) return;
-    setNotice(null);
     setImages((prev) => [...prev, ...entries]);
     const first = entries[0]!;
     setCurrentId(first.id);
     // Hand over the entry itself — see `runOcr`'s `known` argument.
     void runOcr(first.id, first);
-  }, [runOcr]);
+  }, [runOcr, t]);
 
   /** Open image files with a document picker. */
   const addFromPicker = useCallback(async () => {
@@ -257,6 +278,7 @@ export default function ImageReaderScreen() {
     log('[image-reader] choose files result', { canceled: pick.canceled, assets: pick.assets?.length ?? 0 });
     if (pick.canceled || !pick.assets?.length) return;
     const entries: ImageEntry[] = [];
+    let failedReads = 0;
     for (const asset of pick.assets) {
       try {
         const base64 = await FileSystem.readAsStringAsync(asset.uri, {
@@ -274,10 +296,13 @@ export default function ImageReaderScreen() {
           converting: false,
         });
       } catch (err) {
+        // A picked file that can no longer be read (a purged cache copy, a
+        // vanished iCloud placeholder) must be counted, not just logged.
+        failedReads++;
         logwarn('[image-reader] picker read failed:', (err as Error)?.message ?? err);
       }
     }
-    append(entries);
+    append(entries, failedReads);
   }, [append]);
 
   /** Pick images from the photo library (camera roll). No permission prompt is
@@ -297,11 +322,23 @@ export default function ImageReaderScreen() {
       // dropped its presentation), not that the user backed out.
       log('[image-reader] photo library result', { canceled: res.canceled, assets: res.assets?.length ?? 0 });
       if (res.canceled || !res.assets?.length) return;
-      append(await Promise.all(res.assets.map(entryFromAsset)));
+      // allSettled: one asset that cannot be read (its temp file was already
+      // reclaimed) used to reject the whole batch, so choosing five photos could
+      // add none of them, with nothing on screen.
+      const results = await Promise.allSettled(res.assets.map(entryFromAsset));
+      const entries = results
+        .filter((r): r is PromiseFulfilledResult<ImageEntry> => r.status === 'fulfilled')
+        .map((r) => r.value);
+      const failedReads = results.length - entries.length;
+      if (failedReads > 0) {
+        logwarn(`[image-reader] ${failedReads} of ${results.length} library image(s) could not be read`);
+      }
+      append(entries, failedReads);
     } catch (err) {
       logwarn('[image-reader] photo library failed:', (err as Error)?.message ?? err);
+      setNotice(t('msg.failed_to_load_images'));
     }
-  }, [append]);
+  }, [append, t]);
 
   /** Photograph a page with the camera. Needs NSCameraUsageDescription, which
    *  the expo-image-picker config plugin adds (app.config.js). */
@@ -316,9 +353,17 @@ export default function ImageReaderScreen() {
       const res = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9 });
       log('[image-reader] camera result', { canceled: res.canceled, assets: res.assets?.length ?? 0 });
       if (res.canceled || !res.assets?.length) return;
-      append(await Promise.all(res.assets.map(entryFromAsset)));
+      try {
+        append([await entryFromAsset(res.assets[0]!)]);
+      } catch (err) {
+        // The captured photo's file could not be read — say so; silently adding
+        // nothing looks like the camera did not work.
+        logwarn('[image-reader] captured photo could not be read:', (err as Error)?.message ?? err);
+        setNotice(t('msg.failed_to_load_images'));
+      }
     } catch (err) {
       logwarn('[image-reader] camera failed:', (err as Error)?.message ?? err);
+      setNotice(t('msg.failed_to_load_images'));
     }
   }, [append, t]);
 
