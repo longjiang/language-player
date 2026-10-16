@@ -33,7 +33,8 @@ management and subscription fixes). The options:
    `src/proxy.ts` protects all routes; every Flask admin endpoint
    independently calls `require_admin()` on the Supabase JWT claim.
 3. Add new gated Flask endpoints in `routes/admin_users.py` rather than
-   reusing Classic's ungated subscription endpoints.
+   reusing Classic's subscription endpoints, which were ungated at the time
+   (they were gated later — see the last Consequence).
 4. The app listens on port 3100 locally and is covered by Turbo typecheck
    and `build:check`.
 
@@ -49,8 +50,14 @@ management and subscription fixes). The options:
   missing initially and caused 401/CORS failures that looked identical.
 - Some shared setup is duplicated (login page, auth tokens, UI primitives),
    but UI components are intentionally not shared across apps (ADR-0003).
-- **Follow-up**: the legacy `/admin/update_or_add_subscription` and
-  `/admin/check_user_subscription` endpoints in
-  `zerotohero-python-server/routes/subscriptions.py` remain ungated for
-  Classic compatibility. They should be gated with `require_admin()` or
-  removed when Classic is archived (Phase 8).
+- **Follow-up (closed 2026-08-20)**: the legacy
+  `/admin/update_or_add_subscription` and `/admin/check_user_subscription`
+  endpoints in `zerotohero-python-server/routes/subscriptions.py` were ungated
+  when this ADR was written. Commit `73d6bd6` ("security: route backend
+  database access through RLS role") added `require_admin()` to both, so they
+  now return 401 without a token and 403 for a non-admin; Classic is
+  unaffected because it calls them through the authenticated `$axios`
+  instance. They sit on `subscriptions_bp`, so the blueprint-level guard in
+  `routes/admin.py` does **not** cover them — they are gated per route, and
+  `test_app.py::test_subscription_admin_endpoints_reject_non_admins` pins
+  that.

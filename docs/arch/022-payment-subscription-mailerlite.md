@@ -390,7 +390,7 @@ The Stripe subscription continues until the paid period ends; the local row stop
 
 ### Admin management
 
-- **Legacy Classic admin** (`zerotohero-nuxt/pages/admin/manage-subscriptions.vue`) uses the ungated `POST /admin/update_or_add_subscription` and `GET /admin/check_user_subscription?email=` endpoints.
+- **Legacy Classic admin** (`zerotohero-nuxt/pages/admin/manage-subscriptions.vue`) uses `POST /admin/update_or_add_subscription` and `GET /admin/check_user_subscription?email=`. Both require an admin JWT (`require_admin()`, added in `73d6bd6`); Classic works because it calls them through its authenticated `$axios` instance.
 - **New admin console** (`apps/admin`) uses the JWT-gated `routes/admin_users.py` endpoints: grant (`POST /admin/users/<user_id>/subscriptions`), change (`PATCH /admin/subscriptions/<id>`), and remove (`DELETE /admin/subscriptions/<id>`). Remove calls `delete_subscription`, which moves the MailerLite subscriber to `disengaged`.
 
 ---
@@ -599,7 +599,7 @@ Ways to mitigate:
   validation; Classic keeps its StoreKit 1 receipt path.
 - **Renewal recomputes expiry from payment time** (`now + 32/367 days`) rather than stacking onto the previous expiry.
 - **MailerLite creation is limited to email verification**, so group assignment for pre-existing subscribers depends on them already being in MailerLite (SPEC-054 B66).
-- **Legacy admin subscription endpoints are still ungated** server-side for Classic compatibility; gating/retiring them is tracked in ADR-0032.
+- **Legacy admin subscription endpoints are admin-gated** server-side (`require_admin()`, `73d6bd6`, 2026-08-20). ADR-0032's original note that they were ungated is superseded.
 
 ---
 
