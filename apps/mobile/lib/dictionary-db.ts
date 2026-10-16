@@ -482,14 +482,27 @@ export async function getDictMetaForL2(l2: string): Promise<DictMeta | null> {
     l2Db = null;
   }
   if (l2Db) {
-    const fileMeta = await l2Db.getFirstAsync<DictMeta>(
-      'SELECT l2, downloaded_at, entry_count, size_bytes, version FROM dict_meta WHERE l2 = ?',
-      [l2],
-    );
-    if (fileMeta) return fileMeta;
+    try {
+      const fileMeta = await l2Db.getFirstAsync<DictMeta>(
+        'SELECT l2, downloaded_at, entry_count, size_bytes, version FROM dict_meta WHERE l2 = ?',
+        [l2],
+      );
+      if (fileMeta) return fileMeta;
+    } catch (e) {
+      // A precompiled file that opens but cannot be queried: fall back to the
+      // central table instead of rejecting (the download list calls this).
+      logwarn('[DictDB] precompiled dict_meta query failed — l2:', l2, 'error:', (e as Error)?.message ?? e);
+    }
   }
-  const db = await openDictionaryDB();
-  return getDictMeta(db, l2);
+  // The central DB may itself be unopenable: report "no meta" rather than
+  // rejecting into the offline-dictionaries screen.
+  try {
+    const db = await openDictionaryDB();
+    return await getDictMeta(db, l2);
+  } catch (e) {
+    logwarn('[DictDB] dict_meta lookup skipped — the central DB is unavailable — l2:', l2, 'error:', (e as Error)?.message ?? e);
+    return null;
+  }
 }
 
 // ── Table helpers ─────────────────────────────
@@ -771,14 +784,23 @@ export async function lookupOfflineByL2(
     log('[DictDB] no precompiled file — l2:', l2, 'file exists:', file.exists, '— trying legacy central table');
   }
 
-  const db = await openDictionaryDB();
-  if (!(await hasLegacyDictTable(db, l2))) {
-    log('[DictDB] legacy lookup skipped — no legacy table for l2:', l2);
+  // A central DB that cannot be opened (a corrupt/unreadable dictionary.db) or
+  // queried means "no legacy result", not a failed lookup: the callers are the
+  // dictionary popup's `.then(r => r ?? [])` chains, which dropped the rejection
+  // and rendered nothing at all.
+  try {
+    const db = await openDictionaryDB();
+    if (!(await hasLegacyDictTable(db, l2))) {
+      log('[DictDB] legacy lookup skipped — no legacy table for l2:', l2);
+      return null;
+    }
+    const legacy = await lookupOffline(db, text, l2, byDefinition, exactOnly);
+    log('[DictDB] legacy result — l2:', l2, 'text:', text, 'rows:', legacy?.length ?? 0);
+    return legacy;
+  } catch (e) {
+    logwarn('[DictDB] legacy lookup skipped — the central DB is unavailable — l2:', l2, 'text:', text, 'error:', (e as Error)?.message ?? e);
     return null;
   }
-  const legacy = await lookupOffline(db, text, l2, byDefinition, exactOnly);
-  log('[DictDB] legacy result — l2:', l2, 'text:', text, 'rows:', legacy?.length ?? 0);
-  return legacy;
 }
 
 /**
@@ -979,7 +1001,13 @@ export async function autocompleteOffline(
     }
   }
 
-  const db = await openDictionaryDB();
+  let db: SQLite.SQLiteDatabase;
+  try {
+    db = await openDictionaryDB();
+  } catch (e) {
+    logwarn('[DictDB] autocomplete skipped — the central DB is unavailable — l2:', l2, 'error:', (e as Error)?.message ?? e);
+    return [];
+  }
   try {
     const rows = await db.getAllAsync<AutocompleteRow>(querySql, [
       like,
@@ -1088,12 +1116,12 @@ export async function getOfflineEntryById(
     }
   }
 
-  const db = await openDictionaryDB();
-  if (!(await hasLegacyDictTable(db, l2))) {
-    log('[DictDB] legacy entry lookup skipped — no legacy table for l2:', l2);
-    return null;
-  }
   try {
+    const db = await openDictionaryDB();
+    if (!(await hasLegacyDictTable(db, l2))) {
+      log('[DictDB] legacy entry lookup skipped — no legacy table for l2:', l2);
+      return null;
+    }
     return await query(db);
   } catch (e) {
     logwarn('[DictDB] ❌ legacy offline entry lookup failed — l2:', l2, 'entryId:', entryId, 'error:', (e as Error)?.message ?? e);
