@@ -16,9 +16,7 @@ import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
 import { isUnreadableRecordError } from '@/lib/epub-store';
 import { epubStorageErr } from '@/lib/epub-log';
 import { downscaleImage } from '@/lib/downscale-image';
-import {
-  ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose,
-} from 'lucide-react';
+import { ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose, TriangleAlert } from 'lucide-react';
 
 /** Accepted image MIME types (mirrors msg.image_reader_supported). */
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp';
@@ -401,7 +399,6 @@ export default function ImageReaderPage() {
           {t('action.paste')}
         </button>
       </div>
-      {notice && <p className="text-xs text-destructive">{notice}</p>}
     </div>
   );
 
@@ -472,7 +469,19 @@ export default function ImageReaderPage() {
       </div>
 
       {notice && (
-        <p className="mx-auto mb-3 w-full max-w-7xl px-4 text-xs text-destructive">{notice}</p>
+        <div className="mx-auto mb-3 flex w-full max-w-7xl items-center gap-2 px-4">
+          <TriangleAlert className="h-3.5 w-3.5 flex-shrink-0 text-destructive" />
+          <p className="min-w-0 flex-1 text-xs text-destructive">{notice}</p>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label={t('action.close')}
+            title={t('action.close')}
+            className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
 
       {!loaded ? (

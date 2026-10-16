@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useT } from '@/hooks/use-t';
+import { logwarn } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   Upload, FileText,
@@ -165,9 +166,20 @@ export function EpubUpload({
     // through the normal file handler. (Previously a multi-file `.epub` drop
     // was misrouted here and rejected as "not an epub".)
     if (dropHasDirectory(e.dataTransfer.items)) {
-      const folderFiles = await folderFilesFromDrop(e.dataTransfer.items);
-      if (folderFiles && folderFiles.length > 0) {
-        await importFolderFiles(folderFiles);
+      // Reading a dropped directory can reject (a file was moved/deleted while
+      // the drop was in flight, a permission error): report it in the import
+      // dialog instead of leaving an unhandled rejection in the drop handler.
+      try {
+        const folderFiles = await folderFilesFromDrop(e.dataTransfer.items);
+        if (folderFiles && folderFiles.length > 0) {
+          await importFolderFiles(folderFiles);
+        }
+      } catch (err) {
+        logwarn(`EPUB drop: the dropped folder could not be read — ${(err as Error)?.message ?? err}`);
+        onFilesProcessed({
+          files: [],
+          failures: [{ fileName: 'folder', fileSize: 0, reasonKey: 'msg.epub_file_unreadable' }],
+        });
       }
       return;
     }

@@ -22,9 +22,22 @@ const USER_LOCAL_KEYS = [
 // wipe so the cause (logout wipe, dead-refresh-token auto sign-out, etc.) is
 // still visible in the next boot's "[settings] recent diagnostics" log.
 const diagStorage: KeyValueStorage = {
-  getItem: (key) => Promise.resolve(localStorage.getItem(key)),
+  // A throwing `localStorage` (a hardened browser, a full quota) must not escape
+  // as a rejected promise from a synchronous adapter: diagnostics are a
+  // convenience, and they used to break `pushSettingsDiag` / the boot path.
+  getItem: (key) => {
+    try {
+      return Promise.resolve(localStorage.getItem(key));
+    } catch {
+      return Promise.resolve(null);
+    }
+  },
   setItem: (key, value) => {
-    localStorage.setItem(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* best effort */
+    }
     return Promise.resolve();
   },
 };

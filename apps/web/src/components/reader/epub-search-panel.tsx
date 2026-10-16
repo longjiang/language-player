@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '@/hooks/use-t';
+import { logwarn } from '@/lib/logger';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { EpubSearchResult } from '@/hooks/use-epub';
 
@@ -75,6 +76,11 @@ export function EpubSearchPanel({ onSearch, onNavigate, initialQuery, queryNonce
         try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
         return next;
       });
+    } catch (err) {
+      // The search itself failed (e.g. the book's index cannot be read). Leave
+      // `results` null so the panel returns to its neutral hint — claiming "no
+      // results" for a failed search would be a lie — and never a stuck spinner.
+      logwarn(`EPUB search failed for "${q}": ${(err as Error)?.message ?? err}`);
     } finally {
       setSearching(false);
     }

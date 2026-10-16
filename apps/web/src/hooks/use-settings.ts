@@ -29,9 +29,22 @@ const SYNC_DEBOUNCE_MS = 3000;
 
 /** localStorage adapter for the settings diagnostics ring buffer. */
 const diagStorage: KeyValueStorage = {
-  getItem: (key) => Promise.resolve(localStorage.getItem(key)),
+  // A throwing `localStorage` (a hardened browser, a full quota) must not escape
+  // as a rejected promise from a synchronous adapter: diagnostics are a
+  // convenience, and they used to break `pushSettingsDiag` / the boot path.
+  getItem: (key) => {
+    try {
+      return Promise.resolve(localStorage.getItem(key));
+    } catch {
+      return Promise.resolve(null);
+    }
+  },
   setItem: (key, value) => {
-    localStorage.setItem(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* best effort */
+    }
     return Promise.resolve();
   },
 };

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useT } from '@/hooks/use-t';
+import { logwarn } from '@/lib/logger';
 import { findTextMatches } from '@langplayer/utils';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { ReaderBlock } from '@/lib/parse-markdown';
@@ -128,15 +129,21 @@ export function ReaderSearchPanel({ blocks, onNavigate, initialQuery, queryNonce
     setSearching(true);
     setResults(null);
     // Search over the in-memory block stream — no network round-trip, so the
-    // result renders synchronously after a single microtask.
-    await Promise.resolve();
-    setResults(searchReaderBlocks(blocks, q));
-    setRecent(prev => {
-      const next = [q, ...prev.filter(r => r.toLowerCase() !== q.toLowerCase())].slice(0, MAX_RECENT);
-      try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-      return next;
-    });
-    setSearching(false);
+    // result renders synchronously after a single microtask. Guarded so a throw
+    // cannot leave the panel spinning forever.
+    try {
+      await Promise.resolve();
+      setResults(searchReaderBlocks(blocks, q));
+      setRecent(prev => {
+        const next = [q, ...prev.filter(r => r.toLowerCase() !== q.toLowerCase())].slice(0, MAX_RECENT);
+        try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+        return next;
+      });
+    } catch (err) {
+      logwarn(`reader search failed for "${q}": ${(err as Error)?.message ?? err}`);
+    } finally {
+      setSearching(false);
+    }
   }, [blocks]);
 
   const clearRecent = useCallback(() => {
