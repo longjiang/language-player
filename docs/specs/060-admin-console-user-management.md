@@ -219,4 +219,6 @@ self-demotion so the last admin can't lock themselves out.
   — content management shipped as [SPEC-099](099-admin-content-management.md);
   analytics shipped as [SPEC-100](100-admin-signup-analytics.md);
   transactions shipped as [SPEC-101](101-admin-transactions.md);
+  affiliates and coupons are proposed in [SPEC-102](102-affiliates-and-coupons.md)
+  (draft; requires an ADR-0032 amendment for the affiliate login surface);
   payment logs and account actions are still open.

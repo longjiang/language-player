@@ -39,6 +39,7 @@ docs/
 | 099 | [Admin Console — Content Management](specs/099-admin-content-management.md) | 10 | ✅ Complete |
 | 100 | [Admin Console — Analytics](specs/100-admin-signup-analytics.md) | 10 | ✅ Complete |
 | 101 | [Admin Console — Transactions](specs/101-admin-transactions.md) | 10 | ✅ Complete |
+| 102 | [Affiliates and Coupon Codes](specs/102-affiliates-and-coupons.md) | 10 | 📝 Draft |
 
 ## ADRs
 
