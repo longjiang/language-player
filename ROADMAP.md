@@ -159,6 +159,10 @@
 - ✅ Signup analytics — new accounts per day for the last 7/30 days, this
   month, this year, and all time since the Supabase cutover, with imported
   Directus accounts excluded (SPEC-100)
+- ✅ Transactions — estimated subscription sales with purchaser/plan/date
+  filters, search, sortable date/price columns, pagination, and CSV export.
+  Prices come from the current USD price list plus historical sale windows
+  because the database stores no charged amount (SPEC-101)
 - ⬜ Payment log viewer and account actions (delete / reset / demote admin)
 
 ## Known Issues
@@ -178,6 +182,6 @@
 
 ## Currently Working On
 - Phase 7: Mobile Integration — porting all Next.js pages to React Native
-- Phase 10: Admin Console — user management, content management, and signup
-  analytics shipped (SPEC-060, SPEC-099, SPEC-100); payment log viewer and
-  account actions are next
+- Phase 10: Admin Console — user management, content management, signup
+  analytics, and transactions shipped (SPEC-060, SPEC-099, SPEC-100,
+  SPEC-101); payment log viewer and account actions are next
