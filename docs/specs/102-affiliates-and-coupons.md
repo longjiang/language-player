@@ -71,8 +71,8 @@ to Language Player.
 
 Affiliate application forms, product-specific commission restrictions,
 promotional-material uploads, automated PayPal Payouts, tax-form collection,
-mobile deferred deep links, subscription (monthly/annual) coupons, CNY/IAP
-commissions, and Classic/Nuxt integration. Some are listed in the later phases
+mobile deferred deep links, affiliate invitation emails, subscription
+(monthly/annual) coupons, CNY/IAP commissions, and Classic/Nuxt integration. Some are listed in the later phases
 and open questions; none should block the v1 build.
 
 ## What Teachable Actually Does (research notes)
@@ -101,9 +101,10 @@ Sources are linked at the end of this section.
   Resources, Resources (promotional materials), Statements, Settings.
   Statements are monthly; the supplied screenshots show `Pending` / `Paid`
   status and a one-month payout delay.
-- Verified Teachable behavior says payouts are currently **manual** for
-  school owners; automated payouts are "coming soon". This spec uses manual
-  PayPal payouts.
+- Verified Teachable behavior: [Manage affiliate and author earnings](https://support.teachable.com/en/articles/15628287-manage-affiliate-and-author-earnings)
+  says school owners are responsible for paying affiliates manually, and that
+  automated affiliate payouts and tax-form collection are "coming soon". This
+  spec uses manual PayPal payouts and no minimum threshold.
 
 ### Coupons
 
@@ -248,12 +249,12 @@ behavior the product owner described and the FAQ we must reproduce.
 | Refunds | Reverse commission; negative adjustment if already paid. |
 | Payout method | **Manual PayPal mark-paid** in v1. No PayPal Payouts API. |
 | Payout timing | Monthly, one-month delay; statement available ~20 days after month end; paid on the first business day of the following month. |
-| Minimum payout | **$25**, carried forward. This matches Teachable's published affiliate-program threshold; Teachable's school-owner affiliate feature itself does not publish a minimum. |
+| Minimum payout | **None.** Every positive statement is payable; no balance is held back. |
 | Coupon scope | **Lifetime Pro, USD only.** No monthly/annual coupons in v1. |
 | Coupon stacking | One coupon; no stacking with a sale or another coupon. |
 | Coupon editing | Code/discount immutable; archive and recreate. |
 | Affiliate portal language | English in v1 (same as admin app). |
-| Affiliate invitation email | **Yes** — branded email using the same template styling and SMTP/transactional path as verification email. |
+| Affiliate invitation email | **Not in v1.** The admin tells the affiliate out-of-band; onboarding starts on first login. Email is a deferred follow-up. |
 | Tax forms | Out of scope; admin responsibility. |
 | Affiliate-surface PII | **No purchaser email/payment id.** Admins use the existing admin transactions screen. |
 | Cookie consent | Follow Teachable's model: classify `lp_aff` as an essential/functional performance cookie, disclose it in the privacy/cookie policy, and use consent only for non-essential analytics/advertising. Legal review required; see [Cookie consent](#cookie-consent). |
@@ -279,7 +280,6 @@ create table public.affiliates (
   active boolean not null default true,
   paypal_email text,
   onboarded_at timestamptz,
-  invited_at timestamptz,
   created_by uuid references auth.users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -632,6 +632,19 @@ essential, not something the banner can disable. See
 This is a product/legal decision, not a reason to omit the cookie disclosure.
 The spec assumes the Teachable-style essential classification with legal review.
 
+**Launch gate:** implementation can proceed behind a feature flag, but `lp_aff`
+must not be enabled in production until counsel has reviewed and approved the
+classification and the privacy-policy text. Checklist for that review:
+
+- privacy/cookie policy names `lp_aff`, its purpose, first-party status, and
+  60-day retention;
+- no advertising/profiling use or cross-site tracking;
+- a visible cookie notice/banner explains essential vs non-essential cookies;
+- the consent tool can actually block `lp_aff` if counsel classifies it as
+  non-essential;
+- a deletion/clear-cookie path is documented;
+- EU/UK and California (CCPA/CPRA) applicability is assessed.
+
 ## Commission and Payment Ledger
 
 ### When a payment event is created
@@ -744,12 +757,9 @@ the repo today; the spec should not assume one.
 - Admin must set `affiliates.paypal_email` before marking paid; validate with a
   basic email format check.
 - Manual payout only; record `payment_reference` for audit.
-- **Minimum payout: $25.** A statement below $25 remains `pending` and its
-  balance carries into the next statement. Rationale: it matches the only
-  published Teachable affiliate-program threshold and avoids tiny PayPal fees.
-  Teachable's **school-owner** affiliate feature itself does not publish a
-  platform-enforced minimum; owners pay manually. This is a deliberate choice,
-  not a claim that the school feature enforces $25.
+- **No minimum payout threshold.** Every positive statement is payable; there
+  is no carry-forward holdback. Teachable's school-owner feature also does not
+  publish a platform-enforced minimum.
 - Tax forms (W-9/W-8BEN/1099) are out of scope; the admin is responsible for
   compliance. Document this in the affiliate FAQ/terms.
 
@@ -761,9 +771,10 @@ the repo today; the spec should not assume one.
   records the PayPal transaction id and marks the statement `paid`.
 - No PayPal API credentials, funding setup, webhook handling, or payout
   reconciliation code.
-- Matches Teachable's current **school-owner** affiliate feature: Teachable's
-  docs say school owners are responsible for paying affiliates manually and
-  that automated payouts are "coming soon."
+- Matches Teachable's current **school-owner** affiliate feature: [Manage
+  affiliate and author earnings](https://support.teachable.com/en/articles/15628287-manage-affiliate-and-author-earnings)
+  says school owners are responsible for paying affiliates manually and that
+  automated affiliate payouts and tax-form collection are "coming soon."
 - Cost: admin time, manual errors, no automatic retry/status sync.
 
 **PayPal Payouts API (future)**
@@ -777,9 +788,9 @@ the repo today; the spec should not assume one.
   not needed for the first release and adds operational/compliance surface.
 
 Teachable's **own** affiliate program (promoting Teachable, a different program
-from the school-owner feature in the screenshots) is listed by a third-party
-directory with PayPal, a $25 minimum, and Net-30 terms. This spec uses the
-manual model for the school-owner feature, with a $25 minimum for practicality.
+from the school-owner feature in the screenshots) has separate published terms;
+they do not govern this feature. This spec uses the manual model for the
+school-owner feature, with no minimum threshold.
 
 ## Admin UI
 
@@ -788,8 +799,9 @@ manual model for the school-owner feature, with a $25 minimum for practicality.
 Add an **Affiliate** card to `/users/[id]` Overview:
 
 - If not an affiliate: “Make affiliate” button → modal with commission
-  percentage (default 15%) → creates profile, generates code, sends the
-  invitation email, sets `active=true`.
+  percentage (default 15%) → creates profile, generates code, sets
+  `active=true`. No email is sent in v1; show a copyable onboarding link for
+  the admin to share.
 - If an affiliate: code, commission %, active toggle, PayPal email,
   onboarding status, lifetime sales, lifetime commission, pending statement
   total; “Edit commission” and “Deactivate affiliate” actions.
@@ -799,33 +811,13 @@ Add an **Affiliate** card to `/users/[id]` Overview:
 
 Search results should show an `Affiliate` badge.
 
-### Affiliate invitation email
+### No invitation email in v1
 
-When an admin promotes an existing user, send a branded transactional email
-using the same look and sending path as the verification emails.
-
-- Add `docs/email-templates/affiliate-invited.html` using the same card,
-  logo, purple `#69279c` palette, and footer as
-  `docs/email-templates/confirm-signup.html`.
-- Subject: “You’re now a Language Player affiliate”.
-- Body: commission rate, affiliate code, 60-day/last-touch explanation,
-  “Open your affiliate dashboard” link to `https://languageplayer.io/affiliate/welcome`,
-  and a note that the existing Language Player password is used (no new
-  password).
-- Send it through the same SMTP/transactional identity used for auth email.
-  The verification emails are Supabase Auth templates deployed through the
-  Supabase mailer; the affiliate invite is **not** an auth event, so do not rely
-  on `inviteUserByEmail` for an existing confirmed account. Add a small
-  transactional sender (`utils_email.py`) using the same sender domain/SMTP
-  configuration, or a Supabase Edge Function with the same template; if the
-  Supabase SMTP credentials are not exportable, configure a dedicated SMTP
-  identity with the same `From` name/address and keep the HTML template in
-  `docs/email-templates/`.
-- Store `affiliates.invited_at`; expose “Resend invitation email” in the admin
-  affiliate card. A send failure must not roll back the affiliate creation;
-  log it and show a retry.
-- Do not send the email on every commission-rate edit; only on promotion or an
-  explicit resend.
+The admin promotes the user and tells them out-of-band (or shares the
+copyable link). The affiliate sees the welcome/onboarding flow on their next
+login. An automated branded invitation email, using the same template/SMTP
+path as the verification emails, is deferred to a later phase; see
+[Phase 5](#phase-5--deferred).
 
 ### Affiliates list
 
@@ -879,7 +871,6 @@ All routes admin-gated with `require_admin()`:
 | GET | `/admin/users/<id>/affiliate` | Profile + metrics |
 | POST | `/admin/users/<id>/affiliate` | Make affiliate |
 | PATCH | `/admin/users/<id>/affiliate` | Commission/active/PayPal |
-| POST | `/admin/users/<id>/affiliate/resend-invite` | Resend the invitation email |
 | GET | `/admin/affiliates/statements` | Statement queue |
 | POST | `/admin/affiliates/statements/generate` | Generate a period |
 | POST | `/admin/affiliates/statements/<id>/pay` | Mark paid + reference |
@@ -959,13 +950,28 @@ Render the supplied FAQ content:
 - Server-filtered to the signed-in affiliate; no affiliate id query parameter
   is accepted from the client.
 - Columns: Date, Product, Sale amount, Commission rate, Commission, Status.
-- No student name/email/PII. (Admin can see more in the admin affiliate
-  detail.)
+- No student name/email/PII. Admins use the admin-only transactions
+  screen for purchaser details.
 - Filters: date range, product, status; pagination; Export CSV optional.
 - A caller with affiliate A’s token must get zero rows for B’s data even if it
   tampers with request parameters. Add an explicit regression test.
 
 ### Why affiliates do not see purchaser PII
+
+**Definitions**
+
+- **PII (personally identifiable information):** information that can identify
+  a person directly or indirectly — name, email, phone, postal address, payment
+  id, account id, IP address, device id, or combinations of those. A buyer
+  email or Stripe/PayPal payment id is PII.
+- **GDPR (General Data Protection Regulation):** the EU/UK privacy law (the UK
+  has a retained version). It requires a lawful basis, data minimization,
+  transparency, security, and honoring data-subject rights (access, deletion,
+  etc.) for people in the EU/UK.
+- **CCPA/CPRA (California Consumer Privacy Act / California Privacy Rights
+  Act):** California's privacy law. It gives California residents rights to
+  know, delete, correct, and opt out of certain sharing/sales, and imposes
+  notice/minimization duties on covered businesses.
 
 The affiliate needs enough information to verify their commission: date,
 product, sale amount, rate, commission, and status. A buyer’s name, email, and
@@ -1141,11 +1147,9 @@ prevent code brute-forcing.
   circular imports with ledger helpers.
 - `utils_payment_events.py` or `utils_affiliate.py`: idempotent event creation,
   commission math, statement generation.
-- `utils_email.py`: transactional sender for the affiliate invitation, using
-  the same sender domain/SMTP identity as auth email.
 - `scripts/generate_affiliate_statements.py` (cron/admin).
 - Tests: access control/IDOR, attribution, coupons, commissions, statements,
-  refunds, idempotency, invitation-email failure handling.
+  refunds, idempotency.
 
 ### `apps/admin`
 
@@ -1186,10 +1190,8 @@ prevent code brute-forcing.
   subscription flow writes the same ledger/commission rows. Treat as a separate
   repo commit.
 
-### Email templates / docs
+### Privacy docs
 
-- Add `docs/email-templates/affiliate-invited.html` and add it to
-  `docs/email-templates/README.md`.
 - Update `packages/docs/content/privacy-policy.md` with the `lp_aff` cookie
   purpose, 60-day retention, and first-party status.
 
@@ -1252,7 +1254,7 @@ prevent code brute-forcing.
 - Mobile deferred deep links/referral capture.
 - CNY/IAP commissions (requires FX/processor ledger decisions).
 - Affiliate application forms, product restrictions, promotional materials,
-  automated PayPal Payouts, tax forms.
+  affiliate invitation emails, automated PayPal Payouts, tax forms.
 
 ## Migration and Rollout
 
@@ -1341,13 +1343,7 @@ prevent code brute-forcing.
 
 ## Open Questions
 
-1. **Cookie-consent legal review**: confirm the Teachable-style
+1. **Cookie-consent legal review (launch gate)**: confirm the Teachable-style
    essential/functional classification for the jurisdictions Language Player
    serves; if counsel requires opt-in, gate `lp_aff` and accept reduced
-   attribution.
-2. **Affiliate-email SMTP path**: confirm whether the Supabase Auth SMTP
-   credentials can be reused for a non-auth transactional email, or configure a
-   dedicated SMTP identity with the same sender/domain and template.
-3. **$25 threshold**: confirm $25 rather than no threshold. Teachable's
-   school-owner feature publishes no minimum; $25 matches Teachable's separate
-   affiliate program and limits PayPal fees.
+   attribution. Do not launch the attribution cookie without this review.
