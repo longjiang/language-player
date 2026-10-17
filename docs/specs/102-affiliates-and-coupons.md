@@ -257,7 +257,7 @@ behavior the product owner described and the FAQ we must reproduce.
 | Affiliate invitation email | **Not in v1.** The admin tells the affiliate out-of-band; onboarding starts on first login. Email is a deferred follow-up. |
 | Tax forms | Out of scope; admin responsibility. |
 | Affiliate-surface PII | **No purchaser email/payment id.** Admins use the existing admin transactions screen. |
-| Cookie consent | Follow Teachable's model: classify `lp_aff` as an essential/functional performance cookie, disclose it in the privacy/cookie policy, and use consent only for non-essential analytics/advertising. Legal review required; see [Cookie consent](#cookie-consent). |
+| Cookie consent | **Explicit opt-in.** Treat `lp_aff` as non-essential affiliate attribution; set it only after the user accepts “Affiliate cookies” in a consent banner. No pre-consent tracking. See [Cookie consent](#cookie-consent). |
 
 ## Data Model
 
@@ -505,8 +505,7 @@ concurrent subscriptions per user, move the attribution to a
   value:    v1.<CODE>.<issued_at_unix>.<hmac_sha256>
   maxAge:   60 days (fixed attribution window; no admin configuration)
   path:     /
-  domain:   .languageplayer.io in production (share with Classic if approved);
-            host-only locally
+  domain:   .languageplayer.io in production; host-only locally
   sameSite: lax
   secure:   production only
   httpOnly: false   // the checkout client must forward the token to Flask
@@ -515,7 +514,9 @@ concurrent subscriptions per user, move the attribution to a
 - The HMAC uses a dedicated `AFFILIATE_COOKIE_SECRET`, not `AUTH_SECRET`.
 - The token is signed, not encrypted. The code is public; the signature stops a
   client from extending an expired timestamp or inventing a code.
-- Last touch: every valid `affcode` click overwrites `lp_aff`.
+- **Consent gate:** `lp_aff` is set only when `lp_consent` says the affiliate
+  category was accepted. Merely landing with `?affcode=` must not set it.
+- Last touch: every valid, consented `affcode` click overwrites `lp_aff`.
 - The same middleware may accept `coupon_code` but **must not** set a coupon
   cookie; coupon codes are applied at checkout only.
 
@@ -599,53 +600,70 @@ Additional guards:
 
 ### Cookie consent
 
-**How Teachable does it:** Teachable's Cookie Policy lists affiliate
-commission attribution under **essential → performance** cookies (recording
-clicks and transactions to commission an affiliate sale). Its checkout cookie
-banner (from December 2024) is shown to logged-out users and controls
-**non-essential/advertising** cookies; affiliate attribution is treated as
-essential, not something the banner can disable. See
-[Teachable Cookies Policy](https://www.teachable.com/legal/cookies-policy) and
-[Cookies on Checkout Pages](https://support.teachable.com/en/articles/11682560-cookies-on-checkout-pages).
+**Best-effort compliance position (not legal advice):** treat `lp_aff` as a
+**non-essential affiliate-attribution cookie** and set it only after explicit
+opt-in. This is stricter than Teachable's own classification but safer across
+the jurisdictions Language Player can be accessed from.
 
-**Best practice for Language Player:**
+- **Canada (PIPEDA / BC PIPA):** cookies that can identify or track a person
+  require meaningful knowledge and consent. The OPC's [cookie tracking
+  guidance](https://www.priv.gc.ca/en/privacy-topics/technology/online-privacy-tracking-cookies/cookies/02_05_d_49/)
+  and [cookie FAQ](https://www.priv.gc.ca/en/privacy-topics/technology/online-privacy-tracking-cookies/cookies/frequently-asked-questions-about-cookies/)
+  say tracking is acceptable when people know what is going on and agree; BC
+  PIPA has a similar consent model. Opt-in is the conservative reading.
+- **EU/UK (GDPR + ePrivacy):** non-essential tracking requires prior consent.
+  Affiliate attribution is commonly treated as marketing/analytics, not
+  “strictly necessary” for the checkout the user requested. Opt-in avoids the
+  argument.
+- **California (CCPA/CPRA):** disclose the cookie and provide a cookie-
+  preferences/opt-out path. Even if affiliate attribution is not a “sale” or
+  “share” for cross-context behavioral advertising, a preferences link and
+  disclosure are low-cost and safer. See the [California AG CCPA
+  page](https://oag.ca.gov/privacy/ccpa).
+- Teachable's Cookie Policy calls affiliate attribution an essential/performance
+  cookie and does not gate it behind its checkout banner. **This spec does not
+  follow that classification** because it is contestable and we are optimizing
+  for best-effort compliance rather than maximum attribution.
 
-1. Treat `lp_aff` as a **first-party, functional attribution cookie**, not an
-   advertising/profiling cookie. It is set only after an affiliate-link click,
-   stores only an affiliate code/timestamp, lives 60 days, and is not used for
-   ad targeting.
-2. Disclose it explicitly in the privacy/cookie policy: name `lp_aff`, purpose,
-   first-party, 60-day retention, and how to clear it. The current policy lists
-   essential cookies only for sign-in/language/guest navigation, so it must be
-   updated.
-3. Follow Teachable's model: classify it as essential/functional and show a
-   cookie notice/banner only for non-essential analytics/advertising. Do not
-   gate `lp_aff` behind the advertising-consent toggle.
-4. Have **legal counsel** (a qualified privacy lawyer/advisor familiar with
-   GDPR/ePrivacy, UK GDPR, CCPA/CPRA, and Canadian privacy law) confirm the
-   classification for the jurisdictions we serve. Affiliate attribution is
-   treated as marketing in some EU/UK readings; if legal counsel requires
-   opt-in, gate `lp_aff` until consent and accept that declined users are not
-   attributed. Do not silently set it before consent if legal counsel says it
-   is non-essential.
-5. Keep the cookie narrow: no cross-site tracking, no ad networks, no PII in
-   the cookie, and a documented deletion path.
+**Implementation**
 
-This is a product/legal decision, not a reason to omit the cookie disclosure.
-The spec assumes the Teachable-style essential classification with legal review.
+1. Show a first-visit cookie banner with equally prominent **Accept all**,
+   **Reject non-essential**, and **Manage preferences**. No pre-checked boxes,
+   no cookie wall, no dark patterns. Link to the Cookie/Privacy Policy.
+2. Store the choice in a first-party `lp_consent` cookie: category flags,
+   policy version, timestamp. No PII. Keep it for about 6 months, then re-ask
+   if the policy changes.
+3. `lp_aff` is set **only** when the affiliate category is accepted:
+   - If the user accepts while `affcode` is in the URL, call
+     `POST /api/affiliate/consent` with the code; the Next.js route validates
+     the shape and sets the signed `lp_aff` cookie.
+   - On later affiliate clicks, `apps/web/src/proxy.ts` sets `lp_aff` only if
+     `lp_consent` says affiliate cookies are accepted.
+   - If the user rejects, no `lp_aff`; no attribution. Rejection must be as
+     easy as acceptance.
+4. “Cookie preferences” in the footer lets users change their mind. Withdrawing
+   affiliate consent deletes `lp_aff` and stops any new attribution. Already
+   completed payments keep their recorded commission; future ones do not.
+5. Update `packages/docs/content/privacy-policy.md` to name `lp_aff`, its
+   purpose, first-party status, 60-day retention, the consent mechanism, and how
+   to withdraw/clear it.
+6. If the user previously accepted affiliate cookies in this browser, an
+   `affcode` click can set `lp_aff` without re-prompting; otherwise the banner
+   is where consent happens. A user who accepts later, after leaving the
+   affiliate link, has no stored code to attribute — that is an accepted
+   limitation and must be stated in the affiliate FAQ.
+7. Do not use `lp_aff` for advertising, profiling, cross-site tracking, or
+   sharing with ad networks.
 
-**Launch gate:** implementation can proceed behind a feature flag, but `lp_aff`
-must not be enabled in production until legal counsel has reviewed and approved the
-classification and the privacy-policy text. Checklist for that review:
+**Affiliate-facing consequence:** only buyers who accept affiliate cookies are
+attributed. The FAQ must say this plainly, because an affiliate can otherwise
+see “missing” sales that were never tracked.
 
-- privacy/cookie policy names `lp_aff`, its purpose, first-party status, and
-  60-day retention;
-- no advertising/profiling use or cross-site tracking;
-- a visible cookie notice/banner explains essential vs non-essential cookies;
-- the consent tool can actually block `lp_aff` if legal counsel classifies it as
-  non-essential;
-- a deletion/clear-cookie path is documented;
-- EU/UK and California (CCPA/CPRA) applicability is assessed.
+**Legal review (recommended, not a blocker for this opt-in design):** have a
+privacy lawyer review the banner text, cookie policy, and consent record. If
+they prefer a different classification, the opt-in implementation is already
+the stricter path; changing to an essential/functional model would require an
+explicit legal sign-off and a policy update.
 
 ## Commission and Payment Ledger
 
@@ -934,7 +952,9 @@ English in v1, matching the admin app, but all strings still go through
 
 Render the supplied FAQ content:
 
-- How attribution works (cookie, 60-day window, same browser/device).
+- How attribution works (cookie, 60-day window, same browser/device). Buyers
+  who reject affiliate cookies are not attributed, so some sales may be
+  missing from your dashboard.
 - When payouts happen (monthly, one-month delay, PayPal, first business day).
 - First-touch vs last-touch: **last touch**; a new affiliate link overrides the
   previous cookie. (Note the Teachable doc conflict in a footnote.)
@@ -1120,10 +1140,8 @@ prevent code brute-forcing.
 - Admin affiliate list/detail shows aggregate sales and statements, not buyer
   PII. Full purchaser data stays in the admin-only `/admin/transactions`
   screen.
-- Follow the Teachable-style essential/functional cookie classification,
-  disclose `lp_aff` in the privacy/cookie policy, and have legal counsel review
-  it. If legal counsel requires opt-in, gate the cookie and accept reduced
-  attribution.
+- Use the explicit-opt-in `lp_aff` model, disclose it in the privacy/cookie
+  policy, and accept that declined users are not attributed.
 
 ## Apps and Files Impacted
 
@@ -1168,7 +1186,10 @@ prevent code brute-forcing.
 
 ### `apps/web`
 
-- `src/proxy.ts`: `affcode` cookie handling.
+- `src/proxy.ts`: set `lp_aff` from `affcode` only when `lp_consent` allows
+  affiliate cookies; never set it pre-consent.
+- Add the cookie-consent banner/`lp_consent` cookie and a
+  `/api/affiliate/consent` route that sets the signed `lp_aff` after acceptance.
 - `src/app/register/page.tsx`: forward `affiliate_token` on signup.
 - `src/app/[l1]/[l2]/go-pro/page.tsx`: coupon input, affiliate token,
   discounted amount preview, processor availability.
@@ -1346,7 +1367,7 @@ prevent code brute-forcing.
 
 ## Open Questions
 
-1. **Cookie-consent legal review (launch gate)**: confirm the Teachable-style
-   essential/functional classification for the jurisdictions Language Player
-   serves; if legal counsel requires opt-in, gate `lp_aff` and accept reduced
-   attribution. Do not launch the attribution cookie without this review.
+1. **Legal review (recommended)**: have privacy counsel review the opt-in banner
+   text, cookie policy, and consent record before broad EU/UK promotion. The
+   opt-in design is the conservative default, so this is not a blocker for
+   implementation.
