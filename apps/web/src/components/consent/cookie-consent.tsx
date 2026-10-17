@@ -79,8 +79,8 @@ export function CookieConsent() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 p-4 shadow-lg backdrop-blur">
-      <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-2xl text-sm">
+      <div className="mx-auto flex max-w-4xl flex-col gap-3">
+        <div className="max-w-3xl text-sm">
           <p className="font-medium">{t('msg.cookie_title')}</p>
           <p className="mt-1 text-muted-foreground">{t('msg.cookie_body')}</p>
           {manage && (
@@ -95,7 +95,7 @@ export function CookieConsent() {
             </label>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 sm:justify-end">
           <Button variant="outline" onClick={() => setManage((v) => !v)}>
             {t('action.manage_preferences')}
           </Button>
