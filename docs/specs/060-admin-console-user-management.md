@@ -217,4 +217,5 @@ self-demotion so the last admin can't lock themselves out.
 - Which admin surfaces should come next: content moderation (videos/shows),
   dictionary health, payment logs, or user account actions (delete/reset)?
   — content management shipped as [SPEC-099](099-admin-content-management.md);
+  signup analytics shipped as [SPEC-100](100-admin-signup-analytics.md);
   payment logs and account actions are still open.
