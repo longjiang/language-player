@@ -156,9 +156,10 @@
   delete, bulk assign), importer with cursor paging, discovery review,
   shows & talks CRUD with member videos, channels browser, unavailable sweep
   (SPEC-099)
-- ✅ Signup analytics — new accounts per day for the last 7/30 days, this
-  month, this year, and all time since the Supabase cutover, with imported
-  Directus accounts excluded (SPEC-100)
+- ✅ Analytics — daily chart toggling between New Signups and estimated
+  Revenue for the last 7/30 days, this month, this year, and all time.
+  Signups exclude imported Directus accounts; Revenue reuses the Transactions
+  inclusion rules and price heuristic (SPEC-100, SPEC-101)
 - ✅ Transactions — estimated subscription sales with purchaser/plan/date
   filters, search, sortable date/price columns, pagination, and CSV export.
   Prices come from the current USD price list plus historical sale windows

@@ -37,7 +37,7 @@ docs/
 | 048 | [Mobile Release Plan — Human QA + App Store & Play Store](specs/048-mobile-release-plan.md) | — | 🔄 In progress |
 | 066 | [SRS Review Page (Web + Mobile)](specs/066-srs-review-page.md) | 6 | ✅ Complete |
 | 099 | [Admin Console — Content Management](specs/099-admin-content-management.md) | 10 | ✅ Complete |
-| 100 | [Admin Console — Signup Analytics](specs/100-admin-signup-analytics.md) | 10 | ✅ Complete |
+| 100 | [Admin Console — Analytics](specs/100-admin-signup-analytics.md) | 10 | ✅ Complete |
 | 101 | [Admin Console — Transactions](specs/101-admin-transactions.md) | 10 | ✅ Complete |
 
 ## ADRs

@@ -1,21 +1,30 @@
-# SPEC-100: Admin Console — Signup Analytics
+# SPEC-100: Admin Console — Analytics (New Signups & Revenue)
+
+> **Amendment 2026-10-17:** the screen is now named **Analytics** and toggles
+> between **New Signups** and **Revenue**. The original single-metric behavior
+> is described below; see [Amendment 2026-10-17](#amendment-2026-10-17--analytics-metric-toggle).
 
 ## Metadata
 
 - **Spec ID**: SPEC-100
-- **Feature**: Daily new-signup chart in the admin console, with last 7 days /
-  this month / this year / last 30 days / all time ranges
+- **Feature**: Daily analytics chart in the admin console, with last 7 days /
+  this month / this year / last 30 days / all time ranges, toggling between
+  new signups and estimated revenue
 - **Status**: complete (2026-10-17)
 - **Created**: 2026-10-17
+- **Updated**: 2026-10-17
 - **Implemented**: 2026-10-17.
-  `zerotohero-python-server` — `e1ba33f` (endpoint + tests).
+  `zerotohero-python-server` — `e1ba33f` (signup endpoint + tests),
+  `207c1df` (generic metric endpoint + revenue series).
   `apps/admin` — `dac11a34` (i18n), `d54c56d5` (screen + chart),
-  `19a95c52` (chart narrow-screen fix).
+  `19a95c52` (chart narrow-screen fix), `bc13da8e` (metric-toggle i18n),
+  `13c737d8` (screen + chart toggle).
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - [ADR-0032 — Admin Console as a Separate Next.js App](../adr/0032-admin-console-app.md)
   - [SPEC-060 — Admin Console: User Management](060-admin-console-user-management.md) — app, auth, token mirror, CORS, i18n conventions
   - [SPEC-099 — Admin Content Management](099-admin-content-management.md) — the Users / Content nav shell this extends
+  - [SPEC-101 — Admin Transactions](101-admin-transactions.md) — the inclusion rules and price heuristic the Revenue metric reuses
   - [SPEC-039 — Full Database Migration](039-full-database-migration-supabase.md) § 5.1 / 5.7 — the Directus → Supabase auth import and cutover
   - [ARCH-003 — Python Backend Architecture](../arch/003-python-backend-architecture.md) — blueprint/route map
 
@@ -206,3 +215,90 @@ keys existed, so all five were added.
   Deleting an account therefore removes its historical signup from these
   counts. If signup history must be immutable, count deleted rows and flag them
   separately instead.
+
+---
+
+## Amendment 2026-10-17 — Analytics metric toggle
+
+The screen was renamed **Analytics** (nav item and page title) and gained a
+metric picker before the range picker:
+
+- **New Signups** — the original cutover-aware daily signup series.
+- **Revenue** — estimated USD revenue per day from the **same rows the
+  Transactions screen lists** (SPEC-101).
+
+### API
+
+The generic route is:
+
+```text
+GET /admin/analytics?metric=signups|revenue&range=<range>&tz=<IANA>
+```
+
+`metric` defaults to `signups`; an unknown metric is `400`. The response uses a
+common `{date, value, count}` day shape so the chart does not care which metric
+it is rendering:
+
+```json
+{
+  "metric": "revenue",
+  "range": "last_7_days",
+  "timezone": "America/Vancouver",
+  "start": "2026-10-11",
+  "end": "2026-10-17",
+  "days": [
+    { "date": "2026-10-11", "value": 30.0, "count": 3 }
+  ],
+  "total": 150.0,
+  "averagePerDay": 21.43,
+  "bestDay": { "date": "2026-10-13", "value": 50.0, "count": 5 }
+}
+```
+
+`/admin/analytics/signups` remains as a compatibility alias returning the
+original `{date, count}` shape.
+
+### Revenue semantics
+
+Revenue deliberately calls `routes.admin_transactions.query_transactions()`
+rather than re-implementing the rules. That guarantees:
+
+- non-trial subscription rows only,
+- rows with a `payment_id` or payment processor only (backfilled legacy
+  lifetime accounts excluded),
+- prices from `data/prices.csv` plus historical lifetime sale windows in
+  `data/sale_windows.csv`,
+- monthly/annual rows contribute their latest payment, not every renewal.
+
+**Range difference:** signup “all time” starts at the first post-cutover
+Supabase account, while revenue “all time” starts at the first included
+transaction row (2023-04 in the current data). Revenue also includes legacy
+paid subscriptions; the backfilled no-payment accounts remain excluded.
+
+### Chart / UI
+
+`components/analytics/signup-chart.tsx` became `metric-chart.tsx`:
+
+- y-axis and tooltip format as counts for New Signups and USD for Revenue;
+- revenue axis uses compact money (`$380`, `$1.5k`), while the tooltip shows
+  the exact two-decimal amount;
+- both metrics share the same monotone SVG area chart, range picker,
+  total/average/best-day cards, and timezone note;
+- revenue has its own estimate note and empty state.
+
+Eight i18n keys were added in all 18 locales: `title.analytics`, `label.metric`,
+`label.range`, `label.revenue`, `label.total_revenue`, `msg.revenue_hint`,
+`msg.revenue_note`, `msg.no_revenue_range`.
+
+### Amendment verification
+
+- `test_admin_analytics.py` — **17 passed** (10 original + 7 metric/revenue
+  cases, including local-day grouping and all-time start).
+- `test_admin_transactions.py` — **15 passed**.
+- `test_app.py -k "admin_url or admin_endpoints"` — **4 passed**; the generic
+  route is covered by the dynamic `/admin/*` gate test.
+- Read-only production check: last 7 days returned **239 signups** and
+  **US$150.00** estimated revenue; all-time revenue started **2023-04-07** with
+  a total of **US$183,377.10**.
+- `apps/admin`: `tsc --noEmit` clean, `eslint .` clean, and
+  `npm run build:check -w apps/admin` compiled `/analytics`.
