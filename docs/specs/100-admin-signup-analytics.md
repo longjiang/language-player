@@ -135,9 +135,8 @@ route added to it is admin-only by construction. CORS preflight (`OPTIONS`) is
 exempt. The existing dynamic test in `test_app.py` that enumerates every
 `/admin/*` URL therefore covers this route too.
 
-No schema change and no new index are required: `auth.users` and
-`public.user_id_map.auth_user_id` are already indexed by their primary/unique
-keys, and the query touches at most a few thousand post-cutover rows.
+No schema change and no new index are required: `public.user_id_map.auth_user_id`
+is unique, so the anti-join can use it, and `auth.users` is only ~75k rows.
 
 ## Admin App
 
@@ -202,3 +201,7 @@ keys existed, so all five were added.
 - No acquisition-source breakdown. `public.user_acquisition` (SPEC-042) could
   power a stacked chart later.
 - No caching. The query is small and the screen is admin-only.
+- Accounts with `deleted_at` set are excluded, matching the admin user search.
+  Deleting an account therefore removes its historical signup from these
+  counts. If signup history must be immutable, count deleted rows and flag them
+  separately instead.
