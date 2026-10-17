@@ -36,7 +36,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: 'title.insights',
     items: [
-      { href: '/analytics', labelKey: 'title.signup_analytics', icon: TrendingUp },
+      { href: '/analytics', labelKey: 'title.analytics', icon: TrendingUp },
       { href: '/transactions', labelKey: 'title.transactions', icon: Receipt },
     ],
   },
