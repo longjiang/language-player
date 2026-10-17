@@ -3,6 +3,7 @@ import {
   Compass,
   Film,
   Search,
+  TrendingUp,
   Tv,
   Upload,
   TriangleAlert,
@@ -10,9 +11,10 @@ import {
 } from 'lucide-react';
 
 /**
- * The admin console's menu. Two groups: user management and content
- * management (SPEC-099). Labels are `translations.csv` keys resolved with
- * `useT()` so the menu follows the project i18n convention.
+ * The admin console's menu. Three groups: user management, signup analytics
+ * (SPEC-100), and content management (SPEC-099). Labels are
+ * `translations.csv` keys resolved with `useT()` so the menu follows the
+ * project i18n convention.
  */
 export interface NavItem {
   href: string;
@@ -29,6 +31,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: 'label.users',
     items: [{ href: '/users', labelKey: 'title.user_management', icon: Search }],
+  },
+  {
+    labelKey: 'title.insights',
+    items: [
+      { href: '/analytics', labelKey: 'title.signup_analytics', icon: TrendingUp },
+    ],
   },
   {
     labelKey: 'title.content_management',
