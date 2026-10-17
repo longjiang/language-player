@@ -56,6 +56,10 @@ to Language Player.
 - Payouts are **PayPal only** and are processed manually by an admin against a
   monthly statement. Statements are `pending` until the admin marks them
   `paid` with a PayPal reference.
+- **Prerequisite:** a new `payment_events` ledger written when each purchase
+  completes. Besides enabling commissions, it replaces estimated figures with
+  exact amounts for new sales and supports refund, coupon, processor and
+  affiliate reporting. Historical rows are not backfilled.
 - **Coupons** are independent of affiliates. They have a code, internal name,
   percentage or amount discount, a maximum number of uses, and an expiry
   date/time. **Proposed v1 scope: lifetime Pro purchases in USD only**, using
@@ -197,13 +201,18 @@ attributed/discounted. The web app remains the supported purchase surface.
 
 SPEC-101 explicitly says `user_subscriptions` has no charged amount and its
 Transactions screen is an estimate. Affiliate commissions and statements
-cannot be based on an estimate. **Prerequisite:** add `payment_events` and
-record real amounts from each successful payment before any commission is
-created. Historical subscription rows get **no retroactive commissions**.
+cannot be based on an estimate. **Prerequisite:** start writing a
+`payment_events` row **when each purchase completes** — Stripe checkout
+completion/invoice webhooks and the PayPal capture path — recording the amount,
+tax, discount, currency, coupon, affiliate and processor event id. Historical
+subscription rows get **no retroactive commissions** and no invented ledger
+rows; they remain estimates.
 
-This also improves SPEC-101: the Transactions screen should prefer ledger
-amounts for events recorded after launch and keep the heuristic only for
-historical rows.
+This is deliberately also a financial-analytics upgrade: after the cutoff, the
+Transactions screen and the Analytics Revenue chart can use actual collected
+amounts instead of the pricing-table heuristic, and we gain exact revenue by
+day, plan, processor, coupon and affiliate, plus refund/chargeback and
+commission reporting. See [Why log at purchase completion](#why-log-at-purchase-completion).
 
 ### 4. Processor limitations
 
@@ -298,9 +307,14 @@ does not lose a still-valid referral.
 ```sql
 create table public.user_affiliate_attributions (
   user_id uuid primary key references auth.users(id) on delete cascade,
+  -- Last-touch (v1 policy)
   affiliate_id bigint not null references public.affiliates(id) on delete cascade,
   attributed_at timestamptz not null default now(),
   expires_at timestamptz not null,
+  -- First-touch, retained so the policy can change without a new table
+  first_affiliate_id bigint references public.affiliates(id) on delete set null,
+  first_attributed_at timestamptz,
+  first_expires_at timestamptz,
   source text not null default 'cookie' check (source in ('cookie','signup','manual')),
   updated_at timestamptz not null default now()
 );
@@ -505,13 +519,46 @@ concurrent subscriptions per user, move the attribution to a
 - The same middleware may accept `coupon_code` but **must not** set a coupon
   cookie; coupon codes are applied at checkout only.
 
+### First-touch vs last-touch (the attribution policy)
+
+Both policies use the same cookie window; they differ in **which affiliate owns
+a purchase when a user clicked more than one affiliate link**.
+
+| Policy | Who gets the sale? | Example: A's link Monday, B's link Friday, purchase Sunday |
+|---|---|---|
+| **First-touch** | The first affiliate link recorded inside the window | **A** gets it |
+| **Last-touch** | The most recent affiliate link before purchase | **B** gets it |
+
+- **First-touch** rewards the affiliate who introduced the customer. It is
+  stable: a later link cannot take credit. It can feel unfair to an affiliate
+  whose link is the one that actually converted the customer, and it lets an
+  early, low-effort referrer keep credit forever.
+- **Last-touch** rewards the affiliate closest to the purchase. It matches the
+  "last click wins" model most ad platforms use and the supplied Teachable FAQ.
+  It can be gamed by coupon/deal sites that add a link just before checkout, and
+  it can take credit from the original discoverer.
+- Teachable's current documentation says first-touch is the default, while the
+  supplied FAQ and older docs say last-touch. **This spec chooses last-touch**,
+  matching the product owner's FAQ.
+- To keep a future policy change cheap, `user_affiliate_attributions` stores
+  both the first valid touch (`first_*`) and the latest valid touch (the main
+  columns). The cookie itself only carries the most recent code. Switching to
+  first-touch later means changing the checkout resolver and UI copy, not the
+  table shape.
+- Neither policy is retroactive: a completed payment's affiliate is fixed.
+
 ### Persistence for logged-in users
 
 - On page load / login / signup, the web app posts the token to
   `POST /affiliate/attribute` (authenticated) or includes `affiliate_token` in
   `/auth/register`.
 - The server verifies the token, resolves an active affiliate, and upserts
-  `user_affiliate_attributions` with `expires_at = now + link_attribution_days`.
+  `user_affiliate_attributions`:
+  - the first valid touch sets `first_affiliate_id` / `first_attributed_at` /
+    `first_expires_at` if unset;
+  - every valid touch updates the last-touch `affiliate_id` / `attributed_at` /
+    `expires_at`;
+  - `expires_at = now + link_attribution_days`.
 - If the token is invalid/expired, the stored attribution is not extended.
 
 ### Resolving attribution at checkout
@@ -520,9 +567,13 @@ Precedence:
 
 1. Valid, unexpired `affiliate_token` in the checkout body (current browser,
    last touch) → use it and upsert the stored attribution.
-2. Valid, unexpired `user_affiliate_attributions` row for the authenticated
-   user → use it.
+2. Valid, unexpired `user_affiliate_attributions` last-touch row for the
+   authenticated user → use it.
 3. Otherwise no affiliate.
+
+The first-touch columns are populated but are **not** used by the v1 resolver.
+A future policy change to first-touch would resolve step 2 from
+`first_affiliate_id` / `first_expires_at` instead.
 
 Additional guards:
 
@@ -559,7 +610,29 @@ Additional guards:
 | Admin manual grant | manual | **no payment event**; no commission |
 | Apple/Google purchase | app-store/play | optional ledger event later; **no affiliate commission in v1** |
 
-Requirements:
+### Why log at purchase completion
+
+The ledger write must happen at the moment the processor confirms money was
+collected, not from a later reconciliation of the subscription row:
+
+- It captures the **actual amount, tax, discount, currency and processor**
+  while the provider still has them. `user_subscriptions` keeps only the latest
+  payment reference and is overwritten on renewal.
+- It makes affiliate commission math auditable and idempotent: a commission is
+  tied to one immutable payment event, not to a mutable subscription row.
+- It is the basis for exact financial analytics after the cutoff:
+  - revenue by day/week/month, plan, processor, currency, coupon and affiliate;
+  - refunds, chargebacks and net revenue;
+  - coupon ROI and affiliate ROI (sales driven vs commission paid);
+  - recurring revenue, renewal counts, ARPU/ARPL and refund rates;
+  - reconciliation against Stripe/PayPal settlement reports.
+- SPEC-101's Transactions and Analytics → Revenue screens can prefer ledger
+  amounts for post-cutoff rows and keep the pricing heuristic only for
+  historical rows. No estimate is ever turned into a commission.
+- Existing rows are **not** backfilled with invented amounts. The cutoff is the
+  first successful payment after the ledger ships.
+
+### Requirements
 
 - Idempotency: unique `(processor, processor_event_id, kind)`; webhook replays
   must not double-pay commissions.
@@ -1005,11 +1078,15 @@ prevent code brute-forcing.
 ### Phase 0 — Ledger and schema prerequisite
 
 - Add tables/migrations and `user_subscriptions` columns.
-- Add `payment_events` writes for Stripe checkout, Stripe renewals, and PayPal
-  captures; add Stripe refund/dispute webhooks.
-- Backfill: **no historical payment events** (or mark estimates separately).
-- Update SPEC-101 Transactions to prefer ledger amounts where present.
-- Tests: idempotency, amounts, refund events, currency.
+- Write `payment_events` **at purchase completion** for Stripe checkout,
+  Stripe renewals, and PayPal captures; add Stripe refund/dispute webhooks.
+- Backfill: **no historical payment events and no invented amounts**. The
+  ledger cutoff is the first successful payment after deployment; existing
+  rows remain estimates.
+- Update SPEC-101 Transactions and Analytics → Revenue to prefer ledger amounts
+  where present, and expose exact revenue/refund/coupon/affiliate reporting.
+- Tests: idempotency, amounts, tax/discount handling, refund events, currency,
+  and no double event on the first subscription invoice.
 
 ### Phase 1 — Admin affiliate and coupon management
 
