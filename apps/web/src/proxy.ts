@@ -64,6 +64,7 @@ export default function proxy(req: NextRequest) {
     isStaticFileRequest(pathname) ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/affiliate') ||
     pathname.startsWith('/api/videos') ||
     pathname.startsWith('/api/channels') ||
     // Same-origin relay for third-party media (ADR-0046): thumbnails and

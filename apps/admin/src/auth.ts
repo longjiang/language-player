@@ -3,8 +3,8 @@ import Credentials from 'next-auth/providers/credentials';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logerr } from '@/lib/logger';
 
-class AdminOnlyError extends CredentialsSignin {
-  code = 'admin_only';
+class NotAuthorizedError extends CredentialsSignin {
+  code = 'not_authorized';
 }
 
 /**
@@ -64,20 +64,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
-          // Only administrators may use the admin console.
-          if (!user.isAdmin) throw new AdminOnlyError();
+          // Admins use the admin surface; active affiliates use /affiliate.
+          // Everyone else is refused at the source.
+          if (!user.isAdmin && !user.isAffiliate) throw new NotAuthorizedError();
 
           return {
             id: String(user.id),
             email: String(user.email),
             name: String(`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email),
-            isAdmin: true,
+            isAdmin: user.isAdmin === true,
+            isAffiliate: user.isAffiliate === true,
+            affiliateCode: user.affiliate?.code ?? null,
             accessToken: token,
             refreshToken: data?.refreshToken ?? null,
             tokenExpiresAt: tokenExpiry(token),
           };
         } catch (error) {
-          if (error instanceof AdminOnlyError || error instanceof AuthBackendError) throw error;
+          if (error instanceof NotAuthorizedError || error instanceof AuthBackendError) throw error;
           logerr('auth backend unreachable', error); // non-info-level: caught network exception — stack trace needed
           throw new AuthBackendError();
         }
@@ -100,6 +103,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.refreshToken = u.refreshToken as string | null;
         token.tokenExpiresAt = u.tokenExpiresAt as number;
         token.isAdmin = u.isAdmin === true;
+        token.isAffiliate = u.isAffiliate === true;
+        token.affiliateCode = u.affiliateCode ?? null;
       }
       if (user) {
         token.name = user.name ?? undefined;
@@ -135,6 +140,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (session.user as any).refreshToken = (token.refreshToken as string) ?? null;
         (session.user as any).id = token.sub ?? null;
         (session.user as any).isAdmin = token.isAdmin === true;
+        (session.user as any).isAffiliate = token.isAffiliate === true;
+        (session.user as any).affiliateCode = token.affiliateCode ?? null;
       }
       return session;
     },

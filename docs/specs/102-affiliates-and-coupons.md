@@ -497,8 +497,9 @@ concurrent subscriptions per user, move the attribution to a
 - Signup link: `https://languageplayer.io/register?affcode=CODE`
 - Any internal page may carry `?affcode=CODE`; external URLs are rejected by
   the link generator in v1.
-- `apps/web/src/proxy.ts` reads `affcode` on GET/HEAD, validates shape
-  (`^[A-Z0-9]{8,40}$`), and sets:
+- A small client capture component reads `affcode` on GET/HEAD, validates
+  shape (`^[A-Z0-9]{3,40}$`), checks `lp_consent`, and calls
+  `POST /api/affiliate/consent`; that route sets:
 
   ```text
   name:     lp_aff
@@ -637,8 +638,9 @@ the jurisdictions Language Player can be accessed from.
    - If the user accepts while `affcode` is in the URL, call
      `POST /api/affiliate/consent` with the code; the Next.js route validates
      the shape and sets the signed `lp_aff` cookie.
-   - On later affiliate clicks, `apps/web/src/proxy.ts` sets `lp_aff` only if
-     `lp_consent` says affiliate cookies are accepted.
+   - On later affiliate clicks, the client capture component calls
+     `/api/affiliate/consent`, which sets `lp_aff` only if `lp_consent` says
+     affiliate cookies are accepted.
    - If the user rejects, no `lp_aff`; no attribution. Rejection must be as
      easy as acceptance.
 4. “Cookie preferences” in the footer lets users change their mind. Withdrawing
@@ -1186,10 +1188,9 @@ prevent code brute-forcing.
 
 ### `apps/web`
 
-- `src/proxy.ts`: set `lp_aff` from `affcode` only when `lp_consent` allows
-  affiliate cookies; never set it pre-consent.
-- Add the cookie-consent banner/`lp_consent` cookie and a
-  `/api/affiliate/consent` route that sets the signed `lp_aff` after acceptance.
+- Add the cookie-consent banner/`lp_consent` cookie, a client `AffiliateCapture`
+  component, and `/api/affiliate/consent` which sets the signed `lp_aff` only
+  after acceptance.
 - `src/app/register/page.tsx`: forward `affiliate_token` on signup.
 - `src/app/[l1]/[l2]/go-pro/page.tsx`: coupon input, affiliate token,
   discounted amount preview, processor availability.
@@ -1364,6 +1365,49 @@ prevent code brute-forcing.
   is lifted.
 - **Teachable behavior drift**: the docs disagree on first/last touch; this spec
   fixes last touch for our product.
+
+## Implementation Status (2026-10-17)
+
+Shipped in this pass:
+
+- Supabase migration `202610170001_affiliates_coupons.sql` with the affiliate,
+  attribution, coupon, payment-event, commission, statement, and redemption
+  tables; `user_subscriptions.affiliate_id`/`affiliate_attributed_at`.
+- Flask admin APIs: affiliate list/detail/promote/update, CSV export,
+  statements generate/list/detail/mark-paid, commission reversal; coupon
+  list/create/update/redemptions.
+- Flask affiliate APIs: dashboard, payout email/onboarding, transactions,
+  statements, statement detail, signed-token attribution, consent withdrawal.
+- Auth/session now exposes `isAffiliate` and the affiliate profile; login
+  accepts admins and active affiliates.
+- `apps/admin` two-surface routing, affiliate shell/pages (dashboard, welcome,
+  links, payouts, transactions, statements, FAQ), user-detail affiliate card,
+  admin affiliates/statements page, and admin coupons page.
+- Web consent banner and first-party `lp_consent`; signed `lp_aff` is set only
+  after affirmative affiliate consent (via `/api/affiliate/consent`), and the
+  checkout forwards the token. Coupon validation and application on the
+  lifetime Stripe checkout.
+- Stripe lifetime checkout metadata + ledger/commission write; subscription
+  affiliate attached for `invoice.paid` renewals. PayPal lifetime ledger hook
+  and coupon reservation/confirmation.
+- Tests: `test_affiliates_coupons.py` (token HMAC/expiry/tampering, commission
+  math, coupon math, route guards).
+
+Known gaps / deliberately deferred:
+
+- Affiliate invitation emails (decided out of v1).
+- Classic/Nuxt integration (decided out of scope).
+- Automated PayPal Payouts and tax forms.
+- Stripe `charge.refunded` webhook is not wired; use the admin commission
+  reversal action. Refund reversal coverage is therefore manual in v1.
+- The web PayPal button still points at the existing Classic flow; the PayPal
+  order/coupon/ledger backend hook exists but the Next.js PayPal client path is
+  unchanged (Classic out of scope).
+- No persistent footer "Cookie preferences" link yet; the banner stores the
+  choice, and clearing `lp_consent`/`lp_aff` re-prompts/withdraws.
+- Admin/affiliate new UI keys were added with English fallback in the shared CSV;
+  admin is English-only by design, and web falls back to English for these keys
+  until translated.
 
 ## Open Questions
 

@@ -3,6 +3,8 @@ import {
   Compass,
   Film,
   Receipt,
+  TicketPercent,
+  UsersRound,
   Search,
   TrendingUp,
   Tv,
@@ -31,7 +33,11 @@ export interface NavGroup {
 export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: 'label.users',
-    items: [{ href: '/users', labelKey: 'title.user_management', icon: Search }],
+    items: [
+      { href: '/users', labelKey: 'title.user_management', icon: Search },
+      { href: '/affiliates', labelKey: 'label.affiliates', icon: UsersRound },
+      { href: '/coupons', labelKey: 'label.coupons', icon: TicketPercent },
+    ],
   },
   {
     labelKey: 'title.insights',

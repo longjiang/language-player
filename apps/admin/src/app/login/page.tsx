@@ -29,8 +29,8 @@ function LoginForm() {
         redirect: false,
       });
       if (result?.error) {
-        if (result.code === 'admin_only') {
-          setError(t('error.admin_only'));
+        if (result.code === 'not_authorized') {
+          setError(t('error.not_authorized'));
         } else if (result.code === 'auth_unreachable') {
           setError(t('error.auth_unreachable'));
         } else {
@@ -56,7 +56,7 @@ function LoginForm() {
           </div>
           <div>
             <h1 className="text-xl font-bold">{t('title.admin_console')}</h1>
-            <p className="text-sm text-muted-foreground">{t('msg.admin_only_hint')}</p>
+            <p className="text-sm text-muted-foreground">{t('msg.admin_affiliate_hint')}</p>
           </div>
         </div>
 

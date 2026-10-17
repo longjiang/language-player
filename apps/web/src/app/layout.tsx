@@ -4,6 +4,8 @@ import { getLocale, getMessages, getTimeZone } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
 import { LocaleProvider } from '@/providers/locale-provider';
 import { SessionProvider } from '@/providers/session-provider';
+import { CookieConsent, AffiliateCapture } from '@/components/consent/cookie-consent';
+import { Suspense } from 'react';
 import { ApiClientProvider } from '@/components/api-client-provider';
 import { UserDataProvider } from '@/providers/user-data-provider';
 import { SavedWordsProvider } from '@/providers/saved-words-provider';
@@ -125,6 +127,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       <SupabaseSessionHandler />
                       <CapacitorRedirect />
                       <PublicHeader />
+                      <Suspense fallback={null}>
+                        <AffiliateCapture />
+                        <CookieConsent />
+                      </Suspense>
                       {children}
                     </SubscriptionProvider>
                   </SavedWordsProvider>
