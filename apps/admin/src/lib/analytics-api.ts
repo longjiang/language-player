@@ -1,5 +1,5 @@
 /**
- * Typed client for the SPEC-100 signup analytics route.
+ * Typed client for the SPEC-100 analytics route.
  *
  * Uses `authenticatedFetch`, so the Supabase access token mirrored by
  * `SessionTokenMirror` is attached and Flask's blueprint-level admin guard
@@ -9,10 +9,7 @@
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { log, logerr } from '@/lib/logger';
-import { browserTimeZone } from '@/lib/timezone';
-import type { SignupAnalytics, SignupRange } from '@/types/analytics';
-
-export { browserTimeZone };
+import type { AnalyticsMetric, AnalyticsSeries, SignupRange } from '@/types/analytics';
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -23,24 +20,32 @@ async function readError(res: Response): Promise<string> {
   }
 }
 
-export async function fetchSignupAnalytics(
+export async function fetchAnalytics(
+  metric: AnalyticsMetric,
   range: SignupRange,
   timezone: string,
   signal?: AbortSignal,
-): Promise<SignupAnalytics> {
-  const params = new URLSearchParams({ range, tz: timezone });
-  const url = `${PYTHON_API_URL}/admin/analytics/signups?${params.toString()}`;
-  log('signup analytics request', { range, timezone });
+): Promise<AnalyticsSeries> {
+  const params = new URLSearchParams({ metric, range, tz: timezone });
+  const url = `${PYTHON_API_URL}/admin/analytics?${params.toString()}`;
+  log('analytics request', { metric, range, timezone });
 
   const res = await authenticatedFetch(url, { signal });
   if (!res.ok) {
     const message = await readError(res);
-    logerr('signup analytics failed', { range, timezone, status: res.status, message });
+    logerr('analytics failed', {
+      metric,
+      range,
+      timezone,
+      status: res.status,
+      message,
+    });
     throw new Error(message || `HTTP ${res.status}`);
   }
 
-  const data = (await res.json()) as SignupAnalytics;
-  log('signup analytics response', {
+  const data = (await res.json()) as AnalyticsSeries;
+  log('analytics response', {
+    metric: data.metric,
     range: data.range,
     timezone: data.timezone,
     days: data.days?.length ?? 0,

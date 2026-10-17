@@ -9,31 +9,62 @@ import {
   pickLabelIndices,
   smoothPath,
 } from '@/lib/chart';
-import type { SignupDay } from '@/types/analytics';
+import type { AnalyticsMetric, AnalyticsPoint } from '@/types/analytics';
 import { useId, useMemo, useState } from 'react';
 
 const WIDTH = 960;
 const HEIGHT = 320;
-const PADDING = { top: 16, right: 20, bottom: 40, left: 56 };
+const PADDING = { top: 16, right: 20, bottom: 40, left: 72 };
 const PLOT_WIDTH = WIDTH - PADDING.left - PADDING.right;
 const PLOT_HEIGHT = HEIGHT - PADDING.top - PADDING.bottom;
 const MAX_X_LABELS = 7;
 
-interface SignupChartProps {
-  days: SignupDay[];
+interface MetricChartProps {
+  days: AnalyticsPoint[];
+  metric: AnalyticsMetric;
+}
+
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatCount(value: number): string {
+  return new Intl.NumberFormat('en').format(value);
+}
+
+/** Compact y-axis money: `$0`, `$380`, `$1.5k`, `$200k`, `$1.2m`. */
+function compactUsd(value: number): string {
+  if (value >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}m`;
+  }
+  if (value >= 1000) {
+    const thousands = value / 1000;
+    return `$${thousands >= 10 ? Math.round(thousands) : thousands.toFixed(1).replace(/\.0$/, '')}k`;
+  }
+  return `$${Math.round(value)}`;
 }
 
 /**
- * Hand-rolled SVG area chart (no chart dependency, semantic tokens only).
- * Hover/pointer movement selects the nearest day and shows its exact count.
+ * Hand-rolled SVG area chart for either daily signups or estimated revenue.
+ * No chart dependency; colors come from semantic tokens and the curve uses
+ * monotone cubic interpolation so a non-negative series cannot dip below zero.
  */
-export function SignupChart({ days }: SignupChartProps) {
+export function MetricChart({ days, metric }: MetricChartProps) {
   const t = useT();
   const rawId = useId();
-  const gradientId = `signup-gradient-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const gradientId = `metric-gradient-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const [active, setActive] = useState<number | null>(null);
 
-  const scale = useMemo(() => niceScale(Math.max(0, ...days.map((day) => day.count)), 4), [days]);
+  const label = metric === 'revenue' ? t('label.revenue') : t('label.new_signups');
+  const formatValue = metric === 'revenue' ? formatUsd : formatCount;
+  const formatAxis = metric === 'revenue' ? compactUsd : formatCount;
+
+  const scale = useMemo(() => niceScale(Math.max(0, ...days.map((day) => day.value)), 4), [days]);
 
   const points = useMemo(() => {
     const count = days.length;
@@ -43,7 +74,7 @@ export function SignupChart({ days }: SignupChartProps) {
         count <= 1
           ? PADDING.left + PLOT_WIDTH / 2
           : PADDING.left + (index / (count - 1)) * PLOT_WIDTH,
-      y: PADDING.top + PLOT_HEIGHT - (scale.max > 0 ? (day.count / scale.max) * PLOT_HEIGHT : 0),
+      y: PADDING.top + PLOT_HEIGHT - (scale.max > 0 ? (day.value / scale.max) * PLOT_HEIGHT : 0),
     }));
   }, [days, scale.max]);
 
@@ -76,7 +107,7 @@ export function SignupChart({ days }: SignupChartProps) {
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           className="h-auto w-full"
           role="img"
-          aria-label={t('title.signup_analytics')}
+          aria-label={label}
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -105,7 +136,7 @@ export function SignupChart({ days }: SignupChartProps) {
                   fontSize={14}
                   className="fill-muted-foreground"
                 >
-                  {tick}
+                  {formatAxis(tick)}
                 </text>
               </g>
             );
@@ -176,7 +207,7 @@ export function SignupChart({ days }: SignupChartProps) {
           >
             <div className="font-medium">{formatChartDayLong(activePoint.date)}</div>
             <div className="mt-0.5 text-muted-foreground">
-              {t('label.new_signups')}: {activePoint.count}
+              {label}: {formatValue(activePoint.value)}
             </div>
           </div>
         )}

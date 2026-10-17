@@ -1,6 +1,6 @@
 'use client';
 
-import { SignupChart } from '@/components/analytics/signup-chart';
+import { MetricChart } from '@/components/analytics/metric-chart';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,35 +13,50 @@ import {
 } from '@/components/ui/select';
 import { useAuthReady } from '@/hooks/use-auth-ready';
 import { useT } from '@/hooks/use-t';
-import { browserTimeZone, fetchSignupAnalytics } from '@/lib/analytics-api';
+import { fetchAnalytics } from '@/lib/analytics-api';
 import { formatChartDay } from '@/lib/chart';
 import { log, logerr } from '@/lib/logger';
+import { browserTimeZone } from '@/lib/timezone';
 import { cn } from '@/lib/utils';
-import { SIGNUP_RANGES, type SignupAnalytics, type SignupRange } from '@/types/analytics';
-import { AlertCircle, Loader2, TrendingUp } from 'lucide-react';
+import {
+  ANALYTICS_METRICS,
+  SIGNUP_RANGES,
+  type AnalyticsMetric,
+  type AnalyticsSeries,
+  type SignupRange,
+} from '@/types/analytics';
+import { AlertCircle, DollarSign, Loader2, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-        <p className="mt-1 text-3xl font-semibold tabular-nums">{value}</p>
-        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
-  );
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 function formatCount(value: number): string {
   return new Intl.NumberFormat('en').format(value);
 }
 
+function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 text-3xl font-semibold tabular-nums">{value}</p>
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
 export default function AnalyticsPage() {
   const t = useT();
   const authReady = useAuthReady();
+  const [metric, setMetric] = useState<AnalyticsMetric>('signups');
   const [range, setRange] = useState<SignupRange>('last_7_days');
-  const [data, setData] = useState<SignupAnalytics | null>(null);
+  const [data, setData] = useState<AnalyticsSeries | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -49,28 +64,29 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (!authReady) return undefined;
 
-    const timezone = browserTimeZone();
     const controller = new AbortController();
     let cancelled = false;
     setLoading(true);
     setError('');
+    setData(null);
 
     async function load() {
-      log('signup analytics load', { range, timezone });
+      const timezone = browserTimeZone();
+      log('analytics load', { metric, range, timezone });
       try {
-        const result = await fetchSignupAnalytics(range, timezone, controller.signal);
+        const result = await fetchAnalytics(metric, range, timezone, controller.signal);
         if (cancelled) return;
         setData(result);
-        log('signup analytics loaded', {
-          range,
+        log('analytics loaded', {
+          metric: result.metric,
+          range: result.range,
           days: result.days.length,
           total: result.total,
           bestDay: result.bestDay,
         });
       } catch (err) {
         if (cancelled || (err as { name?: string })?.name === 'AbortError') return;
-        logerr('signup analytics load failed', err);
-        setData(null);
+        logerr('analytics load failed', err);
         setError(err instanceof Error ? err.message : t('error.general'));
       } finally {
         if (!cancelled) setLoading(false);
@@ -82,49 +98,82 @@ export default function AnalyticsPage() {
       cancelled = true;
       controller.abort();
     };
-  }, [authReady, range, reloadKey, t]);
+  }, [authReady, metric, range, reloadKey, t]);
 
-  const dimmed = loading && data !== null;
+  const isRevenue = metric === 'revenue';
+  const metricLabel = isRevenue ? t('label.revenue') : t('label.new_signups');
+  const MetricIcon = isRevenue ? DollarSign : TrendingUp;
+  const totalLabel = isRevenue ? t('label.total_revenue') : t('label.total_signups');
+  const formatValue = isRevenue ? formatUsd : formatCount;
 
   return (
     <AdminShell>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{t('title.signup_analytics')}</h1>
+          <h1 className="text-2xl font-bold">{t('title.analytics')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            {t('msg.signup_analytics_hint')}
+            {isRevenue ? t('msg.revenue_hint') : t('msg.signup_analytics_hint')}
           </p>
         </div>
 
-        <Select value={range} onValueChange={(value) => setRange(value as SignupRange)}>
-          <SelectTrigger className="w-44" aria-label={t('title.signup_analytics')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SIGNUP_RANGES.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {t(option.labelKey)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-44">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              {t('label.metric')}
+            </span>
+            <Select value={metric} onValueChange={(value) => setMetric(value as AnalyticsMetric)}>
+              <SelectTrigger aria-label={t('label.metric')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ANALYTICS_METRICS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-44">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              {t('label.range')}
+            </span>
+            <Select value={range} onValueChange={(value) => setRange(value as SignupRange)}>
+              <SelectTrigger aria-label={t('label.range')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SIGNUP_RANGES.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      <div
-        className={cn('mt-6 grid gap-3 transition-opacity sm:grid-cols-3', dimmed && 'opacity-60')}
-      >
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <Metric
-          label={t('label.total_signups')}
-          value={data ? formatCount(data.total) : '—'}
+          label={totalLabel}
+          value={data ? formatValue(data.total) : '—'}
           hint={data ? `${formatChartDay(data.start)} – ${formatChartDay(data.end)}` : undefined}
         />
         <Metric
           label={t('label.daily_average')}
-          value={data ? data.averagePerDay.toLocaleString('en', { maximumFractionDigits: 1 }) : '—'}
+          value={
+            data
+              ? isRevenue
+                ? formatUsd(data.averagePerDay)
+                : data.averagePerDay.toLocaleString('en', { maximumFractionDigits: 1 })
+              : '—'
+          }
         />
         <Metric
           label={t('label.best_day')}
-          value={data?.bestDay ? formatCount(data.bestDay.count) : '—'}
+          value={data?.bestDay ? formatValue(data.bestDay.value) : '—'}
           hint={data?.bestDay ? formatChartDay(data.bestDay.date) : undefined}
         />
       </div>
@@ -144,8 +193,8 @@ export default function AnalyticsPage() {
       <Card className="mt-4">
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            {t('label.new_signups')}
+            <MetricIcon className="h-4 w-4 text-muted-foreground" />
+            {metricLabel}
           </CardTitle>
           {data && (
             <span className="text-xs text-muted-foreground">
@@ -160,11 +209,15 @@ export default function AnalyticsPage() {
               {t('msg.loading')}
             </div>
           ) : data ? (
-            <div className={cn('transition-opacity', dimmed && 'opacity-60')}>
-              <SignupChart key={data.range} days={data.days} />
+            <div className={cn('transition-opacity', loading && 'opacity-60')}>
+              <MetricChart
+                key={`${data.metric}-${data.range}`}
+                days={data.days}
+                metric={data.metric}
+              />
               {data.total === 0 && (
                 <p className="mt-2 text-center text-sm text-muted-foreground">
-                  {t('msg.no_signups_range')}
+                  {isRevenue ? t('msg.no_revenue_range') : t('msg.no_signups_range')}
                 </p>
               )}
             </div>
@@ -173,8 +226,8 @@ export default function AnalyticsPage() {
       </Card>
 
       {data && (
-        <p className="mt-3 text-xs text-muted-foreground">
-          {t('msg.signups_exclude_imported')}{' '}
+        <p className="mt-3 max-w-4xl text-xs text-muted-foreground">
+          {isRevenue ? t('msg.revenue_note') : t('msg.signups_exclude_imported')}{' '}
           {t('msg.signups_timezone', { timezone: data.timezone })}
         </p>
       )}
