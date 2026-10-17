@@ -1,9 +1,9 @@
 # SPEC-102: Affiliates and Coupon Codes
 
-> **Status: draft — decisions required.** This document is a proposal only; no
-> schema, API, or UI has been implemented. Several items below conflict with
-> current architecture and are called out explicitly in
-> [Conflicts and required amendments](#conflicts-and-required-amendments).
+> **Status: draft — decisions approved 2026-10-17; not implemented.** This
+> document is a proposal only; no schema, API, or UI has been implemented.
+> Several items below conflict with current architecture and are called out
+> explicitly in [Conflicts and required amendments](#conflicts-and-required-amendments).
 
 ## Metadata
 
@@ -11,7 +11,7 @@
 - **Feature**: Affiliate program (referral attribution, commissions, monthly
   statements, PayPal payouts) and coupon codes (percentage/amount, limited
   uses, expiry)
-- **Status**: draft — decisions required (2026-10-17)
+- **Status**: draft — decisions approved 2026-10-17; not implemented
 - **Created**: 2026-10-17
 - **ROADMAP Phase**: Phase 10: Admin Console + cross-cutting payment work
 - **See also**:
@@ -62,7 +62,7 @@ to Language Player.
   affiliate reporting. Historical rows are not backfilled.
 - **Coupons** are independent of affiliates. They have a code, internal name,
   percentage or amount discount, a maximum number of uses, and an expiry
-  date/time. **Proposed v1 scope: lifetime Pro purchases in USD only**, using
+  date/time. **v1 scope: lifetime Pro purchases in USD only**, using
   Stripe Checkout or PayPal. Coupons do not apply to Apple IAP, Google Play
   Billing, or the CNY Stripe Payment Links, because those paths cannot accept a
   server-computed discount.
@@ -164,7 +164,7 @@ Relevant facts before designing this:
 
 ## Conflicts and Required Amendments
 
-These are the points that must be agreed before implementation.
+These are the architectural changes the implementation must carry.
 
 ### 1. Affiliate login conflicts with ADR-0032 / SPEC-060
 
@@ -173,7 +173,7 @@ The request is for affiliates to log in through `apps/admin` and get their own
 dashboard. That is a direct contradiction unless the app becomes a
 **two-surface console**.
 
-**Recommended:** keep one Next.js app but make it role-aware:
+**Decision:** keep one Next.js app but make it role-aware:
 
 - `/login` accepts admins and active affiliates.
 - Admin routes (`/users`, `/analytics`, `/transactions`, `/content/*`) require
@@ -185,17 +185,17 @@ dashboard. That is a direct contradiction unless the app becomes a
 - ADR-0032 must be amended; SPEC-060's "admin-only at the source" statement
   becomes "admin-only routes, plus a distinct affiliate surface".
 
-**Alternative:** a separate `apps/affiliate` app. Safer boundary and smaller
-public bundle, but duplicates auth/UI scaffolding and deployment. This is an
-open decision.
+A separate `apps/affiliate` app would be a safer boundary and a smaller public
+bundle, but it duplicates auth/UI scaffolding and deployment. It is **not**
+chosen for v1.
 
 ### 2. Classic integration conflicts with AGENTS.md
 
 The request says the work may touch Classic/Nuxt. `AGENTS.md` says
-`zerotohero-nuxt/` is reference-only. **This spec treats Classic as out of
-scope** until the product owner explicitly lifts that rule for this feature.
-Without Classic support, affiliate/coupon traffic on Classic checkout is not
-attributed/discounted. The web app remains the supported purchase surface.
+`zerotohero-nuxt/` is reference-only. **Decision: Classic is out of scope.**
+The reference-only rule is not lifted for this feature, so affiliate/coupon
+traffic on Classic checkout is not attributed/discounted. The web app remains
+the supported purchase surface.
 
 ### 3. Affiliate commissions require a real payment ledger; SPEC-101 has only estimates
 
@@ -234,31 +234,37 @@ Current Teachable docs say first-touch by default; the supplied FAQ and older
 docs say last-touch. This spec chooses **last-touch**, because that is the
 behavior the product owner described and the FAQ we must reproduce.
 
-## Proposed Decisions (approval required)
+## Decisions (approved 2026-10-17)
 
-| Topic | Proposed decision | Why |
-|---|---|---|
-| Portal location | Two-surface `apps/admin` (admin + `/affiliate`) | Matches request; reuses auth/design; requires ADR-0032 amendment |
-| Attribution model | Last-touch, signed first-party cookie | Matches supplied FAQ |
-| Attribution window | 60 days default, admin-configurable 1–365 | Matches screenshot/cookie norms |
-| Commission base | Net product revenue after tax and after coupon | Teachable behavior |
-| Commission timing | Every successful payment (initial + renewals) | Teachable behavior |
-| Currency | USD only in v1 | PayPal payout and pricing are USD-centric; CNY/IAP need conversion/limitations |
-| Refunds | Reverse commission; negative adjustment if already paid | Avoid paying on refunded sales |
-| Payouts | Manual PayPal on monthly statements | Teachable currently manual; no Payouts API dependency |
-| Coupon scope | Lifetime Pro, USD only | Avoids recurring-discount and IAP/CNY gaps |
-| Coupon stacking | One coupon; no stacking with sale or another coupon | Predictable, matches Teachable |
-| Coupon editing | Code/discount immutable; archive and recreate | Matches Teachable; preserves redemption audit |
-| Affiliate portal language | English in v1 (same as admin app) | Existing admin app is English-only; localize later |
-| Classic | Out of scope until reference-only rule is lifted | AGENTS.md conflict |
+| Topic | Decision |
+|---|---|
+| Portal location | **Two-surface `apps/admin`** (admin routes + `/affiliate/*`); ADR-0032 must be amended. No separate app in v1. |
+| Classic | **Out of scope.** No attribution or discounts on Classic; the reference-only rule is not lifted. |
+| Attribution model | **Last-touch**, with first-touch fields retained for a future policy change. |
+| Attribution window | **Fixed 60 days.** No admin configuration. State this clearly in the affiliate FAQ and checkout/cookie copy. |
+| Commission base | Net product revenue after tax and after coupon. |
+| Commission timing | Every successful payment (initial + renewals) for monthly/annual; one payment for lifetime. |
+| Currency | **USD web purchases only** in v1. CNY/IAP commissions are deferred. |
+| Refunds | Reverse commission; negative adjustment if already paid. |
+| Payout method | **Manual PayPal mark-paid** in v1. No PayPal Payouts API. |
+| Payout timing | Monthly, one-month delay; statement available ~20 days after month end; paid on the first business day of the following month. |
+| Minimum payout | **$25**, carried forward. This matches Teachable's published affiliate-program threshold; Teachable's school-owner affiliate feature itself does not publish a minimum. |
+| Coupon scope | **Lifetime Pro, USD only.** No monthly/annual coupons in v1. |
+| Coupon stacking | One coupon; no stacking with a sale or another coupon. |
+| Coupon editing | Code/discount immutable; archive and recreate. |
+| Affiliate portal language | English in v1 (same as admin app). |
+| Affiliate invitation email | **Yes** — branded email using the same template styling and SMTP/transactional path as verification email. |
+| Tax forms | Out of scope; admin responsibility. |
+| Affiliate-surface PII | **No purchaser email/payment id.** Admins use the existing admin transactions screen. |
+| Cookie consent | Follow Teachable's model: classify `lp_aff` as an essential/functional performance cookie, disclose it in the privacy/cookie policy, and use consent only for non-essential analytics/advertising. Legal review required; see [Cookie consent](#cookie-consent). |
 
 ## Data Model
 
 All tables live in `public` (Supabase). Use integer cents for money, never
 floats. Add `created_at`/`updated_at` defaults and indexes as noted.
 
-Create in dependency order: `affiliates` → `affiliate_settings` →
-`user_affiliate_attributions` → `coupons` → `affiliate_statements` →
+Create in dependency order: `affiliates` → `user_affiliate_attributions` →
+`coupons` → `affiliate_statements` →
 `payment_events` → `affiliate_commissions` → `coupon_redemptions` → alter
 `user_subscriptions`. The DDL below is grouped by purpose, not execution order.
 
@@ -273,6 +279,7 @@ create table public.affiliates (
   active boolean not null default true,
   paypal_email text,
   onboarded_at timestamptz,
+  invited_at timestamptz,
   created_by uuid references auth.users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -288,16 +295,10 @@ create unique index affiliates_code_lower_key on public.affiliates (lower(code))
   historical commissions/statements remain payable.
 - `paypal_email` is required before a statement can be marked paid.
 
-### `affiliate_settings`
-
-```sql
-create table public.affiliate_settings (
-  id smallint primary key default 1 check (id = 1),
-  link_attribution_days integer not null default 60 check (link_attribution_days between 1 and 365),
-  default_commission_bps integer not null default 1500 check (default_commission_bps between 0 and 10000),
-  updated_at timestamptz not null default now()
-);
-```
+There is no `affiliate_settings` table: the attribution window is fixed at
+**60 days** and the default commission is a server constant
+`DEFAULT_COMMISSION_BPS = 1500` (15%). Admin can change an individual
+affiliate's commission, but there is no global window/commission setting in v1.
 
 ### `user_affiliate_attributions`
 
@@ -502,8 +503,7 @@ concurrent subscriptions per user, move the attribution to a
   ```text
   name:     lp_aff
   value:    v1.<CODE>.<issued_at_unix>.<hmac_sha256>
-  maxAge:   365 days (storage cap; the server enforces the configured
-            1–365-day attribution window from issued_at)
+  maxAge:   60 days (fixed attribution window; no admin configuration)
   path:     /
   domain:   .languageplayer.io in production (share with Classic if approved);
             host-only locally
@@ -558,7 +558,7 @@ a purchase when a user clicked more than one affiliate link**.
     `first_expires_at` if unset;
   - every valid touch updates the last-touch `affiliate_id` / `attributed_at` /
     `expires_at`;
-  - `expires_at = now + link_attribution_days`.
+  - `expires_at = now + 60 days`.
 - If the token is invalid/expired, the stored attribution is not extended.
 
 ### Resolving attribution at checkout
@@ -596,6 +596,41 @@ Additional guards:
   link.
 - Mobile IAP purchases cannot be attributed in v1. Affiliate links should open
   the web purchase page. Deferred deep links are a later phase.
+
+### Cookie consent
+
+**How Teachable does it:** Teachable's Cookie Policy lists affiliate
+commission attribution under **essential → performance** cookies (recording
+clicks and transactions to commission an affiliate sale). Its checkout cookie
+banner (from December 2024) is shown to logged-out users and controls
+**non-essential/advertising** cookies; affiliate attribution is treated as
+essential, not something the banner can disable. See
+[Teachable Cookies Policy](https://www.teachable.com/legal/cookies-policy) and
+[Cookies on Checkout Pages](https://support.teachable.com/en/articles/11682560-cookies-on-checkout-pages).
+
+**Best practice for Language Player:**
+
+1. Treat `lp_aff` as a **first-party, functional attribution cookie**, not an
+   advertising/profiling cookie. It is set only after an affiliate-link click,
+   stores only an affiliate code/timestamp, lives 60 days, and is not used for
+   ad targeting.
+2. Disclose it explicitly in the privacy/cookie policy: name `lp_aff`, purpose,
+   first-party, 60-day retention, and how to clear it. The current policy lists
+   essential cookies only for sign-in/language/guest navigation, so it must be
+   updated.
+3. Follow Teachable's model: classify it as essential/functional and show a
+   cookie notice/banner only for non-essential analytics/advertising. Do not
+   gate `lp_aff` behind the advertising-consent toggle.
+4. Have counsel confirm the classification for the jurisdictions we serve.
+   Affiliate attribution is treated as marketing in some EU/UK readings; if
+   counsel requires opt-in, gate `lp_aff` until consent and accept that
+   declined users are not attributed. Do not silently set it before consent if
+   counsel says it is non-essential.
+5. Keep the cookie narrow: no cross-site tracking, no ad networks, no PII in
+   the cookie, and a documented deletion path.
+
+This is a product/legal decision, not a reason to omit the cookie disclosure.
+The spec assumes the Teachable-style essential classification with legal review.
 
 ## Commission and Payment Ledger
 
@@ -687,7 +722,7 @@ collected, not from a later reconciliation of the subscription row:
 4. **Affiliate view**: sees period, statement ID, status (`pending`/`paid`),
    and earnings; can open a detail view listing the underlying commissions.
 
-Timing (proposed, matching the supplied screenshot/FAQ):
+Timing (confirmed, matching the supplied screenshot/FAQ):
 
 - Earnings for March 1–31 are collected into the March statement.
 - The statement is generated/available in April (Teachable says ~20 days after
@@ -708,12 +743,43 @@ the repo today; the spec should not assume one.
 - PayPal only. No Stripe Connect, bank transfer, or store credit in v1.
 - Admin must set `affiliates.paypal_email` before marking paid; validate with a
   basic email format check.
-- Manual payout only; record `payment_reference` for audit. An optional PayPal
-  Payouts API integration is future work.
-- No minimum payout threshold in v1 (open question; a threshold avoids tiny
-  PayPal fees).
+- Manual payout only; record `payment_reference` for audit.
+- **Minimum payout: $25.** A statement below $25 remains `pending` and its
+  balance carries into the next statement. Rationale: it matches the only
+  published Teachable affiliate-program threshold and avoids tiny PayPal fees.
+  Teachable's **school-owner** affiliate feature itself does not publish a
+  platform-enforced minimum; owners pay manually. This is a deliberate choice,
+  not a claim that the school feature enforces $25.
 - Tax forms (W-9/W-8BEN/1099) are out of scope; the admin is responsible for
   compliance. Document this in the affiliate FAQ/terms.
+
+### Manual payouts vs the PayPal Payouts API
+
+**Manual mark-paid (v1)**
+
+- The admin logs into PayPal, sends the affiliate their statement total, then
+  records the PayPal transaction id and marks the statement `paid`.
+- No PayPal API credentials, funding setup, webhook handling, or payout
+  reconciliation code.
+- Matches Teachable's current **school-owner** affiliate feature: Teachable's
+  docs say school owners are responsible for paying affiliates manually and
+  that automated payouts are "coming soon."
+- Cost: admin time, manual errors, no automatic retry/status sync.
+
+**PayPal Payouts API (future)**
+
+- `POST /v1/payments/payouts` sends one or many payments to PayPal emails from
+  a business account, with synchronous batch status and webhook notifications.
+- Requires a PayPal business account with Payouts enabled, API credentials,
+  sufficient funding, idempotency keys, webhook verification, failure/retry
+  handling, and reconciliation against statements.
+- It is the right automation once volume makes manual payments painful; it is
+  not needed for the first release and adds operational/compliance surface.
+
+Teachable's **own** affiliate program (promoting Teachable, a different program
+from the school-owner feature in the screenshots) is listed by a third-party
+directory with PayPal, a $25 minimum, and Net-30 terms. This spec uses the
+manual model for the school-owner feature, with a $25 minimum for practicality.
 
 ## Admin UI
 
@@ -722,8 +788,8 @@ the repo today; the spec should not assume one.
 Add an **Affiliate** card to `/users/[id]` Overview:
 
 - If not an affiliate: “Make affiliate” button → modal with commission
-  percentage (default from settings) → creates profile, generates code, sets
-  `active=true`.
+  percentage (default 15%) → creates profile, generates code, sends the
+  invitation email, sets `active=true`.
 - If an affiliate: code, commission %, active toggle, PayPal email,
   onboarding status, lifetime sales, lifetime commission, pending statement
   total; “Edit commission” and “Deactivate affiliate” actions.
@@ -732,6 +798,34 @@ Add an **Affiliate** card to `/users/[id]` Overview:
 - Preserve the existing admin privilege control and subscription manager.
 
 Search results should show an `Affiliate` badge.
+
+### Affiliate invitation email
+
+When an admin promotes an existing user, send a branded transactional email
+using the same look and sending path as the verification emails.
+
+- Add `docs/email-templates/affiliate-invited.html` using the same card,
+  logo, purple `#69279c` palette, and footer as
+  `docs/email-templates/confirm-signup.html`.
+- Subject: “You’re now a Language Player affiliate”.
+- Body: commission rate, affiliate code, 60-day/last-touch explanation,
+  “Open your affiliate dashboard” link to `https://languageplayer.io/affiliate/welcome`,
+  and a note that the existing Language Player password is used (no new
+  password).
+- Send it through the same SMTP/transactional identity used for auth email.
+  The verification emails are Supabase Auth templates deployed through the
+  Supabase mailer; the affiliate invite is **not** an auth event, so do not rely
+  on `inviteUserByEmail` for an existing confirmed account. Add a small
+  transactional sender (`utils_email.py`) using the same sender domain/SMTP
+  configuration, or a Supabase Edge Function with the same template; if the
+  Supabase SMTP credentials are not exportable, configure a dedicated SMTP
+  identity with the same `From` name/address and keep the HTML template in
+  `docs/email-templates/`.
+- Store `affiliates.invited_at`; expose “Resend invitation email” in the admin
+  affiliate card. A send failure must not roll back the affiliate creation;
+  log it and show a retry.
+- Do not send the email on every commission-rate edit; only on promotion or an
+  explicit resend.
 
 ### Affiliates list
 
@@ -742,11 +836,10 @@ Route `/affiliates` (Users group), admin-only:
 - Search by name/email/code; filters active/inactive; pagination; Export CSV.
 - Table: Name, Email, Code, Commission %, Sales, Earnings, Pending, Status,
   Last activity, Actions (View user, Edit commission, Deactivate).
-- Tabs: **Affiliates**, **Statements**, **Settings**.
+- Tabs: **Affiliates**, **Statements**. There is no Settings tab in v1:
+  commission is per affiliate and the attribution window is fixed at 60 days.
 - Statements tab: period, affiliate, statement ID, status, total, PayPal email,
   actions (Mark paid, View detail, Export CSV).
-- Settings: link attribution window (1–365 days), default commission %, payout
-  note.
 
 ### Coupons
 
@@ -786,6 +879,7 @@ All routes admin-gated with `require_admin()`:
 | GET | `/admin/users/<id>/affiliate` | Profile + metrics |
 | POST | `/admin/users/<id>/affiliate` | Make affiliate |
 | PATCH | `/admin/users/<id>/affiliate` | Commission/active/PayPal |
+| POST | `/admin/users/<id>/affiliate/resend-invite` | Resend the invitation email |
 | GET | `/admin/affiliates/statements` | Statement queue |
 | POST | `/admin/affiliates/statements/generate` | Generate a period |
 | POST | `/admin/affiliates/statements/<id>/pay` | Mark paid + reference |
@@ -870,6 +964,28 @@ Render the supplied FAQ content:
 - Filters: date range, product, status; pagination; Export CSV optional.
 - A caller with affiliate A’s token must get zero rows for B’s data even if it
   tampers with request parameters. Add an explicit regression test.
+
+### Why affiliates do not see purchaser PII
+
+The affiliate needs enough information to verify their commission: date,
+product, sale amount, rate, commission, and status. A buyer’s name, email, and
+payment id are not needed for that calculation and create avoidable risk:
+
+- **Data minimization/privacy:** affiliates are external users; exposing buyer
+  contact/payment identifiers turns the dashboard into a customer list and
+  increases GDPR/CCPA exposure.
+- **Abuse:** an affiliate could use buyer emails for off-platform marketing or
+  contact buyers about refunds, which the school should handle.
+- **Least privilege:** the admin already has the full `/admin/transactions`
+  screen (admin-gated) for support investigations. If an admin needs to find a
+  specific commission, they can search by affiliate/statement in the admin
+  area; the affiliate endpoint never needs to join buyer PII.
+- **Breakage radius:** if an affiliate token leaks, the attacker gets sales
+  amounts and commissions, not buyer identities.
+
+Admin affiliate detail can show aggregate sales/commission and statement
+history; purchaser email/payment id remain visible only in the admin-only
+transactions screen.
 
 **Statements**
 
@@ -970,9 +1086,8 @@ prevent code brute-forcing.
     requires affiliate; login redirects based on role.
   - Demotion/deactivation leaves a stale UI until re-login but APIs fail
     immediately.
-- If an account is both admin and affiliate: default to the admin shell, with a
-  link to the affiliate dashboard; or default to affiliate? **Proposed:** admin
-  default, explicit “View affiliate dashboard” link.
+- If an account is both admin and affiliate: **admin shell by default**, with
+  an explicit “View affiliate dashboard” link.
 
 ### Server-side guards
 
@@ -994,19 +1109,20 @@ prevent code brute-forcing.
 ### Privacy
 
 - Affiliate transaction rows must not expose student names/emails/payment ids.
-- Admin affiliate screens may show purchaser email only if needed; default to
-  not showing PII in the affiliate surface.
-- Marketing cookie consent: confirm the existing cookie policy/consent banner
-  covers an affiliate attribution cookie; if not, add consent gating before
-  setting `lp_aff` (open question).
+- Admin affiliate list/detail shows aggregate sales and statements, not buyer
+  PII. Full purchaser data stays in the admin-only `/admin/transactions`
+  screen.
+- Follow the Teachable-style essential/functional cookie classification,
+  disclose `lp_aff` in the privacy/cookie policy, and have counsel review it.
+  If counsel requires opt-in, gate the cookie and accept reduced attribution.
 
 ## Apps and Files Impacted
 
 ### Supabase
 
-- New tables: `affiliates`, `affiliate_settings`,
-  `user_affiliate_attributions`, `payment_events`, `affiliate_commissions`,
-  `affiliate_statements`, `coupons`, `coupon_redemptions`.
+- New tables: `affiliates`, `user_affiliate_attributions`, `payment_events`,
+  `affiliate_commissions`, `affiliate_statements`, `coupons`,
+  `coupon_redemptions`; `DEFAULT_COMMISSION_BPS = 1500` is a constant.
 - Alter `user_subscriptions` (`affiliate_id`, `affiliate_attributed_at`).
 - Indexes/uniques listed above; RLS is not used by Flask (service role), but
   policies should at least deny anon access.
@@ -1025,16 +1141,18 @@ prevent code brute-forcing.
   circular imports with ledger helpers.
 - `utils_payment_events.py` or `utils_affiliate.py`: idempotent event creation,
   commission math, statement generation.
+- `utils_email.py`: transactional sender for the affiliate invitation, using
+  the same sender domain/SMTP identity as auth email.
 - `scripts/generate_affiliate_statements.py` (cron/admin).
 - Tests: access control/IDOR, attribution, coupons, commissions, statements,
-  refunds, idempotency.
+  refunds, idempotency, invitation-email failure handling.
 
 ### `apps/admin`
 
 - `auth.ts` / `proxy.ts`: allow affiliates, role-based routing.
 - `components/layout/affiliate-shell.tsx`, affiliate nav.
 - `app/affiliate/*` screens.
-- `app/affiliates/page.tsx` admin list/statements/settings.
+- `app/affiliates/page.tsx` admin list/statements (no settings tab).
 - `app/coupons/page.tsx` admin coupon list/create/edit.
 - `app/users/[id]/page.tsx`: affiliate card.
 - `types/affiliate.ts`, `types/coupon.ts`, API clients.
@@ -1049,6 +1167,7 @@ prevent code brute-forcing.
   discounted amount preview, processor availability.
 - `src/app/login` / session bootstrap: persist attribution for logged-in users.
 - `src/lib/prices.ts`: coupon-aware final price helper (or server-only).
+- Add/update the cookie notice/privacy-policy disclosure for `lp_aff`.
 - Tests: cookie set/overwrite/expiry, signup attribution, checkout body.
 
 ### `apps/mobile`
@@ -1066,6 +1185,13 @@ prevent code brute-forcing.
   same cookie/params, checkout forwards token/coupon, and the Classic
   subscription flow writes the same ledger/commission rows. Treat as a separate
   repo commit.
+
+### Email templates / docs
+
+- Add `docs/email-templates/affiliate-invited.html` and add it to
+  `docs/email-templates/README.md`.
+- Update `packages/docs/content/privacy-policy.md` with the `lp_aff` cookie
+  purpose, 60-day retention, and first-party status.
 
 ### Shared packages
 
@@ -1215,28 +1341,13 @@ prevent code brute-forcing.
 
 ## Open Questions
 
-1. **Portal location**: approve two-surface `apps/admin`, or build a separate
-   `apps/affiliate`? (Recommendation: two-surface, with ADR-0032 amendment.)
-2. **Coupon scope**: approve lifetime-only v1, or also monthly/annual? If
-   subscriptions, should a percentage coupon apply to first payment only or all
-   payments? (Recommendation: lifetime-only v1.)
-3. **Attribution model**: confirm last-touch (per supplied FAQ) despite current
-   Teachable docs saying first-touch.
-4. **Attribution window**: 60 days default? Should it be configurable by the
-   admin (1–365)?
-5. **Commission currency**: confirm USD web-only v1; CNY/IAP deferred.
-6. **Payout timing**: one-month delay with statements available ~20 days after
-   month end, paid on the first business day of the following month?
-7. **Manual PayPal vs PayPal Payouts API**: manual mark-paid v1?
-8. **Minimum payout threshold**: none, or e.g. $50 to limit PayPal fees?
-9. **Tax forms**: confirm out of scope and admin responsibility.
-10. **Classic exception**: should the reference-only rule be lifted for this
-    feature? If not, Classic purchases are not attributed/discounted.
-11. **Affiliate email notifications**: should making someone an affiliate send
-    an email (Teachable does)? Not required by the request.
-12. **Admin access to affiliate data**: should admins see the full purchaser
-    email/payment id in an affiliate's transaction detail? (Recommendation:
-    no PII in the affiliate surface; admins can use the existing transactions
-    screen.)
-13. **Cookie consent**: does the existing cookie policy/consent cover a
-    marketing attribution cookie, or must `lp_aff` wait for consent?
+1. **Cookie-consent legal review**: confirm the Teachable-style
+   essential/functional classification for the jurisdictions Language Player
+   serves; if counsel requires opt-in, gate `lp_aff` and accept reduced
+   attribution.
+2. **Affiliate-email SMTP path**: confirm whether the Supabase Auth SMTP
+   credentials can be reused for a non-auth transactional email, or configure a
+   dedicated SMTP identity with the same sender/domain and template.
+3. **$25 threshold**: confirm $25 rather than no threshold. Teachable's
+   school-owner feature publishes no minimum; $25 matches Teachable's separate
+   affiliate program and limits PayPal fees.
