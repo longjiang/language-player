@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SubscriptionManager } from '@/components/users/subscription-manager';
+import { AffiliateCard } from '@/components/users/affiliate-card';
 import { AdminPrivilegeControl } from '@/components/users/admin-privilege';
 import { useT } from '@/hooks/use-t';
 import { fetchUserDetail } from '@/lib/admin-api';
@@ -89,6 +90,8 @@ function OverviewTab({ detail, onChanged }: { detail: UserDetail; onChanged: () 
         subscriptions={detail.subscriptions}
         onChanged={onChanged}
       />
+
+      <AffiliateCard userId={user.id} />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Card>

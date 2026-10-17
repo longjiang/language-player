@@ -126,6 +126,14 @@ export default function GoProPage() {
   const [loadingPrices, setLoadingPrices] = useState(true);
   const [checkingOut, setCheckingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponPreview, setCouponPreview] = useState<{
+    code: string;
+    discountCents: number;
+    finalCents: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
 
   // Sale window, resolved against the device clock after mount (never during
   // SSR — see useSaleWindow). `saleOpen` drives both the banner and which
@@ -168,6 +176,41 @@ export default function GoProPage() {
         && new Date(subscription.expires_on.replace(' ', 'T')) > new Date())
     );
 
+  function readCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const row = document.cookie.split('; ').find((r) => r.startsWith(`${name}=`));
+    return row ? decodeURIComponent(row.split('=').slice(1).join('=')) : null;
+  }
+
+  async function applyCoupon() {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+    setCheckingCoupon(true);
+    setCouponError(null);
+    try {
+      const res = await authenticatedFetch(`${PYTHON_API_URL}/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, plan: 'lifetime', currency: 'usd' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setCouponPreview(null);
+        setCouponError(data?.error ?? t('msg.coupon_invalid'));
+      } else {
+        setCouponPreview({
+          code,
+          discountCents: data.discountCents,
+          finalCents: data.finalCents,
+        });
+      }
+    } catch {
+      setCouponError(t('msg.coupon_invalid'));
+    } finally {
+      setCheckingCoupon(false);
+    }
+  }
+
   // ── Stripe Credit Card checkout ──
   const handleStripeCheckout = useCallback(async () => {
     if (!selectedPlan || !userId) return;
@@ -196,6 +239,8 @@ export default function GoProPage() {
           user_id: String(userId),
           host: APP_HOST,
           mode: usdPrice.mode,
+          coupon_code: selectedPlan === 'lifetime' ? couponPreview?.code : undefined,
+          affiliate_token: readCookie('lp_aff') ?? undefined,
         }),
       });
 
@@ -217,7 +262,7 @@ export default function GoProPage() {
       setError(err?.message ?? t('msg.unexpected_error'));
       setCheckingOut(false);
     }
-  }, [selectedPlan, userId, prices, saleOpen, t]);
+  }, [selectedPlan, userId, prices, saleOpen, t, couponPreview]);
 
   // ── WeChat / Alipay (CNY Payment Link) ──
   // Sale-aware: the CNY sale row carries its own Payment Link, and the Stripe
@@ -355,6 +400,31 @@ export default function GoProPage() {
             </div>
           ) : (
           <div className="space-y-3">
+            {selectedPlan === 'lifetime' && (
+              <div className="rounded-lg border border-border bg-muted/30 p-4">
+                <p className="mb-2 text-sm font-medium">{t('msg.have_coupon')}</p>
+                <div className="flex gap-2">
+                  <input
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder={t('placeholder.coupon_code')}
+                    className="h-9 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm"
+                    disabled={saleOpen}
+                  />
+                  <Button variant="outline" onClick={applyCoupon} disabled={checkingCoupon || !couponCode.trim() || saleOpen}>
+                    {checkingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : t('action.apply')}
+                  </Button>
+                </div>
+                {saleOpen && <p className="mt-2 text-xs text-muted-foreground">{t('msg.coupon_not_with_sale')}</p>}
+                {couponError && <p className="mt-2 text-xs text-destructive">{couponError}</p>}
+                {couponPreview && (
+                  <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+                    {t('msg.coupon_applied')}: -${(couponPreview.discountCents / 100).toFixed(2)}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Credit Card (USD) */}
             {usdPrice && (
               <Button
@@ -371,7 +441,7 @@ export default function GoProPage() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <span className="flex items-center gap-1 text-sm opacity-70">
-                    ${formatPriceAmount(usdPrice.amount)}{selectedPlanData.intervalKey ? ` ${t(selectedPlanData.intervalKey)}` : ''}
+                    ${formatPriceAmount(couponPreview && selectedPlan === 'lifetime' ? couponPreview.finalCents / 100 : Number(usdPrice.amount))}{selectedPlanData.intervalKey ? ` ${t(selectedPlanData.intervalKey)}` : ''}
                     <ArrowRight className="h-3 w-3" />
                   </span>
                 )}
