@@ -33,10 +33,7 @@ export function SignupChart({ days }: SignupChartProps) {
   const gradientId = `signup-gradient-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const [active, setActive] = useState<number | null>(null);
 
-  const scale = useMemo(
-    () => niceScale(Math.max(0, ...days.map((day) => day.count)), 4),
-    [days],
-  );
+  const scale = useMemo(() => niceScale(Math.max(0, ...days.map((day) => day.count)), 4), [days]);
 
   const points = useMemo(() => {
     const count = days.length;
@@ -46,29 +43,20 @@ export function SignupChart({ days }: SignupChartProps) {
         count <= 1
           ? PADDING.left + PLOT_WIDTH / 2
           : PADDING.left + (index / (count - 1)) * PLOT_WIDTH,
-      y:
-        PADDING.top +
-        PLOT_HEIGHT -
-        (scale.max > 0 ? (day.count / scale.max) * PLOT_HEIGHT : 0),
+      y: PADDING.top + PLOT_HEIGHT - (scale.max > 0 ? (day.count / scale.max) * PLOT_HEIGHT : 0),
     }));
   }, [days, scale.max]);
 
-  const labelIndices = useMemo(
-    () => pickLabelIndices(days.length, MAX_X_LABELS),
-    [days.length],
-  );
+  const labelIndices = useMemo(() => pickLabelIndices(days.length, MAX_X_LABELS), [days.length]);
 
   if (points.length === 0) return null;
 
   const baselineY = PADDING.top + PLOT_HEIGHT;
   const line = smoothPath(points);
   const area = areaPath(points, baselineY);
-  const activeIndex =
-    active !== null && active >= 0 && active < points.length ? active : null;
+  const activeIndex = active !== null && active >= 0 && active < points.length ? active : null;
   const activePoint = activeIndex === null ? null : points[activeIndex];
-  const tooltipLeft = activePoint
-    ? Math.min(88, Math.max(12, (activePoint.x / WIDTH) * 100))
-    : 0;
+  const tooltipLeft = activePoint ? Math.min(88, Math.max(12, (activePoint.x / WIDTH) * 100)) : 0;
 
   function handlePointer(event: React.PointerEvent<SVGRectElement>) {
     const svg = event.currentTarget.ownerSVGElement;
@@ -82,121 +70,117 @@ export function SignupChart({ days }: SignupChartProps) {
   }
 
   return (
-    <div className="relative" onPointerLeave={() => setActive(null)}>
-      <svg
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="h-auto w-full"
-        role="img"
-        aria-label={t('title.signup_analytics')}
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="0%"
-              style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.3 }}
-            />
-            <stop
-              offset="100%"
-              style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.02 }}
-            />
-          </linearGradient>
-        </defs>
+    <div className="-mx-1 overflow-x-auto px-1">
+      <div className="relative min-w-[640px]" onPointerLeave={() => setActive(null)}>
+        <svg
+          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+          className="h-auto w-full"
+          role="img"
+          aria-label={t('title.signup_analytics')}
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.3 }} />
+              <stop offset="100%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.02 }} />
+            </linearGradient>
+          </defs>
 
-        {scale.ticks.map((tick) => {
-          const y = baselineY - (tick / scale.max) * PLOT_HEIGHT;
-          return (
-            <g key={tick}>
+          {scale.ticks.map((tick) => {
+            const y = baselineY - (tick / scale.max) * PLOT_HEIGHT;
+            return (
+              <g key={tick}>
+                <line
+                  x1={PADDING.left}
+                  x2={WIDTH - PADDING.right}
+                  y1={y}
+                  y2={y}
+                  className="stroke-border"
+                  strokeWidth={1}
+                  strokeDasharray={tick === 0 ? undefined : '4 4'}
+                />
+                <text
+                  x={PADDING.left - 10}
+                  y={y + 4}
+                  textAnchor="end"
+                  fontSize={14}
+                  className="fill-muted-foreground"
+                >
+                  {tick}
+                </text>
+              </g>
+            );
+          })}
+
+          <path d={area} fill={`url(#${gradientId})`} />
+          <path
+            d={line}
+            fill="none"
+            className="stroke-primary"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {activePoint && (
+            <>
               <line
-                x1={PADDING.left}
-                x2={WIDTH - PADDING.right}
-                y1={y}
-                y2={y}
-                className="stroke-border"
+                x1={activePoint.x}
+                x2={activePoint.x}
+                y1={PADDING.top}
+                y2={baselineY}
+                className="stroke-muted-foreground"
                 strokeWidth={1}
-                strokeDasharray={tick === 0 ? undefined : '4 4'}
+                strokeDasharray="3 3"
               />
+              <circle
+                cx={activePoint.x}
+                cy={activePoint.y}
+                r={4.5}
+                className="fill-primary stroke-card"
+                strokeWidth={2}
+              />
+            </>
+          )}
+
+          {labelIndices.map((index) => {
+            const point = points[index]!;
+            return (
               <text
-                x={PADDING.left - 10}
-                y={y + 4}
-                textAnchor="end"
-                fontSize={12}
+                key={point.date}
+                x={point.x}
+                y={baselineY + 24}
+                textAnchor="middle"
+                fontSize={14}
                 className="fill-muted-foreground"
               >
-                {tick}
+                {formatChartDay(point.date)}
               </text>
-            </g>
-          );
-        })}
+            );
+          })}
 
-        <path d={area} fill={`url(#${gradientId})`} />
-        <path
-          d={line}
-          fill="none"
-          className="stroke-primary"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+          <rect
+            x={PADDING.left}
+            y={PADDING.top}
+            width={PLOT_WIDTH}
+            height={PLOT_HEIGHT}
+            fill="transparent"
+            onPointerMove={handlePointer}
+            onPointerDown={handlePointer}
+          />
+        </svg>
 
         {activePoint && (
-          <>
-            <line
-              x1={activePoint.x}
-              x2={activePoint.x}
-              y1={PADDING.top}
-              y2={baselineY}
-              className="stroke-muted-foreground"
-              strokeWidth={1}
-              strokeDasharray="3 3"
-            />
-            <circle
-              cx={activePoint.x}
-              cy={activePoint.y}
-              r={4.5}
-              className="fill-primary stroke-card"
-              strokeWidth={2}
-            />
-          </>
-        )}
-
-        {labelIndices.map((index) => {
-          const point = points[index]!;
-          return (
-            <text
-              key={point.date}
-              x={point.x}
-              y={baselineY + 24}
-              textAnchor="middle"
-              fontSize={12}
-              className="fill-muted-foreground"
-            >
-              {formatChartDay(point.date)}
-            </text>
-          );
-        })}
-
-        <rect
-          x={PADDING.left}
-          y={PADDING.top}
-          width={PLOT_WIDTH}
-          height={PLOT_HEIGHT}
-          fill="transparent"
-          onPointerMove={handlePointer}
-          onPointerDown={handlePointer}
-        />
-      </svg>
-
-      {activePoint && (
-        <div
-          className="pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
-          style={{ left: `${tooltipLeft}%` }}
-        >
-          <div className="font-medium">{formatChartDayLong(activePoint.date)}</div>
-          <div className="mt-0.5 text-muted-foreground">
-            {t('label.new_signups')}: {activePoint.count}
+          <div
+            className="pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+            style={{ left: `${tooltipLeft}%` }}
+          >
+            <div className="font-medium">{formatChartDayLong(activePoint.date)}</div>
+            <div className="mt-0.5 text-muted-foreground">
+              {t('label.new_signups')}: {activePoint.count}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
