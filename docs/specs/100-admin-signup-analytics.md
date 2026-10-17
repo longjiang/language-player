@@ -9,7 +9,8 @@
 - **Created**: 2026-10-17
 - **Implemented**: 2026-10-17.
   `zerotohero-python-server` — `e1ba33f` (endpoint + tests).
-  `apps/admin` — `dac11a34` (i18n), `d54c56d5` (screen + chart).
+  `apps/admin` — `dac11a34` (i18n), `d54c56d5` (screen + chart),
+  `19a95c52` (chart narrow-screen fix).
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - [ADR-0032 — Admin Console as a Separate Next.js App](../adr/0032-admin-console-app.md)
