@@ -1044,6 +1044,7 @@
         "coupon_applied": "Coupon applied",
         "coupon_invalid": "That coupon is not valid.",
         "coupon_not_with_sale": "Coupons cannot be combined with a sale.",
+        "coupon_usd_only": "This coupon applies to the USD card checkout only.",
         "cover_hint": "The cover is a YouTube id; imports only set it when it is empty.",
         "creating_account": "Creating account...",
         "days_remaining": "{n} {n, plural, one {day} other {days}} remaining",

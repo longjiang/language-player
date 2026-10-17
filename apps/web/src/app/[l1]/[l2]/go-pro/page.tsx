@@ -420,9 +420,14 @@ export default function GoProPage() {
                 {saleOpen && <p className="mt-2 text-xs text-muted-foreground">{t('msg.coupon_not_with_sale')}</p>}
                 {couponError && <p className="mt-2 text-xs text-destructive">{couponError}</p>}
                 {couponPreview && (
-                  <p className="mt-2 text-sm text-green-600 dark:text-green-400">
-                    {t('msg.coupon_applied')}: -${(couponPreview.discountCents / 100).toFixed(2)}
-                  </p>
+                  <>
+                    <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+                      {t('msg.coupon_applied')}: -${(couponPreview.discountCents / 100).toFixed(2)}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t('msg.coupon_usd_only')}
+                    </p>
+                  </>
                 )}
               </div>
             )}
@@ -451,7 +456,7 @@ export default function GoProPage() {
             )}
 
             {/* WeChat Pay (CNY) */}
-            {cnyPaymentLink && (
+            {cnyPaymentLink && !couponPreview && (
               <a
                 href={cnyPaymentLink}
                 className="flex w-full items-center justify-between rounded-lg bg-green-600 px-4 py-3 text-white transition-colors hover:bg-green-700"
@@ -467,7 +472,7 @@ export default function GoProPage() {
             )}
 
             {/* Alipay (CNY) — same as WeChat, uses Payment Link */}
-            {cnyPaymentLink && (
+            {cnyPaymentLink && !couponPreview && (
               <a
                 href={cnyPaymentLink}
                 className="flex w-full items-center justify-between rounded-lg bg-blue-600 px-4 py-3 text-white transition-colors hover:bg-blue-700"
