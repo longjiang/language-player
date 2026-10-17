@@ -27,6 +27,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PayPalButton } from '@/components/checkout/paypal-button';
 
 // ── Constants ──
 
@@ -38,6 +39,7 @@ const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_TEST === 'true'
 
 /** The frontend host, used for post-payment redirect URLs. */
 const APP_HOST = typeof window !== 'undefined' ? window.location.origin : 'https://languageplayer.io';
+const PAYPAL_ENABLED = Boolean(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
 
 interface PlanCard {
   nameKey: 'plan.monthly' | 'plan.annual' | 'plan.lifetime';
@@ -480,20 +482,23 @@ export default function GoProPage() {
               </a>
             )}
 
-            {/* PayPal — lifetime only */}
-            {selectedPlan === 'lifetime' && (
-              <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  {t('msg.paypal_available')}{' '}
-                  <a
-                    href="https://languageplayer.io/go-pro"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-primary underline"
-                  >
-                    {t('msg.use_paypal_classic')}
-                  </a>
+            {/* PayPal — lifetime only, Orders v2 */}
+            {selectedPlan === 'lifetime' && userId && usdPrice && PAYPAL_ENABLED && !saleOpen && (
+              <div className="rounded-lg border border-border bg-muted/30 p-4">
+                <p className="mb-2 text-center text-xs text-muted-foreground">
+                  {t('msg.paypal_available')}
                 </p>
+                <PayPalButton
+                  key={`${couponPreview?.code ?? 'none'}-${couponPreview?.finalCents ?? usdPrice.amount}`}
+                  userId={String(userId)}
+                  host={APP_HOST}
+                  amount={(
+                    (couponPreview ? couponPreview.finalCents : Number(usdPrice.amount) * 100) / 100
+                  ).toFixed(2)}
+                  couponCode={couponPreview?.code}
+                  affiliateToken={readCookie('lp_aff')}
+                  disabled={checkingOut || loadingPrices}
+                />
               </div>
             )}
           </div>
