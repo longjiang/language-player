@@ -245,7 +245,11 @@ export default function TransactionsPage() {
             {t('msg.transactions_hint')}
           </p>
         </div>
-        <Button variant="outline" onClick={() => void handleExport()} disabled={exporting}>
+        <Button
+          variant="outline"
+          onClick={() => void handleExport()}
+          disabled={exporting || !authReady || !data?.total}
+        >
           {exporting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
