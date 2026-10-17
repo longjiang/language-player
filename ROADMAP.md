@@ -164,6 +164,10 @@
   filters, search, sortable date/price columns, pagination, and CSV export.
   Prices come from the current USD price list plus historical sale windows
   because the database stores no charged amount (SPEC-101)
+- ⬜ Affiliates and coupon codes — affiliate profiles/referral attribution,
+  commission ledger, monthly statements, PayPal payouts, and lifetime coupon
+  codes. Drafted as SPEC-102; decisions on the admin-app boundary, coupon
+  scope, and payment ledger are required before implementation
 - ⬜ Payment log viewer and account actions (delete / reset / demote admin)
 
 ## Known Issues
@@ -183,6 +187,7 @@
 
 ## Currently Working On
 - Phase 7: Mobile Integration — porting all Next.js pages to React Native
-- Phase 10: Admin Console — user management, content management, signup
-  analytics, and transactions shipped (SPEC-060, SPEC-099, SPEC-100,
-  SPEC-101); payment log viewer and account actions are next
+- Phase 10: Admin Console — user management, content management, analytics,
+  and transactions shipped (SPEC-060, SPEC-099, SPEC-100, SPEC-101);
+  affiliates/coupons are drafted as SPEC-102 and await decisions; payment log
+  viewer and account actions are next
