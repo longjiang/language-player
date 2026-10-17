@@ -317,6 +317,26 @@ The admin console (`apps/admin`, SPEC-060 / ADR-0032) can grant a subscription d
 
 `POST /admin/users/<user_id>/subscriptions` → `add_subscription(...)` with auto-computed expiry (`trial` = +7d, `monthly` = +30d, `annual` = +365d, `lifetime` = none). Because it reuses `utils_subscription`, the MailerLite group assignment is preserved.
 
+### Admin transactions view (SPEC-101)
+
+The console's `/transactions` screen lists non-trial subscription rows that
+carry a payment reference or processor. It is a **view of subscription
+records, not a payment ledger**:
+
+- `user_subscriptions` has no `amount` or `currency` column, and there is no
+  payments/orders table.
+- The screen estimates USD prices from the current `data/prices.csv` regular
+  rows plus historical lifetime sale windows in `data/sale_windows.csv`.
+- Monthly/annual renewals update the existing row's `payment_date`; they do
+  not insert a new transaction. The list therefore shows the latest payment
+  per subscription and understates recurring revenue.
+- Refunds are not stored, so purchases downgraded to `type='trial'` are absent
+  and no refund/chargeback metrics exist.
+
+If exact financial reporting is needed, persist `amount`, `currency`, the
+provider price id, and a refund/payment ledger row at grant time, then replace
+the estimate. See [SPEC-101](../specs/101-admin-transactions.md).
+
 ---
 
 ## Renewal Flow — How Renewal Payments Renew a Subscription
