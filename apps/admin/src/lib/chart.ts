@@ -85,11 +85,7 @@ export function smoothPath(points: ChartPoint[]): string {
   for (let i = 1; i < n - 1; i += 1) {
     const previous = slopes[i - 1]!;
     const current = slopes[i]!;
-    if (
-      previous === 0 ||
-      current === 0 ||
-      Math.sign(previous) !== Math.sign(current)
-    ) {
+    if (previous === 0 || current === 0 || Math.sign(previous) !== Math.sign(current)) {
       tangents[i] = 0;
     } else {
       const w1 = 2 * dx[i]! + dx[i - 1]!;

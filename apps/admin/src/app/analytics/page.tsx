@@ -17,29 +17,15 @@ import { browserTimeZone, fetchSignupAnalytics } from '@/lib/analytics-api';
 import { formatChartDay } from '@/lib/chart';
 import { log, logerr } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
-  SIGNUP_RANGES,
-  type SignupAnalytics,
-  type SignupRange,
-} from '@/types/analytics';
+import { SIGNUP_RANGES, type SignupAnalytics, type SignupRange } from '@/types/analytics';
 import { AlertCircle, Loader2, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-function Metric({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-}) {
+function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <Card>
       <CardContent className="p-5">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
         <p className="mt-1 text-3xl font-semibold tabular-nums">{value}</p>
         {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
@@ -125,10 +111,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div
-        className={cn(
-          'mt-6 grid gap-3 transition-opacity sm:grid-cols-3',
-          dimmed && 'opacity-60',
-        )}
+        className={cn('mt-6 grid gap-3 transition-opacity sm:grid-cols-3', dimmed && 'opacity-60')}
       >
         <Metric
           label={t('label.total_signups')}
@@ -137,11 +120,7 @@ export default function AnalyticsPage() {
         />
         <Metric
           label={t('label.daily_average')}
-          value={
-            data
-              ? data.averagePerDay.toLocaleString('en', { maximumFractionDigits: 1 })
-              : '—'
-          }
+          value={data ? data.averagePerDay.toLocaleString('en', { maximumFractionDigits: 1 }) : '—'}
         />
         <Metric
           label={t('label.best_day')}
@@ -156,11 +135,7 @@ export default function AnalyticsPage() {
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             {error}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setReloadKey((key) => key + 1)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
             {t('action.retry')}
           </Button>
         </div>

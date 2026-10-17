@@ -4,12 +4,7 @@
  */
 
 /** Range keys accepted by the backend (mirrored in `SIGNUP_RANGES`). */
-export type SignupRange =
-  | 'last_7_days'
-  | 'this_month'
-  | 'this_year'
-  | 'last_30_days'
-  | 'all_time';
+export type SignupRange = 'last_7_days' | 'this_month' | 'this_year' | 'last_30_days' | 'all_time';
 
 /** One day bucket. Dates are ISO `YYYY-MM-DD` in the requested timezone. */
 export interface SignupDay {
