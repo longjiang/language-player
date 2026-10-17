@@ -337,6 +337,11 @@ If exact financial reporting is needed, persist `amount`, `currency`, the
 provider price id, and a refund/payment ledger row at grant time, then replace
 the estimate. See [SPEC-101](../specs/101-admin-transactions.md).
 
+The Analytics screen's **Revenue** metric (SPEC-100) calls the same
+`query_transactions()` function, so its daily graph uses exactly these
+inclusion rules and estimates. Its “all time” starts at the first included
+transaction (2023-04 in the current data), not at the Supabase signup cutover.
+
 ---
 
 ## Renewal Flow — How Renewal Payments Renew a Subscription
