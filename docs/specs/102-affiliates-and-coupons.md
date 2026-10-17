@@ -621,11 +621,13 @@ essential, not something the banner can disable. See
 3. Follow Teachable's model: classify it as essential/functional and show a
    cookie notice/banner only for non-essential analytics/advertising. Do not
    gate `lp_aff` behind the advertising-consent toggle.
-4. Have counsel confirm the classification for the jurisdictions we serve.
-   Affiliate attribution is treated as marketing in some EU/UK readings; if
-   counsel requires opt-in, gate `lp_aff` until consent and accept that
-   declined users are not attributed. Do not silently set it before consent if
-   counsel says it is non-essential.
+4. Have **legal counsel** (a qualified privacy lawyer/advisor familiar with
+   GDPR/ePrivacy, UK GDPR, CCPA/CPRA, and Canadian privacy law) confirm the
+   classification for the jurisdictions we serve. Affiliate attribution is
+   treated as marketing in some EU/UK readings; if legal counsel requires
+   opt-in, gate `lp_aff` until consent and accept that declined users are not
+   attributed. Do not silently set it before consent if legal counsel says it
+   is non-essential.
 5. Keep the cookie narrow: no cross-site tracking, no ad networks, no PII in
    the cookie, and a documented deletion path.
 
@@ -633,14 +635,14 @@ This is a product/legal decision, not a reason to omit the cookie disclosure.
 The spec assumes the Teachable-style essential classification with legal review.
 
 **Launch gate:** implementation can proceed behind a feature flag, but `lp_aff`
-must not be enabled in production until counsel has reviewed and approved the
+must not be enabled in production until legal counsel has reviewed and approved the
 classification and the privacy-policy text. Checklist for that review:
 
 - privacy/cookie policy names `lp_aff`, its purpose, first-party status, and
   60-day retention;
 - no advertising/profiling use or cross-site tracking;
 - a visible cookie notice/banner explains essential vs non-essential cookies;
-- the consent tool can actually block `lp_aff` if counsel classifies it as
+- the consent tool can actually block `lp_aff` if legal counsel classifies it as
   non-essential;
 - a deletion/clear-cookie path is documented;
 - EU/UK and California (CCPA/CPRA) applicability is assessed.
@@ -1119,8 +1121,9 @@ prevent code brute-forcing.
   PII. Full purchaser data stays in the admin-only `/admin/transactions`
   screen.
 - Follow the Teachable-style essential/functional cookie classification,
-  disclose `lp_aff` in the privacy/cookie policy, and have counsel review it.
-  If counsel requires opt-in, gate the cookie and accept reduced attribution.
+  disclose `lp_aff` in the privacy/cookie policy, and have legal counsel review
+  it. If legal counsel requires opt-in, gate the cookie and accept reduced
+  attribution.
 
 ## Apps and Files Impacted
 
@@ -1345,5 +1348,5 @@ prevent code brute-forcing.
 
 1. **Cookie-consent legal review (launch gate)**: confirm the Teachable-style
    essential/functional classification for the jurisdictions Language Player
-   serves; if counsel requires opt-in, gate `lp_aff` and accept reduced
+   serves; if legal counsel requires opt-in, gate `lp_aff` and accept reduced
    attribution. Do not launch the attribution cookie without this review.
