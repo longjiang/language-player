@@ -8,7 +8,8 @@
 - **Status**: complete (2026-10-17)
 - **Created**: 2026-10-17
 - **Implemented**: 2026-10-17.
-  `zerotohero-python-server` — `78195d0` (API + tests + sale-window data).
+  `zerotohero-python-server` — `78195d0` (API + tests + sale-window data),
+  `2e62d21` (timezone routing fix).
   `apps/admin` — `b2e21188` (i18n), `9d97d600` (screen + client),
   `8f0855ca` (export guard).
 - **ROADMAP Phase**: Phase 10: Admin Console
@@ -224,8 +225,11 @@ The screen deliberately labels money as **estimated**:
 
 ## Verification
 
-- `python3.10 -m pytest test_admin_transactions.py -q` — 13 passed.
-- `test_admin_analytics.py` + `test_admin_transactions.py` — 23 passed.
+- `python3.10 -m pytest test_admin_transactions.py -q` — 15 passed (including
+  route-level tests that execute the real `query_transactions()` rather than
+  monkeypatching it, which is what caught the `timezone`/`timezone_name`
+  mismatch).
+- `test_admin_analytics.py` + `test_admin_transactions.py` — 25 passed.
 - `test_app.py -k "admin_url or admin_endpoints"` — 4 passed, confirming both
   new routes reject anonymous and non-admin callers.
 - Read-only production check (2026-10-17): 1,799 transactions, 1,287 lifetime /
