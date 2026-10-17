@@ -2,6 +2,7 @@ import {
   Clapperboard,
   Compass,
   Film,
+  Receipt,
   Search,
   TrendingUp,
   Tv,
@@ -11,10 +12,10 @@ import {
 } from 'lucide-react';
 
 /**
- * The admin console's menu. Three groups: user management, signup analytics
- * (SPEC-100), and content management (SPEC-099). Labels are
- * `translations.csv` keys resolved with `useT()` so the menu follows the
- * project i18n convention.
+ * The admin console's menu. Three groups: user management, insights
+ * (signup analytics + transactions, SPEC-100/101), and content management
+ * (SPEC-099). Labels are `translations.csv` keys resolved with `useT()` so
+ * the menu follows the project i18n convention.
  */
 export interface NavItem {
   href: string;
@@ -34,7 +35,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     labelKey: 'title.insights',
-    items: [{ href: '/analytics', labelKey: 'title.signup_analytics', icon: TrendingUp }],
+    items: [
+      { href: '/analytics', labelKey: 'title.signup_analytics', icon: TrendingUp },
+      { href: '/transactions', labelKey: 'title.transactions', icon: Receipt },
+    ],
   },
   {
     labelKey: 'title.content_management',

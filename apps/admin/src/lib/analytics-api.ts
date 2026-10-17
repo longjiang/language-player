@@ -9,7 +9,10 @@
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { log, logerr } from '@/lib/logger';
+import { browserTimeZone } from '@/lib/timezone';
 import type { SignupAnalytics, SignupRange } from '@/types/analytics';
+
+export { browserTimeZone };
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -17,18 +20,6 @@ async function readError(res: Response): Promise<string> {
     return data?.error || data?.message || `HTTP ${res.status}`;
   } catch {
     return `HTTP ${res.status}`;
-  }
-}
-
-/**
- * The admin's IANA timezone. The backend buckets days in this zone so a
- * signup at 11pm local lands on the local day, not the UTC day.
- */
-export function browserTimeZone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  } catch {
-    return 'UTC';
   }
 }
 
