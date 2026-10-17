@@ -156,6 +156,9 @@
   delete, bulk assign), importer with cursor paging, discovery review,
   shows & talks CRUD with member videos, channels browser, unavailable sweep
   (SPEC-099)
+- ✅ Signup analytics — new accounts per day for the last 7/30 days, this
+  month, this year, and all time since the Supabase cutover, with imported
+  Directus accounts excluded (SPEC-100)
 - ⬜ Payment log viewer and account actions (delete / reset / demote admin)
 
 ## Known Issues
@@ -175,5 +178,6 @@
 
 ## Currently Working On
 - Phase 7: Mobile Integration — porting all Next.js pages to React Native
-- Phase 10: Admin Console — user and content management shipped (SPEC-060,
-  SPEC-099); payment log viewer and account actions are next
+- Phase 10: Admin Console — user management, content management, and signup
+  analytics shipped (SPEC-060, SPEC-099, SPEC-100); payment log viewer and
+  account actions are next
