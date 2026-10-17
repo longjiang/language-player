@@ -1388,21 +1388,30 @@ Shipped in this pass:
   checkout forwards the token. Coupon validation and application on the
   lifetime Stripe checkout.
 - Stripe lifetime checkout metadata + ledger/commission write; subscription
-  affiliate attached for `invoice.paid` renewals. PayPal lifetime ledger hook
-  and coupon reservation/confirmation.
+  affiliate attached for `invoice.paid` renewals.
+- Stripe refund/dispute webhook (`/webhook-stripe-refund`): maps
+  `charge.refunded`, `charge.refund.updated`, and `charge.dispute.created` back
+  to the original payment via stored charge/payment_intent ids, writes a
+  negative commission proportional to the refund, and is idempotent per
+  refund/dispute id.
+- Next.js PayPal Orders v2 checkout (`PayPalButton`), using
+  `NEXT_PUBLIC_PAYPAL_CLIENT_ID`; create-order passes coupon/affiliate data and
+  the existing Flask success handler captures and grants.
 - Tests: `test_affiliates_coupons.py` (token HMAC/expiry/tampering, commission
-  math, coupon math, route guards).
+  math, coupon math, route guards); `scripts/test_stripe_recurring.py` uses a
+  Stripe sandbox test clock to create two paid monthly invoices, verifies two
+  commissions, and verifies duplicate-delivery idempotency.
 
 Known gaps / deliberately deferred:
 
 - Affiliate invitation emails (decided out of v1).
 - Classic/Nuxt integration (decided out of scope).
 - Automated PayPal Payouts and tax forms.
-- Stripe `charge.refunded` webhook is not wired; use the admin commission
-  reversal action. Refund reversal coverage is therefore manual in v1.
-- The web PayPal button still points at the existing Classic flow; the PayPal
-  order/coupon/ledger backend hook exists but the Next.js PayPal client path is
-  unchanged (Classic out of scope).
+- Stripe refunds are wired, but there is no automatic re-credit if a dispute is
+  later won; that remains a manual admin adjustment.
+- Next.js PayPal checkout requires `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (and a
+  matching `PAYPAL_MODE`/backend credentials). It is hidden when the client id
+  is unset; there is no hardcoded fallback.
 - No persistent footer "Cookie preferences" link yet; the banner stores the
   choice, and clearing `lp_consent`/`lp_aff` re-prompts/withdraws.
 - Admin/affiliate new UI keys were added with English fallback in the shared CSV;
