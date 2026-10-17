@@ -605,7 +605,9 @@ Requirements:
 1. **Collect** pending commissions whose `occurred_at` falls in the statement
    month (UTC month; display in the affiliate's timezone).
 2. **Generate** a statement for each affiliate with a positive net total. The
-   statement number is `AFF-YYYY-MM-<id>`; status `pending`.
+   statement number is `AFF-YYYY-MM-<id>`; status `pending`. If the net is zero
+   or negative (for example, a post-payout refund adjustment), do not emit a
+   statement; carry the balance into the next period.
 3. **Review/pay**: admin opens the statements queue, checks the PayPal email,
    sends the PayPal payment, and marks the statement `paid` with the PayPal
    transaction id and optional notes.
@@ -714,6 +716,7 @@ All routes admin-gated with `require_admin()`:
 | GET | `/admin/affiliates/statements` | Statement queue |
 | POST | `/admin/affiliates/statements/generate` | Generate a period |
 | POST | `/admin/affiliates/statements/<id>/pay` | Mark paid + reference |
+| POST | `/admin/affiliates/commissions/<id>/reverse` | Manual refund/chargeback adjustment |
 | GET | `/admin/affiliates/commissions` | Audit ledger (optional) |
 | GET | `/admin/coupons` | List/search |
 | POST | `/admin/coupons` | Create |
@@ -783,6 +786,9 @@ Render the supplied FAQ content:
 
 **Transactions**
 
+- Do **not** reuse `/admin/transactions`; that screen remains admin-only and
+  returns school-wide rows. Affiliates use `/affiliate/transactions`, whose
+  query is permanently scoped to the caller's affiliate id.
 - Server-filtered to the signed-in affiliate; no affiliate id query parameter
   is accepted from the client.
 - Columns: Date, Product, Sale amount, Commission rate, Commission, Status.
