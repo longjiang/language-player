@@ -4,9 +4,9 @@
 
 - **Spec ID**: SPEC-067
 - **Feature**: End-to-end Google Play release of `apps/mobile` ("Language Player 3") — verified Play account, Android AAB build and signing, Play Console setup, testing tracks, and staged production rollout
-- **Status**: complete — Play Console app setup executed 2026-08-12; AAB built & submitted to production for review 2026-08-13; store visual assets remain ([§ 9](#9-known-blockers--open-items))
+- **Status**: complete — the app is live in Production (3.0.0, versionCode 2, approved 2026-08-13/14). This runbook is maintained for future Android releases; per-release history is in [`docs/versioning/build-ledger.md`](../versioning/build-ledger.md)
 - **Created**: 2026-08-11
-- **Updated**: 2026-08-13
+- **Updated**: 2026-10-18
 - **See also**: [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-064 — iOS Development Build Runbook](064-ios-development-build-runbook.md)
 
 ## 1. Context
@@ -41,7 +41,7 @@
 - [x] Upload key generated (2026-08-12, `~/.android/lp-upload.jks`, alias
       `lp-upload`) — credentials in `~/.android/lp-upload-credentials.txt` +
       `android/key.properties`; **copy them into a password manager**
-- [x] Version bumped in `apps/mobile/app.json` (3.0.0, `android.versionCode: 2`)
+- [x] Version bumped in `packages/shared/src/version.json` (3.0.0, shared `PRODUCT_BUILD_NUMBER: 2`), read by `app.config.js`
 - [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
 - [x] Store assets complete (verified via Play API 2026-08-14): icon ×1,
       feature graphic ×1, phone screenshots ×2, 7-inch tablet ×6, 10-inch
@@ -447,7 +447,7 @@ node scripts/upload.mjs android \
 ## 8. Release checklist
 
 - [x] Play account verified / business info current (2026-08-11)
-- [x] `app.json` version + `android.versionCode` bumped (3.0.0 / versionCode 2, 2026-08-13)
+- [x] `version.json` + `app.config.js` version and `android.versionCode` bumped (3.0.0 / versionCode 2, 2026-08-13)
 - [x] AAB built with `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca` (release AAB, versionCode 2, 2026-08-13)
 - [x] AAB signed with the upload key (`key.properties` + `build.gradle`)
 - [x] No `localhost:5001` in the embedded bundle; `pythonvps` present
@@ -460,8 +460,8 @@ node scripts/upload.mjs android \
       mobile + backend Play Billing implemented (SPEC-068 Steps 2–3); Play
       Console product + G1–G5 still pending
 - [x] Production release created + submitted for review (2026-08-13): "Production 1 - 3.0.0", full rollout, 177 countries/regions
-- [ ] Production review passed / app live
-- [ ] Production rollout monitored (Android Vitals)
+- [x] Production review passed / app live (verified 2026-08-14)
+- [x] Production rollout monitored (Android Vitals)
 
 ## 9. Known blockers / open items
 
@@ -485,9 +485,7 @@ node scripts/upload.mjs android \
 - ~~**Store visual assets outstanding**~~ — ✅ complete 2026-08-14: icon ×1,
   feature graphic ×1 (uploaded via Play API), phone screenshots ×2, 7-inch
   tablet ×6, 10-inch tablet ×6 (verified via `listing-status`).
-- **`android.versionCode` not explicit in `app.json` yet** — add `1` for the
-  first release.
-- ~~**`android.versionCode`**~~ — ✅ set to `2` in `app.json` + `android/app/build.gradle` (2026-08-13).
+- ~~**`android.versionCode`**~~ — ✅ set to `2` in `packages/shared/src/version.json` (read by `app.config.js`) + `android/app/build.gradle` (2026-08-13).
   versionCode `1` was already used by the Internal/Closed testing tracks, so
   the production upload was rejected until bumped to `2` (version codes must
   be unique across all tracks).
@@ -495,9 +493,7 @@ node scripts/upload.mjs android \
   (versionCode 2, full rollout, 177 countries/regions) passed review; the
   Play listing shows version **3.0.0** (verified 2026-08-14). 3.1.0
   (versionCode 3) is on the Internal testing track awaiting QA/promotion.
-- **Store visual assets still outstanding** — App icon slot (icon in library,
-  not attached), feature graphic (1024×500), phone + tablet screenshots
-  (SPEC-070). Play may flag missing store graphics during review.
+- ~~**Store visual assets still outstanding**~~ — ✅ complete 2026-08-14: icon ×1, feature graphic (1024×500) ×1, phone screenshots ×2, 7-inch tablet ×6, 10-inch tablet ×6 (verified via `listing-status`; see SPEC-070).
 - ~~**Privacy policy URL to confirm**~~ — ✅ set in Play Console to the Netlify
   domain (2026-08-12, § 4.3). Note `languageplayer.io` v3 routes still 404.
 

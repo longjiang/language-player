@@ -24,15 +24,24 @@ code to store on both platforms:
 The iOS build details and the two hard-won gotchas from the first archive
 remain documented here so future releases are one-command and correct.
 
-## Current app identity (as of 2026-08)
+## App identity (as of 2026-10-18)
 
 | Property | iOS | Android |
 |---|---|---|
 | App name | Language Player 3 | Language Player 3 |
 | Identifier | `ca.zerotohero.go` (bundle ID — replaces the GO listing) | `ca.zerotohero.go` (package, new Play launch) |
-| Version | `3.0.0` (build `3` prepared; shipped `1`) | `3.0.0` (versionCode `3` prepared; shipped `2`) |
+| Version (repo) | `3.7.3` (build `28`) | `3.7.3` (versionCode `28` — next submission) |
 | Min OS | iOS 16.4 | set in `app.config.js` |
 | Production API URL | `https://pythonvps.zerotohero.ca` | same |
+
+**Launch status:** both stores are live. iOS shipped **3.0.0 (b1)** and has
+uploaded through **3.7.3 (b28, TestFlight)**; the current App Store submission
+is **b25** (submitted 2026-09-25, `releaseType AFTER_APPROVAL`). Android
+shipped **3.0.0 (b1)** and **b2 is live in Production**, but the last Android
+upload on record is **3.5.0 (b21, Internal testing)** — Production has not been
+bumped since launch. Per-release history lives in
+[`docs/versioning/build-ledger.md`](../versioning/build-ledger.md) — that file,
+not this one, is the source of truth for what shipped.
 
 > Version numbers live in `packages/shared/src/version.json`
 > (`PRODUCT_VERSION` + shared `PRODUCT_BUILD_NUMBER`), read by
@@ -837,17 +846,21 @@ production run (verified: `NODE_ENV=production` → loads `.env.production.local
 as a **defense-in-depth fallback, never the primary mechanism**. The explicit
 command-line env var is the source of truth for release builds.
 
-## Release checklist (dual-store)
+## Release checklist (per release — tick these for each new release)
+
+> The dual-store launch this spec planned is **complete** (Play account
+> verified 2026-08-11; both apps live). The list below is the reusable
+> per-release gate, not a record of one run, so it starts unticked each time.
 
 - [ ] `packages/shared/src/version.json` bumped (`PRODUCT_VERSION` +
-      `PRODUCT_BUILD_NUMBER`) — picked up by `apps/mobile/app.config.js`
+      `PRODUCT_BUILD_NUMBER` via `scripts/next-build.mjs`) — picked up by `apps/mobile/app.config.js`
 - [ ] Human QA checklist (§ 1.2) passed on the release build
 - [ ] Build command includes `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca`
 - [ ] Stale bundle removed; bundle verified (`pythonvps` ≥ 1, `localhost:5001` = 0)
 - [ ] **iOS:** archive verified → uploaded → App Store Connect build appears → submitted
-- [x] **Android:** Play account verified (2026-08-11)
 - [ ] **Android:** `.aab` built & signed → Internal → … → Production
 - [ ] Store listings complete (screenshots, privacy policy, data safety, content rating)
+- [ ] Build recorded with `scripts/record-build.mjs`, tags cut with `scripts/tag-release.mjs`
 
 ## Related docs
 

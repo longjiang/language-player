@@ -4,9 +4,9 @@
 
 - **Spec ID**: SPEC-064
 - **Feature**: Building and installing a development build of `apps/mobile` on a physical iOS device
-- **Status**: in-progress — the build step below is superseded by ARCH-028 / `scripts/dev-build.mjs`; the device-install detail is still valid
+- **Status**: complete — build and install now run through the tracked pipeline (`scripts/dev-build.mjs` → `scripts/install-dev-build.mjs`); ARCH-028 is the canonical runbook
 - **Created**: 2026-08-11
-- **Last Updated**: 2026-08-11
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
 - **Scope**: `apps/mobile/` (iOS), scripts under `scripts/`
 - **Superseded in part by**: [ARCH-028 — Local Development Runbook](../arch/028-local-development-runbook.md)
@@ -98,52 +98,57 @@ present in Expo Go, and the app's bundle id is `ca.zerotohero.go`, not
 
 ## 3. Build the development build
 
+Use the tracked pipeline — `scripts/dev-build.mjs` (ARCH-028, SPEC-076). It
+refuses a dirty git tree, bakes `ip.txt` for device builds, records a ledger
+row in `docs/versioning/build-ledger.md`, and keeps only the 3 most recent dev
+builds.
+
 ```bash
-cd /Users/longjiang/Projects/language-player/apps/mobile
-source ~/.nvm/nvm.sh && nvm use 22
-ipconfig getifaddr en0          # Mac LAN IP, e.g. 192.168.1.130
-EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:ios --device
+node scripts/dev-build.mjs ios-device
 ```
 
-What happens:
-1. `expo prebuild` (if needed) generates/updates the `ios/` directory.
-2. CocoaPods installs native dependencies.
-3. Xcode builds the app (15–20+ minutes on first build).
-4. The app is installed on the connected device.
+Useful flags: `--dry-run` (print the plan, build nothing), `--keep N`
+(retention), `--allow-dirty` (throwaway build; the ledger row is marked
+dirty and no longer mirrors a commit).
+
+What it does: `expo prebuild` if needed → CocoaPods install → `xcodebuild` →
+zip the `.app` into `.dev-builds/` → record the row. Expect 15–20+ minutes on
+the first build, much less afterwards.
 
 > ⚠️ **Never run build commands without the user's explicit go-ahead.**
-> Builds take 15–20+ minutes and block the machine (AGENTS.md).
+> Builds block the machine (AGENTS.md).
+>
+> Prefer `node scripts/install-dev-build.mjs` (below) when a retained build
+> already fits — it skips the build entirely.
 
-## 4. After the build: run Metro
-
-The installed app needs Metro to load its JS bundle. From `apps/mobile`:
+## 4. Install and launch on the device
 
 ```bash
-cd /Users/longjiang/Projects/language-player/apps/mobile
-source ~/.nvm/nvm.sh && nvm use 22
-ulimit -n 65536 && npx expo start 2>&1 | tee /tmp/metro.log
+node scripts/start-metro.sh                      # physical-device Metro, records the session
+node scripts/install-dev-build.mjs --device <udid>
 ```
 
-Then open the app on the device. It connects to Metro over the LAN and
-loads the bundle.
+`install-dev-build.mjs` derives the Metro host at run time, refuses to launch
+when Metro is unreachable, installs the retained artifact, and launches it with
+`-RCT_jsLocation <host>:<port>` so a stale `ip.txt` cannot strand the app on
+the "No script URL provided" redbox. It then verifies that the device actually
+reached Metro and diagnoses an isolating network if it did not.
 
-> ⚠️ **MacOS file-watcher limit (`EMFILE: too many open files, watch`):**
-> Metro can fail to start with this error even though Watchman is installed.
-> Raise the descriptor limit in the same shell first:
-> `ulimit -n 65536 && npx expo start`. If Watchman itself is blocked (e.g.
-> sandboxed shells can't write `~/Library/LaunchAgents`), start Metro
-> outside the sandbox.
+Useful flags: `--dry-run`, `--no-launch`, `--artifact <zip>`, `--metro-host`,
+`--metro-scheme`, `--verify-timeout`.
 
 ## 5. Point the app at your Flask server
 
-The physical device cannot use `localhost`. Two options:
+`scripts/start-metro.sh` derives the host from the interface that can actually
+reach the device (not just `en0`) and exports the matching
+`EXPO_PUBLIC_API_URL`, so the device does not need a rebuild when the LAN
+address changes.
 
-- **Before building** (recommended): set
-  `EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001` so the value is baked into
-  the bundle at build time.
-- **After building**: `apps/mobile/.env` (gitignored) can set
-  `EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001`; changing it requires a
-  Metro restart and app reload.
+- If the Mac and device are on a network that isolates clients, use
+  `scripts/start-metro.sh --tunnel` and pass `--api-url` for a separately
+  tunnelled Flask.
+- `install-dev-build.mjs` re-points the launched app at the *current* Metro
+  host, so the value baked at build time is only a fallback.
 
 Verify Flask accepts LAN connections:
 ```bash
@@ -159,7 +164,7 @@ No rebuild is needed for JS-only edits. Reload options:
 - Force-quit and reopen the app on the device (always works; also resets
   in-memory module state — sometimes *required*, see Gotchas).
 
-Native changes (new Expo modules, config plugins, `app.json` edits that
+Native changes (new Expo modules, config plugins, `app.config.js` edits that
 affect native code) require a **full rebuild**: repeat § 3.
 
 ## 7. Gotchas (learned the hard way)
@@ -172,9 +177,12 @@ shell can't write `~/Library/LaunchAgents`), start Metro outside the
 sandbox.
 
 ### 7.2 "No script URL provided" after install
-The freshly built app shows `No script URL provided. Make sure the packager
-is running…` when Metro isn't running. Fix: start Metro (§ 4), then
-force-quit and reopen the app on the device.
+The app shows `No script URL provided. Make sure the packager is running…`
+when it cannot reach Metro — most often because `ip.txt` still names an old
+LAN address. `node scripts/install-dev-build.mjs --device <udid>` prevents
+this by launching with the *current* host (`-RCT_jsLocation`) and verifying
+the device connected; if you installed manually, start Metro (§ 4) and
+force-quit/reopen the app.
 
 ### 7.3 Missing IAP native module on the first build
 The first dev build failed at runtime with
@@ -186,7 +194,7 @@ physical device.
 
 ### 7.4 Default (yellow) app icon
 The installed app showed Expo's default icon. Apply the Language Player
-icon (`app.json` / `assets/icon.png`) and rebuild.
+icon (`app.config.js` / `assets/icon.png`) and rebuild.
 
 ### 7.5 Builds are long and fragile
 First build takes 15–20+ minutes and blocks the machine; it also died
@@ -194,8 +202,9 @@ mid-build once when the Mac restarted. Don't start other heavy work during
 the build, and warn the user before starting.
 
 ### 7.6 Build won't start: signing / device registration
-`npx expo run:ios --device` can fail before compiling when the iPad isn't
-ready for development installs. Known blockers:
+`scripts/dev-build.mjs ios-device` (and a manual `npx expo run:ios --device`)
+fails before compiling when the iPad isn't ready for development installs.
+Known blockers:
 - **Developer Mode off** on the device (Settings → Privacy & Security →
   Developer Mode) — enable it and restart the iPad.
 - **UDID not in the provisioning profile** — Xcode errors on signing; add
@@ -204,17 +213,18 @@ ready for development installs. Known blockers:
 
 ## 8. Verification checklist
 
-- [ ] `nvm use 22` succeeded
-- [ ] Port 8081 free before starting Metro
-- [ ] `EXPO_PUBLIC_API_URL` points at the Mac's LAN IP (not localhost)
+- [ ] `node scripts/dev-build.mjs ios-device` completed and printed a ledger row
+- [ ] `node scripts/verify-dev-build.mjs latest` passes (hash, `ip.txt`, commit in git)
+- [ ] Metro started with `node scripts/start-metro.sh` (or `--check` passes)
+- [ ] `node scripts/install-dev-build.mjs --device <udid>` reached the device and launched
 - [ ] Flask reachable from the device (`curl http://<lan-ip>:5001/`)
-- [ ] Build completed and app installed on the device
-- [ ] Metro running with `ulimit -n 65536` and logs teed to a file
 - [ ] App loads the JS bundle (no "No script URL provided")
 - [ ] Login works; `/user-subscription` returns from Flask
 
 ## References
 
+- [ARCH-028 — Local Development Runbook](../arch/028-local-development-runbook.md) — canonical dev-build / Metro / install instructions
+- [SPEC-076 — Versioning & Build Number Strategy](076-versioning-strategy.md) — ledger, build numbers, retention
 - SPEC-048 — Mobile Release Plan (§ 1.4/1.5 build modes, § 3 archive)
 - ARCH-024 — Mobile IAP Architecture (JWS, `appAccountToken`, sandbox
   lessons)
