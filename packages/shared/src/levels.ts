@@ -163,14 +163,26 @@ export function isHskScale(scale: string): boolean {
   return scale === 'hsk_2010' || scale === 'hsk_2025';
 }
 
+/** Lower-cased base subtag (zh-Hans → zh, lzh → lzh). */
+function baseL2(l2Code: string): string {
+  return l2Code.split('-')[0]!.toLowerCase();
+}
+
+/** L2s whose difficulty is graded with the Chinese HSK scales. Literary
+ *  Chinese (lzh) is dictionary- and level-backed by CEDICT just like zh. */
+function isChineseL2(base: string): boolean {
+  return base === 'zh' || base === 'lzh';
+}
+
 /**
  * Whether a level should be shown for the given L2. Chinese shows only HSK
  * levels (old + new HSK); every other language shows all level scales.
- * Handles BCP 47 subtags (zh-Hans → zh).
+ * Handles BCP 47 subtags (zh-Hans → zh) and treats Literary Chinese (lzh) as
+ * Chinese: it is served by the same CEDICT/HSK data as zh.
  */
 export function shouldShowLevel(level: { scale: string }, l2Code: string): boolean {
-  const base = l2Code.split('-')[0]!.toLowerCase();
-  return base !== 'zh' || isHskScale(level.scale);
+  const base = baseL2(l2Code);
+  return !isChineseL2(base) || isHskScale(level.scale);
 }
 
 /**
@@ -208,9 +220,10 @@ export function getLevelLabelWithFallback(
 
 /** Which scale is the primary exam for a given language? */
 export function primaryScale(l2Code: string): ScaleId {
-  if (l2Code === 'zh') return 'hsk_2010';
-  if (l2Code === 'ja') return 'jlpt';
-  if (l2Code === 'ko') return 'topik';
-  if (l2Code === 'en') return 'ielts';
+  const base = baseL2(l2Code);
+  if (isChineseL2(base)) return 'hsk_2010';
+  if (base === 'ja') return 'jlpt';
+  if (base === 'ko') return 'topik';
+  if (base === 'en') return 'ielts';
   return 'cefr';
 }
