@@ -456,6 +456,7 @@
         "discord_server": "Discord サーバー",
         "download_progress": "{downloaded} / {total} 語",
         "downloaded": "ダウンロード済み",
+        "drag_to_reorder": "ドラッグして並べ替え",
         "duration": "長さ",
         "earlier": "以前",
         "email": "メール",

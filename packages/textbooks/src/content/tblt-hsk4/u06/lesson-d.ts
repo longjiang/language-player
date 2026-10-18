@@ -167,7 +167,7 @@ export const lessonD: LessonMeta = {
       type: 'listening',
       sourcePage: 17,
       instructions:
-        '听一段介绍温哥华的公共交通的成段表达录音，然后按照录音中说明的顺序，在（　）中填入数字1～5。接着根据录音的内容在［　］里填入A～E中最合适的描述。',
+        '听一段介绍温哥华的公共交通的成段表达录音，然后按照录音中说明的顺序拖动下面的话题。接着根据录音的内容为每个话题选择A～E中最合适的描述。',
       audio: [
         {
           key: 'tblt-hsk4/u06/六D ➋.mp3',
@@ -205,16 +205,18 @@ export const lessonD: LessonMeta = {
       ],
       body: [
         {
-          kind: 'dataTable',
+          // Rows to drag into the recording's order, one description picker each. The
+          // authored order is the workbook's table order, which is not the answer: 买票、支付
+          // and 运营时刻 are swapped, so the exercise starts from a list that needs moving.
+          kind: 'orderList',
           id: 'd2-topics',
-          columns: ['顺序', '话题', '描述'],
-          rows: [
-            // (1) 路线 and its description are printed as the worked example.
-            { cells: ['（{{b1}}）', '路线', '［{{b2}}］'] },
-            { cells: ['（{{b3}}）', '运营时刻', '［{{b4}}］'] },
-            { cells: ['（{{b5}}）', '站台', '［{{b6}}］'] },
-            { cells: ['（{{b7}}）', '买票、支付', '［{{b8}}］'] },
-            { cells: ['（{{b9}}）', '其它需要注意的', '［{{b10}}］'] },
+          items: [
+            // ① 路线 and its description are the printed worked example: the row is pinned.
+            { id: 'route', text: '路线', blankId: 'b1', descriptionBlankId: 'b2', locked: true },
+            { id: 'hours', text: '运营时刻', blankId: 'b3', descriptionBlankId: 'b4' },
+            { id: 'platform', text: '站台', blankId: 'b5', descriptionBlankId: 'b6' },
+            { id: 'tickets', text: '买票、支付', blankId: 'b7', descriptionBlankId: 'b8' },
+            { id: 'other', text: '其它需要注意的', blankId: 'b9', descriptionBlankId: 'b10' },
           ],
         },
       ],

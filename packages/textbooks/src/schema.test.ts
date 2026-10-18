@@ -856,3 +856,85 @@ describe('column pictures', () => {
     expect(errorsOf(issues).join()).toContain('1 column pictures for 2 columns');
   });
 });
+
+/**
+ * D ➋ is an `orderList`: rows dragged into the recording's order, with the position written into
+ * each row's own blank. The validator has to keep the positions a permutation of 1..n, pin a
+ * locked worked example where the book prints it, and make sure only a draggable row is written.
+ */
+describe('an orderList (D ➋)', () => {
+  const shipped = () => allTasks(tbltHsk4).find((task) => task.id === 'tblt-hsk4.u06.D.t2')!;
+
+  const withOrder = (mutate: (task: Task) => void): Task => {
+    const task = structuredClone(shipped());
+    mutate(task);
+    return task;
+  };
+
+  const orderOf = (task: Task) => {
+    const stimulus = task.body.find((s) => s.kind === 'orderList');
+    if (!stimulus || stimulus.kind !== 'orderList') throw new Error('no orderList');
+    return stimulus;
+  };
+
+  it('accepts the shipped drag list', () => {
+    expect(errorsOf(validateTask(shipped()))).toEqual([]);
+  });
+
+  it('rejects a row pointing at a blank the task does not have', () => {
+    const task = withOrder((t) => {
+      orderOf(t).items[1]!.blankId = 'b99';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('references missing blank "b99"');
+  });
+
+  it('rejects two rows claiming the same position', () => {
+    const task = withOrder((t) => {
+      t.blanks!.b5!.answer = '4';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('both answer position 4');
+  });
+
+  it('rejects a missing position', () => {
+    const task = withOrder((t) => {
+      t.blanks!.b9!.answer = '9';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('missing a row that answers position 5');
+  });
+
+  it('rejects a locked row that is not a given blank', () => {
+    const task = withOrder((t) => {
+      t.blanks!.b1!.kind = 'choose';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('locked but its blank "b1" is "choose"');
+  });
+
+  it('rejects a locked row whose position is not its printed slot', () => {
+    const task = withOrder((t) => {
+      t.blanks!.b1!.answer = '2';
+      t.blanks!.b3!.answer = '4';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('must answer position 1');
+  });
+
+  it('rejects a draggable row that is not a choose blank', () => {
+    const task = withOrder((t) => {
+      t.blanks!.b3!.kind = 'given';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('draggable but its blank "b3" is "given"');
+  });
+
+  it('rejects a row whose description blank does not exist', () => {
+    const task = withOrder((t) => {
+      orderOf(t).items[0]!.descriptionBlankId = 'b99';
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('missing description blank "b99"');
+  });
+
+  it('rejects an empty list', () => {
+    const task = withOrder((t) => {
+      orderOf(t).items.length = 0;
+    });
+    expect(errorsOf(validateTask(task)).join()).toContain('has no items');
+  });
+});

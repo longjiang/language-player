@@ -57,6 +57,8 @@ export type {
   BlankSpec,
   BookMeta,
   DataTableStimulus,
+  OrderListItem,
+  OrderListStimulus,
   DialogueLine,
   DictationStimulus,
   DialogueStimulus,
@@ -140,6 +142,8 @@ export type { BookSummary, TocLesson, TocTask, TocTree, TocUnit } from './loader
 export { TBLT_HSK4_ASSET_KEYS } from './content/tblt-hsk4/assets';
 
 export { bookProgress, progressForId, summarizeProgress, taskProgress } from './progress';
+export { moveRow, moveRowBy, orderFromPositions, sameOrder } from './order';
+export type { OrderRow } from './order';
 export type {
   BookProgress,
   LessonProgress,

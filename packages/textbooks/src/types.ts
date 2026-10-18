@@ -288,6 +288,37 @@ export interface DataTableStimulus {
 }
 
 /**
+ * A list of rows the student drags into the recording's order (D ➋).
+ *
+ * The workbook prints a table with a blank per row for the position (1–5) and a second for the
+ * row's description; picking a number from a dropdown asks the student to translate an ordering
+ * into digits instead of doing the ordering. Drag is the exercise. Each row still records a
+ * **position** in its own blank, so grading is untouched: a drop writes each row's index into its
+ * position blank, whose answer is the position the recording gives it.
+ *
+ * `locked` marks a printed worked example (D ➋'s ① 路线 = 1): the row is pinned where it is,
+ * cannot be dragged, and its position blank is a `given`.
+ */
+export interface OrderListStimulus {
+  kind: 'orderList';
+  id?: string;
+  items: OrderListItem[];
+}
+
+export interface OrderListItem {
+  /** Stable row id, used for drag identity — never for grading. */
+  id: string;
+  /** The row's L2 text, tokenized like any other content. */
+  text: string;
+  /** The blank recording this row's position (its answer is the correct 1-based position). */
+  blankId: string;
+  /** The blank recording the row's description, offered at the row (D ➋'s A–E). */
+  descriptionBlankId?: string;
+  /** A printed worked example: pinned in place, not draggable, position blank `given`. */
+  locked?: boolean;
+}
+
+/**
  * A numbered row of blanks, printed as `① ___ ② ___ ③ ___`.
  *
  * The picture-set tasks (A ➋, C ➊, C ➋) have no passage: the student listens and
@@ -444,6 +475,7 @@ export type Stimulus =
   | DialogueStimulus
   | PictureSetStimulus
   | DataTableStimulus
+  | OrderListStimulus
   | NumberedBlanksStimulus
   | ImageMapStimulus
   | MockAppStimulus
@@ -825,6 +857,9 @@ export function textsIn(task: Task): string[] {
       case 'dataTable':
         out.push(...stimulus.columns);
         for (const row of stimulus.rows) out.push(...row.cells);
+        break;
+      case 'orderList':
+        for (const item of stimulus.items) if (item.text) out.push(item.text);
         break;
       case 'pictureSet':
         for (const item of stimulus.items) if (item.label) out.push(item.label);
