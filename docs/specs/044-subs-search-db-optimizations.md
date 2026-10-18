@@ -11,7 +11,7 @@
 - **Spec ID**: SPEC-044 (merged; supersedes SPEC-045)
 - **Feature**: Subtitle search performance on Supabase (`GET /subs-search` →
   `utils_content.subs_search`)
-- **Status**: **Part 1 (word-based FTS) complete** (implemented + verified
+- **Status**: in-progress — Part 1 (word-based FTS) complete (implemented + verified
   2026-08-05); **Part 2 (continua n-gram token index) unblocked 2026-08-06**
   — the storage-layer I/O hang was resolved with a full `VACUUM FULL` table
   rewrite, and the backfill is running again (see "Blockers / rollout

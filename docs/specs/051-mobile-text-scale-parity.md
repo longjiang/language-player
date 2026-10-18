@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-051
 - **Feature**: One text-scale rule shared by `apps/mobile` and `apps/web`
-- **Status**: in progress
+- **Status**: complete
 - **Created**: 2026-08-07
 - **Updated**: 2026-08-13
 - **ROADMAP Phase**: Phase 6 (Interaction Primitives) / Phase 8 (iPad & Responsive Layout)

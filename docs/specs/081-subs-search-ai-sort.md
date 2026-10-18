@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-081
 - **Feature**: Subs search "Sort by AI" — LLM-grouped results by meaning & syntax patterns
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-17
 - **ROADMAP Phase**: Media — Subtitle Search
 

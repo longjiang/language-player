@@ -1,7 +1,7 @@
 # ADR-0018 — Tokenizer Selection: Prefer Simplemma/LemmatizationList Over spaCy
 
 **Date**: 2026-07-26
-**Status**: Accepted
+**Status**: Superseded by [ADR-0029](0029-registry-single-source-of-truth.md)
 
 ## Context
 

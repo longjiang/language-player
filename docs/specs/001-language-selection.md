@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-001
 - **Feature**: Language Selection & URL Routing
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-12
 - **Phase**: Phase 2 — Auth + Core Navigation
 

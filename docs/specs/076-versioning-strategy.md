@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-076
 - **Feature**: Product-wide version numbering and store build-number policy
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-14
 - **See also**: [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) ·
   [SPEC-059 — Web Release QA Checklist](059-web-release-qa-checklist.md) ·

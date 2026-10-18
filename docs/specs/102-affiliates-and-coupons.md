@@ -11,7 +11,7 @@
 - **Feature**: Affiliate program (referral attribution, commissions, monthly
   statements, PayPal payouts) and coupon codes (percentage/amount, limited
   uses, expiry)
-- **Status**: draft — decisions approved 2026-10-17; not implemented
+- **Status**: in-progress — v1 implemented; affiliate emails, automated payouts, and the Stripe refund webhook are deferred
 - **Created**: 2026-10-17
 - **ROADMAP Phase**: Phase 10: Admin Console + cross-cutting payment work
 - **See also**:

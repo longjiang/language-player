@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-088
 - **Feature**: Correct CJK glyph-variant rendering while keeping uniform ruby line spacing (mobile)
-- **Status**: draft — as-built solution recorded
+- **Status**: complete — as-built solution recorded
 - **Created**: 2026-08-24
 - **ROADMAP Phase**: Cross-cutting (mobile rendering)
 - **Scope**: `apps/mobile` tokenized text (`TokenizedText`, the native ruby paragraph)

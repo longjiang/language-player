@@ -1,7 +1,7 @@
 # ADR-0024: Use DuckDuckGo Image Search for Word Photos (After Google, Openverse, and Bing)
 
 **Date**: 2026-08-03
-**Status**: accepted
+**Status**: accepted (retired 2026-08-30 — see the amendments below)
 **See also**: [ARCH-003 (Python Backend Architecture)](../arch/003-python-backend-architecture.md), [ARCH-006 (Classic Dictionary Architecture)](../arch/006-classic-dictionary-architecture.md)
 
 ## Context

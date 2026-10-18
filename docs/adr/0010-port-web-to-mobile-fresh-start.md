@@ -1,7 +1,7 @@
 # ADR-0010: Port Next.js Web App to React Native — Fresh Start
 
 **Date**: 2026-07-22
-**Status**: proposed
+**Status**: accepted
 **See also**: [ADR-0003 (no shared UI, amended)](./0003-no-shared-ui.md), [ADR-0008 (GO dictionary architecture)](./0008-go-dictionary-architecture.md), [ADR-0009 (i18n migration — shared locale directory)](./0009-go-i18n-migration-react-intl.md), [ADR-0011 (shared design tokens)](./0011-shared-design-tokens.md), [Shared i18n pipeline](../arch/009-shared-i18n-pipeline.md)
 
 ## Context

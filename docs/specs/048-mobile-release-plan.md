@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-048
 - **Feature**: Pre-release (informal, human) testing + releasing `apps/mobile/` to the Apple App Store and Google Play Store
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-06
 - **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E (archived)](archive/025-payment-e2e-testing.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web](052-mobile-large-screen-ipad-layout-parity-with-web.md)
 

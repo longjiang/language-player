@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-014
 - **Feature**: Subscription purchase, verification, and management across web, mobile, and Classic
-- **Status**: Active — implementation mostly landed; testing is tracked in SPEC-054
+- **Status**: in-progress — implementation mostly landed; testing is tracked in SPEC-054
 - **Created**: 2026-07-25 · **Updated**: 2026-09-22
 - **Based on**: ARCH-015 (payment method constraints), ADR-0013 (app store strategy), SPEC-048 (store release)
 - **See also**:

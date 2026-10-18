@@ -1,9 +1,11 @@
 # SPEC-020: iPad & Responsive Layout — Full Compatibility
 
+> **Superseded by [SPEC-052](052-mobile-large-screen-ipad-layout-parity-with-web.md) (2026-10-18).** The remaining open items moved there; this document is kept as the historical iPad audit.
+
 ## Metadata
 - **Spec ID**: SPEC-020
 - **Feature**: iPad responsive layout — landscape, split view, slide over, full-screen, windowed mode
-- **Status**: draft
+- **Status**: superseded by [SPEC-052](052-mobile-large-screen-ipad-layout-parity-with-web.md) — the remaining open items moved there
 - **Created**: 2026-07-26
 - **ROADMAP Phase**: Phase 8 — iPad & Responsive Layout
 - **Depends on**: Phase 6 (Interaction Primitives — already complete ✅)

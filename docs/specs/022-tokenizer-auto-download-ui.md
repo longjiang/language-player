@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-022
 - **Feature**: Transparent auto-download of tokenizer/lemma packs as invisible sidecars to offline dictionary downloads
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-27
 - **See also**:
   - [SPEC-018: Mobile Local Tokenization & Lemmatization](../specs/018-local-tokenization-mobile.md) — the tokenization pipeline that consumes the downloaded packs

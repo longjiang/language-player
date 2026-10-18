@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-033
 - **Feature**: Select any portion of tokenized text and look it up in the dictionary popup
-- **Status**: implemented (2026-08-02; revised 2026-08-02 — selection now opens the dictionary popup instead of an action menu; revised 2026-09-02 — substring selection inside a token wins over the whole-token popup, and cross-boundary phrases retokenize for highlighting; revised 2026-09-07 — a Copy / Read aloud / Look up tooltip now appears first and the selection stays active; only "Look up" opens the popup)
+- **Status**: complete (2026-08-02; revised 2026-08-02 — selection now opens the dictionary popup instead of an action menu; revised 2026-09-02 — substring selection inside a token wins over the whole-token popup, and cross-boundary phrases retokenize for highlighting; revised 2026-09-07 — a Copy / Read aloud / Look up tooltip now appears first and the selection stays active; only "Look up" opens the popup)
 - **Created**: 2026-08-02
 - **ROADMAP Phase**: Phase 4 (Reading) — applies to the web reader, EPUB reader, web reader, and video transcripts
 

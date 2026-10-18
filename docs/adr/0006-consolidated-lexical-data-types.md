@@ -2,6 +2,7 @@
 # ADR 0006: Consolidated Lexical Data Types
 
 > **Date:** 2026-07-14
+> **Status:** accepted
 > **Context:** Unifying words, phrases, and LLM-generated entries into a single type system
 
 ---

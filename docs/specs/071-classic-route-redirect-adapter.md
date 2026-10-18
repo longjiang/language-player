@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-071
 - **Feature**: Redirect Classic-only routes from `apps/web` to `https://v2.languageplayer.io`
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-12
 - **ROADMAP Phase**: Phase 8 — Sunset Classic (redirect strategy from classic URLs)
 - **See also**: [SPEC-069 — Web → Mobile Universal Links](069-web-mobile-universal-links.md) · [SPEC-002 — Monorepo Consolidation](002-repo-migration.md) · [ROADMAP Phase 8](../../ROADMAP.md)

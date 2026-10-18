@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-011
 - **Feature**: Language Switcher UI
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-24
 - **Supersedes**: `docs/specs/archive/011-language-switcher-ui.md` (2026-07-24)
 - **Scope**: Next.js (web) only — see SPEC-001 for mobile

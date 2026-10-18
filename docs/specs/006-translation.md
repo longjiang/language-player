@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-006
 - **Feature**: Text translation (subtitles, reader, action menu)
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-17
 - **ROADMAP Phase**: Phase 4 (Reader + Dictionary)
 

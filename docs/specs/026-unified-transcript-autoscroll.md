@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-026
 - **Feature**: Unified transcript auto-scroll logic across web and mobile
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-28
 - **See also**:
   - `packages/shared/src/transcript-scroll.ts` — shared decision function (only mobile uses it today)

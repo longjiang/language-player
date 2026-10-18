@@ -1,9 +1,11 @@
 # SPEC-027: Chrome Extension — Implicit Auto-Open Toggle for Transcript Panel
 
+> **Removed (2026-10-18).** The extension moved to `chrome.sidePanel`, and `chrome.sidePanel.open()` requires a user gesture, so the panel can no longer auto-open. See [SPEC-086](086-chrome-extension-side-panel-redesign.md). This document is kept as history.
+
 ## Metadata
 - **Spec ID**: SPEC-027
 - **Feature**: Auto-open toggle for the transcript panel on all supported streaming platforms
-- **Status**: draft
+- **Status**: superseded by [SPEC-086](086-chrome-extension-side-panel-redesign.md) — `chrome.sidePanel.open()` needs a user gesture, so the panel cannot auto-open
 - **Created**: 2026-07-30
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point bundled by esbuild (panel creation, subtitle detection, rendering, all platform logic)

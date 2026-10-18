@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-090
 - **Feature**: Standalone image reader — OCR images via DeepSeek Vision into tokenized, interactive text (web + mobile)
-- **Status**: implemented on **web**; **mobile is partial** (retroactive spec for the as-built feature; see SPEC-089 for the original PDF & Image Reader work). The mobile route and vision pipeline exist, but two described pieces were never built — see the **Preview & zoom** and **Persistence** sections below.
+- **Status**: in-progress — web implemented; mobile partial (see below)
 - **ROADMAP Phase**: Phase 5 (Content Features) — Reading
 - **See also**: [SPEC-089 — PDF & Image Reader](089-pdf-and-image-reader.md), [SPEC-083 — Unified Markdown](083-mobile-unified-markdown.md), [ARCH-013 — EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [ADR-0012](../adr/0012-custom-epub-parser-mobile.md), [ADR-0022](../adr/0022-epub-web-book-model-on-epubjs.md)
 

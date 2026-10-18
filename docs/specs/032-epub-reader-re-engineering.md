@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-032
 - **Feature**: Re-engineer the web EPUB reader around the book model (spine flow + TOC bookmarks + whole-book pagination)
-- **Status**: implemented (2026-08-02; commits `78134763`, `7e79aa2d`, `4de46c5d`)
+- **Status**: complete (2026-08-02; commits `78134763`, `7e79aa2d`, `4de46c5d`)
 - **Created**: 2026-08-02
 - **Revised**: 2026-08-02 — web keeps `epubjs` + `turndown`; the whole-book model is built on top of epubjs instead of a new shared parser package (see "Proposed architecture")
 - **ROADMAP Phase**: Phase 4 (Reading)

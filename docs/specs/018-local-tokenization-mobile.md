@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-018
 - **Feature**: On-device tokenization & lemmatization fallback for offline use, with downloadable language packs
-- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f, 3g done; 3b deferred); Phase 4 (offline romanization parity) implemented
+- **Status**: in-progress — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f, 3g done; 3b deferred); Phase 4 (offline romanization parity) implemented
 - **Created**: 2026-07-26
 - **Last updated**: 2026-08-08
 - **Supersedes**: SPEC-015 / SPEC-016 (earlier local-tokenization drafts, merged into this spec; both files deleted)

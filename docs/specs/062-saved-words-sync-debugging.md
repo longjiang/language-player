@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-062
 - **Feature**: Diagnose and fix saved-words cross-device divergence (web Safari iPad/iPhone), `tester.mary` account pollution with `jon.long`'s words, and ensure all four clients use the SPEC-034 row API with correct logout wiping
-- **Status**: investigation complete; quick wins implemented 2026-08-10 (see below); Chrome extension Phase 2 fixes complete 2026-08-13; web/mobile/Classic hydration work still pending
+- **Status**: in-progress — investigation complete; quick wins implemented 2026-08-10 (see below); Chrome extension Phase 2 fixes complete 2026-08-13; web/mobile/Classic hydration work still pending
 - **Created**: 2026-08-10
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (cross-cutting)
 - **See also**: [SPEC-034 (Saved Words, complete)](034-saved-words-supabase-migration.md), [SPEC-039 (Full Database Migration)](039-full-database-migration-supabase.md), [ARCH-014 (Saved Words Data Flow)](../arch/014-saved-words-data-flow.md)

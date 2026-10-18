@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-009
 - **Feature**: Shared reader layout with responsive sidebar
-- **Status**: in-progress
+- **Status**: complete
 - **Created**: 2026-07-23
 - **ROADMAP Phase**: Phase 4 (Reading)
 - **See also**: [Shared i18n pipeline](../arch/009-shared-i18n-pipeline.md)

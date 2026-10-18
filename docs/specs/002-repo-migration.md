@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-002
 - **Feature**: Gradual migration of legacy repos into monorepo
-- **Status**: accepted
+- **Status**: in-progress — Phases 1–7 done (web/mobile/admin in place, GO merged); Phase 8 (Classic sunset) and Phase 9 (backend consolidation) remain
 - **Created**: 2026-07-12
 - **ROADMAP Phases**: 7, 8, 9 (see ROADMAP.md for canonical phase numbering)
 

@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-066
 - **Feature**: SRS Review Page
-- **Status**: implemented (2026-08-11); `dailyNewLimit` semantics corrected
+- **Status**: complete (2026-08-11); `dailyNewLimit` semantics corrected
   to match Anki/FSRS (2026-08-13), with reversible limit changes (2026-08-21);
   single-character answers in inflecting languages route to spell mode instead
   of phonetics-scrabble (2026-09-10); the spell answer is resolved through the
