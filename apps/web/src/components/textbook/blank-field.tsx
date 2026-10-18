@@ -82,12 +82,34 @@ export function BlankField({
   // A given blank that names an `optionSet` is the exception: it prints as an
   // illustration slot, so its worked-example picture is shown (and re-pickable)
   // by the picture-set branch below rather than as a letter here.
+  //
+  // A given blank whose bank is offered in the dialog is still **tappable**: the student may want
+  // to see the options the worked answer was chosen from (B ➏'s ① A). It stays read-only — the
+  // store refuses to write a given blank, and the dialog it opens is read-only too, with that
+  // option marked eliminated — so the tap reveals the choices without offering a change.
   if (blank.kind === 'given' && !blank.optionSet) {
+    const chipClass = `mx-0.5 inline-flex min-w-[2.5em] items-center justify-center gap-1 rounded border border-dashed border-muted-foreground/50 bg-muted/40 px-1.5 align-baseline text-foreground ${
+      inDialog ? 'cursor-pointer transition-colors hover:bg-muted/70' : ''
+    }`;
+    const title = t('review.spell_correct_answer', { answer: blank.answer });
+    if (inDialog) {
+      return (
+        <button
+          type="button"
+          onClick={() => choice?.open(blank.id)}
+          aria-label={`${label} ${blank.answer}`}
+          title={title}
+          className={chipClass}
+        >
+          {blank.answer}
+          {/* The same caret a blank with choices carries: it is the one sign that the worked
+              example opens anything. */}
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        </button>
+      );
+    }
     return (
-      <span
-        className="mx-0.5 inline-flex min-w-[2.5em] items-center justify-center rounded border border-dashed border-muted-foreground/50 bg-muted/40 px-1.5 align-baseline text-foreground"
-        title={t('review.spell_correct_answer', { answer: blank.answer })}
-      >
+      <span className={chipClass} title={title}>
         {blank.answer}
       </span>
     );

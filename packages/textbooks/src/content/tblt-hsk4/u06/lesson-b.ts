@@ -39,8 +39,10 @@ export const lessonB: LessonMeta = {
       ],
       blanks: {
         // Rows 1 and 2 are the worked examples the key omits.
-        b1: { id: 'b1', kind: 'given', answer: 'a' },
-        b2: { id: 'b2', kind: 'given', answer: 'b' },
+        // The two worked examples name the bank their letters came from, so the chip opens the
+        // choices read-only and those letters show as eliminated (SPEC-095 § Banks).
+        b1: { id: 'b1', kind: 'given', answer: 'a', bank: 'w1' },
+        b2: { id: 'b2', kind: 'given', answer: 'b', bank: 'w1' },
         b3: { id: 'b3', kind: 'choose', answer: 'f', bank: 'w1' },
         b4: { id: 'b4', kind: 'choose', answer: 'c', bank: 'w1' },
         b5: { id: 'b5', kind: 'choose', answer: 'e', bank: 'w1' },
@@ -98,7 +100,7 @@ export const lessonB: LessonMeta = {
       blanks: {
         // ① is pre-filled in the workbook as a worked example, which is why the
         // printed answer key starts at ②.
-        b1: { id: 'b1', kind: 'given', answer: '快' },
+        b1: { id: 'b1', kind: 'given', answer: '快', bank: 'w1' },
         b2: { id: 'b2', kind: 'choose', answer: '新', bank: 'w1' },
         b3: { id: 'b3', kind: 'choose', answer: '免费Wi-Fi', bank: 'w1' },
         b4: { id: 'b4', kind: 'choose', answer: '充电口', bank: 'w1' },
@@ -166,7 +168,7 @@ export const lessonB: LessonMeta = {
       ],
       blanks: {
         // The workbook prints the first answer as the worked example.
-        b1: { id: 'b1', kind: 'given', answer: '二等座、无座' },
+        b1: { id: 'b1', kind: 'given', answer: '二等座、无座', bank: 'g41-seats' },
         b2: { id: 'b2', kind: 'choose', answer: '商务座', bank: 'g41-seats' },
         // Two seats may be picked, in either order. `accept` carries the key's
         // wording, which joins them with 和 rather than the pick separator.
@@ -466,7 +468,7 @@ export const lessonB: LessonMeta = {
       ],
       blanks: {
         // ① is printed as the worked example.
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
+        b1: { id: 'b1', kind: 'given', answer: 'A', bank: 'b6-fill' },
         b2: { id: 'b2', kind: 'choose', answer: 'B', bank: 'b6-fill' },
         b3: { id: 'b3', kind: 'choose', answer: 'G', bank: 'b6-fill' },
         b4: { id: 'b4', kind: 'choose', answer: 'F', bank: 'b6-fill' },

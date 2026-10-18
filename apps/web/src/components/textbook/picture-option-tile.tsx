@@ -99,7 +99,7 @@ export function PictureOptionTile({
         // statement at the bottom, so the row's text lines up however many lines each takes.
         className={`flex h-full w-full flex-col justify-between gap-1.5 rounded-lg border p-2 transition-colors ${
           selected ? 'border-primary bg-primary/10' : 'border-border bg-card'
-        } ${disabled ? 'opacity-90' : used ? 'opacity-60' : ''}`}
+        } ${used ? 'opacity-60' : ''}`}
       >
         {/* A picture tile is a picture that picks, with its caption outside the button. A
             label-only option — every bank except B ➌'s photographed seat classes — has no
