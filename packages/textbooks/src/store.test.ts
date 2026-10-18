@@ -151,3 +151,71 @@ describe('TaskResponseStore', () => {
     expect(store.getValue('b2')).toBe('');
   });
 });
+
+/**
+ * B ➎'s 插图一: a `given` blank that names a picture set, so it prints as an
+ * illustration slot. The worked example is the picture the box starts with, and the
+ * student answers at the box like any other slot — while the blank is still excluded
+ * from scoring exactly as a letter-printing `given` blank is.
+ */
+describe('TaskResponseStore — a given illustration slot', () => {
+  const slotTask: Task = {
+    id: 'tblt-hsk4.u06.B.t5',
+    number: '➎',
+    instructions: '读文章，把插图放回文章里。',
+    body: [
+      { kind: 'passage', text: '正文一（ ）{{b1}}' },
+      {
+        kind: 'pictureSet',
+        id: 'illustrations',
+        items: [
+          { letter: 'A', label: '插图一', image: 'tblt-hsk4/u06/b5-illustration-a.jpg' },
+          { letter: 'C', label: '插图三', image: 'tblt-hsk4/u06/b5-illustration-c.jpg' },
+        ],
+      },
+    ],
+    blanks: {
+      b1: { id: 'b1', kind: 'given', answer: 'A', optionSet: 'illustrations' },
+    },
+  };
+  const slotStore = (over: Partial<ConstructorParameters<typeof TaskResponseStore>[0]> = {}) =>
+    new TaskResponseStore({ task: slotTask, contentVersion: 1, ...over });
+
+  it('starts on its worked-example picture', () => {
+    expect(slotStore().getValue('b1')).toBe('A');
+  });
+
+  it('accepts a re-pick at the box, because that is where a slot is answered', () => {
+    const store = slotStore();
+    store.setValue('b1', 'C');
+    expect(store.getValue('b1')).toBe('C');
+  });
+
+  it('restores a re-pick, and lets the student clear the box', () => {
+    const persisted: PersistedTaskState = {
+      taskId: slotTask.id,
+      contentVersion: 1,
+      responses: { b1: 'C' },
+      attempts: [],
+    };
+    expect(slotStore({ load: () => persisted }).getValue('b1')).toBe('C');
+
+    const cleared: PersistedTaskState = { ...persisted, responses: { b1: '' } };
+    expect(slotStore({ load: () => cleared }).getValue('b1')).toBe('');
+  });
+
+  it('resets to the worked example, not to empty', () => {
+    const store = slotStore();
+    store.setValue('b1', 'C');
+    store.reset();
+    expect(store.getValue('b1')).toBe('A');
+  });
+
+  it('is still never scored — a re-pick cannot earn or lose a mark', () => {
+    const store = slotStore();
+    store.setValue('b1', 'C');
+    const result = store.submit();
+    expect(result.scoreableCount).toBe(0);
+    expect(result.correctCount).toBe(0);
+  });
+});

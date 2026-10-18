@@ -172,3 +172,58 @@ describe('tapping a bank blank', () => {
     expect(button.className).toContain('min-w-[3em]');
   });
 });
+
+async function taskB5(): Promise<{ book: BookMeta; task: Task }> {
+  const book = await loadBook('tblt-hsk4');
+  const found = book && findTask(book, 'tblt-hsk4.u06.B.t5');
+  if (!found || !book) throw new Error('task B ➎ did not resolve');
+  return { book, task: found };
+}
+
+/** Points at the task store, so a re-pick can be made the way the dialog makes it. */
+let slotCtx: ReturnType<typeof useTextbookTask> = null;
+function StoreProbe() {
+  slotCtx = useTextbookTask();
+  return null;
+}
+
+const slotImage = () => document.querySelector('img') as HTMLImageElement | null;
+
+/**
+ * B ➎'s 插图一 is a `given` blank that names the picture set. It has to print the
+ * worked-example *picture*, not the letter: the article is supposed to read as the
+ * printed page, where the box holds an illustration.
+ */
+describe('a given blank that names a picture set', () => {
+  it('prints the worked-example picture instead of its letter', async () => {
+    const { book, task: t } = await taskB5();
+    render(
+      <TextbookTaskProvider task={t} book={book}>
+        <BlankField blank={t.blanks!.b1!} />
+        <StoreProbe />
+      </TextbookTaskProvider>,
+    );
+    await act(async () => {});
+
+    expect(slotImage()?.src).toContain('b5-illustration-a.jpg');
+    // The tile's accessible name is the picture's own label — content, not chrome.
+    expect(slotImage()?.alt).toBe('日历和闹钟（记准放票时间）');
+    // The letter chip the `given` branch used to render is gone.
+    expect(document.querySelector('[title="review.spell_correct_answer"]')).toBeNull();
+  });
+
+  it('re-picks at the box, because that is where a slot is answered', async () => {
+    const { book, task: t } = await taskB5();
+    render(
+      <TextbookTaskProvider task={t} book={book}>
+        <BlankField blank={t.blanks!.b1!} />
+        <StoreProbe />
+      </TextbookTaskProvider>,
+    );
+    await act(async () => {});
+    expect(slotImage()?.src).toContain('b5-illustration-a.jpg');
+
+    await act(async () => slotCtx!.store.setValue('b1', 'C'));
+    expect(slotImage()?.src).toContain('b5-illustration-c.jpg');
+  });
+});

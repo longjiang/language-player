@@ -158,6 +158,13 @@ There is **no** `inlineImageSlot` stimulus kind, and none is needed: a `choose` 
 answering from a `pictureSet` is *printed* in one of two shapes and *answered* the same
 way in both. It is a rendering variant of `BlankField`, not a kind of its own.
 
+**A worked example can be a picture.** When the workbook prints an illustration in the box and
+gives its letter (B ➎'s 插图一 `A`), the blank is `given` **and** names the `pictureSet`. It then
+prints as a slot whose starting value is that picture, not the letter — the finished article has
+to read as the printed page. Because a slot is answered at the box, a given slot stays tappable
+and its picture can be re-picked; it is still **never scored**, because `given` is what excludes
+it, not the shape it prints in.
+
 ### Picture choices
 
 **Tapping the blank opens a dialog of the set's pictures; tapping a picture fills the
@@ -231,7 +238,7 @@ Two surfaces answer a task: inline **blanks**, and the free-text fields behind `
 
 | Kind | Notes |
 |---|---|
-| `given` | worked example; pre-filled, non-editable, **not scored** |
+| `given` | worked example; pre-filled, **not scored**. Non-editable — except when it names a `pictureSet`, where it prints as an illustration slot: the box starts on the worked-example *picture* and the student may re-pick it (see [Picture choices](#picture-choices)) |
 | `choose` | pick one option — from a `Bank`, or from a `pictureSet` via `optionSet` |
 | `type` | typed entry, boxed by `expectedLength` where the workbook prints boxes |
 | `goal` | answered **inside a mock app**, never by a blank widget; the app reports an answer the host grades |
@@ -1130,7 +1137,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (prompt, paginator, close), the sandboxed app, and a toolbar with help mode, hint and the Submit that resolves the current task (see below) |
-| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
+| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. A `given` blank that names a set renders here too, starting on its worked-example picture and re-pickable, never scored. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
 | `DictationField` | Boxed per-character entry for dictation tasks |

@@ -17,7 +17,18 @@
  */
 
 import { gradeTask, isBlankScoreable } from './grading';
-import type { Task, TaskResult } from './types';
+import type { BlankSpec, Task, TaskResult } from './types';
+
+/**
+ * A `given` blank prints as an illustration slot when it names an `optionSet`
+ * (B ➎'s 插图一), and a slot is answered at the blank like any other picture blank:
+ * the worked example starts the box and the student may re-pick it. Such a blank is
+ * therefore editable, while every other `given` blank stays a read-only worked
+ * example. Neither is ever scored — this changes what can be written, not grading.
+ */
+function isEditableGiven(blank: BlankSpec): boolean {
+  return blank.kind === 'given' && Boolean(blank.optionSet);
+}
 
 /** A single recorded attempt. Append-only; re-answering voids the previous one. */
 export interface AttemptRecord {
@@ -59,10 +70,12 @@ export interface TaskStoreOptions {
 function mutableResponses(task: Task, persisted?: Record<string, string> | null): Record<string, string> {
   const out: Record<string, string> = {};
   for (const blank of Object.values(task.blanks ?? {})) {
-    // A `given` blank is a worked example: pre-filled, not editable, not scored.
-    if (blank.kind === 'given') out[blank.id] = blank.answer;
+    // A `given` blank is a worked example: pre-filled, not editable, not scored — except a
+    // given *slot*, whose worked-example picture is the box's starting value and whose
+    // re-picks persist like any other response (see isEditableGiven).
+    if (blank.kind === 'given' && !isEditableGiven(blank)) out[blank.id] = blank.answer;
     else if (persisted && blank.id in persisted) out[blank.id] = persisted[blank.id]!;
-    else out[blank.id] = '';
+    else out[blank.id] = blank.kind === 'given' ? blank.answer : '';
   }
   return out;
 }
@@ -146,7 +159,9 @@ export class TaskResponseStore {
 
   setValue = (blankId: string, value: string): void => {
     const blank = this.task.blanks?.[blankId];
-    if (!blank || blank.kind === 'given') return; // worked examples are not editable
+    // A worked example is not editable — except a given *slot*, whose picture the
+    // student re-picks at the box (see isEditableGiven).
+    if (!blank || (blank.kind === 'given' && !isEditableGiven(blank))) return;
     if (this.responses[blankId] === value) return;
     this.responses[blankId] = value;
     // Editing after submit clears the verdict so stale ticks are never shown.
