@@ -36,7 +36,17 @@ export type BlankKind =
    * scored against `answer`, a `free` blank is only recorded. It is excluded from
    * the score exactly like `given`, and needs no answer-key entry.
    */
-  | 'free';
+  | 'free'
+  /**
+   * A slot that shows what the student picked in an **earlier task**, read-only.
+   *
+   * B ➏ is B ➎'s article again: ➎ asks where the six illustrations go, and ➏ asks
+   * for the words. Reading the article in ➏ without the pictures ➎ placed makes two
+   * halves of one page look unrelated, so each tip's picture is carried over. The
+   * pick belongs to the earlier task (`carriedFrom`), is never edited here, and is
+   * never scored — changing ➎ changes what ➏ shows.
+   */
+  | 'carried';
 
 /** A bank of options that `choose` blanks draw from. */
 export interface Bank {
@@ -168,6 +178,15 @@ export interface BlankSpec {
    * (`北京：C；成都：D；…`), because the blanks sit on a map next to city names.
    */
   keyLabel?: string;
+  /**
+   * For `carried`: the earlier task's blank whose pick this slot shows.
+   *
+   * The pick itself is read from that task's saved responses (ADR-0044 keeps state
+   * device-local), not copied into this task's store, so re-answering the earlier
+   * task changes what this slot shows. The source blank must print as a picture
+   * slot; the validator checks both the task and the blank exist in the same book.
+   */
+  carriedFrom?: { taskId: string; blankId: string };
 }
 
 /** One labelled picture option in a `pictureSet`. */
@@ -833,8 +852,10 @@ const TRAILING_BLANK_MARKER_RE = /\{\{\s*([A-Za-z0-9_-]+)\s*\}\}\s*$/;
  * `text` through `TokenizedText` and `blank` beside it. A narrow screen stacks them,
  * which keeps the box where it was: after the paragraph.
  *
- * Only the picture-set printing is split. A trailing bank blank keeps its place in
- * the sentence, where its underline belongs.
+ * Only a blank that prints as an illustration slot is split: a `choose` blank answering
+ * from a picture set, a `given` one that names its set, or a `carried` slot (B ➏'s
+ * pictures, read from B ➎). A trailing bank blank keeps its place in the sentence,
+ * where its underline belongs.
  */
 export function trailingIllustrationSlot(
   text: string,
@@ -843,8 +864,11 @@ export function trailingIllustrationSlot(
   const match = TRAILING_BLANK_MARKER_RE.exec(text ?? '');
   if (!match) return { text, blank: null };
   const blank = task.blanks?.[match[1]!];
-  if (!blank?.optionSet) return { text, blank: null };
-  if (blank.kind !== 'choose' && blank.kind !== 'given') return { text, blank: null };
+  if (!blank) return { text, blank: null };
+  const printsAsSlot =
+    blank.kind === 'carried' ||
+    ((blank.kind === 'choose' || blank.kind === 'given') && Boolean(blank.optionSet));
+  if (!printsAsSlot) return { text, blank: null };
   return { text: text.slice(0, match.index).trimEnd(), blank };
 }
 

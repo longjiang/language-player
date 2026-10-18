@@ -36,7 +36,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **B ➌** | two price tables, their seat photographs as column headings, one intro line each | 4 questions, 1 given; ③ takes two picks | two seat-class banks, offered in the dialog at the blank |
 | **B ➍** | the 12306 app as a mock app, opened from a launch button into a panel | 6 tasks asked one at a time, ① given | the app reports, the host grades |
 | **B ➎** | 小红书 article | 6 illustration slots, 1 given | picture set A–F |
-| **B ➏** | the same article | 6 text blanks, 1 given | statement bank A–G |
+| **B ➏** | the same article | 6 text blanks, 1 given; plus ➎'s six pictures, carried read-only | statement bank A–G |
 | **C ➊ / ➋** | 4 recordings + 4 photos | 3 numbered blanks each, 1 given | picture letters |
 | **C ➌** | the booking recording | 3 comprehension questions | free text (the key prints model sentences) |
 | **C ➍** | the same recording + its transcript | 4 word blanks, 1 given | bank A–E |
@@ -208,6 +208,34 @@ visible `① A` hands over a different task's worked answer while an empty `（�
 them to fill a blank this task cannot grade. The ellipsis says "text has been elided here"
 without asking for anything; B ➏ is where those blanks live.
 
+#### Carrying a pick into a later task
+
+**B ➏ shows the pictures B ➎ placed.** ➏ is the same article, asking for the words; without
+➎'s six pictures it reads as a page full of holes, and the two tasks stop looking like two
+halves of one exercise. Each tip's box is therefore a `carried` blank — a slot whose value is
+read from ➎ at render time, not copied into ➏:
+
+```ts
+b8: { id: 'b8', kind: 'carried', answer: '', carriedFrom: { taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' } },
+```
+
+- **The pick is read, not stored.** `loadPersistedTask` — ADR-0044 keeps exercise state
+  device-local — is read after mount, so re-answering ➎ changes what ➏ shows and there is no
+  copy here to go stale. Nothing about a carried slot is written to ➏'s own saved state,
+  which is why `TaskResponseStore.setValue` refuses it, and why a persisted value for one is
+  ignored on load.
+- **It is display-only.** The box echoes `InlineImageSlot`'s filled printing but has no
+  button, opens no dialog and cannot arm the picture bank — tapping it in ➏ would be
+  answering ➎ inside the wrong task.
+- **The picture comes from the source task.** ➏ does not carry the picture set, so the image
+  and its caption are resolved from the set the *source* blank answers from; `CarriedSlot`
+  finds that blank in the already-loaded book.
+- **An unanswered ➎ leaves an empty box**, not a "tap to choose" prompt: there is nothing to
+  choose here, and a prompt would ask for something this task cannot accept.
+- **Both ends are validated** (`validateBook`): the source task must exist in the book, the
+  source blank must exist, and it must itself print as a picture slot. A carried slot
+  carrying another carried slot is rejected, so the chain is always one hop.
+
 **A tile's caption is tokenized, and sits outside the pick button.** The captions are the
 exercise's own vocabulary — `请到检票口检票`, `请在安全白线内通行`, `请紧握扶手` — so a student has
 to be able to tap a word and read what it means, which is the same tokenized path as any
@@ -258,6 +286,7 @@ Two surfaces answer a task: inline **blanks**, and the free-text fields behind `
 |---|---|
 | `given` | worked example; pre-filled, **not scored**. Non-editable — except when it names a `pictureSet`, where it prints as an illustration slot: the box starts on the worked-example *picture* and the student may re-pick it (see [Picture choices](#picture-choices)) |
 | `choose` | pick one option — from a `Bank`, or from a `pictureSet` via `optionSet` |
+| `carried` | an **earlier task's pick**, shown read-only: B ➏ prints the pictures B ➎ placed. Never answered, edited or scored here; the value is read from the source task's saved state (see [Carrying a pick into a later task](#carrying-a-pick-into-a-later-task)) |
 | `type` | typed entry, boxed by `expectedLength` where the workbook prints boxes |
 | `goal` | answered **inside a mock app**, never by a blank widget; the app reports an answer the host grades |
 | `free` | free prose (notes, free writing); **recorded but never scored**. Carries `answer: ''` — the field is required for every kind, and "nothing to grade" is expressed by the kind, not by absence |
@@ -910,6 +939,7 @@ below fall either side of.
 - a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa;
 - a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to;
 - a `recall` pointing at a task the book does not have — a wrong id renders nothing at all, silently;
+- a `carried` blank that does not name its source, that names a task or blank the book does not have, that carries from its own task, or whose source is not a picture-set slot (including carrying another `carried`) — each leaves a permanently empty box;
 - an `imageMap` pin outside 0–100 on either axis — the control would be clipped by the frame's `overflow-hidden` and the blank would silently stop being answerable.
 
 **Enforced by `mock-app-files.test.ts`** — these need to read
@@ -1169,7 +1199,8 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (prompt, paginator, close), the sandboxed app, and a toolbar with help mode, hint and the Submit that resolves the current task (see below) |
-| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. A `given` blank that names a set renders here too, starting on its worked-example picture and re-pickable, never scored. Its `layout` is `inline` in running text or `gutter` in the column a passage puts beside itself from `md` up (B ➎), where it fills the column and shows the picture uncropped. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
+| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. A `given` blank that names a set renders here too, starting on its worked-example picture and re-pickable, never scored. Its `layout` is `inline` in running text or `gutter` in the column a passage puts beside itself from `md` up (B ➎), where it fills the column and shows the picture uncropped. Read-only when `readOnly` is set (a carried slot): the same box, no button. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
+| `CarriedSlot` | Another task's pick, shown read-only: resolves `BlankSpec.carriedFrom` against the loaded book, reads the earlier task's saved responses after mount, and hands `InlineImageSlot` the picture and its caption. An unanswered source leaves the box empty |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
 | `DictationField` | Boxed per-character entry for dictation tasks |

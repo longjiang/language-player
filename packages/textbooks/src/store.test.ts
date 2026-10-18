@@ -219,3 +219,57 @@ describe('TaskResponseStore — a given illustration slot', () => {
     expect(result.correctCount).toBe(0);
   });
 });
+
+/**
+ * B ➏'s carried slots show B ➎'s pictures. The value belongs to ➎'s saved state, so
+ * this store must never hold, accept or grade one: a copy here would go stale the moment
+ * the student re-picked a picture in ➎.
+ */
+describe('TaskResponseStore — a carried slot', () => {
+  const carriedTask: Task = {
+    id: 'tblt-hsk4.u06.B.t6',
+    number: '➏',
+    instructions: '填词',
+    body: [{ kind: 'passage', text: '正文{{b1}}{{b2}}' }],
+    blanks: {
+      b1: { id: 'b1', kind: 'choose', answer: 'B', bank: 'w1' },
+      b2: {
+        id: 'b2',
+        kind: 'carried',
+        answer: '',
+        carriedFrom: { taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' },
+      },
+    },
+    banks: [{ id: 'w1', items: ['B'] }],
+  };
+  const carriedStore = (over: Partial<ConstructorParameters<typeof TaskResponseStore>[0]> = {}) =>
+    new TaskResponseStore({ task: carriedTask, contentVersion: 1, ...over });
+
+  it('never holds a value of its own', () => {
+    expect(carriedStore().getValue('b2')).toBe('');
+  });
+
+  it('refuses to be edited here — it is answered in the task it came from', () => {
+    const store = carriedStore();
+    store.setValue('b2', 'A');
+    expect(store.getValue('b2')).toBe('');
+  });
+
+  it('ignores a persisted value; the pick is read from the earlier task at render', () => {
+    const persisted: PersistedTaskState = {
+      taskId: carriedTask.id,
+      contentVersion: 1,
+      responses: { b1: 'B', b2: 'A' },
+      attempts: [],
+    };
+    expect(carriedStore({ load: () => persisted }).getValue('b2')).toBe('');
+  });
+
+  it('is never scored, so it cannot change what "complete" means', () => {
+    const store = carriedStore();
+    store.setValue('b1', 'B');
+    const result = store.submit();
+    expect(result.scoreableCount).toBe(1);
+    expect(result.correctCount).toBe(1);
+  });
+});

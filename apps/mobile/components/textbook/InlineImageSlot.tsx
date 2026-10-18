@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
-import { createAssetResolver, pictureSetsIn, type BlankSpec } from '@langplayer/textbooks';
+import { createAssetResolver, pictureSetsIn, type BlankSpec, type PictureOption } from '@langplayer/textbooks';
 import { ASSET_BASE_URL } from '@/lib/asset-url';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
@@ -24,6 +24,8 @@ export function InlineImageSlot({
   blank,
   value,
   layout = 'inline',
+  readOnly = false,
+  item: itemOverride,
 }: {
   blank: BlankSpec;
   value: string;
@@ -33,6 +35,13 @@ export function InlineImageSlot({
    * its column and the picture is shown whole instead of cropped into a fixed 128×80.
    */
   layout?: 'inline' | 'gutter';
+  /**
+   * A carried slot (B ➏) is shown, not answered: no dialog, no selected state, and an
+   * empty box when the earlier task has no pick — never a prompt this task cannot fill.
+   */
+  readOnly?: boolean;
+  /** The picture to print, when it is not resolved from this task's own picture set. */
+  item?: PictureOption;
 }) {
   const t = useT();
   const ctx = useTextbookTask();
@@ -44,8 +53,41 @@ export function InlineImageSlot({
   const gutter = layout === 'gutter' && isMd;
 
   const set = blank.optionSet ? pictureSetsIn(ctx!.task).get(blank.optionSet) : undefined;
-  const item = set?.items.find((i) => i.letter === value);
+  const item = itemOverride ?? set?.items.find((i) => i.letter === value);
   const isSelected = ctx!.selection.get() === blank.id;
+  const box = `items-center justify-center overflow-hidden rounded-md border-2 border-dashed ${
+    gutter ? 'min-h-[96px] w-full' : 'h-24 w-32'
+  }`;
+
+  const picture = item ? (
+    <>
+      <Image
+        source={{ uri: resolve(item.image!) }}
+        // Uncropped in the gutter: these are 900×487 workbook screenshots, and
+        // `cover` in a fixed 128×96 box cut off about 40% of the picture.
+        className={gutter ? 'h-24 w-full' : 'h-20 w-full'}
+        resizeMode={gutter ? 'contain' : 'cover'}
+        accessible={false}
+      />
+      <Text className="w-full px-1 text-center text-[10px] text-muted-foreground">
+        {item.label}
+      </Text>
+    </>
+  ) : null;
+
+  // A carried picture is display-only: the student answered it in the earlier task, so
+  // touching it must not arm this task's bank or open its dialog.
+  if (readOnly) {
+    return (
+      <View className={`${box} border-border`}>
+        {item ? (
+          <View accessible accessibilityLabel={item.label} className="items-center">
+            {picture}
+          </View>
+        ) : null}
+      </View>
+    );
+  }
 
   return (
     <Pressable
@@ -59,24 +101,10 @@ export function InlineImageSlot({
       accessibilityState={{ selected: isSelected }}
       // When filled, the picture's own label names it — that is content, not chrome.
       accessibilityLabel={item ? item.label : t('label.pick_illustration')}
-      className={`items-center justify-center overflow-hidden rounded-md border-2 border-dashed ${
-        gutter ? 'min-h-[96px] w-full' : 'h-24 w-32'
-      } ${isSelected ? 'border-primary' : 'border-border'}`}
+      className={`${box} ${isSelected ? 'border-primary' : 'border-border'}`}
     >
       {item ? (
-        <>
-          <Image
-            source={{ uri: resolve(item.image!) }}
-            // Uncropped in the gutter: these are 900×487 workbook screenshots, and
-            // `cover` in a fixed 128×96 box cut off about 40% of the picture.
-            className={gutter ? 'h-24 w-full' : 'h-20 w-full'}
-            resizeMode={gutter ? 'contain' : 'cover'}
-            accessible={false}
-          />
-          <Text className="w-full px-1 text-center text-[10px] text-muted-foreground">
-            {item.label}
-          </Text>
-        </>
+        picture
       ) : (
         <View className="items-center gap-1 px-2">
           <Text aria-hidden className="text-lg leading-none text-muted-foreground">

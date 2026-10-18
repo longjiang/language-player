@@ -87,9 +87,27 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     if (key !== blank.id) {
       add('error', `Blank key "${key}" does not match its id "${blank.id}".`, key);
     }
-    // A `free` blank is ungraded prose, so it has no answer to require.
-    if (blank.kind !== 'free' && !blank.answer?.trim()) {
+    // A `free` blank is ungraded prose and a `carried` slot shows another task's pick,
+    // so neither has an answer of its own to require.
+    if (blank.kind !== 'free' && blank.kind !== 'carried' && !blank.answer?.trim()) {
       add('error', `Blank "${key}" has no answer.`, key);
+    }
+    if (blank.kind === 'carried') {
+      // The slot is filled by the earlier task; what it must name is where that pick
+      // comes from. The task and blank themselves are checked in `validateBook`, which
+      // is the first place the book's task list is known.
+      if (!blank.carriedFrom?.taskId || !blank.carriedFrom?.blankId) {
+        add('error', `Carried blank "${key}" does not say which task/blank it carries.`, key);
+      }
+      if (blank.bank || blank.optionSet || blank.answer) {
+        add(
+          'error',
+          `Carried blank "${key}" cannot declare an answer, bank or optionSet — they belong to the task it carries.`,
+          key,
+        );
+      }
+    } else if (blank.carriedFrom) {
+      add('error', `Blank "${key}" declares carriedFrom but is not a carried blank.`, key);
     }
     if (blank.kind === 'choose') {
       if (!blank.bank && !blank.optionSet) {
@@ -399,8 +417,9 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
   // ── Answer key agreement ──
   if (task.answerKeyRaw) {
     for (const blank of Object.values(blanks)) {
-      // The key omits worked examples and has nothing to say about free text.
-      if (blank.kind === 'given' || blank.kind === 'free') continue;
+      // The key omits worked examples and has nothing to say about free text or a
+      // slot carried from another task.
+      if (blank.kind === 'given' || blank.kind === 'free' || blank.kind === 'carried') continue;
       const keyed = blank.keyLabel
         ? answersForKeyLabel(task.answerKeyRaw, blank.keyLabel)
         : (() => {
@@ -467,6 +486,59 @@ export function validateBook(book: BookMeta, options?: ValidationOptions): Valid
   const allTaskIds = new Set(
     book.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks.map((t) => t.id))),
   );
+  // A carried slot shows another task's pick. If either end of that reference is wrong
+  // the slot renders an empty box forever, so both are checked here — `validateTask`
+  // cannot, since it never sees the rest of the book.
+  const tasksById = new Map(tasksIn(book).map((task) => [task.id, task]));
+  for (const task of tasksIn(book)) {
+    for (const blank of Object.values(task.blanks ?? {})) {
+      if (blank.kind !== 'carried' || !blank.carriedFrom) continue;
+      const from = blank.carriedFrom;
+      const source = tasksById.get(from.taskId);
+      if (!source) {
+        issues.push({
+          level: 'error',
+          taskId: task.id,
+          blankId: blank.id,
+          message: `Carried blank "${blank.id}" points at "${from.taskId}", which this book does not have.`,
+        });
+        continue;
+      }
+      if (source.id === task.id) {
+        issues.push({
+          level: 'error',
+          taskId: task.id,
+          blankId: blank.id,
+          message: `Carried blank "${blank.id}" carries from its own task; it shows an earlier task's pick.`,
+        });
+        continue;
+      }
+      const sourceBlank = source.blanks?.[from.blankId];
+      if (!sourceBlank) {
+        issues.push({
+          level: 'error',
+          taskId: task.id,
+          blankId: blank.id,
+          message: `Carried blank "${blank.id}" points at "${from.taskId}" blank "${from.blankId}", which does not exist.`,
+        });
+        continue;
+      }
+      // The source must itself print as a picture slot: a carried slot has no image of
+      // its own, so it resolves one from the picture set that blank answers from. A
+      // carried blank carrying another carried blank is rejected to keep it one hop.
+      const printsAsSlot =
+        (sourceBlank.kind === 'choose' || sourceBlank.kind === 'given') &&
+        Boolean(sourceBlank.optionSet);
+      if (!printsAsSlot) {
+        issues.push({
+          level: 'error',
+          taskId: task.id,
+          blankId: blank.id,
+          message: `Carried blank "${blank.id}" carries "${from.taskId}" blank "${from.blankId}", which is not a picture-set slot (${sourceBlank.kind}${sourceBlank.optionSet ? `, set ${sourceBlank.optionSet}` : ''}).`,
+        });
+      }
+    }
+  }
   for (const unit of book.units) {
     for (const lesson of unit.lessons) {
       for (const task of lesson.tasks) {
