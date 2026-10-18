@@ -4,6 +4,17 @@
 > This is the backend that powers both Classic and GO apps. The Next.js app also uses it.
 > **DO NOT EDIT** this directory unless explicitly needed.
 
+## Metadata
+
+- **Arch ID**: ARCH-003
+- **Feature**: Python (Flask) backend — blueprints, routes, utilities, and data access
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-10-17
+- **ROADMAP Phase**: Phase 9 — Backend Consolidation
+- **Scope**: `zerotohero-python-server/` (Flask, active)
+
 > **Current state (2026-08):** auth and data now run on Supabase, not Directus
 > — see SPEC-039 and ADR-0023. This doc remains accurate for Flask structure,
 > blueprints, and route organization, but the "Auth: Directus JWT" /

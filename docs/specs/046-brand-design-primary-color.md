@@ -172,7 +172,7 @@ className="ring-primary"                         // focus rings
 
 For React Native props that take a raw color (e.g. `placeholderTextColor`, lucide icon
 `color`), import from `@/lib/theme-colors`, which derives hexes from
-`packages/shared/tokens.ts` — never inline a hex literal.
+`packages/shared/src/tokens.ts` — never inline a hex literal.
 
 ## 5. Implementation
 

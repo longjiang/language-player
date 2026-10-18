@@ -1,5 +1,17 @@
 # Subs-Search Architecture
 
+## Metadata
+
+- **Arch ID**: ARCH-036
+- **Feature**: Subs-search — how dictionary "Examples" find and display matching video subtitles
+- **Type**: as-built
+- **Status**: draft — the body still describes the retired MySQL FULLTEXT path and the deleted `app_subs_search.py`; SPEC-044 Part 2 is the current strategy
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-09-03
+- **ROADMAP Phase**: Phase 4 — Dictionary
+- **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask), Supabase Postgres
+- **Renumbered**: was `004-subs-search-architecture.md` (collided with ARCH-004); renamed to ARCH-036 on 2026-10-18
+
 How the "Examples" tab on dictionary entry pages finds and displays video subtitles matching a word's inflected forms.
 
 ## Overview
@@ -95,7 +107,7 @@ SubsSearchResults
     └── (closes on backdrop click or X button)
 ```
 
-> **As-built note (post-ARCH-004):** the playback dialog is now
+> **As-built note (added after this doc's original analysis):** the playback dialog is now
 > `SubsSearchPlaybackModal` (`apps/web/src/components/video/subs-search-playback-modal.tsx`),
 > portaled to `document.body`, with a **singleline | multiline** toggle (the
 > watch-page layout). The sheet is `max-h-[85vh]` and **clips** with

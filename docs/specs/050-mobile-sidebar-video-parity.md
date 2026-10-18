@@ -96,7 +96,7 @@ Create `apps/mobile/components/ui/sidebar.tsx`:
 ### Step 2 — Align the video player with web (required)
 
 Update `apps/mobile/components/video/TranscriptQueuePanel.tsx` to match web’s
-API ([web `transcript-queue-panel.tsx`](../../apps/web/src/components/video/transcript-queue-panel.tsx)):
+API ([web `video-queue-panel.tsx`](../../apps/web/src/components/video/video-queue-panel.tsx)):
 
 - Tabs: `transcript`, `queue`, and optional `info` (info only on narrow).
 - Remove the mobile-only `video` tab.

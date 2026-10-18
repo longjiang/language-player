@@ -4,6 +4,17 @@
 > This is the **source of truth** for features. All Next.js implementations should reference this first.
 > **DO NOT EDIT** files in this directory.
 
+## Metadata
+
+- **Arch ID**: ARCH-001
+- **Feature**: Classic (Nuxt 2) web app — pages, components, stores, and patterns
+- **Type**: analysis
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-07-24
+- **ROADMAP Phase**: Cross-cutting (Classic is the source of truth for features)
+- **Scope**: `zerotohero-nuxt/` (Classic, legacy reference only)
+
 ## Tech Stack
 
 - **Framework**: Nuxt 2 (Vue 2) with Vuex, Vue Router, BootstrapVue

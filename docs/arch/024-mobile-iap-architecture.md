@@ -1,5 +1,16 @@
 # Mobile In-App Purchase (IAP) Architecture
 
+## Metadata
+
+- **Arch ID**: ARCH-024
+- **Feature**: Mobile in-app purchase — StoreKit 2 (iOS) and Play Billing (Android), receipt verification and guardrails
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-08-11
+- **Last Updated**: 2026-08-11
+- **ROADMAP Phase**: Phase 7 — Mobile Integration (payments)
+- **Scope**: Mobile (React Native/Expo), Python (Flask)
+
 How the new mobile app (`apps/mobile`) sells Lifetime Pro through Apple In-App
 Purchase, how the purchase is verified, and — more importantly — the failure
 modes we hit during SPEC-054 Phase 3 and the guardrails that now prevent them.

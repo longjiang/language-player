@@ -1,6 +1,14 @@
-# 037 - Two-Tier Remote Cache with Cold Offload
+# SPEC-037 - Two-Tier Remote Cache with Cold Offload
 
-Status: Implemented (August 2026)
+## Metadata
+
+- **Spec ID**: SPEC-037
+- **Feature**: Two-tier cache — local disk plus a remote tier with cold-data offload
+- **Status**: complete
+- **Created**: 2026-08-03
+- **Last Updated**: 2026-08-03
+- **ROADMAP Phase**: Phase 9 — Backend Consolidation
+- **Scope**: `zerotohero-python-server/` (Flask), `utils_cache.py` / `remote_cache`
 
 ## Context
 

@@ -5,8 +5,8 @@
 > **Updated:** 2026-08-09 — the offline download cap was removed; see [ADR-0031](./0031-full-offline-dictionary-downloads.md)
 > **Replaces:** Current mobile offline CSV-based dictionary (`apps/mobile-go-legacy/src/dictionary.ts`, `apps/mobile-go-legacy/src/dictionary-db.ts`, `apps/mobile-go-legacy/src/dictionary-profile.ts`)
 > **See also:**
-> - `docs/adr/lp-nextjs-dictionary-architecture.md` — Next.js server-side dictionary
-> - `docs/adr/lp-classic-dictionary-architecture.md` — Classic Nuxt reference
+> - `docs/arch/007-nextjs-dictionary-architecture.md` — Next.js server-side dictionary
+> - `docs/arch/006-classic-dictionary-architecture.md` — Classic Nuxt reference
 > - `docs/adr/0006-consolidated-lexical-data-types.md` — ADR-0006 lexical types
 > - `docs/adr/0007-dictionary-hub-ux.md` — Dictionary Hub UX
 

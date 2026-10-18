@@ -19,7 +19,7 @@
   - [SPEC-054 — Subscription Payment Testing](054-subscription-payment-testing.md)
   - [SPEC-068 — Google Play Billing Implementation](068-google-play-billing-implementation.md)
   - [ADR-0023 — Proxy Supabase Auth Through Flask](<../adr/0023-proxy-supabase-auth-through-flask.md>)
-  - [ADR-0032 — Admin Console as a Separate Next.js App](<../adr/0032-admin-console-app.md) (the `is_admin` claim model)
+  - [ADR-0032 — Admin Console as a Separate Next.js App](<../adr/0032-admin-console-app.md>) (the `is_admin` claim model)
 
 ## Overview
 

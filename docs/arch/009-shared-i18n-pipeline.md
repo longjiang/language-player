@@ -1,9 +1,17 @@
 # Shared i18n Pipeline — Single Source of Truth
 
-**Date**: 2026-07-23
-**Status**: accepted
-**Supersedes**: [ADR-0009](../adr/0009-go-i18n-migration-react-intl.md) (implementation complete; this doc documents the ongoing pipeline)
-**See also**: [ADR-0010](../adr/0010-port-web-to-mobile-fresh-start.md), [ADR-0011](../adr/0011-shared-design-tokens.md)
+## Metadata
+
+- **Arch ID**: ARCH-009
+- **Feature**: Shared UI i18n pipeline — `translations.csv` → `packages/shared/locales/*.json`
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-07-23
+- **Last Updated**: 2026-08-30
+- **ROADMAP Phase**: Cross-cutting (i18n)
+- **Scope**: Web (Next.js), Mobile (React Native/Expo), Chrome Extension
+- **Supersedes**: [ADR-0009](../adr/0009-go-i18n-migration-react-intl.md) (implementation complete; this doc documents the ongoing pipeline)
+- **See also**: [ADR-0010](../adr/0010-port-web-to-mobile-fresh-start.md), [ADR-0011](../adr/0011-shared-design-tokens.md)
 
 ## Context
 

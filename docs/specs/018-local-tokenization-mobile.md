@@ -6,10 +6,10 @@
 - **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f, 3g done; 3b deferred); Phase 4 (offline romanization parity) implemented
 - **Created**: 2026-07-26
 - **Last updated**: 2026-08-08
-- **Supersedes**: [SPEC-016](../specs/016-mobile-local-tokenization.md)
+- **Supersedes**: SPEC-015 / SPEC-016 (earlier local-tokenization drafts, merged into this spec; both files deleted)
 - **See also**:
   - [ARCH-018: Local Tokenization Strategy](../arch/018-local-tokenization-strategy.md) — per-language taxonomy and strategy reference
-  - [SPEC-015: Local Tokenization & Lemmatization for Mobile](../specs/015-local-tokenization-mobile.md) — earlier exploration
+  - SPEC-015 — Local Tokenization & Lemmatization for Mobile (earlier exploration, merged into this spec)
   - [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md) — download UX pattern
   - [ARCH-016: Server-Side Tokenization Pipeline](../arch/016-server-tokenization.md)
   - [ADR-0018: Tokenizer Selection — Prefer Simplemma/LemmatizationList over spaCy](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md)
@@ -1255,7 +1255,7 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 ## See Also
 
 - [ARCH-018: Local Tokenization Strategy](../arch/018-local-tokenization-strategy.md) — per-language taxonomy, strategy details, and gotchas
-- [SPEC-015: Local Tokenization & Lemmatization for Mobile](../specs/015-local-tokenization-mobile.md) — earlier exploration
+- SPEC-015 — earlier exploration of local tokenization (merged into this spec; file deleted)
 - [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md) — download UX pattern this spec follows
 - [SPEC-053: Mobile Offline Mode](../specs/053-mobile-offline-mode.md) — local-only network kill switch setting
 - [SPEC-055: Local Tokenizer Testing Checklist](../specs/055-local-tokenizer-testing.md) — manual spot-check QA for the local tokenizers

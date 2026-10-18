@@ -1,5 +1,16 @@
 # Difficulty → Level Bucketing
 
+## Metadata
+
+- **Arch ID**: ARCH-033
+- **Feature**: Per-language difficulty thresholds — geometric bucketing of the catalog into 1–7 levels
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-09-06
+- **Last Updated**: 2026-09-06
+- **ROADMAP Phase**: Phase 3 — Explore + Video Player
+- **Scope**: `zerotohero-python-server/` (Flask), Web + Mobile clients
+
 This document describes how a raw `video.difficulty` score is turned into a
 1–7 level and, more importantly, how the per-language **thresholds** that do
 that conversion are computed. See [032 – YouTube Video

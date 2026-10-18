@@ -1,9 +1,17 @@
 # Next.js Dictionary Architecture
 
-> **Status:** Proposed  
-> **Date:** 2026-07-12  
-> **Replaces:** Classic Nuxt offline CSV dictionary approach  
-> **See also:** [Classic Dictionary Architecture](./006-classic-dictionary-architecture.md)
+## Metadata
+
+- **Arch ID**: ARCH-007
+- **Feature**: Dictionary system in the Next.js web app
+- **Type**: as-built
+- **Status**: draft — written as a proposed design; the shipped implementation differs (see "Notes" below)
+- **Created**: 2026-07-12
+- **Last Updated**: 2026-10-18
+- **ROADMAP Phase**: Phase 4 — Dictionary
+- **Scope**: `apps/web/` (Next.js, active), `zerotohero-python-server/` (Flask)
+- **Replaces**: Classic Nuxt offline CSV dictionary approach
+- **See also**: [Classic Dictionary Architecture](./006-classic-dictionary-architecture.md)
 
 ---
 

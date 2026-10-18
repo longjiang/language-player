@@ -23,7 +23,7 @@
   [SPEC-039 (Full Migration, WS-5 §9)](039-full-database-migration-supabase.md),
   [ADR-0021 (Video Content → Supabase)](../adr/0021-migrate-video-content-to-supabase.md),
   [ADR-0026 (Continua Subs-Search Indexing — accepted)](../adr/0026-continua-subs-search-indexing.md),
-  [ARCH-004 (Subs-Search Architecture — outdated, to be updated)](../arch/004-subs-search-architecture.md),
+  [ARCH-036 (Subs-Search Architecture — outdated, to be updated)](../arch/036-subs-search-architecture.md),
   [SPEC-037 (Two-Tier Cache)](037-two-tier-remote-cache-offload.md)
 
 ## Overview
@@ -399,7 +399,7 @@ Changes in `utils_content.subs_search`:
 | `zerotohero-python-server/profiling_subs_search.py` | CJK benchmark matrix |
 | `zerotohero-python-server/test_app.py` | unit tests for token builder/query builder; keep existing endpoint test green |
 | `zerotohero-python-server/tmp/` | migration SQL (column, trigger, index) |
-| `docs/arch/004-subs-search-architecture.md` | update backend section after rollout |
+| `docs/arch/036-subs-search-architecture.md` | update backend section after rollout |
 
 ## Verification
 
@@ -620,7 +620,7 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
    target (all phase1 < 1s: 中国 311ms, 对不起 591ms, 相形见绌 516ms, ja 私
    302ms, の 291ms, 日本 284ms; worst uncached total 2.5s, dominated by the
    remote cache lookup and context reduction).
-7. ✅ Update ARCH-004's backend section and this spec's verification table
+7. ✅ Update ARCH-036's backend section and this spec's verification table
    (done).
 
 ---
@@ -673,7 +673,7 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
 - **Leftover empty `subs_tsv` column** from the aborted ALTER attempt remains
   on `youtube_videos` (all NULL); dropping it rewrites the table, so it's
   deferred to a maintenance window (noted in the migration file).
-- **ARCH-004 is outdated** (describes MySQL ngram) — to be updated to match
+- **ARCH-036 is outdated** (describes MySQL ngram) — to be updated to match
   this strategy.
 
 # Out of scope / future work

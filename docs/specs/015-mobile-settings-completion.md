@@ -10,9 +10,9 @@
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
 - **Depends on**: SPEC-013 (Offline Dictionary), SPEC-014 (Subscription), SPEC-016 (Interaction Primitives — @rn-primitives Switch/Select/Tabs)
 - **See also**:
-  - [STATUS.md](../../apps/mobile/STATUS.md) — current 🟡 status
+  - `apps/mobile/STATUS.md` — current 🟡 status (file deleted; status now lives in ROADMAP.md)
   - [Web settings page](../../apps/web/src/app/[l1]/[l2]/settings/page.tsx) — reference implementation
-  - [Mobile settings screens](../../apps/mobile/app/(tabs)/(me)/settings/) — current implementation (directory-based)
+  - [Mobile settings screens](<../../apps/mobile/app/(tabs)/(me)/settings/>) — current implementation (directory-based)
   - [ADR-0015: Settings UI and Search](../adr/0015-settings-ui-and-search.md) — list→detail layout, wide-screen, search design for web & mobile
   - [SPEC-016: Interaction Primitives Migration](../specs/016-interaction-primitives-migration.md) — @rn-primitives Switch, Select, Tabs, Dialog used in settings
   - [SPEC-017: Settings List→Detail Pattern](../specs/017-settings-list-detail-search.md) — shared search keys, web-side migration companion spec

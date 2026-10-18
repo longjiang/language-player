@@ -11,7 +11,7 @@
 - **See also**:
   - [ADR-0014: Use @rn-primitives for Mobile Interaction Primitives](../adr/0014-rn-primitives-interaction-primitives.md)
   - [Commit 28ceadfda1](https://github.com/zerotohero/language-player/commit/28ceadfda1) — web Dialog migration
-  - [STATUS.md](../../apps/mobile/STATUS.md) — mobile port status
+  - `apps/mobile/STATUS.md` — mobile port status (file deleted; see ROADMAP.md Phase 7)
   - [ROADMAP.md](../../ROADMAP.md) — Phase 7 tasks
 
 ---
@@ -320,7 +320,7 @@ Each migrated component must handle:
 
 - **Web**: `@base-ui/react` (already installed), `shadcn` CLI (already installed), `tw-animate-css` (already installed)
 - **Mobile**: `@rn-primitives/dialog`, `@rn-primitives/select`, `@rn-primitives/switch`, `@rn-primitives/tabs` (new), `react-native-reanimated` (promoted to direct dependency; currently transitive via Expo)
-- **Both**: `packages/shared/tokens.ts` (ADR-0011) for design tokens used in styled wrappers
+- **Both**: `packages/shared/src/tokens.ts` (ADR-0011) for design tokens used in styled wrappers
 
 ---
 

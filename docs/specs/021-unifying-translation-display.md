@@ -9,7 +9,7 @@
 - **Depends on**: Phase 3 (Reader Experience — TextActionMenu ✅), Phase 4 (Video Player ✅)
 - **See also**:
   - [SPEC-006: Translation](./006-translation.md) — the base translation spec (endpoints, caching, what is/isn't translated)
-  - [STATUS.md](../../apps/mobile/STATUS.md) — web-reader notes "Still missing: page translation"
+  - `apps/mobile/STATUS.md` — web-reader notes "Still missing: page translation" (file deleted)
   - [SPEC-009: Reader Layout](./009-reader-layout.md)
 
 ---

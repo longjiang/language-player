@@ -1,4 +1,14 @@
-# AI Explanation Follow-ups
+# SPEC-035: AI Explanation Follow-ups
+
+## Metadata
+
+- **Spec ID**: SPEC-035
+- **Feature**: Multi-turn "Ask AI" follow-ups on the DeepSeek explanation card — free-form input plus preset aspect buttons
+- **Status**: complete
+- **Created**: 2026-08-03
+- **Last Updated**: 2026-10-06
+- **ROADMAP Phase**: Phase 4 — Dictionary
+- **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask)
 
 ## Summary
 

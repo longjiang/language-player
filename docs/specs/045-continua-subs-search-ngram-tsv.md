@@ -1,5 +1,15 @@
 # SPEC-045 — Continua Subs-Search N-Gram Token Index (Supabase)
 
+## Metadata
+
+- **Spec ID**: SPEC-045
+- **Feature**: Continua subs-search n-gram token index (Supabase)
+- **Status**: superseded — merged into SPEC-044 Part 2 (2026-08-05)
+- **Created**: 2026-08-05
+- **Last Updated**: 2026-08-05
+- **ROADMAP Phase**: Phase 4 — Dictionary
+- **Scope**: Supabase Postgres, `zerotohero-python-server/` (Flask)
+
 > **Superseded 2026-08-05** — merged into
 > [SPEC-044 — Subs-Search Database Optimizations](044-subs-search-db-optimizations.md).
 >

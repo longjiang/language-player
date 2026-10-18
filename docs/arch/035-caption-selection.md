@@ -21,7 +21,7 @@
   - [SPEC-096 — Admin Video Ingestion](../specs/096-admin-video-ingestion.md) — the importer that stores a transcript into `subs_l2`
   - [ARCH-003 — Python Backend Architecture](003-python-backend-architecture.md) — route map and utility catalog
   - [ARCH-019 — Chrome Extension Architecture](019-chrome-extension-architecture.md) — the extension's own, separate track picker
-  - [SPEC-037 — Two-Tier Remote Cache](037-two-tier-remote-cache-offload.md) — bucket caps and offload
+  - [SPEC-037 — Two-Tier Remote Cache](../specs/037-two-tier-remote-cache-offload.md) — bucket caps and offload
 
 ---
 

@@ -278,7 +278,7 @@ test) on every page.
   side-by-side layout is unchanged. A `[subsSearch] multiline panel layout`
   diagnostic log reports the panel's measured height for confirmation.
 - **Related**: the player now re-cues to the matched subtitle line when a
-  video is revisited via prev/next (`0fb2433a`, ARCH-004 — the cue-seek guard
+  video is revisited via prev/next (`0fb2433a`, ARCH-036 — the cue-seek guard
   keys on the (youtubeId, startTime) pair instead of a monotonic string).
 
 ---
