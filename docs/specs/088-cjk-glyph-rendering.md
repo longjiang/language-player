@@ -7,7 +7,7 @@
 - **Created**: 2026-08-24
 - **ROADMAP Phase**: Cross-cutting (mobile rendering)
 - **Scope**: `apps/mobile` tokenized text (`TokenizedText`, the native ruby paragraph)
-- **See also**: [SPEC-087 — Paginated Reader](087-paginated-reader.md) · [ARCH-030 — Native Ruby Text Rendering](../arch/030-ruby-text-native-rendering.md) · [ADR-0038 — Native Ruby Text Rendering](../adr/0038-native-ruby-text-rendering.md)
+- **See also**: [SPEC-087 — Paginated Reader](087-paginated-reader.md) · [ARCH-030 — Native Ruby Text Rendering](../arch/030-ruby-text-native-rendering.md) · [ADR-0038 — Native Ruby Text Rendering](../adr/0038-native-ruby-text-rendering.md) · [SPEC-104 — Rare Han glyph subsets + chip fallback](104-rare-han-glyph-subsets.md)
 
 ## Overview
 
