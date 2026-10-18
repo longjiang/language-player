@@ -62,6 +62,28 @@ When `l1` and `l2` name the **same language** (compared by BCP-47 base subtag, s
 - The web client's own `l1 === l2` short-circuit (`lib/translate.ts`) only fires for *string-identical* codes, so `zh-Hans → zh` still reaches the server and gets modernized there.
 - Same-language modernization can expand the text, so the output-token budget is raised for that case (see Long-Paragraph Translation below).
 
+### Literary Chinese → Modern Chinese (`l1=zh`, `l2=lzh`) — 2026-10-18
+
+`zh` and `lzh` are different base subtags, so this pair does **not** take the
+same-language modernization path. It still must produce modern Standard
+Chinese (现代汉语/白话文), not Classical/Literary Chinese: translating 文言文
+into another classical-style paraphrase defeats the purpose.
+
+- Prompt branch in `app_translator_chatgpt.py` requires modern vocabulary and
+  grammar, forbids imitating the source's classical style, converts classical
+  particles into modern equivalents, and preserves all information. Output
+  honors `zh-Hant`/`zh-Hans`; without a subtag it keeps the source's script.
+- Dictionary definition localization (`_translate_definitions`) and the LLM
+  dictionary fallback carry the same rule, so word definitions are modern
+  Chinese too.
+- The output-token budget gets the same 1.5× expansion used for
+  modernization, because classical compression expands as modern prose.
+- The translation cache key for this pair includes the salt
+  `lzh-to-modern-zh-v1`, so pre-change classical-style translations are not
+  reused. Other pairs keep their existing caches.
+- See [SPEC-103](./103-lzh-cedict-and-modern-zh.md) for the full dictionary +
+  translation behavior.
+
 ### Long-Paragraph Translation — 2026-09-02
 
 `/translate` (single text) previously sent the whole text in one LLM call with **no output-token budget**: a long paragraph (e.g. a full EPUB page) could be silently truncated by the model's output limit. Both endpoints now bound the output budget to the input size:

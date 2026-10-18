@@ -36,6 +36,7 @@ Python Backend (new endpoint: app_dictionary.py)
   │
   ├─ 1. Load appropriate CSV dictionary for L2 (in-memory, cached)
   │     ├─ zh → cedict
+  │     ├─ lzh → cedict (Literary Chinese shares zh's curated table)
   │     ├─ ja → edict
   │     ├─ ko → kengdic
   │     ├─ ru → open_russian
@@ -215,6 +216,11 @@ All dictionary source CSVs under `zerotohero-python/data/dictionaries/` follow a
 | 7 | `level` | `hsk_2026:N` or `hsk_2010:N` | *(empty)* | *(empty)* |
 | 8 | `frequency` | from `weight` | *(empty)* | *(empty)* |
 
+> `lzh` (Literary Chinese) uses the same CEDICT columns as `zh`. It is a
+> distinct L2 for selection/tokenization, but its dictionary entries, pinyin,
+> and HSK levels come from the `cedict` table. See
+> [SPEC-103](../specs/103-lzh-cedict-and-modern-zh.md).
+
 ### Language-Specific Extra Columns
 
 Appended after the 8 common columns:
@@ -294,7 +300,7 @@ Per-language precedence as built:
 | L2 | Displayed pronunciation |
 |---|---|
 | `ja` | **Kana always paired with romaji.** With pitch-accent data: kana carrying the ↓ downstep, romaji with the accented vowel, then the circled pattern number — `[のこりꜜ, nokorí]③`. Without pitch data: the plain pair — `[おべっか, obekka]`. Kana alone only when the entry has no romaji anywhere; kana-less entries fall back to `romanization` > `romaji` > `pronunciation` > `ipa`. |
-| `zh`, `yue` | The dictionary's own `pronunciation` (CEDICT tone-marked pinyin / CC-Canto jyutping) > `phonetic_detail.pinyin` > `phonetic_detail.jyutping`. Cantonese never falls back to Mandarin pinyin. |
+| `zh`, `yue`, `lzh` | The dictionary's own `pronunciation` (CEDICT tone-marked pinyin / CC-Canto jyutping) > `phonetic_detail.pinyin` > `phonetic_detail.jyutping`. Cantonese never falls back to Mandarin pinyin. Literary Chinese reads aloud with modern Mandarin pinyin from CEDICT. |
 | `ko` | `phonetic_detail.romanization` > `pronunciation` |
 | `th` | `phonetic_detail.romanization` (Paiboon+) > `pronunciation` > `phonetic_detail.ipa` |
 | other | `phonetic_detail.ipa` > `phonetic_detail.romanization` > `pronunciation` |
