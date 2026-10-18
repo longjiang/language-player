@@ -201,8 +201,10 @@ describe('trailingIllustrationSlot', () => {
     const split = trailingIllustrationSlot(first.text, t);
     expect(split.blank?.id).toBe('b1');
     expect(split.text.endsWith('{{b1}}')).toBe(false);
-    // The sentence itself is untouched, including its printed answer line.
-    expect(split.text).toContain('（② ）');
+    // The sentence itself is untouched, and B ➏'s printed blank is an ellipsis, not a
+    // bracket inviting an answer this task cannot grade (SPEC-095 § Picture choices).
+    expect(split.text).toContain('……');
+    expect(split.text).not.toMatch(/[①②③④⑤⑥⑦]/);
     expect(split.text).toBe(split.text.trimEnd());
   });
 

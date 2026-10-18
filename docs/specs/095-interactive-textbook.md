@@ -201,6 +201,13 @@ in its sentence. The gutter box fills its column and shows the picture whole —
 illustrations are 900×487 workbook screenshots, and the inline box's fixed 128×80 with
 `object-cover` cut off about 40% of each one.
 
+**B ➎ prints only its own exercise.** The workbook's article also carries B ➏'s ①–⑦ word
+blanks, and those are rendered as an ellipsis (`……`) — not as empty brackets and not as the
+worked answers the print shows. The student is being asked where six pictures go, and a
+visible `① A` hands over a different task's worked answer while an empty `（② ）` invites
+them to fill a blank this task cannot grade. The ellipsis says "text has been elided here"
+without asking for anything; B ➏ is where those blanks live.
+
 **A tile's caption is tokenized, and sits outside the pick button.** The captions are the
 exercise's own vocabulary — `请到检票口检票`, `请在安全白线内通行`, `请紧握扶手` — so a student has
 to be able to tap a word and read what it means, which is the same tokenized path as any
