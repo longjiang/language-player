@@ -391,8 +391,10 @@ export const lessonB: LessonMeta = {
         },
       ],
       blanks: {
-        // 插图一 is printed with A as the worked example.
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
+        // 插图一 is printed with A as the worked example. It names the picture set, so the
+        // slot prints A's illustration rather than the letter — the finished article then
+        // reads as the printed page, where the box holds a picture.
+        b1: { id: 'b1', kind: 'given', answer: 'A', optionSet: 'illustrations' },
         b2: { id: 'b2', kind: 'choose', answer: 'C', optionSet: 'illustrations' },
         b3: { id: 'b3', kind: 'choose', answer: 'D', optionSet: 'illustrations' },
         b4: { id: 'b4', kind: 'choose', answer: 'B', optionSet: 'illustrations' },

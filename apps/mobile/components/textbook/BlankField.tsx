@@ -63,8 +63,11 @@ export function BlankField({
   // ── Answered inside a mock app, never by a blank widget ──
   if (blank.kind === 'goal') return null;
 
-  // ── Worked example: pre-filled by the workbook, not editable, not scored ──
-  if (blank.kind === 'given') {
+  // ── Worked example: pre-filled by the workbook, not scored ──
+  // A given blank that names an `optionSet` is the exception: it prints as an
+  // illustration slot, so its worked-example picture is shown (and re-pickable)
+  // by the picture-set branch below rather than as a letter here.
+  if (blank.kind === 'given' && !blank.optionSet) {
     return (
       <View className="mx-0.5 mb-0.5 flex-row items-center rounded border border-dashed border-border bg-muted/40 px-1.5">
         <Text className="text-base text-foreground">{blank.answer}</Text>
