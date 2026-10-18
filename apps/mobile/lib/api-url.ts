@@ -34,4 +34,5 @@ export const PYTHON_API_URL: string =
   (__DEV__ ? DEV_URL : PRODUCTION_URL);
 
 // All backend calls go through the Flask API (SPEC-024).
-// The Flask server uses DIRECTUS_TOKEN (admin token) internally.
+// The Flask server holds the Supabase credentials (SUPABASE_DB_URL,
+// SUPABASE_URL/SUPABASE_SECRET_KEY) internally; clients never see them.

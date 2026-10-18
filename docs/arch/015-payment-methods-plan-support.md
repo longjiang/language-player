@@ -125,11 +125,11 @@ Subscription records store `payment_customer_id` — only Stripe populates this 
 
 ## Subscription Record Structure
 
-All methods create a subscription record in the Directus `subscriptions` collection:
+All methods write a subscription record to the Supabase `public.user_subscriptions` table (the Directus `subscriptions` collection is gone; the helper names were kept):
 
 | Field | Description |
 |---|---|
-| `owner` | Directus user ID |
+| `user_id` | Supabase auth UUID (legacy Directus numeric ids resolve through `user_id_map`) |
 | `type` | `monthly`, `annual`, `lifetime`, or `trial` |
 | `expires_on` | Expiry date (or `null` for lifetime) |
 | `payment_processor` | `stripe`, `paypal`, or `app-store` |

@@ -21,7 +21,7 @@
   - States: loading skeleton, empty, error with retry, load more
 - **`app/api/videos/recommend/route.ts`** — Proxy endpoint: `/api/videos/recommend?l2=ja&limit=24`
 - **`app/api/videos/[videoId]/route.ts`** — Single video lookup: `/api/videos/{id}?l2=ja`
-- **`app/api/videos/[videoId]/subtitles/route.ts`** — Subtitle data from Directus
+- **`app/api/videos/[videoId]/subtitles/route.ts`** — Subtitle data from Flask/Supabase (was Directus at the time)
 - Added `category`, `tags`, `type`, `made_for_kids` fields to `YouTubeVideo` type in `@langplayer/shared`
 
 ### Part B: Explore Page (`/[l1]/[l2]/explore`)
@@ -291,6 +291,6 @@ starttime,line
 | `app/[l1]/[l2]/watch/[videoId]/page.tsx` | 91 | Video player page |
 | `app/api/videos/recommend/route.ts` | 20 | Proxy: Python recommendations |
 | `app/api/videos/[videoId]/route.ts` | 26 | Proxy: single video lookup |
-| `app/api/videos/[videoId]/subtitles/route.ts` | 117 | Directus CSV subtitle fetch |
+| `app/api/videos/[videoId]/subtitles/route.ts` | 117 | CSV subtitle fetch (Directus at the time; now Flask/Supabase) |
 
 **Total**: 16 files, ~1,250 lines of new code.

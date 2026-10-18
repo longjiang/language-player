@@ -2,6 +2,7 @@
 
 **Date**: 2026-08-03
 **Status**: accepted
+**Outcome (2026-10-18)**: shipped. Web (NextAuth) and mobile (AuthContext) authenticate against GoTrue through Flask's `/auth/*`; the blob routes that base64-decoded Directus JWTs (`routes/user_data.py`) were deleted in SPEC-039 WS-8. Classic still authenticates directly against Directus while it remains live.
 **See also**: [SPEC-034 (Saved Words, complete)](../specs/034-saved-words-supabase-migration.md), [SPEC-039 (Full Database Migration)](../specs/039-full-database-migration-supabase.md), [SPEC-024 (Consolidate Directus Calls)](../specs/024-consolidate-directus-calls.md), [ADR-0021 (Video Content to Supabase)](0021-migrate-video-content-to-supabase.md), [ADR-0004 (Directus User Data Token Strategy)](0004-directus-user-data-token-strategy.md), [ARCH-014 (Saved Words Data Flow)](../arch/014-saved-words-data-flow.md)
 
 ## Context

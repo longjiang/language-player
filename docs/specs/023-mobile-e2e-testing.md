@@ -70,10 +70,10 @@ Rebuild only when dependencies or native code change.
 
 | Environment | Server | Database | Auth |
 |---|---|---|---|
-| **Local dev** | `http://127.0.0.1:5001` (Flask) | Dev backend (Flask → Directus) | Test credentials (Mary/Bob from AGENTS.md) |
+| **Local dev** | `http://127.0.0.1:5001` (Flask) | Dev backend (Flask → Supabase) | Test credentials (Mary/Bob from AGENTS.md) |
 | **Staging** | Staging Flask server | Staging backend | Dedicated test accounts |
 
-> **Note:** Per [SPEC-024](./024-consolidate-directus-calls.md), all Directus calls now route through the Flask backend. E2E tests hit the real staging Flask server — no mock server needed. This means tests verify actual backend behavior but depend on network and test data availability.
+> **Note:** Per [SPEC-024](./024-consolidate-directus-calls.md), all CMS calls route through the Flask backend (Directus at the time; Supabase now). E2E tests hit the real staging Flask server — no mock server needed. This means tests verify actual backend behavior but depend on network and test data availability.
 
 ### Test Accounts
 
@@ -359,7 +359,7 @@ To run E2E tests reliably, the backend must have:
 Per SPEC-024, all backend operations go through Flask. Use a setup script that creates test data via the Flask API, not a Directus SQL dump:
 
 Maintain a setup script at `scripts/setup-e2e-env.sh` that:
-1. Creates test user accounts via `POST /auth/register` (Flask proxies to Directus)
+1. Creates test user accounts via `POST /auth/register` (Flask proxies to GoTrue)
 2. Seeds initial state (saved words, SRS cards, watch history) via Flask endpoints
 3. Verifies dictionary data availability for test languages
 4. Seeds video/TV show/channel data via relevant Flask data endpoints

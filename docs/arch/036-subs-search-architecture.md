@@ -415,7 +415,7 @@ The `line` field in the subtitle CSV often contains embedded newlines (the subti
 
 ### 6. Cache Invalidation
 
-The server's disk cache for subs-search results has no automatic invalidation. If subtitle data is updated in Directus — or server-side response post-processing changes, as in SPEC-091 (entity decoding) — the cache must be manually cleared:
+The server's disk cache for subs-search results has no automatic invalidation. If subtitle data is updated in the database — or server-side response post-processing changes, as in SPEC-091 (entity decoding) — the cache must be manually cleared:
 
 ```bash
 find cache/subs_search -type f -delete

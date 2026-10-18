@@ -1,5 +1,10 @@
 # ADR-0004: Directus User Data — Token Strategy & `owner` Field
 
+> **Historical record (superseded 2026-10).** The `user_data` collection, its
+> `owner` system field, and the Directus token strategy described below no
+> longer exist: user data lives in Supabase and is reached through Flask's row
+> APIs (SPEC-034/SPEC-039). Kept for the reasoning, not as current guidance.
+
 **Date**: 2026-07-13
 **Status**: superseded by [ADR-0023](0023-proxy-supabase-auth-through-flask.md) and [ADR-0021](0021-migrate-video-content-to-supabase.md) — Directus user data no longer exists
 

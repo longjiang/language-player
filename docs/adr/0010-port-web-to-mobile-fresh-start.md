@@ -20,7 +20,7 @@ The current mobile app (`apps/mobile-go-legacy/`, formerly `language-player-3/`)
 | **Translation** | Basic `TranslationManager` caching | Progressive chunked translation via `POST /translate_array`, token cache to skip repeated lemmatization |
 | **i18n** | `i18n-js` with Mustache `{{ }}` syntax, separate CSV (`lp3-trans-*.csv`), no pluralization | Per ADR-0009: `react-intl` with ICU MessageFormat `{key}` syntax, shared `translations.csv` source of truth, same `packages/shared/locales/*.json` as web app, `useT()` hook with identical call signature on both platforms |
 | **Styling** | Ad-hoc `StyleSheet.create()` with hardcoded hex colors, no dark mode tokens, no connection to web's Tailwind system | Per ADR-0011 + amended ADR-0003: NativeWind (Tailwind for React Native) with shared design tokens from `packages/shared/src/tokens.ts`. Same `className` syntax as web (`"bg-primary text-sm px-4"`). Shared Tailwind config generated from tokens. Dark mode via `.dark:` prefix. |
-| **Auth** | Manual Directus JWT fetch | NextAuth.js v5 wrapping Directus credentials provider |
+| **Auth** | Manual Directus JWT fetch | NextAuth.js v5 over a credentials provider that calls Flask `/auth/login` → Supabase GoTrue (ADR-0023; Directus is out of the auth path) |
 
 The Next.js app has evolved faster and accumulated better architectural patterns. Rather than incrementally patching the GO app to parity, starting afresh with the web app's architecture ported to React Native yields a cleaner, more maintainable result with less total effort.
 
