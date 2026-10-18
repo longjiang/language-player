@@ -81,6 +81,83 @@ describe('the drag list', () => {
     expect(stored(task)?.responses).toMatchObject({ b1: '1', b3: '2', b5: '3', b7: '4', b9: '5' });
   });
 
+  it('previews the landing slot while dragging, without writing positions', async () => {
+    const { task } = await renderD2();
+    const dataTransfer = {
+      data: '',
+      effectAllowed: '',
+      setData(_type: string, value: string) {
+        this.data = value;
+      },
+      getData() {
+        return this.data;
+      },
+      setDragImage() {},
+    };
+
+    await act(async () => {
+      fireEvent.dragStart(handle('tickets')!, { dataTransfer });
+      fireEvent.dragOver(document.querySelector('[data-order-row="hours"]')!, { dataTransfer });
+    });
+
+    expect(order()).toEqual(['route', 'tickets', 'hours', 'platform', 'other']);
+    expect(
+      document.querySelector('[data-order-row="tickets"]')!.getAttribute('data-dragging'),
+    ).toBe('true');
+    // Nothing is persisted until the drop.
+    expect(stored(task)?.responses).toMatchObject({ b3: '2', b5: '3', b7: '4', b9: '5' });
+  });
+
+  it('restores the order when the drag is cancelled', async () => {
+    const { task } = await renderD2();
+    const dataTransfer = {
+      data: '',
+      effectAllowed: '',
+      setData(_type: string, value: string) {
+        this.data = value;
+      },
+      getData() {
+        return this.data;
+      },
+      setDragImage() {},
+    };
+
+    await act(async () => {
+      fireEvent.dragStart(handle('tickets')!, { dataTransfer });
+      fireEvent.dragOver(document.querySelector('[data-order-row="hours"]')!, { dataTransfer });
+      fireEvent.dragEnd(handle('tickets')!, { dataTransfer });
+    });
+
+    expect(order()).toEqual(['route', 'hours', 'platform', 'tickets', 'other']);
+    expect(stored(task)?.responses).toMatchObject({ b3: '2', b5: '3', b7: '4', b9: '5' });
+  });
+
+  it('uses the whole row as the drag image, not the handle', async () => {
+    await renderD2();
+    const image: { node?: Element; offsetX?: number; offsetY?: number } = {};
+    const dataTransfer = {
+      data: '',
+      effectAllowed: '',
+      setData() {},
+      getData() {
+        return '';
+      },
+      setDragImage(node: Element, x: number, y: number) {
+        image.node = node;
+        image.offsetX = x;
+        image.offsetY = y;
+      },
+    };
+    await act(async () => {
+      fireEvent.dragStart(handle('tickets')!, {
+        dataTransfer,
+        clientX: 10,
+        clientY: 10,
+      });
+    });
+    expect((image.node as Element | undefined)?.getAttribute('data-order-row')).toBe('tickets');
+  });
+
   it('reorders on a drop and rewrites the positions', async () => {
     const { task } = await renderD2();
     const dataTransfer = {
@@ -92,6 +169,7 @@ describe('the drag list', () => {
       getData() {
         return this.data;
       },
+      setDragImage() {},
     };
 
     await act(async () => {
