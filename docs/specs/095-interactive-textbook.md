@@ -1723,8 +1723,17 @@ transcript segment is absent for E ➊'s dictation recordings and for 六D ➍.m
 and transcript share the one pill rather than standing loose, and that a numbered row
 prints number → control → blank.
 
+**The illustration gutter is verified in a browser, at three widths.** B ➎ was rendered in
+headless Chromium at 600, 768 and 1280px: 插图一 shows its worked-example picture rather
+than the letter, each tip's box sits in the right margin from 768 up and stacks under its
+paragraph at 600, and no page produced horizontal overflow. An empty slot still reads as a
+box ("Tap to choose a picture"), so a tip the student has not answered keeps the space its
+picture will take. The split is covered without a browser by `trailingIllustrationSlot`'s
+tests, which pin the two negatives — a trailing bank blank and a mid-sentence slot both
+stay in their line.
+
 What has **not** been verified: any part of the mobile app — no screen of this feature
-has been rendered in a simulator, so mobile audio, the WebView mock-app frame and the
-native ruby path are unchecked — and, on web, that playback is audible rather than merely
-dispatched to a media element.
+has been rendered in a simulator, so mobile audio, the WebView mock-app frame, the native
+ruby path and the `isMd` gutter layout are unchecked — and, on web, that playback is
+audible rather than merely dispatched to a media element.
 
