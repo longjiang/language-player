@@ -3,7 +3,7 @@
 **Date**: 2026-08-05
 **Status**: accepted
 **See also**: [SPEC-044](../specs/044-subs-search-db-optimizations.md),
-[ARCH-004](../arch/004-subs-search-architecture.md),
+[ARCH-036](../arch/036-subs-search-architecture.md),
 [SPEC-039](../specs/039-full-database-migration-supabase.md),
 [ADR-0021](0021-migrate-video-content-to-supabase.md)
 
@@ -76,7 +76,7 @@ query has 25 calls with mean 33.3 s / max 146.4 s; the pre-split full-row
 ILIKE query has 398 calls with mean 23.9 s / max 119.8 s (cumulative stats
 that include pre-SPEC-044 traffic).
 
-ARCH-004's other main concern — MySQL ngram FULLTEXT false positives from
+ARCH-036's other main concern — MySQL ngram FULLTEXT false positives from
 matching translation text and CSV metadata — is mostly obsolete on Supabase:
 sampled zh/ja/th `subs_l2` CSVs contain only `starttime[,duration],line`, so
 whole-blob ILIKE matches line text almost exactly. The remaining problem is
@@ -341,7 +341,7 @@ the bounded walk + GIN fallback and the validation gates in
 - Extend `profiling_subs_search.py` with the CJK matrix (`中`, `中国`,
   `对不起`, `峥嵘`, `绌`, `私`, `日本`) and require uncached p95 < 1 s.
 - Update SPEC-044's verification table (its "Chinese ~0.4s" claim is only
-  valid for 3+ char terms) and rewrite ARCH-004's backend section.
+  valid for 3+ char terms) and rewrite ARCH-036's backend section.
 - Implementation plan and validation gates are tracked in
   [SPEC-044 Part 2](../specs/044-subs-search-db-optimizations.md)
   (formerly SPEC-045, merged 2026-08-05).

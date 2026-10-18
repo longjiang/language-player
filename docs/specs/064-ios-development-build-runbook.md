@@ -1,4 +1,15 @@
-# iOS Development Build Runbook
+# SPEC-064: iOS Development Build Runbook
+
+## Metadata
+
+- **Spec ID**: SPEC-064
+- **Feature**: Building and installing a development build of `apps/mobile` on a physical iOS device
+- **Status**: in-progress — the build step below is superseded by ARCH-028 / `scripts/dev-build.mjs`; the device-install detail is still valid
+- **Created**: 2026-08-11
+- **Last Updated**: 2026-08-11
+- **ROADMAP Phase**: Phase 7 — Mobile Integration
+- **Scope**: `apps/mobile/` (iOS), scripts under `scripts/`
+- **Superseded in part by**: [ARCH-028 — Local Development Runbook](../arch/028-local-development-runbook.md)
 
 How to build and install a **development build** of `apps/mobile` on a
 physical iPhone/iPad (Expo SDK 57 / RN 0.86), with every step verified

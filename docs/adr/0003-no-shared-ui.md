@@ -27,7 +27,7 @@ We have a web app (Next.js/React DOM) and a mobile app (React Native/Expo). The 
 
 Rationale: The UI requirements differ fundamentally between platforms. Web needs SEO, responsive layouts, keyboard navigation, and accessibility patterns that don't map to mobile. Mobile needs touch gestures, native feel, safe areas, and platform-specific navigation. However, this doesn't mean everything in the UI layer must diverge:
 
-- **Design tokens** (ADR-0011) — colors, typography, spacing, border radius — are pure data. Sharing them in `packages/shared/tokens.ts` gives both platforms a single source of truth. No more visual drift from independently maintained color palettes.
+- **Design tokens** (ADR-0011) — colors, typography, spacing, border radius — are pure data. Sharing them in `packages/shared/src/tokens.ts` gives both platforms a single source of truth. No more visual drift from independently maintained color palettes.
 - **Styling syntax** — both platforms use Tailwind. The web app already uses it; NativeWind compiles the same `className` strings to React Native `StyleSheet` objects at build time. This means a developer styles both platforms with the same mental model (`className="bg-primary text-sm px-4"`).
 - **Components** — still separate per platform. A `<div>` is not a `<View>`, `onClick` is not `onPress`, `hover:` doesn't exist on mobile. Component `.tsx` files live in `apps/web/src/components/` and `apps/mobile/components/` respectively.
 

@@ -1,7 +1,7 @@
 # Tokenization & Batch Lookup Pipeline
 
 ## Metadata
-- **ARch ID**: ARCH-017
+- **Arch ID**: ARCH-017
 - **Feature**: Lemmatization, dictionary batch lookup, and request optimization strategies
 - **Status**: active (maintained)
 - **Created**: 2026-07-26

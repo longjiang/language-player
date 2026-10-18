@@ -7,6 +7,7 @@
 - **Created**: 2026-07-24
 - **Supersedes**: `docs/specs/archive/011-language-switcher-ui.md` (2026-07-24)
 - **Scope**: Next.js (web) only — see SPEC-001 for mobile
+- **Note (2026-10-18)**: Next.js 16 renamed the middleware file to `apps/web/src/proxy.ts` (ADR-0025); paths below reflect the current name.
 
 ## Overview
 
@@ -230,7 +231,7 @@ Header
 - `@langplayer/shared` — `SUPPORTED_L1S`, `SUPPORTED_L2S`
 - `apps/web/src/lib/language-data.ts` — `POPULAR_LANGUAGES`, `languageName()`, `getLanguageMeta()`
 - `apps/web/src/providers/language-provider.tsx` — updated `setLanguagePair`
-- `apps/web/src/middleware.ts` — cookie setting (unchanged)
+- `apps/web/src/proxy.ts` — cookie setting (unchanged)
 
 ## Related Specs
 - **SPEC-001** — Language selection & routing

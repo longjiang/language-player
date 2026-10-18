@@ -1,5 +1,16 @@
 # Python Dictionary Database Schema
 
+## Metadata
+
+- **Arch ID**: ARCH-004
+- **Feature**: SQLite dictionary database schema (`data/dictionaries.db`) built from raw dictionaries
+- **Type**: schema
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-10-18
+- **ROADMAP Phase**: Phase 4 — Dictionary
+- **Scope**: `zerotohero-python-server/` (Flask, active)
+
 > **Source**: `zerotohero-python-server/import_dict_to_sqlite.py`
 > **Database**: `data/dictionaries.db` (SQLite, WAL mode, 64 MB cache)
 > **Data sources**: `data/dictionaries/` and `data/wiktionary-csv/`

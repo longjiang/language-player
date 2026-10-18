@@ -215,7 +215,7 @@ Each PR is independently deployable: wrapper APIs stay stable, so feature call s
 
 - `@radix-ui/react-dialog`, `-popover`, `-tabs`, `-switch`, `-hover-card`, `-select` (new; dialog already declared)
 - `tailwindcss-animate` (existing), `shadcn` CLI (existing, for future component additions)
-- `packages/shared/tokens.ts` (ADR-0011) for styled wrappers
+- `packages/shared/src/tokens.ts` (ADR-0011) for styled wrappers
 - SPEC-016 (web portion superseded), ADR-0014 (mobile symmetry), ADR-0011 (tokens), ADR-0003 (no shared UI across platforms)
 
 ---

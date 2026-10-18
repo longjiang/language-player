@@ -1,7 +1,16 @@
 # ARCH-016 — Server-Side Tokenization Pipeline
 
-> **Source files**: `zerotohero-python-server/lemmatize_*.py`, `routes/text_routes.py`, `utils_nlp.py`, `utils_cache.py`, `romanize.py`, `app_directus.py`
-> **Last updated**: 2026-07-27
+## Metadata
+
+- **Arch ID**: ARCH-016
+- **Feature**: Server-side tokenization and lemmatization pipeline (all L2 languages)
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-07-26
+- **Last Updated**: 2026-09-06
+- **ROADMAP Phase**: Cross-cutting (backend NLP)
+- **Scope**: `zerotohero-python-server/` (Flask, active)
+- **Source files**: `zerotohero-python-server/lemmatize_*.py`, `routes/text_routes.py`, `utils_nlp.py`, `utils_cache.py`, `romanize.py`, `app_directus.py`
 
 ---
 

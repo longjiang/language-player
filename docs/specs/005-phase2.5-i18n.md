@@ -6,6 +6,7 @@
 - **Status**: complete
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 2.5 — UI Internationalization
+- **Note (2026-10-18)**: Next.js 16 renamed the middleware file to `apps/web/src/proxy.ts` (ADR-0025); paths below reflect the current name.
 
 ## Overview
 
@@ -92,7 +93,7 @@ const withNextIntl = createNextIntlPlugin();
 module.exports = withNextIntl({...});
 ```
 
-**`apps/web/src/middleware.ts`** — add locale from L1 cookie/URL:
+**`apps/web/src/proxy.ts`** — add locale from L1 cookie/URL:
 ```ts
 // Current middleware sets l1/l2 cookies.
 // next-intl reads locale from cookie: NEXT_LOCALE
@@ -159,7 +160,7 @@ GO's 621 keys cover most of our needs. We may need to add ~10-15 new keys for st
 | `apps/web/messages/en.json` | NEW | Copy from GO (621 keys) |
 | `apps/web/messages/{30 more}.json` | NEW | Copy from GO |
 | `apps/web/src/hooks/use-t.ts` | NEW | Typed translation hook |
-| `apps/web/src/middleware.ts` | MODIFY | Set NEXT_LOCALE cookie from L1 |
+| `apps/web/src/proxy.ts` | MODIFY | Set NEXT_LOCALE cookie from L1 |
 | `apps/web/next.config.js` | MODIFY | Add next-intl plugin |
 | `apps/web/src/app/layout.tsx` | MODIFY | Add NextIntlClientProvider |
 | 12 page/component files | MODIFY | Replace English strings with t() |

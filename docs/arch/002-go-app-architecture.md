@@ -3,6 +3,17 @@
 > Analysis of `language-player-3/` (React Native / Expo 51).
 > This is a reference document for implementing equivalent features in `apps/web/` (Next.js 14).
 
+## Metadata
+
+- **Arch ID**: ARCH-002
+- **Feature**: GO (React Native / Expo) mobile app — screens, components, and patterns
+- **Type**: analysis
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-07-24
+- **ROADMAP Phase**: Phase 7 — Mobile Integration
+- **Scope**: `language-player-3/` (archived at `apps/mobile-go-legacy/`; reference only)
+
 ## Tech Stack
 
 - **Framework**: Expo SDK 51 with Expo Router (file-based routing)

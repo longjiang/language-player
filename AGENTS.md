@@ -35,7 +35,7 @@ The **active development** happens in:
 
 5. **The backend is a Flask API** has a local dev URL and a production URL, which are noted in `apps/web/src/lib/api-url.ts`. All data goes through it. Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API. The reason is that we want to abstract the directus layer away from the web and mobile apps, so we can migrate to Directus 11 or another backend in the future without changing the clients.
 
-6. **Use semantic design tokens, not hardcoded colors.** Never use hex values (`#fff`, `#94a3b8`, `#888`) or named colors (`"white"`, `"black"`) in components. Use NativeWind/Tailwind semantic classes like `text-foreground`, `text-muted-foreground`, `text-primary-foreground`, `bg-background`, `bg-card`, `border-border`. For React Native props that don't accept classes (e.g., `placeholderTextColor`, lucide icon `color`), import from `@/lib/theme-colors` which derives hex values from `packages/shared/tokens.ts`. Both apps share the same design tokens — colors, typography, spacing — from a single source of truth.
+6. **Use semantic design tokens, not hardcoded colors.** Never use hex values (`#fff`, `#94a3b8`, `#888`) or named colors (`"white"`, `"black"`) in components. Use NativeWind/Tailwind semantic classes like `text-foreground`, `text-muted-foreground`, `text-primary-foreground`, `bg-background`, `bg-card`, `border-border`. For React Native props that don't accept classes (e.g., `placeholderTextColor`, lucide icon `color`), import from `@/lib/theme-colors` which derives hex values from `packages/shared/src/tokens.ts`. Both apps share the same design tokens — colors, typography, spacing — from a single source of truth.
 
 7. **Always import `PYTHON_API_URL` from `@/lib/api-url`**, never from `process.env`. The shared module is the single source of truth — it reads `NEXT_PUBLIC_API_URL` with a localhost fallback. Using `process.env.PYTHON_API_URL` directly in server code will silently fall back to `http://127.0.0.1:5001` in production if only `NEXT_PUBLIC_API_URL` is set in the deployment environment, breaking login, video/channel APIs, and subtitle fetching.
 
@@ -46,11 +46,11 @@ The **active development** happens in:
 ### Before Implementing Any Feature
 
 1. Check if `@langplayer/shared` already has the types you need
-3. Read `docs/specs/` for existing feature specifications
-4. Read `docs/adr/` for relevant architecture decisions
-5. Read `docs/arch/` for relevant as-built architectural description
-6. Check if the Flask server already has the endpoint you need in `zerotohero-python/routes`
-6. If Working on `apps/web`, also check if `@langplayer/api-client` already has the Next.js endpoint you need. Note that `@langplayer/api-client` is largely a wrapper around the Flask server
+2. Read `docs/specs/` for existing feature specifications
+3. Read `docs/adr/` for relevant architecture decisions
+4. Read `docs/arch/` for relevant as-built architectural description
+5. Check if the Flask server already has the endpoint you need in `zerotohero-python-server/routes`
+6. If working on `apps/web`, also check if `@langplayer/api-client` already has the Next.js endpoint you need. Note that `@langplayer/api-client` is largely a wrapper around the Flask server
 
 ### File Naming & Organization
 

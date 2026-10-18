@@ -1,5 +1,16 @@
 # YouTube Video Difficulty
 
+## Metadata
+
+- **Arch ID**: ARCH-032
+- **Feature**: Video `difficulty` score (`lex_div / word_freq`) and its 1–7 level mapping
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-09-06
+- **Last Updated**: 2026-10-16
+- **ROADMAP Phase**: Phase 3 — Explore + Video Player
+- **Scope**: `zerotohero-python-server/` (Flask), Web + Mobile clients
+
 Every video in the catalog carries a numeric `difficulty` score, and the UI
 turns that into a 1–7 level badge (HSK for Chinese, JLPT for Japanese, CEFR
 for everything else). This document explains where both numbers come from,

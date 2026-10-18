@@ -804,7 +804,7 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 
 ## Preferred Tokenizer by Language (ADR-0018)
 
-Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), the canonical preference order is **LemmatizationList > Simplemma > spaCy > BaseTokenizer**. The table below shows which tokenizer each language SHOULD use once this preference is applied. This has been the de facto behavior of the Classic Nuxt frontend for years.
+Per [ADR-0018](../../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), the canonical preference order is **LemmatizationList > Simplemma > spaCy > BaseTokenizer**. The table below shows which tokenizer each language SHOULD use once this preference is applied. This has been the de facto behavior of the Classic Nuxt frontend for years.
 
 ### Dedicated tokenizers (unchanged)
 

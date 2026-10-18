@@ -1,5 +1,16 @@
 # Translation Keys Reference
 
+## Metadata
+
+- **Arch ID**: ARCH-005
+- **Feature**: Translation-key reference for `translations.csv` (every key except `lang.*`)
+- **Type**: reference
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-10-01
+- **ROADMAP Phase**: Cross-cutting (i18n)
+- **Scope**: All apps — `translations.csv` is the single source of truth
+
 All keys from translations.csv except lang.* (language name translations).
 Use `{$key}` in docs to reference UI strings. At render time these resolve to the locale's CSV translation.
 

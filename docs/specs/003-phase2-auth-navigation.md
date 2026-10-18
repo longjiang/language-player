@@ -6,6 +6,7 @@
 - **Status**: complete
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 2 — Auth + Core Navigation
+- **Note (2026-10-18)**: Next.js 16 renamed the middleware file to `apps/web/src/proxy.ts` (ADR-0025); paths below reflect the current name.
 
 ## Overview
 
@@ -123,7 +124,7 @@ Use **NextAuth.js v5** (Auth.js) with a custom credentials provider that wraps D
    - Session callback: expose user data to client components
    - Refresh token support (Directus `/auth/refresh`)
 
-2. **Auth middleware** (`apps/web/src/middleware.ts`)
+2. **Auth middleware** (`apps/web/src/proxy.ts`)
    - Protect `/[l1]/[l2]/dashboard` and other authenticated routes
    - Redirect unauthenticated users to `/login`
    - Must be Edge-compatible (no Directus calls in middleware — only check Auth.js session cookie)
@@ -230,7 +231,7 @@ apps/web/src/app/
 
 #### Tasks
 
-1. **`apps/web/src/middleware.ts`** (Edge)
+1. **`apps/web/src/proxy.ts`** (Edge)
    - Read `l1`/`l2` from URL pathname
    - Validate against `@langplayer/shared` constants
    - If unauthenticated and accessing `/[l1]/[l2]/...`, redirect to `/login?callbackUrl=...`
@@ -347,7 +348,7 @@ RootLayout (layout.tsx)
 |------|---------|
 | `apps/web/src/auth.ts` | Auth.js configuration (Directus provider) |
 | `apps/web/src/auth.config.ts` | Edge-compatible auth config for middleware |
-| `apps/web/src/middleware.ts` | Auth guard + language validation |
+| `apps/web/src/proxy.ts` | Auth guard + language validation |
 | `apps/web/src/app/api/auth/[...nextauth]/route.ts` | Auth.js Route Handler |
 | `apps/web/src/providers/language-provider.tsx` | Language context |
 | `apps/web/src/providers/session-provider.tsx` | Auth session wrapper |

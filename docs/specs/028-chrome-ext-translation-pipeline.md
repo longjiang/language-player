@@ -1,6 +1,13 @@
 # SPEC-028: Chrome Extension Translation Pipeline - MANUAL Key Audit
 
-Date: 2026-07-30
+## Metadata
+
+- **Spec ID**: SPEC-028
+- **Feature**: Audit of extension strings that still needed a hand-written MANUAL translation entry
+- **Status**: complete — the audit and its key eliminations were performed 2026-07-30
+- **Created**: 2026-07-30
+- **ROADMAP Phase**: Cross-cutting (Chrome Extension i18n)
+- **Scope**: `apps/chrome-extension/`
 
 ## Eliminate from MANUAL (6)
 

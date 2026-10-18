@@ -3,6 +3,17 @@
 > Reference document for re-implementing dictionary features in the Next.js app.
 > Based on analysis of `zerotohero-nuxt/dist/js/` and `zerotohero-nuxt/lib/languages.js`.
 
+## Metadata
+
+- **Arch ID**: ARCH-006
+- **Feature**: Dictionary system in the Classic (Nuxt) app
+- **Type**: analysis
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-08-30
+- **ROADMAP Phase**: Phase 4 — Dictionary
+- **Scope**: `zerotohero-nuxt/` (Classic, legacy reference only)
+
 ---
 
 ## 1. Overview

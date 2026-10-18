@@ -33,7 +33,7 @@ docs/
 | 005 | [Phase 2.5 — UI Internationalization (i18n)](specs/005-phase2.5-i18n.md) | 2.5 | ✅ Complete |
 | 006 | [Translation](specs/006-translation.md) | 3 | ✅ Complete |
 | 009 | [Reader Layout System](specs/009-reader-layout.md) | 5 | ✅ Complete |
-| 010 | [Subtitles Mode — Dual-View Watch Page](specs/010-subtitles-mode.md) | 4 | ✅ Complete |
+| 010 | [Video Watch Page Layout and UI](specs/010-video-watch-page-layout-and-ui.md) | 4 | 🔄 In progress |
 | 048 | [Mobile Release Plan — Human QA + App Store & Play Store](specs/048-mobile-release-plan.md) | — | 🔄 In progress |
 | 066 | [SRS Review Page (Web + Mobile)](specs/066-srs-review-page.md) | 6 | ✅ Complete |
 | 099 | [Admin Console — Content Management](specs/099-admin-content-management.md) | 10 | ✅ Complete |
@@ -49,7 +49,7 @@ docs/
 | 0002 | [Use Next.js App Router (not Pages Router)](adr/0002-nextjs-app-router.md) | accepted | 2026-07-12 |
 | 0003 | [Do not share UI components between web and mobile](adr/0003-no-shared-ui.md) | accepted | 2026-07-12 |
 | 0004 | [Directus user data token strategy](adr/0004-directus-user-data-token-strategy.md) | accepted | 2026-07-14 |
-| 0005 | [Payment methods plan support](adr/0005-payment-methods-plan-support.md) | proposed | 2026-07-14 |
+| 0005 | [Payment methods plan support](arch/015-payment-methods-plan-support.md) — moved to ARCH-015 | moved | 2026-07-14 |
 | 0006 | [Consolidated lexical data types](adr/0006-consolidated-lexical-data-types.md) | accepted | 2026-07-14 |
 | 0007 | [Dictionary Hub UX — persistent search bar & panel layout](adr/0007-dictionary-hub-ux.md) | proposed | 2026-07-19 |
 | 0008 | [GO app dictionary architecture — online lookup + offline download](adr/0008-go-dictionary-architecture.md) | proposed | 2026-07-21 |

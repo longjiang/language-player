@@ -73,7 +73,7 @@ came from.
   regenerable through the existing translation pipeline.
 - `subs_l2` is copied as-is (CSV text, TOASTed by Postgres) and is deliberately
   **not** indexed. MySQL's ngram FULLTEXT search on `subs_l2`
-  (`docs/arch/004-subs-search-architecture.md`) is not portable to Postgres in
+  (`docs/arch/036-subs-search-architecture.md`) is not portable to Postgres in
   this migration; embedding-based search is the intended replacement.
 - Non-video content tables are copied **as-is with their original IDs**:
   `phrasebook → phrasebooks`, `youtube_channels`, `talks`, `tv_shows`,
@@ -228,7 +228,7 @@ subtitle FULLTEXT search.
 
 - `docs/specs/004-phase3-explore-video.md` — shard layout and schema
 - `docs/arch/003-python-backend-architecture.md` — Flask backend architecture
-- `docs/arch/004-subs-search-architecture.md` — MySQL FULLTEXT subtitle search
+- `docs/arch/036-subs-search-architecture.md` — MySQL FULLTEXT subtitle search
 - `docs/arch/017-tokenization-batch-lookup-pipeline.md` — tokenization cache
 - `zerotohero-python-server/utils_directus.py` — shard suffix map (deleted 2026-10-16; the map now lives in `utils_user_data.L2_PREFIX_BY_CODE`)
 - `tmp/supabase-test/supabase-migrate.py` — migration loader

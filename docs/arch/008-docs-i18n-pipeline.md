@@ -1,7 +1,15 @@
 # Documentation i18n Pipeline
 
-**Date**: 2026-07-23
-**Status**: accepted
+## Metadata
+
+- **Arch ID**: ARCH-008
+- **Feature**: Docs i18n pipeline (`packages/docs/content` → `packages/docs/i18n/*.json`)
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-07-23
+- **Last Updated**: 2026-08-10
+- **ROADMAP Phase**: Cross-cutting (i18n)
+- **Scope**: Web (Next.js), Mobile (React Native/Expo), docs content
 
 ## Context
 

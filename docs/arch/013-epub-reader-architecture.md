@@ -1,10 +1,17 @@
 # EPUB Reader Architecture
 
-> **Status:** As-Built  
-> **Date:** 2026-07-25  
-> **Scope:** Next.js Web (`apps/web`), React Native Mobile (`apps/mobile`)  
-> **See also:** [Next.js Dictionary Architecture](./007-nextjs-dictionary-architecture.md), [Settings Architecture](./011-settings-architecture.md)  
-> **Source:** `apps/web/src/hooks/use-epub.ts`, `apps/mobile/hooks/use-epub.ts`, `apps/mobile/lib/epub-parser.ts`
+## Metadata
+
+- **Arch ID**: ARCH-013
+- **Feature**: EPUB reader — parsing, pagination, ruby, progress sync (web + mobile)
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-07-25
+- **Last Updated**: 2026-10-16
+- **ROADMAP Phase**: Phase 5 — Content Features
+- **Scope**: Next.js Web (`apps/web`), React Native Mobile (`apps/mobile`)
+- **See also:** [Next.js Dictionary Architecture](./007-nextjs-dictionary-architecture.md), [Settings Architecture](./011-settings-architecture.md)
+- **Source:** `apps/web/src/hooks/use-epub.ts`, `apps/mobile/hooks/use-epub.ts`, `apps/mobile/lib/epub-parser.ts`
 
 ---
 

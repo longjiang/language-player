@@ -8,7 +8,7 @@
 - **ROADMAP Phase**: Phase 8 — iPad & Responsive Layout
 - **Depends on**: Phase 6 (Interaction Primitives — already complete ✅)
 - **See also**:
-  - [STATUS.md](../../apps/mobile/STATUS.md) — Phase 8 task list
+  - `apps/mobile/STATUS.md` — Phase 8 task list (file deleted; see ROADMAP.md Phase 7)
   - [ADR-0015: Settings UI and Search](../adr/0015-settings-ui-and-search.md) — iPad split view design
   - [ADR-0014: Interaction Primitives Strategy](../adr/0014-rn-primitives-interaction-primitives.md)
 

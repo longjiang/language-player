@@ -27,7 +27,7 @@ This created several problems:
 
 ## Options Considered
 
-### Option A: Share raw values only (define in `packages/shared/tokens.ts`, import on both sides)
+### Option A: Share raw values only (define in `packages/shared/src/tokens.ts`, import on both sides)
 
 Web imports HSL values → generates CSS custom properties + Tailwind config. Mobile imports the same values → uses in `StyleSheet.create()` with an `hslToHex()` converter.
 
@@ -46,7 +46,7 @@ Web imports HSL values → generates CSS custom properties + Tailwind config. Mo
 
 ## Decision (Original — Superseded)
 
-~~**Option A: Share raw design tokens in `packages/shared/tokens.ts`.**~~
+~~**Option A: Share raw design tokens in `packages/shared/src/tokens.ts`.**~~
 
 ~~Mobile would import values via `hslToHex()` into `StyleSheet.create()`.~~
 
@@ -199,7 +199,7 @@ Per ADR-0003, these remain platform-specific:
 
 ### Original (2026-07-22) — proposed
 
-Option A: Share raw tokens in `packages/shared/tokens.ts`. Mobile uses `hslToHex()` → `StyleSheet.create()`. Web uses CSS custom properties + Tailwind `hsl(var(--xxx))`.
+Option A: Share raw tokens in `packages/shared/src/tokens.ts`. Mobile uses `hslToHex()` → `StyleSheet.create()`. Web uses CSS custom properties + Tailwind `hsl(var(--xxx))`.
 
 ### Revision 1 (2026-07-23) — accepted (revised)
 

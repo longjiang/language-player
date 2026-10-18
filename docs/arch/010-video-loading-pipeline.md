@@ -1,8 +1,16 @@
 # Video Loading Pipeline — Subtitle, Lemmatization, Translation, Dictionary
 
-> **Status:** Documented (as-built)
-> **Date:** 2026-07-24
-> **See also:**
+## Metadata
+
+- **Arch ID**: ARCH-010
+- **Feature**: End-to-end video loading — subtitles → lemmatization → translation → dictionary
+- **Type**: as-built
+- **Status**: accepted
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-09-03
+- **ROADMAP Phase**: Phase 3 — Explore + Video Player
+- **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask)
+- **See also:**
 > - `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` — watch page
 > - `apps/web/src/app/api/videos/[videoId]/route.ts` — Next.js API proxy
 > - `apps/web/src/components/video/subtitle-display.tsx` — subtitle rendering + translation trigger

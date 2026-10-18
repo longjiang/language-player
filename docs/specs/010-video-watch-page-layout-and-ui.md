@@ -1,14 +1,20 @@
 # Video Watch Page Layout and UI
 
-> **Status:** Proposed
-> **Date:** 2026-07-23 (revised)
-> **See also:**
-> - `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` — current watch page
-> - `apps/web/src/app/[l1]/[l2]/settings/page.tsx` — `playback.transcriptMode` setting
-> - `apps/web/src/components/video/video-control-bar.tsx` — LP control bar (to be reduced)
-> - `apps/web/src/components/video/subtitle-display.tsx` — subtitle rendering
-> - `apps/web/src/components/video/transcript-queue-panel.tsx` — transcript + queue tabs
-> - `apps/web/src/components/video/youtube-player.tsx` — YouTube IFrame player (native controls already visible)
+## Metadata
+
+- **Spec ID**: SPEC-010
+- **Feature**: Subtitles-mode watch page layout — transcript/queue panels, control bar, `playback.transcriptMode`
+- **Status**: in-progress — the layout shipped, but the planned control-bar reduction did not
+- **Created**: 2026-07-24
+- **Last Updated**: 2026-09-08
+- **ROADMAP Phase**: Phase 3 — Explore + Video Player
+- **See also:**
+  - `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` — current watch page
+  - `apps/web/src/app/[l1]/[l2]/settings/page.tsx` — `playback.transcriptMode` setting
+  - `apps/web/src/components/video/video-control-bar.tsx` — LP control bar (to be reduced)
+  - `apps/web/src/components/video/subtitle-display.tsx` — subtitle rendering
+  - `apps/web/src/components/video/video-queue-panel.tsx` — transcript + queue tabs (formerly `transcript-queue-panel.tsx`)
+  - `apps/web/src/components/video/youtube-player.tsx` — YouTube IFrame player (native controls already visible)
 
 ---
 

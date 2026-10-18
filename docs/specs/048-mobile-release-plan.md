@@ -696,7 +696,7 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
 
 The Play Developer account was **not deleted** — it became **unverified**
 after we neglected to renew our business information
-([ADR-0013](0013-app-store-strategy.md)), and it was **re-verified
+([ADR-0013](../adr/0013-app-store-strategy.md)), and it was **re-verified
 2026-08-11**. Classic's **"Language Player 2"** remains live on Google Play
 under `ca.zerotohero.app`. The account is now in good standing; the remaining
 Google Play work is creating the **"Language Player 3"** app and configuring
