@@ -35,6 +35,8 @@ interface RareGlyphContextValue {
   missing: ReadonlySet<number>;
   /** Queue codepoints for loading (idempotent, batched). */
   request: (cps: readonly number[]) => void;
+  /** Sans/serif source currently loaded. */
+  style: RareGlyphStyle;
 }
 
 const RareGlyphContext = createContext<RareGlyphContextValue | null>(null);
@@ -88,7 +90,12 @@ async function loadFontFace(
   const promise = (async () => {
     const entry = manifest.fonts.woff2;
     if (!entry) throw new Error('glyph-font manifest has no woff2 font');
-    const response = await fetch(entry.url);
+    // The backend returns root-relative /glyph-font/... URLs; on web they
+    // must go through the same-origin /api/glyph-font proxy.
+    const url = entry.url.startsWith('/glyph-font/')
+      ? `/api${entry.url}`
+      : entry.url;
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`glyph-font HTTP ${response.status}`);
     const bytes = await response.arrayBuffer();
     const unicodeRange = parseHexList(manifest.covered)
@@ -222,7 +229,10 @@ export function RareGlyphProvider({ children }: { children: React.ReactNode }) {
   // The typeface setting changes the source font. Drop the loaded maps so the
   // next batch fetches the sans/serif variant; already-registered FontFaces
   // remain valid and are reused by hash.
+  const previousStyleRef = useRef(style);
   useEffect(() => {
+    if (previousStyleRef.current === style) return;
+    previousStyleRef.current = style;
     familiesRef.current = {};
     missingRef.current = new Set();
     pendingRef.current.clear();
@@ -239,8 +249,8 @@ export function RareGlyphProvider({ children }: { children: React.ReactNode }) {
 
   const familyFor = useCallback((cp: number) => familiesRef.current[cp], []);
   const value = useMemo<RareGlyphContextValue>(
-    () => ({ familyFor, missing, request }),
-    [familyFor, missing, request],
+    () => ({ familyFor, missing, request, style }),
+    [familyFor, missing, request, style],
   );
 
   return <RareGlyphContext.Provider value={value}>{children}</RareGlyphContext.Provider>;
@@ -255,10 +265,11 @@ export function useRareGlyphState(text: string) {
     if (cps.length > 0) context?.request(cps);
     // `key` captures the codepoint set; the array identity is not stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, context?.request]);
+  }, [key, context?.request, context?.style]);
 
   return {
     familyFor: context?.familyFor,
     missing: context?.missing,
+    style: context?.style,
   };
 }
