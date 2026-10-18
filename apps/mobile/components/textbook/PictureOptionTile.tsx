@@ -69,9 +69,13 @@ export function PictureOptionTile({
   const placeholder = broken || !hasPicture;
 
   return (
-    <View className="relative">
+    <View className="relative h-full">
       <View
-        className={`gap-1.5 rounded-lg border p-2 ${
+        // `h-full` and `justify-between`: the dialog wraps its choices into rows, and a row's
+        // tiles must share its height — a two-line statement next to one-line ones otherwise
+        // leaves the short ones as visibly smaller boxes. Writing at the top, statement at the
+        // bottom, so a row's text lines up however many lines each option takes.
+        className={`h-full gap-1.5 justify-between rounded-lg border p-2 ${
           selected ? 'border-primary bg-primary/10' : 'border-border bg-card'
         } ${disabled ? 'opacity-90' : used ? 'opacity-60' : ''}`}
       >

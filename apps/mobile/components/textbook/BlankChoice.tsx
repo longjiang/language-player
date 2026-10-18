@@ -153,7 +153,9 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
 
             <ScrollView contentContainerClassName="flex-row flex-wrap gap-3">
               {options.map((item) => (
-                <View key={item.letter} className="w-[46%]">
+                // `h-full`: a wrapped row's items stretch to the line's height, and the tile
+                // fills its wrapper — so a row of choices shares one height.
+                <View key={item.letter} className="w-[46%] h-full">
                   <PictureOptionTile
                     item={item}
                     selected={isChosen(item.letter)}

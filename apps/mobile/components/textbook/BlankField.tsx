@@ -168,8 +168,12 @@ export function BlankField({
         // `min-h-[24px]` is not decoration: the pressable holds an empty `Text` until it is
         // answered, and an empty text box has no height — so the whole tap target was the border
         // under it. 24px matches the picture-cell blank, so every kind of blank is tappable over
-        // the same area.
-        className={`min-h-[24px] flex-row items-center gap-1 justify-center rounded px-1.5 py-0.5 ${
+        // the same area. `min-w` gives the caret somewhere to sit at the blank's right edge: an
+        // empty dialog blank aligns it there instead of centring it, so it reads as an affordance
+        // at the end of the line rather than as part of the blank's content.
+        className={`min-h-[24px] min-w-[44px] flex-row items-center gap-1 rounded px-1.5 py-0.5 ${
+          !value && inDialog ? 'justify-end' : 'justify-center'
+        } ${
           blankResult
             ? blankResult.correct
               ? 'bg-green-500/20'
@@ -183,7 +187,7 @@ export function BlankField({
         {/* Empty is empty, and `min-w` is what keeps it visible: the blank's own bottom
             border is the line to write on, so a placeholder underscore inside it drew a second
             line over the first. */}
-        <Text className="min-w-[28px] text-center text-base text-foreground">{value}</Text>
+        <Text className="flex-1 min-w-[28px] text-center text-base text-foreground">{value}</Text>
         {/* A blank whose choices live in a dialog looks like an empty underline, and the pool
             that used to advertise them is gone — so an empty one carries a caret, and an
             answered one does not (its text is the affordance). */}

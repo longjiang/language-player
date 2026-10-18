@@ -173,7 +173,14 @@ export function BlankField({
         // and an empty flex box has no content height — so the whole tap target was the 2px
         // border, measured at 48×2. It matches the picture-cell blank's `h-6 min-w-9`, so every
         // kind of blank is now tappable over the same area.
-        className={`inline-flex min-h-6 min-w-[3em] items-center justify-center gap-1 rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
+        //
+        // An empty dialog blank aligns the caret to its right edge rather than centring it: the
+        // caret marks where the options come from, and centred it read as part of the blank's
+        // content rather than as an affordance at the end of the line. An answered blank keeps its
+        // answer centred — no caret, and a right-aligned word inside the underline looks misplaced.
+        className={`inline-flex min-h-6 min-w-[3em] items-center gap-1 rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
+          !value && inDialog ? 'justify-end' : 'justify-center'
+        } ${
           verdictClass ??
           (isSelected
             ? 'border-primary bg-primary/10'

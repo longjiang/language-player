@@ -455,9 +455,14 @@ The dialog's rules are the picture choices' rules, with these additions:
   B ➏ asks for six statements out of seven, and an option another blank has taken is dimmed (and
   struck through on web) but stays tappable — a student may be moving an answer from one blank to
   another. `given` blanks do not count as having spent theirs.
-- **An empty blank whose choices are in a dialog carries a caret (▾).** The pool was the only
-  thing advertising the options, so the blank has to; the caret disappears once the blank holds an
-  answer, whose text is the affordance. A pool-backed blank (none ship) keeps no caret.
+- **An empty blank whose choices are in a dialog carries a caret (▾) at its right edge.** The pool
+  was the only thing advertising the options, so the blank has to; right-aligned, it reads as an
+  affordance at the end of the line rather than as part of the blank's content, and centred it sat
+  dead in the middle of an empty underline. The caret disappears once the blank holds an answer,
+  whose text is the affordance; a pool-backed blank (none ship) keeps no caret.
+- **Choices in a row share one height.** The options are a grid (a wrapped row on mobile), and a
+  tile fills its cell (`h-full`) with the writing at the top and the statement at the bottom, so a
+  two-line statement beside one-line ones does not leave the short tiles visibly smaller.
 
 **A table heading is content, and tokenized.** B ➌'s headings are the seat classes the questions
 ask about (无座, 二等座, 商务座) and B ➊'s first column names the train, so a heading renders
@@ -1210,7 +1215,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free` / `carried`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app. A `choose` blank whose bank is offered in the dialog carries a ▾ caret while empty, so the blank advertises its choices with no pool on the page |
 | `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Struck out once the student has placed a word, and bottom-aligned so a reading never moves a glyph. With every foot-of-task bank now in the dialog, the shipped book's only pools are A ➍'s typed ones |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
-| `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them. `used` dims (and strikes, on web) an option another blank has spent, without disabling it |
+| `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them. `used` dims (and strikes, on web) an option another blank has spent, without disabling it. Fills its row's height (`h-full`, writing top, statement bottom) |
 | `BlankChoiceProvider` / `useBlankChoice` | The task's choice dialog and its opener: a `pictureSet`'s pictures, or a bank offered in the dialog (`Bank.choicesInDialog`). One dialog per task; a blank calls `open(blankId)` |
 | `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
