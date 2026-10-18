@@ -5,11 +5,13 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
-import { dialogBankIds, inlineBankIds } from '@langplayer/textbooks';
+import { dialogBankIds, inlineBankIds, trailingIllustrationSlot } from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './BlankChoice';
+import { BlankField } from './BlankField';
 import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
 import { TranscriptDialogProvider } from './TranscriptDialog';
@@ -194,18 +196,33 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
 export function TaskStimulus() {
   const ctx = useTextbookTask()!;
   const { l2Lang } = useLanguage();
+  // B ➎'s illustration boxes print beside their paragraph on a wide screen, as the
+  // workbook prints them. React Native has no `md:` classes, so the layout decides here.
+  const { isMd } = useResponsive();
 
   return (
     <>
       {ctx.task.body.map((stimulus, i) => {
         switch (stimulus.kind) {
-          case 'passage':
+          case 'passage': {
+            const slot = trailingIllustrationSlot(stimulus.text, ctx.task);
             return (
               <View key={i} className="gap-2">
                 {stimulus.audio && stimulus.audio.length > 0 && (
                   <AudioPlayer tracks={stimulus.audio} />
                 )}
-                <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
+                {slot.blank ? (
+                  <View className={isMd ? 'flex-row items-start gap-6' : 'gap-3'}>
+                    <View className="min-w-0 flex-1">
+                      <TokenizedText text={slot.text} l2Code={l2Lang.code} leading={2} />
+                    </View>
+                    <View className={isMd ? 'w-44' : ''}>
+                      <BlankField blank={slot.blank} slotLayout="gutter" />
+                    </View>
+                  </View>
+                ) : (
+                  <TokenizedText text={stimulus.text} l2Code={l2Lang.code} leading={2} />
+                )}
                 {/* The passage's own option pool, at the end of the item it belongs to. */}
                 {(stimulus.banks ?? []).map((bankId) => {
                   const bank = (ctx.task.banks ?? []).find((b) => b.id === bankId);
@@ -213,6 +230,7 @@ export function TaskStimulus() {
                 })}
               </View>
             );
+          }
           case 'recall':
             return <RecallCard key={i} stimulus={stimulus} />;
           case 'audio':

@@ -335,8 +335,10 @@ export const lessonB: LessonMeta = {
       ],
       body: [
         {
-          // The article, one block per paragraph group so each tip's illustration
-          // slot lands at the end of the tip it belongs to. The article's ①–⑦ text
+          // The article, one block per paragraph group, each ending with the tip's
+          // illustration slot — the renderer lifts that trailing marker out of the line and
+          // puts the box in the paragraph's right margin on a wide screen, as the workbook
+          // prints it (SPEC-095 § Picture choices). The article's ①–⑦ text
           // blanks belong to B ➏, so here they are printed as the workbook prints
           // them, with ① and ③ showing their worked-example answers.
           kind: 'passage',

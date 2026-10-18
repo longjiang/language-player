@@ -30,6 +30,7 @@ const FIELD_FONT_SIZE = 16;
 export function BlankField({
   blank,
   variant = 'slot',
+  slotLayout = 'inline',
 }: {
   blank: BlankSpec;
   /**
@@ -38,6 +39,12 @@ export function BlankField({
    * or table cell prints (A ➊/➋/➌, C ➊/➋). Both open the same picture-choice dialog.
    */
   variant?: 'slot' | 'cell';
+  /**
+   * How a `slot` is sized: `inline` is the box inside running text, `gutter` fills the
+   * column a passage puts beside itself on a wide screen (B ➎ — SPEC-095). `cell`
+   * ignores it.
+   */
+  slotLayout?: 'inline' | 'gutter';
 }) {
   const ctx = useTextbookTask();
   const t = useT();
@@ -126,7 +133,7 @@ export function BlankField({
     return variant === 'cell' ? (
       <PictureBlankCell blank={blank} value={value} result={blankResult} />
     ) : (
-      <InlineImageSlot blank={blank} value={value} />
+      <InlineImageSlot blank={blank} value={value} layout={slotLayout} />
     );
   }
 

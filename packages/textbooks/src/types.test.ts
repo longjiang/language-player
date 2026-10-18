@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { assetKeysIn, audioTracksIn, recordingsIn, transcriptsIn } from './types';
+import {
+  assetKeysIn,
+  audioTracksIn,
+  recordingsIn,
+  trailingIllustrationSlot,
+  transcriptsIn,
+} from './types';
 import type { BookMeta, Task, TranscriptLine } from './types';
 import { tbltHsk4 } from './content/tblt-hsk4/book';
 import { findTask } from './loaders';
@@ -174,6 +180,53 @@ describe('transcriptsIn', () => {
     const map = transcriptsIn(book([onBlank, onRow]));
     expect(map.get('a/b.mp3')).toEqual([{ text: '第一' }]);
     expect(map.get('a/r.mp3')).toEqual([{ text: '第二' }]);
+  });
+});
+
+/**
+ * B ➎ prints one illustration box per tip, at the tip's end. On a wide screen the box
+ * belongs in the margin beside the paragraph, as the workbook prints it — a box inside
+ * running text cannot leave that line's flow — so the renderer splits the trailing
+ * marker out and places it in a column. Only a trailing *picture-set* blank qualifies:
+ * a bank blank's underline belongs in its sentence.
+ */
+describe('trailingIllustrationSlot', () => {
+  it("splits B ➎'s tip so the box can sit beside the paragraph", () => {
+    const t = findTask(tbltHsk4, 'tblt-hsk4.u06.B.t5')!;
+    const first = t.body.find(
+      (s) => s.kind === 'passage' && s.text.includes('{{b1}}'),
+    );
+    if (!first || first.kind !== 'passage') throw new Error('B ➎ ① did not resolve');
+
+    const split = trailingIllustrationSlot(first.text, t);
+    expect(split.blank?.id).toBe('b1');
+    expect(split.text.endsWith('{{b1}}')).toBe(false);
+    // The sentence itself is untouched, including its printed answer line.
+    expect(split.text).toContain('（② ）');
+    expect(split.text).toBe(split.text.trimEnd());
+  });
+
+  it('leaves a trailing bank blank in its sentence', () => {
+    const t = findTask(tbltHsk4, 'tblt-hsk4.u06.B.t6')!;
+    const split = trailingIllustrationSlot('一句话（{{b1}}）。另外{{b2}}', t);
+    expect(split.blank).toBeNull();
+    expect(split.text).toBe('一句话（{{b1}}）。另外{{b2}}');
+  });
+
+  it('does not split a slot that is not at the end of the text', () => {
+    // B ➏'s ① is a word blank mid-sentence and B ➎'s boxes are the only trailing
+    // picture slots — a slot in the middle of a line must stay in the line.
+    const t = findTask(tbltHsk4, 'tblt-hsk4.u06.B.t5')!;
+    const split = trailingIllustrationSlot('前面{{b2}}后面', t);
+    expect(split.blank).toBeNull();
+    expect(split.text).toBe('前面{{b2}}后面');
+  });
+
+  it('ignores a marker whose blank does not exist', () => {
+    const t = findTask(tbltHsk4, 'tblt-hsk4.u06.B.t5')!;
+    const split = trailingIllustrationSlot('正文{{b99}}', t);
+    expect(split.blank).toBeNull();
+    expect(split.text).toBe('正文{{b99}}');
   });
 });
 

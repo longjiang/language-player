@@ -21,7 +21,20 @@ import { useBlankChoice } from './blank-choice';
  * way, in the two shapes the workbook prints it. This stays a rendering variant of
  * `BlankField` rather than a stimulus kind of its own.
  */
-export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: string }) {
+export function InlineImageSlot({
+  blank,
+  value,
+  layout = 'inline',
+}: {
+  blank: BlankSpec;
+  value: string;
+  /**
+   * Where the box is printed. `inline` is the box inside running text; `gutter` is the
+   * column a passage puts beside itself on a wide screen (B ➎), where the box widens to
+   * its column and the picture is shown whole instead of cropped into a fixed 128×80.
+   */
+  layout?: 'inline' | 'gutter';
+}) {
   const t = useT();
   const ctx = useTextbookTask();
   const { selected } = useBlankPicker();
@@ -31,9 +44,11 @@ export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: str
   const set = blank.optionSet ? pictureSetsIn(ctx!.task).get(blank.optionSet) : undefined;
   const item = set?.items.find((i) => i.letter === value);
   const isSelected = selected === blank.id;
+  const gutter = layout === 'gutter';
 
   return (
-    <span className="mx-1 inline-flex align-middle">
+    // A gutter slot fills its column; an inline one keeps its printed size in the text.
+    <span className={gutter ? 'block' : 'mx-1 inline-flex align-middle'}>
       <button
         type="button"
         onClick={() => {
@@ -45,9 +60,9 @@ export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: str
         // When filled, the picture's own label names it — that is content, not chrome.
         aria-label={item ? item.label : t('label.pick_illustration')}
         aria-pressed={isSelected}
-        className={`flex h-24 w-32 flex-col items-center justify-center overflow-hidden rounded-md border-2 border-dashed bg-muted/30 transition-colors ${
-          isSelected ? 'border-primary' : 'border-border hover:border-muted-foreground/60'
-        }`}
+        className={`flex flex-col items-center justify-center overflow-hidden rounded-md border-2 border-dashed bg-muted/30 transition-colors ${
+          gutter ? 'min-h-24 w-32 md:w-full' : 'h-24 w-32'
+        } ${isSelected ? 'border-primary' : 'border-border hover:border-muted-foreground/60'}`}
       >
         {item ? (
           <>
@@ -55,7 +70,9 @@ export function InlineImageSlot({ blank, value }: { blank: BlankSpec; value: str
             <img
               src={resolve(item.image!)}
               alt={item.label}
-              className="h-20 w-full object-cover"
+              // Uncropped in the gutter: these are 900×487 workbook screenshots, and
+              // `object-cover` in a fixed 128×96 box cut off about 40% of the picture.
+              className={gutter ? 'w-full' : 'h-20 w-full object-cover'}
             />
             <span className="w-full truncate px-1 text-center text-[10px] text-muted-foreground">
               {item.label}
