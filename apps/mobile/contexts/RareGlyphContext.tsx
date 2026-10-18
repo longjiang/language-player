@@ -34,6 +34,7 @@ interface RareGlyphContextValue {
   familyFor: (cp: number) => string | undefined;
   missing: ReadonlySet<number>;
   request: (cps: readonly number[]) => void;
+  style: RareGlyphStyle;
 }
 
 const RareGlyphContext = createContext<RareGlyphContextValue | null>(null);
@@ -223,7 +224,10 @@ export function RareGlyphProvider({ children }: { children: React.ReactNode }) {
     [schedule],
   );
 
+  const previousStyleRef = useRef(style);
   useEffect(() => {
+    if (previousStyleRef.current === style) return;
+    previousStyleRef.current = style;
     familiesRef.current = {};
     missingRef.current = new Set();
     pendingRef.current.clear();
@@ -240,8 +244,8 @@ export function RareGlyphProvider({ children }: { children: React.ReactNode }) {
 
   const familyFor = useCallback((cp: number) => familiesRef.current[cp], []);
   const value = useMemo<RareGlyphContextValue>(
-    () => ({ familyFor, missing, request }),
-    [familyFor, missing, request],
+    () => ({ familyFor, missing, request, style }),
+    [familyFor, missing, request, style],
   );
 
   return <RareGlyphContext.Provider value={value}>{children}</RareGlyphContext.Provider>;
@@ -256,10 +260,11 @@ export function useRareGlyphState(text: string) {
     if (cps.length > 0) context?.request(cps);
     // `key` captures the codepoint set; the array identity is not stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, context?.request]);
+  }, [key, context?.request, context?.style]);
 
   return {
     familyFor: context?.familyFor,
     missing: context?.missing,
+    style: context?.style,
   };
 }
