@@ -7,6 +7,7 @@ import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { InlineImageSlot } from './inline-image-slot';
 import { CarriedSlot } from './carried-slot';
+import { SelfCheck } from './self-check';
 import { PictureBlankCell } from './picture-blank-cell';
 import { useBlankChoice } from './blank-choice';
 import { bankInDialog } from '@langplayer/textbooks';
@@ -76,6 +77,11 @@ export function BlankField({
   // ── Another task's pick, shown read-only (B ➏ carries B ➎'s pictures) ──
   if (blank.kind === 'carried') {
     return <CarriedSlot blank={blank} layout={slotLayout} />;
+  }
+
+  // ── Self-check: no input at all, just a reveal (C ➌) ──
+  if (blank.kind === 'selfCheck') {
+    return <SelfCheck blank={blank} />;
   }
 
   // ── Worked example: pre-filled by the workbook, not scored ──

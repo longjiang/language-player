@@ -7,7 +7,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './word-bank';
-import { dialogBankIds, inlineBankIds, trailingIllustrationSlot } from '@langplayer/textbooks';
+import { dialogBankIds, inlineBankIds, isBlankScoreable, trailingIllustrationSlot } from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './blank-choice';
 import { BlankField } from './blank-field';
 import { AudioPlayer } from './audio-player';
@@ -68,9 +68,16 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   const banks = task.banks ?? [];
   /** A mock app submits itself, from its own panel — see the controls below. */
   const hasMockApp = (task.body ?? []).some((s) => s.kind === 'mockApp');
-  // Nothing to grade: every blank is a worked example or ungraded prose.
-  const hasNothingToScore = !Object.values(task.blanks ?? {}).some(
-    (b) => b.kind !== 'given' && b.kind !== 'free',
+  // Nothing to grade: every blank is a worked example, ungraded prose, a carried pick or a
+  // self-check answer.
+  const hasNothingToScore = !Object.values(task.blanks ?? {}).some(isBlankScoreable);
+  /**
+   * Whether the task asks for anything at all. A self-check task (C ➌) has no input, nothing
+   * to grade and no attempt to submit — checking its answers records its completion — so the
+   * Submit / Try again pair is not rendered rather than shown and disabled.
+   */
+  const hasAnswerable = Object.values(task.blanks ?? {}).some(
+    (b) => b.kind === 'choose' || b.kind === 'type' || b.kind === 'free',
   );
   const answersOnPage = Object.values(task.blanks ?? {}).filter((b) => b.kind !== 'given').length;
 
@@ -133,7 +140,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           records the attempt. Two submit controls for one task would be one too many, and
           the panel's is the one that knows which task is being answered. The result banner
           below still reports the outcome. */}
-      {!hasMockApp && (
+      {!hasMockApp && hasAnswerable && (
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"

@@ -273,3 +273,69 @@ describe('TaskResponseStore — a carried slot', () => {
     expect(result.correctCount).toBe(1);
   });
 });
+
+/**
+ * C ➌ is check-only: the student reveals the model answer for each question and never types
+ * anything. The reveal is stored like any other response (so it survives a reload), and the
+ * task's completion is recorded when the last one is checked — there is no submit to do it.
+ */
+describe('TaskResponseStore — a check-only task', () => {
+  const checkTask: Task = {
+    id: 'tblt-hsk4.u06.C.t3',
+    number: '➌',
+    instructions: '听录音，回答问题。',
+    body: [{ kind: 'passage', text: '① 问{{b1}}\n\n② 问{{b2}}' }],
+    blanks: {
+      b1: { id: 'b1', kind: 'selfCheck', answer: '答案一' },
+      b2: { id: 'b2', kind: 'selfCheck', answer: '答案二' },
+    },
+  };
+  const checkStore = (over: Partial<ConstructorParameters<typeof TaskResponseStore>[0]> = {}) =>
+    new TaskResponseStore({ task: checkTask, contentVersion: 1, ...over });
+
+  it('stores the reveal flag and restores it', () => {
+    const save = vi.fn();
+    const store = checkStore({ save });
+    store.setValue('b1', '1');
+    expect(store.getValue('b1')).toBe('1');
+    expect(save.mock.calls[0]![0].responses.b1).toBe('1');
+
+    const persisted: PersistedTaskState = {
+      taskId: checkTask.id,
+      contentVersion: 1,
+      responses: { b1: '1' },
+      attempts: [],
+    };
+    expect(checkStore({ load: () => persisted }).getValue('b1')).toBe('1');
+    expect(checkStore({ load: () => persisted }).getValue('b2')).toBe('');
+  });
+
+  it('records completion without setting a result, so no banner can appear', () => {
+    const store = checkStore();
+    store.recordChecked();
+    expect(store.getResult()).toBeNull();
+    expect(store.isSubmitted()).toBe(false);
+
+    const attempts = store.getAttempts();
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0]!.result?.complete).toBe(true);
+    expect(attempts[0]!.result?.scoreableCount).toBe(0);
+  });
+
+  it('records completion once, however many times the last answer is re-checked', () => {
+    const store = checkStore();
+    store.recordChecked();
+    store.recordChecked();
+    expect(store.getAttempts()).toHaveLength(1);
+    expect(store.getAttempts()[0]!.voidedAt).toBeUndefined();
+  });
+
+  it('never scores a self-check answer', () => {
+    const store = checkStore();
+    store.setValue('b1', '1');
+    store.setValue('b2', '1');
+    const result = store.submit();
+    expect(result.scoreableCount).toBe(0);
+    expect(result.correctCount).toBe(0);
+  });
+});

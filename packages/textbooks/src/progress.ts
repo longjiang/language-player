@@ -10,6 +10,7 @@
  * synchronous, AsyncStorage is not) and passes them in.
  */
 
+import { isBlankScoreable } from './grading';
 import type { Task } from './types';
 import type { PersistedTaskState } from './store';
 
@@ -56,9 +57,7 @@ export interface BookProgress {
  * then right has completed it.
  */
 export function taskProgress(task: Task, state: PersistedTaskState | null): TaskProgress {
-  const scoreable = Object.values(task.blanks ?? {}).filter(
-    (b) => b.kind !== 'given' && b.kind !== 'free',
-  ).length;
+  const scoreable = Object.values(task.blanks ?? {}).filter(isBlankScoreable).length;
   return progressForId(task.id, scoreable, state);
 }
 

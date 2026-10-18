@@ -192,6 +192,13 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     if (blank.kind === 'goal' && (blank.bank || blank.optionSet)) {
       add('error', `Goal blank "${key}" cannot draw from a bank or picture set.`, key);
     }
+    if (blank.kind === 'selfCheck' && (blank.bank || blank.optionSet)) {
+      add(
+        'error',
+        `Self-check blank "${key}" cannot draw from a bank or picture set — it reveals its own model answer.`,
+        key,
+      );
+    }
     if (blank.expectedLength !== undefined && blank.answer && blank.expectedLength !== blank.answer.length) {
       add(
         'warning',
@@ -444,9 +451,17 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
   // ── Answer key agreement ──
   if (task.answerKeyRaw) {
     for (const blank of Object.values(blanks)) {
-      // The key omits worked examples and has nothing to say about free text or a
-      // slot carried from another task.
-      if (blank.kind === 'given' || blank.kind === 'free' || blank.kind === 'carried') continue;
+      // The key omits worked examples and has nothing to say about free text, a slot carried
+      // from another task, or a self-check answer: C ➌'s key prints model sentences, not the
+      // exact strings a student compares against.
+      if (
+        blank.kind === 'given' ||
+        blank.kind === 'free' ||
+        blank.kind === 'carried' ||
+        blank.kind === 'selfCheck'
+      ) {
+        continue;
+      }
       const keyed = blank.keyLabel
         ? answersForKeyLabel(task.answerKeyRaw, blank.keyLabel)
         : (() => {

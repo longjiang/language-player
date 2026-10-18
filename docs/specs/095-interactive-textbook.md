@@ -38,7 +38,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **B ➎** | 小红书 article | 6 illustration slots, 1 given | picture set A–F |
 | **B ➏** | the same article | 6 text blanks, 1 given; plus ➎'s six pictures, carried read-only | statement bank A–G |
 | **C ➊ / ➋** | 4 recordings + 4 photos | 3 numbered blanks each, 1 given | picture letters |
-| **C ➌** | the booking recording | 3 comprehension questions | free text (the key prints model sentences) |
+| **C ➌** | the booking recording | 3 comprehension questions, answered in the head | self-check: each question reveals the key's model sentence |
 | **C ➍** | the same recording + its transcript | 4 word blanks, 1 given | bank A–E |
 | **D ➊** | 6 recordings, one per paragraph | 8 word blanks, 1 given | one combined bank A–I |
 | **D ➋** | the Vancouver recording | per topic, its order 1–5 **and** its description | number bank + description bank |
@@ -63,9 +63,10 @@ because only `choose` blanks were compared with theirs.
 
 The other six are the tasks the key has nothing to grade in: D ➍, D ➎, D ➏, D ➐, E ➌ and
 E ➍ are read-along, note-taking, drafting, self-check, reading a model and free writing.
-C ➌ is the interesting case — its key *does* print answers, as model sentences rather
-than fixed strings — so its three blanks are recorded and not scored rather than graded
-against wording the student has no reason to reproduce.
+C ➌ is the interesting case — its key *does* print answers, as model sentences rather than fixed
+strings — so its three questions are **self-check**: the student answers in their head and taps
+*Check answer* to reveal the model sentence, because there is no wording they could be marked
+against. Nothing is typed or graded, and there is no submit (see [Self-check](#self-check)).
 
 Consequently the feature is **not** 60 bespoke activity components. It is **two primitives** — stimulus and response — composed per task, rendered inside a shared task shell so heterogeneous tasks feel like one product.
 
@@ -290,6 +291,34 @@ Two surfaces answer a task: inline **blanks**, and the free-text fields behind `
 | `type` | typed entry, boxed by `expectedLength` where the workbook prints boxes |
 | `goal` | answered **inside a mock app**, never by a blank widget; the app reports an answer the host grades |
 | `free` | free prose (notes, free writing); **recorded but never scored**. Carries `answer: ''` — the field is required for every kind, and "nothing to grade" is expressed by the kind, not by absence |
+| `selfCheck` | a question answered in the head: **no input**, a *Check answer / Hide answer* control reveals the model sentence in `answer`. Never scored, never submitted; checking all of a task's questions records its completion (see [Self-check](#self-check)) |
+
+### Self-check
+
+C ➌'s three comprehension questions have printed answers that are model sentences, not strings
+a student would reproduce — so a text field could only ever be "wrong". The blank renders no
+input at all: the question ends with a **Check answer** control, tapping it shows the model
+sentence to compare against what the student said to themselves, and the control becomes
+**Hide answer** so the question can be covered and re-tested.
+
+- **Nothing is graded.** `selfCheck` is excluded from `isBlankScoreable`, carries no bank or
+  picture set (the validator rejects both), and is skipped by the answer-key comparison, which
+  would otherwise try to match a model sentence against a key item.
+- **The reveal is stored like a response.** It is written as `'1'` in the task's responses
+  under the blank's id, so it survives a reload through the same local store every other
+  answer uses (ADR-0044) — no second store, no server record.
+- **No submit, no Try again.** A self-check task asks nothing that could be submitted, so
+  `TaskShell` hides its controls when no blank is answerable (`choose`/`type`/`free`). The
+  result banner is never shown, because nothing is ever submitted.
+- **Completion is recorded by the checks.** A graded result is `complete` only when at least
+  one blank is scoreable and all are right, so a check-only task would otherwise never tick.
+  Checking the task's **last** question calls `TaskResponseStore.recordChecked()`, which
+  appends the usual attempt carrying `complete: true` and no blanks — without touching
+  `submitted`/`result`, so no banner appears. It is idempotent, and hiding an answer again
+  does not un-complete the task (it has been checked). The TOC tick and the picker's
+  `complete/total` both read that attempt.
+- **The answer is tokenized**, so the model sentence carries readings and its words can be
+  looked up like any other L2 text.
 
 ## Task Schema
 
@@ -1217,6 +1246,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free` / `carried`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app. A `choose` blank whose bank is offered in the dialog carries a ▾ caret while empty, so the blank advertises its choices with no pool on the page; a `given` blank on such a bank is a button that opens the same choices read-only, caret included |
+| `SelfCheck` | A self-check question: a **Check answer / Hide answer** button and, when checked, the model sentence tokenized under it. No input, no scoring; the reveal is a stored response and the task's completion is recorded when the last one is checked |
 | `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Struck out once the student has placed a word, and bottom-aligned so a reading never moves a glyph. With every foot-of-task bank now in the dialog, the shipped book's only pools are A ➍'s typed ones |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
 | `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them. `used` dims (and strikes, on web) an option another blank has spent, without disabling it. Fills its row's height (`h-full`, writing top, statement bottom) |
@@ -1546,6 +1576,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
    - **Mock-app tasks** — the app owns its own screen and reports the student's **selection**, which the host writes into the blank as it is toggled. The panel's bottom bar owns submission: **Submit** grades that selection and says whether this task is done, **Next ›** carries them to the next one, and **All Done!** on the last grades the task. Help mode, hint and the task's own `focus` forward over the bridge from the same bar.
 5. The attempt resolves — by the shell's Submit for blank and free-text tasks, or by the panel's **All Done!** for a mock-app task, which calls the same `store.submit()`. `gradeTask` runs locally either way, and the attempt is recorded locally (ADR-0044); the per-task Submits before that grade one blank and record nothing. Correct/incorrect is shown — a toast per task, and the result banner for the task as a whole.
+6. **Self-check tasks have no step 5.** C ➌'s questions are answered in the head and revealed one at a time; there is no submit and nothing is graded. Checking the last one calls `store.recordChecked()`, which appends a completion attempt so the TOC and picker can show the task as done (see [Self-check](#self-check)).
 
 ## States
 
@@ -1558,6 +1589,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
 - **Transcript**: available on every control whose recording has one, at any time — before, during and after answering. The dialog shows the lines tokenized and translated per the student's own settings, and scrolls; a recording with no transcript shows no button at all, so the affordance never promises text that is not there.
 - **Resuming vs. first paint**: on web the task page is server-rendered, and ADR-0044's saved attempt exists only in the browser. So the HTML always shows an **unanswered** task, and the store adopts the saved attempt immediately after hydration — reading device storage while rendering made the first client render disagree with the server's HTML, which React answers by discarding the whole tree (the mismatch A ➋ shipped with: the server's `?` re-rendered as the saved `E`). Nothing is persisted before the attempt is adopted, so an empty store can never overwrite a saved one. A client-side navigation has no server HTML to disagree with and restores the saved answers on the first render.
 - **Submitted but incomplete**: submit is allowed; unanswered blanks are marked as such rather than silently graded wrong.
+- **Self-check**: each question shows *Check answer*; revealing shows the model sentence and turns the control into *Hide answer*, and the reveal survives a reload as a stored response. Checking the last question marks the task complete; there is no Submit, Try again or result banner.
 - **Autoplay blocked**: audio requires an explicit tap; never autoplay.
 - **Edge cases**: audio-less task with `type: listening` (validator flag); a `choose` blank whose bank has one remaining option; `given` blanks excluded from scoring; a task with zero blanks (pure `freeWrite`); a `mockApp` with no goals (pure stimulus — showing a submit/completion affordance would be wrong); a `mockApp` whose bridge major version the frame cannot speak (refuse, fall back to the image); a very long passage (continuous scroll — no pagination, see Non-Goals).
 
@@ -1749,7 +1781,8 @@ behind ADR-0039's corrected note about an adjacent-ruby run being unbreakable.
 A task with nothing to grade (D ➎ ➏ ➐, E ➍) reports *Saved* rather than `0 / 0`, so
 self-completed work is not presented as a failure. D ➐ is completed by the student: they
 say the draft aloud themselves and write what to improve, since neither app captures
-audio.
+audio. C ➌ shows no Submit or Try again at all — it asks for no answer — and its completion
+is recorded when the last of its three answers has been checked.
 
 The mock-app answer check found two real defects the moment it ran, both now fixed: G871
 was flagged 复兴号 though its row carries no such tag, and D11 was missing from the
@@ -1818,6 +1851,12 @@ page. B ➏'s ① chip opens the same bank read-only — titled *Correct answer:
 A dimmed and struck as eliminated — and tapping another option changes nothing. The pool's own
 gesture survives for content that does not opt in, and is pinned by a fixture in
 `blank-field.test.tsx`, because no shipped bank uses a pool any more.
+
+**C ➌'s self-check pass is verified in a browser.** All three questions render a *Check
+answer* control and no input; revealing the first shows its model sentence (tokenized) and turns
+the control into *Hide answer*; checking all three writes one completion attempt (the stored
+responses are `b1`–`b3` = `'1'`, `attempts[0].result.complete` is true), and the book's TOC then
+shows C ➌ ticked and lesson C at `1/4`. The page has no Submit or Try again.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame, the native

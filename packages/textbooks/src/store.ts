@@ -205,6 +205,43 @@ export class TaskResponseStore {
     return result;
   };
 
+  /**
+   * Mark a check-only task complete.
+   *
+   * A task whose questions are all `selfCheck` has nothing to submit: the student answers in
+   * their head and reveals the model answer. A graded result is `complete` only when at least
+   * one blank is scoreable and all of them are right, so such a task could never be marked
+   * complete — this appends the same append-only attempt, carrying `complete: true` and no
+   * blanks. The store's `submitted`/`result` are deliberately left alone: there is nothing to
+   * report and no result banner.
+   *
+   * Idempotent: once the latest un-voided attempt is a completion, re-checking does not append
+   * another (hiding and re-showing an answer must not multiply the history).
+   */
+  recordChecked = (): void => {
+    const latest = [...this.attempts].reverse().find((attempt) => !attempt.voidedAt);
+    if (latest?.result?.complete) return;
+    const now = Date.now();
+    for (const attempt of this.attempts) if (!attempt.voidedAt) attempt.voidedAt = now;
+    this.attemptSeq += 1;
+    this.attempts.push({
+      id: `${this.task.id}#${this.attemptSeq}`,
+      taskId: this.task.id,
+      contentVersion: this.contentVersion,
+      responses: { ...this.responses },
+      result: {
+        taskId: this.task.id,
+        blanks: [],
+        correctCount: 0,
+        scoreableCount: 0,
+        complete: true,
+      },
+      submittedAt: now,
+    });
+    this.persist();
+    this.emit();
+  };
+
   /** Clear responses and the current verdict, keeping the attempt history. */
   reset = (): void => {
     this.responses = mutableResponses(this.task, null);

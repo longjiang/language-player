@@ -255,18 +255,19 @@ export const lessonC: LessonMeta = {
         {
           kind: 'passage',
           text:
-            '① 乘客想买什么样的票？（{{b1}}）\n\n' +
-            '② 售票员一开始给出了什么建议？（{{b2}}）\n\n' +
-            '③ 最后乘客买了几点的票？（{{b3}}）',
+            '① 乘客想买什么样的票？{{b1}}\n\n' +
+            '② 售票员一开始给出了什么建议？{{b2}}\n\n' +
+            '③ 最后乘客买了几点的票？{{b3}}',
         },
       ],
       blanks: {
-        // Comprehension answers, not exact strings: the key prints model sentences
-        // (乘客想买今天、尽快的去上海的商务座票。) and any wording that carries the same
-        // information is right, so these are recorded and not scored.
-        b1: { id: 'b1', kind: 'free', answer: '' },
-        b2: { id: 'b2', kind: 'free', answer: '' },
-        b3: { id: 'b3', kind: 'free', answer: '' },
+        // Self-check, not free text: the key prints model sentences rather than exact strings,
+        // so there is nothing a text field could be marked against. Each question gets a
+        // Check answer / Hide answer control that reveals the model sentence, and checking all
+        // three records the task's completion (there is no submit). No scoring either way.
+        b1: { id: 'b1', kind: 'selfCheck', answer: '乘客想买今天、尽快的去上海的商务座票。' },
+        b2: { id: 'b2', kind: 'selfCheck', answer: '售票员建议买3:13的快一点的票。' },
+        b3: { id: 'b3', kind: 'selfCheck', answer: '最后乘客买了2:56的票。' },
       },
       answerKeyRaw:
         '乘客想买今天、尽快的去上海的商务座票。售票员建议买3:13的快一点的票。最后乘客买了2:56的票。',
