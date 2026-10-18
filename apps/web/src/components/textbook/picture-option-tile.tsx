@@ -93,7 +93,11 @@ export function PictureOptionTile({
 
       <div
         data-used={used ? 'true' : undefined}
-        className={`flex w-full flex-col gap-1.5 rounded-lg border p-2 transition-colors ${
+        // `h-full` and `justify-between`: the dialog lays its choices out in a grid, and a row's
+        // tiles must share its height — a two-line statement (C) next to one-line ones (A, B)
+        // otherwise leaves A and B as visibly shorter boxes. The writing sits at the top and the
+        // statement at the bottom, so the row's text lines up however many lines each takes.
+        className={`flex h-full w-full flex-col justify-between gap-1.5 rounded-lg border p-2 transition-colors ${
           selected ? 'border-primary bg-primary/10' : 'border-border bg-card'
         } ${disabled ? 'opacity-90' : used ? 'opacity-60' : ''}`}
       >
