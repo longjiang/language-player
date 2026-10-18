@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { GripVertical } from 'lucide-react';
 import {
   moveRow,
@@ -52,8 +52,19 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
   const result = useSyncExternalStore(ctx.store.subscribe, getResult, getResult);
 
   const [order, setOrder] = useState<string[]>(authored);
+  /** The displayed order, readable synchronously: a dragover preview and the drop that follows
+   *  it run in one React batch, so the drop cannot read the preview from `order` state yet. */
+  const orderRef = useRef<string[]>(authored);
+  orderRef.current = order;
+  const setPreview = (next: string[]) => {
+    orderRef.current = next;
+    setOrder(next);
+  };
   const [dragId, setDragId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
+  /** The drag source, readable synchronously by the next drag event (state lags a render). */
+  const dragRef = useRef<string | null>(null);
+  /** Set on a drop so the following dragend does not undo the drop as a cancelled drag. */
+  const dropped = useRef(false);
 
   // The stored positions are the truth (a reload, or this component's own writes); the authored
   // order is only the fallback while they are incomplete. `sameOrder` keeps the effect from
@@ -73,13 +84,21 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
     });
   }, [rows, responses, ctx]);
 
+  /** Write the current arrangement into the position blanks — the only write a drop does. */
+  const persist = useCallback(
+    (next: string[]) => {
+      next.forEach((id, index) => {
+        const row = byId.get(id)!;
+        if (!row.locked) ctx.store.setValue(row.blankId, String(index + 1));
+      });
+    },
+    [byId, ctx],
+  );
+
+  /** Keyboard moves commit immediately; a drag only previews until it is dropped. */
   const commit = (next: string[]) => {
-    if (sameOrder(next, order)) return;
-    setOrder(next);
-    next.forEach((id, index) => {
-      const row = byId.get(id)!;
-      if (!row.locked) ctx.store.setValue(row.blankId, String(index + 1));
-    });
+    if (!sameOrder(next, orderRef.current)) setPreview(next);
+    persist(next);
   };
 
   const verdictFor = (rowId: string): 'correct' | 'incorrect' | null => {
@@ -92,7 +111,20 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
   };
 
   return (
-    <ol className="flex flex-col gap-2">
+    <ol
+      className="flex flex-col gap-2"
+      onDragOver={(event) => {
+        if (dragRef.current) event.preventDefault();
+      }}
+      onDrop={(event) => {
+        if (!dragRef.current) return;
+        event.preventDefault();
+        persist(orderRef.current);
+        dropped.current = true;
+        dragRef.current = null;
+        setDragId(null);
+      }}
+    >
       {order.map((id) => {
         const row = byId.get(id)!;
         const verdict = verdictFor(id);
@@ -104,29 +136,35 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
             key={id}
             data-order-row={id}
             data-verdict={verdict ?? undefined}
+            data-dragging={dragId === id ? 'true' : undefined}
             onDragOver={(event) => {
-              if (row.locked || !dragId) return;
+              const active = dragRef.current;
+              if (row.locked || !active) return;
               event.preventDefault();
-              setOverId(id);
+              event.stopPropagation();
+              // Live preview: the rows under the pointer move out of the way, and the dragged
+              // row takes the slot it would land in (rendered as the dashed drop zone below).
+              const next = moveRow(orderRef.current, rows, active, id);
+              if (!sameOrder(next, orderRef.current)) setPreview(next);
             }}
-            onDragLeave={() => setOverId((current) => (current === id ? null : current))}
             onDrop={(event) => {
               if (row.locked) return;
               event.preventDefault();
-              const from = event.dataTransfer.getData('text/plain') || dragId;
-              if (from) commit(moveRow(order, rows, from, id));
+              event.stopPropagation();
+              persist(orderRef.current);
+              dropped.current = true;
+              dragRef.current = null;
               setDragId(null);
-              setOverId(null);
             }}
             className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
-              verdict === 'correct'
-                ? 'border-green-600 bg-green-500/10'
-                : verdict === 'incorrect'
-                  ? 'border-destructive bg-destructive/10'
-                  : overId === id
-                    ? 'border-primary bg-primary/5'
+              dragId === id
+                ? 'border-dashed border-primary bg-primary/5 opacity-50'
+                : verdict === 'correct'
+                  ? 'border-green-600 bg-green-500/10'
+                  : verdict === 'incorrect'
+                    ? 'border-destructive bg-destructive/10'
                     : 'border-border bg-card'
-            } ${dragId === id ? 'opacity-50' : ''}`}
+            }`}
           >
             {row.locked ? (
               // A worked example: the grip is printed but inert, so the row reads as part of the
@@ -144,11 +182,34 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
                 onDragStart={(event) => {
                   event.dataTransfer.effectAllowed = 'move';
                   event.dataTransfer.setData('text/plain', id);
+                  dropped.current = false;
+                  dragRef.current = id;
+                  // The handle is draggable only so a drag starts from it; the drag image should
+                  // be the whole row, not the grip. (The row is not itself draggable, so dragging
+                  // the description picker or selecting the topic never moves the list.)
+                  const rowElement = (event.currentTarget as HTMLElement).closest(
+                    '[data-order-row]',
+                  ) as HTMLElement | null;
+                  if (rowElement) {
+                    const rect = rowElement.getBoundingClientRect();
+                    event.dataTransfer.setDragImage(
+                      rowElement,
+                      event.clientX - rect.left,
+                      event.clientY - rect.top,
+                    );
+                  }
                   setDragId(id);
                 }}
                 onDragEnd={() => {
+                  // A cancelled drag (Escape, drop outside the list) restores the stored order;
+                  // a drop has already persisted the previewed order, so this is a no-op then.
+                  if (!dropped.current) {
+                    const stored = orderFromPositions(rows, responses);
+                    if (!sameOrder(orderRef.current, stored)) setPreview(stored);
+                  }
+                  dropped.current = false;
+                  dragRef.current = null;
                   setDragId(null);
-                  setOverId(null);
                 }}
                 onKeyDown={(event) => {
                   // Keyboard path: a drag handle nobody can drag is not an affordance.

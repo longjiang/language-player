@@ -59,8 +59,20 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
   const result = useSyncExternalStore(ctx.store.subscribe, getResult, getResult);
 
   const [order, setOrder] = useState<string[]>(authored);
+  /** The displayed order, readable synchronously by the gesture between renders. */
+  const orderRef = useRef<string[]>(authored);
+  orderRef.current = order;
+  const setPreview = (next: string[]) => {
+    orderRef.current = next;
+    setOrder(next);
+  };
+
   const [dragId, setDragId] = useState<string | null>(null);
+  const [dragDy, setDragDy] = useState(0);
   const heights = useRef<Record<string, number>>({});
+  /** Where the drag started, and the slot it is currently previewing. */
+  const dragStart = useRef<{ id: string; index: number; height: number } | null>(null);
+  const dragTarget = useRef(0);
 
   // The stored positions are the truth (a reload, or this component's own writes); the authored
   // order is only the fallback while they are incomplete.
@@ -79,40 +91,65 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
     });
   }, [rows, responses, ctx]);
 
-  const commit = useCallback(
+  const persist = useCallback(
     (next: string[]) => {
-      if (sameOrder(next, order)) return;
-      setOrder(next);
       next.forEach((id, index) => {
         const row = byId.get(id)!;
         if (!row.locked) ctx.store.setValue(row.blankId, String(index + 1));
       });
     },
-    [order, byId, ctx],
+    [byId, ctx],
+  );
+
+  /** Keyboard/accessibility moves commit immediately; a drag only previews until release. */
+  const commit = useCallback(
+    (next: string[]) => {
+      if (!sameOrder(next, orderRef.current)) setPreview(next);
+      persist(next);
+    },
+    [persist],
   );
 
   const beginDrag = useCallback(
     (id: string) => {
+      const draggableIds = orderRef.current.filter((current) => !byId.get(current)!.locked);
+      const index = draggableIds.indexOf(id);
+      if (index < 0) return;
+      dragStart.current = { id, index, height: heights.current[id] ?? 56 };
+      dragTarget.current = index;
+      setDragDy(0);
       setDragId(id);
     },
-    [],
+    [byId],
   );
 
-  const finishDrag = useCallback(
-    (id: string, dy: number) => {
-      setDragId(null);
-      const height = heights.current[id] ?? 56;
-      const steps = Math.round(dy / height);
-      if (!steps) return;
-      const draggableIds = order.filter((current) => !byId.get(current)!.locked);
-      const from = draggableIds.indexOf(id);
-      if (from < 0) return;
-      const target = Math.max(0, Math.min(draggableIds.length - 1, from + steps));
-      const targetId = draggableIds[target];
-      if (targetId) commit(moveRow(order, rows, id, targetId));
+  const moveDrag = useCallback(
+    (dy: number) => {
+      const start = dragStart.current;
+      if (!start) return;
+      const draggableIds = orderRef.current.filter((current) => !byId.get(current)!.locked);
+      const steps = Math.round(dy / start.height);
+      const target = Math.max(0, Math.min(draggableIds.length - 1, start.index + steps));
+      if (target !== dragTarget.current) {
+        const targetId = draggableIds[target];
+        if (targetId) setPreview(moveRow(orderRef.current, rows, start.id, targetId));
+        dragTarget.current = target;
+      }
+      // Follow the finger between slots: the row already sits at the landing slot in the flow,
+      // so the residual travel is what is left after the slot change.
+      setDragDy(dy - (target - start.index) * start.height);
     },
-    [order, byId, rows, commit],
+    [byId, rows],
   );
+
+  const finishDrag = useCallback(() => {
+    dragStart.current = null;
+    setDragId(null);
+    setDragDy(0);
+    // Keep the previewed order and record it; a tiny drag that never changed slot rewrites the
+    // same positions, which the store no-ops.
+    persist(orderRef.current);
+  }, [persist]);
 
   const verdictFor = (rowId: string): 'correct' | 'incorrect' | null => {
     if (!result) return null;
@@ -137,13 +174,16 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
             onLayout={(event) => {
               heights.current[id] = event.nativeEvent.layout.height;
             }}
+            style={dragId === id ? { transform: [{ translateY: dragDy }], zIndex: 10 } : undefined}
             className={`flex-row items-center gap-3 rounded-lg border px-3 py-2 ${
-              verdict === 'correct'
-                ? 'border-green-600 bg-green-500/10'
-                : verdict === 'incorrect'
-                  ? 'border-destructive bg-destructive/10'
-                  : 'border-border bg-card'
-            } ${dragId === id ? 'opacity-60' : ''}`}
+              dragId === id
+                ? 'border-dashed border-primary bg-primary/5 opacity-60'
+                : verdict === 'correct'
+                  ? 'border-green-600 bg-green-500/10'
+                  : verdict === 'incorrect'
+                    ? 'border-destructive bg-destructive/10'
+                    : 'border-border bg-card'
+            }`}
           >
             {row.locked ? (
               <View className="h-6 w-6 items-center justify-center opacity-40">
@@ -153,8 +193,9 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
               <OrderHandle
                 label={t('label.drag_to_reorder')}
                 onBegin={() => beginDrag(id)}
-                onFinish={(dy) => finishDrag(id, dy)}
-                onStep={(delta) => commit(moveRowBy(order, rows, id, delta))}
+                onMove={moveDrag}
+                onFinish={finishDrag}
+                onStep={(delta) => commit(moveRowBy(orderRef.current, rows, id, delta))}
               />
             )}
 
@@ -178,17 +219,21 @@ export function OrderList({ stimulus }: { stimulus: OrderListStimulus }) {
 function OrderHandle({
   label,
   onBegin,
+  onMove,
   onFinish,
   onStep,
 }: {
   label: string;
   onBegin: () => void;
-  onFinish: (dy: number) => void;
+  onMove: (dy: number) => void;
+  onFinish: () => void;
   onStep: (delta: number) => void;
 }) {
   const begin = useRef(onBegin);
+  const move = useRef(onMove);
   const finish = useRef(onFinish);
   begin.current = onBegin;
+  move.current = onMove;
   finish.current = onFinish;
 
   const responder = useMemo(
@@ -197,8 +242,9 @@ function OrderHandle({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: (_event, gesture) => Math.abs(gesture.dy) > 4,
         onPanResponderGrant: () => begin.current(),
-        onPanResponderRelease: (_event, gesture) => finish.current(gesture.dy),
-        onPanResponderTerminate: (_event, gesture) => finish.current(gesture.dy),
+        onPanResponderMove: (_event, gesture) => move.current(gesture.dy),
+        onPanResponderRelease: () => finish.current(),
+        onPanResponderTerminate: () => finish.current(),
       }),
     [],
   );

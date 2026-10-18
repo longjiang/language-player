@@ -569,11 +569,16 @@ the start of each row, the topic, and the description picker at the end.
   whose answer is not its slot, and rejects a draggable row that is not `choose` (the drag writes
   its blank). It also requires the positions to be exactly 1..n and every row's blank and
   description blank to exist.
-- **The drag is the handle, with a keyboard path.** Web uses native HTML drag-and-drop on the
-  grip and ArrowUp/ArrowDown while it is focused; mobile uses a `PanResponder` on the grip and
-  `accessibilityActions` increment/decrement, with the target slot computed from the finger's
-  travel over the row's measured height. Rows are reordered by `moveRow`, which keeps locked rows
-  in their own slots.
+- **The drag is the handle, but the whole row moves.** The grip is the only draggable element
+  (so the description picker still clicks), and the web drag image is the row itself
+  (`dataTransfer.setDragImage`), not the grip. While dragging, hovering another row previews the
+  landing slot live — the other rows move out of the way — and the dragged row is drawn as a
+  **dashed, dimmed drop zone** at the slot it would land in. Positions are written only on drop;
+  a cancelled drag restores the stored order. Keyboard: ArrowUp/ArrowDown on a focused grip.
+  Mobile follows the finger with a `PanResponder` on the grip, translating the row by the travel
+  left after the slot change, with the same dashed drop zone and live preview, plus
+  `accessibilityActions` increment/decrement. Rows are reordered by `moveRow`, which keeps locked
+  rows in their own slots.
 - **After Submit, each row is green or red by whether it sits in the right slot** — the position
   blank's own result, with the locked row always correct. The description picker keeps its own
   verdict (it is a normal blank), so a row can be correctly ordered and still have a wrong
@@ -1933,7 +1938,10 @@ authored order positions 运营时刻 and 买票、支付 in the wrong slots, so
 red and the other three (including the given 路线) green — with descriptions unanswered the banner
 reads *Incorrect 2 / 8* while the row colours still follow the slots alone. Moving 买票、支付 up
 twice and 运营时刻 down once, then submitting, tints all five green (*Incorrect 4 / 8*, the four
-descriptions still being empty). Reordering by ArrowUp/ArrowDown on a focused grip rewrites the
+descriptions still being empty). A synthetic drag confirms the whole-row drag image is the row
+element and that hovering previews the landing slot without writing: 买票、支付 leaves slot 4 for
+slot 3 (dashed, dimmed, 站台 moving down) and only the drop writes `b7 = 3` / `b5 = 4`; cancelling
+restores the stored order. Reordering by ArrowUp/ArrowDown on a focused grip rewrites the
 positions, and the mobile drag path is the same `moveRow` behind a `PanResponder`.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
