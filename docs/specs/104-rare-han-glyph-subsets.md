@@ -381,22 +381,21 @@ that are not on screen.
 ### Native ruby renderer
 
 `GlyphText`/RN `<Text>` resolves expo-font aliases automatically. The custom
-ruby paragraph views do not; they must be extended:
+ruby views need explicit handling:
 
-- Add an optional per-run `fontFamily`/`rareFontFamily` to the run model.
-- iOS: resolve the registered subset by its **PostScript name** with
-  `UIFont(name: postScriptName, size:)`.
-- Android: resolve the runtime-loaded family with
-  `ReactFontManager.getInstance().getTypeface(family, style, assets)` (or pass
-  the downloaded file path and use `Typeface.createFromFile`), not bare
-  `Typeface.create(family, style)`.
-- Only rare runs use this font; base runs keep the existing system/regional
-  font.
+- The **per-token** `RubyText` path is used for blocks containing rare
+  codepoints (the JS flex path). Each ruby segment gets
+  `textStyle.fontFamily = LPRareHan-<hash>` when it contains a rare codepoint;
+  this reaches the native view as its base family. iOS resolves the registered
+  subset by its PostScript name; Android resolves the runtime-loaded family
+  through `ReactFontManager.getInstance().getTypeface(family, style, assets)`
+  instead of bare `Typeface.create(family, style)`.
+- The **paragraph** native attributed-string path cannot host an inline chip,
+  so `TokenizedText` forces the JS flex path for any block containing a rare
+  codepoint. This avoids blanking and keeps chip/copy semantics. A future
+  optimization can add per-run font support to the paragraph renderer.
 - Readings (ruby) do not need the rare font unless the reading itself contains
   a rare codepoint.
-
-This is a required part of the work: the screenshot path is the native ruby
-view, not the RN `<Text>` path.
 
 ### Plain-text surfaces
 
@@ -618,8 +617,8 @@ visual pass on the exact screenshot phrase. No production build was run here.
 2. **Web**: shared helpers, provider/batching, `FontFace` loader, chip, plain
    text surfaces, same-origin proxy.
 3. **Mobile RN**: provider, file cache, `expo-font` loader, chip, plain text.
-4. **Native ruby**: per-run font support for iOS/Android; verify the screenshot
-   path.
+4. **Native ruby**: per-segment subset family on the JS path, Android
+   ReactFontManager resolution; verify the screenshot path on a dev build.
 5. **Serif**: enable HanaMinB source after the sans path is stable.
 
 Feature flag: `rareGlyphSubsets` (default on after verification). If the
