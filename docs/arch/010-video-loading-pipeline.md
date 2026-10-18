@@ -297,7 +297,7 @@ User opens video
 │
 ├─ 1. Watch page mounts
 │   ├─ fetch /api/videos/{youtubeId}?l2=ja&l1=en
-│   │   └─ Directus → subs_l2 (CSV) → parsed → syncLines → data.lines (no L1)
+│   │   └─ Flask → subs_l2 (CSV) → parsed → syncLines → data.lines (no L1)
 │   ├─ setVideo(data.video) → video?.id available (Directus ID)
 │   └─ setSubtitleLines(data.lines)
 │
@@ -356,5 +356,5 @@ User opens video
 
 | Risk | Status |
 |---|---|
-| YouTube L2 fallback (`/get_best_l2_subs`) may not exist in current Python server | ⚠️ Unverified — videos without Directus L2 subs might show no subtitles |
+| YouTube L2 fallback (`/get_best_l2_subs`) may not exist in current Python server | ⚠️ Unverified — videos without stored L2 subs might show no subtitles |
 | YouTube L1 fallback (`/get_best_l1_subs`) no longer used | ✅ All L1 translations are live-translated via `/translate_array` with server cache |

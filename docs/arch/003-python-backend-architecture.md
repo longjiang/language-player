@@ -27,9 +27,9 @@
 - **CORS**: flask-cors (permissive for dev origins)
 - **Rate Limiting**: flask-limiter (200 req/min per IP, configurable)
 - **Compression**: flask-compress
-- **Database**: MySQL (via mysql-connector-python with connection pooling) + SQLite (local dictionaries)
+- **Database**: Supabase Postgres (content + user data, via psycopg2) + SQLite (local dictionaries)
 - **AI/LLM**: DeepSeek V4 Flash (via OpenAI-compatible SDK), Azure Translator, ChatGPT
-- **Auth**: Directus JWT (validated via token)
+- **Auth**: Supabase GoTrue JWT, issued through `/auth/*` and validated per request
 - **Payments**: Stripe, PayPal, iOS In-App Purchase
 - **Deployment**: Passenger WSGI (shared hosting) or `python app.py` (dev)
 
@@ -367,9 +367,11 @@ Directus 8 is **legacy**: the video-content cutover completed (ADR-0021) and `ut
 
 | Variable | Purpose |
 |---|---|
-| `DIRECTUS_TOKEN` | Admin token for Directus API calls |
+| `SUPABASE_DB_URL` | Postgres connection string for content + user data |
+| `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | GoTrue admin access (account creation, email verification) |
+| `SUPABASE_JWT_SECRET` | Verifies access tokens in tests |
 | `DEEPSEEK_API_KEY` | DeepSeek V4 API key (for chat, dictionary LLM fallback, translation) |
-| `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_NAME` | MySQL connection for Direct SQL queries |
+| `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_NAME` | Legacy MySQL connection, only read by `utils_db.py` |
 | `FLASK_LIMITER_ENABLED` | Enable/disable rate limiting |
 | `AZURE_TRANSLATOR_KEY` | Azure Translator API key (alternative translation) |
 

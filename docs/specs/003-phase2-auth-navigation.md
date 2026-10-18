@@ -7,6 +7,7 @@
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 2 — Auth + Core Navigation
 - **Note (2026-10-18)**: Next.js 16 renamed the middleware file to `apps/web/src/proxy.ts` (ADR-0025); paths below reflect the current name.
+- **Note (2026-10-18)**: the Directus auth flow described below was replaced by Supabase GoTrue proxied through Flask (ADR-0023). Read the Directus steps as the build record, not as current behaviour — `apps/web/src/auth.ts` now posts to `/auth/login`.
 
 ## Overview
 
@@ -18,7 +19,7 @@ Implement the foundational UX layer: user authentication (login, register, email
 
 ### How Auth Works Today
 
-Both Classic and GO authenticate against **Directus 8** (not the Python backend). Directus is the user database + auth provider.
+Both Classic and GO authenticated against **Directus 8** (not the Python backend) at the time; Directus was the user database and auth provider. Web and mobile now use Supabase GoTrue through Flask (ADR-0023).
 
 ```
 ┌──────────────┐     POST /auth/authenticate     ┌──────────────┐

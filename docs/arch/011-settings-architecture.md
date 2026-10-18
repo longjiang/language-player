@@ -346,7 +346,7 @@ The Next.js Web app currently has **three independent settings mechanisms** with
 - **Storage:** Single `localStorage` key: `zthSrsProgress` → `{ settings: { dailyNewLimit }, cards: {...} }`
 - **Pattern:** React hook + context (`SrsProvider`)
 - **Reactivity:** ✅ Reads via React state
-- **Sync:** ✅ Debounced 3s cloud sync via `POST /user-data/sync` → Directus `user_data.srs_progress`
+- **Sync:** ✅ Debounced cloud sync via the SRS row API (`PUT /srs/cards` → Supabase `user_srs_cards`); `dailyNewLimit` travels with the settings row
 - **Per-L2:** ❌ Single global value (the new-card budget it controls is still enforced per language)
 - **Note:** `dailyNewLimit` is piggybacked inside the SRS progress blob; it's not a standalone setting
 
@@ -787,17 +787,21 @@ However, this adds complexity. **Start simple with a single `ts`.** If merge con
 
 **Classic is still live in production** and reads/writes `user_data.settings` with a flat format (`{ skin, mode, l2Settings: { zh: {...} } }`). V2 writes a nested-by-category format (`{ v: 2, ts, global: {...}, l2: {...} }`). These are **not compatible** — writing V2 to the Classic column would corrupt Classic's data on next sync.
 
-**Solution: separate Directus column — `settings_v2`.**
+**Solution: separate `settings` storage for the V2 format — now a `settings_v2`
+jsonb column on the Supabase `public.user_settings` row.**
 
 ```
-Directus user_data
-├── settings      ← Classic only (flat blob)
-├── settings_v2   ← GO + Next.js Web (V2 nested blob)
-├── srs_progress  ← Shared (all apps)
-└── saved_words   ← Shared (all apps)
+Supabase public.user_settings          (one row per user)
+├── settings_v2   ← GO + Next.js Web (V2 nested blob, jsonb)
+└── …             ← other per-user settings columns
+
+Classic (Directus-era, still live)
+└── user_data.settings   ← Classic only (flat blob; not touched by V2)
 ```
 
-When Classic is eventually retired, the `settings` column is dropped and `settings_v2` becomes the single canonical store. The `v` version field in the blob ensures future migrations are safe without another column rename.
+When Classic is eventually retired, its `settings` column is dropped and
+`settings_v2` becomes the single canonical store. The `v` version field in the
+blob ensures future migrations are safe without another column rename.
 
 **Flask API changes (shipped 2026-08-24, via the row API rather than `user_data`):**
 

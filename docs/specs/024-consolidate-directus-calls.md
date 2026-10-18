@@ -8,7 +8,7 @@
 
 ## Overview
 
-Per the architecture rule in `AGENTS.md`:
+Per the architecture rule in `AGENTS.md` (quoted as it read in 2026-08; the rule has since been rewritten for the Supabase era — the abstraction requirement is unchanged):
 
 > *"Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API. The reason is that we want to abstract the Directus layer away from the web and mobile apps, so we can migrate to Directus 11 or another backend in the future without changing the clients."*
 

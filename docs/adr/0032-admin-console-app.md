@@ -19,9 +19,9 @@ management and subscription fixes). The options:
 2. **A separate `apps/admin` Next.js app** — a clean boundary: admin-only
    login, its own proxy guard, no public-bundle leakage, and independent
    deployment/release cadence.
-3. **Directus/other CMS admin UI** — Directus is treated as a black box
-   behind the Flask API (AGENTS.md rule 5), so a Directus-side UI would
-   bypass the abstraction and the new stack's patterns.
+3. **Directus/other CMS admin UI** — rejected. The CMS is gone (Supabase is
+   the store, reached through Flask), and a CMS-side UI would bypass the API
+   boundary the clients rely on.
 
 ## Decision
 
