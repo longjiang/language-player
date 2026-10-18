@@ -14,12 +14,43 @@ import { memo, useCallback, useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { RubySegment } from '@langplayer/utils';
 import { buildRuby } from '@langplayer/utils';
-import { RubyText, RubyTextParagraph } from '@/components/RubyText';
+import { collectRareCodePoints, rareGlyphLabel } from '@langplayer/shared';
+import { RubyText, RubyTextParagraph, type RubyTextProps } from '@/components/RubyText';
 import { NATIVE_RUBY_ACTIVE, useMobileRubyColors } from '@/lib/ruby-layout';
 import type { GridLine } from '@/lib/aligned-translation';
 import { tokenizedTextLogger } from '@/lib/logger';
+import { useRareGlyphState } from '@/contexts/RareGlyphContext';
+import { RareGlyphChip, RareGlyphText } from '@/components/RareGlyphText';
 
 const { log } = tokenizedTextLogger;
+
+/**
+ * A RubyText segment that switches to the loaded rare-Han subset when the
+ * segment contains a rare codepoint, or to a chip when it cannot be rendered.
+ * Ordinary segments take the exact existing path.
+ */
+function RareAwareRubyText(props: RubyTextProps) {
+  const cps = useMemo(() => collectRareCodePoints(props.segment.text), [props.segment.text]);
+  const { familyFor } = useRareGlyphState(props.segment.text);
+
+  if (cps.length === 0) return <RubyText {...props} />;
+  const family = familyFor?.(cps[0]!);
+  if (family) {
+    return (
+      <RubyText
+        {...props}
+        textStyle={{ ...props.textStyle, fontFamily: family }}
+      />
+    );
+  }
+  return (
+    <RareGlyphChip
+      text={props.segment.text}
+      label={rareGlyphLabel(cps[0]!)}
+      style={{ fontSize: props.textStyle.fontSize ?? 16 }}
+    />
+  );
+}
 
 export type PressWordHandler = (
   index: number,
@@ -143,7 +174,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
               view, mirroring web's inline <ruby> elements. Each measures its
               own fallback column once and hands the box to the native view. */}
           {(isBlanked ? [{ text: '＿'.repeat(Math.max(1, word.length)) }] : rubySegs).map((seg, j) => (
-            <RubyText
+            <RareAwareRubyText
               key={j}
               segment={seg}
               reserveReadingSlot={!isBlanked && (hasRuby || reserveRubySlot)}
@@ -262,7 +293,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
   return (
     <>
       {(isBlanked ? [{ text: '＿'.repeat(Math.max(1, word.length)) }] : rubySegs).map((seg, j) => (
-        <RubyText
+        <RareAwareRubyText
           key={j}
           segment={seg}
           reserveReadingSlot={!isBlanked && (hasRuby || reserveRubySlot)}
@@ -536,7 +567,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
       {isBlanked ? (
         <Text className={textColor}>{'＿'.repeat(Math.max(1, word.length))}</Text>
       ) : (
-        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}><RareGlyphText text={displayText} /></Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
       {showQuickGloss ? <Text lang={quickGlossLang} style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}

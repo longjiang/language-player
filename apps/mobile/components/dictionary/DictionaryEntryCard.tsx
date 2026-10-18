@@ -19,6 +19,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { dictionaryEntryLogger } from '@/lib/logger';
 import { WebViewSheet } from '@/components/WebViewSheet';
+import { RareGlyphText } from '@/components/RareGlyphText';
 
 const { log } = dictionaryEntryLogger;
 
@@ -315,13 +316,13 @@ export function DictionaryEntryCard({
                 accessibilityRole="button"
                 accessibilityLabel={t('action.open_in_dictionary')}
               >
-                <Text lang={glyphLang} className="text-lg font-bold text-foreground">{displayHead}</Text>
+                <Text lang={glyphLang} className="text-lg font-bold text-foreground"><RareGlyphText text={displayHead} /></Text>
               </Pressable>
             ) : (
-              <Text lang={glyphLang} className="text-lg font-bold text-foreground">{displayHead}</Text>
+              <Text lang={glyphLang} className="text-lg font-bold text-foreground"><RareGlyphText text={displayHead} /></Text>
             )}
             {displayAlternate && displayAlternate !== head && (
-              <Text className="text-xs text-muted-foreground" lang={glyphLang}>{displayAlternate}</Text>
+              <Text className="text-xs text-muted-foreground" lang={glyphLang}><RareGlyphText text={displayAlternate} /></Text>
             )}
             <SpeakButton text={displayHead} l2Code={l2Code} size={14} />
             {formattedPron ? (
@@ -466,9 +467,9 @@ export function DictionaryEntryCard({
         className="active:opacity-70"
       >
         <View className="flex-row items-start gap-2">
-          <Text className="text-3xl font-bold text-foreground shrink-0" lang={glyphLang}>{head}</Text>
+          <Text className="text-3xl font-bold text-foreground shrink-0" lang={glyphLang}><RareGlyphText text={head} /></Text>
           {displayAlternate && (
-            <Text className="mt-2 text-base text-muted-foreground shrink-0" lang={glyphLang}>{displayAlternate}</Text>
+            <Text className="mt-2 text-base text-muted-foreground shrink-0" lang={glyphLang}><RareGlyphText text={displayAlternate} /></Text>
           )}
           <View className="flex-1" />
           {badges}
@@ -542,7 +543,7 @@ export function DictionaryEntryCard({
                 </Text>
               </View>
               {m.example && (
-                        <Text className="mt-1 text-sm text-foreground" lang={glyphLang}>{m.example}</Text>
+                        <Text className="mt-1 text-sm text-foreground" lang={glyphLang}><RareGlyphText text={m.example} /></Text>
               )}
               {m.exampleTranslation && (
                 <Text className="mt-0.5 text-sm text-muted-foreground">{m.exampleTranslation}</Text>
