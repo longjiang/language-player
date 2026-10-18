@@ -72,6 +72,8 @@ export default function proxy(req: NextRequest) {
     // language pair. Without this the request would be read as `[l1]/[l2]` and
     // rewritten to /_not-found.
     pathname.startsWith('/api/asset-proxy') ||
+    // Same-origin rare-Han font subset proxy (SPEC-104).
+    pathname.startsWith('/api/glyph-font') ||
     pathname.startsWith('/og') ||
     pathname.startsWith('/favicon')
   ) {
