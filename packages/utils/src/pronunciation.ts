@@ -93,12 +93,13 @@ export function formatPronunciation(
     if (pron) return `[${pron}]`;
   }
 
-  // ── Chinese (Mandarin & Cantonese) ──
+  // ── Chinese (Mandarin, Cantonese & Literary Chinese) ──
   // The dictionary's own pronunciation field is already the right reading:
   // cedict stores tone-marked pinyin, cccanto stores jyutping. Prefer it
   // over phonetic_detail so Cantonese never shows Mandarin pinyin by
   // default (phonetic_detail variants remain as fallbacks for sparse rows).
-  if (l2Code === 'zh' || l2Code === 'yue') {
+  // Literary Chinese reads aloud with modern Mandarin pinyin, same as zh.
+  if (l2Code === 'zh' || l2Code === 'yue' || l2Code === 'lzh') {
     if (pron) return `[${pron}]`;
     if (pd?.pinyin) return `[${cleanPronunciation(pd.pinyin)}]`;
     if (pd?.jyutping) return `[${cleanPronunciation(pd.jyutping)}]`;
@@ -165,7 +166,7 @@ export function entryReading(
     }
     return null;
   }
-  if (base === 'zh' || base === 'yue') {
+  if (base === 'zh' || base === 'yue' || base === 'lzh') {
     return pron ?? cleanPronunciation(pd?.pinyin) ?? cleanPronunciation(pd?.jyutping);
   }
   if (base === 'ko' || base === 'th') {
@@ -192,7 +193,8 @@ export function entryMatchesSurface(
 ): boolean {
   if (!entry || !surface) return false;
   if (entry.head === surface) return true;
-  if (l2Code.split('-')[0] === 'zh') {
+  const base = l2Code.split('-')[0];
+  if (base === 'zh' || base === 'lzh') {
     const hs = entry.han_script;
     return (
       hs?.traditional === surface ||

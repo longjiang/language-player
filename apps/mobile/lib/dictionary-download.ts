@@ -43,7 +43,7 @@ export interface OfflineDictMeta {
 export interface OfflineDictRow {
   id: string;
   head: string;
-  /** Traditional script form (zh/yue). Null when the entry has none. */
+  /** Traditional script form (zh/yue/lzh). Null when the entry has none. */
   alternate: string | null;
   pronunciation: string | null;
   entry_json: string;
@@ -157,9 +157,11 @@ async function streamNdjson(
     const row = JSON.parse(line) as [string, string, string | null, string];
     const entryJson = row[3];
     let alternate: string | null = null;
-    // Only zh/yue carry a traditional-script alternate. Parsing every entry
-    // just to extract it is pure overhead for the other ~60 languages.
-    if (l2 === 'zh' || l2 === 'yue') {
+    // zh/lzh (CEDICT) and yue (CC-Canto) carry a traditional-script
+    // alternate. Parsing every entry just to extract it is pure overhead for
+    // the other ~60 languages. lzh is included because it now downloads the
+    // CEDICT table (same simplified head + traditional alternate as zh).
+    if (l2 === 'zh' || l2 === 'yue' || l2 === 'lzh') {
       try {
         alternate = (JSON.parse(entryJson) as DictionaryEntry).alternate ?? null;
       } catch {

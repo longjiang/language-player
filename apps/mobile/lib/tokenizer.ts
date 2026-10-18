@@ -181,7 +181,7 @@ async function loadDictWordSet(l2: string): Promise<{
     }>;
     try {
       rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
-        // head = simplified form (zh), alternate = traditional form (zh/yue).
+        // head = simplified form (zh/lzh), alternate = traditional form (zh/yue/lzh).
         // UNION dedupes across both scripts.
         `SELECT head, pronunciation, part_of_speech FROM ${table} WHERE head != ''
          UNION

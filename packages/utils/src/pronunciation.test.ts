@@ -114,6 +114,16 @@ describe('formatPronunciation', () => {
     expect(formatPronunciation(e, 'zh')).toBe('[nǐ hǎo]');
   });
 
+  it('uses CEDICT pinyin for Literary Chinese (lzh)', () => {
+    const e = entry({
+      head: '學而時習之',
+      pronunciation: 'xué ér shí xí zhī',
+      phonetic_detail: { pinyin: 'xué ér shí xí zhī' },
+    });
+    expect(formatPronunciation(e, 'lzh')).toBe('[xué ér shí xí zhī]');
+    expect(entryReading(e, 'lzh')).toBe('xué ér shí xí zhī');
+  });
+
   it('falls back to phonetic_detail when the flat field is missing', () => {
     const e = entry({
       pronunciation: '',
@@ -206,6 +216,10 @@ describe('entryReading / entryMatchesSurface / savedEntryReading', () => {
     expect(entryMatchesSurface(zh, '青豆', 'zh')).toBe(true);
     const trad = entry({ head: '青豆', han_script: { simplified: '青豆', traditional: '靑豆' } });
     expect(entryMatchesSurface(trad, '靑豆', 'zh')).toBe(true);
+    // Literary Chinese matches CEDICT's simplified/traditional forms too.
+    const lzh = entry({ head: '學', han_script: { simplified: '学', traditional: '學' } });
+    expect(entryMatchesSurface(lzh, '學', 'lzh')).toBe(true);
+    expect(entryMatchesSurface(lzh, '学', 'lzh')).toBe(true);
     // Non-Chinese languages require an exact head match.
     const ko = entry({ head: '학교', han_script: { hangul: '학교', hanja: '學校' } });
     expect(entryMatchesSurface(ko, '학교', 'ko')).toBe(true);

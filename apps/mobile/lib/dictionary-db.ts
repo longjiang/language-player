@@ -8,7 +8,7 @@
  * Schema:
  *   dict_{l2}    — one table per downloaded language, stores full
  *                  DictionaryEntry as JSON with indexed head and alternate
- *                  columns (alternate = traditional script for zh/yue)
+ *                  columns (alternate = traditional script for zh/yue/lzh)
  *   llm_cache     — shared table for LLM-generated entries
  *   dict_meta     — per-language download metadata
  */
