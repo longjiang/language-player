@@ -29,7 +29,7 @@ Frequency data lives directly in each dictionary table's `frequency` column — 
 | Table | Total Records | Records with Frequency | Coverage | Notes |
 |---|---|---|---|---|
 | kengdic (Korean) | 133,771 | 19,291 | 14.4% | Hanja form in `alternate` |
-| cedict (Chinese) | 124,722 | 33,020 | 26.5% | Simplified + traditional + pinyin |
+| cedict (Chinese) | 124,722 | 33,020 | 26.5% | Simplified + traditional + pinyin. Also serves `lzh` (Literary Chinese) |
 | edict (Japanese) | 117,368 | 22,252 | 19.0% | Kanji + kana + pitch accent |
 | open_russian | 58,218 | 0 | — | Enrichment only — stress marks, not a standalone dictionary |
 | cccanto (Cantonese) | 32,095 | 0 | 0% | No Zipf frequency data for Cantonese (yue) |
@@ -333,6 +333,12 @@ matching Classic.
 | `wiktionary` | ISO 639-3 → ISO 639-1 via `_ISO3_TO_ISO1` | `(lang_code, head)` |
 
 Klingon has no frequency data. Wiktionary languages are mapped from ISO 639-3 to ISO 639-1 using `_ISO3_TO_ISO1` (see code).
+
+`lzh` (Literary Chinese) is not a separate table: it is served by the `cedict`
+table and therefore uses the `zh` frequency list and `head` matching, giving
+it the same HSK levels and difficulty metadata as `zh`. It is a distinct L2
+for content, tokenization, and language selection. See
+[SPEC-103](../specs/103-lzh-cedict-and-modern-zh.md).
 
 ### Word Level Assignment
 

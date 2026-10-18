@@ -1033,8 +1033,13 @@ Each dictionary table in the SQLite database (`dictionaries.db`, built by `impor
 | **EDICT** (ja) | `edict` | Pure digits (row ID from `edict_normalized.csv`) | `93628` | CSV column `id` |
 | **Kengdic** (ko) | `kengdic` | Pure digits (row ID from `kengdic_2011.csv`) | `500885` | CSV column `id` |
 | **Klingonska** (tlh) | `klingonska` | Raw ID from CSV | _(varies)_ | CSV column `id` |
-| **Wiktionary** (all others) | `wiktionary` | `w` + 32-bit djb2 hash of `head + first_definition` | `w1190326473` | `import_dict_to_sqlite.py` — `_wiktionary_classic_id()` |
+| **Wiktionary** (all others except `lzh`) | `wiktionary` | `w` + 32-bit djb2 hash of `head + first_definition` | `w1190326473` | `import_dict_to_sqlite.py` — `_wiktionary_classic_id()` |
 | **LLM-generated** | `llm` | `{l2}-{12-char-md5}` of the queried text | `ja-56818f257212` | `routes/dictionary.py` — `_llm_lookup()` |
+
+> **Literary Chinese (`lzh`)**: uses the CEDICT ID scheme and `dict=cedict`.
+> `lzh` is a distinct L2 for content/tokenization, but its lexical entries,
+> pinyin, and HSK levels come from CEDICT. See
+> [SPEC-103](../specs/103-lzh-cedict-and-modern-zh.md).
 
 ### Wiktionary ID Generation
 
