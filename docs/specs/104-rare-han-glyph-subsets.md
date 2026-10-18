@@ -414,8 +414,10 @@ The chip is the guaranteed fallback and the initial rendering state.
 ### Appearance
 
 - Inline, roughly `1em` wide, same line height as surrounding text.
-- Label: `U+26030` (small, muted) inside a dashed border; optionally a `?` or
-  `□` mark.
+- Visible mark: a compact `?` inside a dashed border. The full codepoint
+  (`U+26030`) is carried in `aria-label`, `title`, `data-rare-glyph`, and the
+  detail sheet — putting the seven-character label inline overflowed a 1em
+  chip.
 - Never shown as an error color; it is an informational “glyph unavailable”
   state.
 
@@ -450,6 +452,8 @@ The chip is the guaranteed fallback and the initial rendering state.
 
 - Web: `aria-label="Rare character U+26030"`; `role="img"` on the chip.
 - Mobile: `accessibilityLabel="Rare character U+26030"`; focusable/tappable.
+- The visible `?` is decorative; the codepoint is not lost and is available in
+  the detail/copy path.
 - Screen readers should not read the chip label as the word itself; the
   dictionary action announces the token.
 - Contrast and size follow the design tokens; do not use hardcoded colors.
