@@ -456,6 +456,7 @@
         "discord_server": "Server Discord",
         "download_progress": "{downloaded} / {total} words",
         "downloaded": "Scaricato",
+        "drag_to_reorder": "Trascina per riordinare",
         "duration": "Durata",
         "earlier": "Prima",
         "email": "Email",

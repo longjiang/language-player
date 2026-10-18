@@ -41,7 +41,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **C ➌** | the booking recording | 3 comprehension questions, answered in the head | self-check: each question reveals the key's model sentence |
 | **C ➍** | the same recording + its transcript | 4 word blanks, 1 given | bank A–E |
 | **D ➊** | 6 recordings, one per paragraph | 8 word blanks, 1 given | one combined bank A–I |
-| **D ➋** | the Vancouver recording | per topic, its order 1–5 **and** its description | number bank + description bank |
+| **D ➋** | the Vancouver recording | five topic rows dragged into the recording's order, each with its description | position blanks (written by the drag) + description bank |
 | **D ➌** | the same recording | 11 typed blanks, 1 given | typed |
 | **D ➍** | the same recording + transcript | read along — no response | — |
 | **D ➎** | the same recording | 5 note cards, 1 printed as a worked example | free text |
@@ -143,7 +143,8 @@ These are the members of the `Stimulus` union in `packages/textbooks/src/types.t
 | `dialogue` | C ➍ | speaker-labelled lines carrying inline blanks |
 | `pictureSet` | A ➊, A ➋, A ➌, B ➎, C ➊, C ➋, E ➊, E ➋ | lettered image grid the blanks reference by letter |
 | `imageMap` | A ➊ | image with positioned pins, each pin holding a blank |
-| `dataTable` | A ➌, B ➊, B ➋, B ➌, D ➋ | tabular data; cells **and headings** are L2 text and may carry blanks, a column may carry a picture above its name (`columnImages`), and a row may carry a decorative icon (`TableRow.icon`) drawn outside that text |
+| `dataTable` | A ➌, B ➊, B ➋, B ➌ | tabular data; cells **and headings** are L2 text and may carry blanks, a column may carry a picture above its name (`columnImages`), and a row may carry a decorative icon (`TableRow.icon`) drawn outside that text |
+| `orderList` | D ➋ | rows the student drags into the recording's order; each row writes its 1-based position into its own blank, and may carry a description blank (see [Order by dragging](#order-by-dragging)) |
 | `numberedBlanks` | A ➋, C ➊, C ➋ | a `① ___ ② ___` row, for tasks with no passage |
 | `mockApp` | B ➍ | a self-contained HTML mock app, referenced by id; owns its own UI and goals (see below) |
 | `dictation` | E ➊, E ➋ | numbered items typed into boxed per-character fields |
@@ -546,6 +547,37 @@ shows characters at different heights — measured at 7px in A ➍, where a read
 above 趟 and 摇. Pinning the content to the chip's inner bottom puts the shared baseline at a
 fixed offset and lets the reading grow upward; because the row stretches every chip to its
 tallest, each one also reserves the reading space for the others.
+
+### Order by dragging
+
+D ➋'s workbook page is a table: the first column is a blank for the position (1–5), the third a
+blank for the row's description. The position is not really a number the student wants to type —
+it is the order itself, and choosing "4" from a dropdown asks them to translate an ordering into
+digits. The stimulus renders the rows as a **drag list** instead: no table, no header, a grip at
+the start of each row, the topic, and the description picker at the end.
+
+- **The position is still a stored blank.** A drop writes each row's 1-based index into its
+  position blank (`choose`, answer = the position the recording gives it), so grading, the answer
+  key, Try again and progress are untouched. The order blanks are never rendered as widgets.
+- **The list starts as the workbook's arrangement, and that arrangement is recorded.** On a fresh
+  task the component writes the authored positions, so submitting without dragging grades the
+  list the student can see rather than empty blanks. An existing set of positions wins (a reload
+  restores the student's order); `orderFromPositions` falls back to the authored order whenever
+  the stored positions are not a unique 1..n.
+- **A locked row is a worked example.** D ➋ prints ① 路线 = 1, so that row is pinned, has an
+  inert grip, and its blank is `given`: the validator rejects a locked row that is not given or
+  whose answer is not its slot, and rejects a draggable row that is not `choose` (the drag writes
+  its blank). It also requires the positions to be exactly 1..n and every row's blank and
+  description blank to exist.
+- **The drag is the handle, with a keyboard path.** Web uses native HTML drag-and-drop on the
+  grip and ArrowUp/ArrowDown while it is focused; mobile uses a `PanResponder` on the grip and
+  `accessibilityActions` increment/decrement, with the target slot computed from the finger's
+  travel over the row's measured height. Rows are reordered by `moveRow`, which keeps locked rows
+  in their own slots.
+- **After Submit, each row is green or red by whether it sits in the right slot** — the position
+  blank's own result, with the locked row always correct. The description picker keeps its own
+  verdict (it is a normal blank), so a row can be correctly ordered and still have a wrong
+  description; the two are shown separately.
 
 ### Audio
 
@@ -996,6 +1028,7 @@ below fall either side of.
 - a `{{bN}}` marker in text with no matching entry in `blanks`, or vice versa;
 - a `mockApp` goal referencing a missing blank, a duplicate goal id, or a `goal` blank no goal links to;
 - a `recall` pointing at a task the book does not have — a wrong id renders nothing at all, silently;
+- an `orderList` whose positions are not exactly 1..n, whose locked row is not a `given` blank in its printed slot or whose draggable row is not `choose`, or whose row/description blank is missing;
 - a `carried` blank that does not name its source, that names a task or blank the book does not have, that carries from its own task, or whose source is not a picture-set slot (including carrying another `carried`) — each leaves a permanently empty box;
 - an `imageMap` pin outside 0–100 on either axis — the control would be clipped by the frame's `overflow-hidden` and the blank would silently stop being answerable.
 
@@ -1280,6 +1313,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `PictureBlankCell` | A picture-set blank printed as a small tappable cell (map pin, numbered row, table cell), showing the letter and opening the dialog |
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
+| `OrderList` | D ➋'s drag list: a grip per draggable row (native drag-and-drop on web, `PanResponder` on mobile, arrow keys on web, accessibility actions on mobile), the topic tokenized, the description blank at the end, and rows tinted green/red by their slot after submit. Writes positions through `orderFromPositions` / `moveRow` / `moveRowBy` in `packages/textbooks` |
 | `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (prompt, paginator, close), the sandboxed app, and a toolbar with help mode, hint and the Submit that resolves the current task (see below) |
 | `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. A `given` blank that names a set renders here too, starting on its worked-example picture and re-pickable, never scored. Its `layout` is `inline` in running text or `gutter` in the column a passage puts beside itself from `md` up (B ➎), where it fills the column and shows the picture uncropped. Read-only when `readOnly` is set (a carried slot): the same box, no button. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `CarriedSlot` | Another task's pick, shown read-only: resolves `BlankSpec.carriedFrom` against the loaded book, reads the earlier task's saved responses after mount, and hands `InlineImageSlot` the picture and its caption. An unanswered source leaves the box empty |
@@ -1892,6 +1926,15 @@ That pass also caught a real load failure on read-only tasks: `expandAcceptedVar
 the task **synchronously** when there is nothing to convert (E ➌ has no `blanks`), and the task
 provider called `.then` on that value — "*… then is not a function*". Both providers now
 normalise it with `Promise.resolve`, and `task-provider.test.tsx` renders a no-blank task.
+
+**D ➋'s drag list is verified in a browser.** The page renders no table header: five rows, four
+grips and one inert grip on the pinned 路线, the description pickers at the end of each row. The
+authored order positions 运营时刻 and 买票、支付 in the wrong slots, so submitting it tints those two
+red and the other three (including the given 路线) green — with descriptions unanswered the banner
+reads *Incorrect 2 / 8* while the row colours still follow the slots alone. Moving 买票、支付 up
+twice and 运营时刻 down once, then submitting, tints all five green (*Incorrect 4 / 8*, the four
+descriptions still being empty). Reordering by ArrowUp/ArrowDown on a focused grip rewrites the
+positions, and the mobile drag path is the same `moveRow` behind a `PanResponder`.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame, the native

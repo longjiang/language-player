@@ -456,6 +456,7 @@
         "discord_server": "Сервер Discord",
         "download_progress": "{downloaded} / {total} words",
         "downloaded": "Загружено",
+        "drag_to_reorder": "Перетащите, чтобы изменить порядок",
         "duration": "Длительность",
         "earlier": "Ранее",
         "email": "Эл. почта",

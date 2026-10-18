@@ -26,6 +26,7 @@ import { TranscriptDialogProvider } from './TranscriptDialog';
 import { RecallCard } from './RecallCard';
 import { PictureSet } from './PictureSet';
 import { DataTable } from './DataTable';
+import { OrderList } from './OrderList';
 import { DialoguePassage } from './DialoguePassage';
 import { NumberedBlanks } from './NumberedBlanks';
 import { ImageMap } from './ImageMap';
@@ -337,6 +338,8 @@ export function TaskStimulus() {
             return <DialoguePassage key={i} dialogue={stimulus} />;
           case 'dataTable':
             return <DataTable key={i} table={stimulus} />;
+          case 'orderList':
+            return <OrderList key={i} stimulus={stimulus} />;
           case 'pictureSet':
             return <PictureSet key={i} set={stimulus} />;
           case 'numberedBlanks':

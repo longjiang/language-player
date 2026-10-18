@@ -53,6 +53,12 @@ function markerIdsIn(task: Task): string[] {
     if (stimulus.kind === 'dictation') ids.push(...stimulus.ids);
     if (stimulus.kind === 'freeWrite') ids.push(stimulus.blankId);
     if (stimulus.kind === 'noteCards') ids.push(...stimulus.cards.map((card) => card.blankId));
+    if (stimulus.kind === 'orderList') {
+      for (const item of stimulus.items) {
+        ids.push(item.blankId);
+        if (item.descriptionBlankId) ids.push(item.descriptionBlankId);
+      }
+    }
   }
   return ids;
 }
@@ -386,6 +392,78 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
     for (const item of set.items) {
       if (!item.letter) add('error', `pictureSet "${set.id}" has an option with no letter.`);
       if (!item.image) add('warning', `pictureSet "${set.id}" option "${item.letter}" has no image.`);
+    }
+  }
+
+  // ── Ordered lists (D ➋) ──
+  // The drag writes each row's position into its own blank, so the blanks must be a permutation
+  // of 1..n or two rows can never both be right; a locked worked example must sit where the
+  // workbook prints it, and only a draggable row may be written by the drag.
+  for (const stimulus of task.body) {
+    if (stimulus.kind !== 'orderList') continue;
+    if (stimulus.items.length === 0) add('error', 'An orderList has no items.');
+
+    const positionOwner = new Map<string, string>();
+    stimulus.items.forEach((item, index) => {
+      const blank = blanks[item.blankId];
+      if (!blank) {
+        add(
+          'error',
+          `OrderList row "${item.id}" references missing blank "${item.blankId}".`,
+          item.blankId,
+        );
+        return;
+      }
+      const position = blank.answer.trim();
+      if (!/^[1-9]\d*$/.test(position)) {
+        add(
+          'error',
+          `OrderList blank "${item.blankId}" answer "${blank.answer}" is not a position number.`,
+          item.blankId,
+        );
+      } else if (positionOwner.has(position)) {
+        add(
+          'error',
+          `OrderList blanks "${positionOwner.get(position)}" and "${item.blankId}" both answer position ${position}.`,
+          item.blankId,
+        );
+      } else {
+        positionOwner.set(position, item.blankId);
+      }
+      if (item.locked) {
+        if (blank.kind !== 'given') {
+          add(
+            'error',
+            `OrderList row "${item.id}" is locked but its blank "${item.blankId}" is "${blank.kind}" — a locked worked example is a given blank.`,
+            item.blankId,
+          );
+        }
+        if (position !== String(index + 1)) {
+          add(
+            'error',
+            `OrderList locked row "${item.id}" must answer position ${index + 1}, not "${blank.answer}".`,
+            item.blankId,
+          );
+        }
+      } else if (blank.kind !== 'choose') {
+        add(
+          'error',
+          `OrderList row "${item.id}" is draggable but its blank "${item.blankId}" is "${blank.kind}" — the drag writes a position into a choose blank.`,
+          item.blankId,
+        );
+      }
+      if (item.descriptionBlankId && !blanks[item.descriptionBlankId]) {
+        add(
+          'error',
+          `OrderList row "${item.id}" references missing description blank "${item.descriptionBlankId}".`,
+          item.descriptionBlankId,
+        );
+      }
+    });
+    for (let position = 1; position <= stimulus.items.length; position += 1) {
+      if (!positionOwner.has(String(position))) {
+        add('error', `OrderList is missing a row that answers position ${position}.`);
+      }
     }
   }
 
