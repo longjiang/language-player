@@ -36,8 +36,8 @@ Flask backend that most of the others depend on.
 |---|---|---|---|
 | **Web** | `apps/web` | `3000` | `npm run dev -w apps/web` |
 | **Admin** | `apps/admin` | `3100` | `npm run dev -w apps/admin` |
-| **Mobile (Metro)** | `apps/mobile` | `8081` | `scripts/start-metro.sh` (physical device) · `npx expo start --ios` (simulator) — see [Mobile](#mobile-appsmobile) |
-| **Chrome Extension** | `apps/chrome-extension` | — (no server) | `node apps/chrome-extension/build.mjs`, then load unpacked (see [Chrome Extension](#chrome-extension-appschrome-extension)) |
+| **Mobile (Metro)** | `apps/mobile` | `8081` | `scripts/start-metro.sh` (physical device) · `npx expo start --ios` (simulator) — see [Mobile](#mobile--appsmobile) |
+| **Chrome Extension** | `apps/chrome-extension` | — (no server) | `node apps/chrome-extension/build.mjs`, then load unpacked (see [Chrome Extension](#chrome-extension--appschrome-extension)) |
 | **Classic (Nuxt)** | `zerotohero-nuxt` | `3001` | `cd zerotohero-nuxt && npm run dev -- --port 3001` |
 | **Flask backend** | `zerotohero-python-server` | `5001` | `cd zerotohero-python-server && FLASK_ENV=development python3.10 app.py` |
 
@@ -300,6 +300,49 @@ devices only** — for the iOS Simulator use Workflow 1 (Expo Go).
 > *current* LAN IP, so it keeps working when the network changes — the build
 > steps below are only needed when no retained build suits.
 
+#### Any Wi-Fi network — the travel checklist
+
+A retained dev build is **not tied to a network**: the only network-dependent
+inputs are `ip.txt` (baked at build time), the device's persisted
+`RCT_jsLocation`, and `EXPO_PUBLIC_API_URL` (which Metro derives when it
+starts). The installer overrides the first two at launch, so travelling never
+requires a rebuild. On each new network:
+
+```bash
+# 1. Metro, with the host and API URL derived for this network
+scripts/start-metro.sh
+
+# 2. Install + launch the retained build (overrides the baked ip.txt)
+node scripts/install-dev-build.mjs --device 00008132-000261A41EFA401C
+```
+
+If Metro is already running from the previous network, stop it first: it keeps
+the host and the inlined `EXPO_PUBLIC_API_URL` it started with, so step 1 would
+otherwise refuse to start a second instance — and the app would load with a
+dead API URL.
+
+Then, once per network, make **home-screen launches** work too: with the app
+running, shake → dev menu → **Configure Bundler** → `<mac-lan-ip>:8081`.
+
+The installer's closing line — `✓ Device connected to Metro from <ip>` — is the
+end-to-end proof: the bundle loaded and the API URL Metro inlined is reachable.
+If it reports *"No device reached Metro"*, the Wi-Fi is isolating the two
+devices; see
+[Networking conditions](#networking-conditions--how-the-metro-host-is-chosen).
+
+**Why the last step is separate:** `-RCT_jsLocation` is a launch argument, and
+iOS honours it for that one launch. Once the app has been backgrounded long
+enough for iOS to terminate it, the next tap on the icon cold-launches with only
+the persisted `RCT_jsLocation` / `ip.txt` — and a value from the old network
+shows the "No script URL provided … (null)" redbox. That is exactly what "it
+worked, then stopped after a while" looks like. Details and the programmatic
+escape hatch:
+[The persisted Metro host and cold launches](#the-persisted-metro-host-and-cold-launches).
+
+Rebuild (`node scripts/dev-build.mjs ios-device`) only when native code or
+config changed — a rebuild does not make a build network-proof, because
+`ip.txt` is baked in and goes stale the same way.
+
 #### Check for an existing build first
 
 A dev build may already exist on this machine — don't rebuild if a usable one
@@ -488,10 +531,12 @@ node scripts/verify-dev-build.mjs latest  # prove which commit it mirrors
 ```
 
 `dev-build.mjs` refuses a dirty git tree (a build must mirror a commit "for
-sure"), requires Metro already running (`npx expo start` above), and bakes
-`ip.txt` so the device finds Metro at `http://<mac-lan-ip>:8081`. To show the
-exact commit in the About dialog, start Metro with
-`EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) npx expo start`.
+sure"), requires Metro already running (`scripts/start-metro.sh` above), and
+bakes `ip.txt` so the device finds Metro at `http://<mac-lan-ip>:8081` — the
+build-time address, which the installer replaces at launch when the network
+changes. To show the exact commit in the About dialog, start Metro with
+`EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) scripts/start-metro.sh` (the script
+passes the environment through).
 
 #### Adding a native module — run `pod install` first
 
@@ -653,11 +698,12 @@ the script says so and lists the ways out instead of reporting a clean install.
 In tunnel mode the check is skipped, for the reason given in
 [Networking conditions](#networking-conditions--how-the-metro-host-is-chosen).
 
-**The two values that go stale when the LAN changes**
+**The values that go stale when the LAN changes**
 
 | Value | Set when | Stale symptom | Fix without a rebuild |
 |---|---|---|---|
 | Metro host for the device (`ip.txt` inside the `.app`) | build time — `react-native-xcode.sh` runs `ipconfig getifaddr en0` | redbox **"No script URL provided … unsanitizedScriptURLString = (null)"** | `-RCT_jsLocation <lan-ip>:8081` launch argument (step 4), or dev menu → Configure Bundler |
+| Persisted Metro host (`RCT_jsLocation` in the app's preferences) | dev menu → Configure Bundler | the same redbox on a **cold launch**, even right after a successful installer run | update it — dev menu, or [the cfprefsd procedure](#the-persisted-metro-host-and-cold-launches) |
 | Backend URL (`EXPO_PUBLIC_API_URL`) | Metro start — inlined into the bundle at serve time | JS loads, but every Flask call fails | restart Metro with the current IP (step 2) |
 
 Android's equivalent of `ip.txt` is the `debug_http_host` preference; the same
@@ -739,19 +785,92 @@ reachable, which is why step 2 comes first.)
 
 **5. Make it stick.** With the app running, shake → dev menu →
 **Configure Bundler** → `<lan-ip>:8081`. That persists `RCT_jsLocation`, so
-ordinary launches from the home screen work from then on — until the LAN
-changes again, at which point this section takes a minute to redo.
+ordinary launches from the home screen work from then on — including after iOS
+terminates the app in the background, when the launch argument is gone. This
+matters: a successful installer launch says nothing about the *next* cold
+launch. Until the LAN changes again, at which point this section takes a minute
+to redo — see
+[The persisted Metro host and cold launches](#the-persisted-metro-host-and-cold-launches).
+
+#### The persisted Metro host and cold launches
+
+`RCTBundleURLProvider` resolves the packager in two steps
+(`packagerServerHostPort` in
+`node_modules/react-native/React/Base/RCTBundleURLProvider.mm`):
+
+1. the `RCT_jsLocation` `NSUserDefaults` key — the installer sets it **for one
+   launch** through the argument domain (`-RCT_jsLocation host:port`);
+2. `ip.txt`, baked into the app at build time.
+
+Both are reachability-checked (`isPackagerRunning`); an unreachable value is
+discarded. That is why a **stopped Metro produces the same redbox** even when
+the settings are right — start Metro before launching the app.
+
+The dev menu persists the host properly: shake → **Configure Bundler** →
+`<lan-ip>:8081`. It lives in the app's
+`Library/Preferences/ca.zerotohero.go.plist`; inspect it with:
+
+```bash
+xcrun devicectl device copy from --device <udid> \
+  --domain-type appDataContainer --domain-identifier ca.zerotohero.go \
+  --source Library/Preferences/ca.zerotohero.go.plist --destination /tmp/lp-prefs.plist
+plutil -p /tmp/lp-prefs.plist | grep RCT_jsLocation
+```
+
+**A direct plist edit does not stick on its own.** `cfprefsd` caches the
+domain: writing the file with `devicectl device copy to` reads back correctly,
+but the app keeps using the cached value and the daemon rewrites the old value
+over the file later (observed 2026-10-18: `192.168.1.67:8081` written and read
+back, then `192.168.0.104:8081` again after launch). To force an external write,
+stop the app, restart the preference daemons, write, then launch:
+
+```bash
+UDID=00008132-000261A41EFA401C
+HOST=<mac-lan-ip>:8081
+# pids from: xcrun devicectl device info processes --device "$UDID" --json-output /tmp/p.json
+xcrun devicectl device process terminate --device "$UDID" --pid <app-pid>
+xcrun devicectl device process terminate --device "$UDID" --pid <cfprefsd-pid-1>
+xcrun devicectl device process terminate --device "$UDID" --pid <cfprefsd-pid-2>
+
+xcrun devicectl device copy from --device "$UDID" \
+  --domain-type appDataContainer --domain-identifier ca.zerotohero.go \
+  --source Library/Preferences/ca.zerotohero.go.plist --destination /tmp/lp-prefs.plist
+/usr/libexec/PlistBuddy -c "Set :RCT_jsLocation $HOST" /tmp/lp-prefs.plist
+xcrun devicectl device copy to --device "$UDID" \
+  --domain-type appDataContainer --domain-identifier ca.zerotohero.go \
+  --source /tmp/lp-prefs.plist --destination Library/Preferences/ca.zerotohero.go.plist
+
+xcrun devicectl device process launch --device "$UDID" ca.zerotohero.go
+lsof -nP -iTCP:8081 | grep ESTABLISHED   # the device's IP appears when it connected
+```
+
+Treat that as the automation/emergency route; **Configure Bundler is the
+supported one** (no daemon restart). Either way the value is per-network — redo
+it after the next LAN change.
 
 **Troubleshooting**
 
 - **Redbox "No script URL provided … unsanitizedScriptURLString = (null)"** —
-  the build's `ip.txt` points at an IP this Mac no longer has, so
-  `guessPackagerHost` finds nothing and `jsBundleURL` is nil. Fix with step 4.
+  RN found no usable packager host. In order of likelihood: (1) the build's
+  `ip.txt` points at an IP this Mac no longer has; (2) the **persisted**
+  `RCT_jsLocation` points at an old network — this is what a cold launch uses,
+  even right after the installer launched the app successfully; (3) Metro is
+  not reachable, in which case even a correct host is discarded. Fix with
+  step 4, and for (2) update the persisted value (see
+  [The persisted Metro host and cold launches](#the-persisted-metro-host-and-cold-launches)).
   **Shake will not open the dev menu in this state** — `RCTDevMenu`'s
   `showOnShake` only presents the menu when the window hierarchy already
   contains an `RCTView` (`React/CoreModules/RCTDevMenu.mm:234-248`), which
   requires a rendered bundle. So with no bundle there is no way in from the
   UI; the launch argument is the fix, not the menu.
+- **It worked, then redboxed "after a while"** — the app was terminated in the
+  background (jetsam) and the next launch had no `-RCT_jsLocation` argument, so
+  it fell back to the stale persisted host. Relaunch through
+  `install-dev-build.mjs`, then persist the current host (dev menu → Configure
+  Bundler) so the next cold launch works.
+- **A direct plist edit seems to work but the app still uses the old host** —
+  `cfprefsd` served its cache and rewrote the file. Restart the preference
+  daemons before writing (procedure above), or just use Configure Bundler.
 - **Installer reports "No device reached Metro"** — the device has no route to
   the Metro host, usually AP isolation on public/guest Wi-Fi. Metro itself is
   fine; the link is not. See
@@ -1136,6 +1255,8 @@ See ARCH-012 for the deprecation note.
 | Web/Admin can't log in or fetch data | Flask not running | Verify `lsof -i:5001`; ask the user to start Flask |
 | Mobile app gets network errors | API URL wrong for the target | Simulator: localhost. Android emulator: `10.0.2.2`. Physical device: Mac LAN IP |
 | Mobile stale behavior after edits | Hot reload didn't re-evaluate module-level constants | Kill Metro, `rm -rf apps/mobile/.expo`, restart without `--clear` |
+| Mobile dev app worked, then shows "No script URL provided … (null)" on a later launch | iOS terminated the app; the cold launch used the stale persisted `RCT_jsLocation` / `ip.txt` | `node scripts/install-dev-build.mjs --device <udid>`, then persist the current host via dev menu → Configure Bundler |
+| Mobile dev app can't load after changing Wi-Fi | The host is from the old network (`ip.txt` baked at build time + persisted `RCT_jsLocation`) | Run the [travel checklist](#any-wi-fi-network--the-travel-checklist); no rebuild needed |
 | Port already in use | Second dev server | `lsof -ti:<port>` and kill the stale process, or use the running instance |
 | Extension changes not visible | dist/ is stale | Run `node apps/chrome-extension/build.mjs`, refresh at `chrome://extensions`, reload the video page |
 | `EMFILE: too many open files` (Metro) | macOS file-watcher limit | `ulimit -n 65536 && npx expo start` |
