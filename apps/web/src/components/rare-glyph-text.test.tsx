@@ -65,7 +65,7 @@ describe('RareGlyphText', () => {
     );
 
     expect(container.querySelector('[data-rare-glyph="U+26030"]')).toBeTruthy();
-    expect(container.textContent).toContain('U+26030');
+    expect(container.querySelector('[data-rare-glyph="U+26030"]')?.getAttribute('aria-label')).toContain('U+26030');
 
     await waitFor(() => {
       const rare = container.querySelector(`[data-rare-glyph="U+26030"]`) as HTMLElement | null;

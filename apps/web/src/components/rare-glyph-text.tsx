@@ -31,9 +31,10 @@ export function RareGlyphChip({
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 flex select-none items-center justify-center text-[0.55em] font-medium leading-none"
+        className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-medium"
+        style={{ fontSize: '0.8em', lineHeight: 1 }}
       >
-        {label}
+        ?
       </span>
       <span className="select-text opacity-0">{text}</span>
     </span>
