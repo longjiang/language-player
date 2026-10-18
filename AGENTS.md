@@ -35,7 +35,7 @@ The **active development** happens in:
 
 4. **Language state flows L1 → L2.** Every language-specific page lives under `/[l1]/[l2]/...`. The middleware (`apps/web/src/proxy.ts` — Next 16 renamed `middleware.ts` to `proxy.ts`) reads these params, looks up language objects, and provides them via React Context.
 
-5. **The backend is a Flask API** has a local dev URL and a production URL, which are noted in `apps/web/src/lib/api-url.ts`. All data goes through it. Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API. The reason is that we want to abstract the directus layer away from the web and mobile apps, so we can migrate to Directus 11 or another backend in the future without changing the clients.
+5. **The backend is a Flask API** with a local dev URL and a production URL, both noted in `apps/web/src/lib/api-url.ts`. All data goes through it — clients never talk to the database or the auth provider directly. Since the SPEC-039 migration the store is **Supabase Postgres** (content and user data) and auth is **GoTrue**, both proxied through Flask; Directus 8 is legacy and its utilities (`utils_directus.py`) are deleted. Preserve that boundary: add endpoints under `zerotohero-python-server/routes/` rather than calling Supabase from web or mobile.
 
 6. **Use semantic design tokens, not hardcoded colors.** Never use hex values (`#fff`, `#94a3b8`, `#888`) or named colors (`"white"`, `"black"`) in components. Use NativeWind/Tailwind semantic classes like `text-foreground`, `text-muted-foreground`, `text-primary-foreground`, `bg-background`, `bg-card`, `border-border`. For React Native props that don't accept classes (e.g., `placeholderTextColor`, lucide icon `color`), import from `@/lib/theme-colors` which derives hex values from `packages/shared/src/tokens.ts`. Both apps share the same design tokens — colors, typography, spacing — from a single source of truth.
 
@@ -77,7 +77,7 @@ apps/web/src/
 
 - **L1** = Native language (UI language, e.g., `en`)
 - **L2** = Target language being learned (e.g., `zh`, `ja`)
-- **Directus** = Headless CMS at the database layer
+- **Directus** = legacy headless CMS from before the Supabase migration; still visible in old table and route names, but no longer in the live data path
 - **Lemma** = Base/dictionary form of a word
 - **Token** = A word or punctuation unit after tokenization
 - **CEFR** = Common European Framework of Reference (A1–C2)
