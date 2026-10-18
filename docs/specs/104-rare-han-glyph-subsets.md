@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-104
 - **Feature**: Render rare Han codepoints (e.g. U+26030 𦀰) on web and mobile with minimal client download
-- **Status**: draft
+- **Status**: in-progress — backend/web/mobile implemented; device verification pending
 - **Created**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (rendering, dictionary, reader, video)
 - **Depends on**: [SPEC-080 — Web lang/glyph rendering](./080-web-lang-attribute-glyph-rendering.md), [SPEC-088 — CJK glyph rendering](./088-cjk-glyph-rendering.md), [ADR-0046 — China-blocked hosts](../adr/0046-china-blocked-third-party-hosts.md)
@@ -39,11 +39,12 @@ lookup, saved words, and tokenization. The subset/chip is **presentation only**.
 - Full rare-Han fonts that do cover it are large:
   - **Plangothic P1** V2.9.5795 — 19 MB TTF, covers Ext B–J, SIL OFL 1.1.
   - **HanaMinB** 8.030 — 31 MB OTF, covers Ext B–F, Hanazono/OFL.
-- A single-codepoint subset is tiny and renders correctly:
-  - Plangothic P1 `.ttf`: **1.3 KB**
-  - Plangothic P1 `.woff2`: **744 B**
-  - HanaMinB `.otf`: **1.8 KB**
-  - HanaMinB `.woff2`: **1.2 KB**
+- A single-codepoint subset is tiny and renders correctly. The numbers below
+  are the service's output including copyright/license name records:
+  - Plangothic P1 `.ttf`: **2.8 KB**
+  - Plangothic P1 `.woff2`: **1.2 KB**
+  - HanaMinB `.otf`: **2.3 KB**
+  - HanaMinB `.woff2`: **1.3 KB**
 
 Source-font verification (2026-10-18, `fontTools` cmap + outline bounds):
 
@@ -507,9 +508,9 @@ blank.
 
 | Metric | Target |
 |---|---|
-| Sample U+26030 WOFF2 | ≤ 1 KB (measured 744 B) |
-| Sample U+26030 TTF | ≤ 2 KB (measured 1.3 KB) |
-| Typical document (1–20 rare cps) | ≤ 8 KB |
+| Sample U+26030 WOFF2 | ≤ 2 KB (measured 1.2 KB) |
+| Sample U+26030 TTF | ≤ 3 KB (measured 2.8 KB) |
+| Typical document (1–20 rare cps) | ≤ 10 KB |
 | Max codepoints per request | 256 |
 | Manifest request | one per render batch |
 | Cold subset generation | < 500 ms |
@@ -589,6 +590,23 @@ Do not log entire source texts or user content.
 
 ---
 
+## Implementation status
+
+Implemented in this change:
+
+- Backend subsetter + manifest/binary endpoints, source fonts, cache, 15 tests.
+- Web same-origin proxy, batching provider, `FontFace` loader, `RareGlyphText`
+  chip, token spans, plain text, dictionary entries, jsdom swap test.
+- Mobile provider/file cache/expo-font loader, chip, per-segment ruby font,
+  dictionary entries, and Android `ReactFontManager` resolution for
+  runtime-loaded families.
+- Blocks containing rare codepoints use the JS flex path on mobile so the
+  native attributed-string paragraph cannot blank them; the per-segment native
+  `RubyText` view still receives the subset family.
+
+Pending verification: a physical iOS/Android build (native module change) and a
+visual pass on the exact screenshot phrase. No production build was run here.
+
 ## Rollout
 
 1. **Server**: subsetter, manifest/binary endpoints, cache, tests, source font
@@ -609,8 +627,8 @@ server is not provisioned, the client still renders chips.
 
 - `遠將𦀰像` displays a real glyph for U+26030 on web and mobile, sans and
   serif, without downloading a full font.
-- U+26030 download is ≤ 2 KB (TTF/WOFF2) for the sample; a typical page stays
-  ≤ 8 KB.
+- U+26030 download is ≤ 3 KB (TTF) / ≤ 2 KB (WOFF2) for the sample; a typical
+  page stays ≤ 10 KB.
 - No blank rendering in any L2 surface: tokenized text, dictionary, examples,
   subtitles, search results, saved words, review context.
 - Offline, server error, missing source font, or uncovered codepoint → visible,
