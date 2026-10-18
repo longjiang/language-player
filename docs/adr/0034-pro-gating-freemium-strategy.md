@@ -126,9 +126,7 @@ full-text translation budget, and the AI explanation quota.
 
 - Constants and SPEC-054 C5 agree on exact numbers:
   **10 visible transcript lines** and **5 word-example hits**.
-- ⚠️ **Marketing copy does not match yet:** the landing pricing table still
-  renders "2 per word" (`pricing.free_word_examples` in `translations.csv`).
-  D2's copy change never reached that string; the enforced limit is 5.
+- ✅ **Marketing copy matches:** `pricing.free_word_examples` was corrected from "2 per word" to "5 per word" across all 18 locales on 2026-10-18, so constants, copy, and SPEC-054 C5 now agree.
 - The SRS free daily new-card allowance (20) is backend-enforced and gains a
   SPEC-054 test row.
 - AI explanations stay hard Pro-only (no quota change).

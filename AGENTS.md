@@ -193,7 +193,7 @@ Use these to log in during local development:
 
 Contact: [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)
 
-> ⚠️ **Known copy mismatch:** the enforced free word-example limit is **5** (`FREE_SUBS_SEARCH_HITS` in `apps/web/src/components/video/subs-search-results.tsx`, per ADR-0034 D2), but the landing pricing table still renders "2 per word" (`pricing.free_word_examples` in `translations.csv`). The CSV copy is the thing that needs fixing — do not lower the constant to match the stale string.
+> ✅ **Copy and gate agree:** the free word-example limit is **5** (`FREE_SUBS_SEARCH_HITS` in `apps/web/src/components/video/subs-search-results.tsx`, per ADR-0034 D2), and `pricing.free_word_examples` renders "5 per word" in all 18 locales (corrected 2026-10-18). If you ever change the constant, change the CSV key with it.
 
 ### Internationalization (i18n)
 
