@@ -91,7 +91,7 @@ docs/
 | 061 | [Supabase-Backed Video Lemmatization + Cache ID Rebinding](specs/061-video-lemmatization-supabase-cache.md) | 9 | ✅ Complete |
 | 062 | [Saved Words Sync Debugging — Cross-Device Divergence & Account Pollution](specs/062-saved-words-sync-debugging.md) | 9 | 🔄 In progress |
 | 063 | [UI Translation Locale Trim (31 → 18)](specs/063-ui-translation-locale-trim.md) | 18 | ✅ Complete |
-| 064 | [iOS Development Build Runbook](specs/064-ios-development-build-runbook.md) | 7 | 🔄 In progress |
+| 064 | [iOS Development Build Runbook](specs/064-ios-development-build-runbook.md) | 7 | ✅ Complete |
 | 065 | [EPUB Reading Progress Sync (Server + Mobile Offline)](specs/065-epub-progress-sync.md) | 6 | ⬜ Draft |
 | 066 | [SRS Review Page (Web + Mobile)](specs/066-srs-review-page.md) | 6 | ✅ Complete |
 | 067 | [Language Player 3 — Google Play Release Runbook](specs/067-google-play-release-runbook.md) | — | ✅ Complete |

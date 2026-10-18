@@ -200,11 +200,11 @@
   shipped; invitation emails, automated payouts, and the Stripe refund
   webhook deferred), then the payment log viewer and account actions
   (delete / reset / demote admin).
-- **Mobile release maintenance:** 3.7.3 / build 28 is the current release
-  (`docs/versioning/build-ledger.md`); rare-Han device verification is
-  outstanding (SPEC-104).
-- **Docs:** the 2026-10-18 documentation audit is done through the content
-  pass (links, statuses, index, ARCH/ADR/AGENTS/ROADMAP). Remaining known-stale
-  bodies: SPEC-048 and SPEC-067 identity tables (they still show 3.0.0/build 3)
-  and SPEC-064's manual build flow, which ARCH-028 and `scripts/dev-build.mjs`
-  supersede.
+- **Mobile release maintenance:** iOS is at 3.7.3 / build 28 (TestFlight) with
+  b25 submitted to the App Store; Android's last upload was 3.5.0 / b21
+  (Internal testing) while Production still runs b2 — Android Production needs
+  a catch-up release (`docs/versioning/build-ledger.md`). Rare-Han device
+  verification is outstanding (SPEC-104).
+- **Docs:** the 2026-10-18 documentation audit is complete (links, statuses,
+  index, ARCH/ADR/AGENTS/ROADMAP, release runbooks). The free-tier word-example
+  copy now matches the enforced limit in all 18 locales.
