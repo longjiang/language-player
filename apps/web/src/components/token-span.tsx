@@ -7,6 +7,7 @@ import { buildRuby, katakanaToHiragana, pickSavedEntry, resolveByeonggi, savedEn
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries, getCachedEntryById, getL1CachedEntry } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { RareGlyphText } from '@/components/rare-glyph-text';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
@@ -434,7 +435,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   const isWord = token.lemmas.length > 0;
   if (!isWord) {
-    return <>{token.text}</>;
+    return <RareGlyphText text={token.text} />;
   }
 
   const isJapanese = base === 'ja';
@@ -554,12 +555,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
             <React.Fragment key={j}>
               {seg.reading ? (
                 <ruby className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
-                  {seg.text}
+                  <RareGlyphText text={seg.text} />
                   <rt className="select-none" dir="ltr">{seg.reading}</rt>
                 </ruby>
               ) : (
                 <span className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
-                  {seg.text}
+                  <RareGlyphText text={seg.text} />
                 </span>
               )}
             </React.Fragment>
@@ -567,7 +568,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         </>
       ) : (
         <span className={flatSegmentClasses} style={karaokeStyle} onClick={segmentClick}>
-          {displayText}
+          <RareGlyphText text={displayText} />
         </span>
       );
     } else {
@@ -578,16 +579,16 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
                 seg.reading
                   ? (
                     <React.Fragment key={j}>
-                      <ruby>{seg.text}<rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
+                      <ruby><RareGlyphText text={seg.text} /><rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
                     </React.Fragment>
                   )
                   : (
                     <React.Fragment key={j}>
-                      {seg.text}
+                      <RareGlyphText text={seg.text} />
                     </React.Fragment>
                   )
               )
-            : displayText}
+            : <RareGlyphText text={displayText} />}
         </span>
       );
     }
