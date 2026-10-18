@@ -7,6 +7,7 @@
 - **Status**: implemented
 - **Created**: (today)
 - **ROADMAP Phase**: Web polish
+- **See also**: [SPEC-104 — Rare Han glyph subsets + chip fallback](./104-rare-han-glyph-subsets.md)
 
 ## Overview
 
