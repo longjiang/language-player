@@ -7,8 +7,9 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './word-bank';
-import { dialogBankIds, inlineBankIds } from '@langplayer/textbooks';
+import { dialogBankIds, inlineBankIds, trailingIllustrationSlot } from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './blank-choice';
+import { BlankField } from './blank-field';
 import { AudioPlayer } from './audio-player';
 import { TaskAudioProvider } from './task-audio';
 import { TranscriptDialogProvider } from './transcript-dialog';
@@ -205,15 +206,32 @@ export function TaskStimulus() {
     <>
       {ctx.task.body.map((stimulus, i) => {
         switch (stimulus.kind) {
-          case 'passage':
+          case 'passage': {
+            // B ➎ prints one illustration box per tip, at the tip's end. On a wide screen
+            // the box belongs in the margin *beside* the paragraph, as the workbook prints
+            // it — a box inside the running text cannot be moved out of that line's flow, so
+            // the trailing marker is split out and the slot rendered as a column. Below
+            // `md` the two stack, which keeps the box where it was: after the paragraph.
+            const slot = trailingIllustrationSlot(stimulus.text, ctx.task);
             return (
               <div key={i} className="flex flex-col gap-2">
                 {stimulus.audio && stimulus.audio.length > 0 && (
                   <AudioPlayer tracks={stimulus.audio} />
                 )}
-                <div className="text-lg leading-loose text-foreground">
-                  <TokenizedText text={stimulus.text} l2Code={l2.code} />
-                </div>
+                {slot.blank ? (
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-6">
+                    <div className="min-w-0 flex-1 text-lg leading-loose text-foreground">
+                      <TokenizedText text={slot.text} l2Code={l2.code} />
+                    </div>
+                    <div className="md:w-44 md:shrink-0">
+                      <BlankField blank={slot.blank} slotLayout="gutter" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-lg leading-loose text-foreground">
+                    <TokenizedText text={stimulus.text} l2Code={l2.code} />
+                  </div>
+                )}
                 {/* The passage's own option pool, at the end of the item it belongs to. */}
                 {(stimulus.banks ?? []).map((bankId) => {
                   const bank = (ctx.task.banks ?? []).find((b) => b.id === bankId);
@@ -221,6 +239,7 @@ export function TaskStimulus() {
                 })}
               </div>
             );
+          }
           case 'recall':
             return <RecallCard key={i} stimulus={stimulus} />;
           case 'audio':

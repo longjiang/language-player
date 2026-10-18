@@ -820,6 +820,34 @@ export function pictureSetsIn(task: Task): Map<string, PictureSetStimulus> {
   return map;
 }
 
+/** `{{bN}}` as the last thing in a text, which is where a slot's marker is authored. */
+const TRAILING_BLANK_MARKER_RE = /\{\{\s*([A-Za-z0-9_-]+)\s*\}\}\s*$/;
+
+/**
+ * Split a passage whose final item is an illustration slot (SPEC-095).
+ *
+ * B ➎ prints one illustration box per tip, at the tip's end, so the authored text
+ * ends with that slot's `{{bN}}` marker. On a wide screen the box belongs in the
+ * margin *beside* the paragraph, as the workbook prints it — and a box inside the
+ * running text cannot be moved out of that line's flow, so the caller renders
+ * `text` through `TokenizedText` and `blank` beside it. A narrow screen stacks them,
+ * which keeps the box where it was: after the paragraph.
+ *
+ * Only the picture-set printing is split. A trailing bank blank keeps its place in
+ * the sentence, where its underline belongs.
+ */
+export function trailingIllustrationSlot(
+  text: string,
+  task: Task,
+): { text: string; blank: BlankSpec | null } {
+  const match = TRAILING_BLANK_MARKER_RE.exec(text ?? '');
+  if (!match) return { text, blank: null };
+  const blank = task.blanks?.[match[1]!];
+  if (!blank?.optionSet) return { text, blank: null };
+  if (blank.kind !== 'choose' && blank.kind !== 'given') return { text, blank: null };
+  return { text: text.slice(0, match.index).trimEnd(), blank };
+}
+
 // ─── Responses and grading ───────────────────────────────────────────────
 
 /** A student's answer to one blank. */

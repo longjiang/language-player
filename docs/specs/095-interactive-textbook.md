@@ -190,6 +190,17 @@ is the caller that decides: `BlankField`'s `variant` prop, and `TokenizedText`'s
 `blankVariant` pass-through for blanks that live inside a cell or a passage. Both
 variants open the same dialog.
 
+**A slot sits in the paragraph's margin on a wide screen.** The workbook prints each
+tip's box at its right edge, so B ➎'s passages are authored with the tip's slot marker at
+the end, and the task renderer lifts it out of the line: from `md` (768px) up the item is
+a text column with the box in a 11rem gutter beside it, and below `md` the two stack,
+which puts the box back where it was — after the paragraph. The split is shared logic
+(`trailingIllustrationSlot` in `packages/textbooks`) so both clients lift the same marker,
+and it applies **only** to a trailing picture-set blank: a bank blank's underline belongs
+in its sentence. The gutter box fills its column and shows the picture whole — the
+illustrations are 900×487 workbook screenshots, and the inline box's fixed 128×80 with
+`object-cover` cut off about 40% of each one.
+
 **A tile's caption is tokenized, and sits outside the pick button.** The captions are the
 exercise's own vocabulary — `请到检票口检票`, `请在安全白线内通行`, `请紧握扶手` — so a student has
 to be able to tap a word and read what it means, which is the same tokenized path as any
@@ -1137,7 +1148,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `ImageMap` | Image with positioned pins, each holding a blank |
 | `DataTable` | Tabular stimulus with optionally blank cells |
 | `MockAppFrame` | The page's **launch button** plus the panel the app opens in — header (prompt, paginator, close), the sandboxed app, and a toolbar with help mode, hint and the Submit that resolves the current task (see below) |
-| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. A `given` blank that names a set renders here too, starting on its worked-example picture and re-pickable, never scored. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
+| `InlineImageSlot` | In-passage illustration slot: a `choose` blank answering from a `pictureSet` renders here, showing the chosen picture, and tapping it opens the picture-choice dialog. A `given` blank that names a set renders here too, starting on its worked-example picture and re-pickable, never scored. Its `layout` is `inline` in running text or `gutter` in the column a passage puts beside itself from `md` up (B ➎), where it fills the column and shows the picture uncropped. Rendered by `BlankField` rather than by `TaskStimulus`, since it sits inside running text |
 | `DialoguePassage` | Speaker-labelled L2 lines carrying inline blanks |
 | `NumberedBlanks` | A `① ___ ② ___` row for tasks whose answers have no surrounding passage (A ➋, C ➊/➋) |
 | `DictationField` | Boxed per-character entry for dictation tasks |

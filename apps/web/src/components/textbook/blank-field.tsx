@@ -33,13 +33,19 @@ function blankLabel(blank: BlankSpec): string {
  * illustration box a passage prints, `cell` is the small tappable blank a map pin, a
  * numbered row or a table cell prints. Both open the same picture-choice dialog; see
  * `picture-blank-cell.tsx`.
+ *
+ * `slotLayout` sizes a `slot` for the place it is printed: `inline` is the box inside
+ * running text, `gutter` fills the column a passage puts beside itself on a wide
+ * screen (B ➎ — SPEC-095). `cell` ignores it.
  */
 export function BlankField({
   blank,
   variant = 'slot',
+  slotLayout = 'inline',
 }: {
   blank: BlankSpec;
   variant?: 'slot' | 'cell';
+  slotLayout?: 'inline' | 'gutter';
 }) {
   const ctx = useTextbookTask();
   const t = useT();
@@ -143,7 +149,7 @@ export function BlankField({
     return variant === 'cell' ? (
       <PictureBlankCell blank={blank} value={value} result={blankResult} />
     ) : (
-      <InlineImageSlot blank={blank} value={value} />
+      <InlineImageSlot blank={blank} value={value} layout={slotLayout} />
     );
   }
 

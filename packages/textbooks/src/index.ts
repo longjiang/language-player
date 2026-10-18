@@ -22,6 +22,7 @@ export {
   recordingsIn,
   tasksIn,
   textsIn,
+  trailingIllustrationSlot,
   transcriptsIn,
 } from './types';
 export { TASK_TYPES, taskTypeKey } from './task-types';
