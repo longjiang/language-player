@@ -188,9 +188,9 @@ subtitle FULLTEXT search.
 
 ### Negative / trade-offs
 
-- **Cutover is still pending.** The Flask backend continues to read videos from
-  Directus; Supabase is currently a parallel store until the backend data layer
-  is switched.
+- **Cutover is complete** (2026-10): Flask reads videos from Supabase
+  (`utils_content.py`, `public.youtube_videos`) and the Directus shard tables
+  are no longer consulted. `utils_directus.py` was deleted on 2026-10-16.
 - **User-data remap required** before watch history, likes, playlists, and
   `user_data` can follow: each row's video reference must be mapped
   `l2 → source shard → prefixed ID`.

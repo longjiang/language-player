@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-23
-- **Last Updated**: 2026-08-10
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (i18n)
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), docs content
 
@@ -78,7 +78,7 @@ Each web script merges into `packages/docs/i18n/{locale}.json` — existing entr
 
 ## Search
 
-The search index is built at request time from the locale JSON files via `getSearchIndex(l1)`. For any locale (including `en`), it loads `docs-i18n/{l1}.json` and passes the array to Fuse.js on the client.
+The search index is built at request time from the locale JSON files via `getSearchIndex(l1)`. For any locale (including `en`), it loads `packages/docs/i18n/{locale}.json` and passes the array to Fuse.js on the client.
 
 **Fuse.js configuration:**
 ```js
@@ -108,6 +108,6 @@ Doc H1s should use a pure `{$key}` (e.g., `# {$title.explore}`) when a matching 
 - `en.json` is now treated identically to other locale JSONs — it resolves `{$key}` to English values
 - Web locale JSONs live in `packages/docs/i18n/`; mobile embed lives in `packages/shared/src/docs.ts`
 - The mobile embed (`build-docs-data.cjs`) is English-only by design — `translate-doc.mjs` handles per-locale i18n for the web app
-- `packages/shared/src/docs.ts` is a generated 1400+ line file committed to the repo (same pattern as `tokens.ts`)
+- `packages/shared/src/docs.ts` is a generated, ~28,500-line (~2.1 MB) file committed to the repo and imported by mobile
 - Cross-references between docs use absolute paths (`/docs/vocab/dictionary`) and must be updated when files are renamed
 - Category titles use `title.{folderName}` CSV keys dynamically — adding a new folder automatically picks up the translation

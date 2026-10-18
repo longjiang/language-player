@@ -28,10 +28,12 @@ management and subscription fixes). The options:
 1. Build `apps/admin` as a separate Next.js 16 app in the same workspace,
    mirroring `apps/web`'s stack (Tailwind semantic tokens, next-intl `useT()`,
    NextAuth v5, shadcn-style primitives).
-2. Auth is admin-only at the source: the NextAuth credentials provider calls
-   Flask `POST /auth/login` and rejects any user without `isAdmin === true`;
-   `src/proxy.ts` protects all routes; every Flask admin endpoint
-   independently calls `require_admin()` on the Supabase JWT claim.
+2. Auth is gated at the source: the NextAuth credentials provider calls
+   Flask `POST /auth/login` and rejects any user without `isAdmin === true`
+   **or** `isAffiliate === true` (the affiliate portal was added by SPEC-102);
+   `src/proxy.ts` guards all routes, with a separate `/affiliate/*` guard;
+   every Flask admin endpoint independently calls `require_admin()` on the
+   Supabase JWT claim.
 3. Add new gated Flask endpoints in `routes/admin_users.py` rather than
    reusing Classic's subscription endpoints, which were ungated at the time
    (they were gated later — see the last Consequence).

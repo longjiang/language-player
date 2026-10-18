@@ -110,7 +110,7 @@ apps/web/src/components/settings/
 ├── settings-detail.tsx       ← category → detail component
 ├── settings-route.tsx        ← deep-link trigger (renders the dialog)
 ├── settings-categories.ts    ← category keys + title keys
-├── DisplaySettings.tsx …     ← per-category content (moved out of route pages)
+├── display-settings.tsx …    ← per-category content (moved out of route pages)
 └── SearchBar/SectionHeader/SegmentedRow/SliderRow/ToggleRow.tsx  ← row primitives
 
 apps/web/src/app/[l1]/[l2]/settings/

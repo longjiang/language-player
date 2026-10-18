@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-24
-- **Last Updated**: 2026-09-03
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 3 — Explore + Video Player
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask)
 - **See also:**
@@ -79,7 +79,7 @@ This was especially problematic with `cache: 'no-store'` which forced fresh fetc
 ```
 watch page (page.tsx)
   → fetch(`/api/videos/${youtubeId}?l2=ja&l1=en`)
-    → Directus: GET /items/youtube_videos_{suffix}?filter[youtube_id][eq]=...
+    → Flask: GET /videos?youtube_id=... (Supabase public.youtube_videos)
       → response includes subs_l2 (CSV)
       → subs_l1 (CSV) is DEPRECATED — no longer read or stored
     → parseCSVSubtitles(item.subs_l2) → SubtitleLine[]  (L2: original language)
@@ -89,18 +89,18 @@ watch page (page.tsx)
 
 ### Key facts
 
-- **Directus is the source of truth for L2 subtitles.** `subs_l2` (original language) is stored as a CSV string in the `youtube_videos_{suffix}` table, uploaded during video ingestion.
+- **Supabase is the source of truth for L2 subtitles.** `subs_l2` (original language) is stored as a CSV string on `public.youtube_videos`, written during video ingestion. Flask reads it through `utils_content.py`; the Directus shard tables (`youtube_videos_{suffix}`) are historical (ADR-0021).
 - **HTML entities are decoded server-side (SPEC-091).** The DB stores YouTube's raw encoding (`isn&#39;t`, double-encoded `&amp;#39;`); Flask decodes the `line` text on every subtitle-returning endpoint (`/videos`, `/videos/subtitles`, `/subs-search`, caption fallbacks), and `parseCSVSubtitles()`/`parseSubtitleCSV()` apply an idempotent client-side decode as a safety net.
-- **`subs_l1` is deprecated and no longer read.** The API route no longer parses `subs_l1` from Directus and does not set `video.subs_l1`. The field remains in the `YouTubeVideo` type only for backward compatibility with cached API responses.
+- **`subs_l1` is deprecated and no longer read.** The API no longer parses `subs_l1` and does not set `video.subs_l1`. The field remains in the `YouTubeVideo` type only for backward compatibility with cached API responses.
 - **No `syncLines` call in the API.** Each L2 line is directly mapped to a `SyncedLine` struct with `l1Line: ''`. Translations are applied later by `SubtitleDisplay` via `/translate_array`.
-- **YouTube fallback for L2 only.** If Directus has no L2 subtitles, the API calls `/get_best_l2_subs` (YouTube auto-captions). L1 subtitles are never fetched from YouTube — all translations come from `/translate_array` (see Pipeline 4).
+- **YouTube fallback for L2 only.** If the database has no L2 subtitles, the API calls `/get_best_l2_subs` (YouTube auto-captions). L1 subtitles are never fetched from YouTube — all translations come from `/translate_array` (see Pipeline 4).
 - **Watch page receives `data.lines`** (L2 with empty L1 placeholders) and passes them as `initialLines` to `SubtitleDisplay`.
 
 ### Files
 
 | File | Role |
 |---|---|
-| `apps/web/src/app/api/videos/[videoId]/route.ts` | Next.js API route — fetches from Directus, parses CSV, pairs lines |
+| `apps/web/src/app/api/videos/[videoId]/route.ts` | Next.js API route — fetches from Flask (`PYTHON_API_URL/videos`), parses CSV, pairs lines |
 | `apps/web/src/lib/subtitle-csv.ts` | `parseCSVSubtitles()` (CSV → `SubtitleLine[]`), `syncLines()` (structurally wraps L2; pairing logic is dead code) |
 | `apps/web/src/lib/video-service.ts` | `fetchYouTubeL2Captions()` — YouTube fallback for L2 captions only |
 | `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` | Watch page — fetches from API, stores in `subtitleLines` state |
@@ -267,11 +267,11 @@ TokenizedText (×300 instances)
     → reads localStorage('zthProgress')          ← synchronous, instant
     → listens for cross-tab storage events
 
-Explore page / Music page / Profile page
+Explore page / Profile page
   → useProgress(l2Code)                         ← full hook (WITH cloud sync)
     → reads localStorage
-    → GET /user-data (cloud load, once)
-    → debounced POST /user-data/sync (on change)
+    → GET /progress (cloud load, once)
+    → debounced PUT /progress (on change)
 ```
 
 ### Key facts

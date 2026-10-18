@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: draft
 - **Created**: 2026-08-09
-- **Last Updated**: 2026-08-10
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (payment infrastructure)
 - **Scope**: Python backend (active), Classic Nuxt (legacy), Next.js Web (active), React Native Mobile (active), Admin console (active)
 - **Supersedes**: None
@@ -46,7 +46,7 @@ Three ideas matter most for understanding this system:
 
 ## Context
 
-ARCH-015 documents the payment-method constraints and renewal strategy. SPEC-014 defines the unified implementation plan for web and mobile. This document describes how the system actually works today in `zerotohero-python-server/`, including the parts SPEC-014 leaves as future work (for example, mobile IAP is still not implemented).
+ARCH-015 documents the payment-method constraints and renewal strategy. SPEC-014 defines the unified implementation plan for web and mobile. This document describes how the system actually works today in `zerotohero-python-server/`. Mobile IAP shipped on 2026-08-11 (StoreKit 2 on iOS, Play Billing on Android) — see [ARCH-024](024-mobile-iap-architecture.md).
 
 Since ARCH-015 was written, SPEC-039 WS-6 moved subscriptions from Directus to Supabase (`public.user_subscriptions`). The utility functions in `utils_subscription.py` keep the same names and response shapes as the Directus era, so payment apps, routes, and the admin console use them unchanged. User ids are Supabase auth UUIDs, with legacy Directus numeric ids resolved through `user_id_map`.
 
@@ -612,8 +612,8 @@ Ways to mitigate:
 | POST | `/in_app_purchase_success` | Validate Apple receipt, grant lifetime | Public (app call) |
 | GET | `/user-subscription` | Return current subscription | Supabase JWT |
 | POST | `/cancel-subscription-at-end-of-period` | Cancel Stripe subscription at period end | Public (app call) |
-| POST | `/admin/update_or_add_subscription` | Legacy admin upsert by email | Ungated (Classic compat; see ADR-0032) |
-| GET | `/admin/check_user_subscription?email=` | Legacy admin lookup | Ungated |
+| POST | `/admin/update_or_add_subscription` | Legacy admin upsert by email | Admin JWT (`require_admin`) |
+| GET | `/admin/check_user_subscription?email=` | Legacy admin lookup | Admin JWT (`require_admin`) |
 | POST | `/admin/users/<user_id>/subscriptions` | Admin grant | Admin JWT |
 | PATCH | `/admin/subscriptions/<id>` | Admin change | Admin JWT |
 | DELETE | `/admin/subscriptions/<id>` | Admin remove | Admin JWT |

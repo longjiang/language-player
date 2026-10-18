@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-25
-- **Last Updated**: 2026-10-16
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 5 — Content Features
 - **Scope**: Next.js Web (`apps/web`), React Native Mobile (`apps/mobile`)
 - **See also:** [Next.js Dictionary Architecture](./007-nextjs-dictionary-architecture.md), [Settings Architecture](./011-settings-architecture.md)
@@ -707,9 +707,11 @@ used a compact renderer that dropped that wiring). The bottom bar carries a
 **toggles the sidebar**.
 The top-right reader close control is a `✕` close button; there is no
 top-left thumbnails icon (the header uses a standard sidebar toggle). Web
-rendering: `apps/web/src/lib/pdf-book.ts` + `components/reader/pdf-reader-panel.tsx`;
-mobile: `lib/pdf-viewer.tsx` (WebView + pdf.js via data: URLs — no native
-modules) + `components/reader/PdfReaderPanel.tsx`.
+rendering: `apps/web/src/lib/pdf-book.ts` + `components/reader/pdf-reader-panel.tsx`.
+Mobile has **no PDF reader**: the standalone PDF screen landed in `64745e95`
+and was rolled back by `a563180a` / `d53a6561`, so there is no
+`lib/pdf-viewer.tsx` and no `components/reader/PdfReaderPanel.tsx` in
+`apps/mobile`. See SPEC-089.
 
 ### Image reader (web + mobile)
 The image reader is a **standalone route** (not an epub-bookshelf action),

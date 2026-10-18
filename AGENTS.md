@@ -19,6 +19,8 @@ Note that the above three directories are **independent Git repositories**. They
 The **active development** happens in:
 - `apps/web/` — Next.js 16.3 App Router with React 19 (replaces Classic; see ADR-0025)
 - `apps/mobile/` — React Native/Expo 57, fresh port from Next.js per ADR-0010 (replaces legacy GO app at `apps/mobile-go-legacy/`)
+- `apps/admin/` — Next.js 16 admin console on port 3100 (users, content, analytics, transactions, affiliates; see ADR-0032 and SPEC-060/099/100/101/102)
+- `apps/chrome-extension/` — Chrome extension (side panel, page tokenization); no package.json, built with `node apps/chrome-extension/build.mjs`
 - `packages/shared/` — Shared types & constants
 - `packages/api-client/` — Shared API client
 - `packages/utils/` — Shared utilities
@@ -58,11 +60,13 @@ The **active development** happens in:
 apps/web/src/
 ├── app/                    ← Next.js App Router pages
 │   ├── [l1]/[l2]/         ← Language-pair scoped routes
-│   └── (auth)/             ← Auth routes (no language context)
+│   ├── api/                ← Route handlers (videos, channels, auth, glyph-font, affiliate)
+│   └── login/ register/ auth/ …  ← Auth pages, top-level (no language context)
 ├── components/
 │   ├── ui/                 ← shadcn/ui primitives (Button, Input, etc.)
 │   ├── video/              ← Video player components
 │   ├── dictionary/         ← Dictionary components
+│   ├── reader/ settings/ textbook/  ← Reader, settings, textbook components
 │   └── layout/             ← Header, sidebar, navigation
 ├── hooks/                  ← React hooks (useVideo, useDictionary, etc.)
 ├── lib/                    ← Next.js-specific utilities
@@ -86,6 +90,7 @@ apps/web/src/
 nvm use 22                    # Required Node version
 npm install                   # Install all workspace deps
 npx turbo dev                 # Start all dev servers
+npm run dev -w apps/admin     # Admin console only (port 3100)
 npx turbo build               # Build all apps (⚠️ deletes .next, conflicts with dev)
 npx turbo build --filter=@langplayer/web  # Build only web (⚠️ same, conflicts with dev)
 npx turbo lint                # Lint all
@@ -118,8 +123,9 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 | Chrome Extension | `[LP Extension]` | `console.log('[LP Extension] Panel created')` |
 | Web (Next.js) | `[LP Web]` | `console.log('[LP Web] Video loaded')` |
 | Mobile (Expo/RN) | `[LP Mobile]` | `console.log('[LP Mobile] Subtitle fetched')` |
+| Admin (Next.js) | `[LP Admin]` | `console.log('[LP Admin] Transactions loaded')` |
 
-This applies to all source files in `apps/chrome-extension/`, `apps/web/`, and `apps/mobile/`. Do not use bare prefixes like `[LanguagePlayer]`, `[LPV]`, or no prefix at all — the bracketed app identifier is mandatory and must come first.
+This applies to all source files in `apps/chrome-extension/`, `apps/web/`, `apps/mobile/`, and `apps/admin/`. Do not use bare prefixes like `[LanguagePlayer]`, `[LPV]`, or no prefix at all — the bracketed app identifier is mandatory and must come first.
 
 **⚠️ All logging must be gated by an app-wide switch.** Every app must have a single flag that controls whether logging is enabled or disabled, so all logs can be turned off in production or turned on for debugging without modifying individual callsites.
 
@@ -128,6 +134,7 @@ This applies to all source files in `apps/chrome-extension/`, `apps/web/`, and `
 | Chrome Extension | `src/i18n.js` — `LOG_LEVEL` constant (0=off, 1=errors, 2=warnings, 3=verbose) |
 | Web (Next.js) | `src/lib/logger.ts` (wraps shared `packages/utils/src/logger.ts`) — `LOG_LEVEL` (0=off, 1=errors, 2=warnings, 3=verbose); set via `NEXT_PUBLIC_LOG_LEVEL` env or `setLogLevel()` at runtime |
 | Mobile (Expo/RN) | `lib/logger.ts` (wraps shared `packages/utils/src/logger.ts`) — same `LOG_LEVEL`; set via `EXPO_PUBLIC_LOG_LEVEL` env or `setLogLevel()` at runtime |
+| Admin (Next.js) | `src/lib/logger.ts` (wraps shared `packages/utils/src/logger.ts`) — same `LOG_LEVEL`; set via `NEXT_PUBLIC_LOG_LEVEL` |
 
 Use a simple pattern — export `log()`, `logwarn()`, `logerr()` helpers that check the flag internally. Never call `console.log` directly in application code.
 
@@ -167,7 +174,7 @@ Use these to log in during local development:
 - Access 600,000+ videos across 110+ languages
 - See collocations, example sentences, verb inflections, and Chinese character decomposition in the dictionary
 - See only first 10 lines of interactive transcripts with English translation
-- See only 2 examples of words in videos
+- See only 5 examples of words in videos
 - 14-day money-back guarantee
 
 **Pro Account:**
@@ -185,6 +192,8 @@ Use these to log in during local development:
 | Lifetime | US$169 (one-time payment, lifetime access) |
 
 Contact: [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)
+
+> ⚠️ **Known copy mismatch:** the enforced free word-example limit is **5** (`FREE_SUBS_SEARCH_HITS` in `apps/web/src/components/video/subs-search-results.tsx`, per ADR-0034 D2), but the landing pricing table still renders "2 per word" (`pricing.free_word_examples` in `translations.csv`). The CSV copy is the thing that needs fixing — do not lower the constant to match the stale string.
 
 ### Internationalization (i18n)
 
@@ -448,7 +457,7 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 
 **Logging conventions:** all `console.log` / `console.warn` / `console.error`
 calls must start with the app's bracketed prefix (`[LP Extension]`,
-`[LP Web]`, `[LP Mobile]`) so logs can be filtered by app, and all logging
+`[LP Web]`, `[LP Mobile]`, `[LP Admin]`) so logs can be filtered by app, and all logging
 must be gated by the app-wide `LOG_LEVEL` switch. Use the exported `log()`,
 `logwarn()`, `logerr()` helpers — never call `console.log` directly in
 application code. **Logging is info-level (`log()`) by default** — including

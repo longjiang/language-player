@@ -28,7 +28,7 @@ and the shared packages the app consumes, plus the built client chunks under
 |---|---|
 | Fonts | `apps/web/src/app/layout.tsx` uses `next/font/local` with four vendored Inter TTFs (`src/app/fonts/`), so neither the build nor the browser touches Google Fonts. There is no `@font-face`, no `@import url(...)` and no font `<link>` anywhere in the app. |
 | CJK type | `globals.css` names OS fonts only (`PingFang SC`, `Hiragino Sans`, `Microsoft YaHei`, …). Nothing is downloaded, so nothing can be blocked. |
-| Third-party scripts | None. No `<Script>`/`next/script` usage, no Analytics, no GTM, no Sentry, no reCAPTCHA, no CDN (jsDelivr/unpkg), no Google OAuth (`apps/web/src/auth.ts` is Credentials-only). |
+| Third-party scripts | **PayPal only**, and only on the checkout path: the go-pro page injects `https://www.paypal.com/sdk/js` (`components/checkout/paypal-button.tsx`) after the user picks PayPal. No Analytics, GTM, Sentry, reCAPTCHA, CDN (jsDelivr/unpkg) or Google OAuth (`apps/web/src/auth.ts` is Credentials-only). |
 | PDF worker | Bundled locally (`pdf-book.ts` resolves `pdfjs-dist/build/pdf.worker.min.mjs` through `import.meta.url`). |
 | Stripe | `@stripe/stripe-js` is a declared dependency but is never imported; checkout is a plain redirect, so `js.stripe.com` is never loaded client-side. |
 | Page text | Reader/article text is fetched through the Flask `/proxy`, so it is already relayed by our own server. |

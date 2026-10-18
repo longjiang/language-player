@@ -11,7 +11,7 @@
 - **Type**: analysis
 - **Status**: accepted
 - **Created**: 2026-07-24
-- **Last Updated**: 2026-07-24
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (Classic is the source of truth for features)
 - **Scope**: `zerotohero-nuxt/` (Classic, legacy reference only)
 
@@ -19,7 +19,7 @@
 
 - **Framework**: Nuxt 2 (Vue 2) with Vuex, Vue Router, BootstrapVue
 - **UI**: Bootstrap 4 + custom themed components + Font Awesome
-- **State**: Vuex (22 store modules) + localStorage persistence
+- **State**: Vuex (20 store modules) + localStorage persistence
 - **Backend**: Directus 8 (headless CMS) + Python Flask API
 - **Auth**: Directus JWT (stored in cookies via Nuxt Auth module)
 - **Dictionary**: Python Flask `/dictionary/lookup` endpoint (server-side)
@@ -226,7 +226,7 @@ All stores persist to localStorage via `vuex-persist` plugin.
 | **ChannelList** | `components/ChannelList.vue` | Channel list. |
 | **MediaSearchResults** | `components/MediaSearchResults.vue` | Media search results. |
 | **MediaItemStats** | `components/MediaItemStats.vue` | Media item statistics. |
-| **MiniPlayer** | `components/MiniPlayer.vue` | Minimized persistent video player. |
+| **MiniPlayer** | `components/MiniPlayer.vue` | Minimized persistent video player. *(Not present in the current `zerotohero-nuxt` checkout.)* |
 
 ### Reader / Text
 
@@ -338,7 +338,7 @@ All stores persist to localStorage via `vuex-persist` plugin.
 | **shared-mutations.js** | `plugins/shared-mutations.js` | Cross-tab Vuex mutation sharing. |
 | **pwa-update.js** | `plugins/pwa-update.js` | PWA update notification. |
 | **stripe.js** | `plugins/stripe.js` | Stripe payment integration. |
-| **paypal.js** | `plugins/paypal.js` | PayPal payment integration. |
+| **paypal.js** | `plugins/paypal.js` | PayPal payment integration. *(Not present in the current `zerotohero-nuxt` checkout — the file no longer exists.)* |
 | **ios-in-app-purchase.js** | `plugins/ios-in-app-purchase.js` | iOS IAP integration. |
 | **idle-vue.js** | `plugins/idle-vue.js` | Idle detection. |
 
@@ -754,24 +754,24 @@ These classes cascade to show/hide `.translation-line`, `.translated-line`, ruby
 
 ---
 
-## What the Next.js App Should Implement
+## What the Next.js App Implements
 
-Based on Classic's architecture, the Next.js app should have:
+Status as of 2026-10-18, verified against `apps/web/src/app/`:
 
 | Classic Feature | Next.js Route | Status |
 |---|---|---|
 | Dictionary Search | `/[l1]/[l2]/dictionary` | ✅ Implemented |
-| Word Detail Entry | `/[l1]/[l2]/dictionary/word/[id]` | ❌ **Not yet** |
+| Word Detail Entry | `/[l1]/[l2]/dictionary/entry/[dictionaryId]/[entryId]` | ✅ Implemented |
 | Saved Words | `/[l1]/[l2]/saved-words` | ✅ Implemented |
-| Saved Phrases | `/[l1]/[l2]/saved-phrases` | ❌ Future |
-| Media Home (Explore) | `/[l1]/[l2]/explore` | ❌ Future |
-| YouTube Section | `/[l1]/[l2]/youtube/*` | ❌ Future |
-| TV Shows | `/[l1]/[l2]/tv-shows` | ❌ Future |
-| Music / Audiobooks | `/[l1]/[l2]/music` etc. | ❌ Future |
-| Text Reader | `/[l1]/[l2]/reader` | ❌ Future |
-| Language Progress | `/[l1]/[l2]/progress` | ❌ Future |
-| Settings | `/[l1]/[l2]/settings` | ❌ Future |
-| Grammar Reference | `/[l1]/[l2]/grammar` | ❌ Future |
+| Saved Phrases | — | ➖ Folded into Saved Words (phrases are `LexicalItem`s, not a separate page) |
+| Media Home (Explore) | `/[l1]/[l2]/explore` | ✅ Implemented |
+| YouTube Section | `/[l1]/[l2]/channels`, `/[l1]/[l2]/channel/[channelId]` | ✅ Implemented (no `/youtube/*` tree) |
+| TV Shows | `/[l1]/[l2]/tv-shows` | ✅ Implemented |
+| Music / Audiobooks | — | ➖ No page; music is a content category filtered in Explore |
+| Text Reader | `/[l1]/[l2]/reader`, `/web-reader`, `/epub` | ✅ Implemented |
+| Language Progress | — | 🟡 No `/progress` route; progress surfaces in `/[l1]/[l2]/profile` |
+| Settings | `/[l1]/[l2]/settings` | ✅ Implemented (routes deep-link into the settings modal, ADR-0042) |
+| Grammar Reference | — | ❌ Not planned |
 
 ### Word Detail Page — Classic Pattern
 - Route: `/dictionary/word/[id]` (not nested under L1/L2 in Classic — it's a standalone route)

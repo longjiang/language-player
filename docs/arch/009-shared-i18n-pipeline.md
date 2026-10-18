@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-23
-- **Last Updated**: 2026-08-30
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (i18n)
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Chrome Extension
 - **Supersedes**: [ADR-0009](../adr/0009-go-i18n-migration-react-intl.md) (implementation complete; this doc documents the ongoing pipeline)
@@ -242,7 +242,7 @@ ICU keywords (`one`, `other`, `plural`, `select`, `#`) must **never** be transla
 
 ## Supported Locales (18)
 
-`en`, `zh-Hans`, `zh-Hant`, `af`, `ar`, `ca`, `de`, `el`, `es`, `fi`, `fr`, `ga`, `hi`, `hr`, `hu`, `id`, `it`, `ja`, `ko`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sr`, `sv`, `sw`, `th`, `tr`, `vi`
+`en`, `zh-Hans`, `zh-Hant`, `ar`, `de`, `es`, `fr`, `id`, `it`, `ja`, `ko`, `nl`, `pl`, `pt`, `ru`, `th`, `tr`, `vi`
 
 Priority order for discovery: `en`, `zh-Hans`, `zh-Hant`, then alphabetical.
 
