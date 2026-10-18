@@ -74,6 +74,7 @@ import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { RareGlyphProvider } from '@/contexts/RareGlyphContext';
 import { SyncStatusProvider } from '@/contexts/SyncStatusContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { DictionaryProvider } from '@/contexts/DictionaryContext';
@@ -176,6 +177,7 @@ export default function RootLayout() {
         <AuthProvider>
           <UserDataProvider>
             <SettingsProvider>
+              <RareGlyphProvider>
               <SyncStatusProvider>
               <ThemeProvider>
                 <DictionaryProvider>
@@ -205,6 +207,7 @@ export default function RootLayout() {
                 </DictionaryProvider>
               </ThemeProvider>
               </SyncStatusProvider>
+              </RareGlyphProvider>
             </SettingsProvider>
           </UserDataProvider>
         </AuthProvider>

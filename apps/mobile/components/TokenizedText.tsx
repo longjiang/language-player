@@ -39,6 +39,7 @@ import type { GridLine } from '@/lib/aligned-translation';
 import { logPhoneticsSummary, logRubyRenderPath, logRenderedTokens, scheduleTreeLog } from '@/lib/tokenized-text-log';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { RareGlyphText } from '@/components/RareGlyphText';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useSpeech } from '@/hooks/use-speech';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -65,7 +66,7 @@ import {
 import { useEffectiveHighlightTerms, useHighlightKanaForms, useSavedPhraseCandidates } from '@/hooks/use-highlight-forms';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter, detectChineseScript } from '@/lib/chinese-script';
-import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
+import { collectRareCodePoints, glyphLangTag, isHanLanguage } from '@langplayer/shared';
 // (glyphFontFamily from '@/lib/glyph-font' no longer used — the base uses the
 // system font and the L2 language tag drives the correct CJK fallback.)
 import { buildSelectionMap, selectionSourceOffset, selectionTermAt } from '@/lib/selection-map';
@@ -1475,8 +1476,14 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
               // badges they force the JS flex path: a single native attributed
               // string cannot host them.
               const hasBlanks = blankMarkers.length > 0;
+              // Rare Han codepoints need the JS flex path: the native
+              // attributed-string paragraph cannot host an inline chip, and a
+              // missing glyph would render as a blank (SPEC-104).
+              const hasRareGlyphs = displayTokens.some(
+                (t) => collectRareCodePoints(t.text).length > 0,
+              );
               const useParagraph =
-                NATIVE_PARAGRAPH_ACTIVE && !showDefinition && !hasNotes && !hasBlanks;
+                NATIVE_PARAGRAPH_ACTIVE && !showDefinition && !hasNotes && !hasBlanks && !hasRareGlyphs;
               // Dev-only: log the ruby render path once per change, so the
               // Metro log shows which path this build actually takes (native
               // paragraph / native per-token / JS fallback).
@@ -1580,7 +1587,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                       <View style={{ height: readingSize, marginBottom: -rubyPull }} />
                     )}
                     {!isNewline && (
-                      <Text lang={glyphLang} style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
+                      <Text lang={glyphLang} style={[textStyle, { lineHeight: baseLeading }]} className={textColor}><RareGlyphText text={token.text} /></Text>
                     )}
                     {/* Universal definition slot: when showDefinition is on, every token
                         gets a slot of the same height so all word texts share a baseline.

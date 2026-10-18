@@ -21,6 +21,7 @@ import android.text.style.ReplacementSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.util.Log
+import com.facebook.react.common.assets.ReactFontManager
 import android.util.TypedValue
 import android.view.ActionMode
 import android.view.Menu
@@ -547,7 +548,9 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       else -> Typeface.NORMAL
     }
     return if (fontFamily != null) {
-      Typeface.create(fontFamily, style)
+      // Runtime-loaded expo-font families live in ReactFontManager, not in
+      // Android's system font resolver (SPEC-104).
+      ReactFontManager.getInstance().getTypeface(fontFamily, style, context.assets)
     } else {
       Typeface.create(Typeface.DEFAULT, style)
     }
@@ -744,7 +747,9 @@ private class RubyReplacementSpan(
       else -> Typeface.NORMAL
     }
     return if (fontFamily != null) {
-      Typeface.create(fontFamily, style)
+      // Runtime-loaded expo-font families live in ReactFontManager, not in
+      // Android's system font resolver (SPEC-104).
+      ReactFontManager.getInstance().getTypeface(fontFamily, style, context.assets)
     } else {
       Typeface.create(Typeface.DEFAULT, style)
     }

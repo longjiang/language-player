@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.Log
+import com.facebook.react.common.assets.ReactFontManager
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
@@ -178,7 +179,9 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     val style = if (fontWeight == "bold") Typeface.BOLD else Typeface.NORMAL
     val family = fontFamily
     return if (family != null) {
-      Typeface.create(family, style)
+      // Runtime-loaded expo-font families live in ReactFontManager, not in
+      // Android's system font resolver (SPEC-104).
+      ReactFontManager.getInstance().getTypeface(family, style, context.assets)
     } else {
       Typeface.create(Typeface.DEFAULT, style)
     }
