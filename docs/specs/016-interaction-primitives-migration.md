@@ -5,7 +5,7 @@
 ## Metadata
 - **Spec ID**: SPEC-016
 - **Feature**: Migrate hand-rolled interaction components to headless UI primitives on both platforms
-- **Status**: draft
+- **Status**: complete — mobile shipped on `@rn-primitives`; the web portion was replaced by SPEC-030 / ADR-0020
 - **Created**: 2026-07-25
 - **ROADMAP Phase**: Phase 7 — Mobile Integration (mobile), ongoing (web)
 - **See also**:

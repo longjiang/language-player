@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-074
 - **Feature**: Publish the Language Player Chrome extension to the Chrome Web Store
-- **Status**: published — live on the Chrome Web Store
+- **Status**: complete — published 2026-08-25; live on the Chrome Web Store
 - **Created**: 2026-08-12
 - **ROADMAP Phase**: Chrome Extension
 

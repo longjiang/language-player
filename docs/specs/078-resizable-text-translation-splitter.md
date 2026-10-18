@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-078
 - **Feature**: Draggable boundary between the L2 tokenized text and its L1 translation in the web readers, letting the user adjust the column-width distribution
-- **Status**: in-progress
+- **Status**: complete
 - **Created**: 2026-09-06
 - **ROADMAP Phase**: Phase 5 (Content Features) — "Reader and Notes"
 - **See also**:

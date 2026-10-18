@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-024
 - **Feature**: Move remaining client-side Directus calls to the Flask backend
-- **Status**: Draft
+- **Status**: draft
 - **Created**: 2026-07-27
 
 ## Overview

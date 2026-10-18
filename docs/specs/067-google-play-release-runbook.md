@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-067
 - **Feature**: End-to-end Google Play release of `apps/mobile` ("Language Player 3") — verified Play account, Android AAB build and signing, Play Console setup, testing tracks, and staged production rollout
-- **Status**: in progress — Play Console app setup executed 2026-08-12; AAB built & submitted to production for review 2026-08-13; store visual assets remain ([§ 9](#9-known-blockers--open-items))
+- **Status**: complete — Play Console app setup executed 2026-08-12; AAB built & submitted to production for review 2026-08-13; store visual assets remain ([§ 9](#9-known-blockers--open-items))
 - **Created**: 2026-08-11
 - **Updated**: 2026-08-13
 - **See also**: [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-064 — iOS Development Build Runbook](064-ios-development-build-runbook.md)

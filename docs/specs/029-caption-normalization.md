@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-029
 - **Feature**: LLM normalization of auto-generated (ASR) captions
-- **Status**: in-progress
+- **Status**: complete
 - **Created**: 2026-08-01
 - **ROADMAP Phase**: Backend caption pipeline
 

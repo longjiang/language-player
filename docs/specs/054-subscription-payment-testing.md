@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-054
 - **Feature**: Subscription & payment testing across `zerotohero-nuxt` (Classic), `apps/web` and `apps/mobile`, covering subscription endpoints, all payment methods, renewal, trial, cancellation, and MailerLite sync
-- **Status**: Active
+- **Status**: in-progress
 - **Created**: 2026-08-08 · **Updated**: 2026-08-10
 - **Scope**: All three active frontends + admin console + `zerotohero-python-server` payment, subscription, auth, and MailerLite paths (no production data should be touched by these tests)
 - **Related specs**: [SPEC-014 — Subscription & Payment System](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md) · [SPEC-068 — Google Play Billing Implementation](068-google-play-billing-implementation.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) · [SPEC-039 — Full Database Migration (Supabase)](039-full-database-migration-supabase.md) · [SPEC-060 — Admin Console User Management](060-admin-console-user-management.md) · [SPEC-041 — Delete Account](041-delete-account.md)

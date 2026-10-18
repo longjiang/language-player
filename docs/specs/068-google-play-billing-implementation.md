@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-068
 - **Feature**: Implement Google Play Billing for `apps/mobile` ("Language Player 3") — Play Console setup, mobile purchase flow, backend verification, device testing on a Pixel, and the path to a signed AAB
-- **Status**: draft
+- **Status**: in-progress
 - **Created**: 2026-08-11
 - **See also**: [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md)
 

@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-036
 - **Feature**: Phrase extraction Flask endpoint (pronunciation + canonical forms)
-- **Status**: in-progress
+- **Status**: complete
 - **Created**: 2026-08-03
 - **ROADMAP Phase**: Backend NLP
 

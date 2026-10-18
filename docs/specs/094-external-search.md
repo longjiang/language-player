@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-094
 - **Feature**: "External Search" collapsible panel in the popup dictionary, listing curated external lookup links grouped by heading
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-09-07
 - **ROADMAP Phase**: Phase 4 (Reading) — dictionary popup
 - **Web ref**: `apps/web/src/components/dictionary-popup.tsx` (image button), Classic `zerotohero-nuxt/components/LookUpIn.vue` + `EntryExternal.vue`

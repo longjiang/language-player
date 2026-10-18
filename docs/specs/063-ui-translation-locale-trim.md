@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-063
 - **Feature**: Remove 13 low-usage UI locales across web, mobile, Chrome extension, and the shared i18n pipeline
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-10
 - **ROADMAP Phase**: Cross-cutting (i18n & product)
 - **See also**:

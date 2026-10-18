@@ -1,7 +1,7 @@
 # ADR-0004: Directus User Data — Token Strategy & `owner` Field
 
 **Date**: 2026-07-13
-**Status**: accepted
+**Status**: superseded by [ADR-0023](0023-proxy-supabase-auth-through-flask.md) and [ADR-0021](0021-migrate-video-content-to-supabase.md) — Directus user data no longer exists
 
 ## Context
 

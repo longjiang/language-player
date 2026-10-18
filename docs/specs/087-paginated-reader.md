@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-087
 - **Feature**: The paginated reading component shared by the web and mobile readers — paged reading, content parsing, translation, and tokenized-text actions
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-23
 - **ROADMAP Phase**: Phase 5 (Content Features) — "Reader and Notes"
 - **Scope**: `apps/web` and `apps/mobile` paginated reader

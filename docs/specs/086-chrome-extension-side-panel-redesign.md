@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-086
 - **Feature**: Redesign the Chrome extension side panel to match the apps/web visual language and interaction model
-- **Status**: implemented; manual browser parity verification pending
+- **Status**: complete; manual browser parity verification pending
 - **Created**: 2026-08-21
 - **ROADMAP Phase**: Chrome Extension
 - **Scope**: apps/chrome-extension/

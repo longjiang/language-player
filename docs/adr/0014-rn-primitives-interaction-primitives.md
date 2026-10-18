@@ -1,7 +1,7 @@
 # ADR-0014: Interaction Primitives Strategy — Headless UI for Web + Mobile
 
 **Date**: 2026-07-25
-**Status**: proposed
+**Status**: accepted for mobile; the web portion is superseded by [ADR-0020](0020-radix-web-interaction-primitives.md) and the animation section by [ADR-0016](0016-mobile-animations-layoutanimation.md)
 **See also**: [ADR-0003 (no shared UI)](./0003-no-shared-ui.md), [ADR-0011 (shared design tokens)](./0011-shared-design-tokens.md), [SPEC-016](../specs/016-interaction-primitives-migration.md) (implementation plan)
 
 ## Context

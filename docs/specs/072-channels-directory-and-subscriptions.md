@@ -6,7 +6,7 @@
 - **Feature**: Port Classic's channel directory (`/youtube/channels`) and
   subscribed-content feed (`/youtube/subscriptions`) to `apps/web` and
   `apps/mobile`
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-12
 - **ROADMAP Phase**: Phase 5 — Content Features
 - **See also**: [SPEC-071 — Classic Route Redirect Adapter](071-classic-route-redirect-adapter.md) · [SPEC-039 — Full Database Migration](039-full-database-migration-supabase.md)

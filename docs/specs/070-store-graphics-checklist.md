@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-070
 - **Feature**: Produce all store-listing graphics (icons, feature graphic, screenshots) for both the **Apple App Store** (Language Player GO, iOS) and **Google Play Store** (Language Player 3, Android) from a single shared checklist — so each visual is captured/created once and reused, minimizing repeated work
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-12
 - **See also**: [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md)
 

@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-021
 - **Feature**: Consistent translation loading and display across reader, video, review, and per-block actions
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-27
 - **ROADMAP Phase**: Cross-cutting — spans reader (Phase 3), video (Phase 4), review (Phase 1)
 - **Depends on**: Phase 3 (Reader Experience — TextActionMenu ✅), Phase 4 (Video Player ✅)

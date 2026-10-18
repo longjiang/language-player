@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-095
 - **Feature**: Hierarchical interactive textbook (`book > unit > lesson > task`) — tokenized L2 text with inline interactive blanks, audio playback, and per-activity stimulus widgets
-- **Status**: implemented (phases 0–3), with every requirement in this spec built — see
+- **Status**: complete (phases 0–3), with every requirement in this spec built — see
   [Known Gaps Against This Spec](#known-gaps-against-this-spec), which is where anything
   outstanding would be listed. The mobile task body scrolls keyboard-aware since
   2026-09-17 (ADR-0047)

@@ -1,6 +1,6 @@
 # ADR 0008: Mobile App Dictionary Architecture — Online Lookup + Offline Download
 
-> **Status:** Proposed
+> **Status:** accepted
 > **Date:** 2026-07-21
 > **Updated:** 2026-08-09 — the offline download cap was removed; see [ADR-0031](./0031-full-offline-dictionary-downloads.md)
 > **Replaces:** Current mobile offline CSV-based dictionary (`apps/mobile-go-legacy/src/dictionary.ts`, `apps/mobile-go-legacy/src/dictionary-db.ts`, `apps/mobile-go-legacy/src/dictionary-profile.ts`)

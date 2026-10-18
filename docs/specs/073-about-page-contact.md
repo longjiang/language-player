@@ -5,7 +5,7 @@
 - **Spec ID**: SPEC-073
 - **Feature**: Update the About surface in `apps/web` and `apps/mobile` with
   contact information, docs, and tokenizer-test links
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-12
 - **ROADMAP Phase**: Phase 2.5 — UI Internationalization / general polish
 - **See also**: [SPEC-071 — Classic Route Redirect Adapter](071-classic-route-redirect-adapter.md) · [SPEC-072 — Channels Directory + Subscriptions](072-channels-directory-and-subscriptions.md)

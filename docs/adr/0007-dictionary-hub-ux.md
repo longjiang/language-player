@@ -1,6 +1,6 @@
 # ADR 0007: Dictionary Hub UX — Persistent Search Bar & Panel-Based Layout
 
-> **Status:** Proposed
+> **Status:** accepted
 > **Date:** 2026-07-19
 > **Replaces:** Current `apps/web/src/app/[l1]/[l2]/dictionary/page.tsx` (search page) and `apps/web/src/app/[l1]/[l2]/dictionary/entry/...` (entry detail) full-page navigation model
 > **See also:**
