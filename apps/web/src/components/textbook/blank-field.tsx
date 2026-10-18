@@ -10,6 +10,7 @@ import { CarriedSlot } from './carried-slot';
 import { PictureBlankCell } from './picture-blank-cell';
 import { useBlankChoice } from './blank-choice';
 import { bankInDialog } from '@langplayer/textbooks';
+import { ChevronDown } from 'lucide-react';
 
 /** The workbook identifies questions by circled numeral; blanks share that index. */
 function blankLabel(blank: BlankSpec): string {
@@ -172,7 +173,7 @@ export function BlankField({
         // and an empty flex box has no content height — so the whole tap target was the 2px
         // border, measured at 48×2. It matches the picture-cell blank's `h-6 min-w-9`, so every
         // kind of blank is now tappable over the same area.
-        className={`inline-flex min-h-6 min-w-[3em] items-center justify-center rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
+        className={`inline-flex min-h-6 min-w-[3em] items-center justify-center gap-1 rounded-sm border-0 border-b-2 px-1.5 text-foreground transition-colors ${
           verdictClass ??
           (isSelected
             ? 'border-primary bg-primary/10'
@@ -182,6 +183,12 @@ export function BlankField({
         {/* Empty is empty: the blank's own bottom border is the line to write on, so a
             placeholder underscore inside it drew a second line over the first. */}
         {value}
+        {/* A blank whose choices live in a dialog looks like an empty underline, and the pool
+            that used to advertise them is gone — so an empty one carries a caret, and an
+            answered one does not (its text is the affordance). */}
+        {!value && inDialog && (
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        )}
       </button>
       {reveal && (
         <span className="text-sm font-medium text-green-600">

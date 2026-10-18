@@ -338,6 +338,7 @@ export const lessonC: LessonMeta = {
           items: ['A', 'B', 'C', 'D', 'E'],
           optionLabels: { A: '那', B: '那就', C: '要不', D: '我看一下', E: '等一下' },
           allowReuse: false,
+          choicesInDialog: true,
         },
       ],
       answerKeyRaw: '② C; ③ D; ④ E; ⑤ B。',

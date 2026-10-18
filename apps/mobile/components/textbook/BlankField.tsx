@@ -4,7 +4,8 @@ import { bankInDialog, indexToCircled, type BlankSpec } from '@langplayer/textbo
 import { glyphEms } from '@langplayer/utils';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
-import { ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { ChevronDown } from 'lucide-react-native';
 import { InlineImageSlot } from './InlineImageSlot';
 import { CarriedSlot } from './CarriedSlot';
 import { PictureBlankCell } from './PictureBlankCell';
@@ -168,7 +169,7 @@ export function BlankField({
         // answered, and an empty text box has no height — so the whole tap target was the border
         // under it. 24px matches the picture-cell blank, so every kind of blank is tappable over
         // the same area.
-        className={`min-h-[24px] justify-center rounded px-1.5 py-0.5 ${
+        className={`min-h-[24px] flex-row items-center gap-1 justify-center rounded px-1.5 py-0.5 ${
           blankResult
             ? blankResult.correct
               ? 'bg-green-500/20'
@@ -183,6 +184,10 @@ export function BlankField({
             border is the line to write on, so a placeholder underscore inside it drew a second
             line over the first. */}
         <Text className="min-w-[28px] text-center text-base text-foreground">{value}</Text>
+        {/* A blank whose choices live in a dialog looks like an empty underline, and the pool
+            that used to advertise them is gone — so an empty one carries a caret, and an
+            answered one does not (its text is the affordance). */}
+        {!value && inDialog ? <ChevronDown size={12} color={ICON_MUTED} /> : null}
       </Pressable>
       {reveal && (
         <Text className="ml-1.5 text-sm font-medium text-green-600">

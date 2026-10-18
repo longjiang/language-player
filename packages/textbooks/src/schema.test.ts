@@ -3,7 +3,7 @@ import { assertValid, validateBook, validateTask } from './schema';
 import { tbltHsk4 } from './content/tblt-hsk4/book';
 import { TBLT_HSK4_ASSET_KEYS } from './content/tblt-hsk4/assets';
 import { allTasks } from './loaders';
-import { assetKeysIn, BookMeta } from './types';
+import { assetKeysIn, BookMeta, inlineBankIds } from './types';
 import type { Task } from './types';
 
 const base = (over: Partial<Task> = {}): Task => ({
@@ -206,6 +206,24 @@ describe('the shipped book', () => {
   it('every task declares at least one stimulus', () => {
     for (const task of allTasks(tbltHsk4)) {
       expect(task.body.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('offers every bank printed at the foot of a task in the dialog at the blank', () => {
+    // The pool used to sit under the task, and a student who never scrolled to it never saw
+    // there were choices. A bank a passage prints under itself (A ➍'s per-summary pools) is
+    // already beside its blanks and stays printed; every other bank a `choose` blank draws on
+    // opens at the blank instead (SPEC-095 § Banks).
+    for (const task of allTasks(tbltHsk4)) {
+      const inline = inlineBankIds(task);
+      for (const bank of task.banks ?? []) {
+        if (inline.has(bank.id)) continue;
+        const drawnByChoose = Object.values(task.blanks ?? {}).some(
+          (blank) => blank.bank === bank.id && blank.kind === 'choose',
+        );
+        if (!drawnByChoose) continue;
+        expect(bank.choicesInDialog, `${task.id} bank ${bank.id}`).toBe(true);
+      }
     }
   });
 });

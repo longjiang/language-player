@@ -219,12 +219,14 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
   }
 
   // ── Banks offered in a dialog ──
-  // A dialog bank is picked at the blank, so every blank drawing on it has to be a `choose`
-  // blank: a typed blank has nowhere to put a pick.
+  // A dialog bank is picked at the blank, so the blanks drawing on it have to be `choose`
+  // blanks: a typed blank has nowhere to put a pick. A `given` blank is the exception — it is
+  // pre-filled from the printed worked example and never picked, but it still names the bank
+  // it was drawn from (B ➊'s ① a and ② b, B ➋'s ① 快, D ➋'s ① 1 / ［A］).
   for (const bank of banks.values()) {
     if (!bank.choicesInDialog) continue;
     for (const [id, blank] of Object.entries(blanks)) {
-      if (blank.bank === bank.id && blank.kind !== 'choose') {
+      if (blank.bank === bank.id && blank.kind !== 'choose' && blank.kind !== 'given') {
         add(
           'error',
           `Bank "${bank.id}" offers its options in a dialog, but blank "${id}" is "${blank.kind}" — only a choose blank can be picked from one.`,
