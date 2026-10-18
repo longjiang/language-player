@@ -177,12 +177,38 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           feedback at each step, and All Done! as the resolution that grades the task and
           records the attempt. Two submit controls for one task would be one too many, and
           the panel's is the one that knows which task is being answered. The result banner
-          below still reports the outcome.
+          above reports the outcome.
 
           A self-check task has nothing to submit: it gets Mark as complete instead, and the
           button says so once it has been recorded. Next sits beside whichever group applies,
           disabled until the task is resolved (submitted, marked complete, or — for a
           read-only task — immediately). */}
+      {submitted && result && (
+        <div
+          role="status"
+          className={`rounded-md border px-4 py-3 text-sm ${
+            hasNothingToScore
+              ? 'border-border bg-muted/30 text-foreground'
+              : result.complete
+                ? 'border-green-600 bg-green-500/10 text-foreground'
+                : 'border-destructive bg-destructive/10 text-foreground'
+          }`}
+        >
+          {hasNothingToScore ? (
+            // A task with nothing to grade — note-taking, a draft, a self-check — is
+            // kept and never marked, so it must not report "0 / 0" as though it failed.
+            t('label.saved')
+          ) : (
+            <>
+              {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
+              <span className="ml-2 text-muted-foreground">
+                {result.correctCount} / {result.scoreableCount}
+              </span>
+            </>
+          )}
+        </div>
+      )}
+
       {(hasAnswerable || isSelfCheckOnly || nextTask) && (
         <div className="flex flex-wrap items-center gap-3">
           {!hasMockApp && hasAnswerable && (
@@ -223,32 +249,6 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
             >
               {t('action.next')}
             </button>
-          )}
-        </div>
-      )}
-
-      {submitted && result && (
-        <div
-          role="status"
-          className={`rounded-md border px-4 py-3 text-sm ${
-            hasNothingToScore
-              ? 'border-border bg-muted/30 text-foreground'
-              : result.complete
-                ? 'border-green-600 bg-green-500/10 text-foreground'
-                : 'border-destructive bg-destructive/10 text-foreground'
-          }`}
-        >
-          {hasNothingToScore ? (
-            // A task with nothing to grade — note-taking, a draft, a self-check — is
-            // kept and never marked, so it must not report "0 / 0" as though it failed.
-            t('label.saved')
-          ) : (
-            <>
-              {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
-              <span className="ml-2 text-muted-foreground">
-                {result.correctCount} / {result.scoreableCount}
-              </span>
-            </>
           )}
         </div>
       )}

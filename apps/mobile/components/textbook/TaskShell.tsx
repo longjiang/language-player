@@ -190,12 +190,37 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           feedback at each step, and All Done! as the resolution that grades the task and
           records the attempt. Two submit controls for one task would be one too many, and
           the panel's is the one that knows which task is being answered. The result banner
-          below still reports the outcome.
+          above reports the outcome.
 
           A self-check task has nothing to submit: it gets Mark as complete instead, and the
           button says so once it has been recorded. Next sits beside whichever group applies,
           disabled until the task is resolved (submitted, marked complete, or — for a
           read-only task — immediately). */}
+      {submitted && result && (
+        <View
+          accessibilityRole="alert"
+          className={`rounded-md border px-4 py-3 ${
+            result.complete ? 'border-green-600 bg-green-500/10' : 'border-destructive bg-destructive/10'
+          }`}
+        >
+          <Text className="text-sm text-foreground">
+            {hasNothingToScore ? (
+              // Nothing to grade — note-taking, a draft, a self-check — so it must not
+              // report "0 / 0" as though the student failed.
+              t('label.saved')
+            ) : (
+              <>
+                {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
+                <Text className="text-muted-foreground">
+                  {'  '}
+                  {result.correctCount} / {result.scoreableCount}
+                </Text>
+              </>
+            )}
+          </Text>
+        </View>
+      )}
+
       {(hasAnswerable || isSelfCheckOnly || nextTask) && (
         <View className="flex-row flex-wrap items-center gap-3">
           {!hasMockApp && hasAnswerable && (
@@ -241,31 +266,6 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
               <Text className="text-sm text-foreground">{t('action.next')}</Text>
             </Pressable>
           )}
-        </View>
-      )}
-
-      {submitted && result && (
-        <View
-          accessibilityRole="alert"
-          className={`rounded-md border px-4 py-3 ${
-            result.complete ? 'border-green-600 bg-green-500/10' : 'border-destructive bg-destructive/10'
-          }`}
-        >
-          <Text className="text-sm text-foreground">
-            {hasNothingToScore ? (
-              // Nothing to grade — note-taking, a draft, a self-check — so it must not
-              // report "0 / 0" as though the student failed.
-              t('label.saved')
-            ) : (
-              <>
-                {result.complete ? t('review.answer_correct') : t('review.answer_incorrect')}
-                <Text className="text-muted-foreground">
-                  {'  '}
-                  {result.correctCount} / {result.scoreableCount}
-                </Text>
-              </>
-            )}
-          </Text>
         </View>
       )}
 
