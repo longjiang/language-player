@@ -112,6 +112,7 @@ action.log_out,Log Out,退出登录,登出,تسجيل الخروج,Abmelden,Cerr
 action.login,Login,登录,登入,تسجيل الدخول,Anmelden,Iniciar sesión,Connexion,Masuk,Accedi,ログイン,로그인,Inloggen,Zaloguj się,Entrar,Войти,เข้าสู่ระบบ,Giriş Yap,Đăng nhập
 action.logout,Logout,退出登录,登出,تسجيل الخروج,Abmelden,Cerrar sesión,Déconnexion,Keluar,Esci,ログアウト,로그아웃,Uitloggen,Wyloguj się,Sair,Выйти,ออกจากระบบ,Çıkış Yap,Đăng xuất
 action.look_up,Look up,查询,查詢,ابحث,Nachschlagen,Buscar,Chercher,Cari,Cerca,調べる,찾아보기,Opzoeken,Sprawdź,Consultar,Найти,ค้นหา,Ara,Tra cứu
+action.mark_complete,Mark as complete,标记为完成,標記為完成,وضع علامة مكتمل,Als abgeschlossen markieren,Marcar como completado,Marquer comme terminé,Tandai selesai,Segna come completato,完了にする,완료로 표시,Markeer als voltooid,Oznacz jako ukończone,Marcar como concluído,Отметить как выполненное,ทำเครื่องหมายว่าเสร็จสิ้น,Tamamlandı olarak işaretle,Đánh dấu hoàn thành
 action.more,More,更多,更多,المزيد,Mehr,Más,Plus,Lainnya,Altro,その他,더보기,Meer,Więcej,Mais,Ещё,เพิ่มเติม,Daha Fazla,Thêm
 action.morphemes,Morphemes,语素,語素,المورفيمات,Morpheme,Morfemas,Morphèmes,Morfem,Morfemi,形態素,형태소,Morfemen,Morfemy,Morfemas,Морфемы,หน่วยคำ,Biçimbirimler,Hình vị
 action.my_notes,My Notes,我的笔记,我的筆記,ملاحظاتي,Meine Notizen,Mis notas,Mes notes,Catatan Saya,Le mie note,マイノート,내 노트,Mijn notities,Moje notatki,Minhas notas,Мои заметки,บันทึกของฉัน,Notlarım,Ghi chú của tôi
@@ -376,6 +377,7 @@ label.collapse_video,Collapse Video,收起视频,摺疊影片,طي الفيدي�
 label.coming_soon,Coming soon,即将推出,即將推出,قريبًا,Demnächst,Próximamente,Bientôt disponible,Segera hadir,In arrivo,近日公開,출시 예정,Binnenkort beschikbaar,Wkrótce,Em breve,Скоро,เร็วๆ นี้,Çok yakında,Sắp ra mắt
 label.comments,Comments,评论数,留言數,التعليقات,Kommentare,Comentarios,Commentaires,Komentar,Commenti,コメント,댓글,Reacties,Komentarze,Comentários,Комментарии,ความคิดเห็น,Yorumlar,Bình luận
 label.commit,Commit,提交,提交,الالتزام,Commit,Commit,Commit,Komit,Commit,コミット,커밋,Commit,Commit,Commit,Коммит,คอมมิต,Commit,Commit
+label.completed,Completed,已完成,已完成,مكتمل,Abgeschlossen,Completado,Terminé,Selesai,Completato,完了,완료됨,Voltooid,Ukończone,Concluído,Выполнено,เสร็จสิ้น,Tamamlandı,Đã hoàn thành
 label.conjugation,Conjugation,变位,變位,تصريف,Konjugation,Conjugación,Conjugaison,Konjugasi,Coniugazione,活用,활용,Vervoeging,Odmiana,Conjugação,Спряжение,การผัน,Çekim,Cách chia
 label.context_sentence,Context sentence,上下文句子,上下文句子,جملة السياق,Kontextsatz,Frase de contexto,Phrase de contexte,Kalimat konteks,Frase di contesto,文脈の文,문맥 문장,Contextzin,Zdanie kontekstowe,Frase de contexto,Предложение из контекста,ประโยคบริบท,Bağlam cümlesi,Câu ngữ cảnh
 label.conversation,Conversation,会话,會話,محادثة,Konversation,Conversación,Conversation,Percakapan,Conversazione,会話,회화,Gesprek,Konwersacja,Conversação,Разговор,การสนทนา,Konuşma,Hội thoại

@@ -1,13 +1,21 @@
 'use client';
 
 import React, { useCallback, useSyncExternalStore } from 'react';
+import { useRouter } from 'next/navigation';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './word-bank';
-import { dialogBankIds, inlineBankIds, isBlankScoreable, trailingIllustrationSlot } from '@langplayer/textbooks';
+import {
+  adjacentTasks,
+  dialogBankIds,
+  inlineBankIds,
+  isBlankScoreable,
+  taskHref,
+  trailingIllustrationSlot,
+} from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './blank-choice';
 import { BlankField } from './blank-field';
 import { AudioPlayer } from './audio-player';
@@ -79,7 +87,37 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   const hasAnswerable = Object.values(task.blanks ?? {}).some(
     (b) => b.kind === 'choose' || b.kind === 'type' || b.kind === 'free',
   );
+  /** A check-only task: questions to self-check, and nothing that could be submitted. */
+  const isSelfCheckOnly =
+    !hasAnswerable && Object.values(task.blanks ?? {}).some((b) => b.kind === 'selfCheck');
   const answersOnPage = Object.values(task.blanks ?? {}).filter((b) => b.kind !== 'given').length;
+
+  // ── Moving on ──
+  const router = useRouter();
+  const nextTask = adjacentTasks(book, task.id).next;
+  /**
+   * The latest un-voided attempt, as a primitive so it can be a store snapshot. A graded
+   * Submit and a self-check's Mark as complete both append one, so this is "the task has been
+   * resolved" — which is what enables Next.
+   */
+  const getAttemptState = useCallback(() => {
+    const latest = [...ctx.store.getAttempts()].reverse().find((attempt) => !attempt.voidedAt);
+    if (!latest) return 'none';
+    return latest.result?.complete ? 'complete' : 'attempted';
+  }, [ctx]);
+  const attemptState = useSyncExternalStore(
+    ctx.store.subscribe,
+    getAttemptState,
+    getAttemptState,
+  );
+  const completed = attemptState === 'complete';
+  /**
+   * Next waits for the task to be resolved: submitted (right or wrong) or marked complete.
+   * A read-only task (D ➍'s read-along, E ➌'s model post) has nothing to resolve, so its Next
+   * is available immediately; a mock-app task resolves when its panel records All Done!.
+   */
+  const canAdvance =
+    attemptState !== 'none' || (!hasAnswerable && !isSelfCheckOnly && !hasMockApp);
 
   return (
     // The playback engine wraps the whole task, so the audio row at the top and the
@@ -139,24 +177,53 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           feedback at each step, and All Done! as the resolution that grades the task and
           records the attempt. Two submit controls for one task would be one too many, and
           the panel's is the one that knows which task is being answered. The result banner
-          below still reports the outcome. */}
-      {!hasMockApp && hasAnswerable && (
+          below still reports the outcome.
+
+          A self-check task has nothing to submit: it gets Mark as complete instead, and the
+          button says so once it has been recorded. Next sits beside whichever group applies,
+          disabled until the task is resolved (submitted, marked complete, or — for a
+          read-only task — immediately). */}
+      {(hasAnswerable || isSelfCheckOnly || nextTask) && (
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => ctx.store.submit()}
-            disabled={answersOnPage > 0 && !Object.values(responses).some((v) => v.trim())}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {t('review.submit')}
-          </button>
-          <button
-            type="button"
-            onClick={() => ctx.store.reset()}
-            className="rounded-md border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
-          >
-            {t('action.try_again')}
-          </button>
+          {!hasMockApp && hasAnswerable && (
+            <>
+              <button
+                type="button"
+                onClick={() => ctx.store.submit()}
+                disabled={answersOnPage > 0 && !Object.values(responses).some((v) => v.trim())}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {t('review.submit')}
+              </button>
+              <button
+                type="button"
+                onClick={() => ctx.store.reset()}
+                className="rounded-md border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                {t('action.try_again')}
+              </button>
+            </>
+          )}
+          {!hasMockApp && isSelfCheckOnly && (
+            <button
+              type="button"
+              onClick={() => ctx.store.recordChecked()}
+              disabled={completed}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {completed ? t('label.completed') : t('action.mark_complete')}
+            </button>
+          )}
+          {nextTask && (
+            <button
+              type="button"
+              onClick={() => router.push(taskHref(l1.code, l2.code, nextTask.id))}
+              disabled={!canAdvance}
+              className="rounded-md border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+            >
+              {t('action.next')}
+            </button>
+          )}
         </div>
       )}
 
