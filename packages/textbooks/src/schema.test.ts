@@ -131,6 +131,57 @@ describe('validateTask', () => {
   it('requires instructions', () => {
     expect(errorsOf(validateTask(base({ instructions: '' }))).join()).toContain('no instructions');
   });
+
+  // A carried slot shows an earlier task's pick (B ➏'s pictures from B ➎). It has no
+  // answer of its own, so the answer rule must not apply — but it must say where the pick
+  // comes from, or the box is empty forever with nothing to report it.
+  it('accepts a carried slot that names an earlier task and blank', () => {
+    const t = base({
+      body: [{ kind: 'passage', text: '正文{{b1}}' }],
+      blanks: {
+        b1: {
+          id: 'b1',
+          kind: 'carried',
+          answer: '',
+          carriedFrom: { taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' },
+        },
+      },
+    });
+    expect(errorsOf(validateTask(t))).toEqual([]);
+  });
+
+  it('rejects a carried slot that does not say what it carries', () => {
+    const t = base({ blanks: { b1: { id: 'b1', kind: 'carried', answer: '' } } });
+    expect(errorsOf(validateTask(t)).join()).toContain('does not say which task/blank');
+  });
+
+  it('rejects a carried slot declaring its own answer, bank or set', () => {
+    const t = base({
+      blanks: {
+        b1: {
+          id: 'b1',
+          kind: 'carried',
+          answer: 'A',
+          carriedFrom: { taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' },
+        },
+      },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('cannot declare an answer');
+  });
+
+  it('rejects carriedFrom on a blank that is not carried', () => {
+    const t = base({
+      blanks: {
+        b1: {
+          id: 'b1',
+          kind: 'type',
+          answer: '新',
+          carriedFrom: { taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' },
+        },
+      },
+    });
+    expect(errorsOf(validateTask(t)).join()).toContain('declares carriedFrom but is not a carried blank');
+  });
 });
 
 describe('the shipped book', () => {
@@ -506,6 +557,95 @@ describe('recall stimuli (D ➐)', () => {
     // A wrong id renders nothing at all, silently, which is worth catching here.
     const issues = validateBook(book('tblt-hsk4.u06.D.t9'));
     expect(issues.some((i) => i.message.includes('Recall stimulus points at'))).toBe(true);
+  });
+});
+
+/**
+ * B ➏ carries B ➎'s six illustrations. Both ends of that reference live in different
+ * tasks, so the checks belong in `validateBook` — a carried slot whose source is missing
+ * renders an empty box forever, and nothing else would report it.
+ */
+describe('carried slots between tasks (B ➎ → B ➏)', () => {
+  const slotTask: Task = base({
+    id: 'tblt-hsk4.u06.B.t5',
+    body: [
+      { kind: 'pictureSet', id: 'ps', items: [{ letter: 'A', label: '一', image: 'b/pic.png' }] },
+      { kind: 'passage', text: '正文{{b1}}' },
+    ],
+    blanks: { b1: { id: 'b1', kind: 'choose', answer: 'A', optionSet: 'ps' } },
+  });
+
+  const carriedTask = (from: { taskId: string; blankId: string }): Task =>
+    base({
+      id: 'tblt-hsk4.u06.B.t6',
+      body: [{ kind: 'passage', text: '正文{{b1}}' }],
+      blanks: { b1: { id: 'b1', kind: 'carried', answer: '', carriedFrom: from } },
+    });
+
+  const book = (tasks: Task[]): BookMeta =>
+    ({
+      id: 'tblt-hsk4',
+      title: 'B',
+      l2: 'zh',
+      contentVersion: 3,
+      units: [
+        { id: 'u06', number: 6, title: 'U', lessons: [{ id: 'B', letter: 'B', title: 'B', tasks }] },
+      ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any;
+
+  it('accepts a slot carried from another task’s picture blank', () => {
+    const issues = validateBook(
+      book([slotTask, carriedTask({ taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' })]),
+    );
+    expect(issues.filter((i) => i.message.includes('Carried blank'))).toEqual([]);
+  });
+
+  it('rejects a slot carried from a task this book does not have', () => {
+    const issues = validateBook(
+      book([slotTask, carriedTask({ taskId: 'tblt-hsk4.u06.B.t9', blankId: 'b1' })]),
+    );
+    expect(issues.some((i) => i.message.includes('which this book does not have'))).toBe(true);
+  });
+
+  it('rejects a slot carried from a blank that does not exist', () => {
+    const issues = validateBook(
+      book([slotTask, carriedTask({ taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b9' })]),
+    );
+    expect(issues.some((i) => i.message.includes('which does not exist'))).toBe(true);
+  });
+
+  it('rejects carrying a blank that is not a picture slot', () => {
+    const notASlot: Task = base({
+      id: 'tblt-hsk4.u06.B.t5',
+      body: [{ kind: 'passage', text: '正文{{b1}}' }],
+      blanks: { b1: { id: 'b1', kind: 'type', answer: '新' } },
+    });
+    const issues = validateBook(
+      book([notASlot, carriedTask({ taskId: 'tblt-hsk4.u06.B.t5', blankId: 'b1' })]),
+    );
+    expect(issues.some((i) => i.message.includes('not a picture-set slot'))).toBe(true);
+  });
+
+  it('rejects a slot that carries from its own task', () => {
+    const selfCarry: Task = base({
+      id: 'tblt-hsk4.u06.B.t6',
+      body: [
+        { kind: 'pictureSet', id: 'ps', items: [{ letter: 'A', label: '一', image: 'b/pic.png' }] },
+        { kind: 'passage', text: '正文{{b1}}{{b2}}' },
+      ],
+      blanks: {
+        b1: { id: 'b1', kind: 'choose', answer: 'A', optionSet: 'ps' },
+        b2: {
+          id: 'b2',
+          kind: 'carried',
+          answer: '',
+          carriedFrom: { taskId: 'tblt-hsk4.u06.B.t6', blankId: 'b1' },
+        },
+      },
+    });
+    const issues = validateBook(book([selfCarry]));
+    expect(issues.some((i) => i.message.includes('carries from its own task'))).toBe(true);
   });
 });
 

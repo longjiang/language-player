@@ -6,6 +6,7 @@ import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { InlineImageSlot } from './InlineImageSlot';
+import { CarriedSlot } from './CarriedSlot';
 import { PictureBlankCell } from './PictureBlankCell';
 import { useBlankChoice } from './BlankChoice';
 
@@ -69,6 +70,11 @@ export function BlankField({
 
   // ── Answered inside a mock app, never by a blank widget ──
   if (blank.kind === 'goal') return null;
+
+  // ── Another task's pick, shown read-only (B ➏ carries B ➎'s pictures) ──
+  if (blank.kind === 'carried') {
+    return <CarriedSlot blank={blank} layout={slotLayout} />;
+  }
 
   // ── Worked example: pre-filled by the workbook, not scored ──
   // A given blank that names an `optionSet` is the exception: it prints as an

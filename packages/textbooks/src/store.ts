@@ -70,6 +70,14 @@ export interface TaskStoreOptions {
 function mutableResponses(task: Task, persisted?: Record<string, string> | null): Record<string, string> {
   const out: Record<string, string> = {};
   for (const blank of Object.values(task.blanks ?? {})) {
+    // A carried slot's value belongs to the earlier task, not this one: it is read
+    // from that task's saved state at render time, so nothing is seeded, persisted
+    // or editable here. Copying it in would go stale the moment the earlier task
+    // changed.
+    if (blank.kind === 'carried') {
+      out[blank.id] = '';
+      continue;
+    }
     // A `given` blank is a worked example: pre-filled, not editable, not scored — except a
     // given *slot*, whose worked-example picture is the box's starting value and whose
     // re-picks persist like any other response (see isEditableGiven).
@@ -160,8 +168,9 @@ export class TaskResponseStore {
   setValue = (blankId: string, value: string): void => {
     const blank = this.task.blanks?.[blankId];
     // A worked example is not editable — except a given *slot*, whose picture the
-    // student re-picks at the box (see isEditableGiven).
-    if (!blank || (blank.kind === 'given' && !isEditableGiven(blank))) return;
+    // student re-picks at the box (see isEditableGiven) — and a carried slot is
+    // edited in the task it came from, never here.
+    if (!blank || blank.kind === 'carried' || (blank.kind === 'given' && !isEditableGiven(blank))) return;
     if (this.responses[blankId] === value) return;
     this.responses[blankId] = value;
     // Editing after submit clears the verdict so stale ticks are never shown.

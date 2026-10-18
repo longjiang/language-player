@@ -230,6 +230,19 @@ describe('trailingIllustrationSlot', () => {
     expect(split.blank).toBeNull();
     expect(split.text).toBe('正文{{b99}}');
   });
+
+  it("splits a carried slot too, so B ➏'s carried picture sits in the margin", () => {
+    // B ➏'s tips end with the picture carried from ➎. It prints as a slot, so it is
+    // lifted out of the line the same way — and it is `carried`, not `choose`, which is
+    // why the splitter accepts the kind as well as a picture-set choose blank.
+    const t = findTask(tbltHsk4, 'tblt-hsk4.u06.B.t6')!;
+    const tip1 = t.body.find((s) => s.kind === 'passage' && s.text.includes('{{b8}}'));
+    if (!tip1 || tip1.kind !== 'passage') throw new Error('B ➏ ① did not resolve');
+    const split = trailingIllustrationSlot(tip1.text, t);
+    expect(split.blank?.kind).toBe('carried');
+    expect(split.blank?.id).toBe('b8');
+    expect(split.text.endsWith('{{b8}}')).toBe(false);
+  });
 });
 
 /**

@@ -6,6 +6,7 @@ import { glyphEms } from '@langplayer/utils';
 import { useTextbookTask } from './task-provider';
 import { useT } from '@/hooks/use-t';
 import { InlineImageSlot } from './inline-image-slot';
+import { CarriedSlot } from './carried-slot';
 import { PictureBlankCell } from './picture-blank-cell';
 import { useBlankChoice } from './blank-choice';
 import { bankInDialog } from '@langplayer/textbooks';
@@ -70,6 +71,11 @@ export function BlankField({
 
   // ── Answered inside a mock app, never by a blank widget ──
   if (blank.kind === 'goal') return null;
+
+  // ── Another task's pick, shown read-only (B ➏ carries B ➎'s pictures) ──
+  if (blank.kind === 'carried') {
+    return <CarriedSlot blank={blank} layout={slotLayout} />;
+  }
 
   // ── Worked example: pre-filled by the workbook, not scored ──
   // A given blank that names an `optionSet` is the exception: it prints as an

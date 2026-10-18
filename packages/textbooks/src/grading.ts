@@ -61,11 +61,13 @@ export function acceptedAnswers(blank: BlankSpec): string[] {
 /**
  * Whether a blank counts toward the score.
  *
- * `given` is a worked example and `free` is ungraded prose (notes, free writing):
- * both are shown and recorded, neither is scored.
+ * `given` is a worked example, `free` is ungraded prose (notes, free writing) and
+ * `carried` is an earlier task's pick shown read-only: all three are shown or
+ * recorded, none is scored. `carried` in particular has nothing to grade here — its
+ * answer belongs to the task it came from.
  */
 export function isBlankScoreable(blank: BlankSpec): boolean {
-  return blank.kind !== 'given' && blank.kind !== 'free';
+  return blank.kind !== 'given' && blank.kind !== 'free' && blank.kind !== 'carried';
 }
 
 /**
