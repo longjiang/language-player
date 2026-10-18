@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-25
-- **Last Updated**: 2026-08-10
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Next.js Web (active), Python Backend (active)
 - **Supersedes**: None
@@ -35,12 +35,20 @@ The saved-words system lets users bookmark vocabulary words from the video playe
 > mirror/reconciler/sweep scaffolding was removed in SPEC-039 WS-8;
 > `routes/user_data.py` and `packages/api-client/src/user-data.ts` no longer
 > exist, and `UserDataProvider` is a no-op placeholder on web and mobile.
+>
+> **As-built (2026-10-18):** saved words live in `public.saved_words`, one row
+> per word, read and written through `routes/saved_words.py`
+> (`GET /saved-words`, `PUT /saved-words/<l2>/<id>`, `DELETE …`).
+> `useSavedWords` keeps localStorage as the instant local store for **both**
+> anonymous and authenticated users and flushes changes to the row API. Treat
+> every `/user-data`, blob-mirror, and `UserDataProvider`-hydrates-the-store
+> passage below as history, not as current behaviour.
 
 | Layer | Where | What |
 |---|---|---|
 | **Save** | `SaveButton` component | User clicks bookmark → inflection fetch → store + sync |
-| **Store** | `useSavedWords` hook | React state + localStorage + cloud blob |
-| **Sync** | `UserDataProvider` + Flask | Directus `user_data.saved_words` JSON column |
+| **Store** | `useSavedWords` hook | React state + localStorage (+ row-API flush) |
+| **Sync** | `useSavedWords` + Flask row API | Supabase `saved_words` rows (`routes/saved_words.py`) |
 | **Retrieve** | `useSavedWordsContext` | Get/sort/filter per-L2 word lists |
 | **Display** | `SavedWordRow` + `WordListItem` | Head form, context form, source attribution |
 | **Enrich** | `InlineDefinition` + Python `/dictionary/entry` | Lazy-loaded definition + pronunciation per row |
@@ -287,9 +295,9 @@ type SavedLexicalItemStore = Record<string, SavedLexicalItemRecord[]>;
 | Auth State | Initialization Strategy |
 |---|---|
 | **Not authenticated** | Load from `localStorage` (`zthSavedWords`). No cloud interaction. |
-| **Authenticated** | Skip localStorage entirely. Wait for `UserDataProvider` → `GET /user-data` → parse `saved_words` field → hydrate. Cloud is the source of truth on login. |
+| **Authenticated** | Load from `localStorage` as well; `useSavedWords` then hydrates/merges from the row API (`GET /saved-words`) and flushes every change back. *(Historical: this row used to say "skip localStorage, wait for `UserDataProvider` → `GET /user-data`".)* |
 
-`UserDataProvider` (`apps/web/src/providers/user-data-provider.tsx`) fetches `GET /user-data` **once per auth session** (when user ID changes) and distributes the result via React Context. Both `useSavedWords` and `useSrs` consume this data, avoiding redundant API calls.
+`UserDataProvider` (`apps/web/src/providers/user-data-provider.tsx`) is a **no-op placeholder** — it does not fetch anything. Hydration happens inside `useSavedWords` against the row API (SPEC-034).
 
 #### Merge & Sync Strategy
 
@@ -326,8 +334,8 @@ SaveButton.saveWord() / SavedWordRow.removeSavedWord()
 #### Download Path
 
 ```
-UserDataProvider mounts (auth state change)
-  → GET /user-data                    // Once per session
+useSavedWords mounts (anonymous or authenticated)
+  → GET /saved-words                  // row API (SPEC-034)
     Response: {
       id: string | number,
       saved_words: string,            // JSON.stringify(SavedLexicalItemStore)

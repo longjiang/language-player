@@ -16,7 +16,7 @@
 - ✅ `@langplayer/shared` package (types + constants)
 - ✅ `@langplayer/api-client` package (typed API client)
 - ✅ `@langplayer/utils` package (formatting, language, difficulty)
-- ✅ `apps/web` scaffold (Next.js 14, Tailwind, shadcn/ui)
+- ✅ `apps/web` scaffold (Next.js App Router, Tailwind, shadcn/ui — since upgraded to Next.js 16.3, ADR-0025)
 - ✅ Landing page, Explore page, Login/Register pages
 - ✅ Dark mode support (next-themes)
 - ✅ Build pipeline verified
@@ -24,11 +24,11 @@
 
 ## Phase 2: Auth + Core Navigation ✅
 
-- ✅ NextAuth.js v5 (beta.31) integration with Directus 8 credentials provider
+- ✅ NextAuth.js v5 (beta.31) with a credentials provider that posts to Flask `/auth/login` → Supabase GoTrue (ADR-0023; Directus is no longer in the auth path)
 - ✅ Auth middleware (cookie-based session check, protect routes, redirect to login)
 - ✅ User registration flow (3-step: form → email verification → auto-login)
 - ✅ Required "How did you hear about us?" acquisition survey on registration (web + mobile, SPEC-042)
-- ✅ Password reset flow (Directus)
+- ✅ Password reset flow (Supabase GoTrue, proxied through Flask)
 - ✅ L1/L2 language selector (onboarding dual-picker + search)
 - ✅ Header/navbar with language switcher + swap button
 - ✅ URL-based language routing (`/[l1]/[l2]/...`)
@@ -46,7 +46,7 @@
 - ✅ Up Next sidebar with scrollable queue list, current video highlighted
 - ✅ Subtitle display — L2 captions always shown, L1 translation below (DeepSeek LLM)
 - ✅ Subtitle improvements — duration prefix stripping, click-to-seek, subtitle-based line nav
-- ✅ Live translation via Python /translate_array (5 lines/chunk, progressive)
+- ✅ Live translation via Python /translate_array (10 lines/chunk, progressive)
 - ✅ Loading skeletons, error states, empty states
 - ✅ Client settings (localStorage) for translation toggle
 - ✅ `lib/utils.ts` — `cn()` classname utility
@@ -55,34 +55,40 @@
 
 > 📋 **Spec**: `docs/specs/005-phase2.5-i18n.md`
 
-- ✅ Wire up `next-intl` with App Router (middleware, provider, request config)
-- ✅ Copy 31 locale files from GO (`assets/localizations/` → `apps/web/messages/`)
-- ✅ Supported L1 languages: af, ar, ca, de, el, en, es, fi, fr, ga, hi, hr, hu, id, it, ja, ko, nl, no, pl, pt, ro, ru, sr, sv, sw, th, tr, vi, zh-Hans, zh-Hant
+- ✅ Wire up `next-intl` with App Router (proxy, provider, request config)
+- ✅ Locale pipeline: `translations.csv` (18 locales) → `packages/shared/locales/*.json`, consumed by web, mobile, and the Chrome extension
+- ✅ Supported L1 languages (18): en, zh-Hans, zh-Hant, ar, de, es, fr, id, it, ja, ko, nl, pl, pt, ru, th, tr, vi — ADR-0033 removed 13 locales in 2026-08
 - ✅ Replace hardcoded English strings with `t()` in all pages and components (~70 strings across 12 files)
-- ✅ Add ~35 missing keys to `en.json` (title, action, msg, placeholder, subtitle categories)
-- ✅ L1 cookie → locale passthrough in middleware via `next-intl` middleware
+- ✅ Add ~35 missing keys (title, action, msg, placeholder, subtitle categories) through the CSV workflow
+- ✅ L1 cookie → locale passthrough via the `next-intl` proxy
 
-## Phase 4: Dictionary
+## Phase 4: Dictionary ✅
 
 - ✅ Tap-to-lookup (click a word → dictionary popup)
 - ✅ Dictionary search page
-- ✅ Word saving / vocabulary list 🔄
+- ✅ Word saving / vocabulary list (web + mobile, SPEC-034)
 - ✅ Tokenization + lemmatization display
 - ✅ Pronunciation (TTS) — Web Speech API with per-language quality-ranked voice auto-selection (ARCH-031) + VoicePicker settings
 - ✅ TV Shows page — browse shows with search, sort (views/title), locale filter, poster grid
 - ✅ Localized video category names on watch page + subs search; TV-show badge linking to the episode list; TV-shows toolbar polish, no-op year sort removed (SPEC-092)
-- ✅ Dictionary database rebuild, add classifier for cedict, gender and audio for wiktionary, and add pytohn code to supply inflections via inflectors
+- ✅ Dictionary database rebuild, add classifier for cedict, gender and audio for wiktionary, and add python code to supply inflections via inflectors
 - ✅ Shared Radix sidebar primitive (dictionary, reader, EPUB, web-reader) + Radix migration of all web ui primitives (SPEC-030, ADR-0020)
 - ✅ Corpus tab in the web dictionary (Sketch Engine collocations, examples, related words, and Chinese learner mistakes) (SPEC-047)
+- ✅ External search panel — dictionary popup and entry tabs (SPEC-094)
+- ✅ Glyph rendering — `lang` attributes and per-script font stacks (SPEC-080, SPEC-088)
+- ✅ Literary Chinese (`lzh`) — CEDICT definitions, HSK levels, modern-Chinese translation (SPEC-103)
+- ✅ Rare-Han codepoints via on-demand font subsets + chip fallback (SPEC-104)
 
 ## Phase 5: Content Features
 
 - ✅ TV Shows page
 - ✅ Live TV page
 - ✅ Reader and Notes
-- ✅ Music page
+- ✅ Music and entertainment content in Explore (with an "exclude music" toggle — there is no separate music page)
 - ✅ Level system
 - ✅ Documentation / Help
+- ✅ Ebook reader — bookshelf, EPUB, paginated reader, notes reader, web reader, PDF (web only) and image reader (vision OCR) (SPEC-085, SPEC-087, SPEC-089, SPEC-090)
+- ✅ Interactive textbook — `book > unit > lesson > task` with interactive blanks and per-activity widgets (SPEC-095)
 
 ## Phase 6: User Features
 
@@ -108,15 +114,15 @@
 
 - ✅ **Scaffold** — new Expo SDK 57 app, NativeWind, shared packages, i18n pipeline
 - ✅ **Porting** — porting all Next.js pages/components to React Native (see AGENTS.md Mobile Porting Rules)
-- ⬜ **Interaction primitives** — adopt `@rn-primitives` (Dialog, Select, Switch, Tabs, Drawer) for headless interaction behavior, wrapped with NativeWind + design tokens. See [ADR-0014](./docs/adr/0014-rn-primitives-interaction-primitives.md).
-- ⬜ **Feature parity** — validate against Classic for completeness
+- ✅ **Interaction primitives** — `@rn-primitives` (Dialog, Select, Switch, Tabs, Portal) with NativeWind + design tokens; the web half became Radix (SPEC-016, SPEC-030, ADR-0014, ADR-0020)
+- 🔄 **Feature parity** — every Next.js screen is ported (50 screens across the 4 tabs); remaining work is validating behaviour against Classic (SPEC-049)
 
 ## Phase 8: Sunset Classic
 
 > 🗄️ **Repo merge**: `zerotohero-nuxt` → `apps/classic/` for archival (see docs/specs/002)
 
 - ⬜ Full feature parity audit (web + mobile vs Classic)
-- ⬜ Redirect strategy from classic URLs (`languageplayer.io/en/zh/...` → new URLs)
+- ✅ Redirect strategy from classic URLs (`languageplayer.io/en/zh/...` → new URLs) — `classic-route-redirect.ts` wired into `proxy.ts`, verified by `scripts/check-redirects.mjs` (SPEC-071)
 - ⬜ Data migration verification
 - ⬜ Merge Nuxt code into monorepo for historical reference
 - ⬜ Archive `zerotohero-nuxt` GitHub repo (read-only)
@@ -128,15 +134,15 @@
 
 - ⬜ Merge Python backend into monorepo with full Git history
 - ⬜ Wire `apps/api/` into Turborepo pipeline (`npx turbo dev` starts backend too)
-- ⬜ Directus 8 → Directus 11 migration plan
+- ⬜ Directus decommission — content and user data already read/write Supabase; the remaining Directus-era paths and tables need retiring
 - ⬜ CI/CD pipeline (GitHub Actions)
 - ⬜ Testing infrastructure (unit + E2E)
 - ⬜ Monitoring + error tracking
 
 ## Phase 10: Admin Console
 
-- ✅ Admin console app (`apps/admin`) — separate Next.js 16 app, admin-only
-  NextAuth login, proxy route guard (SPEC-060, ADR-0032)
+- ✅ Admin console app (`apps/admin`) — separate Next.js 16 app, admin-or-affiliate
+  NextAuth login, proxy route guard (SPEC-060, ADR-0032, SPEC-102)
 - ✅ User search — email, name, phone, auth/legacy IDs, payment and
   subscription information
 - ✅ User detail — subscriptions, learning progress, saved words, watch
@@ -172,13 +178,16 @@
 
 ## Known Issues
 
-- **Arabic lemmatization (offline arabic-stem)** — logged 2026-08-08. Server
-  resolved 2026-08-09 via CAMeL Tools MLE (`calima-msa-r13`): the Qalsadi
-  bugs (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`) are fixed and pronunciation
-  comes from CAMeL diacritization. Offline `arabic-stem` still mangles
-  pronouns/conjunctions (`أنا→اني`, `هنا→هني`, `وكيف→وكف`) and resolves
+- **Arabic lemmatization (offline arabic-stem)** — logged 2026-08-08. The server
+  side was resolved 2026-08-09 via CAMeL Tools MLE (`calima-msa-r13`): the
+  Qalsadi bugs (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`) are fixed and
+  pronunciation comes from CAMeL diacritization. Offline `arabic-stem` still
+  mangles pronouns/conjunctions (`أنا→اني`, `هنا→هني`, `وكيف→وكف`) and resolves
   inflected words to roots (`صديقي→صدق`). See SPEC-055 TC-11.
-- **Thai (server)** — resolved 2026-08-08: PyThaiNLP `newmm` segmentation +
+
+## Resolved
+
+- **Thai (server)** — 2026-08-08: PyThaiNLP `newmm` segmentation +
   `thaiphon` Paiboon+ pronunciation (`thai_g2p.py`); offline mobile gets the
   same readings from the re-downloaded dictionary. No PyICU needed for Thai.
   See SPEC-055 TC-12.
@@ -186,8 +195,16 @@
 ---
 
 ## Currently Working On
-- Phase 7: Mobile Integration — porting all Next.js pages to React Native
-- Phase 10: Admin Console — user management, content management, analytics,
-  and transactions shipped (SPEC-060, SPEC-099, SPEC-100, SPEC-101);
-  affiliates/coupons v1 shipped as SPEC-102; payment log viewer and account
-  actions are next
+
+- **Phase 10 — Admin Console:** affiliates/coupons rollout (SPEC-102 v1
+  shipped; invitation emails, automated payouts, and the Stripe refund
+  webhook deferred), then the payment log viewer and account actions
+  (delete / reset / demote admin).
+- **Mobile release maintenance:** 3.7.3 / build 28 is the current release
+  (`docs/versioning/build-ledger.md`); rare-Han device verification is
+  outstanding (SPEC-104).
+- **Docs:** the 2026-10-18 documentation audit is done through the content
+  pass (links, statuses, index, ARCH/ADR/AGENTS/ROADMAP). Remaining known-stale
+  bodies: SPEC-048 and SPEC-067 identity tables (they still show 3.0.0/build 3)
+  and SPEC-064's manual build flow, which ARCH-028 and `scripts/dev-build.mjs`
+  supersede.

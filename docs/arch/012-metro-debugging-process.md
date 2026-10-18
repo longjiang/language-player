@@ -5,6 +5,7 @@
 - **Topic**: Mobile app debugging workflow with Metro + idb + iOS Simulator
 - **Status**: draft
 - **Created**: 2026-07-22
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (all phases)
 
 ## Overview
@@ -22,9 +23,9 @@ This document standardizes the debugging workflow for the React Native mobile ap
 
 ---
 
-## Server Startup (AI Agent Responsibility)
+## Server Startup
 
-The AI agent MUST start all servers itself so it owns the terminal UUIDs and can access stdout via `get_terminal_output`. The user should NOT start servers manually.
+Check for an already-running instance before starting anything (`lsof -ti:8081`, and the same for `:3000`, `:3100`, `:5001`); if the user says it is running, trust them. The agent may start the Next.js dev servers and Metro when it needs them. **Never start or stop the Flask backend** — that process belongs to the user (AGENTS.md).
 
 ### Prerequisites Check
 

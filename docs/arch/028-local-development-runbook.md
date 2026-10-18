@@ -6,7 +6,7 @@
 - **Type**: reference
 - **Status**: draft
 - **Created**: 2026-08-13
-- **Last Updated**: 2026-10-01
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (active), Admin (active), Mobile (active), Chrome Extension (active), Classic Nuxt (reference), Flask backend
 - **See also**:
@@ -237,12 +237,13 @@ the app. There are two local workflows:
 2. **Metro + development build on a physical device** — native binary on iOS
    and Android
 
-> ⚠️ **Status change (2026-08-29): iOS Simulators are no longer used.**
-> All simulator runtimes/devices were removed from this machine and the
-> project no longer supports simulator workflows. Workflow 1 (Metro + Expo Go
-> in the iOS Simulator) is therefore **no longer available** — physical-device
-> debug builds (`node scripts/dev-build.mjs ios-device|android`) and
-> TestFlight/store builds are the only mobile-device paths now.
+> ⚠️ **Status note (2026-08-29, machine-specific): this machine has no iOS
+> Simulator runtimes installed.** On a machine that does have one, Workflow 1
+> (Metro + Expo Go in the simulator, started with `npx expo start --ios`) still
+> works — Expo Go is simulator-only for this project, never for a physical
+> device. Physical-device debug builds (`node scripts/dev-build.mjs
+> ios-device|android`) and TestFlight/store builds are the paths used here
+> because no simulator is available.
 
 ### Prerequisites for both
 

@@ -13,6 +13,12 @@
 - **Replaces**: Classic Nuxt offline CSV dictionary approach
 - **See also**: [Classic Dictionary Architecture](./006-classic-dictionary-architecture.md)
 
+> **As-built difference (2026-10-18).** This document records the design as proposed in July 2026. Four things shipped differently, and the design below should not be read as current:
+> - The endpoint lives in `zerotohero-python-server/routes/dictionary.py`, not `app_dictionary.py`.
+> - Dictionary data is one SQLite database (`data/dictionaries.db`) built by `import_dict_to_sqlite.py` and queried through `utils_dictionary.py` — not per-language CSV loaders cached in memory.
+> - Saved words are Supabase rows written through `routes/saved_words.py` (SPEC-034), not Directus `user_data`.
+> - The entry route is `/[l1]/[l2]/dictionary/entry/[dictionaryId]/[entryId]`.
+
 ---
 
 ## Context
@@ -40,7 +46,7 @@ POST /api/python/dictionary/lookup
   { text: "食べる", l2: "ja", l1: "es" }
   │
   ▼
-Python Backend (new endpoint: app_dictionary.py)
+Python Backend (shipped: routes/dictionary.py)
   │
   ├─ 1. Load appropriate CSV dictionary for L2 (in-memory, cached)
   │     ├─ zh → cedict
@@ -377,8 +383,8 @@ interface Lemma {
 
 ### Phase 4a: Backend Endpoint
 
-1. Create `zerotohero-python/app_dictionary.py` with `/dictionary/lookup` POST endpoint
-2. Build `dictionary_loaders/base.py` — abstract loader with CSV loading + memory caching
+1. ~~Create `zerotohero-python/app_dictionary.py`~~ — shipped as `zerotohero-python-server/routes/dictionary.py` with the `/dictionary/lookup` POST endpoint
+2. ~~Build `dictionary_loaders/base.py`~~ — shipped as `utils_dictionary.py`, querying the SQLite database instead of caching CSVs in memory
 3. Build loader for each L2: `cedict.py`, `edict.py`, `kengdic.py`, `open_russian.py`, `wiktionary.py`
 4. Implement search logic: exact → lemma → fuzzy
 5. Integrate DeepSeek for definition translation (context-aware prompt)
@@ -395,7 +401,7 @@ interface Lemma {
 
 11. Create `/dictionary` search page with search input + results list
 12. Add `/dictionary/word/[id]` detail page
-13. Add word saving/bookmarking via Directus `user_data`
+13. Add word saving/bookmarking — shipped as Supabase `saved_words` rows via `routes/saved_words.py` (SPEC-034), not Directus `user_data`
 
 ---
 

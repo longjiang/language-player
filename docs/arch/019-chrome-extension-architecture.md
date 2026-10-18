@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-31 (page reader tokenizes a wrapper's own paragraph runs — aozora-style bare `<div>` bodies with heading sub-blocks are no longer dropped by the leaf-only filter, and existing `<ruby>` is stripped before tokenizing so the page's reading doesn't double-render; side panel per-tab open/sub-tab state + a tokenize guard so a tab is only tokenized when the panel is open on it, plus page restore on close — see notes below)
+- **Last Updated**: 2026-10-18 (page reader tokenizes a wrapper's own paragraph runs — aozora-style bare `<div>` bodies with heading sub-blocks are no longer dropped by the leaf-only filter, and existing `<ruby>` is stripped before tokenizing so the page's reading doesn't double-render; side panel per-tab open/sub-tab state + a tokenize guard so a tab is only tokenized when the panel is open on it, plus page restore on close — see notes below)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -116,7 +116,7 @@ node apps/chrome-extension/build.mjs
 
 The build script (`build.mjs`) does five things in order:
 
-1. **Generate language name lookup** — runs `scripts/generate-lang-names.js` which parses the monorepo's `translations.csv`, extracts all `lang.*` keys across 31 locales, and produces `dist/lang-names.json`. This JSON maps language codes (e.g., `"ja"`) to translated names (e.g., `{"en": "Japanese", "zh_CN": "日语", ...}`) for use in the L2 language dropdown.
+1. **Generate language name lookup** — runs `scripts/generate-lang-names.js` which parses the monorepo's `translations.csv`, extracts all `lang.*` keys across 18 locales, and produces `dist/lang-names.json`. This JSON maps language codes (e.g., `"ja"`) to translated names (e.g., `{"en": "Japanese", "zh_CN": "日语", ...}`) for use in the L2 language dropdown.
 
 2. **Bundle content script with esbuild** — takes `src/content-entry.js` as the entry point and produces `dist/content.js`. Key esbuild settings:
    - `format: 'iife'` — wraps everything in an immediately-invoked function expression
@@ -894,7 +894,7 @@ The extension uses Chrome's native `chrome.i18n` API for all user-facing strings
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                  translations.csv (monorepo)                 │
-│  1074 keys × 31 locales, source of truth for ALL i18n       │
+│  1,947 keys × 18 locales, source of truth for ALL i18n       │
 └──────────────────────┬──────────────────────────────────────┘
                        │
           ┌────────────┼────────────┐
@@ -1000,7 +1000,7 @@ New UI string needed
 │   YES → Map it! Add entry to CSV_LOOKUP in generate-locales.js.
 │          Example: 'myNewKey': 'action.close'
 │          DO NOT add to MANUAL. DO NOT add to en/messages.json placeholders.
-│          The CSV already has 31-locale translations.
+│          The CSV already has 18-locale translations.
 │
 ├─ Can an existing CSV key serve with slightly different wording?
 │   YES → Same as above. Prefer reuse over new keys.
@@ -1075,7 +1075,7 @@ New UI string needed
 
 #### New CSV_LOOKUP Mapping Workflow
 
-1. **Verify the CSV key exists** in `translations.csv` with full 31-locale coverage:
+1. **Verify the CSV key exists** in `translations.csv` with full 18-locale coverage:
    ```bash
    grep "^action\.close," translations.csv
    ```
@@ -1104,10 +1104,10 @@ New UI string needed
 
 | Aspect | Detail |
 |---|---|
-| **Input** | `translations.csv` (1074 keys × 31 locales) |
+| **Input** | `translations.csv` (1,947 keys × 18 locales) |
 | **Template** | `_locales/en/messages.json` (defines which 60 keys to generate) |
 | **CSV_LOOKUP** | 28 mappings from flat ext keys → dotted CSV keys |
-| **MANUAL** | 13 extension-only keys with built-in 30-locale translations |
+| **MANUAL** | 13 extension-only keys with built-in 18-locale translations |
 | **Output** | `_locales/{locale}/messages.json` for the 18 supported locales |
 | **Placeholder conversion** | `{name}` → `$name$` auto-applied to all CSV values |
 | **Skip behavior** | None — all 18 supported locales generated uniformly (previously `en`, `zh_CN`, `zh_TW`, `fr`, `ja` were skipped; now all auto-generated) |
@@ -1137,7 +1137,7 @@ The runtime path does NOT resolve named placeholders (`$word$`) — it only does
 | `scripts/generate-lang-names.js` | Build-time language name generator (CSV `lang.*` → `lang-names.json`) |
 | `_locales/en/messages.json` | English template — defines the 40 key set |
 | `_locales/{locale}/messages.json` | Per-locale translations (31 dirs, auto-generated) |
-| `translations.csv` | Monorepo source of truth (1074 keys × 31 locales) |
+| `translations.csv` | Monorepo source of truth (1,947 keys × 18 locales) |
 
 ---
 

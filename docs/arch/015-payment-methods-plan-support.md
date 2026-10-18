@@ -6,12 +6,12 @@
 - **Type**: reference
 - **Status**: accepted
 - **Created**: 2026-07-13
-- **Last Updated**: 2026-07-25
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (payment infrastructure)
 - **Scope**: Nuxt Classic (legacy), GO (legacy), Python Backend (active), Next.js Web (active), React Native Mobile (active)
 - **Supersedes**: ADR-0005
 - **See also**:
-  - `docs/adr/0005-payment-methods-plan-support.md` — Original ADR (moved here)
+  - `docs/arch/015-payment-methods-plan-support.md` — this document (absorbed ADR-0005)
   - `zerotohero-nuxt/components/Pricing.vue` — Plan selection UI with sale logic
   - `zerotohero-nuxt/components/PaymentMethods.vue` — Routes to correct payment component per plan
   - `zerotohero-nuxt/components/PurchaseStripe.vue` — Stripe Checkout + WeChat/Alipay via Payment Links
@@ -19,7 +19,6 @@
   - `zerotohero-nuxt/components/PurchaseiOS.vue` — iOS IAP (non-consumable, lifetime-only)
   - `zerotohero-nuxt/plugins/ios-in-app-purchase.js` — Capacitor IAP plugin wrapper
   - `zerotohero-nuxt/plugins/stripe.js` — Stripe Checkout plugin
-  - `zerotohero-nuxt/plugins/paypal.js` — PayPal plugin
   - `zerotohero-nuxt/store/subscriptions.js` — Vuex subscription store
   - `apps/mobile-go-legacy/contexts/SubscriptionContext.tsx` — GO app subscription status
   - `apps/mobile-go-legacy/app/go-pro.tsx` — GO Go Pro screen
@@ -28,7 +27,7 @@
   - `zerotohero-python-server/app_stripe_checkout.py` — Stripe checkout, webhooks, auto-renewal
   - `zerotohero-python-server/app_paypal_checkout.py` — PayPal verification (lifetime hardcoded)
   - `zerotohero-python-server/app_in_app_purchase.py` — iOS receipt validation (lifetime hardcoded)
-  - `zerotohero-python-server/utils_subscription.py` — CRUD for Directus `subscriptions` collection
+  - `zerotohero-python-server/utils_subscription.py` — CRUD for Supabase `public.user_subscriptions` (Directus-era names kept)
   - `zerotohero-python-server/data/prices.csv` — Price definitions (USD + CNY)
 
 ---
@@ -178,7 +177,7 @@ All methods create a subscription record in the Directus `subscriptions` collect
 | `zerotohero-python-server/app_stripe_checkout.py` | Stripe checkout, webhooks, auto-renewal |
 | `zerotohero-python-server/app_paypal_checkout.py` | PayPal verification (lifetime hardcoded) |
 | `zerotohero-python-server/app_in_app_purchase.py` | iOS receipt validation (lifetime hardcoded) |
-| `zerotohero-python-server/utils_subscription.py` | CRUD for Directus `subscriptions` collection |
+| `zerotohero-python-server/utils_subscription.py` | CRUD for Supabase `public.user_subscriptions` (names kept from the Directus era) |
 | `zerotohero-python-server/data/prices.csv` | Price definitions (USD + CNY) |
 
 ---

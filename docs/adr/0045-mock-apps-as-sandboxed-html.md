@@ -36,7 +36,7 @@ Relevant existing facts, verified rather than assumed:
    | Layer | Where | Grows per new app? |
    |---|---|---|
    | `MockAppFrame` (frame, bridge, TaskShell integration, host chrome) | `apps/web` iframe, `apps/mobile` WebView | No |
-   | `mock-app-runtime.js` (help mode, token rendering, hint, progress, completion) | repo, same-origin, version-pinned | No |
+   | `runtime.v1.js` (help mode, token rendering, hint, progress, completion) | repo, same-origin, version-pinned | No |
    | The app (HTML/CSS, dataset, goals, `mount`) | one file per app | Yes — irreducible |
 
    Adding an app costs zero host code, zero content-schema fields and zero translation keys.

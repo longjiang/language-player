@@ -1,6 +1,6 @@
 # Language Player — Python Backend Architecture Reference
 
-> Analysis of `zerotohero-python/` (Flask 2.x / Python 3.10).
+> Analysis of `zerotohero-python-server/` (Flask 2.x / Python 3.10).
 > This is the backend that powers both Classic and GO apps. The Next.js app also uses it.
 > **DO NOT EDIT** this directory unless explicitly needed.
 
@@ -11,7 +11,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-24
-- **Last Updated**: 2026-10-17
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 9 — Backend Consolidation
 - **Scope**: `zerotohero-python-server/` (Flask, active)
 
@@ -44,7 +44,7 @@ MyApp = Flask(__name__)
 Compress(MyApp)
 CORS(MyApp, origins=[...])  # localhost:3000, languageplayer.io, etc.
 limiter.init_app(MyApp)     # 200 req/min default
-register_routes(MyApp)       # 10 blueprints
+register_routes(MyApp)       # 29 blueprints
 ```
 
 ---
@@ -86,26 +86,24 @@ register_routes(MyApp)       # 10 blueprints
 
 ### Lemmatization Endpoints (`routes/text_routes.py`)
 
-All use a factory pattern (`register_text_endpoint()`) to create endpoints from lemmatizer modules.
+Since ADR-0029 the per-language endpoints are gone: one registry (`LEMMATIZER_REGISTRY`) decides which engine runs for a given `l2`, and the unified endpoints dispatch to it.
 
-| Endpoint | Language | Engine |
+| Endpoint | Method | Purpose |
 |---|---|---|
-| `/lemmatize-spacy` | Multi (spaCy models) | spaCy |
-| `/lemmatize-chinese` | Chinese | Jieba |
-| `/lemmatize-japanese` | Japanese | MeCab / fugashi |
-| `/lemmatize-korean` | Korean | KoNLPy |
-| `/lemmatize-turkish` | Turkish | Turkish lemmatizer |
-| `/lemmatize-arabic` | Arabic | Arabic lemmatizer |
-| `/lemmatize-persian` | Persian | Persian lemmatizer |
-| `/lemmatize-russian` | Russian | pymorphy2 |
-| `/lemmatize-burmese` | Burmese | Burmese lemmatizer |
-| `/lemmatize-simple` | Any (simple) | Regex/rule-based |
-| `/lemmatize-lemmatization-lists` | Vocabulary lists | Static lookup tables |
-| `/lemmatize-unified` | Multi (unified) | Combined approach |
-| `/inflect-pattern` | Multi | Pattern-based inflection |
-| `/inflect-pymorphy` | Russian | pymorphy2 inflection |
+| `/lemmatize-normalized` | POST | Single string → unified tokens; dispatches on `l2` |
+| `/lemmatize-normalized/batch` | POST | Batch of strings → unified tokens |
+| `/lemmatize-video` | GET | Whole-video lemmatization, cached |
+| `/lemmatize-video-legacy` | GET | Legacy id-keyed variant |
+| `/lemmatize-video-normalized` | GET | Whole-video, unified schema |
+| `/extract-phrases` | GET/POST | Phrase extraction (SPEC-036) |
+| `/inflect-japanese` | GET | Japanese inflection |
+| `/lemmatization/export` | GET | Export the lemmatizer registry |
+| `/lemmatization/download` | GET | Download language lemma packs |
+| `/transliterate-persian` | GET | Persian transliteration |
 
-Each returns: `{ "md5_hash": [ {word, lemma, pos}, ... ] }`
+Engine per language is in ARCH-016; note Korean uses **Kiwi** (`kiwipiepy`, LGPL-3.0), which replaced KoNLPy/Okt in 2026-08.
+
+Each returns: `{ "md5_hash": [ {word, lemma, pos}, ... ] }` (unified endpoints return `{ "tokens": [...] }`).
 
 ### Translation (`routes/translate.py`)
 
@@ -270,7 +268,7 @@ The MySQL ngram backend and its `/subs-search-classic` route were retired
 |---|---|---|
 | `lemmatize_chinese.py` | Chinese | Jieba segmentation |
 | `lemmatize_japanese.py` | Japanese | MeCab / fugashi + UniDic |
-| `lemmatize_korean.py` | Korean | KoNLPy (Mecab-ko) |
+| `lemmatize_korean.py` | Korean | Kiwi (`kiwipiepy`) — replaced KoNLPy/Okt in 2026-08 |
 | `lemmatize_russian.py` | Russian | pymorphy2 |
 | `lemmatize_arabic.py` | Arabic | Qalsadi / Farasa |
 | `lemmatize_persian.py` | Persian | Hazm |
@@ -327,19 +325,21 @@ The lemmatization flow for video subtitles:
 
 ## Key Architectural Patterns
 
-### 1. Directus as CMS, Flask as API Gateway
+### 1. Supabase as the Database, Flask as the API Gateway
 
-Directus 8 is the headless CMS — it stores users, videos, subscriptions, user_data. Flask acts as an API gateway that:
-- Abstracts Directus away from clients
+Supabase Postgres is the database — content (`youtube_videos`, `subs_l2`, shows, channels) and user data (saved words, notes, progress, settings, subscriptions) both live there, reached through `utils_content.py`, `utils_user_data.py`, and `utils_subscription.py`. Auth is GoTrue, proxied through Flask's `/auth/*` routes (ADR-0023). Flask acts as an API gateway that:
+- Keeps the database and auth provider behind one HTTP surface (clients never talk to Supabase directly)
 - Adds business logic (recommendations, lemmatization, LLM)
 - Handles cross-cutting concerns (rate limiting, caching)
 
+Directus 8 is **legacy**: the video-content cutover completed (ADR-0021) and `utils_directus.py` was deleted on 2026-10-16. Any remaining Directus reference below is historical.
+
 ### 2. Token-based Auth Flow
 
-1. Client authenticates with Directus → gets JWT
-2. Client sends JWT in `Authorization: Bearer <token>` header to Flask
-3. Flask extracts user ID from JWT payload (no `/users/me` call)
-4. Flask uses admin token for Directus CRUD, user token for user_data
+1. Client posts credentials to Flask `/auth/login`, which calls Supabase GoTrue and returns the access + refresh token
+2. Client sends the token in `Authorization: Bearer <token>` header to Flask
+3. Flask verifies it with `verify_access_token` and extracts the user ID from the JWT payload
+4. Flask uses its service credentials for database access; RLS is not relied on for authorisation
 
 ### 3. Dictionary Architecture
 
@@ -397,7 +397,7 @@ The Next.js app currently uses this Python backend. Important notes:
 
 3. **Saved words storage**: Classic (`zerotohero-nuxt`) uses a localStorage cache + the Flask row API. GO stores in UserDataContext + the Flask row API. Next.js uses the `useSavedWords` hook + the Flask row API. All backed by Supabase rows (SPEC-034).
 
-4. **Lemmatization**: All lemmatization is done server-side via Flask. Neither frontend does local tokenization.
+4. **Lemmatization**: the server is the primary tokenizer for both frontends, but they are not purely server-side any more — mobile runs a local fallback (kuromoji for Japanese, dictionary segmentation for Chinese/SEA, lemma tables) when offline or when the server is slow, and web keeps a per-video token cache. See ARCH-018 and ARCH-026.
 
 ---
 

@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-09-06
-- **Last Updated**: 2026-10-16
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 3 — Explore + Video Player
 - **Scope**: `zerotohero-python-server/` (Flask), Web + Mobile clients
 
@@ -241,8 +241,7 @@ WHERE l2 = 'zh'
 - jieba `>= 0.42` is required by `wordfreq` 3.0.3 for Chinese
   (`Requires-Dist: jieba (>=0.42); extra == "jieba"`), because `wordfreq`
   calls `jieba.Tokenizer`, an API only present in jieba 0.42+.
-- `requirements.txt` lists `jieba` **unpinned** (and `wordfreq` unpinned),
-  which is how environments drift.
+- `requirements.txt` now **pins** both (`jieba==0.42.1`, `wordfreq==3.0.3`); they were unpinned when this incident happened, which is how environments drifted.
 - The local dev environment was found in a corrupted state: pip metadata
   (dist-info) says jieba 0.42.1 and its RECORD lists a 19,809-byte
   `__init__.py`, but the on-disk files are jieba 0.34 (13,200 bytes,

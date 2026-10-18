@@ -322,6 +322,12 @@ two-phase FTS flow as SPEC-044. Terms of 3+ characters are matched as the AND
 of their overlapping bigrams. ILIKE/trigram remains only for wildcards and
 space-containing terms.
 
+> **Amendment (2026-10-18):** a shipped fallback exists that this decision did
+> not anticipate. When the n-gram tsvector index is not built, the continua
+> path uses **Option E (PGroonga)** — `_pgroonga_index_ready()` /
+> `subs_l2 &@| %s` in `utils_content.py`. Order of preference at runtime is
+> n-gram tsvector → PGroonga → plain ILIKE.
+
 **Rationale**: Option B has the best balance of the measured trade-offs —
 medium initial cost (backfill + ~7–10 GB) versus ~25 GB for the posting
 table, no new extension dependency (vs PGroonga), and it reuses the FTS/GIN

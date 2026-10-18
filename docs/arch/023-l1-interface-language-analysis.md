@@ -7,7 +7,7 @@
 - **Type**: analysis
 - **Status**: accepted
 - **Created**: 2026-08-10
-- **Last Updated**: 2026-08-10
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Cross-cutting (user data & analytics)
 - **Scope**: Supabase Postgres (`tfugoojrqybaoukgpqza`) user-data tables; Classic settings evidence; web/mobile coverage gap
 - **Supersedes**: none
@@ -655,8 +655,10 @@ order by l1_entries desc;
 
 ## Evidence Summary — Current UI Locale Support
 
-The following evidence matrix was used to evaluate the 31 current UI locales;
-the resulting decision is recorded in [ADR-0033](../adr/0033-ui-translation-locale-support.md).
+The following evidence matrix was used to evaluate the 31 UI locales that
+existed in 2026-08 (13 of them were removed by ADR-0033, leaving the 18
+supported today); the resulting decision is recorded in
+[ADR-0033](../adr/0033-ui-translation-locale-support.md).
 
 Evidence basis:
 

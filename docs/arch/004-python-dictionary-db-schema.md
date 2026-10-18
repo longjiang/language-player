@@ -13,7 +13,7 @@
 
 > **Source**: `zerotohero-python-server/import_dict_to_sqlite.py`
 > **Database**: `data/dictionaries.db` (SQLite, WAL mode, 64 MB cache)
-> **Data sources**: `data/dictionaries/` and `data/wiktionary-csv/`
+> **Data sources**: `data/dictionaries/` (including `data/dictionaries/wiktionary-csv/`)
 
 ---
 

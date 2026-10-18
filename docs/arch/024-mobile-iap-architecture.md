@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-08-11
-- **Last Updated**: 2026-08-11
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 7 — Mobile Integration (payments)
 - **Scope**: Mobile (React Native/Expo), Python (Flask)
 
@@ -27,7 +27,9 @@ modes we hit during SPEC-054 Phase 3 and the guardrails that now prevent them.
 This doc covers **iOS IAP only** (`pro_go`, non-consumable, lifetime). It is
 the only in-app payment path on mobile: Stripe / PayPal / WeChat / Alipay are
 website payments and were removed from the app (SPEC-054 Phase 3). Android
-renders a "buy on our website" notice until Google Play Billing lands.
+sells the same Lifetime Pro through **Google Play Billing** (`lib/iap.ts` android
+branch → `/play_billing_success`, SPEC-068); the two platforms differ in
+verification, not in what is sold.
 
 ## Components
 

@@ -10,7 +10,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-10-16
-- **Last Updated**: 2026-10-16 (merged the two resolvers — see "Fixed")
+- **Last Updated**: 2026-10-18 (merged the two resolvers — see "Fixed")
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (cross-cutting)
 - **Scope**: Flask backend (`zerotohero-python-server/`). Client-side track
   pickers (Chrome extension, web player) are out of scope.
@@ -121,9 +121,9 @@ Accepted everywhere; nothing rejects a video for being ASR-only. The only
 preference is manual-over-ASR, as above.
 
 The video-level `contentDetails.caption` flag is a **different** question —
-"does this video have any captions at all" — used only by
-`filter_youtube(filter_captions=...)`, i.e. the legacy crawler and the
-Google-search discovery path. It says nothing about the requested language.
+"does this video have any captions at all" — and it was only ever used by the
+legacy crawler and the Google-search discovery path (both removed). It says
+nothing about the requested language.
 The admin importer does not use it: it checks whether an actual track in the
 L2 family exists, which is strictly stronger.
 
@@ -258,7 +258,7 @@ Second pass (`86b550b`):
 |---|---|
 | `zerotohero-python-server/caption_selection.py` | The rule: `l2_locale_priority()`, `choose_best_transcript()`, `MIN_TRANSCRIPT_LINES`, `is_usable_transcript[_line_count]()` |
 | `zerotohero-python-server/app_youtubecaptions.py` | `caption_api()`, `list_transcripts_result()`, `select_best_l2_transcript()`, `get_best_l2_subs_with_meta()`, `get_best_l1_subs()`, `fetch_caption_track()` / `caption()`, `transcribe_youtube()` |
-| `zerotohero-python-server/utils_youtube.py` | `list_captions()` (crawler adapter), `find_videos_with_transcripts()`, `l2_locales()`, `video_locale_matches_l2()`, `filter_youtube()` |
+| `zerotohero-python-server/utils_youtube.py` | `l2_locales()`, `video_locale_matches_l2()` — the crawler-era `list_captions()` / `find_videos_with_transcripts()` / `filter_youtube()` helpers were deleted with the crawler |
 | `zerotohero-python-server/utils_language.py` | `LOCALES` (the table), `get_locales_dict()`, `caption_locales_by_code()`, `locales_by_code()`, `host_country_locales_by_code()` |
 | `zerotohero-python-server/utils_cache.py` | caption / caption_clean / transcribe_youtube cache keys |
 | `zerotohero-python-server/routes/core.py` | `/timedtext`, `/timedtext/clean`, `/get_best_l2_subs`, `/get_best_l1_subs` |

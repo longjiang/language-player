@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-08-05
-- **Last Updated**: 2026-08-05
+- **Last Updated**: 2026-10-18
 - **ROADMAP Phase**: Phase 4 (Video Player / Dictionary)
 - **Scope**: Classic (legacy source), Python Flask backend (active), Next.js Web + Mobile (target consumers)
 - **Supersedes**: none
@@ -69,7 +69,7 @@ All routes live on the Flask blueprint `sketch_engine` (`zerotohero-python-serve
 
 | Method | Route | Classic source | Purpose |
 |---|---|---|---|
-| GET/POST | `/sketch-engine/proxy` | `sketch-engine-proxy.php` | Raw relay — forwards to any Sketch Engine Bonito URL in the query string |
+| GET/POST | `/sketch-engine-proxy` | `sketch-engine-proxy.php` | Raw relay — forwards to any Sketch Engine Bonito URL in the query string |
 | GET | `/sketch-engine/corpora` | `getCorpora()` (static file) | Corpus list from the CA API, cached ~monthly; `?refresh=1` forces re-download |
 | GET | `/sketch-engine/collocations?word=&l2=` | `wsketch()` + `Collocations.vue` | Word sketch — collocates grouped by grammatical relation |
 | GET | `/sketch-engine/examples?word=&l2=&l1=en` | `concordance()` + `Concordance.vue` | Example sentences with optional parallel translation (`&searchAsPhrase=1` supported) |
@@ -193,5 +193,5 @@ Per-line parsing (from Classic `mistakes()`):
 - **`punct` typo fixed**: Classic's errors map says `"puncutation"`; the port uses `"punctuation"`.
 - **Null token strings**: Sketch Engine occasionally returns `null` for a token's `str`; Python's `" ".join()` rejects `None`, so tokens coerce to `""` (JS `Array.join` treats `null`/`undefined` as empty).
 - **`wordcount` is nested**: the CA corpus list stores word counts under `sizes.wordcount`, not top-level — Classic's `sort((a,b) => b['wordcount'] - a['wordcount'])` was effectively comparing `undefined`. The port reads `sizes.wordcount`.
-- **Fresh list size**: the live CA API returns 1016 corpora; Classic's static file (`sketch-engine-corpora.json.txt`) has 546 and is a stale snapshot from an account with different access — no simple filter reproduces it, so the endpoint returns the authoritative fresh list.
+- **Fresh list size**: the live CA API returns 1016 corpora; Classic's remote snapshot (`data/sketch-engine/sketch-engine-corpora.json.txt`, fetched from the server rather than shipped in the repo) has 546 and is a stale snapshot from an account with different access — no simple filter reproduces it, so the endpoint returns the authoritative fresh list.
 - **Cache-forever for feature data**: feature endpoints use the default `cache_life=-1` (like the PHP proxy) — collocations/examples/thesaurus/mistakes change slowly and are safe to cache indefinitely.

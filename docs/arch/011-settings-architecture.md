@@ -9,7 +9,7 @@
   [known issue](#known-issue-settings_v2-resets-to-default-debug-in-progress-2026-08-24)
   at the top of this page
 - **Created**: 2026-07-17
-- **Last updated**: 2026-09-11 (per-L2 vs global table rewritten to the as-built schema; `display.translation` moved per-L2)
+- **Last updated**: 2026-10-18 (per-L2 vs global table rewritten to the as-built schema; `display.translation` moved per-L2; settings sync endpoints corrected to the `/user-settings` row API)
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic (legacy, `settings_classic` only), GO (reference),
   Next.js Web (active, `settings_v2`), React Native Mobile (active,
@@ -725,7 +725,7 @@ const { toggleGlobalDisplay, toggleL2Display } = useSettings();
 │    1. Try lp_settings (v2) from localStorage                │
 │    2. If missing, migrate from old keys (lp_*, zth*, etc.)  │
 │    3. Set React state → components re-render                │
-│    4. If logged in, fetch cloud copy via GET /user-data     │
+│    4. If logged in, fetch cloud copy via GET /user-settings  │
 │    5. Merge: latest ts wins per top-level key               │
 │    6. Persist merged result to localStorage                 │
 │                                                             │
@@ -733,7 +733,7 @@ const { toggleGlobalDisplay, toggleL2Display } = useSettings();
 │    1. Update React state (immediate UI response)            │
 │    2. Write to localStorage (immediate, survives reload)    │
 │    3. Schedule cloud sync (debounced 3s)                    │
-│       → POST /user-data/sync { settings_v2: JSON.stringify() } │
+│       → PUT /user-settings { settings_v2: JSON.stringify() } │
 │                                                             │
 │  On cross-tab change (StorageEvent):                        │
 │    1. Listen for 'lp_settings' key change                   │
@@ -799,14 +799,14 @@ Directus user_data
 
 When Classic is eventually retired, the `settings` column is dropped and `settings_v2` becomes the single canonical store. The `v` version field in the blob ensures future migrations are safe without another column rename.
 
-**Flask API changes needed:**
+**Flask API changes (shipped 2026-08-24, via the row API rather than `user_data`):**
 
-| Step | What |
+| Step | What actually shipped |
 |---|---|
-| 1 | Add nullable `settings_v2` column to `user_data` table |
-| 2 | `GET /user-data` — return `settings_v2` alongside existing fields |
-| 3 | `POST /user-data/sync` — accept `settings_v2` in the sync payload |
-| 4 | No changes to Classic's `settings` field — it continues to work as before |
+| 1 | `public.user_settings` row per user holding `settings_v2` (jsonb), not a new `user_data` column |
+| 2 | `GET /user-settings` returns the stored row (`routes/user_data_columns.py`) |
+| 3 | `PUT /user-settings` upserts it with server-side LWW |
+| 4 | Classic's `settings` field is untouched — it continues to work as before |
 
 ### File Layout
 
