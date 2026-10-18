@@ -11,6 +11,7 @@ import { baseCode, formatPronunciation, getSrsReviewStatus } from '@langplayer/u
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
+import { RareGlyphText } from '@/components/rare-glyph-text';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
@@ -341,13 +342,13 @@ export function DictionaryEntryCard({
                 className="cursor-pointer text-lg font-bold text-foreground hover:underline underline-offset-2"
                 lang={glyphLang}
               >
-                {head}
+                <RareGlyphText text={head} />
               </button>
             ) : (
-              <span className="text-lg font-bold text-foreground" lang={glyphLang}>{head}</span>
+              <span className="text-lg font-bold text-foreground" lang={glyphLang}><RareGlyphText text={head} /></span>
             )}
             {displayAlternate && (
-              <span className="text-xs text-muted-foreground" lang={glyphLang}>{displayAlternate}</span>
+              <span className="text-xs text-muted-foreground" lang={glyphLang}><RareGlyphText text={displayAlternate} /></span>
             )}
             <SpeakButton text={head} l2Code={l2Code ?? ''} size="sm" />
             {formattedPron && (
@@ -454,11 +455,11 @@ export function DictionaryEntryCard({
       <div className="mb-3">
         <div className="flex items-start gap-3">
           <HeadTag className="shrink-0 text-3xl font-bold" lang={glyphLang}>
-            {head}
+            <RareGlyphText text={head} />
           </HeadTag>
           {displayAlternate && (
             <span className="mt-2 shrink-0 text-base text-muted-foreground" lang={glyphLang}>
-              {displayAlternate}
+              <RareGlyphText text={displayAlternate} />
             </span>
           )}
           <div className="flex-1" />
@@ -540,7 +541,7 @@ export function DictionaryEntryCard({
                 <span>{t('label.textbook_format', { material: m.material, book: m.location?.book ?? '', lesson: m.location?.lesson ?? '' })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
-                <p className="text-sm" lang={glyphLang}>{m.example}</p>
+                <p className="text-sm" lang={glyphLang}><RareGlyphText text={m.example} /></p>
               )}
               {m.exampleTranslation && (
                 <p className="text-sm text-muted-foreground">{m.exampleTranslation}</p>

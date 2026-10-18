@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { LanguageProvider } from '@/providers/language-provider';
 import { VideoPlayerProvider } from '@/providers/video-player-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
+import { RareGlyphProvider } from '@/providers/rare-glyph-provider';
 import { ThemeSync } from '@/components/theme-sync';
 import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
 import { UserLibraryProvider } from '@/providers/user-library-provider';
@@ -33,17 +34,19 @@ export default async function LanguageLayout(
     <LanguageProvider l1={params.l1} l2={params.l2}>
       <UserLibraryProvider>
         <SettingsProvider>
-          <ThemeSync />
-          <ExploreCacheProvider>
-            <VideoPlayerProvider>
-              <ReaderChromeProvider>
-                <div className="flex min-h-screen flex-col">
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                </div>
-              </ReaderChromeProvider>
-            </VideoPlayerProvider>
-          </ExploreCacheProvider>
+          <RareGlyphProvider>
+            <ThemeSync />
+            <ExploreCacheProvider>
+              <VideoPlayerProvider>
+                <ReaderChromeProvider>
+                  <div className="flex min-h-screen flex-col">
+                    <Header />
+                    <main className="flex-1">{children}</main>
+                  </div>
+                </ReaderChromeProvider>
+              </VideoPlayerProvider>
+            </ExploreCacheProvider>
+          </RareGlyphProvider>
         </SettingsProvider>
       </UserLibraryProvider>
     </LanguageProvider>

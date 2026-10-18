@@ -12,6 +12,7 @@ import {
 } from '@langplayer/shared';
 import { DictionaryPopup } from './dictionary-popup';
 import { NoteBadge, NotePopup } from './note-popup';
+import { RareGlyphText } from './rare-glyph-text';
 import { SelectionTooltip } from './selection-tooltip';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
@@ -61,24 +62,28 @@ export { ZOOM_TO_REM };
  */
 function highlightPlainText(text: string, formats: FormatRange[] | undefined): React.ReactNode {
   const ranges = (formats ?? []).filter((f) => f.type === 'highlight' && f.end > f.start);
-  if (ranges.length === 0) return text;
+  if (ranges.length === 0) return <RareGlyphText text={text} />;
   const sorted = [...ranges].sort((a, b) => a.start - b.start);
   const out: React.ReactNode[] = [];
   let pos = 0;
   for (const f of sorted) {
     const start = Math.max(0, Math.min(f.start, text.length));
     const end = Math.max(start, Math.min(f.end, text.length));
-    if (start > pos) out.push(text.slice(pos, start));
+    if (start > pos) {
+      out.push(<RareGlyphText key={`t-${pos}`} text={text.slice(pos, start)} />);
+    }
     if (end > start) {
       out.push(
         <mark key={start} className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
-          {text.slice(start, end)}
+          <RareGlyphText text={text.slice(start, end)} />
         </mark>,
       );
     }
     pos = Math.max(pos, end);
   }
-  if (pos < text.length) out.push(text.slice(pos));
+  if (pos < text.length) {
+    out.push(<RareGlyphText key={`t-${pos}`} text={text.slice(pos)} />);
+  }
   return out;
 }
 
