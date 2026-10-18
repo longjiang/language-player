@@ -158,3 +158,62 @@ describe('highlighting a multi-answer dialog blank', () => {
     expect(pressed).toEqual(['软卧']);
   });
 });
+
+/**
+ * The pool used to strike out an option once another blank had taken it. B ➏'s bank is now
+ * offered in the dialog and the pool is gone (SPEC-095 § Banks), so the dialog carries that
+ * job: six statements are chosen from seven, and a spent one must not look available.
+ */
+describe('a spent option in a dialog bank', () => {
+  async function renderB6() {
+    const book = await loadBook('tblt-hsk4');
+    const t = book && findTask(book, 'tblt-hsk4.u06.B.t6');
+    if (!t || !book) throw new Error('task B ➏ did not resolve');
+    render(
+      <TextbookTaskProvider task={t} book={book}>
+        <BlankChoiceProvider>
+          <BlankField blank={t.blanks!.b2!} />
+          <BlankField blank={t.blanks!.b3!} />
+        </BlankChoiceProvider>
+      </TextbookTaskProvider>,
+    );
+    await act(async () => {});
+    return t;
+  }
+
+  // The tile's accessible name is `letter. statement`; the statement text is content, so the
+  // test looks the tile up by prefix rather than restating it.
+  function labelOf(letter: string): string {
+    const button = [...(dialog()?.querySelectorAll('button[aria-label]') ?? [])].find((b) =>
+      (b.getAttribute('aria-label') ?? '').startsWith(`${letter}.`),
+    );
+    return button?.getAttribute('aria-label') ?? '';
+  }
+
+  it('dims an option another blank already used, and keeps it tappable', async () => {
+    await renderB6();
+
+    // Put ② on B.
+    await act(async () => blankButton('②').click());
+    await act(async () => tile(labelOf('B')).click());
+    expect(blankButton('②').textContent).toBe('B');
+
+    // ③'s dialog is where the spent statement has to show as spent.
+    await act(async () => blankButton('③').click());
+    const spent = tile(labelOf('B'));
+    expect(spent.closest('[data-used="true"]')).not.toBeNull();
+    // Still pickable: a student may be moving the answer between blanks.
+    expect(spent.disabled).toBe(false);
+
+    // An option nobody has used is not dimmed.
+    const free = tile(labelOf('A'));
+    expect(free.closest('[data-used="true"]')).toBeNull();
+  });
+
+  it('does not count a given blank as having spent its option', async () => {
+    // ① is given `A`. Counting it would dim A before the student has done anything.
+    await renderB6();
+    await act(async () => blankButton('②').click());
+    expect(tile(labelOf('A')).closest('[data-used="true"]')).toBeNull();
+  });
+});

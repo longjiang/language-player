@@ -156,6 +156,7 @@ export const lessonD: LessonMeta = {
             H: '准时',
             I: '排队',
           },
+          choicesInDialog: true,
         },
       ],
       answerKeyRaw: '② E；③ F；④ B；⑤ H；⑥ G；⑦ C；⑧ I；⑨ D。',
@@ -233,7 +234,7 @@ export const lessonD: LessonMeta = {
         b10: { id: 'b10', kind: 'choose', answer: 'B', bank: 'd2-desc', keyIndex: 5 },
       },
       banks: [
-        { id: 'd2-order', items: ['1', '2', '3', '4', '5'] },
+        { id: 'd2-order', items: ['1', '2', '3', '4', '5'], choicesInDialog: true },
         {
           id: 'd2-desc',
           items: ['A', 'B', 'C', 'D', 'E'],
@@ -244,6 +245,7 @@ export const lessonD: LessonMeta = {
             D: '可以直接用信用卡碰一下',
             E: '仔细看显示屏',
           },
+          choicesInDialog: true,
         },
       ],
       answerKeyRaw: '(4) 运营时刻 [ C ]；(3) 站台 [ E ]；(2) 买票、支付 [ D ]；(5) 其它需要注意的 [ B ]。',

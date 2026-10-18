@@ -88,17 +88,36 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
   const options = set ? set.items : bank ? bankChoiceOptions(bank) : [];
   const dialogOpen = Boolean(blank && (set || bank));
 
-  const getValue = useCallback(
-    () => (openBlankId ? ctx.store.getValue(openBlankId) : ''),
-    [ctx, openBlankId],
-  );
-  const current = useSyncExternalStore(ctx.store.subscribe, getValue, getValue);
+  // The whole response map, not just the open blank's value: a dialog bank has to know which
+  // of its options another blank has already spent (`allowReuse: false`).
+  const getResponses = useCallback(() => ctx.store.getResponsesSnapshot(), [ctx]);
+  const responses = useSyncExternalStore(ctx.store.subscribe, getResponses, getResponses);
+  const current = openBlankId ? (responses[openBlankId] ?? '') : '';
 
   // Which options are chosen. A `multiple` blank stores its picks in ONE string (`硬卧、软卧`), so
   // comparing that string to a single option highlights the first pick and then highlights nothing
   // at all once a second is added.
   const chosen = useMemo(() => new Set(pickValues(current)), [current]);
   const isChosen = (value: string) => (blank?.multiple ? chosen.has(value) : current === value);
+
+  /**
+   * Options another blank has already used, when the bank does not allow reuse.
+   *
+   * The pool used to strike these out; now the pool is gone, the dialog does — otherwise one
+   * statement can be placed in two blanks with nothing saying it is spent. `given` blanks do not
+   * count: their answers are pre-filled.
+   */
+  const spent = useMemo(() => {
+    const out = new Set<string>();
+    if (!bank || bank.allowReuse) return out;
+    for (const [id, value] of Object.entries(responses)) {
+      if (id === openBlankId) continue;
+      const other = ctx.task.blanks?.[id];
+      if (!other || other.bank !== bank.id || other.kind === 'given') continue;
+      for (const pick of pickValues(value)) out.add(pick);
+    }
+    return out;
+  }, [bank, ctx.task, openBlankId, responses]);
 
   const close = () => setOpenBlankId(null);
 
@@ -138,6 +157,7 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
                   <PictureOptionTile
                     item={item}
                     selected={isChosen(item.letter)}
+                    used={!isChosen(item.letter) && spent.has(item.letter)}
                     onPick={(letter) => {
                       // A multi-select blank takes several picks, so the dialog stays
                       // open until the student closes it; a single answer closes on the

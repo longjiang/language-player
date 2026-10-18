@@ -96,33 +96,62 @@ const blankButton = () => document.querySelector('input, button[aria-label]') as
 const bankOption = (index = 0) =>
   [...document.querySelectorAll('button[aria-pressed]')][index] as HTMLElement;
 
-async function taskC4(): Promise<{ book: BookMeta; task: Task }> {
-  const book = await loadBook('tblt-hsk4');
-  const found = book && findTask(book, 'tblt-hsk4.u06.C.t4');
-  if (!found || !book) throw new Error('task C ➍ did not resolve');
-  return { book, task: found };
-}
+/**
+ * A pool-backed choose blank: a bank the content does **not** offer in the dialog.
+ *
+ * The shipped book no longer has one — every bank printed at the foot of a task now opens at
+ * the blank (SPEC-095 § Banks) — so the pool's own gesture is pinned with a fixture rather
+ * than with C ➍, which moved into the dialog.
+ */
+const poolTask: Task = {
+  id: 'tblt-hsk4.u06.C.t9',
+  number: '➒',
+  instructions: '填词',
+  body: [{ kind: 'passage', text: '说话{{b1}}，然后{{b2}}。' }],
+  blanks: {
+    b1: { id: 'b1', kind: 'given', answer: 'A' },
+    b2: { id: 'b2', kind: 'choose', answer: '新', bank: 'w1' },
+  },
+  banks: [{ id: 'w1', items: ['新', '旧'] }],
+  answerKeyRaw: '② 新。',
+};
 
-/** One bank blank (C ➍ ②, answered from bank w1) with its pool and a selection readout. */
+const poolBook: BookMeta = {
+  id: 'tblt-hsk4',
+  title: 'Tasks for Life in China (HSK 4)',
+  l2: 'zh',
+  contentVersion: 3,
+  units: [
+    {
+      id: 'u06',
+      number: 6,
+      title: '交通出行',
+      lessons: [{ id: 'C', letter: 'C', title: 'C', tasks: [poolTask] }],
+    },
+  ],
+};
+
+/** One pool-backed blank (its answer is 新) with its pool and a selection readout. */
 async function renderBankBlank() {
-  const { book, task: t } = await taskC4();
   render(
-    <TextbookTaskProvider task={t} book={book}>
-      <BlankField blank={t.blanks!.b2!} />
-      <WordBank bank={t.banks!.find((b) => b.id === 'w1')!} />
+    <TextbookTaskProvider task={poolTask} book={poolBook}>
+      <BlankField blank={poolTask.blanks!.b2!} />
+      <WordBank bank={poolTask.banks![0]!} />
       <SelectionProbe />
     </TextbookTaskProvider>,
   );
+  // The provider rebuilds its store once the script-variant expansion lands, which also
+  // replaces the selection store — wait for that before tapping.
   await act(async () => {});
-  return t;
+  return poolTask;
 }
 
 /**
- * Tapping a bank blank selects it — that is the whole gesture. It used to clear a filled blank
- * and toggle off an empty one, which made a stray second tap disarm the blank silently: the
- * next option tap then went nowhere, with nothing on screen to say why.
+ * Tapping a pool-backed bank blank selects it — that is the whole gesture. It used to clear a
+ * filled blank and toggle off an empty one, which made a stray second tap disarm the blank
+ * silently: the next option tap then went nowhere, with nothing on screen to say why.
  */
-describe('tapping a bank blank', () => {
+describe('tapping a pool-backed bank blank', () => {
   it('selects it, and a second tap keeps it selected', async () => {
     const t = await renderBankBlank();
     expect(selection()).toBe('');
@@ -164,6 +193,8 @@ describe('tapping a bank blank', () => {
     // The blank's own bottom border is the line to write on; the placeholder underscore that
     // used to sit inside it drew a second line just above the first.
     expect(button.textContent).toBe('');
+    // A pool-backed blank has no caret: the pool below it is the affordance.
+    expect(button.querySelector('svg')).toBeNull();
 
     // …and empty has to stay tappable. An empty `inline-flex` box has no content height, so the
     // whole target was the 2px border — measured 48×2 in the browser, against 48×24 now. The
@@ -177,6 +208,13 @@ async function taskB5(): Promise<{ book: BookMeta; task: Task }> {
   const book = await loadBook('tblt-hsk4');
   const found = book && findTask(book, 'tblt-hsk4.u06.B.t5');
   if (!found || !book) throw new Error('task B ➎ did not resolve');
+  return { book, task: found };
+}
+
+async function taskB6(): Promise<{ book: BookMeta; task: Task }> {
+  const book = await loadBook('tblt-hsk4');
+  const found = book && findTask(book, 'tblt-hsk4.u06.B.t6');
+  if (!found || !book) throw new Error('task B ➏ did not resolve');
   return { book, task: found };
 }
 
@@ -225,5 +263,31 @@ describe('a given blank that names a picture set', () => {
 
     await act(async () => slotCtx!.store.setValue('b1', 'C'));
     expect(slotImage()?.src).toContain('b5-illustration-c.jpg');
+  });
+});
+
+/**
+ * With the pool gone (SPEC-095 § Banks), an empty blank whose choices live in a dialog is
+ * otherwise indistinguishable from a line to write on — so it carries a caret until it holds
+ * an answer. B ➏'s blanks draw on the A–G statement bank, which is dialog-backed.
+ */
+describe('a blank whose choices are in a dialog', () => {
+  it('carries a caret until it is answered', async () => {
+    const { book, task } = await taskB6();
+    render(
+      <TextbookTaskProvider task={task} book={book}>
+        <BlankField blank={task.blanks!.b2!} />
+        <StoreProbe />
+      </TextbookTaskProvider>,
+    );
+    await act(async () => {});
+
+    const button = () => document.querySelector('button[aria-label]') as HTMLElement;
+    expect(button().querySelector('svg')).not.toBeNull();
+
+    await act(async () => slotCtx!.store.setValue('b2', 'B'));
+    // Answered: the text is the affordance, and a second caret beside it would be noise.
+    expect(button().querySelector('svg')).toBeNull();
+    expect(button().textContent).toContain('B');
   });
 });

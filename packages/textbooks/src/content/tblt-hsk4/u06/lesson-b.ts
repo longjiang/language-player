@@ -61,6 +61,10 @@ export const lessonB: LessonMeta = {
             f: '城际动车组列车',
           },
           allowReuse: false,
+          // Every bank printed at the foot of a task is offered at the blank instead: the
+          // pool sat below a long table, and a student who did not scroll to it never saw
+          // there were choices at all (SPEC-095 § Banks).
+          choicesInDialog: true,
         },
       ],
       answerKeyRaw: '③ f; ④ c; ⑤ e; ⑥ d。',
@@ -99,7 +103,9 @@ export const lessonB: LessonMeta = {
         b3: { id: 'b3', kind: 'choose', answer: '免费Wi-Fi', bank: 'w1' },
         b4: { id: 'b4', kind: 'choose', answer: '充电口', bank: 'w1' },
       },
-      banks: [{ id: 'w1', items: ['快', '免费Wi-Fi', '充电口', '新'], allowReuse: false }],
+      banks: [
+        { id: 'w1', items: ['快', '免费Wi-Fi', '充电口', '新'], allowReuse: false, choicesInDialog: true },
+      ],
       answerKeyRaw: '② 新; ③ 免费Wi-Fi; ④ 充电口。',
     },
     {
@@ -508,7 +514,7 @@ export const lessonB: LessonMeta = {
         },
       },
       banks: [
-        { id: 'b6-fill', items: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], optionLabels: { A: '还是很难让所有旅客满意', B: '别错过最好的抢票时间', C: '一定要通过铁路12306正式的订票平台', D: '可以买到这些没有支付的票', E: '先上车，后补票', F: '在网页上点击"候补"按钮', G: '确定购买' } },
+        { id: 'b6-fill', items: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], optionLabels: { A: '还是很难让所有旅客满意', B: '别错过最好的抢票时间', C: '一定要通过铁路12306正式的订票平台', D: '可以买到这些没有支付的票', E: '先上车，后补票', F: '在网页上点击"候补"按钮', G: '确定购买' }, choicesInDialog: true },
       ],
       answerKeyRaw: '② B；③ G；④ F；⑤ E；⑥ D；⑦ C。',
     },

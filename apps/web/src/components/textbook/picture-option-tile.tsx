@@ -34,6 +34,7 @@ export function PictureOptionTile({
   item,
   selected,
   disabled,
+  used,
   onPick,
   className,
 }: {
@@ -45,6 +46,14 @@ export function PictureOptionTile({
   /** The current answer names this option. */
   selected?: boolean;
   disabled?: boolean;
+  /**
+   * Another blank has already used this option, and the bank does not allow reuse.
+   *
+   * Dimmed and struck through, still tappable — the same treatment the pool gave a spent word
+   * (`WordBank`). It is not `disabled`: a student may be moving the answer from one blank to
+   * the other, and the pool never made it impossible either.
+   */
+  used?: boolean;
   onPick: (letter: string) => void;
   className?: string;
 }) {
@@ -83,42 +92,68 @@ export function PictureOptionTile({
       )}
 
       <div
+        data-used={used ? 'true' : undefined}
         className={`flex w-full flex-col gap-1.5 rounded-lg border p-2 transition-colors ${
           selected ? 'border-primary bg-primary/10' : 'border-border bg-card'
-        } ${disabled ? 'opacity-90' : ''}`}
+        } ${disabled ? 'opacity-90' : used ? 'opacity-60' : ''}`}
       >
-        <button
-          type="button"
-          onClick={() => onPick(item.letter)}
-          disabled={disabled}
-          aria-pressed={selected}
-          aria-label={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
-          className={`block w-full overflow-hidden rounded bg-muted/50 ${
-            disabled ? 'cursor-default' : 'cursor-pointer'
+        {/* A picture tile is a picture that picks, with its caption outside the button. A
+            label-only option — every bank except B ➌'s photographed seat classes — has no
+            picture to be the button, so the letter chip is: the statement stays tokenized text
+            beside it, where a word can be looked up without picking the option. */}
+        {hasPicture ? (
+          <button
+            type="button"
+            onClick={() => onPick(item.letter)}
+            disabled={disabled}
+            aria-pressed={selected}
+            aria-label={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
+            className={`block w-full overflow-hidden rounded bg-muted/50 ${
+              disabled ? 'cursor-default' : 'cursor-pointer'
+            }`}
+          >
+            <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden">
+              {placeholder ? (
+                <span className="px-2 text-center text-xs text-muted-foreground">{item.label}</span>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  onError={() => setBroken(true)}
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onPick(item.letter)}
+            disabled={disabled}
+            aria-pressed={selected}
+            aria-label={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
+            className={`shrink-0 self-start rounded border px-2 py-0.5 text-sm font-semibold text-primary transition-colors ${
+              selected ? 'border-primary bg-primary/10' : 'border-border'
+            } ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
+          >
+            {item.letter}
+          </button>
+        )}
+
+        <span
+          className={`flex flex-wrap items-baseline gap-x-1 text-sm ${
+            used ? 'text-muted-foreground line-through' : 'text-foreground'
           }`}
         >
-          <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden">
-            {placeholder ? (
-              <span className="px-2 text-center text-xs text-muted-foreground">{item.label}</span>
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={src}
-                alt=""
-                loading="lazy"
-                onError={() => setBroken(true)}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </span>
-        </button>
-
-        <span className="flex flex-wrap items-baseline gap-x-1 text-sm text-foreground">
           {/* The letter is part of the button's accessible name, so it is decoration
               here rather than a second reading of it. */}
-          <span className="font-semibold text-primary" aria-hidden>
-            {item.letter}
-          </span>
+          {hasPicture && (
+            <span className="font-semibold text-primary" aria-hidden>
+              {item.letter}
+            </span>
+          )}
           <TokenizedText text={item.label} l2Code={l2.code} inline />
         </span>
       </div>

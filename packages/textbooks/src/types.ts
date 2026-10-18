@@ -78,17 +78,19 @@ export interface Bank {
    */
   allowReuse?: boolean;
   /**
-   * Offer these options **in the dialog at the blank**, instead of as a pool beside the task.
+   * Offer these options **in the dialog at the blank**, instead of as a pool below the task.
    *
-   * B ➌ is why this exists. Its options are four seat classes, each with a photograph, and the
-   * question is asked at a blank inside a sentence ("G41的哪种座位最便宜？"). A pool at the foot
-   * of the task puts the photographs a screen away from the question — and the same photographs
-   * are already printed in the table above, so a second tappable copy adds nothing. In the
-   * dialog the student answers at the blank, from the classes the table shows, and a blank whose
-   * answer is a *set* (K1275's two sleeping berths) can be picked in one go and confirmed.
+   * This is the shape every task-level bank a `choose` blank draws on now takes tree-wide: a pool
+   * at the foot of the task is a screen away from the question, and a student who never scrolls to
+   * it never learns there are choices. B ➌ was the first case (four seat classes with
+   * photographs, asked about inside a sentence), and B ➏ made the problem sharp — its A–G
+   * statements sat below an article a screen and a half long.
    *
-   * A bank offered this way is **not** rendered as a pool, and its blanks are all `choose` (the
-   * validator enforces that — a typed blank cannot be picked from a dialog).
+   * A bank offered this way is **not** rendered as a pool at all; tapping the blank opens the
+   * options, a spent option is dimmed (`allowReuse`), and an empty blank carries a caret so the
+   * blank itself advertises the choices. Its blanks are `choose` — the validator enforces that,
+   * because a typed blank cannot be picked from a dialog — with `given` blanks exempt (they print
+   * their worked answer and are never picked).
    */
   choicesInDialog?: boolean;
 }

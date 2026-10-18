@@ -35,6 +35,7 @@ export function PictureOptionTile({
   item,
   selected,
   disabled,
+  used,
   onPick,
 }: {
   /**
@@ -45,6 +46,12 @@ export function PictureOptionTile({
   /** The current answer names this option. */
   selected?: boolean;
   disabled?: boolean;
+  /**
+   * Another blank has already used this option, and the bank does not allow reuse. Dimmed and
+   * struck through, still tappable — the same treatment the pool gave a spent word, because a
+   * student may be moving an answer from one blank to another.
+   */
+  used?: boolean;
   onPick: (letter: string) => void;
 }) {
   const t = useT();
@@ -66,49 +73,68 @@ export function PictureOptionTile({
       <View
         className={`gap-1.5 rounded-lg border p-2 ${
           selected ? 'border-primary bg-primary/10' : 'border-border bg-card'
-        } ${disabled ? 'opacity-90' : ''}`}
+        } ${disabled ? 'opacity-90' : used ? 'opacity-60' : ''}`}
       >
-        <Pressable
-          onPress={() => onPick(item.letter)}
-          disabled={disabled}
-          accessibilityRole="button"
-          accessibilityState={{ selected: !!selected, disabled: !!disabled }}
-          accessibilityLabel={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
-          className="w-full overflow-hidden rounded bg-muted/50"
-        >
-          <View className="aspect-[4/3] w-full items-center justify-center overflow-hidden">
-            {placeholder ? (
-              // RN allows a nested Pressable, so the retry lives with the fallback. The
-              // tile stays pickable either way: the letter is the answer.
-              <Pressable
-                onPress={() => {
-                  if (!hasPicture) return;
-                  setBroken(false);
-                  setRetryToken((n) => n + 1);
-                }}
-                disabled={!hasPicture}
-                accessibilityRole={hasPicture ? 'button' : undefined}
-                accessibilityLabel={t('action.retry')}
-                className="items-center gap-1 px-2"
-              >
-                <Text className="text-center text-xs text-muted-foreground">{item.label}</Text>
-                {hasPicture ? <Text className="text-xs text-primary">{t('action.retry')}</Text> : null}
-              </Pressable>
-            ) : (
-              <Image
-                source={{ uri }}
-                resizeMode="cover"
-                className="h-full w-full"
-                onError={() => setBroken(true)}
-              />
-            )}
-          </View>
-        </Pressable>
+        {/* A picture tile is a picture that picks, with its caption outside the button. A
+            label-only option — every bank except B ➌'s photographed seat classes — has no
+            picture to be the button, so the letter chip is: the statement stays tokenized text
+            beside it, where a word can be looked up without picking the option. */}
+        {hasPicture ? (
+          <Pressable
+            onPress={() => onPick(item.letter)}
+            disabled={disabled}
+            accessibilityRole="button"
+            accessibilityState={{ selected: !!selected, disabled: !!disabled }}
+            accessibilityLabel={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
+            className="w-full overflow-hidden rounded bg-muted/50"
+          >
+            <View className="aspect-[4/3] w-full items-center justify-center overflow-hidden">
+              {placeholder ? (
+                // RN allows a nested Pressable, so the retry lives with the fallback. The
+                // tile stays pickable either way: the letter is the answer.
+                <Pressable
+                  onPress={() => {
+                    if (!hasPicture) return;
+                    setBroken(false);
+                    setRetryToken((n) => n + 1);
+                  }}
+                  disabled={!hasPicture}
+                  accessibilityRole={hasPicture ? 'button' : undefined}
+                  accessibilityLabel={t('action.retry')}
+                  className="items-center gap-1 px-2"
+                >
+                  <Text className="text-center text-xs text-muted-foreground">{item.label}</Text>
+                  {hasPicture ? <Text className="text-xs text-primary">{t('action.retry')}</Text> : null}
+                </Pressable>
+              ) : (
+                <Image
+                  source={{ uri }}
+                  resizeMode="cover"
+                  className="h-full w-full"
+                  onError={() => setBroken(true)}
+                />
+              )}
+            </View>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => onPick(item.letter)}
+            disabled={disabled}
+            accessibilityRole="button"
+            accessibilityState={{ selected: !!selected, disabled: !!disabled }}
+            accessibilityLabel={`${item.label ? `${item.letter}. ${item.label}` : item.letter}`}
+            className={`self-start rounded border px-2 py-0.5 ${selected ? 'border-primary bg-primary/10' : 'border-border'}`}
+          >
+            <Text className="text-sm font-semibold text-primary">{item.letter}</Text>
+          </Pressable>
+        )}
 
         <View className="flex-row flex-wrap items-baseline gap-x-1">
           {/* The letter is part of the button's accessible name; here it is the caption's
               marker, matching what the workbook prints beside the picture. */}
-          <Text className="text-sm font-semibold text-primary">{item.letter}</Text>
+          {hasPicture ? <Text className="text-sm font-semibold text-primary">{item.letter}</Text> : null}
+          {/* A spent option is dimmed (the tile carries `opacity-60`); React Native has no
+              inherited strike-through for tokenized text, so the dim is the marker here. */}
           <TokenizedText
             text={item.label}
             l2Code={l2Lang.code}
