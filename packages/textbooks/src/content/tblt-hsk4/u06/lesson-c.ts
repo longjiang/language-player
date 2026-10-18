@@ -326,7 +326,7 @@ export const lessonC: LessonMeta = {
         },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
+        b1: { id: 'b1', kind: 'given', answer: 'A', bank: 'w1' },
         b2: { id: 'b2', kind: 'choose', answer: 'C', bank: 'w1' },
         b3: { id: 'b3', kind: 'choose', answer: 'D', bank: 'w1' },
         b4: { id: 'b4', kind: 'choose', answer: 'E', bank: 'w1' },

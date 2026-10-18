@@ -226,6 +226,28 @@ describe('the shipped book', () => {
       }
     }
   });
+
+  it('gives every worked example the dialog bank its answer came from', () => {
+    // A given blank names its bank so its chip can open the choices read-only and its answer can
+    // show eliminated (B ➏'s ① A). Without the reference the chip is inert and the option looks
+    // available to the other blanks. A pool's given answers are the exception: A ➍'s pools are
+    // inline reference lists, and its worked examples are words in the text, not picks.
+    for (const task of allTasks(tbltHsk4)) {
+      const inline = inlineBankIds(task);
+      for (const bank of task.banks ?? []) {
+        if (!bank.choicesInDialog || inline.has(bank.id)) continue;
+        for (const blank of Object.values(task.blanks ?? {})) {
+          if (blank.kind !== 'given') continue;
+          const picks = blank.answer
+            .split(/[、,，]/)
+            .map((part) => part.trim())
+            .filter(Boolean);
+          if (picks.length === 0 || !picks.every((pick) => bank.items.includes(pick))) continue;
+          expect(blank.bank, `${task.id} ${blank.id} should name ${bank.id}`).toBe(bank.id);
+        }
+      }
+    }
+  });
 });
 
 describe('asset manifest', () => {

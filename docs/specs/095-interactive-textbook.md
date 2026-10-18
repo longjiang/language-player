@@ -284,7 +284,7 @@ Two surfaces answer a task: inline **blanks**, and the free-text fields behind `
 
 | Kind | Notes |
 |---|---|
-| `given` | worked example; pre-filled, **not scored**. Non-editable — except when it names a `pictureSet`, where it prints as an illustration slot: the box starts on the worked-example *picture* and the student may re-pick it (see [Picture choices](#picture-choices)) |
+| `given` | worked example; pre-filled, **not scored**. Non-editable — except when it names a `pictureSet`, where it prints as an illustration slot: the box starts on the worked-example *picture* and the student may re-pick it (see [Picture choices](#picture-choices)). When it names a dialog `bank`, its chip opens the choices read-only and its answer is eliminated there |
 | `choose` | pick one option — from a `Bank`, or from a `pictureSet` via `optionSet` |
 | `carried` | an **earlier task's pick**, shown read-only: B ➏ prints the pictures B ➎ placed. Never answered, edited or scored here; the value is read from the source task's saved state (see [Carrying a pick into a later task](#carrying-a-pick-into-a-later-task)) |
 | `type` | typed entry, boxed by `expectedLength` where the workbook prints boxes |
@@ -449,12 +449,16 @@ The dialog's rules are the picture choices' rules, with these additions:
   睡觉？* two picks are the answer, and without a confirm there is no way to say "done". The
   button is rendered only for a `multiple` blank, so the other tasks keep their one-tap flow.
 - **Blanks drawing on a dialog bank are `choose` blanks** — the validator says so, because a typed
-  blank has nowhere to put a pick. A `given` blank is exempt: it prints its worked answer and is
-  never picked (B ➊'s ① a, B ➋'s ① 快, D ➋'s ① 1 / ［A］).
+  blank has nowhere to put a pick. A `given` blank is not picked, but it still names the bank its
+  worked answer came from (B ➊'s ① a, B ➋'s ① 快, B ➌'s ① 二等座、无座, D ➋'s ① 1 / ［A］), which
+  makes its chip a button: the tap opens the choices **read-only** — every tile disabled, the
+  title naming the given answer — so the student can see what it was chosen from without being
+  offered a change.
 - **A spent option is dimmed.** With the pool gone the dialog inherits its `allowReuse` job:
   B ➏ asks for six statements out of seven, and an option another blank has taken is dimmed (and
   struck through on web) but stays tappable — a student may be moving an answer from one blank to
-  another. `given` blanks do not count as having spent theirs.
+  another. **A `given` answer counts as spent** and shows eliminated everywhere in that bank,
+  including in its own read-only dialog: it is already placed, so it cannot answer another blank.
 - **An empty blank whose choices are in a dialog carries a caret (▾) at its right edge.** The pool
   was the only thing advertising the options, so the blank has to; right-aligned, it reads as an
   affordance at the end of the line rather than as part of the blank's content, and centred it sat
@@ -497,9 +501,9 @@ the student cannot tap.)
 have placed this word*, which is what a student working down a summary needs to see — and it
 has to survive reuse, since (4) uses 摇 twice and its pool holds three words. `allowReuse`
 describes the *key* (may this word answer twice?); it never meant the word had not been used. A
-struck option is still tappable and still selectable. In the dialog the same rule holds, expressed
-as a dim and strikethrough on the tile (`PictureOptionTile`'s `used`) — see the dialog-bank rules
-above.
+struck option is still tappable and still selectable. In the dialog the same rule holds for a `choose` blank, expressed as a dim and
+strikethrough on the tile (`PictureOptionTile`'s `used`); a `given` answer is the one difference —
+the pool leaves it unstruck, while the dialog eliminates it (see the dialog-bank rules above).
 
 **`given` blanks do not count as used.** Their answers are pre-filled in the store, so counting
 them would strike out A ➍ (1)'s whole pool — the printed worked example — before the student
@@ -1212,7 +1216,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TranscriptDialogProvider` / `useTranscriptDialog` | The task's transcript dialog and its opener. One dialog per task; a play control calls `open(key)`. Resolves transcripts through `transcriptsIn(book)`, so a task that replays another task's recording still offers its text |
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
-| `BlankField` | The inline blank: `given` / `choose` / `type` / `free` / `carried`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app. A `choose` blank whose bank is offered in the dialog carries a ▾ caret while empty, so the blank advertises its choices with no pool on the page |
+| `BlankField` | The inline blank: `given` / `choose` / `type` / `free` / `carried`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app. A `choose` blank whose bank is offered in the dialog carries a ▾ caret while empty, so the blank advertises its choices with no pool on the page; a `given` blank on such a bank is a button that opens the same choices read-only, caret included |
 | `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Struck out once the student has placed a word, and bottom-aligned so a reading never moves a glyph. With every foot-of-task bank now in the dialog, the shipped book's only pools are A ➍'s typed ones |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
 | `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them. `used` dims (and strikes, on web) an option another blank has spent, without disabling it. Fills its row's height (`h-full`, writing top, statement bottom) |
@@ -1810,8 +1814,10 @@ stay in their line.
 statement bank at the blank with no pool below the article; picking B closes it, and ③'s dialog
 shows B dimmed and struck through while the other six options stay active. B ➋'s four-word bank
 opens the same way, and an empty dialog-backed blank carries a caret with no pool anywhere on the
-page. The pool's own gesture survives for content that does not opt in, and is pinned by a fixture
-in `blank-field.test.tsx`, because no shipped bank uses a pool any more.
+page. B ➏'s ① chip opens the same bank read-only — titled *Correct answer: A*, every tile disabled,
+A dimmed and struck as eliminated — and tapping another option changes nothing. The pool's own
+gesture survives for content that does not opt in, and is pinned by a fixture in
+`blank-field.test.tsx`, because no shipped bank uses a pool any more.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame, the native

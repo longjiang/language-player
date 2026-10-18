@@ -89,8 +89,11 @@ export interface Bank {
    * A bank offered this way is **not** rendered as a pool at all; tapping the blank opens the
    * options, a spent option is dimmed (`allowReuse`), and an empty blank carries a caret so the
    * blank itself advertises the choices. Its blanks are `choose` — the validator enforces that,
-   * because a typed blank cannot be picked from a dialog — with `given` blanks exempt (they print
-   * their worked answer and are never picked).
+   * because a typed blank cannot be picked from a dialog.
+   *
+   * A `given` blank may also name its bank, solely so its chip can open the choices **read-only**:
+   * the student sees what the worked answer was chosen from, every tile is disabled, and the given
+   * answer is marked eliminated (it is already placed, so it cannot answer another blank).
    */
   choicesInDialog?: boolean;
 }

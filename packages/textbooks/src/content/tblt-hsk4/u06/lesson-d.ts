@@ -129,7 +129,7 @@ export const lessonD: LessonMeta = {
       ],
       blanks: {
         // The booklet prints ① A as the worked example.
-        b1: { id: 'b1', kind: 'given', answer: 'A' },
+        b1: { id: 'b1', kind: 'given', answer: 'A', bank: 'd1-fill' },
         b2: { id: 'b2', kind: 'choose', answer: 'E', bank: 'd1-fill' },
         b3: { id: 'b3', kind: 'choose', answer: 'F', bank: 'd1-fill' },
         b4: { id: 'b4', kind: 'choose', answer: 'B', bank: 'd1-fill' },
@@ -219,8 +219,10 @@ export const lessonD: LessonMeta = {
         },
       ],
       blanks: {
-        b1: { id: 'b1', kind: 'given', answer: '1' },
-        b2: { id: 'b2', kind: 'given', answer: 'A' },
+        // The worked examples name their banks, so each opens its choices read-only and shows its
+        // own option eliminated.
+        b1: { id: 'b1', kind: 'given', answer: '1', bank: 'd2-order' },
+        b2: { id: 'b2', kind: 'given', answer: 'A', bank: 'd2-desc' },
         // The order is the key's own row numbering, so these opt out of the
         // per-blank key check — their id does not correspond to a key item.
         b3: { id: 'b3', kind: 'choose', answer: '4', bank: 'd2-order', keyIndex: null },

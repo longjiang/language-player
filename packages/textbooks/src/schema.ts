@@ -158,8 +158,33 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
         );
       }
     }
+    // A worked example may name its bank: that is what makes the chip open the choices (read
+    // only) and its answer show as eliminated there. It is not "drawing" on the bank — nothing
+    // is picked — so the answer is checked the same way a choose blank's is (a set is split on
+    // the pick separators), and a bank that is not offered in a dialog is a warning: naming it
+    // would do nothing.
     if (blank.kind === 'given' && blank.bank) {
-      add('warning', `Given blank "${key}" declares a bank but is not answered.`, key);
+      const bank = banks.get(blank.bank);
+      if (!bank) {
+        add('error', `Given blank "${key}" references missing bank "${blank.bank}".`, key);
+      } else {
+        if (!bank.choicesInDialog) {
+          add(
+            'warning',
+            `Given blank "${key}" names bank "${bank.id}", which is not offered in a dialog; the reference only matters for a dialog bank.`,
+            key,
+          );
+        }
+        for (const pick of blank.answer.split(/[、,，]/).map((p) => p.trim()).filter(Boolean)) {
+          if (!bank.items.includes(pick)) {
+            add(
+              'error',
+              `Given blank "${key}" answer "${pick}" is not in bank "${bank.id}".`,
+              key,
+            );
+          }
+        }
+      }
     }
     if (blank.kind === 'free' && blank.bank) {
       add('error', `Free blank "${key}" cannot draw from a bank.`, key);

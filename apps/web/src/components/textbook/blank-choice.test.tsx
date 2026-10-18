@@ -172,6 +172,8 @@ describe('a spent option in a dialog bank', () => {
     render(
       <TextbookTaskProvider task={t} book={book}>
         <BlankChoiceProvider>
+          {/* ① is the worked example (given A); ② and ③ are answered from the same bank. */}
+          <BlankField blank={t.blanks!.b1!} />
           <BlankField blank={t.blanks!.b2!} />
           <BlankField blank={t.blanks!.b3!} />
         </BlankChoiceProvider>
@@ -205,15 +207,36 @@ describe('a spent option in a dialog bank', () => {
     // Still pickable: a student may be moving the answer between blanks.
     expect(spent.disabled).toBe(false);
 
-    // An option nobody has used is not dimmed.
-    const free = tile(labelOf('A'));
+    // An option nobody has used is not dimmed. (A is not free: ① is a given `A`.)
+    const free = tile(labelOf('C'));
     expect(free.closest('[data-used="true"]')).toBeNull();
   });
 
-  it('does not count a given blank as having spent its option', async () => {
-    // ① is given `A`. Counting it would dim A before the student has done anything.
+  it("eliminates a given blank's option for every blank in the bank", async () => {
+    // ① is the worked example `A`. It is already placed, so it cannot also answer ②.
     await renderB6();
     await act(async () => blankButton('②').click());
-    expect(tile(labelOf('A')).closest('[data-used="true"]')).toBeNull();
+    expect(tile(labelOf('A')).closest('[data-used="true"]')).not.toBeNull();
+  });
+
+  it("opens a given blank's choices read-only, with its answer eliminated", async () => {
+    await renderB6();
+
+    // The worked-example chip is a button, not a bare span: the student can see what ① was
+    // chosen from.
+    await act(async () => blankButton('①').click());
+    expect(dialog()).not.toBeNull();
+
+    const given = tile(labelOf('A'));
+    expect(given.closest('[data-used="true"]')).not.toBeNull();
+    // Nothing is selectable, and nothing is marked as the current choice.
+    expect(given.disabled).toBe(true);
+    expect(dialog()!.querySelectorAll('button[aria-pressed="true"]')).toHaveLength(0);
+
+    // A tap on another option changes nothing, and the dialog stays open (the tap did not
+    // commit anything, so there is nothing to close on).
+    await act(async () => tile(labelOf('B')).click());
+    expect(dialog()).not.toBeNull();
+    expect(blankButton('①').textContent).toBe('A');
   });
 });

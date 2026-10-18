@@ -81,9 +81,31 @@ export function BlankField({
   // A given blank that names an `optionSet` is the exception: it prints as an
   // illustration slot, so its worked-example picture is shown (and re-pickable)
   // by the picture-set branch below rather than as a letter here.
+  //
+  // A given blank whose bank is offered in the dialog is still **tappable**: the student may want
+  // to see the options the worked answer was chosen from (B ➏'s ① A). It stays read-only — the
+  // store refuses to write a given blank, and the dialog it opens is read-only too, with that
+  // option marked eliminated — so the tap reveals the choices without offering a change.
   if (blank.kind === 'given' && !blank.optionSet) {
+    const chipClass =
+      'mx-0.5 mb-0.5 flex-row items-center gap-1 rounded border border-dashed border-border bg-muted/40 px-1.5';
+    if (inDialog) {
+      return (
+        <Pressable
+          onPress={() => choice?.open(blank.id)}
+          accessibilityRole="button"
+          accessibilityLabel={`${label} ${blank.answer}`}
+          className={chipClass}
+        >
+          <Text className="text-base text-foreground">{blank.answer}</Text>
+          {/* The same caret a blank with choices carries: it is the one sign that the worked
+              example opens anything. */}
+          <ChevronDown size={12} color={ICON_MUTED} />
+        </Pressable>
+      );
+    }
     return (
-      <View className="mx-0.5 mb-0.5 flex-row items-center rounded border border-dashed border-border bg-muted/40 px-1.5">
+      <View className={chipClass}>
         <Text className="text-base text-foreground">{blank.answer}</Text>
       </View>
     );

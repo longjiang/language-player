@@ -109,20 +109,31 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
    *
    * The pool used to strike these out. Now that the pool is gone, the dialog has to: B ➏ asks
    * for six statements out of seven, and without this a student can put one statement in two
-   * blanks and see nothing saying it is spent. `given` blanks are not counted — their answers
-   * are pre-filled, so counting them would dim B ➋'s first option before the student starts.
+   * blanks and see nothing saying it is spent.
+   *
+   * A `given` blank **does** count: its answer is already placed, so it is eliminated from the
+   * choices for every other blank in the bank (B ➊'s ① a and ② b, B ➋'s ① 快) — and it counts as
+   * spent in its *own* dialog too, which is why the open blank is skipped only when it is not
+   * given.
    */
   const spent = useMemo(() => {
     const out = new Set<string>();
     if (!bank || bank.allowReuse) return out;
     for (const [id, value] of Object.entries(responses)) {
-      if (id === openBlankId) continue;
       const other = ctx.task.blanks?.[id];
-      if (!other || other.bank !== bank.id || other.kind === 'given') continue;
+      if (!other || other.bank !== bank.id) continue;
+      if (id === openBlankId && other.kind !== 'given') continue;
       for (const pick of pickValues(value)) out.add(pick);
     }
     return out;
   }, [bank, ctx.task, openBlankId, responses]);
+
+  /**
+   * A worked example opens the choices to be read, not answered: the student may want to see
+   * what ① A was chosen from. The store already refuses to write a `given` blank; disabling the
+   * tiles keeps the dialog from pretending a tap did something.
+   */
+  const readOnly = blank?.kind === 'given';
 
   return (
     <BlankChoiceContext.Provider value={value}>
@@ -139,8 +150,16 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
             {/* A picture set's title is the instruction the student tapped ("Tap to choose a
                 picture"); a bank's options are words with pictures, so it asks for a choice
                 rather than for a picture. */}
+            {/* A picture set's title is the instruction the student tapped ("Tap to choose a
+                picture"); a bank's options are words with pictures, so it asks for a choice
+                rather than for a picture. A worked example is not asking for anything — it is
+                being *read* — so its title names the given answer instead of inviting a pick. */}
             <DialogTitle>
-              {set ? t('label.pick_illustration') : t('msg.please_select_option')}
+              {set
+                ? t('label.pick_illustration')
+                : readOnly && blank
+                  ? t('review.spell_correct_answer', { answer: blank.answer })
+                  : t('msg.please_select_option')}
             </DialogTitle>
           </DialogHeader>
 
@@ -150,8 +169,11 @@ export function BlankChoiceProvider({ children }: { children: React.ReactNode })
                 <PictureOptionTile
                   key={item.letter}
                   item={item}
-                  selected={isChosen(item.letter)}
-                  used={!isChosen(item.letter) && spent.has(item.letter)}
+                  // In a read-only (worked-example) dialog nothing is "chosen": the given
+                  // option is shown eliminated, below.
+                  selected={!readOnly && isChosen(item.letter)}
+                  used={spent.has(item.letter)}
+                  disabled={readOnly}
                   onPick={(letter) => {
                     // A multi-select blank takes several picks, so the dialog stays open
                     // until the student closes it; a single answer closes on the tap.
