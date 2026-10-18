@@ -73,3 +73,29 @@ describe('transport scoping', () => {
     expect(times()[1]).toBe('0:00 / 0:00');
   });
 });
+
+/**
+ * A long passage must not take the transport away with it: B ➎'s article runs past a
+ * screen and a half, so pausing would otherwise mean scrolling back to the top and
+ * losing the place. The bar pins below the app header — on an opaque card, or the
+ * article shows through it as it scrolls underneath.
+ */
+describe('a full audio bar', () => {
+  it('is sticky below the app header, on an opaque card', async () => {
+    const book = await loadBook('tblt-hsk4');
+    const t = book && findTask(book, 'tblt-hsk4.u06.B.t5');
+    if (!t) throw new Error('task B ➎ did not resolve');
+
+    render(
+      <TaskAudioProvider task={t}>
+        <AudioPlayer tracks={t.audio!} />
+      </TaskAudioProvider>,
+    );
+
+    const bar = document.querySelector('section[aria-label]')!;
+    expect(bar.className).toContain('sticky');
+    // The app header is `sticky top-0 h-14`, so `top-14` is what clears it.
+    expect(bar.className).toContain('top-14');
+    expect(bar.className).toContain('bg-card');
+  });
+});

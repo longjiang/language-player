@@ -566,6 +566,20 @@ should appear:
 `label` is optional and renders as a heading above the controls — useful when a recording
 covers a long text and needs naming.
 
+#### A full bar stays in view
+
+A **full** bar — `AudioPlayer`, as opposed to the per-item pill — is **sticky** below the
+app header. B ➎'s article runs past a screen and a half, and without it pausing means
+scrolling back to the top of the article and losing the place. The offset clears the header
+(`h-14`, itself sticky at 0), and the bar stays on an opaque `bg-card` so the passage cannot
+show through it.
+
+Each bar pins **within its own block**, so A ➍'s five summary players cannot pile up on one
+another — a block's bar is pushed out as that block leaves. On mobile the pin is
+`stickyHeaderIndices` on the task's scroll view, which reaches direct children only: the
+task's own row is pinned, while a bar nested in a passage block (A ➍, D ➊) stays with its
+item, because hoisting it would detach the transport from the recording it plays.
+
 #### `AudioTrack`
 
 ```ts
@@ -1133,7 +1147,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
 | `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. Both controls are **hidden for a mock-app task**, which submits from its own panel. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
-| `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input). The transport is **scoped to this row's track keys**, so a page with several players shows progress only in the one playing |
+| `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input). The transport is **scoped to this row's track keys**, so a page with several players shows progress only in the one playing. **Sticky** below the app header while its block is on screen (web), and pinned for the task's own row on mobile — see [A full bar stays in view](#a-full-bar-stays-in-view) |
 | `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. The same pill in every place a recording is offered — beside a numbered slot and in the task's audio row, both read `① [▶|▤]`, the numeral printed by the caller as decoration. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
 | `InlineTrackButton` | The seam a widget places for an item's own recording: `TrackControls`, or nothing at all when the item has no recording |
 | `TranscriptDialogProvider` / `useTranscriptDialog` | The task's transcript dialog and its opener. One dialog per task; a play control calls `open(key)`. Resolves transcripts through `transcriptsIn(book)`, so a task that replays another task's recording still offers its text |
