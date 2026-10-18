@@ -113,3 +113,37 @@ describe('summarizeProgress', () => {
     });
   });
 });
+
+/**
+ * C ➌ is check-only: it has no scoreable blank, so a graded result can never be `complete`
+ * (that needs at least one scoreable blank, all right). Its completion is the attempt
+ * `recordChecked` writes when every question has been checked, and it must read as complete
+ * here — the TOC and the picker both go through this summary.
+ */
+describe('taskProgress — a check-only task', () => {
+  const t = task('tblt-hsk4.u06.C.t3', {
+    b1: { id: 'b1', kind: 'selfCheck', answer: '一' },
+    b2: { id: 'b2', kind: 'selfCheck', answer: '二' },
+  });
+
+  it('counts no scoreable blank', () => {
+    expect(taskProgress(t, null).scoreableCount).toBe(0);
+  });
+
+  it('is complete once the check-completion attempt is recorded', () => {
+    const p = taskProgress(t, state('tblt-hsk4.u06.C.t3', [{ result: result(true, 0, 0) }]));
+    expect(p.attempted).toBe(true);
+    expect(p.complete).toBe(true);
+  });
+
+  it('is not complete from reveals alone', () => {
+    const p = taskProgress(t, {
+      taskId: 'tblt-hsk4.u06.C.t3',
+      contentVersion: 1,
+      responses: { b1: '1' },
+      attempts: [],
+    });
+    expect(p.attempted).toBe(false);
+    expect(p.complete).toBe(false);
+  });
+});

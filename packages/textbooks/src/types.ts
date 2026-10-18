@@ -46,7 +46,19 @@ export type BlankKind =
    * pick belongs to the earlier task (`carriedFrom`), is never edited here, and is
    * never scored — changing ➎ changes what ➏ shows.
    */
-  | 'carried';
+  | 'carried'
+  /**
+   * A question the student answers in their head, then reveals the model answer to check.
+   *
+   * C ➌'s three comprehension questions are this: the key prints model sentences, not
+   * exact strings, so there is nothing a text field could be marked against — the point
+   * is to check whether you understood the recording. The blank renders a
+   * **Check answer / Hide answer** control instead of an input, its `answer` is the model
+   * sentence shown when checked, and nothing is graded. Checking all of a task's
+   * self-check questions records its completion (see `TaskResponseStore.recordChecked`),
+   * because there is no submission to complete it.
+   */
+  | 'selfCheck';
 
 /** A bank of options that `choose` blanks draw from. */
 export interface Bank {

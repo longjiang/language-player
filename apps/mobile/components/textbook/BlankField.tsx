@@ -8,6 +8,7 @@ import { ICON_MUTED, ICON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors'
 import { ChevronDown } from 'lucide-react-native';
 import { InlineImageSlot } from './InlineImageSlot';
 import { CarriedSlot } from './CarriedSlot';
+import { SelfCheck } from './SelfCheck';
 import { PictureBlankCell } from './PictureBlankCell';
 import { useBlankChoice } from './BlankChoice';
 
@@ -75,6 +76,11 @@ export function BlankField({
   // ── Another task's pick, shown read-only (B ➏ carries B ➎'s pictures) ──
   if (blank.kind === 'carried') {
     return <CarriedSlot blank={blank} layout={slotLayout} />;
+  }
+
+  // ── Self-check: no input at all, just a reveal (C ➌) ──
+  if (blank.kind === 'selfCheck') {
+    return <SelfCheck blank={blank} />;
   }
 
   // ── Worked example: pre-filled by the workbook, not scored ──

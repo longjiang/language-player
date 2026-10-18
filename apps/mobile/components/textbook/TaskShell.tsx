@@ -9,7 +9,7 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useInstructionTranslation } from '@/hooks/use-instruction-translation';
 import { useTextbookTask } from './task-provider';
 import { WordBank } from './WordBank';
-import { dialogBankIds, inlineBankIds, trailingIllustrationSlot } from '@langplayer/textbooks';
+import { dialogBankIds, inlineBankIds, isBlankScoreable, trailingIllustrationSlot } from '@langplayer/textbooks';
 import { BlankChoiceProvider } from './BlankChoice';
 import { BlankField } from './BlankField';
 import { AudioPlayer } from './AudioPlayer';
@@ -70,9 +70,16 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   /** A mock app submits itself, from its own panel — see the controls below. */
   const hasMockApp = (task.body ?? []).some((s) => s.kind === 'mockApp');
   const hasBlanks = Object.keys(task.blanks ?? {}).length > 0;
-  // Nothing to grade: every blank is a worked example or ungraded prose.
-  const hasNothingToScore = !Object.values(task.blanks ?? {}).some(
-    (b) => b.kind !== 'given' && b.kind !== 'free',
+  // Nothing to grade: every blank is a worked example, ungraded prose, a carried pick or a
+  // self-check answer.
+  const hasNothingToScore = !Object.values(task.blanks ?? {}).some(isBlankScoreable);
+  /**
+   * Whether the task asks for anything at all. A self-check task (C ➌) has no input, nothing
+   * to grade and no attempt to submit — checking its answers records its completion — so the
+   * Submit / Try again pair is not rendered rather than shown and disabled.
+   */
+  const hasAnswerable = Object.values(task.blanks ?? {}).some(
+    (b) => b.kind === 'choose' || b.kind === 'type' || b.kind === 'free',
   );
   const anyAnswer = Object.values(responses).some((v) => v.trim());
   /**
@@ -146,7 +153,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           records the attempt. Two submit controls for one task would be one too many, and
           the panel's is the one that knows which task is being answered. The result banner
           below still reports the outcome. */}
-      {!hasMockApp && (
+      {!hasMockApp && hasAnswerable && (
         <View className="flex-row flex-wrap items-center gap-3">
           <Pressable
             onPress={() => ctx.store.submit()}
