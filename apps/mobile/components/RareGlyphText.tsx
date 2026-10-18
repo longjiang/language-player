@@ -27,7 +27,7 @@ export function RareGlyphChip({
       className="rounded border border-dashed border-border bg-muted/30 px-0.5 text-center text-muted-foreground"
       style={style}
     >
-      <Text className="text-[9px] font-medium leading-none">{label}</Text>
+      <Text style={{ fontSize: 9, lineHeight: 9, fontWeight: '600' }}>?</Text>
       <Text style={{ opacity: 0 }}>{text}</Text>
     </Text>
   );
