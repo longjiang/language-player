@@ -1071,6 +1071,10 @@ on what the task asks for:
 | mock app (B ➍) | **Next** only — the panel owns Submit, one task at a time |
 | read-only (D ➍, E ➌ — nothing to answer) | **Next** only |
 
+The result banner (correct/incorrect with the score, or *Saved*) sits **above** the control
+group: the outcome is read before the buttons that act on it, and a green *Correct 8 / 8* is not
+below the thing that produced it.
+
 **Next is disabled until the task is resolved** — that is, until the store holds an un-voided
 attempt, which a graded Submit and a self-check's Mark as complete both append; a mock-app task
 resolves when its panel records All Done!. A read-only task has nothing to resolve, so its Next
