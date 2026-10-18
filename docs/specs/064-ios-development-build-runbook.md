@@ -134,6 +134,15 @@ when Metro is unreachable, installs the retained artifact, and launches it with
 the "No script URL provided" redbox. It then verifies that the device actually
 reached Metro and diagnoses an isolating network if it did not.
 
+The launch argument applies to **that launch only**. Launches from the home
+screen — including after iOS terminates the app in the background — use the
+app's persisted `RCT_jsLocation` / `ip.txt` instead, so a host from an older
+network strands them on the same redbox. Persist the current host once per
+network: in the running app, shake → dev menu → **Configure Bundler** →
+`<lan-ip>:8081`. ARCH-028 §
+[The persisted Metro host and cold launches](../arch/028-local-development-runbook.md#the-persisted-metro-host-and-cold-launches)
+has the details (including why a direct plist edit is reverted by `cfprefsd`).
+
 Useful flags: `--dry-run`, `--no-launch`, `--artifact <zip>`, `--metro-host`,
 `--metro-scheme`, `--verify-timeout`.
 
@@ -161,8 +170,11 @@ If that fails, Flask may be bound to `127.0.0.1` only.
 No rebuild is needed for JS-only edits. Reload options:
 
 - Press `r` in the Metro terminal (fastest).
-- Force-quit and reopen the app on the device (always works; also resets
-  in-memory module state — sometimes *required*, see Gotchas).
+- Force-quit and reopen the app on the device (resets in-memory module state —
+  sometimes *required*, see Gotchas). This only works while the persisted Metro
+  host matches the current network: after a LAN change the relaunch redboxes
+  `No script URL provided` — relaunch through `install-dev-build.mjs` (step 4)
+  and persist the host with Configure Bundler.
 
 Native changes (new Expo modules, config plugins, `app.config.js` edits that
 affect native code) require a **full rebuild**: repeat § 3.
@@ -178,11 +190,15 @@ sandbox.
 
 ### 7.2 "No script URL provided" after install
 The app shows `No script URL provided. Make sure the packager is running…`
-when it cannot reach Metro — most often because `ip.txt` still names an old
-LAN address. `node scripts/install-dev-build.mjs --device <udid>` prevents
-this by launching with the *current* host (`-RCT_jsLocation`) and verifying
-the device connected; if you installed manually, start Metro (§ 4) and
-force-quit/reopen the app.
+when it cannot reach Metro — most often because `ip.txt` **or the persisted
+`RCT_jsLocation`** names an old LAN address (a cold launch uses those; the
+installer's launch argument does not persist). `node
+scripts/install-dev-build.mjs --device <udid>` fixes the current launch by
+launching with the *current* host (`-RCT_jsLocation`) and verifying the device
+connected. To make later launches work, persist the host in the dev menu
+(**Configure Bundler**) — otherwise a force-quit/reopen on the new network
+returns to this redbox. See ARCH-028 §
+[The persisted Metro host and cold launches](../arch/028-local-development-runbook.md#the-persisted-metro-host-and-cold-launches).
 
 ### 7.3 Missing IAP native module on the first build
 The first dev build failed at runtime with
@@ -219,6 +235,7 @@ Known blockers:
 - [ ] `node scripts/install-dev-build.mjs --device <udid>` reached the device and launched
 - [ ] Flask reachable from the device (`curl http://<lan-ip>:5001/`)
 - [ ] App loads the JS bundle (no "No script URL provided")
+- [ ] Home-screen launch works (persisted host set with Configure Bundler, or the LAN has not changed since it was set)
 - [ ] Login works; `/user-subscription` returns from Flask
 
 ## References

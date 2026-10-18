@@ -28,6 +28,13 @@
  * highest-priority argument domain and RCTBundleURLProvider prefers over the
  * bundled ip.txt. No rebuild, no repo mutation.
  *
+ * The argument applies to THIS launch only. A later cold launch (home screen,
+ * or after iOS terminates the app in the background) falls back to the
+ * persisted `RCT_jsLocation` / `ip.txt`, which may still name the old network.
+ * Persist the current host with the dev menu's "Configure Bundler" to make
+ * home-screen launches work — see ARCH-028 § "The persisted Metro host and
+ * cold launches".
+ *
  * The host comes from the session `start-metro.sh` recorded
  * (`.dev-builds/metro-runtime.json`) when that file is fresh, so the launch
  * always matches the Metro that is actually running — including a tunnel host
