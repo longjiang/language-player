@@ -75,6 +75,18 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
     (b) => b.kind !== 'given' && b.kind !== 'free',
   );
   const anyAnswer = Object.values(responses).some((v) => v.trim());
+  /**
+   * The task's own audio row is the scroll view's second child (after the
+   * instructions) and is pinned with `stickyHeaderIndices`, so a long passage — B ➎'s
+   * article runs past a screen and a half — cannot take the transport away with it.
+   *
+   * React Native has no sticky positioning outside a ScrollView's direct children, and
+   * a bar nested in a passage block (A ➍, D ➊) cannot be hoisted without detaching it
+   * from the item it plays, so those stay with their item. The index is only passed
+   * when the row exists: `Children.toArray` drops a null child, which would shift the
+   * index onto the stimulus and pin the whole task body instead.
+   */
+  const hasTaskAudio = (task.audio ?? []).length > 0;
 
   return (
     // The playback engine wraps the whole task, so the audio row at the top and the
@@ -99,6 +111,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
       keyboardShouldPersistTaps="handled"
       contentContainerClassName="gap-5 pb-16"
       className="flex-1"
+      stickyHeaderIndices={hasTaskAudio ? [1] : undefined}
     >
       <View className="flex-row items-start gap-3">
         <View className="mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">

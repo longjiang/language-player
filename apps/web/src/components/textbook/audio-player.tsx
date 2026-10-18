@@ -33,9 +33,15 @@ export function AudioPlayer({ tracks }: { tracks: AudioTrack[] }) {
   const failed = rows.some((track) => audio.failed.has(track.key));
 
   return (
+    // Sticky, so a long passage does not take the transport away with it: B ➎'s
+    // article runs past a screen and a half, and stopping to scroll back up to pause
+    // is the wrong cost. `top-14` clears the app header (h-14, sticky at 0); each bar
+    // pins within its own block, so A ➍'s five summary players cannot pile up on one
+    // another — a block's bar is pushed out as the block ends. The row's `bg-card` is
+    // opaque on purpose: a translucent sticky bar would show the text through it.
     <section
       aria-label={t('label.subtitles')}
-      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3"
+      className="sticky top-14 z-30 flex flex-col gap-2 rounded-lg border border-border bg-card p-3"
     >
       {single ? (
         <div className="flex items-center gap-3">
