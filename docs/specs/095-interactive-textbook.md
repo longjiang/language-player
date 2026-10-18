@@ -297,9 +297,10 @@ Two surfaces answer a task: inline **blanks**, and the free-text fields behind `
 
 C ➌'s three comprehension questions have printed answers that are model sentences, not strings
 a student would reproduce — so a text field could only ever be "wrong". The blank renders no
-input at all: the question ends with a **Check answer** control, tapping it shows the model
-sentence to compare against what the student said to themselves, and the control becomes
-**Hide answer** so the question can be covered and re-tested.
+input at all: the question ends and a **Check answer** control begins on the next line (a
+block-level control, so a long question cannot push it to the edge of the column), tapping it
+shows the model sentence to compare against what the student said to themselves, and the control
+becomes **Hide answer** so the question can be covered and re-tested.
 
 - **Nothing is graded.** `selfCheck` is excluded from `isBlankScoreable`, carries no bank or
   picture set (the validator rejects both), and is skipped by the answer-key comparison, which
@@ -310,13 +311,14 @@ sentence to compare against what the student said to themselves, and the control
 - **No submit, no Try again.** A self-check task asks nothing that could be submitted, so
   `TaskShell` hides its controls when no blank is answerable (`choose`/`type`/`free`). The
   result banner is never shown, because nothing is ever submitted.
-- **Completion is recorded by the checks.** A graded result is `complete` only when at least
-  one blank is scoreable and all are right, so a check-only task would otherwise never tick.
-  Checking the task's **last** question calls `TaskResponseStore.recordChecked()`, which
-  appends the usual attempt carrying `complete: true` and no blanks — without touching
-  `submitted`/`result`, so no banner appears. It is idempotent, and hiding an answer again
-  does not un-complete the task (it has been checked). The TOC tick and the picker's
-  `complete/total` both read that attempt.
+- **Completion is explicit.** A graded result is `complete` only when at least one blank is
+  scoreable and all are right, so a check-only task would otherwise never tick. Its control
+  group carries **Mark as complete** (`TaskResponseStore.recordChecked()`), which appends the
+  usual attempt carrying `complete: true` and no blanks — without touching `submitted`/`result`,
+  so no banner appears. Checking the last answer does **not** complete the task: the student
+  decides when they are done. The button becomes *Completed* and disabled once recorded (the
+  label is idempotent, and hiding an answer again does not un-complete the task), and the TOC
+  tick and the picker's `complete/total` both read the attempt.
 - **The answer is tokenized**, so the model sentence carries readings and its words can be
   looked up like any other L2 text.
 
@@ -1057,6 +1059,26 @@ The extension follows whichever encoding is actually smaller for that image, mea
 
 The pattern to imitate is `packages/shared/src/sample-content/loaders.ts`, which keeps one module per language behind a `Record<ContentL2, () => Promise<{ default: SampleContent }>>` lazy loader map with a runtime completeness guard, so each entry is a separate chunk fetched on demand on web. Applied to textbooks the axis is the unit rather than the language: one module per unit, behind a loader map keyed by book and unit, so opening one unit does not download the whole book.
 
+## Task controls and moving on
+
+The control group at the foot of a task is the same on both platforms, and its contents depend
+on what the task asks for:
+
+| Task | Controls |
+|---|---|
+| graded (`choose` / `type` / `free` blanks) | **Submit** · **Try again** · **Next** |
+| self-check (C ➌) | **Mark as complete** (→ *Completed*) · **Next** |
+| mock app (B ➍) | **Next** only — the panel owns Submit, one task at a time |
+| read-only (D ➍, E ➌ — nothing to answer) | **Next** only |
+
+**Next is disabled until the task is resolved** — that is, until the store holds an un-voided
+attempt, which a graded Submit and a self-check's Mark as complete both append; a mock-app task
+resolves when its panel records All Done!. A read-only task has nothing to resolve, so its Next
+is available immediately. Next is **hidden on the last task** in reading order (the student
+uses the TOC), and it moves to the next task via `adjacentTasks` and the platform's href helper
+(`taskHref` on web, `mobileTaskHref` in expo-router). Re-submitting after Try again does not
+disable it: an attempt has still been recorded.
+
 ## Navigation and Information Architecture
 
 The feature is reached from **`Study` > `Tasks`**, where `Study` is the existing top-level nav group **renamed** from `Vocab`, and `Tasks` is added **below `Review`**.
@@ -1237,7 +1259,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TextbookToc` | The tree itself: collapsible units → lessons → tasks, current lesson expanded |
 | `TaskTypeIcon` | A task's `type` as an icon (`Headphones`/`BookOpen`/`MessagesSquare`/`PenLine`) with the localized type name as its accessible label |
 | `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
-| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), submit/reveal, result banner — the consistency anchor. Both controls are **hidden for a mock-app task**, which submits from its own panel. **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
+| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), the task controls, result banner — the consistency anchor. Its control group is Submit / Try again / **Mark as complete** (self-check) / **Next**, each rendered only for the tasks it applies to, with Next disabled until the task is resolved and hidden on the last task (see [Task controls and moving on](#task-controls-and-moving-on)). **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input). The transport is **scoped to this row's track keys**, so a page with several players shows progress only in the one playing. **Sticky** below the app header while its block is on screen (web), and pinned for the task's own row on mobile — see [A full bar stays in view](#a-full-bar-stays-in-view) |
 | `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. The same pill in every place a recording is offered — beside a numbered slot and in the task's audio row, both read `① [▶|▤]`, the numeral printed by the caller as decoration. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
@@ -1246,7 +1268,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `useTranscriptTranslation` | Machine-translates a transcript's lines into L1 in one request, gated by the per-L2 `display.translation` setting. Mirrors `useInstructionTranslation`, one line→one line |
 | `RecallCard` | Renders another task's saved answers, read from the local store (ADR-0044) |
 | `BlankField` | The inline blank: `given` / `choose` / `type` / `free` / `carried`, sized by `expectedLength`. A `goal` blank never renders a widget — it is filled by a mock app. A `choose` blank whose bank is offered in the dialog carries a ▾ caret while empty, so the blank advertises its choices with no pool on the page; a `given` blank on such a bank is a button that opens the same choices read-only, caret included |
-| `SelfCheck` | A self-check question: a **Check answer / Hide answer** button and, when checked, the model sentence tokenized under it. No input, no scoring; the reveal is a stored response and the task's completion is recorded when the last one is checked |
+| `SelfCheck` | A self-check question: a block-level **Check answer / Hide answer** button (it starts on its own line) and, when checked, the model sentence tokenized under it. No input, no scoring; the reveal is a stored response and the task's completion is the explicit **Mark as complete** control, not the last check |
 | `WordBank` | An option pool, in one of two shapes decided by the blanks that draw on it: buttons that fill the selected blank (`choose`), or a plain reference list to type from (`type`), with the words tokenized either way. Struck out once the student has placed a word, and bottom-aligned so a reading never moves a glyph. With every foot-of-task bank now in the dialog, the shipped book's only pools are A ➍'s typed ones |
 | `PictureSet` | Lettered image grid referenced by blanks — the picture bank, which fills the selected blank |
 | `PictureOptionTile` | One picture as a pickable tile: the picture picks the letter, the tokenized caption teaches it, and a failed image degrades to a labelled tile with an inline retry that stays pickable. Shared by the bank and by the dialog so the fallback cannot drift between them. `used` dims (and strikes, on web) an option another blank has spent, without disabling it. Fills its row's height (`h-full`, writing top, statement bottom) |
@@ -1852,11 +1874,20 @@ A dimmed and struck as eliminated — and tapping another option changes nothing
 gesture survives for content that does not opt in, and is pinned by a fixture in
 `blank-field.test.tsx`, because no shipped bank uses a pool any more.
 
-**C ➌'s self-check pass is verified in a browser.** All three questions render a *Check
-answer* control and no input; revealing the first shows its model sentence (tokenized) and turns
-the control into *Hide answer*; checking all three writes one completion attempt (the stored
-responses are `b1`–`b3` = `'1'`, `attempts[0].result.complete` is true), and the book's TOC then
-shows C ➌ ticked and lesson C at `1/4`. The page has no Submit or Try again.
+**C ➌'s self-check pass is verified in a browser.** All three questions render a *Check answer*
+control on its own line and no input; revealing the first shows its model sentence (tokenized)
+and turns the control into *Hide answer*; checking all three stores the reveals
+(`b1`–`b3` = `'1'`) without recording an attempt. The end of the task then offers *Mark as
+complete* and a disabled **Next**; marking it complete records one attempt with
+`complete: true`, turns the button into *Completed*, enables **Next**, and Next moves to C ➍ —
+the book's TOC shows C ➌ ticked and lesson C at `1/4`. A graded task's **Next** behaves the
+same way around Submit (C ➍: disabled, then enabled), a read-only task (E ➌) offers an enabled
+Next with no Submit, and the last task (E ➍) shows no Next at all.
+
+That pass also caught a real load failure on read-only tasks: `expandAcceptedVariants` returns
+the task **synchronously** when there is nothing to convert (E ➌ has no `blanks`), and the task
+provider called `.then` on that value — "*… then is not a function*". Both providers now
+normalise it with `Promise.resolve`, and `task-provider.test.tsx` renders a no-blank task.
 
 What has **not** been verified: any part of the mobile app — no screen of this feature
 has been rendered in a simulator, so mobile audio, the WebView mock-app frame, the native

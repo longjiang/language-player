@@ -17,8 +17,9 @@ import { useTextbookTask } from './task-provider';
  * scored.
  *
  * The reveal is stored as `'1'` in the task's responses rather than as component state, so it
- * survives a reload the same way an answer does (ADR-0044 stays the only store), and checking
- * the last question records the task's completion — a check-only task has no submit to do it.
+ * survives a reload the same way an answer does (ADR-0044 stays the only store). Completing the
+ * task is a separate, explicit act: its *Mark as complete* button lives with the task controls,
+ * so checking an answer never silently marks the task done.
  */
 export function SelfCheck({ blank }: { blank: BlankSpec }) {
   const ctx = useTextbookTask()!;
@@ -29,18 +30,13 @@ export function SelfCheck({ blank }: { blank: BlankSpec }) {
   const checked = useSyncExternalStore(ctx.store.subscribe, getChecked, getChecked);
 
   const toggle = () => {
-    const next = !checked;
-    ctx.store.setValue(blank.id, next ? '1' : '');
-    if (!next) return;
-    // Completion is recorded once every question in the task has been checked: there is no
-    // submit button to press, so this is what a check-only task completes on.
-    const all = Object.values(ctx.task.blanks ?? {}).filter((b) => b.kind === 'selfCheck');
-    const done = all.every((b) => b.id === blank.id || ctx.store.getValue(b.id) === '1');
-    if (done) ctx.store.recordChecked();
+    ctx.store.setValue(blank.id, checked ? '' : '1');
   };
 
   return (
-    <span className="mx-1 inline-flex flex-col items-start gap-1 align-baseline">
+    // A block-level control, not an inline one: the question ends, then its button sits on the
+    // next line, so a long question does not push the control to the right edge of the column.
+    <span className="mt-1 flex flex-col items-start gap-1">
       <button
         type="button"
         onClick={toggle}

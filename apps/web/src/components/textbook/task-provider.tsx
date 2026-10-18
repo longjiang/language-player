@@ -127,7 +127,11 @@ export function TextbookTaskProvider({ task, book, children }: TextbookTaskProvi
       setPrepared(task);
       return;
     }
-    void expandAcceptedVariants(task, toTraditional)
+    // `expandAcceptedVariants` returns the task **synchronously** when nothing has to change —
+    // a task with no blanks (E ➌, D ➍) returns before any conversion — and a promise only when
+    // the converter is asynchronous. `Promise.resolve` normalises both: calling `.then` on the
+    // bare return value is a runtime error, which is how a read-only task used to fail to load.
+    void Promise.resolve(expandAcceptedVariants(task, toTraditional))
       .then((expanded) => {
         if (!cancelled) setPrepared(expanded);
       })

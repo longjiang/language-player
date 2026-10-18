@@ -71,29 +71,34 @@ describe('a self-check question', () => {
     expect(buttons()[0]!.textContent).toBe('action.check_answer');
   });
 
-  it('records completion when every question has been checked, and only then', async () => {
+  it('stores each reveal, and checking is not itself a completion', async () => {
     await renderC3();
 
-    await act(async () => buttons()[0]!.click());
-    await act(async () => buttons()[1]!.click());
-    expect(saved()?.attempts.at(-1)?.result.complete).toBeUndefined();
-
-    await act(async () => buttons()[2]!.click());
-    const state = saved();
-    expect(state?.attempts).toHaveLength(1);
-    expect(state?.attempts[0]!.result.complete).toBe(true);
-    expect(state?.attempts[0]!.voidedAt).toBeUndefined();
-  });
-
-  it('does not un-complete the task when an answer is hidden again', async () => {
-    await renderC3();
     for (const index of [0, 1, 2]) {
       await act(async () => buttons()[index]!.click());
     }
-    expect(saved()?.attempts.at(-1)?.result.complete).toBe(true);
 
+    // The reveals are responses, so they survive a reload…
+    expect(saved()?.attempts).toHaveLength(0);
+    const stored = JSON.parse(
+      window.localStorage.getItem(TEXTBOOK_STORAGE_PREFIX + 'tblt-hsk4.u06.C.t3') ?? 'null',
+    ) as { responses: Record<string, string> };
+    expect(stored.responses).toEqual({ b1: '1', b2: '1', b3: '1' });
+
+    // …but completing the task is the explicit Mark as complete button's job, not the last
+    // check's: a check-only task has no submit, and checking every answer is not an act the
+    // student necessarily means as "done".
+    expect(saved()?.attempts).toHaveLength(0);
+  });
+
+  it('clears a reveal when it is hidden again', async () => {
+    await renderC3();
     await act(async () => buttons()[0]!.click());
-    expect(document.body.textContent).not.toContain('乘客想买今天');
-    expect(saved()?.attempts.at(-1)?.result.complete).toBe(true);
+    await act(async () => buttons()[0]!.click());
+
+    const stored = JSON.parse(
+      window.localStorage.getItem(TEXTBOOK_STORAGE_PREFIX + 'tblt-hsk4.u06.C.t3') ?? 'null',
+    ) as { responses: Record<string, string> };
+    expect(stored.responses.b1).toBe('');
   });
 });

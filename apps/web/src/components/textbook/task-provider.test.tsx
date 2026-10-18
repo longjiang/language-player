@@ -136,3 +136,35 @@ describe('resuming a task the browser has a saved attempt for', () => {
     expect(hydrationErrors()).toEqual([]);
   });
 });
+
+/**
+ * A task with no blanks at all (E ➌'s model post, D ➍'s read-along) has nothing for the
+ * script-variant expansion to convert, so `expandAcceptedVariants` returns the task
+ * **synchronously** — the overload only returns a promise when the converter does. The
+ * provider used to call `.then` on that return value, so a read-only task could not load
+ * at all ("... then is not a function"). `Promise.resolve` covers both shapes.
+ */
+describe('a task with no blanks', () => {
+  it('renders, because the synchronous expansion is normalised to a promise', async () => {
+    const book = await loadBook('tblt-hsk4');
+    const task = book && findTask(book, 'tblt-hsk4.u06.E.t3');
+    if (!task || !book) throw new Error('task E ➌ did not resolve');
+    // No `blanks` at all, which is the early return that made the expansion synchronous.
+    expect(task.blanks).toBeUndefined();
+
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <TextbookTaskProvider task={task} book={book}>
+          <span data-testid="loaded" />
+        </TextbookTaskProvider>,
+      );
+    });
+    await act(async () => {});
+
+    expect(container.querySelector('[data-testid="loaded"]')).not.toBeNull();
+    const errors = consoleError.mock.calls.map((args) => String(args[0])).join('\n');
+    expect(errors).not.toContain('then is not a function');
+    root.unmount();
+  });
+});
