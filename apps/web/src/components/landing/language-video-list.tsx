@@ -7,15 +7,26 @@ import { Video } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { detectBrowserL1 } from '@/lib/docs-locale';
 import { flagEmoji, languageName } from '@/lib/language-data';
+import { PYTHON_API_URL } from '@/lib/api-url';
+import { log, logerr } from '@/lib/logger';
 import { LANGUAGE_VIDEO_COUNTS } from '@/data/language-video-counts';
 import { LANGUAGE_FAMILIES, LANGUAGE_FAMILY_KEYS } from '@/data/language-families';
 import { isExperimentalL2 } from '@langplayer/shared';
 
-/** Alphabetical list of languages with flags + measured video counts (ARCH-025). */
+/**
+ * Alphabetical list of languages with flags + video counts (ARCH-025).
+ *
+ * The static map is the first-paint / API-down fallback; the live counts come
+ * from the daily-refreshed `language_video_counts` matview via
+ * `GET /stats/language-video-counts` (SPEC-105).
+ */
 export function LanguageVideoList() {
   const locale = useLocale();
   const t = useT();
   const [l1Code, setL1Code] = useState('en');
+  const [counts, setCounts] = useState<Record<string, number>>(
+    () => ({ ...LANGUAGE_VIDEO_COUNTS }),
+  );
   const numberFormat = new Intl.NumberFormat(locale);
 
   // Use the browser's language as L1 when it's supported, otherwise English.
@@ -23,7 +34,38 @@ export function LanguageVideoList() {
     setL1Code(detectBrowserL1(navigator.languages?.join(',') ?? navigator.language));
   }, []);
 
-  const languages = Object.entries(LANGUAGE_VIDEO_COUNTS)
+  // Live per-language counts; only override the curated keys so the list shape
+  // (families, names) stays the same.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${PYTHON_API_URL}/stats/language-video-counts`, {
+      signal: controller.signal,
+    })
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`)),
+      )
+      .then((data: { counts?: Record<string, number> }) => {
+        const live = data?.counts;
+        if (!live) return;
+        setCounts((prev) => {
+          const next = { ...prev };
+          for (const code of Object.keys(next)) {
+            const value = live[code];
+            if (typeof value === 'number') next[code] = value;
+          }
+          return next;
+        });
+        log('live language video counts loaded');
+      })
+      .catch((err: unknown) => {
+        if ((err as Error)?.name !== 'AbortError') {
+          logerr('live language video counts failed; using snapshot', err);
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  const languages = Object.entries(counts)
     .map(([code, videoCount]) => ({
       code,
       videoCount,

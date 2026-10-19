@@ -175,6 +175,7 @@ the whole language subset for a rare tag — hence the tags trigram.
 | `user_playlists.videos` | JSONB `[{id, title, duration, youtube_id}]` | No FK; ids are strings. |
 | `content_revision` | one row (`id = 1`) | Bumped by a statement trigger on every `youtube_videos` write; the subs-search cache compares `saved_at` to `updated_at`. |
 | `maintenance_runs` | ledger | Worker/Update-now rows: kind, started/finished, processed, failed, detail. |
+| `language_video_counts` | materialized view (`l2, total`) | Refreshed by the daily worker; read by `GET /stats/language-video-counts` for the landing page / language picker. |
 
 ## Write paths & derived data
 
@@ -204,7 +205,7 @@ All writes go through `utils_content.create_video` / `update_video` /
 | 2026-08-04/05 | pg_trgm GIN on `subs_l2`; FTS expression index + `(l2, views)` (SPEC-039/044) |
 | 2026-08-08 | `arb` → `ar` consolidation (ADR-0028), source of 119 duplicate groups |
 | 2026-08-14 | n-gram partial GIN + trigger + backfill (SPEC-045) |
-| 2026-10-19 | 128 duplicate groups merged; `(youtube_id, l2)` unique index; tag search UI shipped; SPEC-105 index cleanup (tags trigram, 6 drops → 16 indexes); SPEC-106 derived-data migration; unused `subs_tsv` column dropped (2,855 non-null values backed up for 7 days) |
+| 2026-10-19 | 128 duplicate groups merged; `(youtube_id, l2)` unique index; tag search UI shipped; SPEC-105 index cleanup (tags trigram, 6 drops → 16 indexes); SPEC-106 derived-data migration; unused `subs_tsv` column dropped (2,855 non-null values backed up for 7 days); `language_video_counts` matview |
 
 ## Operations / verification
 
@@ -238,8 +239,9 @@ where relname = 'youtube_videos' order by idx_scan;
   tokenizable `line` text (empty/blank), so they are NULL by design.
 - All videos now have an embedding (the 8 missing `zh` rows were embedded on
   2026-10-19); `--report` shows 0 pending / 0 missing.
-- `LANGUAGE_VIDEO_COUNT` / web counts are stale and need a full regeneration,
-  not a per-write update (SPEC-105).
+- The static `LANGUAGE_VIDEO_COUNT` / `LANGUAGE_VIDEO_COUNTS` maps are
+  build-time fallbacks; live counts come from `language_video_counts` via
+  `GET /stats/language-video-counts` (SPEC-105).
 - The admin dialog still re-sends `subs_l2` on every save; the server-side
   recompute keeps the data correct, but the dirty-check is a follow-up.
 - The daily maintenance crontab is not installed yet (ops step; the admin

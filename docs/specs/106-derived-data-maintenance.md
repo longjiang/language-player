@@ -61,7 +61,7 @@ maintained by the cheapest mechanism that can *guarantee* correctness.
 | `video_embeddings` | **`needs_embedding` dirty flag** + daily worker; admin "Update now" | ≤ 1 day, or immediate on demand | DB trigger flags every writer; FK cascade on delete |
 | `lemmatized_subs` | delete the per-video entry on subtitle/L2 change or delete; recompute on write | immediate | content-keyed cache miss after invalidation |
 | `subs_search` results | **content revision** (primary) + optional TTL (30-day backstop); admin cache-bust | immediate on write; no TTL expiry needed | stale entries are ignored, not searched for |
-| Static counts (`LANGUAGE_VIDEO_COUNT`) | regenerated from the DB (not per-write) | next refresh | see SPEC-105 |
+| Per-language counts | `language_video_counts` matview refreshed by the daily worker | daily | `GET /stats/language-video-counts`; static maps are fallbacks (SPEC-105) |
 
 Subs-search itself does **not** wait for the worker: the n-gram tokens are
 computed inline, and the full-text/trigram indexes are maintained by Postgres.
@@ -105,6 +105,8 @@ Only the metadata embedding is asynchronous.
   `content_revision` (5 s in-process cache) with a 30-day configurable
   backstop. `utils_cache.delete_from_lemmatized_subs_cache` and
   `remote_cache.delete()` handle per-video invalidation.
+- The daily worker also refreshes `public.language_video_counts` (the
+  landing-page counts) after the embedding drain.
 - Data catch-up: the 8 missing embeddings were embedded and the 114
   n-gram-missing rows reindexed; 106 remain NULL because their subtitles have
   no tokenizable `line` text (by design). `--report` now shows 0 pending and

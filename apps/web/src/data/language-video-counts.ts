@@ -1,15 +1,17 @@
 import { type ContentL2 } from '@langplayer/shared';
 
 /**
- * Measured video counts per L2 code — 2026-08-11 snapshot (ARCH-025).
+ * Build-time fallback for per-language video counts (2026-10-19 snapshot,
+ * ARCH-025). Live counts come from `GET /stats/language-video-counts`, backed
+ * by the daily-refreshed `public.language_video_counts` matview (SPEC-105).
  * Includes Tables A (Popular L2s), B (Secondary inventory), and C
- * (Experimental) only. Counts are `public.youtube_videos` row counts.
+ * (Experimental) only.
  */
 export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'af': 109,
   'am': 89,
   'ami': 122,
-  'ar': 9181,
+  'ar': 9062,
   'as': 220,
   'ase': 6034,
   'az': 1910,
@@ -22,12 +24,12 @@ export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'ceb': 91,
   'ckb': 133,
   'cnr': 405,
-  'cs': 7907,
+  'cs': 7906,
   'cy': 1189,
   'da': 15756,
-  'de': 54684,
+  'de': 54683,
   'el': 7227,
-  'en': 155004,
+  'en': 155002,
   'eo': 1625,
   'es': 42784,
   'et': 1881,
@@ -53,7 +55,7 @@ export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'ins': 263,
   'is': 1069,
   'it': 73608,
-  'ja': 37248,
+  'ja': 37246,
   'jv': 75,
   'ka': 1124,
   'kac': 123,
@@ -79,8 +81,8 @@ export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'mt': 161,
   'my': 297,
   'nan': 8625,
-  'nl': 22164,
-  'no': 11689,
+  'nl': 22163,
+  'no': 11688,
   'nsl': 93,
   'och': 259,
   'pa': 300,
@@ -115,5 +117,5 @@ export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'wo': 818,
   'yo': 64,
   'yue': 7697,
-  'zh': 121834,
+  'zh': 121840,
 };
