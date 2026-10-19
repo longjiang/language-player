@@ -132,6 +132,8 @@ docs/
 | 102 | [Affiliates and Coupon Codes](specs/102-affiliates-and-coupons.md) | 10 | 🔄 In progress |
 | 103 | [Literary Chinese (lzh) — CEDICT Definitions, HSK Levels, and Modern Chinese Translation](specs/103-lzh-cedict-and-modern-zh.md) | 4 | ✅ Complete |
 | 104 | [Rare Han Glyph Display via On-Demand Font Subsets + Chip Fallback](specs/104-rare-han-glyph-subsets.md) | — | 🔄 In progress |
+| 105 | [Video Content Index Cleanup & Schema Reproducibility](specs/105-video-content-index-cleanup.md) | 9 | ⬜ Draft |
+| 106 | [Derived Content Data Maintenance — One Pipeline, Cheapest Guarantee](specs/106-derived-data-maintenance.md) | 9 | ⬜ Draft |
 
 ## ADRs
 
