@@ -6,6 +6,11 @@ import { BookmarkCheck, Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log } from '@/lib/logger';
+import {
+  getEntryFetchQueueStats,
+  withEntryFetchSlot,
+} from '@/lib/entry-fetch-queue';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { removeCardFromStorage } from '@/hooks/use-srs';
 import { normalizeInstances } from '@/hooks/use-saved-words';
@@ -16,6 +21,10 @@ import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 // ── Module-level entry cache (lives for the lifetime of the page session) ──
 const entryFetchCache = new Map<string, DictionaryEntry | null>();
 
+/** In-flight requests, keyed by word id — dedupes double mounts (StrictMode)
+ *  and the same word rendered twice (hidden + visible sidebar copies). */
+const entryFetchInflight = new Map<string, Promise<DictionaryEntry | null>>();
+
 /**
  * Fetch the full dictionary entry for a saved word and cache it module-wide.
  * Uses the same decomposed dict + scoped id fetch as the entry detail page.
@@ -23,6 +32,10 @@ const entryFetchCache = new Map<string, DictionaryEntry | null>();
  *
  * The returned entry is normalized so its `id` matches the saved word's id —
  * this keeps the card's bookmark state (and removal) tied to the saved record.
+ *
+ * Requests are funneled through the shared entry-fetch queue (max 6 in flight)
+ * and deduped while in flight: a large saved-words list renders one card per
+ * word, and firing them all at once exhausts browser network resources.
  */
 export async function fetchSavedWordEntry(
   wordId: string,
@@ -32,6 +45,28 @@ export async function fetchSavedWordEntry(
 ): Promise<DictionaryEntry | null> {
   if (entryFetchCache.has(wordId)) return entryFetchCache.get(wordId) ?? null;
 
+  const inFlight = entryFetchInflight.get(wordId);
+  if (inFlight) return inFlight;
+
+  const stats = getEntryFetchQueueStats();
+  if (stats.active >= stats.maxConcurrency && stats.queued === 0) {
+    // One line per backlog burst (subsequent queued fetches stay silent).
+    log('entry fetches queued behind the concurrency cap', { wordId, ...stats });
+  }
+
+  const promise = loadSavedWordEntry(wordId, head, l1Code, l2Code).finally(() => {
+    entryFetchInflight.delete(wordId);
+  });
+  entryFetchInflight.set(wordId, promise);
+  return promise;
+}
+
+async function loadSavedWordEntry(
+  wordId: string,
+  head: string,
+  l1Code: string,
+  l2Code: string,
+): Promise<DictionaryEntry | null> {
   const decomposed = decomposeWordId(wordId, l2Code);
   let entry: DictionaryEntry | null = null;
   // True when we got a definitive answer (entry found, or server says missing).
@@ -41,7 +76,7 @@ export async function fetchSavedWordEntry(
   if (decomposed) {
     const url = `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2Code)}&dict=${encodeURIComponent(decomposed.dict)}&id=${encodeURIComponent(decomposed.id)}&l1=${l1Code}`;
     try {
-      const res = await fetch(url);
+      const res = await withEntryFetchSlot(() => fetch(url));
       if (res.ok) {
         const data = await res.json();
         entry = (data.entry as DictionaryEntry | undefined) ?? null;
@@ -58,11 +93,11 @@ export async function fetchSavedWordEntry(
   // saved without a resolvable prefix) — find the entry by its head form.
   if (!entry && head) {
     try {
-      const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
+      const res = await withEntryFetchSlot(() => fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: head, l2: baseCode(l2Code), l1: l1Code }),
-      });
+      }));
       if (res.ok) {
         const data = await res.json();
         const results: DictionaryEntry[] = data.results ?? [];
