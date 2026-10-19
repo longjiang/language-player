@@ -12,6 +12,7 @@ import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { log, logerr } from '@/lib/logger';
 import type {
   AdminChannel,
+  AdminChannelDetail,
   AdminShow,
   AdminVideo,
   ChannelVideo,
@@ -422,10 +423,37 @@ export async function listEpisodes(
   );
 }
 
-// ── Channels (read-only + import) ───────────────────────────────────────
+// ── Channels (detail + import + delete) ─────────────────────────────────
 
 export async function listChannels(l2: string): Promise<AdminChannel[]> {
   return request<AdminChannel[]>(`/channels?l2=${encodeURIComponent(l2)}`);
+}
+
+/** Stored channel row plus the count of videos the delete would remove. */
+export async function getChannel(
+  channelId: string,
+  l2: string,
+): Promise<AdminChannelDetail> {
+  return request<AdminChannelDetail>(
+    `/admin/channels/${encodeURIComponent(channelId)}${query({ l2 })}`,
+  );
+}
+
+/** Delete one language's channel row and every video stored under it. */
+export async function deleteChannel(
+  channelId: string,
+  l2: string,
+): Promise<{ deleted_videos: number }> {
+  const result = await request<{ deleted_videos: number }>(
+    `/admin/channels/${encodeURIComponent(channelId)}${query({ l2 })}`,
+    { method: 'DELETE' },
+  );
+  log('content-api channel deleted', {
+    channelId,
+    l2,
+    deletedVideos: result.deleted_videos,
+  });
+  return result;
 }
 
 export interface ChannelVideos {

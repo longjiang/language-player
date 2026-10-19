@@ -130,6 +130,16 @@ export interface AdminChannel {
   views: number | null;
 }
 
+/**
+ * `GET /admin/channels/<channel_id>?l2=` — one stored channel plus the number
+ * of `youtube_videos` rows the delete would remove. `stored_video_count` is
+ * not the channel's YouTube `video_count`.
+ */
+export interface AdminChannelDetail {
+  channel: AdminChannel;
+  stored_video_count: number;
+}
+
 /** `GET /admin/channels/resolve` — live YouTube channel metadata. */
 export interface ResolvedChannel {
   channel_id: string;
