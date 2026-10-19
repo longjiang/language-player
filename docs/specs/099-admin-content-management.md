@@ -297,12 +297,15 @@ stopping early loses nothing. Failure of a page surfaces the Flask error body
   description (truncated).
 - *Resolve* panel: `GET /admin/channels/resolve?channel=<ref>` shows the live
   YouTube metadata (title, handle, subscribers, video count, uploads
-  playlist) and offers *Import uploads*.
+  playlist) for the referenced channel.
+- The import card is laid out in two sections: the channel lookup (input +
+  *Look up*, hint, and the optional resolved metadata) on top, then an
+  **Import options** section holding the title filters (full width), limit
+  and talk / TV-show assignment in an aligned grid, with the circuit-break
+  toggle and the *Import uploads* / *Stop* actions in a footer row. The
+  import runs the same cursor loop as `/content/import`.
 - *Videos* expands a panel: `GET /channels/<channel_id>/videos?l2=<code>&page=N&page_size=24`
   with prev/next.
-- *Import uploads* opens the channel import controls (limit, match keywords,
-  circuit break, talk/tv_show) and runs the same cursor loop as
-  `/content/import`.
 - Channel rows are **read-only** — `public.youtube_channels` has no write
   path anywhere in the backend. This is a decision, not an omission
   (see Open Questions).
