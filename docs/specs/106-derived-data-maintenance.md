@@ -15,6 +15,7 @@
   - [SPEC-099 — Admin Content Management](099-admin-content-management.md) — the edit/delete surface
   - [SPEC-044 — Subs-Search DB Optimizations](044-subs-search-db-optimizations.md) and [SPEC-045 / ADR-0026](<../adr/0026-continua-subs-search-indexing.md>) — the n-gram token index
   - [ARCH-036 — Subs-Search Architecture](../arch/036-subs-search-architecture.md)
+  - [ARCH-037 — Video Content Schema & Index Inventory](../arch/037-video-content-schema.md)
   - [ADR-0021 — Migrate Video Content to Supabase](0021-migrate-video-content-to-supabase.md) — the metadata embeddings
   - [ARCH-034 — Video Lemmatization Cache](../arch/034-video-lemmatization-cache.md)
   - [ARCH-032 — YouTube Video Difficulty](../arch/032-youtube-video-difficulty.md) — the incremental scoring rule
@@ -320,9 +321,9 @@ Each phase is independently shippable and reversible.
     should page someone, and through which channel?
 11. **Job retention.** How long should failed `derived_jobs` rows and the
     `backup.*_20261019` tables be kept?
-12. **Trigram dependency.** If SPEC-105 drops the 6.2 GB trigram index,
-    wildcard/space subs-search needs a replacement path; does that change the
-    embedding or n-gram design?
+12. **Trigram dependency.** Resolved 2026-10-19: the `subs_l2` trigram index
+    is **kept** for wildcard/space-term queries and future grammar examples
+    (SPEC-105), so wildcard subs-search keeps its indexed path.
 13. **Single writer assumption.** Is the Flask server the only writer to
     `youtube_videos` forever, or must the triggers fully cover direct SQL /
     future services?

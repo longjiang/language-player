@@ -134,6 +134,7 @@ docs/
 | 104 | [Rare Han Glyph Display via On-Demand Font Subsets + Chip Fallback](specs/104-rare-han-glyph-subsets.md) | — | 🔄 In progress |
 | 105 | [Video Content Index Cleanup & Schema Reproducibility](specs/105-video-content-index-cleanup.md) | 9 | ⬜ Draft |
 | 106 | [Derived Content Data Maintenance — One Pipeline, Cheapest Guarantee](specs/106-derived-data-maintenance.md) | 9 | ⬜ Draft |
+| 107 | [Tag Search and Video-Tag Pills](specs/107-tag-search-and-video-tag-pills.md) | 3 | ✅ Complete |
 
 ## ADRs
 
@@ -225,6 +226,7 @@ docs/
 | 034 | [Video Lemmatization Cache](arch/034-video-lemmatization-cache.md) | The whole-video lemmatization cache — server storage, two-tier offload, key rebinding, and the client in-memory token cache |
 | 035 | [Caption Selection — which transcript a video resolves to](arch/035-caption-selection.md) | The single rule the Python backend uses to choose a YouTube caption track for a language — locale candidates,… |
 | 036 | [Subs-Search Architecture](arch/036-subs-search-architecture.md) | Subs-search — how dictionary "Examples" find and display matching video subtitles |
+| 037 | [Video Content Schema & Index Inventory](arch/037-video-content-schema.md) | As-built `youtube_videos` columns, indexes, constraints and search routing |
 
 ## Quick Reference
 
