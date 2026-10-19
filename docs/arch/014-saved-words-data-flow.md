@@ -475,6 +475,27 @@ Each row's definition is fetched **only when the row approaches the viewport**:
 
 The module-level `definitionCache: Map<string, { definition, pronunciation, partOfSpeech } | null>` survives across renders within a page session. Scrolling away and back does not re-fetch. Null entries are cached to prevent repeated failed requests.
 
+#### Sidebar and SavedWordEntryCard — Gated, Bounded Entry Fetching
+
+Every card that resolves a saved word to its full entry (`fetchSavedWordEntry`,
+used by the saved-words page, the dictionary entry sidebar, and the Related
+grid) follows two rules:
+
+1. **Visibility gate** — nothing is fetched until the card is within 300px of
+   the viewport (`IntersectionObserver`). The dictionary sidebar stays mounted
+   while collapsed, and its source list can be the user's entire saved
+   vocabulary, so fetching on mount fired one request per saved word.
+2. **Bounded concurrency + in-flight dedupe** — requests go through
+   `apps/web/src/lib/entry-fetch-queue.ts` (6 in flight max), and concurrent
+   requests for the same word id share one promise (so StrictMode's double
+   mount doesn't double the traffic).
+
+Without both, opening any entry page from a large saved-words list fired
+hundreds of `/dictionary/entry` requests in one burst — Chrome fails them with
+`net::ERR_INSUFFICIENT_RESOURCES` — and then rendered every resolved card,
+freezing the page. Measured with a 300-word saved list: 603 requests before,
+17 after (the visible cards only).
+
 ### 6. Enrich — Dictionary/LLM Entry Fetching Pipelines
 
 #### Entry-Level Fetch (`GET /dictionary/entry`)
@@ -605,7 +626,7 @@ On re-save, new instances are appended (deduped by `timestamp|form|text`), forms
 | **List components** | `apps/web/src/components/dictionary/word-list.tsx` | `WordListItem`, `WordList` — reusable primitives |
 | **Definition fetch** | `apps/web/src/components/dictionary/inline-definition.tsx` | Lazy-loaded entry fetch via IntersectionObserver |
 | **Source attribution** | `apps/web/src/components/saved-word-source.tsx` | Video/book icon + title + date |
-| **Sidebar** | `apps/web/src/components/dictionary/word-list-sidebar.tsx` | Cross-page navigation sidebar for dictionary entry pages |
+| **Sidebar** | `apps/web/src/components/dictionary/word-list-sidebar.tsx` | Cross-page navigation sidebar for dictionary entry pages — cards lazy-fetch via the bounded entry queue |
 | **Nav utility** | `apps/web/src/lib/word-list-navigation.ts` | sessionStorage-based navigation context |
 | **Route builder** | `apps/web/src/lib/entry-route.ts` | `buildEntryRoute()` — URL construction (handles CEDICT comma encoding) |
 | **Dict cache** | `apps/web/src/lib/dictionary-cache.ts` | `bulkLookupWords()`, `getCachedEntries()`, in-flight dedup |

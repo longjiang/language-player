@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
@@ -159,29 +159,62 @@ function SidebarEntryCard({
 }) {
   const router = useRouter();
   const [entry, setEntry] = useState<DictionaryEntry | null | undefined>(undefined);
+  const [fetching, setFetching] = useState(false);
   const glyphLang = useGlyphLang(l2Code);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const requestedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
+
     const load = async () => {
+      setFetching(true);
       // Search-fallback items (unknown dictionary id) resolve by head and keep
       // the real entry id; everything else resolves via its composite id.
       const e = item.dictionaryId === 'unknown'
         ? await resolveByHead(item.head, l2Code)
         : await fetchSavedWordEntry(item.id, item.head, l1Code, l2Code);
-      if (!cancelled) setEntry(e);
+      if (cancelled) return;
+      setFetching(false);
+      setEntry(e);
     };
-    void load();
-    return () => { cancelled = true; };
+
+    // Only fetch once the card is near the viewport. The sidebar stays mounted
+    // while collapsed/hidden, and the source list can be the user's entire
+    // saved-words vocabulary — fetching every item on mount exhausted the
+    // browser's network resources (ERR_INSUFFICIENT_RESOURCES) and froze the
+    // page while every resolved card rendered.
+    const el = sentinelRef.current;
+    if (!el || requestedRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting && !requestedRef.current) {
+          requestedRef.current = true;
+          observer.disconnect();
+          void load();
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    observer.observe(el);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, [item.id, item.head, item.dictionaryId, l1Code, l2Code]);
 
   let content: ReactNode;
   if (entry === undefined) {
-    // Still loading — show the head with a spinner.
+    // Still loading — show the head, with a spinner only once the fetch starts
+    // (a large list would otherwise animate hundreds of idle spinners).
     content = (
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-3">
+      <div
+        ref={sentinelRef}
+        className="flex items-center gap-2 rounded-lg border border-border bg-card p-3"
+      >
         <span className="text-sm font-medium text-muted-foreground" lang={glyphLang}>{item.head}</span>
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+        {fetching && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
       </div>
     );
   } else if (!entry) {
