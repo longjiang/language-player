@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { cn } from '@/lib/utils';
 import { Button, buttonTextClass } from '@/components/ui/button';
@@ -288,6 +288,7 @@ export function WordListSidebar({
       sidebarOpen={sidebarOpen}
       title={title}
       desktopClassName="w-56 ml-3"
+      scrollable={false}
       headerActions={
         currentIdx >= 0 ? (
           <View className="flex-row items-center gap-1">
@@ -327,11 +328,24 @@ export function WordListSidebar({
         ) : undefined
       }
     >
-      {/* List of entry cards */}
-      <View className="p-2">
-        {items.map((item) => (
+      {/* Virtualized list of entry cards. A 'saved' source list is the user's
+          entire vocabulary, and every mounted card resolves its entry (a
+          /dictionary/entry fetch on a cache/offline miss) — mapping every row
+          into a ScrollView mounted and fetched the whole list at once, which
+          is the same thundering herd web had. FlatList mounts only the rows
+          near the viewport, so only those resolve. */}
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id}
+        // The panel body is a bounded flex column; the list itself must claim
+        // that height or it grows to its content and never virtualizes.
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 8 }}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        renderItem={({ item }) => (
           <SidebarEntryCard
-            key={item.id}
             item={item}
             l1Code={l1Code}
             l2Code={l2Code}
@@ -356,8 +370,8 @@ export function WordListSidebar({
               onNavigate?.(resolvedItems, entry?.id ?? it.id, source.kind === 'wordlist' ? source.source : undefined);
             }}
           />
-        ))}
-      </View>
+        )}
+      />
     </Sidebar>
   );
 }

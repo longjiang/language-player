@@ -46,6 +46,11 @@ export interface SidebarPanelProps {
   bodyClassName?: string;
   /** Extra classes for the header row. */
   headerClassName?: string;
+  /**
+   * Set false when the children provide their own scrolling (e.g. a
+   * `FlatList`, so long lists stay virtualized instead of mounting every row).
+   */
+  scrollable?: boolean;
 }
 
 /** Card chrome shared by the persistent panel and the slide-in sheet. */
@@ -58,6 +63,7 @@ export function SidebarPanel({
   footer,
   bodyClassName,
   headerClassName,
+  scrollable = true,
 }: SidebarPanelProps) {
   const t = useT();
   const insets = useSafeAreaInsets();
@@ -88,9 +94,13 @@ export function SidebarPanel({
           )}
         </View>
       )}
-      <ScrollView className={`flex-1 ${bodyClassName ?? 'px-1 py-1'}`}>
-        {children ?? emptyState}
-      </ScrollView>
+      {scrollable ? (
+        <ScrollView className={`flex-1 ${bodyClassName ?? 'px-1 py-1'}`}>
+          {children ?? emptyState}
+        </ScrollView>
+      ) : (
+        <View className={`flex-1 ${bodyClassName ?? ''}`}>{children ?? emptyState}</View>
+      )}
       {footer && <View className="border-t border-border">{footer}</View>}
     </View>
   );
