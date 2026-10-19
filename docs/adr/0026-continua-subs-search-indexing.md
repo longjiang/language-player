@@ -327,6 +327,10 @@ space-containing terms.
 > path uses **Option E (PGroonga)** — `_pgroonga_index_ready()` /
 > `subs_l2 &@| %s` in `utils_content.py`. Order of preference at runtime is
 > n-gram tsvector → PGroonga → plain ILIKE.
+>
+> **Amendment (2026-10-19):** the leftover `subs_tsv` column was dropped
+> (SPEC-105). The live word-FTS index is an expression over `subs_l2`, and the
+> continua path uses `subs_ngram_tsv`; no query depended on `subs_tsv`.
 
 **Rationale**: Option B has the best balance of the measured trade-offs —
 medium initial cost (backfill + ~7–10 GB) versus ~25 GB for the posting

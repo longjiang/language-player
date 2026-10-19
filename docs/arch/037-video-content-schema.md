@@ -91,7 +91,6 @@ Row count: **1,045,301**; heap **866 MB**, indexes **~10.2 GB**, total
 | `word_freq` | `real` | yes | Mean Zipf frequency of the unique lemmas (ARCH-032). |
 | `difficulty` | `real` | yes | `lex_div / word_freq` (ARCH-032/033). |
 | `type` | `varchar` | yes | Content type (`other`, …). |
-| `subs_tsv` | `tsvector` | yes | **Leftover** from an aborted ALTER; ~99.7% NULL, not indexed, unused. |
 | `subs_ngram_tsv` | `tsvector` | yes | Continua token vector (unique 1-char + 2-char tokens from `subs_l2`, `line` column only), computed inline on write (SPEC-106). |
 | `needs_embedding` | `boolean` | no | SPEC-106 dirty flag; a trigger sets it on insert and on embedding-field updates. |
 | `embed_attempts` | `integer` | no | Failed drain attempts (>= 5 is shown in the health panel). |
@@ -205,7 +204,7 @@ All writes go through `utils_content.create_video` / `update_video` /
 | 2026-08-04/05 | pg_trgm GIN on `subs_l2`; FTS expression index + `(l2, views)` (SPEC-039/044) |
 | 2026-08-08 | `arb` → `ar` consolidation (ADR-0028), source of 119 duplicate groups |
 | 2026-08-14 | n-gram partial GIN + trigger + backfill (SPEC-045) |
-| 2026-10-19 | 128 duplicate groups merged; `(youtube_id, l2)` unique index; tag search UI shipped; SPEC-105 index cleanup (tags trigram, 6 drops → 16 indexes); SPEC-106 derived-data migration |
+| 2026-10-19 | 128 duplicate groups merged; `(youtube_id, l2)` unique index; tag search UI shipped; SPEC-105 index cleanup (tags trigram, 6 drops → 16 indexes); SPEC-106 derived-data migration; unused `subs_tsv` column dropped (2,855 non-null values backed up for 7 days) |
 
 ## Operations / verification
 
@@ -233,7 +232,6 @@ where relname = 'youtube_videos' order by idx_scan;
 
 ## Known issues / follow-ups
 
-- `subs_tsv` is a leftover; dropping it needs a maintenance window.
 - The trigram index is 6.2 GB for wildcard/space queries; retained for the
   future grammar-example feature (SPEC-105).
 - 106 continua rows still have `subs_ngram_tsv = NULL`; their `subs_l2` has no

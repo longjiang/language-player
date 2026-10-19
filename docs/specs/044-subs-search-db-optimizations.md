@@ -670,9 +670,9 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
   whole request in v1; acceptable because they are rare and explicit.
 - **Language-list drift**: the partial index list must match
   `subs_tsv_config()`; keep them adjacent and commented.
-- **Leftover empty `subs_tsv` column** from the aborted ALTER attempt remains
-  on `youtube_videos` (all NULL); dropping it rewrites the table, so it's
-  deferred to a maintenance window (noted in the migration file).
+- **The leftover `subs_tsv` column was dropped on 2026-10-19** (SPEC-105).
+  The live full-text index is an expression over `subs_l2`; nothing depended
+  on the column.
 - **ARCH-036 is outdated** (describes MySQL ngram) — to be updated to match
   this strategy.
 
