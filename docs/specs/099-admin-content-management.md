@@ -47,11 +47,12 @@ This spec adds that surface to `apps/admin`:
 - a **discovery** screen (SPEC-098) that reviews candidates before importing,
 - a **shows & talks** manager (list by L2, create / edit / delete, member
   videos),
-- a **channels** browser (list by L2, resolve a handle, import uploads — no
-  channel write path exists, by decision),
+- a **channels** browser (list by L2, resolve a handle, import uploads, open
+  a channel detail page, and delete a channel together with its videos for
+  that language),
 - an **unavailable sweep** screen (report first, delete opt-in).
 
-It also contains two small backend fixes (see § "Backend changes"), both in
+It also documents four backend changes (see § "Backend changes"), all in
 `zerotohero-python-server` and committed there.
 
 Everything is admin-gated server-side: the app's NextAuth credentials provider
@@ -108,7 +109,7 @@ can load `/admin/db-audit`; only the API calls fail. Feature by feature:
 | Text survey | `pages/admin/ngram.vue` | Select a show/talk/all and download subtitle text | Out of scope |
 | Lesson assignment | `pages/admin/assign-lesson-videos.vue` | Match lesson vocabulary against `subs-search`, set `level`/`lesson` | Out of scope; `level`, `lesson` and `topic` are editable fields on the video edit dialog |
 | Bulk crawl | `pages/_l1/_l2/youtube/search.vue` + `YouTubeSearchResults.vue` | Scrape Google video results, "Load N pages", Add All | `/content/discover` (the SPEC-098 port of the same scraper) |
-| Channels | `pages/_l1/_l2/youtube/channels.vue`, `components/ChannelCard.vue` | Read-only channel cards from `GET /channels`; the channel page showed playlists behind `$adminMode` | `/content/channels` — list, resolve, import uploads, view channel videos |
+| Channels | `pages/_l1/_l2/youtube/channels.vue`, `components/ChannelCard.vue` | Read-only channel cards from `GET /channels`; the channel page showed playlists behind `$adminMode` | `/content/channels` — clickable rows, channel detail page, resolve, import uploads, delete channel + its L2 videos |
 | Subtitles / text tools | `break-lines.vue`, `renumber-notes.vue`, `json-to-csv.vue`, `corpora-csv.vue`, `wiktionary-csv.vue` | Offline text munging | Out of scope (no video-management coupling) |
 
 Two Classic quirks are deliberately **not** ported:
@@ -150,7 +151,8 @@ dashboard) moves to `/users`; `/` becomes a redirect to `/users`.
 | `/content/import` | import: single · batch · channel · playlist, with cursor paging, a live result log and the language check | `POST /admin/videos/preflight`, `POST /admin/videos/add`, `/admin/videos/add-batch`, `GET /admin/channels/resolve`, `POST /admin/channels/add`, `POST /admin/playlists/add` |
 | `/content/discover` | discovery: generate/review candidates, then import selected | `POST /admin/videos/preflight`, `POST /admin/videos/discover` |
 | `/content/shows` | TV shows + talks: list by L2 (incl. hidden), create / edit / delete, member videos | `GET /tv-shows`, `GET /talks`, `GET /tv-shows|/talks/<id>/episodes`, `POST|PATCH|DELETE /admin/tv-shows|/admin/talks` |
-| `/content/channels` | channels: list by L2, resolve a handle, view channel videos, import uploads | `GET /channels`, `GET /channels/<id>/videos`, `GET /admin/channels/resolve`, `POST /admin/channels/add` |
+| `/content/channels` | channels: list by L2, click a row for its channel page, resolve a handle, import uploads | `GET /channels`, `GET /admin/channels/resolve`, `POST /admin/channels/add` |
+| `/content/channels/[channelId]` | channel detail: stored channel metadata, stored-video count, video grid + *Load more*, *Import* (deep-links to the prefilled import screen), *Delete channel* (confirm + cascade for that L2) | `GET /admin/channels/<id>?l2=`, `GET /channels/<id>/videos`, `DELETE /admin/channels/<id>?l2=` |
 | `/content/sweep` | unavailable sweep: check, review, opt-in delete | `POST /admin/videos/sweep-unavailable` |
 
 The sidebar is `apps/admin/src/components/layout/admin-shell.tsx` (client
@@ -299,7 +301,9 @@ stopping early loses nothing. Failure of a page surfaces the Flask error body
 
 - L2 select → `GET /channels?l2=<code>`; table: thumbnail, title, channel id
   (copy button), subscribers, video count, country, custom URL, views,
-  description (truncated).
+  description (truncated). Clicking a row (or its title link) opens
+  `/content/channels/<channel_id>?l2=<code>`; the *Videos* action keeps the
+  inline pager and *Import* keeps filling the lookup card.
 - *Resolve* panel: `GET /admin/channels/resolve?channel=<ref>` shows the live
   YouTube metadata (title, handle, subscribers, video count, uploads
   playlist) for the referenced channel.
@@ -309,11 +313,22 @@ stopping early loses nothing. Failure of a page surfaces the Flask error body
   and talk / TV-show assignment in an aligned grid, with the circuit-break
   toggle and the *Import uploads* / *Stop* actions in a footer row. The
   import runs the same cursor loop as `/content/import`.
-- *Videos* expands a panel: `GET /channels/<channel_id>/videos?l2=<code>&page=N&page_size=24`
-  with prev/next.
-- Channel rows are **read-only** — `public.youtube_channels` has no write
-  path anywhere in the backend. This is a decision, not an omission
-  (see Open Questions).
+- **Channel detail** (`/content/channels/[channelId]?l2=…`): the header shows
+  the stored channel metadata (thumbnail, title, channel id, subscribers,
+  YouTube upload count, country, custom URL, description) and a
+  `stored_video_count` badge. Actions:
+  - *Import* deep-links to
+    `/content/import?mode=channel&l2=<code>&channel=<ref>`, which opens the
+    Channel tab with the language and reference prefilled.
+  - *Delete channel* opens a confirmation naming the exact number of stored
+    videos, then calls `DELETE /admin/channels/<channel_id>?l2=<code>`. The
+    delete is **L2-scoped**: it removes the channel row and every
+    `youtube_videos` row for `(channel_id, l2)` and leaves other languages'
+    registrations and videos untouched.
+  - The video grid pages `GET /channels/<channel_id>/videos?l2=<code>&page=N&page_size=24`
+    with *Load more*; cards open the video on YouTube.
+- Channel rows are **deletable** (not fully read-only). Create/edit/hide still
+  have no backend path — see Open Questions.
 
 ### `/content/sweep`
 
@@ -338,10 +353,13 @@ Using the public routes here is acceptable because they are **read-only** and
 their payload is the same catalogue the public site already serves; the
 console never writes through them. The write routes it does use
 (`/admin/tv-shows`, `/admin/talks`, `/admin/videos`, `/admin/channels/add`,
-`/admin/playlists/add`, `/admin/videos/discover`,
-`/admin/videos/sweep-unavailable`) are all on `admin_bp` behind the
-blueprint-level `require_admin()` hook, so a demoted admin's stale session
-still gets 403s on every mutation.
+`DELETE /admin/channels/<id>`, `/admin/playlists/add`,
+`/admin/videos/discover`, `/admin/videos/sweep-unavailable`) are all on
+`admin_bp` behind the blueprint-level `require_admin()` hook, so a demoted
+admin's stale session still gets 403s on every mutation. The channel detail
+lookup (`GET /admin/channels/<id>`) is also admin-only: it returns the stored
+row plus the stored-video count, which is what the delete confirmation
+promises.
 
 `GET /tv-shows/<id>/episodes` and `/talks/<id>/episodes` are called **with an
 explicit `?l2=`** even after the `_show_dict` fix, because the fallback path
@@ -350,7 +368,7 @@ knows is cheaper and unambiguous.
 
 ## Backend changes
 
-Two changes in `zerotohero-python-server` (a separate Git repository; each is
+Four changes in `zerotohero-python-server` (a separate Git repository; each is
 committed there):
 
 ### 1. `utils_content._show_dict` is defined twice
@@ -423,9 +441,28 @@ POST /admin/videos/preflight   { "l2": "ja", "youtube_ids": ["dQw4w9WgXcQ"] }
   existing structural test enumerates every rule on the blueprint and
   requires 401/403, so it covers this route too.
 
-No other route changes. Documented in
-[ARCH-003](../arch/003-python-backend-architecture.md) and in the SPEC-039
-§ 5.8 route list note.
+### 4. `GET` / `DELETE /admin/channels/<channel_id>` (new)
+
+- `GET /admin/channels/<channel_id>?l2=<code>` returns
+  `{ "channel": <youtube_channels row>, "stored_video_count": N }`.
+  `stored_video_count` counts `youtube_videos` rows for `(channel_id, l2)` —
+  not the channel's YouTube `video_count` — so the delete confirmation names
+  exactly what will be removed. 404 for an unknown row, 400 for a bad `l2`.
+- `DELETE /admin/channels/<channel_id>?l2=<code>` removes the channel row and
+  every `youtube_videos` row for `(channel_id, l2)`. It reuses the
+  single-video derived-data cleanup (lemma cache + `video_embeddings`) and
+  returns `{ "deleted_videos": N }`. Other languages' registrations and videos
+  are untouched. 404 when the channel row does not exist.
+
+Both are on `admin_bp`, so the blueprint-level `require_admin()` covers them.
+`utils_content.get_channel`, `count_channel_videos` and `delete_channel`
+implement the reads/writes; `test_admin_video_import.py` covers the routing,
+the 404/400 paths, the admin gate and the L2 scoping. This reverses the
+earlier "channels are read-only" decision and resolves the delete half of the
+channel-CRUD open question.
+
+No other route changes. [ARCH-003](../arch/003-python-backend-architecture.md)
+carries the updated `admin_bp` route list.
 
 ## Components & files
 
@@ -439,7 +476,8 @@ No other route changes. Documented in
 | `apps/admin/src/app/content/import/page.tsx` | Single / batch / channel / playlist importer |
 | `apps/admin/src/app/content/discover/page.tsx` | Candidate review + import |
 | `apps/admin/src/app/content/shows/page.tsx` | TV shows + talks manager |
-| `apps/admin/src/app/content/channels/page.tsx` | Channels browser + resolve + import |
+| `apps/admin/src/app/content/channels/page.tsx` | Channels browser + resolve + import; row click opens the detail page |
+| `apps/admin/src/app/content/channels/[channelId]/page.tsx` | Channel detail: metadata, video grid + load more, import deep-link, delete confirm |
 | `apps/admin/src/app/content/sweep/page.tsx` | Unavailable sweep |
 | `apps/admin/src/components/content/video-dialog.tsx` | Create/edit one video (all `ADMIN_VIDEO_WRITABLE` fields) |
 | `apps/admin/src/components/content/show-dialog.tsx` | Create/edit one TV show or talk |
@@ -448,9 +486,9 @@ No other route changes. Documented in
 | `apps/admin/src/hooks/use-auth-ready.ts` | Wait for the mirrored access token before the first fetch |
 | `apps/admin/src/lib/content-api.ts` | Typed clients for every content route |
 | `apps/admin/src/lib/video-ids.ts` | Extract ids from pasted ids/URLs |
-| `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, import/discovery/sweep result types |
-| `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)` |
-| `zerotohero-python-server/routes/admin.py` | `q` query parameter, `POST /admin/videos/preflight` |
+| `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, `AdminChannelDetail`, import/discovery/sweep result types |
+| `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)`, `get_channel` / `count_channel_videos` / `delete_channel` |
+| `zerotohero-python-server/routes/admin.py` | `q` query parameter, `POST /admin/videos/preflight`, `GET` / `DELETE` on `/admin/channels/<id>` |
 | `zerotohero-python-server/test_admin_videos_list.py` | `q` filter + escaping + route tests |
 | `zerotohero-python-server/test_content_shows.py` | `_show_dict` regression test (`l2Code` present, keys preserved) |
 | `zerotohero-python-server/test_admin_video_preflight.py` | Preflight decisions and validation (no DB access) |
@@ -466,9 +504,10 @@ wherever they already say the right thing (`action.search`, `action.save`,
 `title.tv_shows`, `title.episodes`, `label.level`, `label.status`,
 `label.videos`, `label.subscribers`, `msg.no_videos_found`,
 `msg.no_shows_found`, `msg.confirm_remove_video`, `msg.loading`,
-`error.general`, …). The admin app still renders English only (SPEC-060 §
-i18n); the keys exist so the convention holds and a future locale toggle
-works.
+`action.delete_channel`, `msg.confirm_delete_channel`, `msg.channel_deleted`,
+`msg.stored_videos_count`, `error.general`, …). The admin app still renders
+English only (SPEC-060 § i18n); the keys exist so the convention holds and a
+future locale toggle works.
 
 **Watch out when reusing a key: placeholder keys need their arguments.**
 Ten call sites initially reused an existing key purely for its English text
@@ -539,13 +578,25 @@ videos / import / discover / shows / channels / sweep against a real
 language. Login requires `app_metadata.is_admin = true`; Flask's CORS
 allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
 
+### Channel detail & delete (2026-10-19)
+
+- Backend: `python3.10 -m pytest test_admin_video_import.py` — 78 passed,
+  including six new cases for `GET` / `DELETE /admin/channels/<id>` (stored
+  count, 404/400, admin gate, L2-scoped deletion, lemma-cache cleanup).
+- Admin: `tsc --noEmit` and ESLint pass for the changed files.
+- Manual: no local admin account was available (`tester.mary` / `tester.bob`
+  report `isAdmin: false`), so the detail page, delete confirmation and
+  load-more flow still need one click-through by an admin.
+
 ## Known limitations
 
 - **No single-video GET.** `GET /admin/videos/<id>` does not exist, so the
   edit dialog is fed from the loaded list row and there is no
   `/content/videos/<id>` deep link. Adding the endpoint is an Open Question.
-- **Channel rows are read-only** — the backend has no `youtube_channels`
-  write path.
+- **Channel delete is L2-scoped, and only delete exists.** Deleting a channel
+  removes its row and every video stored under it in the selected language;
+  other languages' registrations are untouched. There is still no
+  create/edit/hide path for `youtube_channels`.
 - **Deleting a show does not detach its videos** (the backend deletes only
   the show row), so orphans keep their `tv_show` / `talk` id until edited.
 - **Cross-language shows list is approximate.** The `l2` returned by
@@ -588,8 +639,8 @@ allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
   (and `/content/videos/[id]` a real page)?
 - Should `GET /admin/videos` return a total count (`meta.filter_count`) so the
   table can show "1–50 of N" and page properly?
-- Should channel row CRUD be added to Flask (create/edit/hide
-  `youtube_channels`), or are channel rows purely a mirror of YouTube?
+- Should channel rows gain create/edit/hide in Flask now that delete exists,
+  or should they stay a read-only mirror apart from deletion?
 - Should duplicate detection (`youtube_id` / identical `subs_l2`, Classic's
   `db-audit`) be ported into the videos table as a highlighted flag?
 - Should the importer remember "term X was searched on date Y" so discovery
