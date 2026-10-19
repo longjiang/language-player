@@ -72,3 +72,19 @@ CREATE INDEX video_embeddings_hnsw_l2_arb
 ON public.video_embeddings USING hnsw (embedding vector_cosine_ops)
 WHERE kind = 'metadata' AND model = 'gemini-embedding-2@1024' AND l2 = 'arb';
 ```
+
+## Amendment (2026-10-19) — duplicate rows resolved, uniqueness enforced
+
+Changing only `l2` left duplicate `(youtube_id, l2)` rows for the 119 videos
+that already existed in `ar`. On 2026-10-19 those 128 duplicate groups
+(119 `ar` plus 9 repeated imports/admin creates elsewhere) were merged: the
+keeper was chosen by user references, completeness, views and id; the handful
+of `user_likes` / `user_watch_history` references were remapped; no playlist
+referenced a dropped id. Removed rows are preserved in
+`backup.youtube_videos_dedupe_20261019` (plus the user-table backups).
+
+`youtube_videos_youtube_id_l2_key` now enforces one row per
+`(youtube_id, l2)`, and `POST /admin/videos` returns `409` for a duplicate.
+See [SPEC-105](../specs/105-video-content-index-cleanup.md) for the index
+inventory and the dedupe context.
+
