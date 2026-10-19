@@ -1,4 +1,5 @@
 import {
+  Activity,
   Clapperboard,
   Compass,
   Film,
@@ -55,6 +56,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/content/shows', labelKey: 'title.shows_and_talks', icon: Clapperboard },
       { href: '/content/channels', labelKey: 'title.channels', icon: Tv },
       { href: '/content/sweep', labelKey: 'title.unavailable_videos', icon: TriangleAlert },
+      { href: '/content/health', labelKey: 'title.content_health', icon: Activity },
     ],
   },
 ];

@@ -463,3 +463,60 @@ export async function countVideos(
   const text = await res.text();
   return Number.parseInt(text, 10) || 0;
 }
+
+// ── Content health / derived-data maintenance (SPEC-106) ────────────────
+
+export interface MaintenanceRun {
+  kind: string;
+  started_at: string | null;
+  finished_at: string | null;
+  processed: number;
+  failed: number;
+  detail: string | null;
+}
+
+export interface ContentHealth {
+  pending_embeddings: number;
+  failed_embeddings: number;
+  missing_embeddings: number;
+  missing_ngram: number;
+  revision: { rev: number; updated_at: string } | null;
+  last_run: MaintenanceRun | null;
+}
+
+export interface EmbeddingRunResult {
+  processed: number;
+  failed: number;
+  remaining: number;
+}
+
+export interface NgramRunResult {
+  processed: number;
+  remaining: number;
+}
+
+export async function getContentHealth(): Promise<ContentHealth> {
+  return request<ContentHealth>('/admin/content-health');
+}
+
+export async function runEmbeddings(limit = 50): Promise<EmbeddingRunResult> {
+  const body = { limit };
+  return request<EmbeddingRunResult>(
+    '/admin/maintenance/run-embeddings',
+    jsonInit('POST', body),
+    body,
+  );
+}
+
+export async function reindexNgram(limit = 100): Promise<NgramRunResult> {
+  const body = { limit };
+  return request<NgramRunResult>(
+    '/admin/maintenance/reindex-ngram',
+    jsonInit('POST', body),
+    body,
+  );
+}
+
+export async function clearSearchCache(): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>('/admin/cache/bust', { method: 'POST' });
+}
