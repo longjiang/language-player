@@ -42,7 +42,7 @@ import {
   Search,
   Upload,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type Mode = 'single' | 'batch' | 'channel' | 'playlist';
@@ -116,6 +116,25 @@ export default function ImportPage() {
   const [checking, setChecking] = useState(false);
   const [confirm, setConfirm] = useState<{ description: string; run: () => void } | null>(null);
   const mismatchDescription = useMismatchDescription();
+
+  // The channel detail page deep-links here with `?mode=channel&l2=&channel=`.
+  // The language is still an explicit admin choice (SPEC-099), never a default.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedMode = params.get('mode');
+    const requestedL2 = params.get('l2');
+    const requestedChannel = params.get('channel');
+    if (
+      requestedMode === 'single' ||
+      requestedMode === 'batch' ||
+      requestedMode === 'channel' ||
+      requestedMode === 'playlist'
+    ) {
+      setMode(requestedMode);
+    }
+    if (requestedL2?.trim()) setL2(requestedL2.trim());
+    if (requestedChannel?.trim()) setChannelRef(requestedChannel.trim());
+  }, []);
 
   function options() {
     return {
