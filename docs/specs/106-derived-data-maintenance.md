@@ -60,7 +60,7 @@ maintained by the cheapest mechanism that can *guarantee* correctness.
 | `subs_ngram_tsv` | **synchronous** token computation in `create_video` / `update_video` | immediate | trigger remains the safety net for non-app writers |
 | `video_embeddings` | **`needs_embedding` dirty flag** + daily worker; admin "Update now" | ≤ 1 day, or immediate on demand | DB trigger flags every writer; FK cascade on delete |
 | `lemmatized_subs` | delete the per-video entry on subtitle/L2 change or delete; recompute on write | immediate | content-keyed cache miss after invalidation |
-| `subs_search` results | **content revision + 24 h TTL**; admin cache-bust | immediate on write/revision, ≤ 24 h backstop | stale entries are ignored, not searched for |
+| `subs_search` results | **content revision** (primary) + optional TTL (30-day backstop); admin cache-bust | immediate on write; no TTL expiry needed | stale entries are ignored, not searched for |
 | Static counts (`LANGUAGE_VIDEO_COUNT`) | regenerated from the DB (not per-write) | next refresh | see SPEC-105 |
 
 Subs-search itself does **not** wait for the worker: the n-gram tokens are
@@ -71,13 +71,13 @@ Only the metadata embedding is asynchronous.
 
 | Question | Decision |
 |---|---|
-| Worker cadence | **Daily cron on the Flask VPS** (the `prune_cache.py` pattern), plus an admin **"Update now"** action for immediate work. The scheduler is pluggable: a Supabase `pg_cron`/Edge Function or a systemd worker can replace the cron without changing the worker code. |
+| Worker cadence | **Supabase `pg_cron`** (available, not yet installed) + `pg_net` → a protected Flask maintenance endpoint, with a VPS cron as the fallback. `pg_cron` runs SQL only, so it schedules a call — it cannot call Gemini itself. The admin **Update now** action uses the same endpoint. |
 | Latency | Embeddings: ≤ 1 day automatically, immediate on demand. Sub-search: immediate (inline n-gram); no daily wait. |
 | Rescore on subtitle edit | **Synchronous** — never serve stale scores. Delete the lemma cache first; if recompute fails, set the scores to NULL so they are visibly missing rather than silently stale. |
 | Queue shape | A **`needs_embedding` flag on `youtube_videos`** (plus attempts/error/requested_at) is enough. No separate `derived_jobs` table. |
 | L2 changes | **Supported**: delete the embedding + flag, recompute n-gram/scores, delete the lemma cache; the worker re-embeds with the new `l2`. |
 | Embedding model changes | No change now. Keep `model`/`kind` and a config-driven worker so a future versioned re-embed is a migration, not a redesign. |
-| Cache TTL | **24 hours** (the current code has **no TTL**), plus a revision check and an admin cache-bust. |
+| Cache TTL | **Revision check is the primary invalidation** (every write bumps it), so no 24 h TTL is needed. Keep a **30-day backstop**, configurable to `0` (indefinite), plus the admin cache-bust. The current code has **no TTL** at all. |
 | Deploy backfill | Manual one-off; the worker does not auto-drain the initial 8 + 36 rows. |
 | Alerting | Admin health panel + failed-row list; email/log thresholds (no pager). |
 | Retention | **7 days** for failed state and the `backup.*_20261019` tables. |
@@ -180,11 +180,50 @@ Worker `scripts/maintain_derived_data.py` (tracked, `python3.10`):
    them (health panel) but does not auto-flag them, so the initial 8 + 36
    backlog stays a deliberate one-off.
 
-Schedule: the VPS crontab runs the worker **daily** (e.g. `15 3 * * *`) and
-logs to `/var/log/langplayer-derived.log`; the admin "Update now" button calls
-the same drain synchronously for one bounded batch. Also add
-`video_embeddings.video_id → youtube_videos(id) ON DELETE CASCADE` so any
-delete path cleans the vector.
+Schedule — two supported options, same worker:
+
+- **Supabase `pg_cron` (preferred if Supabase should own the schedule).**
+  `pg_cron` 1.6.4 and `pg_net` 0.20.4 are available on the project (not yet
+  installed). `pg_cron` runs SQL only, so it cannot call Gemini; it calls a
+  protected Flask endpoint that runs one bounded batch:
+
+  ```sql
+  create extension if not exists pg_cron;
+  create extension if not exists pg_net;
+
+  select cron.schedule(
+    'embed-videos',
+    '15 3 * * *',
+    $$
+      select net.http_post(
+        url := 'https://python.zerotohero.ca/admin/maintenance/run-embeddings',
+        headers := jsonb_build_object(
+          'Content-Type', 'application/json',
+          'X-Maintenance-Secret',
+          (select decrypted_secret from vault.decrypted_secrets
+           where name = 'maintenance_secret')
+        ),
+        body := '{"limit": 50}'::jsonb,
+        timeout_milliseconds := 100000
+      );
+    $$
+  );
+  ```
+
+  The endpoint accepts `limit` (≤ 50), processes one batch, and returns
+  `{processed, failed, remaining}`. Store the secret in Supabase Vault
+  (`supabase_vault` is installed); the endpoint checks it before doing any
+  work. `pg_net` is asynchronous — the cron job only fires the request; the
+  backlog and the last response are visible in the health panel
+  (`net._http_response`).
+- **VPS cron (fallback, fewest moving parts).** `15 3 * * * cd /srv/flask &&
+  python3.10 scripts/maintain_derived_data.py`, logging to
+  `/var/log/langplayer-derived.log`.
+
+Either way the admin **Update now** button calls the same drain function for
+one bounded batch, and the endpoint/worker is idempotent (safe to run twice).
+Also add `video_embeddings.video_id → youtube_videos(id) ON DELETE CASCADE` so
+any delete path cleans the vector.
 
 ### 3. Caches: version, don't search
 
@@ -195,10 +234,16 @@ delete path cleans the vector.
   one bump; the import's one-insert-per-video still bumps per video, which is
   negligible.)
 - Subs-search entries become `{saved_at, videos}`. On read, a `pg`-namespace
-  entry is a miss when `saved_at < content_revision.updated_at` **or older
-  than 24 hours**. Read the revision once per request and cache it in-process
-  for ~5 s. The current code has **no TTL** (manual deletion only); the 24 h
-  TTL is the backstop, not the primary invalidation.
+  entry is a miss when `saved_at < content_revision.updated_at`. Read the
+  revision once per request and cache it in-process for ~5 s. This is the
+  primary invalidation: **every write bumps the revision, so a 24 h TTL is not
+  needed for correctness**. Keep a long backstop anyway — default **30 days**,
+  configurable to `0` (indefinite) — to cover a missed/broken trigger and
+  entries written before the revision mechanism existed. On deploy, bump the
+  revision once so every pre-existing entry is a miss. The current code has
+  **no TTL** at all (manual deletion only). A TTL only makes reads miss; it
+  does not delete files — if unbounded disk becomes a concern, add a prune
+  step for `cache/subs_search`.
 - Admin cache-bust: `POST /admin/cache/bust` bumps `content_revision` (every
   old entry immediately becomes a miss) and deletes the local
   `cache/subs_search` files; the Content health panel gets a **Clear search
@@ -273,7 +318,7 @@ Each phase is independently shippable and reversible.
 |---|---|---|
 | 0 | Correct the docs listed below; run the one-time n-gram backfill (36 rows) and embed the 8 missing videos | current data correct |
 | 1 | Shared tokenizer; n-gram on write; trigger fix; admin `subs_l2` dirty-check; tests | imports/edits indexed immediately |
-| 2 | `content_revision`; cache envelope + 24 h TTL; lemma-cache delete; `video_embeddings` FK cascade; tests | deletes/edits stop leaking through caches |
+| 2 | `content_revision`; cache envelope + revision check (optional TTL backstop); lemma-cache delete; `video_embeddings` FK cascade; tests | deletes/edits stop leaking through caches |
 | 3 | `needs_embedding` columns + trigger + tracked embedding module + daily cron + **Update now** worker + report-only reconciliation | new/updated videos embedded within a day, or on demand |
 | 4 | Content-health endpoint/panel (Update now, reindex missing n-gram, clear cache); alerting | the invariant is observable and recoverable |
 
@@ -329,6 +374,10 @@ Each phase is independently shippable and reversible.
   report-only reconciliation surfaces rows that bypassed them. A writer that
   disables triggers would still be invisible — the backstop is a manual review,
   not silence.
+- **pg_cron/pg_net dependence.** The cron job only fires an HTTP request; if
+  the Flask endpoint is down or the secret is wrong, `pg_net` records a failed
+  response and the backlog grows. The health panel / `net._http_response` is
+  the check; the next daily run retries.
 - **Doc drift.** SPEC-096 currently documents “the n-gram index is not
   refreshed”; ADR-0021 documents a one-time embedding backfill. Both must be
   amended with this spec, not after it.
@@ -341,8 +390,8 @@ Each phase is independently shippable and reversible.
 - **ADR-0021** — embeddings are maintained incrementally now; add the FK
   cascade and the “absent, never stale” rule.
 - **SPEC-044 / ARCH-036** — replace “nightly backfill” with the inline path +
-  the daily report-only reconciliation; document the cache revision and 24 h
-  TTL instead of “manual clearing only”.
+  the daily report-only reconciliation; document the cache revision and the
+  long/optional TTL instead of “manual clearing only”.
 - **SPEC-099** — document that only changed subtitles are sent, and that a
   subtitle edit re-indexes and re-scores.
 - **ARCH-034** — its claim that a subtitle edit invalidates the whole-video
@@ -354,11 +403,10 @@ Each phase is independently shippable and reversible.
 
 Resolved 2026-10-19 (kept here so the reasoning is visible):
 
-1. **Worker cadence and ownership.** Daily cron on the Flask VPS (the
-   `prune_cache.py` pattern), plus an admin **Update now** action. The VPS
-   administrator owns the crontab; the backend repo owns the script; the
-   Content health panel owns visibility. The scheduler is pluggable (Supabase
-   `pg_cron`/Edge Function or a systemd worker) without changing the worker.
+1. **Worker cadence and ownership.** Supabase `pg_cron` + `pg_net` calls a
+   protected Flask endpoint daily (preferred); VPS cron is the fallback.
+   Supabase owns the schedule, the backend owns the endpoint/secret, and the
+   Content health panel owns visibility. The worker stays Python either way.
 2. **Acceptable latency.** ≤ 1 day for embeddings; immediate via **Update
    now**. Subs-search is immediate (inline n-gram), so it never waits for the
    worker.
@@ -373,8 +421,9 @@ Resolved 2026-10-19 (kept here so the reasoning is visible):
    model is a versioned re-embed (new rows/indexes, switch `VECTOR_MODEL`, drop
    the old set), not a redesign. If two models must coexist, the flag becomes a
    per-model job table.
-7. **Cache TTL.** 24 hours (the current code has **no TTL**), plus the revision
-   check and the admin cache-bust.
+7. **Cache TTL.** The revision check is primary (every write bumps it); no
+   24 h TTL. Keep a 30-day configurable backstop (`0` = indefinite), plus the
+   admin cache-bust.
 8. **Deploy backfill.** Manual one-off. The reconciliation report lists missing
    rows but does not auto-flag them.
 9. **Alerting.** Thresholds: `needs_embedding > 1,000`, `embed_attempts >= 5`

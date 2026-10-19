@@ -183,7 +183,8 @@ All writes go through `utils_content.create_video` / `update_video` /
   worker, with an admin **Update now** action (≤ 1 day, or on demand).
 - **lemmatization cache** — written on import, never invalidated; SPEC-106.
 - **subs-search result cache** — no TTL today; SPEC-106 proposes a content
-  revision plus a 24 h TTL and an admin cache-bust.
+  revision (every write bumps it) plus a long/optional TTL (30-day backstop,
+  `0` = indefinite) and an admin cache-bust.
 
 ## Migration history
 
