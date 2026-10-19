@@ -6,7 +6,7 @@
 - **Feature**: Audit the `public.youtube_videos` index set, retire indexes that
   no query uses, replace the ones whose shape no longer matches their query,
   and make the surviving set reproducible from a tracked migration
-- **Status**: draft
+- **Status**: complete (2026-10-19)
 - **Created**: 2026-10-19
 - **ROADMAP Phase**: Phase 9: Backend Consolidation
 - **See also**:
@@ -127,6 +127,29 @@ the proposed cleanup:
 6. **Retention: 7 days.** Drop `backup.*_20261019` on/after 2026-10-26 and
    keep failed maintenance state for 7 days (SPEC-106).
 
+## Implementation (2026-10-19)
+
+Applied on the live database:
+
+- Built `idx_youtube_videos_tags_trgm` (235 MB, valid). Rare tags use it
+  (`zoonotic`: bitmap index scan, ~2 ms); common tags still use the
+  `(l2, views)` walk, which stops after the limit.
+- Dropped the six retired indexes (`idx_youtube_videos_youtube_id`,
+  `youtube_videos_subs_l2_fts_ru_idx`, `idx_youtube_videos_tags`,
+  `idx_youtube_videos_date`, `idx_youtube_videos_topic`,
+  `idx_youtube_videos_type`).
+- Surviving set: **16 indexes** (ARCH-037). Verified plans: `(youtube_id, l2)`
+  uses the unique index, Russian rare FTS uses the global `subs_tsv_idx`, and
+  tag search uses the trigram for rare tags.
+- Tracked migrations:
+  `202610190002_video_content_indexes.sql` (keep set + tags trigram) and
+  `202610190003_video_content_index_drops.sql` (drops); both validated
+  statement-by-statement.
+- The two-week observation window was skipped at the product owner's request;
+  the drops rest on the recorded zero-scan / redundant evidence.
+- Still deferred: dropping the `subs_tsv` column and regenerating the stale
+  `LANGUAGE_VIDEO_COUNT` / web counts.
+
 ## Proposed cleanup
 
 ### Keep (15) + add (1) = 16 final
@@ -201,9 +224,8 @@ exact-token (`(',' || tags || ',') ILIKE '%,news,%'`) or a normalized
 
 ## Tracked schema migration
 
-Create **one idempotent file**, e.g.
-`supabase/migrations/202610190002_video_content_indexes.sql`, that defines the
-surviving set:
+The keep set lives in
+`supabase/migrations/202610190002_video_content_indexes.sql`:
 
 ```sql
 create index if not exists idx_youtube_videos_l2
@@ -222,9 +244,9 @@ It is a no-op on the current database and creates everything on a fresh one.
 autocommit), so keep them in a separate section/file from the `BEGIN`-wrapped
 DDL.
 
-The **drops** are a separate, reviewed migration (they are destructive and
-irreversible except by rebuild). Add them after the observation window and
-record the decisions in [ARCH-037](../arch/037-video-content-schema.md).
+The **drops** live in `202610190003_video_content_index_drops.sql`; they
+are destructive but reversible by rebuilding the index. The decisions are
+recorded in [ARCH-037](../arch/037-video-content-schema.md).
 
 ## Verification
 
@@ -260,8 +282,8 @@ record the decisions in [ARCH-037](../arch/037-video-content-schema.md).
   normalized `video_tags` table would be the long-term answer) — see SPEC-107.
 - Should the `subs_tsv` leftover column be dropped in the same maintenance
   window as the index cleanup, or deferred separately?
-- When should the six drops be executed — immediately, or after a fixed
-  two-week observation window? The migration file is ready either way.
+- ~~When should the six drops be executed?~~ **Applied 2026-10-19** at the
+  product owner's request (see "Implementation").
 - Should `LANGUAGE_VIDEO_COUNT` be regenerated from the DB as part of this
   cleanup, or in a separate content-audit task?
 - How long should `backup.*_20261019` be retained before it is dropped?

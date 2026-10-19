@@ -163,6 +163,14 @@ subtitle FULLTEXT search.
   Postgres connection per language, and a quota-aware abort with resume. Loader:
   `tmp/supabase-test/supabase-embed-metadata.py`.
 
+> **Amendment (2026-10-19):** metadata embeddings are maintained
+> incrementally now. A DB trigger sets `youtube_videos.needs_embedding` on
+> insert and on embedding-field updates and deletes the old vector; a daily
+> VPS worker (or the admin **Update now** action) re-embeds it. The table
+> gained an FK to `youtube_videos` with `ON DELETE CASCADE`. The 2026-08-02/03
+> backfill remains the historical baseline. See
+> [SPEC-106](../specs/106-derived-data-maintenance.md).
+
 ## Consequences
 
 ### Positive

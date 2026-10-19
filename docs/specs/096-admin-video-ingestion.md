@@ -442,12 +442,10 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   `defaultLanguage`). YouTube omits it for many uploads, so a video whose
   audio is in a different language is still imported whenever it declares
   nothing; the transcript requirement is the only other guard.
-- **The n-gram subtitle index is not refreshed inline.** The `subs_l2` trigger
-  nulls `subs_ngram_tsv` on write, so newly imported videos are not reachable
-  through the continua n-gram token path until `backfill_subs_ngram_tsv.py`
-  runs. [SPEC-106](106-derived-data-maintenance.md) proposes computing the
-  tokens in the write path; until that ships, run the backfill after imports
-  and subtitle edits.
+- **N-gram tokens are computed inline** since SPEC-106: `create_video` /
+  `update_video` call the shared tokenizer, so an imported or edited continua
+  video is searchable immediately. `backfill_subs_ngram_tsv.py` remains the
+  repair tool for rows written by other paths.
 - **Duplicates are rejected by a unique index.**
   `youtube_videos_youtube_id_l2_key` (added 2026-10-19) enforces one row per
   `(youtube_id, l2)`. The importer's existence check is the normal path; a
@@ -473,9 +471,8 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
 
 ## Open Questions
 
-- Should imports also mark the video as searchable (compute the n-gram tokens
-  inline) instead of leaving that to the cron job? — proposed in
-  [SPEC-106](106-derived-data-maintenance.md).
+- ~~Should imports also mark the video as searchable?~~ **Resolved 2026-10-19
+  (SPEC-106):** the write path computes the n-gram tokens inline.
 - Should `clean_generated` default to true for single adds (where the cost is
   one video) and stay false for bulk?
 - Is a members-only heuristic worth adding as an *advisory* flag (e.g.
