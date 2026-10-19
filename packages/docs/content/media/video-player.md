@@ -19,6 +19,10 @@ The layout adapts to your screen size:
 
 Above the controls, the page shows the video's title, view count, likes, comments, and publish date. A color-coded difficulty badge shows the {$level.exam_cefr} level (or language-specific equivalent like {$level.exam_hsk}, {$level.exam_jlpt}, or {$level.exam_topik}). The video's locale, category, and YouTube channel are shown as well.
 
+Next to the category, you'll see the video's tags. The first three are visible — click the `…` button to show the rest. Click any tag to jump to a search for every video with that tag.
+
+See [{$action.search}](/docs/media/search) for details on tag searches.
+
 ## {$title.transcript} Panel
 
 The right sidebar (or the section below the video on narrow screens) has two tabs:
