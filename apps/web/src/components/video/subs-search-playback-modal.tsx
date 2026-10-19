@@ -14,6 +14,7 @@ import { VideoSidebarPanel, type SidebarTabKey } from '@/components/video/video-
 import { X, FileText, Info, Eye, Clock, Calendar, Play } from 'lucide-react';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
+import { log } from '@/lib/logger';
 
 /** Compact number label (e.g. "12K") with a plain fallback. */
 function formatNumber(n: number | undefined, locale: string): string {
@@ -75,9 +76,38 @@ export function SubsSearchPlaybackModal({
   const t = useT();
 
   const currentVideo = index !== null ? (videos[index] ?? null) : null;
+  // The line the search matched. The player is cued there (startTime), so it
+  // is also the playhead the modal assumes until the embed reports its own.
+  const currentMatchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
 
   const playerRef = useRef<YouTubePlayerHandle>(null);
-  const [currentTime, setCurrentTime] = useState(0);
+  // Playhead for the current open/video. The YouTube IFrame API reports its
+  // position only after the embed loads and seeks (polled every 500ms), so
+  // right after opening — or after prev/next — there is no real playhead yet.
+  // A plain `currentTime` state started at 0 (or kept the previous video's
+  // position), which the loaded-range check read as "before the subtitles"
+  // and flashed the "Load Full Subtitles" notice until the first time update
+  // (and the pause-on-out-of-range effect fired with it). Key the playhead to
+  // the open/video and start it at the match-line cue, where the player is
+  // about to be cued; `inRangeSeen` only latches once the player reports a
+  // position that actually lands inside the loaded range, so a fresh embed's
+  // not-yet-seeked placeholder can't trip the notice either.
+  const playheadKey = `${index ?? 'closed'}:${currentVideo?.youtube_id ?? ''}`;
+  const [playhead, setPlayhead] = useState({
+    key: playheadKey,
+    time: currentMatchLine?.starttime ?? 0,
+    reported: false,
+    inRangeSeen: false,
+  });
+  if (playhead.key !== playheadKey) {
+    setPlayhead({
+      key: playheadKey,
+      time: currentMatchLine?.starttime ?? 0,
+      reported: false,
+      inRangeSeen: false,
+    });
+  }
+  const currentTime = playhead.time;
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
 
@@ -140,13 +170,14 @@ export function SubsSearchPlaybackModal({
     setPanelTab('subs');
   }, [persistModeKey]);
 
-  const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
+  const handleTimeUpdate = useCallback((time: number) => {
+    setPlayhead((p) => ({ ...p, time, reported: true }));
+  }, []);
   const handleDuration = useCallback((d: number) => setDuration(d), []);
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
   }, []);
 
-  const currentMatchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
   // Show the search-match line immediately, even before the video plays.
   const defaultSubtitleLine = currentMatchLine
     ? { starttime: currentMatchLine.starttime, line: currentMatchLine.line }
@@ -193,7 +224,19 @@ export function SubsSearchPlaybackModal({
     return { first, lastEnd };
   }, [playerSubLines]);
 
+  // Latch once a reported playhead lands inside the loaded range. A fresh
+  // embed can report 0 for a poll before its cue/seek applies; only a report
+  // that has been in range makes a later out-of-range position trustworthy,
+  // so the notice cannot flash while the player seeks to the match line.
+  useEffect(() => {
+    if (!playhead.reported || playhead.inRangeSeen || !subsCoverage) return;
+    if (currentTime >= subsCoverage.first - 0.3 && currentTime <= subsCoverage.lastEnd) {
+      setPlayhead((p) => (p.inRangeSeen ? p : { ...p, inRangeSeen: true }));
+    }
+  }, [playhead.reported, playhead.inRangeSeen, currentTime, subsCoverage]);
+
   const isOutOfRange =
+    playhead.inRangeSeen &&
     subsCoverage !== null &&
     (currentTime < subsCoverage.first - 0.3 || currentTime > subsCoverage.lastEnd);
 
@@ -206,10 +249,15 @@ export function SubsSearchPlaybackModal({
     }
     if (wasInRangeRef.current) {
       wasInRangeRef.current = false;
+      log('[subsSearch] playhead left loaded subtitle range', {
+        youtubeId: currentVideo?.youtube_id,
+        currentTime,
+        coverage: subsCoverage,
+      });
       playerRef.current?.pause();
       setPaused(true);
     }
-  }, [isOutOfRange, currentTime, subsCoverage]);
+  }, [isOutOfRange, currentVideo?.youtube_id, currentTime, subsCoverage]);
 
   const goToPreviousVideo = useCallback(() => {
     if (index !== null && index > 0) onIndexChange(index - 1);

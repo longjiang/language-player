@@ -2,6 +2,10 @@ import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
+  // Match Next.js's automatic JSX runtime. Without this, Vite's esbuild
+  // defaults to the classic runtime and any tested component that doesn't
+  // `import React` (most of apps/web) throws "React is not defined".
+  esbuild: { jsx: 'automatic' },
   test: {
     environment: 'node',
     globals: true,
