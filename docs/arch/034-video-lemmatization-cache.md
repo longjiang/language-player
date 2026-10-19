@@ -185,7 +185,7 @@ a whole-video entry at **insert time**, before the video is ever watched:
 
 | Layer | Key | Value | Location | Invalidation |
 |---|---|---|---|---|
-| **Whole-video** (`lemmatized_subs`) | `{iso639-3}/{video_id}`, or `v2/...` for `kor`/`lzh` | JSON `{md5(line): raw lemmatizer output}` | Local disk + shared host | Version namespace bump; deleted on subtitle/L2 edit and on video delete (SPEC-106); manual delete |
+| **Whole-video** (`lemmatized_subs`) | `{iso639-3}/{video_id}`, or `v2/...` for `kor`/`lzh` | JSON `{md5(line): raw lemmatizer output}` | Local disk + shared host | Version namespace bump; deleted on subtitle/L2 edit and on video delete (SPEC-106); bulk channel deletes use the batched cache-delete endpoint; manual delete |
 | **Per-text** (`lemmatization`) | `{lemmatizer_name}/{lang}/{md5(text)}` | JSON raw lemmatizer output | Local disk + shared host | Manual deletion only |
 | **Inflection** (`inflection`) | `{inflector_name}/{lang}/{md5(text)}` | JSON inflection table | Local disk + shared host | Manual deletion only |
 | **Client in-memory** (`TokenCache`) | `md5(line_text)` | `LemmatizedToken[]` | Browser / app memory | Discarded on unmount or `videoId` change |
@@ -211,11 +211,13 @@ write:  local cache/{bucket}/{key}  (only)     [offload job handles the host]
 - **Local root**: `LP_CACHE_ROOT`, default `cache`.
 - **PHP endpoints**: `load-flask-cache.php` (GET), `save-flask-cache.php` (POST),
   `load-flask-cache-batch.php` (defined in `remote_cache.py` but currently
-  unused), `delete-flask-cache.php` (DELETE).
+  unused), `delete-flask-cache.php` (DELETE), `delete-flask-cache-batch.php`
+  (POST, up to 5,000 bucket/key items per request — used by
+  `remote_cache.delete_many()` for bulk channel deletes).
 - **Auth**: `X-Cache-Key` header, from `REMOTE_CACHE_KEY` or `~/.lp_cache_key`.
 - **Sanitization**: bucket `[a-z0-9_-]`; each key segment `[A-Za-z0-9._-]`.
   A key with an empty segment returns `None` (no path traversal).
-- **Timeouts**: get 5s, offload 60s, delete 10s.
+- **Timeouts**: get 5s, offload 60s, delete 10s, batch delete 10s per chunk.
 - **Failure policy**: every remote failure is non-fatal — a timeout or
   connection error is a cache **miss**, and the caller recomputes. A stored
   entry that is not valid UTF-8 is also treated as a miss rather than raising.
@@ -518,7 +520,9 @@ remote latency.
 - **Whole-video granularity.** One corrupt line or one subtitle edit
   invalidates the entire video's entry, and there is no partial refresh. Since
   SPEC-106 the subtitle/L2 edit path deletes the entry (`utils_cache.delete_from_lemmatized_subs_cache`)
-  and recomputes it synchronously.
+  and recomputes it synchronously; bulk deletes use
+  `delete_from_lemmatized_subs_cache_many()` so a channel delete makes one
+  batched cache request per chunk instead of one per video.
 - **Two ID spaces coexist indefinitely.** Every caller must know whether it
   holds a legacy or consolidated ID; `cache_video_id()` exists precisely
   because that is error-prone.
