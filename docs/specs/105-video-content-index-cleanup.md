@@ -150,7 +150,8 @@ Applied on the live database:
   the drops rest on the recorded zero-scan / redundant evidence.
 - Dropped the unused `subs_tsv` column (metadata-only; the 2,855 non-null
   values are in `backup.youtube_videos_subs_tsv_20261019` for 7 days).
-- Still deferred: regenerating the stale `LANGUAGE_VIDEO_COUNT` / web counts.
+- Per-language counts are now served live (see "Counts" below); the static
+  maps are only a build-time / API-down fallback.
 
 ## Proposed cleanup
 
@@ -215,12 +216,15 @@ no usable trigram, so silent short tags remain a scan; if tag matching moves to
 exact-token (`(',' || tags || ',') ILIKE '%,news,%'`) or a normalized
 `video_tags` table, revisit this index (see SPEC-107's open question).
 
-### Deferred
+### Counts
 
-- Refresh `LANGUAGE_VIDEO_COUNT` (`utils_language.py`) and the generated web
-  counts. They are already stale beyond the dedupe (e.g. `en` map 164,069 vs
-  live 155,002; `zh` 139,167 vs 121,840), so a manual subtraction would be
-  misleading — regenerate them from the database instead.
+`public.language_video_counts` (migration `202610190006`) is a materialized
+view of `select l2, count(*)`, refreshed by the daily SPEC-106 worker and
+served by `GET /stats/language-video-counts` (215 languages, keyed by ISO
+code). The web landing merges the live counts over the fallback map, and the
+fallback was refreshed to the 2026-10-19 values. No manual count regeneration
+remains; the old `LANGUAGE_VIDEO_COUNT` dict in `utils_language.py` is marked
+legacy.
 
 ## Tracked schema migration
 
@@ -284,8 +288,9 @@ recorded in [ARCH-037](../arch/037-video-content-schema.md).
   (`202610190005_drop_subs_tsv.sql`); `DROP COLUMN` is metadata-only.
 - ~~When should the six drops be executed?~~ **Applied 2026-10-19** at the
   product owner's request (see "Implementation").
-- Should `LANGUAGE_VIDEO_COUNT` be regenerated from the DB as part of this
-  cleanup, or in a separate content-audit task?
+- ~~Should `LANGUAGE_VIDEO_COUNT` be regenerated?~~ **Resolved 2026-10-19:**
+  live counts come from `public.language_video_counts` via
+  `GET /stats/language-video-counts`; the static maps are fallbacks.
 - How long should `backup.*_20261019` be retained before it is dropped?
 
 ## Files
@@ -295,8 +300,13 @@ recorded in [ARCH-037](../arch/037-video-content-schema.md).
 | `supabase/migrations/202610190001_video_youtube_id_l2_unique.sql` | applied uniqueness migration |
 | `supabase/migrations/202610190002_video_content_indexes.sql` | reproducible index set + tags trigram |
 | `supabase/migrations/202610190005_drop_subs_tsv.sql` | drop the unused `subs_tsv` column |
+| `supabase/migrations/202610190006_language_video_counts.sql` | per-language count matview |
+| `zerotohero-python-server/routes/stats.py` | `GET /stats/language-video-counts` |
+| `zerotohero-python-server/scripts/maintain_derived_data.py` | refreshes the count matview daily |
+| `apps/web/src/components/landing/language-video-list.tsx` | merges live counts over the fallback |
+| `apps/web/src/data/language-video-counts.ts` | build-time fallback (2026-10-19 values) |
 | `docs/arch/036-subs-search-architecture.md` | subs-search routing (wildcards/space-terms) |
 | `docs/arch/037-video-content-schema.md` | as-built schema + index inventory |
 | `docs/specs/107-tag-search-and-video-tag-pills.md` | tag search feature that motivates the tags trigram |
 | `zerotohero-python-server/utils_content.py` | `search_videos` / `subs_search` query shapes that justify each keep/drop |
-| `zerotohero-python-server/utils_language.py` | stale `LANGUAGE_VIDEO_COUNT` to regenerate |
+| `zerotohero-python-server/utils_language.py` | legacy `LANGUAGE_VIDEO_COUNT` snapshot (no longer runtime source) |
