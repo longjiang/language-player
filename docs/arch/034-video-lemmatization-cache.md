@@ -185,7 +185,7 @@ a whole-video entry at **insert time**, before the video is ever watched:
 
 | Layer | Key | Value | Location | Invalidation |
 |---|---|---|---|---|
-| **Whole-video** (`lemmatized_subs`) | `{iso639-3}/{video_id}`, or `v2/...` for `kor`/`lzh` | JSON `{md5(line): raw lemmatizer output}` | Local disk + shared host | Version namespace bump; manual delete |
+| **Whole-video** (`lemmatized_subs`) | `{iso639-3}/{video_id}`, or `v2/...` for `kor`/`lzh` | JSON `{md5(line): raw lemmatizer output}` | Local disk + shared host | Version namespace bump; deleted on subtitle/L2 edit and on video delete (SPEC-106); manual delete |
 | **Per-text** (`lemmatization`) | `{lemmatizer_name}/{lang}/{md5(text)}` | JSON raw lemmatizer output | Local disk + shared host | Manual deletion only |
 | **Inflection** (`inflection`) | `{inflector_name}/{lang}/{md5(text)}` | JSON inflection table | Local disk + shared host | Manual deletion only |
 | **Client in-memory** (`TokenCache`) | `md5(line_text)` | `LemmatizedToken[]` | Browser / app memory | Discarded on unmount or `videoId` change |
@@ -516,7 +516,9 @@ remote latency.
   batch-pipeline cost the cache was built to avoid.
 - **Cold-read latency after offload** with no copy-back (Known Issue 5).
 - **Whole-video granularity.** One corrupt line or one subtitle edit
-  invalidates the entire video's entry, and there is no partial refresh.
+  invalidates the entire video's entry, and there is no partial refresh. Since
+  SPEC-106 the subtitle/L2 edit path deletes the entry (`utils_cache.delete_from_lemmatized_subs_cache`)
+  and recomputes it synchronously.
 - **Two ID spaces coexist indefinitely.** Every caller must know whether it
   holds a legacy or consolidated ID; `cache_video_id()` exists precisely
   because that is error-prone.

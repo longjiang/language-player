@@ -7,7 +7,7 @@
   video is added, updated or deleted (individually or in bulk): full-text and
   n-gram indexes, metadata embeddings, the lemmatization cache and the
   subs-search cache
-- **Status**: draft
+- **Status**: complete (2026-10-19)
 - **Created**: 2026-10-19
 - **ROADMAP Phase**: Phase 9: Backend Consolidation
 - **See also**:
@@ -84,7 +84,36 @@ Only the metadata embedding is asynchronous.
 | Trigram | **Kept** (SPEC-105); wildcard/space-term search keeps its index. |
 | Writers | DB triggers cover direct SQL and future services; the app also does the inline work. |
 
-## Current gaps (measured 2026-10-19)
+## Implementation (2026-10-19)
+
+- Migration `202610190004_video_derived_data.sql` applied: n-gram trigger fix,
+  `needs_embedding` columns + partial index, flag/invalidate triggers,
+  `video_embeddings` FK cascade, `content_revision` + bump trigger, and
+  `maintenance_runs`.
+- N-gram tokens are computed inline in `utils_content.create_video` /
+  `update_video` via the shared `utils_subs_ngram.py`; the backfill script
+  imports the same tokenizer.
+- Subtitle/L2 edits delete the lemma cache and recompute scores synchronously.
+  The admin dialog sends `subs_l2` only when it changed, so a title-only edit
+  no longer fires the n-gram invalidation.
+- Worker `scripts/maintain_derived_data.py` (`--limit`, `--report`,
+  `--flag-missing`, `--reindex-ngram`) plus the admin routes
+  `GET /admin/content-health`, `POST /admin/maintenance/run-embeddings`,
+  `POST /admin/maintenance/reindex-ngram`, `POST /admin/cache/bust`; the admin
+  Content health page and nav item are in `apps/admin`.
+- Subs-search cache entries store `{saved_at, videos}` and compare against
+  `content_revision` (5 s in-process cache) with a 30-day configurable
+  backstop. `utils_cache.delete_from_lemmatized_subs_cache` and
+  `remote_cache.delete()` handle per-video invalidation.
+- Data catch-up: the 8 missing embeddings were embedded and the 114
+  n-gram-missing rows reindexed; 106 remain NULL because their subtitles have
+  no tokenizable `line` text (by design). `--report` now shows 0 pending and
+  0 missing embeddings.
+- Tests: `test_derived_data.py` (8) plus the admin import/preflight/list
+  suites (93) pass. The daily cron line is the only ops step:
+  `15 3 * * * cd /srv/flask && python3.10 scripts/maintain_derived_data.py`.
+
+## Current gaps (measured 2026-10-19, before implementation)
 
 - **N-gram**: 405 continua rows have `subs_ngram_tsv IS NULL`; 291 have no
   `subs_l2` at all (nothing to index). Of the 114 with subtitles, **36 contain
@@ -291,6 +320,10 @@ Each phase is independently shippable and reversible.
 | 3 | `needs_embedding` columns + trigger + tracked embedding module + daily cron + **Update now** worker + report-only reconciliation | new/updated videos embedded within a day, or on demand |
 | 4 | Content-health endpoint/panel (Update now, reindex missing n-gram, clear cache); alerting | the invariant is observable and recoverable |
 
+All four phases are implemented; the only remaining ops step is installing
+the daily crontab. Alert *delivery* (email/Slack) is not implemented — the
+panel is the current surface.
+
 ## Verification
 
 - **Unit**: `extract_tokens` parity with the backfill; n-gram set on insert and
@@ -316,13 +349,16 @@ Each phase is independently shippable and reversible.
 | `zerotohero-python-server/utils_video_import.py` | duplicate race handling; inline tokens |
 | `zerotohero-python-server/utils_video_lemma.py` | cache invalidation / force recompute |
 | `zerotohero-python-server/utils_cache.py`, `remote_cache.py` | revision-aware reads; `delete()` |
-| `zerotohero-python-server/scripts/maintain_derived_data.py` | flag drain + report-only reconciliation (new) |
+| `zerotohero-python-server/utils_embeddings.py` | Gemini client, drain, flag-missing, health counts (new) |
+| `zerotohero-python-server/scripts/maintain_derived_data.py` | drain / report / flag-missing / reindex-ngram (new) |
 | `zerotohero-python-server/scripts/backfill_subs_ngram_tsv.py` | repair tool, unchanged behavior |
-| `zerotohero-python-server/routes/admin.py` | content-health endpoint; cache-bust; 409 on duplicate create |
+| `zerotohero-python-server/routes/admin.py` | content-health, run-embeddings, reindex-ngram, cache-bust; 409 on duplicate create |
+| `apps/admin/src/lib/content-api.ts` | health/maintenance client functions |
 | `apps/admin/src/components/content/video-dialog.tsx` | send `subs_l2` only when changed |
 | `apps/admin/src/app/content/health/page.tsx` | content-health panel: Update now / reindex n-gram / clear cache (new) |
-| `supabase/migrations/…` | `needs_embedding` columns, triggers, revision, FK cascade |
-| `docs/adr/…` | new ADR for the derived-data layer |
+| `apps/admin/src/components/layout/nav-items.ts` | Content health nav item |
+| `supabase/migrations/202610190004_video_derived_data.sql` | `needs_embedding` columns, triggers, revision, FK cascade |
+| `docs/adr/0050-derived-content-data-maintenance.md` | the decision record |
 
 ## Risks
 
@@ -413,8 +449,5 @@ Still open:
   listed rows, or allow a full-language rebuild from the panel?
 - **Failed-row lifecycle.** After 5 attempts, does the row stay flagged forever
   (visible in the panel) or move to a separate failed list with a reset button?
-- **Worker run ledger.** Do we need a `maintenance_runs` row (started/finished/
-  processed/failed) for the "last successful run" health check, or is a log
-  line enough?
 - **Model migration procedure.** The exact cutover order (new rows → new HNSW
   indexes → recommender switch → drop the old set) when the model does change.

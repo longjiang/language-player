@@ -232,9 +232,12 @@ slow (`中国` ~31 s, rare 1-2 char terms >30 s). SPEC-045 adds:
 - **Query:** 1-2 char terms are single lexemes; 3+ char terms are the AND of
   overlapping bigrams (`对不起` → `对不 不起`); terms are OR-joined with
   `websearch_to_tsquery('simple', …)`.
-- **Invalidation trigger** `youtube_videos_invalidate_ngram_tsv` sets the
-  column NULL on subtitle writes; `backfill_subs_ngram_tsv.py` (nightly)
-  repopulates it. The backfill must run **before** the index build.
+- **Invalidation trigger** `youtube_videos_invalidate_ngram_tsv` nulls the
+  column when `subs_l2` changes and the caller did not supply a value; the
+  write path (`utils_content.create_video` / `update_video`, shared
+  `utils_subs_ngram.py`) computes the tokens inline. `backfill_subs_ngram_tsv.py`
+  remains the repair tool. The trigger is the safety net for raw SQL /
+  future writers.
 
 `_reduce_subs_to_context` uses `re.escape` on each term before building the
 match regex (so terms like `c++` can't raise `multiple repeat`), then converts
@@ -251,7 +254,12 @@ index; no full `l2` index scans for plain continua terms.
 ### Caching
 
 Results are cached in the shared subs-search cache (namespaced `pg` so they
-never collide with the Classic MySQL keys). Walk timeouts are **not** cached as
+never collide with the Classic MySQL keys). Entries store
+`{saved_at, videos}`; a read is a miss when `saved_at` predates
+`content_revision.updated_at` (every video write bumps it; a 5 s in-process
+cache avoids a query per request) or is older than the 30-day configurable
+backstop (`0` = indefinite). The admin **Clear search cache** action bumps the
+revision and removes the local files. Walk timeouts are **not** cached as
 "no matches".
 
 ## Backend: `app_subs_search.py`

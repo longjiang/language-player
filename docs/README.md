@@ -132,8 +132,8 @@ docs/
 | 102 | [Affiliates and Coupon Codes](specs/102-affiliates-and-coupons.md) | 10 | 🔄 In progress |
 | 103 | [Literary Chinese (lzh) — CEDICT Definitions, HSK Levels, and Modern Chinese Translation](specs/103-lzh-cedict-and-modern-zh.md) | 4 | ✅ Complete |
 | 104 | [Rare Han Glyph Display via On-Demand Font Subsets + Chip Fallback](specs/104-rare-han-glyph-subsets.md) | — | 🔄 In progress |
-| 105 | [Video Content Index Cleanup & Schema Reproducibility](specs/105-video-content-index-cleanup.md) | 9 | ⬜ Draft |
-| 106 | [Derived Content Data Maintenance — One Pipeline, Cheapest Guarantee](specs/106-derived-data-maintenance.md) | 9 | ⬜ Draft |
+| 105 | [Video Content Index Cleanup & Schema Reproducibility](specs/105-video-content-index-cleanup.md) | 9 | ✅ Complete |
+| 106 | [Derived Content Data Maintenance — One Pipeline, Cheapest Guarantee](specs/106-derived-data-maintenance.md) | 9 | ✅ Complete |
 | 107 | [Tag Search and Video-Tag Pills](specs/107-tag-search-and-video-tag-pills.md) | 3 | ✅ Complete |
 
 ## ADRs
@@ -187,6 +187,7 @@ docs/
 | 0047 | [Mobile inputs stay visible: a keyboard-aware layout, not a bigger scroll area](adr/0047-mobile-keyboard-aware-inputs.md) | accepted | 2026-09-17 |
 | 0048 | [Sale windows are gated on the client clock; sale amounts stay in the backend price rows](adr/0048-client-side-sale-window-gating.md) | accepted | 2026-09-22 |
 | 0049 | [A web EPUB/PDF record that can no longer be read is badged and removed, never silently deleted](adr/0049-unreadable-epub-record-recovery.md) | accepted | 2026-10-16 |
+| 0050 | [Derived content data is maintained by the cheapest mechanism that guarantees correctness](adr/0050-derived-content-data-maintenance.md) | accepted | 2026-10-19 |
 
 ## Architecture Docs
 

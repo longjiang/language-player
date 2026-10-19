@@ -228,8 +228,8 @@ deliberately. The panel always adds the honest caveat — YouTube omits
   `tv_show`/`talk` accept an id or a title; empty means *unassign* (the API
   sends explicit `null`). Create requires `youtube_id` + `l2`. **`l2` is
   selectable only on create** — on edit it is shown disabled, because the id
-  block is language-specific. The dialog currently re-sends the full
-  `subs_l2` on every save; SPEC-106 proposes sending it only when changed.
+  block is language-specific. The dialog sends `subs_l2` only when it changed
+  (SPEC-106).
 - **Bulk actions** (when rows are selected): *Assign to TV show*, *Assign to
   talk*, *Clear assignment*, *Delete selected*. These are UI-side loops over
   `PATCH`/`DELETE` with a progress counter — no new endpoint (the backend
