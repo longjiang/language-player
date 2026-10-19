@@ -25,5 +25,6 @@ export * from './markdown/inline';
 export * from './markdown/vision';
 export * from './voice-selection';
 export * from './youtube-categories';
+export * from './video-tags';
 export * from './external-search';
 export * from './saved-word-context';

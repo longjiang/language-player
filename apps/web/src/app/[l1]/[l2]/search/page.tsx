@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
 import { apiClient } from '@langplayer/api-client';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { formatTagSearchQuery, isTagSearchQuery, parseTagSearchQuery } from '@langplayer/shared';
 import { languageName, baseCode } from '@/lib/language-data';
 import { Search, Loader2, AlertCircle, Film, Tag, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,12 +38,14 @@ export default function SearchPage() {
   const [results, setResults] = useState<YouTubeVideo[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searched, setSearched] = useState(false);
   const [tags, setTags] = useState<VideoTag[]>([]);
   const [tagsLoading, setTagsLoading] = useState(true);
   const [tagsExpanded, setTagsExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const loadingRef = useRef(false);
+  /** Last `?q=` value this page auto-searched, so the effect below doesn't
+   *  re-run when doSearch() rewrites the URL with the same value. */
+  const autoSearchedRef = useRef<string | null>(null);
 
   const INITIAL_TAG_COUNT = 15;
   const visibleTags = tagsExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
@@ -61,16 +64,6 @@ export default function SearchPage() {
     return () => { cancelled = true; };
   }, [l2.code]);
 
-  // Auto-search from ?q= param on first load
-  useEffect(() => {
-    const q = searchParams.get('q');
-    if (q && !searched) {
-      setQuery(q);
-      setSearched(true);
-      setTimeout(() => { doSearch(q); }, 100);
-    }
-  }, [searchParams, searched]);
-
   const extractYouTubeID = useCallback((url: string): string | null => {
     const match = url.match(YOUTUBE_URL_RE);
     return (match && match[2]?.length === 11) ? match[2] : null;
@@ -80,11 +73,20 @@ export default function SearchPage() {
     const trimmed = term.trim();
     if (!trimmed || loadingRef.current) return;
 
-    // If it's a YouTube URL, navigate directly to the watch page
-    const youtubeId = extractYouTubeID(trimmed);
-    if (youtubeId) {
-      router.push(`/${l1.code}/${l2.code}/watch/${youtubeId}`);
-      return;
+    // `#news` means "search videos tagged news" (not a title search):
+    // the user-facing query keeps the `#`, the API gets the bare tag.
+    const byTag = isTagSearchQuery(trimmed);
+    const searchTerm = parseTagSearchQuery(trimmed);
+    if (!searchTerm) return;
+
+    // If it's a YouTube URL, navigate directly to the watch page. A `#` query
+    // is always a tag search, even if the tag text happens to look like a URL.
+    if (!byTag) {
+      const youtubeId = extractYouTubeID(searchTerm);
+      if (youtubeId) {
+        router.push(`/${l1.code}/${l2.code}/watch/${youtubeId}`);
+        return;
+      }
     }
 
     loadingRef.current = true;
@@ -95,11 +97,14 @@ export default function SearchPage() {
     // Update URL
     const params = new URLSearchParams(searchParams.toString());
     params.set('q', trimmed);
+    // Mark this value as handled so the auto-search effect (which runs when
+    // the URL changes) doesn't start the same search a second time.
+    autoSearchedRef.current = trimmed;
     router.replace(`/${l1.code}/${l2.code}/search?${params.toString()}`, { scroll: false });
 
     try {
       const data = await videosApi.searchByTitle({
-        q: trimmed,
+        ...(byTag ? { tag: searchTerm } : { q: searchTerm }),
         l2: baseCode(l2.code),
         limit: 50,
       });
@@ -111,6 +116,18 @@ export default function SearchPage() {
       setLoading(false);
     }
   }, [videosApi, l2.code, l1.code, t, searchParams, router, extractYouTubeID]);
+
+  // Auto-search from ?q= param on first load (including #tag links from the
+  // watch page). Guarded by autoSearchedRef so the URL rewrite inside
+  // doSearch() doesn't start a second identical search.
+  useEffect(() => {
+    const q = searchParams.get('q')?.trim();
+    if (!q || q === autoSearchedRef.current) return;
+    autoSearchedRef.current = q;
+    setQuery(q);
+    const timer = setTimeout(() => { void doSearch(q); }, 100);
+    return () => clearTimeout(timer);
+  }, [searchParams, doSearch]);
 
   const handleSubmit = useCallback((e?: FormEvent) => {
     e?.preventDefault();
@@ -125,15 +142,17 @@ export default function SearchPage() {
   }, []);
 
   const handleTagClick = useCallback((tag: string) => {
-    setQuery(tag);
-    doSearch(tag);
+    // A tag click is a *tag* search (`#news`), not a keyword/title search.
+    const tagQuery = formatTagSearchQuery(tag);
+    setQuery(tagQuery);
+    doSearch(tagQuery);
   }, [doSearch]);
 
   const hasResults = results && results.length > 0;
   const hasSearched = results !== null || error !== null;
   // When the field holds a YouTube URL, the submit action becomes "Import"
   // (navigate straight to the video) instead of a text search.
-  const isImport = !!extractYouTubeID(query.trim());
+  const isImport = !isTagSearchQuery(query) && !!extractYouTubeID(query.trim());
 
   return (
     <div className={hasResults ? 'mx-auto max-w-7xl px-4 py-6' : 'mx-auto max-w-2xl px-4 py-12'}>

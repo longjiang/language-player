@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { SearchBar } from '@/components/ui/search-bar';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';
@@ -11,6 +11,11 @@ import { e2e } from '@/lib/e2e';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoGrid } from '@/components/video/VideoGrid';
 import { baseCode } from '@langplayer/utils';
+import {
+  formatTagSearchQuery,
+  isTagSearchQuery,
+  parseTagSearchQuery,
+} from '@langplayer/shared';
 import { AlertCircle, Film, Tag } from 'lucide-react-native';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -28,6 +33,7 @@ export default function SearchScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const videosApi = useVideos();
+  const { q: qParam } = useLocalSearchParams<{ q?: string }>();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<YouTubeVideo[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,6 +42,8 @@ export default function SearchScreen() {
   const [tags, setTags] = useState<VideoTag[]>([]);
   const [tagsLoading, setTagsLoading] = useState(true);
   const [tagsExpanded, setTagsExpanded] = useState(false);
+  /** Last `q` param this screen auto-searched, so re-renders don't repeat it. */
+  const autoSearchedRef = useRef<string | null>(null);
 
   const INITIAL_TAG_COUNT = 15;
 
@@ -58,14 +66,23 @@ export default function SearchScreen() {
     return (match && match[2]?.length === 11) ? match[2] : null;
   };
 
-  const doSearch = useCallback(async (term: string, byTag = false) => {
+  const doSearch = useCallback(async (term: string) => {
     const trimmed = term.trim();
     if (!trimmed) return;
 
-    const youtubeId = extractYouTubeID(trimmed);
-    if (youtubeId) {
-      router.push(`/(tabs)/(media)/watch/${youtubeId}` as any);
-      return;
+    // `#news` means "search videos tagged news" (not a title search):
+    // the field keeps the `#`, the API gets the bare tag.
+    const byTag = isTagSearchQuery(trimmed);
+    const searchTerm = parseTagSearchQuery(trimmed);
+    if (!searchTerm) return;
+
+    // A `#` query is always a tag search, even if the tag looks like a URL.
+    if (!byTag) {
+      const youtubeId = extractYouTubeID(searchTerm);
+      if (youtubeId) {
+        router.push(`/(tabs)/(media)/watch/${youtubeId}` as any);
+        return;
+      }
     }
 
     setLoading(true);
@@ -75,8 +92,8 @@ export default function SearchScreen() {
 
     try {
       const res = byTag
-        ? await videosApi.searchByTitle({ tag: trimmed, l2: baseCode(l2Lang.code), limit: 50 })
-        : await videosApi.searchByTitle({ q: trimmed, l2: baseCode(l2Lang.code), limit: 50 });
+        ? await videosApi.searchByTitle({ tag: searchTerm, l2: baseCode(l2Lang.code), limit: 50 })
+        : await videosApi.searchByTitle({ q: searchTerm, l2: baseCode(l2Lang.code), limit: 50 });
       setResults(Array.isArray(res) ? res : []);
     } catch (err: any) {
       setError(localizedError(t, err, 'error.something_went_wrong'));
@@ -85,16 +102,28 @@ export default function SearchScreen() {
     }
   }, [videosApi, l2Lang.code, t]);
 
+  // Auto-search from a `?q=` param (e.g. a tag pill on the watch page pushes
+  // `?q=%23news`). Guarded by autoSearchedRef so re-renders don't repeat it.
+  useEffect(() => {
+    const q = typeof qParam === 'string' ? qParam.trim() : '';
+    if (!q || q === autoSearchedRef.current) return;
+    autoSearchedRef.current = q;
+    setQuery(q);
+    void doSearch(q);
+  }, [qParam, doSearch]);
+
   const handleTagClick = (tag: string) => {
-    setQuery(tag);
-    doSearch(tag, true);
+    // A tag click is a *tag* search (`#news`), not a keyword/title search.
+    const tagQuery = formatTagSearchQuery(tag);
+    setQuery(tagQuery);
+    doSearch(tagQuery);
   };
 
   const visibleTags = tagsExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
   const hasResults = results && results.length > 0;
   // When the field holds a YouTube URL, the submit action becomes "Import"
   // (navigate straight to the video) instead of a text search.
-  const isImport = !!extractYouTubeID(query.trim());
+  const isImport = !isTagSearchQuery(query) && !!extractYouTubeID(query.trim());
 
   return (
     <PageContainer maxWidth={hasResults ? '7xl' : '2xl'}>
