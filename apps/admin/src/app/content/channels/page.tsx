@@ -34,6 +34,8 @@ import {
   Search,
   Upload,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -41,10 +43,12 @@ const EMPTY_SUMMARY: ImportSummary = { total: 0, added: 0, updated: 0, skipped: 
 
 export default function ChannelsPage() {
   const t = useT();
+  const router = useRouter();
   const authReady = useAuthReady();
 
   // Deliberately unset: a defaulted language is how content gets
-  // imported or edited in the wrong one (SPEC-099).
+  // imported or edited in the wrong one (SPEC-099). A `?l2=` from the channel
+  // detail page is an explicit admin choice, never a default.
   const [l2, setL2] = useState<string | null>(null);
   const [channels, setChannels] = useState<AdminChannel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -70,6 +74,19 @@ export default function ChannelsPage() {
   const [videoPage, setVideoPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [videosLoading, setVideosLoading] = useState(false);
+
+  // Returning from a channel detail page carries the language in `?l2=`, so
+  // the list reopens on the same language instead of the empty picker.
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get('l2');
+    if (value?.trim()) setL2(value.trim());
+  }, []);
+
+  function channelHref(channelId: string): string {
+    return `/content/channels/${encodeURIComponent(channelId)}${
+      l2 ? `?l2=${encodeURIComponent(l2)}` : ''
+    }`;
+  }
 
   const load = useCallback(async () => {
     if (!authReady || !l2) return;
@@ -392,7 +409,11 @@ export default function ChannelsPage() {
             </thead>
             <tbody>
               {channels.map((channel) => (
-                <tr key={channel.id} className="border-t border-border align-top">
+                <tr
+                  key={channel.id}
+                  className="group cursor-pointer border-t border-border align-top transition-colors hover:bg-muted/30"
+                  onClick={() => router.push(channelHref(channel.channel_id))}
+                >
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
                       {channel.thumbnail && (
@@ -404,11 +425,18 @@ export default function ChannelsPage() {
                         />
                       )}
                       <div className="min-w-0">
-                        <div className="font-medium">{channel.title ?? '—'}</div>
+                        <Link
+                          href={channelHref(channel.channel_id)}
+                          className="font-medium hover:underline"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {channel.title ?? '—'}
+                        </Link>
                         {channel.custom_url && (
                           <div className="text-xs text-muted-foreground">{channel.custom_url}</div>
                         )}
                       </div>
+                      <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{channel.channel_id}</td>
@@ -418,7 +446,7 @@ export default function ChannelsPage() {
                   <td className="max-w-[20rem] px-3 py-2 text-xs text-muted-foreground">
                     <span className="line-clamp-2">{channel.description ?? '—'}</span>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2" onClick={(event) => event.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       <Button
                         size="sm"
