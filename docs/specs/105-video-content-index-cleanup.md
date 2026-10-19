@@ -148,8 +148,9 @@ Applied on the live database:
   statement-by-statement.
 - The two-week observation window was skipped at the product owner's request;
   the drops rest on the recorded zero-scan / redundant evidence.
-- Still deferred: dropping the `subs_tsv` column and regenerating the stale
-  `LANGUAGE_VIDEO_COUNT` / web counts.
+- Dropped the unused `subs_tsv` column (metadata-only; the 2,855 non-null
+  values are in `backup.youtube_videos_subs_tsv_20261019` for 7 days).
+- Still deferred: regenerating the stale `LANGUAGE_VIDEO_COUNT` / web counts.
 
 ## Proposed cleanup
 
@@ -216,8 +217,6 @@ exact-token (`(',' || tags || ',') ILIKE '%,news,%'`) or a normalized
 
 ### Deferred
 
-- Drop the leftover `subs_tsv` column (99.7% NULL, no index) in a maintenance
-  window; it needs a table rewrite / `VACUUM FULL` to reclaim space.
 - Refresh `LANGUAGE_VIDEO_COUNT` (`utils_language.py`) and the generated web
   counts. They are already stale beyond the dedupe (e.g. `en` map 164,069 vs
   live 155,002; `zh` 139,167 vs 121,840), so a manual subtraction would be
@@ -281,8 +280,8 @@ recorded in [ARCH-037](../arch/037-video-content-schema.md).
 - Should tag matching become exact-token (`(',' || tags || ',') ILIKE
   '%,news,%'`) rather than substring? That changes the index shape (a
   normalized `video_tags` table would be the long-term answer) — see SPEC-107.
-- Should the `subs_tsv` leftover column be dropped in the same maintenance
-  window as the index cleanup, or deferred separately?
+- ~~Should the `subs_tsv` leftover column be dropped?~~ **Dropped 2026-10-19**
+  (`202610190005_drop_subs_tsv.sql`); `DROP COLUMN` is metadata-only.
 - ~~When should the six drops be executed?~~ **Applied 2026-10-19** at the
   product owner's request (see "Implementation").
 - Should `LANGUAGE_VIDEO_COUNT` be regenerated from the DB as part of this
@@ -294,7 +293,8 @@ recorded in [ARCH-037](../arch/037-video-content-schema.md).
 | File | Role |
 |---|---|
 | `supabase/migrations/202610190001_video_youtube_id_l2_unique.sql` | applied uniqueness migration |
-| `supabase/migrations/202610190002_video_content_indexes.sql` | proposed reproducible index set + tags trigram |
+| `supabase/migrations/202610190002_video_content_indexes.sql` | reproducible index set + tags trigram |
+| `supabase/migrations/202610190005_drop_subs_tsv.sql` | drop the unused `subs_tsv` column |
 | `docs/arch/036-subs-search-architecture.md` | subs-search routing (wildcards/space-terms) |
 | `docs/arch/037-video-content-schema.md` | as-built schema + index inventory |
 | `docs/specs/107-tag-search-and-video-tag-pills.md` | tag search feature that motivates the tags trigram |
