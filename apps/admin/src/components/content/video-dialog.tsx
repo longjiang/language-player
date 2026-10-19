@@ -144,11 +144,15 @@ export function VideoDialog({
   const [form, setForm] = useState<FormState>(EMPTY);
   const [l2, setL2] = useState<string | null>(defaultL2);
   const [saving, setSaving] = useState(false);
+  // Only send subs_l2 when it actually changed. Re-sending it on a title-only
+  // edit would null the n-gram tokens and (SPEC-106) trigger a rescore.
+  const [originalSubs, setOriginalSubs] = useState('');
 
   useEffect(() => {
     if (!open) return;
     setForm(formFrom(video));
     setL2(defaultL2);
+    setOriginalSubs(video?.subs_l2 ?? '');
   }, [open, video, defaultL2]);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -184,7 +188,9 @@ export function VideoDialog({
       notes: form.notes,
       made_for_kids: form.made_for_kids ? 1 : 0,
     };
-    if (form.subs_l2.trim()) payload.subs_l2 = form.subs_l2;
+    if (form.subs_l2.trim() && (isCreate || form.subs_l2 !== originalSubs)) {
+      payload.subs_l2 = form.subs_l2;
+    }
     if (isCreate) {
       payload.youtube_id = form.youtube_id.trim();
       payload.l2 = l2 ?? undefined;
