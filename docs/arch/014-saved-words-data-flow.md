@@ -496,6 +496,14 @@ hundreds of `/dictionary/entry` requests in one burst — Chrome fails them with
 freezing the page. Measured with a 300-word saved list: 603 requests before,
 17 after (the visible cards only).
 
+**Mobile parity.** React Native has no `IntersectionObserver`, so the mobile
+sidebar (`apps/mobile/components/dictionary/WordListSidebar.tsx`) renders its
+cards in a `FlatList` (`initialNumToRender={8}`, `windowSize={5}`) with the
+panel's own `ScrollView` disabled via `scrollable={false}` — only the mounted
+rows resolve entries. The saved-words screen was already gated: it enriches on
+viewability (`ENRICH_BUFFER` rows).
+
+
 #### Sidebar Source Resolution
 
 The entry page resolves the sidebar list in this order (ADR-0007: the sidebar
