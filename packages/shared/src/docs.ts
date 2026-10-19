@@ -624,6 +624,7 @@ The search page is the fastest way to find content in your target language (L2).
 
 - **Search... title** — Type what you want to watch and get matching videos
 - **Open any YouTube video** — Paste a YouTube URL to watch it instantly with interactive subtitles
+- **Search by tag** — Start your search with \`#\` to find videos tagged with a topic
 - **browse popular tags** — Explore trending topics in your target language
 
 ## How to Search
@@ -631,6 +632,8 @@ The search page is the fastest way to find content in your target language (L2).
 Type a keyword into the search bar and click **Search... Language Player looks through all available videos and returns matches by title. You'll see video cards with thumbnails, titles, difficulty levels, and view counts.
 
 Search... your target language for the best results. For example, if you're learning Japanese, search \`料理\` (cooking) instead of "cooking."
+
+Put a \`#\` in front of your search to look at tags instead of titles. For example, \`#news\` finds videos tagged news, while \`news\` searches the words in video titles.
 
 The search updates the page URL, so you can bookmark or share your search results.
 
@@ -650,7 +653,9 @@ See [watch Page](/docs/media/watch) for details on the video player.
 
 ## popular tags
 
-When you first open the search page, you'll see a tag cloud of popular topics in your target language. These are the most-searched terms by other learners. Click any tag to search for it instantly — a great way to find content when you're not sure what to look for.
+When you first open the search page, you'll see a tag cloud of popular topics in your target language. These tags come from the videos themselves, so they reflect how creators actually label their content. Click any tag to see every video with that tag — a great way to find content when you're not sure what to look for.
+
+Clicking a tag puts a \`#\` in front of it in the search field, like \`#ニュース\`. That \`#\` is what tells Language Player to match tags instead of titles. You can type tags yourself the same way. The tag lands in the page URL, so you can bookmark or share a tag search just like any other search.
 
 tags vary by language. A Japanese learner might see \`ニュース\` (news), \`アニメ\` (anime), and \`料理\` (cooking), while a Spanish learner might see \`música\`, \`noticias\`, and \`cocina\`.
 
@@ -778,6 +783,10 @@ The layout adapts to your screen size:
 ### Video Info
 
 Above the controls, the page shows the video's title, view count, likes, comments, and publish date. A color-coded difficulty badge shows the CEFR level (or language-specific equivalent like HSK, JLPT, or TOPIK). The video's locale, category, and YouTube channel are shown as well.
+
+Next to the category, you'll see the video's tags. The first three are visible — click the \`…\` button to show the rest. Click any tag to jump to a search for every video with that tag.
+
+See [Search](/docs/media/search) for details on tag searches.
 
 ## Transcript Panel
 
@@ -5223,6 +5232,7 @@ The search page is the fastest way to find content in your target language (L2).
 
 - **Search... title** — Type what you want to watch and get matching videos
 - **Open any YouTube video** — Paste a YouTube URL to watch it instantly with interactive subtitles
+- **Search by tag** — Start your search with \`#\` to find videos tagged with a topic
 - **browse popular tags** — Explore trending topics in your target language
 
 ## How to Search
@@ -5230,6 +5240,8 @@ The search page is the fastest way to find content in your target language (L2).
 Type a keyword into the search bar and click **Search... Language Player looks through all available videos and returns matches by title. You'll see video cards with thumbnails, titles, difficulty levels, and view counts.
 
 Search... your target language for the best results. For example, if you're learning Japanese, search \`料理\` (cooking) instead of "cooking."
+
+Put a \`#\` in front of your search to look at tags instead of titles. For example, \`#news\` finds videos tagged news, while \`news\` searches the words in video titles.
 
 The search updates the page URL, so you can bookmark or share your search results.
 
@@ -5249,7 +5261,9 @@ See [watch Page](/docs/media/watch) for details on the video player.
 
 ## popular tags
 
-When you first open the search page, you'll see a tag cloud of popular topics in your target language. These are the most-searched terms by other learners. Click any tag to search for it instantly — a great way to find content when you're not sure what to look for.
+When you first open the search page, you'll see a tag cloud of popular topics in your target language. These tags come from the videos themselves, so they reflect how creators actually label their content. Click any tag to see every video with that tag — a great way to find content when you're not sure what to look for.
+
+Clicking a tag puts a \`#\` in front of it in the search field, like \`#ニュース\`. That \`#\` is what tells Language Player to match tags instead of titles. You can type tags yourself the same way. The tag lands in the page URL, so you can bookmark or share a tag search just like any other search.
 
 tags vary by language. A Japanese learner might see \`ニュース\` (news), \`アニメ\` (anime), and \`料理\` (cooking), while a Spanish learner might see \`música\`, \`noticias\`, and \`cocina\`.
 
@@ -5377,6 +5391,10 @@ The layout adapts to your screen size:
 ### Video Info
 
 Above the controls, the page shows the video's title, view count, likes, comments, and publish date. A color-coded difficulty badge shows the CEFR level (or language-specific equivalent like HSK, JLPT, or TOPIK). The video's locale, category, and YouTube channel are shown as well.
+
+Next to the category, you'll see the video's tags. The first three are visible — click the \`…\` button to show the rest. Click any tag to jump to a search for every video with that tag.
+
+See [Search](/docs/media/search) for details on tag searches.
 
 ## Transcript Panel
 
