@@ -217,14 +217,19 @@ deliberately. The panel always adds the honest caveat — YouTube omits
   Directus numeric id — the UI shows the L2 code from the filter and the
   format helper, and never round-trips the numeric id into a request).
 - **Row actions**: *Edit* (dialog), *Delete* (confirm dialog →
-  `DELETE /admin/videos/<id>`).
+  `DELETE /admin/videos/<id>`). *Create* is `POST /admin/videos`; it returns
+  `409` when that `(youtube_id, l2)` row already exists (the unique index added
+  2026-10-19, SPEC-105).
 - **Edit / create dialog** fields — exactly `ADMIN_VIDEO_WRITABLE` (24
   columns): `youtube_id`, `title`, `topic`, `level`, `l2`, `subs_l2`,
   `lesson`, `channel_id`, `date`, `notes`, `tv_show`, `talk`, `lex_div`,
   `views`, `tags`, `made_for_kids`, `category`, `likes`, `comments`,
   `locale`, `duration`, `word_freq`, `difficulty`, `type`, `status`.
   `tv_show`/`talk` accept an id or a title; empty means *unassign* (the API
-  sends explicit `null`). Create requires `youtube_id` + `l2`.
+  sends explicit `null`). Create requires `youtube_id` + `l2`. **`l2` is
+  selectable only on create** — on edit it is shown disabled, because the id
+  block is language-specific. The dialog currently re-sends the full
+  `subs_l2` on every save; SPEC-106 proposes sending it only when changed.
 - **Bulk actions** (when rows are selected): *Assign to TV show*, *Assign to
   talk*, *Clear assignment*, *Delete selected*. These are UI-side loops over
   `PATCH`/`DELETE` with a progress counter — no new endpoint (the backend

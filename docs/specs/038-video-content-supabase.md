@@ -48,7 +48,12 @@ watch/likes/playlists remap rely on.
   half the data volume).
 - `subs_l2` copied as-is (TOASTed, deliberately unindexed); MySQL ngram
   FULLTEXT search is not portable — embedding-based search is the intended
-  replacement (SPEC-039).
+  replacement (SPEC-039). (It later gained the interim trigram index and the
+  FTS / n-gram indexes — see SPEC-044/045 and SPEC-105.)
+- **One row per `(youtube_id, l2)`** — enforced by
+  `youtube_videos_youtube_id_l2_key` since 2026-10-19. The same YouTube video
+  may still exist under two different languages; duplicates under one language
+  are rejected (SPEC-105).
 - Small tables copied with **original IDs** — only `youtube_videos` is
   id-prefixed: `phrasebooks`, `youtube_channels`, `talks`, `tv_shows`,
   `articles`, `resources`, `pages`, `heroes`, `drills`, `exams`, `reading`,
