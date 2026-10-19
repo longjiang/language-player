@@ -124,6 +124,8 @@ the proposed cleanup:
    growth.
 5. **Schema inventory lives in [ARCH-037](../arch/037-video-content-schema.md)**,
    not ARCH-036 (which stays focused on subs-search routing).
+6. **Retention: 7 days.** Drop `backup.*_20261019` on/after 2026-10-26 and
+   keep failed maintenance state for 7 days (SPEC-106).
 
 ## Proposed cleanup
 
@@ -248,8 +250,8 @@ record the decisions in [ARCH-037](../arch/037-video-content-schema.md).
   scan. If exact-token tag matching replaces substring matching, revisit the
   index shape.
 - **Backup schema retention.** `backup.*_20261019` holds deleted rows and user
-  references. Keep it until the dedupe is verified, then drop it in a
-  maintenance window.
+  references. Keep it for **7 days** (drop on/after 2026-10-26), then remove
+  it in a maintenance window.
 
 ## Open Questions
 
