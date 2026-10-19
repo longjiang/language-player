@@ -59,7 +59,7 @@ maintained by the cheapest mechanism that can *guarantee* correctness.
 | Trigram GIN (`subs_l2_trgm_idx`) | Postgres index maintenance | immediate | automatic (retained — SPEC-105) |
 | `subs_ngram_tsv` | **synchronous** token computation in `create_video` / `update_video` | immediate | trigger remains the safety net for non-app writers |
 | `video_embeddings` | **`needs_embedding` dirty flag** + daily worker; admin "Update now" | ≤ 1 day, or immediate on demand | DB trigger flags every writer; FK cascade on delete |
-| `lemmatized_subs` | delete the per-video entry on subtitle/L2 change or delete; recompute on write | immediate | content-keyed cache miss after invalidation |
+| `lemmatized_subs` | delete the entry on subtitle/L2 change; bulk deletes use the batch cache-delete endpoint | immediate | content-keyed cache miss after invalidation |
 | `subs_search` results | **content revision** (primary) + optional TTL (30-day backstop); admin cache-bust | immediate on write; no TTL expiry needed | stale entries are ignored, not searched for |
 | Per-language counts | `language_video_counts` matview refreshed by the daily worker | daily | `GET /stats/language-video-counts`; static maps are fallbacks (SPEC-105) |
 
@@ -104,7 +104,9 @@ Only the metadata embedding is asynchronous.
 - Subs-search cache entries store `{saved_at, videos}` and compare against
   `content_revision` (5 s in-process cache) with a 30-day configurable
   backstop. `utils_cache.delete_from_lemmatized_subs_cache` and
-  `remote_cache.delete()` handle per-video invalidation.
+  `remote_cache.delete()` handle per-video invalidation; bulk deletes use
+  `remote_cache.delete_many()` → `delete-flask-cache-batch.php` (one request
+  per 1,000 keys).
 - The daily worker also refreshes `public.language_video_counts` (the
   landing-page counts) after the embedding drain.
 - Data catch-up: the 8 missing embeddings were embedded and the 114
@@ -114,6 +116,15 @@ Only the metadata embedding is asynchronous.
 - Tests: `test_derived_data.py` (8) plus the admin import/preflight/list
   suites (93) pass. The daily cron line is the only ops step:
   `15 3 * * * cd /srv/flask && python3.10 scripts/maintain_derived_data.py`.
+- Follow-up (2026-10-19): channel deletes invalidated the lemma cache with one
+  HTTPS request per video, so a 5,000-video channel took ~20 minutes. Bulk
+  invalidation now goes through `remote_cache.delete_many()` and the shared
+  host's `delete-flask-cache-batch.php` (one request per 1,000 keys), and the
+  content delete commits before the cache cleanup runs. See § 5.
+- **Deploy order**: `delete-flask-cache-batch.php` must be live on
+  `server.chinesezerotohero.com` before the new Python path is deployed.
+  Until it is, the batch call logs a `404` warning, the content delete still
+  succeeds, and lemma-cache invalidation is skipped for that delete.
 
 ## Current gaps (measured 2026-10-19, before implementation)
 
@@ -252,6 +263,11 @@ any delete path cleans the vector.
 - Add `remote_cache.delete(bucket, key)` (local file + remote host; the
   existing `remote_delete()` only removes the remote copy). Call it for
   `lemmatized_subs` when a video is deleted or its `subs_l2`/`l2` changes.
+- Add `remote_cache.delete_many(bucket, keys)` for bulk invalidation. It
+  removes local files and POSTs `{"items":[{"bucket","key"}, …]}` to
+  `delete-flask-cache-batch.php` in chunks, instead of one HTTPS DELETE per
+  video. `utils_cache.delete_from_lemmatized_subs_cache_many()` builds the
+  lemma keys; a request failure is logged and swallowed.
 - Deleting the lemma cache on delete also fixes id reuse: a new import that
   gets the recycled id starts from an empty cache.
 
@@ -282,8 +298,10 @@ any delete path cleans the vector.
   committed insert; the daily worker batches the embeddings, and **Update now**
   drains them on demand.
 - **Bulk delete**: the `video_embeddings` FK cascade removes the vector; the
-  video row (and its flag) is gone; lemma cache entries are deleted per id;
-  one revision bump.
+  video row (and its flag) is gone; one revision bump. The content delete
+  commits first, then lemma cache entries are deleted in batches
+  (`remote_cache.delete_many()` → `delete-flask-cache-batch.php`), so a slow
+  cache host cannot hold the transaction open or roll the delete back.
 - **Bulk assign** (TV show / talk): no derived artifact depends on these
   fields; deliberately no `needs_embedding` and no re-embeds.
 - **Duplicate protection**: the `(youtube_id, l2)` unique index (SPEC-105)
@@ -350,7 +368,8 @@ panel is the current surface.
 | `zerotohero-python-server/utils_content.py` | `create_video` / `update_video` / `delete_video`, cache revision |
 | `zerotohero-python-server/utils_video_import.py` | duplicate race handling; inline tokens |
 | `zerotohero-python-server/utils_video_lemma.py` | cache invalidation / force recompute |
-| `zerotohero-python-server/utils_cache.py`, `remote_cache.py` | revision-aware reads; `delete()` |
+| `zerotohero-python-server/utils_cache.py`, `remote_cache.py` | revision-aware reads; `delete()` / `delete_many()` |
+| `zerotohero-php-server/delete-flask-cache-batch.php` | batched cache-file delete on the shared host (new) |
 | `zerotohero-python-server/utils_embeddings.py` | Gemini client, drain, flag-missing, health counts (new) |
 | `zerotohero-python-server/scripts/maintain_derived_data.py` | drain / report / flag-missing / reindex-ngram (new) |
 | `zerotohero-python-server/scripts/backfill_subs_ngram_tsv.py` | repair tool, unchanged behavior |

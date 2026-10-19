@@ -449,10 +449,13 @@ POST /admin/videos/preflight   { "l2": "ja", "youtube_ids": ["dQw4w9WgXcQ"] }
   not the channel's YouTube `video_count` — so the delete confirmation names
   exactly what will be removed. 404 for an unknown row, 400 for a bad `l2`.
 - `DELETE /admin/channels/<channel_id>?l2=<code>` removes the channel row and
-  every `youtube_videos` row for `(channel_id, l2)`. It reuses the
-  single-video derived-data cleanup (lemma cache + `video_embeddings`) and
-  returns `{ "deleted_videos": N }`. Other languages' registrations and videos
-  are untouched. 404 when the channel row does not exist.
+  every `youtube_videos` row for `(channel_id, l2)`. The content delete
+  commits before the cache cleanup. Lemma cache keys are invalidated in
+  batches via `remote_cache.delete_many()` →
+  `delete-flask-cache-batch.php` (one request per 1,000 keys), not one HTTPS
+  request per video. Returns `{ "deleted_videos": N }`. Other languages'
+  registrations and videos are untouched. 404 when the channel row does not
+  exist.
 
 Both are on `admin_bp`, so the blueprint-level `require_admin()` covers them.
 `utils_content.get_channel`, `count_channel_videos` and `delete_channel`
@@ -583,6 +586,13 @@ allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
 - Backend: `python3.10 -m pytest test_admin_video_import.py` — 78 passed,
   including six new cases for `GET` / `DELETE /admin/channels/<id>` (stored
   count, 404/400, admin gate, L2-scoped deletion, lemma-cache cleanup).
+- Bulk cache invalidation: `test_derived_data.py` adds four cases for
+  `remote_cache.delete_many()` (chunking, local removal, swallowed remote
+  failure) and the `utils_cache` / `utils_content` wiring; the combined run is
+  90 passed.
+- The PHP `delete-flask-cache-batch.php` endpoint mirrors
+  `load-flask-cache-batch.php`; there is no PHP binary in the dev environment,
+  so it was reviewed but not `php -l`-ed here.
 - Admin: `tsc --noEmit` and ESLint pass for the changed files.
 - Manual: no local admin account was available (`tester.mary` / `tester.bob`
   report `isAdmin: false`), so the detail page, delete confirmation and

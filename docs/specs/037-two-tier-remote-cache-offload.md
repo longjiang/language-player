@@ -69,6 +69,11 @@ New PHP endpoints under `~/server.chinesezerotohero.com/`:
   returns `{"results":[...]}` for batched text lookups.
 - `delete-flask-cache.php` — DELETE `bucket` + `key`, used for tests and
   invalidation.
+- `delete-flask-cache-batch.php` — POST JSON
+  `{"items":[{"bucket","key"}, ...]}`, deletes every matching file in one
+  request (max 5,000 items). Used for bulk invalidation such as deleting a
+  channel with thousands of videos; returns
+  `{"deleted","missing","invalid","failed"}`.
 
 All endpoints require an `X-Cache-Key` header matching the `cacheKey` value in
 `apikeys.json` (gitignored). `apikeys.example.json` documents the field.
