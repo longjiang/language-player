@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: draft — the body still describes the retired MySQL FULLTEXT path and the deleted `app_subs_search.py`; SPEC-044 Part 2 is the current strategy
 - **Created**: 2026-07-24
-- **Last Updated**: 2026-09-03
+- **Last Updated**: 2026-10-19
 - **ROADMAP Phase**: Phase 4 — Dictionary
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask), Supabase Postgres
 - **Renumbered**: was `004-subs-search-architecture.md` (collided with ARCH-004); renamed to ARCH-036 on 2026-10-18
@@ -116,6 +116,20 @@ SubsSearchResults
 > which is height-bounded by the sheet's flex chain (`min-h-0`). While the
 > dialog is open the page body is scroll-locked so a wheel/touch over the
 > subtitles never scrolls the page behind the dialog.
+>
+> **Out-of-range notice — initial playhead (as-built, 2026-10-19):** the
+> "Load Full Subtitles" notice is gated on a real playhead. The YouTube IFrame
+> API reports its position only after the embed loads and seeks (web and mobile
+> both poll every 500 ms), so `currentTime` is still `0` — or the previous
+> video's position after prev/next — right after the modal opens. The modal
+> therefore assumes the match-line cue (where the player is cued via
+> `startTime`) until the player reports a position, and does not evaluate the
+> loaded subtitle range before then. It also only acts on an out-of-range
+> position after a reported position has landed inside the range, so a fresh
+> embed's not-yet-seeked `0` report can't trip it either. Without that gate
+> the notice (and the pause-on-out-of-range effect) fired on every open and
+> cleared when the first time update landed — the "partial subs banner flashes
+> for a second" bug.
 
 ### States
 
