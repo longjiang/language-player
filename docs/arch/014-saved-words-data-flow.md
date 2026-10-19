@@ -496,6 +496,24 @@ hundreds of `/dictionary/entry` requests in one burst — Chrome fails them with
 freezing the page. Measured with a 300-word saved list: 603 requests before,
 17 after (the visible cards only).
 
+#### Sidebar Source Resolution
+
+The entry page resolves the sidebar list in this order (ADR-0007: the sidebar
+is always present and its default content is saved words):
+
+1. `?listCurrent=` + the list stored by `setWordListNav()` — the list the user
+   navigated from (search results, saved words, related words).
+2. **Saved words** rebuilt from the provider, when `listCurrent` is one of the
+   user's saved words (recovers from a lost/blocked `sessionStorage` write).
+3. **Saved words** as the default, even when the entry wasn't opened from that
+   list — `currentId` stays empty so nothing is falsely highlighted and
+   prev/next stay disabled. This is what keeps a direct link or a refreshed
+   tab from losing the sidebar (and its show/hide toggle) entirely.
+4. Nothing — only when there is no stored list and the user has no saved
+   words for the current L2.
+
+The sidebar renders only when the resolved list has more than one item.
+
 ### 6. Enrich — Dictionary/LLM Entry Fetching Pipelines
 
 #### Entry-Level Fetch (`GET /dictionary/entry`)

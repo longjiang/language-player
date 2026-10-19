@@ -43,8 +43,10 @@ function saveRecent(l2Code: string, term: string) {
 
 // ── Sidebar content type ─────────────────────
 // The sidebar shows the word list the user navigated to the current entry
-// from. It's set by the entry page from the URL (?listCurrent= + stored nav)
-// and is `none` everywhere else — there is no saved-words fallback.
+// from (set by the entry page from ?listCurrent= + the stored nav). When that
+// list is missing it falls back to the user's saved words (ADR-0007: saved
+// words are the sidebar's default content); it is `none` only when there is
+// no list and nothing saved.
 
 export type SidebarSource =
   | { kind: 'none' }
