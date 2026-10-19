@@ -71,7 +71,7 @@ Only the metadata embedding is asynchronous.
 
 | Question | Decision |
 |---|---|
-| Worker cadence | **Supabase `pg_cron`** (available, not yet installed) + `pg_net` → a protected Flask maintenance endpoint, with a VPS cron as the fallback. `pg_cron` runs SQL only, so it schedules a call — it cannot call Gemini itself. The admin **Update now** action uses the same endpoint. |
+| Worker cadence | **Daily cron on the Flask VPS** (the `prune_cache.py` pattern), plus an admin **Update now** action for immediate work. `pg_cron` was evaluated and rejected: it runs SQL only, so it would need `pg_net` + a Vault secret + an HTTP hop back to Flask. The VPS cron adds no new network path or secret. |
 | Latency | Embeddings: ≤ 1 day automatically, immediate on demand. Sub-search: immediate (inline n-gram); no daily wait. |
 | Rescore on subtitle edit | **Synchronous** — never serve stale scores. Delete the lemma cache first; if recompute fails, set the scores to NULL so they are visibly missing rather than silently stale. |
 | Queue shape | A **`needs_embedding` flag on `youtube_videos`** (plus attempts/error/requested_at) is enough. No separate `derived_jobs` table. |
@@ -180,48 +180,17 @@ Worker `scripts/maintain_derived_data.py` (tracked, `python3.10`):
    them (health panel) but does not auto-flag them, so the initial 8 + 36
    backlog stays a deliberate one-off.
 
-Schedule — two supported options, same worker:
+Schedule: the VPS crontab runs the worker **daily** (e.g. `15 3 * * *`) and
+logs to `/var/log/langplayer-derived.log`; the admin **Update now** button
+calls the same drain function for one bounded batch (≤ 50). The drain is
+idempotent, so a manual run and the cron can overlap harmlessly.
 
-- **Supabase `pg_cron` (preferred if Supabase should own the schedule).**
-  `pg_cron` 1.6.4 and `pg_net` 0.20.4 are available on the project (not yet
-  installed). `pg_cron` runs SQL only, so it cannot call Gemini; it calls a
-  protected Flask endpoint that runs one bounded batch:
+**Why not Supabase `pg_cron`.** It was evaluated and rejected for this
+project: `pg_cron` runs SQL only, so it cannot call Gemini; it would need
+`pg_net` (another extension), a shared secret in Vault, and an HTTP hop back
+to the same Flask endpoint. The VPS already runs `prune_cache.py` on cron, so
+using it for this worker adds no new moving part.
 
-  ```sql
-  create extension if not exists pg_cron;
-  create extension if not exists pg_net;
-
-  select cron.schedule(
-    'embed-videos',
-    '15 3 * * *',
-    $$
-      select net.http_post(
-        url := 'https://python.zerotohero.ca/admin/maintenance/run-embeddings',
-        headers := jsonb_build_object(
-          'Content-Type', 'application/json',
-          'X-Maintenance-Secret',
-          (select decrypted_secret from vault.decrypted_secrets
-           where name = 'maintenance_secret')
-        ),
-        body := '{"limit": 50}'::jsonb,
-        timeout_milliseconds := 100000
-      );
-    $$
-  );
-  ```
-
-  The endpoint accepts `limit` (≤ 50), processes one batch, and returns
-  `{processed, failed, remaining}`. Store the secret in Supabase Vault
-  (`supabase_vault` is installed); the endpoint checks it before doing any
-  work. `pg_net` is asynchronous — the cron job only fires the request; the
-  backlog and the last response are visible in the health panel
-  (`net._http_response`).
-- **VPS cron (fallback, fewest moving parts).** `15 3 * * * cd /srv/flask &&
-  python3.10 scripts/maintain_derived_data.py`, logging to
-  `/var/log/langplayer-derived.log`.
-
-Either way the admin **Update now** button calls the same drain function for
-one bounded batch, and the endpoint/worker is idempotent (safe to run twice).
 Also add `video_embeddings.video_id → youtube_videos(id) ON DELETE CASCADE` so
 any delete path cleans the vector.
 
@@ -374,10 +343,10 @@ Each phase is independently shippable and reversible.
   report-only reconciliation surfaces rows that bypassed them. A writer that
   disables triggers would still be invisible — the backstop is a manual review,
   not silence.
-- **pg_cron/pg_net dependence.** The cron job only fires an HTTP request; if
-  the Flask endpoint is down or the secret is wrong, `pg_net` records a failed
-  response and the backlog grows. The health panel / `net._http_response` is
-  the check; the next daily run retries.
+- **Cron dependence.** If the VPS crontab is removed or the script fails, the
+  backlog grows silently. The health panel shows `needs_embedding` and the
+  last successful run; the next daily run (or **Update now**) catches up. A
+  failed run is retried the next day, not immediately.
 - **Doc drift.** SPEC-096 currently documents “the n-gram index is not
   refreshed”; ADR-0021 documents a one-time embedding backfill. Both must be
   amended with this spec, not after it.
@@ -403,10 +372,11 @@ Each phase is independently shippable and reversible.
 
 Resolved 2026-10-19 (kept here so the reasoning is visible):
 
-1. **Worker cadence and ownership.** Supabase `pg_cron` + `pg_net` calls a
-   protected Flask endpoint daily (preferred); VPS cron is the fallback.
-   Supabase owns the schedule, the backend owns the endpoint/secret, and the
-   Content health panel owns visibility. The worker stays Python either way.
+1. **Worker cadence and ownership.** Daily cron on the Flask VPS (the
+   `prune_cache.py` pattern), plus the admin **Update now** action. The VPS
+   administrator owns the crontab; the backend repo owns the script; the
+   Content health panel owns visibility. `pg_cron` was considered and rejected
+   (SQL-only; would need `pg_net`, a Vault secret and an HTTP hop).
 2. **Acceptable latency.** ≤ 1 day for embeddings; immediate via **Update
    now**. Subs-search is immediate (inline n-gram), so it never waits for the
    worker.
