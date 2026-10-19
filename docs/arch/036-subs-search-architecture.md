@@ -11,6 +11,7 @@
 - **ROADMAP Phase**: Phase 4 — Dictionary
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask), Supabase Postgres
 - **Renumbered**: was `004-subs-search-architecture.md` (collided with ARCH-004); renamed to ARCH-036 on 2026-10-18
+- **See also**: [ARCH-037 — Video Content Schema & Index Inventory](037-video-content-schema.md) for the `youtube_videos` index set; [SPEC-105](../specs/105-video-content-index-cleanup.md) for the retained trigram and planned index cleanup
 
 How the "Examples" tab on dictionary entry pages finds and displays video subtitles matching a word's inflected forms.
 

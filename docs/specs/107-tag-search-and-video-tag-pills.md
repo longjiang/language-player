@@ -149,5 +149,8 @@ typed by the user; the route shape (`?q=…`) stays unchanged.
   tags merely contain the term, but needs a before/after latency measurement
   (see SPEC-105).
 - If tag searches become common, add the trigram index discussed in SPEC-105.
+  **Update 2026-10-19:** SPEC-105 now proposes adding
+  `gin (tags gin_trgm_ops)` — measured 5–35 ms for common `en` tags, but a
+  rare tag scans the whole language subset; short (1–2 char) tags still scan.
 - Tag order on the watch page follows the stored comma order. If that proves
   noisy, sort by relevance or alphabetically.
