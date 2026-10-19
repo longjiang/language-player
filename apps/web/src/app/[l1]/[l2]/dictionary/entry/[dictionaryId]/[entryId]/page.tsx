@@ -103,14 +103,15 @@ export default function DictionaryEntryPage() {
   }, [fetchEntry]);
 
   // The sidebar shows the word list the user navigated here from (search
-  // results, saved words, or related words). It's only available when
-  // ?listCurrent= points at a stored list with more than one item — otherwise
-  // there is no list to show. Also logs every dictionary nav from a wordlist.
+  // results, saved words, or related words). When that list is gone (a direct
+  // link, a refreshed/new tab, or cleared storage) it falls back to the user's
+  // saved words — ADR-0007: the sidebar is always present and its default
+  // content is saved words. Also logs every dictionary nav from a wordlist.
   useEffect(() => {
     const listCurrent = searchParams.get('listCurrent');
     let nav = listCurrent ? getWordListNav() : null;
 
-    // Fallback: the stored nav can be lost (opened in a new tab, storage
+    // Fallback 1: the stored nav can be lost (opened in a new tab, storage
     // cleared, or a write race). When the tapped word is one of the user's
     // saved words, rebuild the saved-words list from the provider so the
     // sidebar still appears instead of silently disappearing.
@@ -125,12 +126,34 @@ export default function DictionaryEntryPage() {
       }
     }
 
+    // Fallback 2 (ADR-0007): no stored list at all — the sidebar defaults to
+    // the saved-words list, even when this entry wasn't opened from it (e.g.
+    // reached from a video, or the list was never written). `currentEntryId`
+    // stays empty when the viewed entry isn't saved, so no card is falsely
+    // highlighted and prev/next stay disabled.
+    if (!nav) {
+      const saved = getSavedWords(l2.code);
+      if (saved.length > 0) {
+        nav = {
+          items: saved.map((w) => savedWordToNavItem(w, l2.code)),
+          currentEntryId: listCurrent && saved.some((w) => w.id === listCurrent) ? listCurrent : '',
+          source: 'saved',
+        };
+      }
+    }
+
     if (nav) {
       log('Dictionary nav from wordlist', {
         source: nav.source,
         count: nav.items.length,
         sidebarShown: nav.items.length > 1,
         currentId: nav.currentEntryId,
+      });
+    } else {
+      log('Dictionary sidebar unavailable', {
+        listCurrent,
+        savedCount: getSavedWords(l2.code).length,
+        reason: 'no stored list and no saved words',
       });
     }
     if (nav && nav.items.length > 1) {
