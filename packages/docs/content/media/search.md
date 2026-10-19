@@ -8,6 +8,7 @@ The search page is the fastest way to find content in your target language (L2).
 
 - **{$placeholder.search} title** — Type what you want to watch and get matching videos
 - **Open any {$option.youtube} video** — Paste a {$option.youtube} URL to watch it instantly with interactive subtitles
+- **Search by tag** — Start your search with `#` to find videos tagged with a topic
 - **browse popular tags** — {$title.explore} trending topics in your target language
 
 ## How to {$action.search}
@@ -15,6 +16,8 @@ The search page is the fastest way to find content in your target language (L2).
 Type a keyword into the search bar and click **{$placeholder.search} {$title.app_name} looks through all available videos and returns matches by title. You'll see video cards with thumbnails, titles, difficulty levels, and view counts.
 
 {$placeholder.search} your target language for the best results. For example, if you're learning {$lang.ja}, search `料理` (cooking) instead of "cooking."
+
+Put a `#` in front of your search to look at tags instead of titles. For example, `#news` finds videos tagged news, while `news` searches the words in video titles.
 
 The search updates the page URL, so you can bookmark or share your search results.
 
@@ -34,7 +37,9 @@ See [watch Page](/docs/media/watch) for details on the video player.
 
 ## popular tags
 
-When you first open the search page, you'll see a tag cloud of popular topics in your target language. These are the most-searched terms by other learners. Click any tag to search for it instantly — a great way to find content when you're not sure what to look for.
+When you first open the search page, you'll see a tag cloud of popular topics in your target language. These tags come from the videos themselves, so they reflect how creators actually label their content. Click any tag to see every video with that tag — a great way to find content when you're not sure what to look for.
+
+Clicking a tag puts a `#` in front of it in the search field, like `#ニュース`. That `#` is what tells {$title.app_name} to match tags instead of titles. You can type tags yourself the same way. The tag lands in the page URL, so you can bookmark or share a tag search just like any other search.
 
 tags vary by language. A {$lang.ja} learner might see `ニュース` (news), `アニメ` (anime), and `料理` (cooking), while a Spanish learner might see `música`, `noticias`, and `cocina`.
 

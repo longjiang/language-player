@@ -201,8 +201,11 @@ window, and record the decision in ARCH-036.
 
 ## Open Questions
 
-- Is tag search (`tags ILIKE`) a real user-facing feature, or only an admin
-  convenience? That decides whether a trigram index on `tags` is worth it.
+- ~~Is tag search (`tags ILIKE`) a real user-facing feature?~~ **Answered
+  2026-10-19 (SPEC-107):** yes. Tag searches are now first-class in web and
+  mobile — the search tag cloud, `#tag` queries, and the watch page's tag pills
+  all route through `GET /search-videos?tag=…`. That decides whether a trigram
+  index on `tags` is worth it; re-measure latency before adding one.
 - How much wildcard/space-term traffic does subs-search actually see? The
   trigram decision depends on it.
 - Is the single-column `views` index still chosen after the unique index and
