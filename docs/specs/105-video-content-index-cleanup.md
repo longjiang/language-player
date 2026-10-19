@@ -138,9 +138,10 @@ Applied on the live database:
   `youtube_videos_subs_l2_fts_ru_idx`, `idx_youtube_videos_tags`,
   `idx_youtube_videos_date`, `idx_youtube_videos_topic`,
   `idx_youtube_videos_type`).
-- Surviving set: **16 indexes** (ARCH-037). Verified plans: `(youtube_id, l2)`
-  uses the unique index, Russian rare FTS uses the global `subs_tsv_idx`, and
-  tag search uses the trigram for rare tags.
+- Surviving content set: **16 indexes** (ARCH-037), plus the 16 kB
+  SPEC-106 `needs_embedding` flag index (17 on the table in total). Verified
+  plans: `(youtube_id, l2)` uses the unique index, Russian rare FTS uses the
+  global `subs_tsv_idx`, and tag search uses the trigram for rare tags.
 - Tracked migrations:
   `202610190002_video_content_indexes.sql` (keep set + tags trigram) and
   `202610190003_video_content_index_drops.sql` (drops); both validated
