@@ -179,9 +179,11 @@ All writes go through `utils_content.create_video` / `update_video` /
 - **`subs_ngram_tsv`** — nulled by the `subs_l2` trigger; repaired by
   `backfill_subs_ngram_tsv.py` today. SPEC-106 proposes computing it inline.
 - **`video_embeddings`** — one-time 2026-08-02/03 backfill; new/edited videos
-  are not re-embedded. SPEC-106 proposes an outbox + worker.
+  are not re-embedded. SPEC-106 proposes a `needs_embedding` flag + daily
+  worker, with an admin **Update now** action (≤ 1 day, or on demand).
 - **lemmatization cache** — written on import, never invalidated; SPEC-106.
-- **subs-search result cache** — no TTL; SPEC-106 proposes a content revision.
+- **subs-search result cache** — no TTL today; SPEC-106 proposes a content
+  revision plus a 24 h TTL and an admin cache-bust.
 
 ## Migration history
 
