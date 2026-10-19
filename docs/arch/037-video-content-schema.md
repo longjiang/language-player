@@ -113,7 +113,7 @@ Row count: **1,045,301**; heap **866 MB**, indexes **~10.2 GB**, total
   makes the next import reuse its id (SPEC-106 deletes the lemma cache on
   delete for that reason).
 
-## Index inventory (16)
+## Index inventory (16 content + 1 maintenance)
 
 Measured 2026-10-19 after the dedupe and the SPEC-105 cleanup. Scan counts are
 cumulative since stats were last reset.
@@ -136,6 +136,7 @@ cumulative since stats were last reset.
 | `youtube_videos_subs_tsv_idx` | `gin (to_tsvector(subs_tsv_config(l2), subs_l2))` | 2.3 GB | word-language FTS |
 | `youtube_videos_subs_ngram_tsv_idx` | `gin (subs_ngram_tsv)` partial, 29 continua languages | 1.1 GB | continua FTS |
 | `youtube_videos_subs_l2_trgm_idx` | `gin (subs_l2 gin_trgm_ops)` | 6.2 GB | wildcard (`*`, `?`, `_`) and whitespace ("space-term") searches; retained deliberately (a future grammar-example feature may rely on it) |
+| `youtube_videos_needs_embedding_idx` | partial `(embed_requested_at) where needs_embedding` | 16 kB | SPEC-106 drain queue (not part of the content/search set) |
 
 Six indexes were dropped on 2026-10-19: `idx_youtube_videos_youtube_id`
 (prefix of the unique index), `youtube_videos_subs_l2_fts_ru_idx` (duplicate
