@@ -1,7 +1,7 @@
 'use client';
 
 import { AdminShell } from '@/components/layout/admin-shell';
-import { Field } from '@/components/content/field';
+import { Field, FormSection } from '@/components/content/field';
 import { L2Select } from '@/components/content/l2-select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -200,10 +200,11 @@ export default function ChannelsPage() {
       </div>
 
       <Card className="mt-5">
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-5 pt-6">
           <Field label={t('label.channel_ref')} hint={t('msg.channel_ref_hint')}>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input
+                className="flex-1"
                 value={reference}
                 onChange={(e) => {
                   setReference(e.target.value);
@@ -214,6 +215,7 @@ export default function ChannelsPage() {
               <Button
                 type="button"
                 variant="outline"
+                className="sm:w-auto"
                 disabled={resolving || !reference.trim()}
                 onClick={() => void runResolve()}
               >
@@ -240,8 +242,14 @@ export default function ChannelsPage() {
             </div>
           )}
 
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="w-28">
+          <div className="border-t border-border" />
+
+          <FormSection title={t('title.import_options')} className="space-y-4">
+            <Field label={t('label.match_keywords')} hint={t('msg.match_keywords_hint')}>
+              <Input value={matchKeywords} onChange={(e) => setMatchKeywords(e.target.value)} />
+            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-3">
               <Field label={t('label.limit')}>
                 <Input
                   type="number"
@@ -251,46 +259,46 @@ export default function ChannelsPage() {
                   onChange={(e) => setLimit(Number(e.target.value) || 50)}
                 />
               </Field>
-            </div>
-            <div className="w-56">
-              <Field label={t('label.match_keywords')} hint={t('msg.match_keywords_hint')}>
-                <Input value={matchKeywords} onChange={(e) => setMatchKeywords(e.target.value)} />
-              </Field>
-            </div>
-            <div className="w-48">
               <Field label={t('title.tv_show')} hint={t('msg.show_or_talk_hint')}>
                 <Input value={tvShow} onChange={(e) => setTvShow(e.target.value)} />
               </Field>
-            </div>
-            <div className="w-48">
               <Field label={t('label.talk')}>
                 <Input value={talk} onChange={(e) => setTalk(e.target.value)} />
               </Field>
             </div>
-            <label className="flex items-center gap-2 pb-2 text-sm">
-              <Checkbox
-                checked={circuitBreak}
-                onChange={(e) => setCircuitBreak(e.target.checked)}
-              />
-              {t('label.use_circuit_break')}
-            </label>
-            <Button disabled={running || !authReady || !l2} onClick={() => void runImport()}>
-              {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              {t('action.import_uploads')}
-            </Button>
-            {running && (
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  stopRef.current = true;
-                  log('channel import stop requested');
-                }}
-              >
-                <CircleStop className="h-4 w-4" />
-                {t('action.stop')}
-              </Button>
-            )}
-          </div>
+
+            <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={circuitBreak}
+                  onChange={(e) => setCircuitBreak(e.target.checked)}
+                />
+                {t('label.use_circuit_break')}
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  className="w-full sm:w-auto"
+                  disabled={running || !authReady || !l2}
+                  onClick={() => void runImport()}
+                >
+                  {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  {t('action.import_uploads')}
+                </Button>
+                {running && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      stopRef.current = true;
+                      log('channel import stop requested');
+                    }}
+                  >
+                    <CircleStop className="h-4 w-4" />
+                    {t('action.stop')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </FormSection>
 
           {(results.length > 0 || summary.total > 0) && (
             <div className="space-y-2">
