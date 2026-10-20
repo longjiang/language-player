@@ -8,12 +8,14 @@
   fetching metadata, downloading the L2 transcript, populating the
   lemmatization cache and scoring difficulty
 - **Status**: complete (2026-10-16); extended 2026-10-19 with the read-only
-  discovery phase
+  discovery and transcript-check phases
 - **Created**: 2026-10-16
 - **Implemented**: 2026-10-16 — five commits, `ec70774` → `1df1911`
   (`zerotohero-python-server`). 2026-10-19 — `7f6025e` added
-  `/admin/videos/ids`, `/admin/videos/screen` and `utils_video_screening.py`
-  for the console's two-phase import (SPEC-099).
+  `/admin/videos/ids`, `/admin/videos/screen` and `utils_video_screening.py`;
+  the later `7794ed8` / `00756f7` commits added manual-only eligibility,
+  throttling and `/admin/videos/transcripts` for the console's three-phase
+  import (SPEC-099).
 - **ROADMAP Phase**: Phase 9: Backend Consolidation
 - **Scope**: Flask backend (`zerotohero-python-server/`). The admin console UI
   that calls these endpoints is [SPEC-099](099-admin-content-management.md).
@@ -38,21 +40,23 @@ and MySQL. That path no longer matches the stack: the content lives in
 Supabase (SPEC-038/039), it never scored difficulty, it created talk / TV-show
 rows as a side effect, and it cannot be called over HTTP.
 
-This spec adds nine `is_admin`-gated Flask endpoints. Seven ingest YouTube
+This spec adds ten `is_admin`-gated Flask endpoints. Seven ingest YouTube
 content directly into `public.youtube_videos` through one shared pipeline
 (the five below, plus `POST /admin/videos/sweep-unavailable` and
-`POST /admin/videos/discover` from [SPEC-098](098-video-discovery.md)). Two
-more are **read-only**: they enumerate and screen candidates so the admin
-console can review them before writing anything (SPEC-099's Discover → Add
-flow).
+`POST /admin/videos/discover` from [SPEC-098](098-video-discovery.md)). Three
+more are **read-only**: they enumerate, screen and list transcripts so the
+admin console can review candidates before writing anything (SPEC-099's
+Discover → Check transcripts → Add flow).
 
 ```text
-Discover (writes nothing)
+Discover + Check (write nothing)
    YouTube id / channel / playlist
       │
       ├─ /admin/videos/ids           ── one page of candidate ids
-      └─ /admin/videos/screen        ── DB existence + videos.list (50/batch)
-                                        + caption-track listing (no download)
+      ├─ /admin/videos/screen        ── DB existence + videos.list (50/batch)
+      │                                 + Shorts filter (duration heuristic)
+      └─ /admin/videos/transcripts   ── caption-track listing only (one id at
+                                        a time in the console; cached)
                                            │
 Add (the pipeline below)  ◄────────────────┘
    YouTube id / channel / playlist
@@ -311,7 +315,8 @@ with a non-admin token, so a new unguarded route fails the suite.
 | `/admin/videos/sweep-unavailable` | POST | Find (and optionally delete) stored videos YouTube no longer serves |
 | `/admin/videos/discover` | POST | Find candidates from search terms — [SPEC-098](098-video-discovery.md) |
 | `/admin/videos/ids` | POST | Enumerate candidate ids from a list / channel / playlist (read-only) |
-| `/admin/videos/screen` | POST | Screen up to 50 ids: DB existence, metadata, caption-track listing (read-only) |
+| `/admin/videos/screen` | POST | Screen up to 50 ids: DB existence, metadata, Shorts filter, optional caption-track listing (read-only) |
+| `/admin/videos/transcripts` | POST | List caption tracks only — no metadata / DB re-fetch (read-only) |
 
 ### `POST /admin/videos/add`
 
@@ -409,22 +414,28 @@ Order matters for cost:
    call and **no** caption listing.
 2. **Metadata** — the remaining ids go through `videos.list` in one batch of
    50, so an unavailable or non-embeddable video costs no caption request.
-3. **Caption listing** — every available, embeddable video gets
-   `select_best_l2_transcript()` (a listing call, cached by the caption
-   layer; no transcript is downloaded). Region-restricted and
-   declared-locale-mismatch videos are soft blocks that `force: true` can
-   import, so their track is listed too — a force-add therefore needs no
-   second discovery pass.
+3. **Shorts filter** — Shorts are removed before the table and before any
+   caption request. The Data API exposes no Shorts flag, so the proxy is
+   duration ≤ `SHORTS_MAX_SECONDS` (default 180s = YouTube's 3-minute Shorts
+   maximum; override with the env var). Stored rows are filtered too, so an
+   already-imported Short does not reappear. They are counted in
+   `summary.shorts_excluded`; `requested` still includes them.
+4. **Caption listing** (only when `check_transcripts: true`) — every
+   available, embeddable video gets `select_best_l2_transcript()` (a listing
+   call, cached by the caption layer; no transcript is downloaded).
+   Region-restricted and declared-locale-mismatch videos are soft blocks that
+   `force: true` can import, so their track is listed too — a force-add
+   therefore needs no second discovery pass.
 
-The console drives this endpoint in two modes, matching its three phases.
-**Discover** sends `check_transcripts: false` and gets DB verdicts + metadata
-only, so the admin sees the found videos before any caption request.
-**Check transcripts** sends `check_transcripts: true` in 10-id batches and
-shows a spinner against those rows until the listing returns. Successful
-listings are cached by `list_transcripts_result()` in the two-tier `caption`
-bucket (`list/<hash>`, per video, language-independent), so re-running the
-check phase only calls YouTube for videos that were never listed; failures
-are not cached.
+The console drives the split phases separately. **Discover** sends
+`check_transcripts: false` and gets DB verdicts + metadata only, so the admin
+sees the found videos before any caption request. **Check transcripts** uses
+`POST /admin/videos/transcripts` (below) one id at a time, so it never
+re-fetches the metadata Discover already has. Successful listings are cached
+by `list_transcripts_result()` in the two-tier `caption` bucket
+(`list/<hash>`, per video, language-independent), so re-running the check
+phase only calls YouTube for videos that were never listed; failures are not
+cached.
 
 ```json
 {
@@ -445,7 +456,8 @@ are not cached.
   "invalid": [],
   "caption_error": null,
   "summary": {
-    "requested": 1, "invalid": 0, "in_db": 0, "checked_metadata": 1,
+    "requested": 1, "invalid": 0, "shorts_excluded": 0,
+    "in_db": 0, "checked_metadata": 1,
     "unavailable": 0, "not_embeddable": 0, "region_restricted": 0,
     "locale_mismatch": 0, "transcript_found": 1,
     "auto_generated_transcript": 0, "no_transcript": 0,
@@ -488,6 +500,42 @@ between tracks) and a rate-limited listing is retried once
 reduces the chance of tripping YouTube's `/sorry/index` 429 but cannot
 eliminate it: it is an anti-bot/IP block on the caption proxy, so the console
 retains the stop-and-retry flow.
+
+### `POST /admin/videos/transcripts`
+
+The Check-transcripts phase, split out so it does **not** re-fetch metadata
+or touch the database. The console sends **one id per call**, which lets the
+table show a spinner against exactly one video; the endpoint also accepts up
+to 50 for other callers.
+
+```json
+{ "l2": "zh", "youtube_ids": ["dQw4w9WgXcQ"] }
+```
+
+```json
+{
+  "l2": "zh",
+  "results": [{
+    "youtube_id": "dQw4w9WgXcQ",
+    "transcript": { "language_code": "zh", "language": "Chinese", "is_generated": false },
+    "transcript_status": "found",
+    "transcript_error": null
+  }],
+  "invalid": [],
+  "caption_error": null,
+  "summary": {
+    "requested": 1, "invalid": 0, "transcript_found": 1,
+    "auto_generated_transcript": 0, "no_transcript": 0,
+    "caption_service_unavailable": 0, "not_checked": 0
+  }
+}
+```
+
+The same throttling, one-retry, caption-error and `is_generated` rules as the
+screen endpoint apply. A caption failure stops further listings in the call
+and returns a short `caption_error`; the full upstream exception is logged.
+The listing cache is shared with the screener/importer, so a re-run of this
+endpoint for an already-listed video is a cache hit.
 
 ### `GET /admin/channels/resolve`
 
@@ -550,10 +598,16 @@ caught, recorded as `failed`, and the rest of the page continues.
 The discovery phase is paged the same way but stays **stateless**:
 `/admin/videos/ids` returns one playlist page (max 50 ids), and
 `/admin/videos/screen` accepts at most 50 ids (one `videos.list` batch plus
-up to 50 serial caption listings). The console loops and accumulates the rows
-in the browser. Keeping the result set client-side is what makes
+an optional caption listing). The console loops and accumulates the rows in
+the browser. Keeping the result set client-side is what makes
 "add all eligible (including rows behind the infinite scroll)" possible
 without a server-side job.
+
+The check phase is deliberately **one id per request** in the console:
+`/admin/videos/transcripts` accepts one id, so the spinner is exactly one
+video, and the endpoint does no metadata or DB work. A 500-video check is 500
+small requests, each a caption listing (or a cache hit); Stop/Continue and the
+per-video cache keep that practical.
 
 Background jobs with progress polling were considered and rejected: they need
 a job registry that survives worker restarts (gunicorn runs 4 workers, and an
@@ -588,7 +642,7 @@ caption *listings* are cached by the caption layer, not the table rows.
 | `zerotohero-python-server/caption_selection.py` | The caption rule the transcript step uses (ARCH-035) |
 | `zerotohero-python-server/app_youtubecaptions.py` | Transcript download, shared with every other caption consumer |
 | `zerotohero-python-server/test_admin_video_import.py` | Importer unit + route tests (64 cases) |
-| `zerotohero-python-server/test_admin_video_screening.py` | Discovery enumeration + screening tests (18 cases) |
+| `zerotohero-python-server/test_admin_video_screening.py` | Discovery enumeration + screening tests (22 cases) |
 | `zerotohero-python-server/test_video_discovery.py` | Discovery tests (12 cases) |
 
 ## Testing
@@ -624,10 +678,16 @@ caption *listings* are cached by the caption layer, not the table rows.
   `not_checked`), and the public error is concise while the full upstream
   message is not returned,
 - a rate-limited listing is retried once when the retry budget allows,
+- Shorts (duration ≤ `SHORTS_MAX_SECONDS`, including an already-stored one)
+  are excluded before any caption call and counted in `shorts_excluded`,
+- the transcript-only check makes no metadata/DB call and returns the same
+  manual/auto/no-transcript verdicts,
 - duplicate/invalid ids, the 50-id cap, metadata failure → `YouTubeApiError`,
 - `/admin/videos/ids` paging for a pasted list, a channel's uploads playlist,
   validation, and playlist failure → 502,
-- `/admin/videos/screen` row shape, language/id validation, and the 502 path.
+- `/admin/videos/screen` row shape, language/id validation, and the 502 path;
+- `/admin/videos/transcripts` returns results without metadata and validates
+  the language/id list.
 
 Everything network- or NLP-shaped (YouTube API, caption pipeline,
 lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
@@ -683,6 +743,15 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   reduce the chance, but a sustained `/sorry/index` 429 is an IP/proxy block;
   the call then stops, preserves the rows already screened, and the console
   offers *Retry unchecked*. The full upstream error is only in the server log.
+- **Shorts detection is duration-based.** The Data API exposes no Shorts
+  flag, so `SHORTS_MAX_SECONDS` (default 180, YouTube's 3-minute Shorts
+  maximum) is the proxy. A normal 2–3 minute video is filtered too; lower the
+  env var to 60 for classic short-form only. A Short already in the DB is
+  filtered from Discover as well.
+- **Video metadata is not cached.** `videos.list` is fetched once per video
+  during Discover; the transcript-only Check endpoint does not re-fetch it.
+  Re-running Discover does fetch metadata again. Caption **listings** are
+  cached (the `list/<hash>` entries), so re-running Check is the cheap one.
 - **Already-stored rows skip YouTube entirely.** Their title/duration/locale
   come from `youtube_videos`, and no caption listing is made even when
   `subs_l2` is empty (`transcript_status: "not_checked"`). This keeps a
