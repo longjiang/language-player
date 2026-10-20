@@ -120,6 +120,14 @@ Consequences worth knowing:
 Accepted everywhere; nothing rejects a video for being ASR-only. The only
 preference is manual-over-ASR, as above.
 
+**One consumer-level exception:** the admin import screen
+([SPEC-099](../specs/099-admin-content-management.md) § `/content/import`)
+lists ASR tracks but marks them ineligible for import; only manually created
+transcripts are offered as addable. That is a policy of that screen, not a
+change to `choose_best_transcript()` or to the importer — `/admin/videos/add`
+and `/add-batch` still store ASR when called directly, and the watch/serving
+paths still resolve an ASR-only video normally.
+
 The video-level `contentDetails.caption` flag is a **different** question —
 "does this video have any captions at all" — and it was only ever used by the
 legacy crawler and the Google-search discovery path (both removed). It says

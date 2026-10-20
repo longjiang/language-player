@@ -858,6 +858,15 @@ call fails with a CORS error**. Deploy the Flask change to the VPS before
 treating such an error as a frontend bug (SPEC-060 § "Flask CORS must allow the
 admin origin").
 
+**A 502/504 also looks like a CORS error.** Cloudflare (or any gateway)
+generates those responses before Flask runs, so they carry no
+`Access-Control-Allow-Origin` header and the browser reports the request as
+CORS-blocked even when `app.py` is correct. Check the actual status in the
+Network tab: a 502 is a gateway/origin failure — for the admin console this
+was a long `/admin/channels/add` request (50 serial transcript downloads)
+outliving the proxy timeout, not a missing origin. The two-phase import's add
+phase therefore uses 25-id pages (SPEC-099 § `/content/import`).
+
 ### 11.5 Deploy
 
 **Deploy from a directory outside the repo.** A CLI deploy run from inside the
