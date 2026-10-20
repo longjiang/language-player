@@ -1,0 +1,353 @@
+'use client';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useT } from '@/hooks/use-t';
+import { formatDuration, isEligible, type ScreeningRowState } from '@/lib/screening';
+import { Loader2, Plus } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+/** Rows rendered before the sentinel asks for more (client-side, no request). */
+const PAGE = 50;
+
+type FilterKey = 'in_db' | 'unavailable' | 'region' | 'audio' | 'transcript';
+
+const FILTERS: { key: FilterKey; labelKey: string; matches: (row: ScreeningRowState) => boolean }[] = [
+  { key: 'in_db', labelKey: 'label.in_db', matches: (row) => row.in_db },
+  {
+    key: 'unavailable',
+    labelKey: 'label.unavailable',
+    matches: (row) => !row.available || row.embeddable === false,
+  },
+  { key: 'region', labelKey: 'label.region_restricted', matches: (row) => row.region_restricted },
+  {
+    key: 'audio',
+    labelKey: 'label.audio_mismatch',
+    matches: (row) => row.audio_matches_l2 === false,
+  },
+  {
+    key: 'transcript',
+    labelKey: 'label.no_transcript',
+    matches: (row) =>
+      row.transcript_status === 'no_transcript' ||
+      row.transcript_status === 'caption_service_unavailable',
+  },
+];
+
+const ALL_SHOWN: Record<FilterKey, boolean> = {
+  in_db: true,
+  unavailable: true,
+  region: true,
+  audio: true,
+  transcript: true,
+};
+
+export function ScreeningTable({
+  rows,
+  force,
+  busy,
+  addingId,
+  onAdd,
+}: {
+  rows: ScreeningRowState[];
+  force: boolean;
+  busy: boolean;
+  addingId: string | null;
+  onAdd: (row: ScreeningRowState) => void;
+}) {
+  const t = useT();
+  const [shown, setShown] = useState<Record<FilterKey, boolean>>(ALL_SHOWN);
+  const [eligibleOnly, setEligibleOnly] = useState(false);
+  const [limit, setLimit] = useState(PAGE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const counts = useMemo(() => {
+    const result = {} as Record<FilterKey, number>;
+    for (const filter of FILTERS) {
+      result[filter.key] = rows.reduce(
+        (total, row) => total + (filter.matches(row) ? 1 : 0),
+        0,
+      );
+    }
+    return result;
+  }, [rows]);
+
+  const filtered = useMemo(
+    () =>
+      rows.filter((row) => {
+        if (eligibleOnly) return isEligible(row, force);
+        for (const filter of FILTERS) {
+          if (filter.matches(row) && !shown[filter.key]) return false;
+        }
+        return true;
+      }),
+    [rows, shown, eligibleOnly, force],
+  );
+
+  // A new screen page (or a filter change) starts from the first page again;
+  // adding a row does not reset the scroll because the row count is unchanged.
+  useEffect(() => {
+    setLimit(PAGE);
+  }, [rows.length, shown, eligibleOnly]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setLimit((current) => Math.min(current + PAGE, filtered.length));
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [filtered.length]);
+
+  const hidden = rows.length - filtered.length;
+  const visible = filtered.slice(0, limit);
+
+  function transcriptLabel(row: ScreeningRowState) {
+    if (row.transcript_status === 'found' && row.transcript) {
+      const code = row.transcript.language_code ?? row.transcript.language ?? '?';
+      const kind = row.transcript.is_generated ? t('label.generated') : t('label.manual');
+      return `${code} (${kind})`;
+    }
+    if (row.transcript_status === 'stored') return t('label.stored');
+    if (row.transcript_status === 'not_checked') return t('label.not_checked');
+    return '—';
+  }
+
+  return (
+    <Card className="mt-5">
+      <CardContent className="pt-6">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-sm font-medium">{t('label.filters')}</span>
+          {FILTERS.map((filter) => (
+            <label key={filter.key} className="flex items-center gap-1.5 text-sm">
+              <Checkbox
+                checked={shown[filter.key]}
+                onChange={(event) =>
+                  setShown((current) => ({ ...current, [filter.key]: event.target.checked }))
+                }
+              />
+              {t(filter.labelKey)}
+              <span className="text-xs text-muted-foreground">({counts[filter.key]})</span>
+            </label>
+          ))}
+          <label className="flex items-center gap-1.5 text-sm">
+            <Checkbox
+              checked={eligibleOnly}
+              onChange={(event) => setEligibleOnly(event.target.checked)}
+            />
+            {t('action.eligible_only')}
+          </label>
+          {Object.values(shown).some((value) => !value) || eligibleOnly ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShown(ALL_SHOWN);
+                setEligibleOnly(false);
+              }}
+            >
+              {t('action.show_all')}
+            </Button>
+          ) : null}
+          {hidden > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {t('label.hidden_by_filters', { count: hidden })}
+            </span>
+          )}
+        </div>
+
+        <p className="mt-2 text-xs text-muted-foreground">{t('msg.transcript_listing_hint')}</p>
+
+        {filtered.length === 0 ? (
+          <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+            {t('msg.screening_no_matches')}
+          </div>
+        ) : (
+          <>
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+              <table className="w-full min-w-[64rem] text-sm">
+                <thead className="sticky top-0 bg-muted/80 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2">
+                      <span className="sr-only">{t('a11y.video_thumbnail')}</span>
+                    </th>
+                    <th className="px-3 py-2">{t('label.title')}</th>
+                    <th className="px-3 py-2">{t('label.duration')}</th>
+                    <th className="px-3 py-2">{t('label.views')}</th>
+                    <th className="px-3 py-2">{t('label.audio_locale')}</th>
+                    <th className="px-3 py-2">{t('label.transcript_locale')}</th>
+                    <th className="px-3 py-2">{t('label.status')}</th>
+                    <th className="px-3 py-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((row) => {
+                    const addable = isEligible(row, force);
+                    const adding = row.add_status === 'adding' || addingId === row.youtube_id;
+                    return (
+                      <tr key={row.youtube_id} className="border-t border-border align-top">
+                        <td className="px-3 py-2">
+                          <a
+                            href={`https://www.youtube.com/watch?v=${row.youtube_id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={
+                                row.thumbnail ??
+                                `https://i.ytimg.com/vi/${row.youtube_id}/mqdefault.jpg`
+                              }
+                              alt={t('a11y.video_thumbnail')}
+                              loading="lazy"
+                              className="h-12 w-20 rounded-md object-cover"
+                            />
+                          </a>
+                        </td>
+                        <td className="px-3 py-2">
+                          <a
+                            href={`https://www.youtube.com/watch?v=${row.youtube_id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="line-clamp-2 max-w-[24rem] font-medium hover:underline"
+                          >
+                            {row.title ?? t('label.untitled_video')}
+                          </a>
+                          <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                            <span className="font-mono">{row.youtube_id}</span>
+                            {row.channel_title && (
+                              <span className="max-w-[16rem] truncate">{row.channel_title}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2">
+                          {formatDuration(row.duration)}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2">
+                          {row.views == null ? '—' : row.views.toLocaleString()}
+                        </td>
+                        <td className="px-3 py-2">
+                          {row.declared_audio_locale ? (
+                            <span
+                              className={
+                                row.audio_matches_l2 === false
+                                  ? 'font-medium text-destructive'
+                                  : 'font-mono text-xs'
+                              }
+                            >
+                              {row.declared_audio_locale}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="font-mono text-xs">{transcriptLabel(row)}</span>
+                          {row.transcript?.language && (
+                            <div className="text-xs text-muted-foreground">
+                              {row.transcript.language}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex max-w-[16rem] flex-wrap gap-1">
+                            {row.in_db && <Badge variant="secondary">{t('label.in_db')}</Badge>}
+                            {!row.in_db && !row.available && (
+                              <Badge variant="destructive">{t('label.unavailable')}</Badge>
+                            )}
+                            {!row.in_db && row.embeddable === false && (
+                              <Badge variant="warning">{t('label.not_embeddable')}</Badge>
+                            )}
+                            {!row.in_db && row.region_restricted && (
+                              <Badge variant="warning">{t('label.region_restricted')}</Badge>
+                            )}
+                            {!row.in_db && row.audio_matches_l2 === false && (
+                              <Badge variant="destructive">{t('label.audio_mismatch')}</Badge>
+                            )}
+                            {!row.in_db && row.transcript_status === 'no_transcript' && (
+                              <Badge variant="warning">{t('label.no_transcript')}</Badge>
+                            )}
+                            {!row.in_db &&
+                              row.transcript_status === 'caption_service_unavailable' && (
+                                <Badge variant="destructive">
+                                  {t('label.caption_service_unavailable')}
+                                </Badge>
+                              )}
+                            {!row.in_db && row.transcript_status === 'not_checked' && (
+                              <Badge variant="secondary">{t('label.not_checked')}</Badge>
+                            )}
+                            {addable && <Badge variant="success">{t('label.eligible')}</Badge>}
+                            {row.add_status && row.add_status !== 'adding' && (
+                              <Badge
+                                variant={
+                                  row.add_status === 'added'
+                                    ? 'success'
+                                    : row.add_status === 'updated'
+                                      ? 'default'
+                                      : row.add_status === 'skipped'
+                                        ? 'secondary'
+                                        : 'destructive'
+                                }
+                              >
+                                {t(`label.${row.add_status}`)}
+                              </Badge>
+                            )}
+                          </div>
+                          {row.add_reason && (
+                            <div className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
+                              {row.add_reason}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <Button
+                            size="sm"
+                            variant={addable ? 'default' : 'outline'}
+                            disabled={busy || adding || !addable}
+                            onClick={() => onAdd(row)}
+                          >
+                            {adding ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Plus className="h-4 w-4" />
+                            )}
+                            {t('action.add')}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              ref={sentinelRef}
+              className="flex items-center justify-center border-t border-border p-3 text-xs text-muted-foreground"
+            >
+              {limit < filtered.length ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLimit((current) => Math.min(current + PAGE, filtered.length))}
+                >
+                  {t('action.load_more')}
+                </Button>
+              ) : (
+                <span>{t('msg.showing_count', { shown: visible.length, total: filtered.length })}</span>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

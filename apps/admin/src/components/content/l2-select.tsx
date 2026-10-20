@@ -24,18 +24,22 @@ export function L2Select({
   allowAll = false,
   className,
   id,
+  disabled = false,
 }: {
   value: string | null;
   onChange: (l2: string | null) => void;
   allowAll?: boolean;
   className?: string;
   id?: string;
+  /** Locked while a discovery/add run is in flight (the L2 is its target). */
+  disabled?: boolean;
 }) {
   const t = useT();
   return (
     <Select
       value={value ?? (allowAll ? ALL : '')}
       onValueChange={(next) => onChange(next === ALL ? null : next)}
+      disabled={disabled}
     >
       <SelectTrigger id={id} className={className ?? 'w-40'}>
         <SelectValue placeholder={t('label.language')} />
