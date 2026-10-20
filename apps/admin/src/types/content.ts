@@ -315,6 +315,98 @@ export interface PreflightResponse {
   summary: PreflightSummary;
 }
 
+// ── Discovery screening (SPEC-096 / SPEC-099) ───────────────────────────
+
+/**
+ * `found` — a track in the L2 locale family exists (no download yet);
+ * `stored` — the video is already in the DB and has `subs_l2` stored;
+ * `not_checked` — skipped (unavailable, non-embeddable, check disabled, or
+ * the caption service blocked a previous listing in the same batch).
+ */
+export type TranscriptStatus =
+  | 'found'
+  | 'no_transcript'
+  | 'caption_service_unavailable'
+  | 'stored'
+  | 'not_checked';
+
+export interface ScreeningTranscript {
+  language_code: string | null;
+  language: string | null;
+  /** True for YouTube ASR, false for a manually created track. */
+  is_generated: boolean;
+}
+
+/** One row of `POST /admin/videos/screen` — the discovery table's record. */
+export interface ScreeningRow {
+  youtube_id: string;
+  in_db: boolean;
+  db_video_id: number | null;
+  title: string | null;
+  channel_id: string | null;
+  channel_title: string | null;
+  thumbnail: string | null;
+  /** Raw ISO-8601 (`PT3M44S`), as stored in `youtube_videos.duration`. */
+  duration: string | null;
+  /** `snippet.defaultAudioLanguage` (or `defaultLanguage`), when declared. */
+  declared_audio_locale: string | null;
+  /** `null` when YouTube returned no video or the stored row has no locale. */
+  audio_matches_l2: boolean | null;
+  available: boolean;
+  /** `null` when the id was unavailable, so embeddability is unknown. */
+  embeddable: boolean | null;
+  region_restricted: boolean;
+  /** The raw `video_import_block_reason()` verdict (force not applied). */
+  block_reason: PreflightBlockReason | null;
+  transcript: ScreeningTranscript | null;
+  transcript_status: TranscriptStatus;
+  transcript_error: string | null;
+  views: number | null;
+}
+
+export interface ScreeningSummary {
+  requested: number;
+  invalid: number;
+  in_db: number;
+  checked_metadata: number;
+  unavailable: number;
+  not_embeddable: number;
+  region_restricted: number;
+  locale_mismatch: number;
+  transcript_found: number;
+  no_transcript: number;
+  caption_service_unavailable: number;
+  not_checked: number;
+  /** New rows the importer would accept with the current force setting. */
+  eligible: number;
+}
+
+export interface CaptionError {
+  kind: string;
+  message: string;
+}
+
+export interface ScreeningResponse {
+  l2: string;
+  l2_locales: string[];
+  results: ScreeningRow[];
+  invalid: string[];
+  /** Set when the caption listing itself failed; listings stop at that row. */
+  caption_error: CaptionError | null;
+  summary: ScreeningSummary;
+}
+
+/** `POST /admin/videos/ids` — one page of candidate ids, never imports. */
+export interface VideoIdsResponse {
+  l2: string;
+  youtube_ids: string[];
+  next_cursor: ImportCursor | null;
+  invalid: string[];
+  /** Present when a channel reference was resolved. */
+  channel: ResolvedChannel | null;
+  playlist_id: string | null;
+}
+
 // ── Sweep ───────────────────────────────────────────────────────────────
 
 /** The sweep's keyset cursor is its own shape, not the importer's. */

@@ -18,6 +18,7 @@ import type {
   ChannelVideo,
   DiscoverResponse,
   EpisodeVideo,
+  ImportCursor,
   ImportOptions,
   ImportResponse,
   ImportVideoResult,
@@ -25,10 +26,12 @@ import type {
   PreflightRow,
   PreflightSummary,
   ResolvedChannel,
+  ScreeningResponse,
   ShowInput,
   ShowKind,
   SweepCursor,
   SweepResponse,
+  VideoIdsResponse,
   VideoInput,
 } from '@/types/content';
 
@@ -260,6 +263,65 @@ export async function discover(input: DiscoverOptions): Promise<DiscoverResponse
     skipped: Object.fromEntries(
       Object.entries(response.skipped ?? {}).map(([k, v]) => [k, v?.length ?? 0]),
     ),
+  });
+  return response;
+}
+
+// ── Discovery screening (SPEC-096 / SPEC-099) ───────────────────────────
+
+export interface VideoIdsOptions {
+  l2: string;
+  youtube_ids?: string[] | string;
+  channel?: string;
+  playlist?: string;
+  cursor?: ImportCursor | null;
+  limit?: number;
+  match_keywords?: string;
+}
+
+/**
+ * Enumerate candidate ids without importing them. One call returns one
+ * playlist page (max 50) or one slice of a pasted list; call again with
+ * `next_cursor` while it is non-null.
+ */
+export async function listVideoIds(input: VideoIdsOptions): Promise<VideoIdsResponse> {
+  const response = await request<VideoIdsResponse>(
+    '/admin/videos/ids',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api list ids', {
+    source: input.channel ? 'channel' : input.playlist ? 'playlist' : 'ids',
+    ids: response.youtube_ids?.length ?? 0,
+    next_cursor: response.next_cursor,
+    invalid: response.invalid?.length ?? 0,
+  });
+  return response;
+}
+
+export interface ScreenOptions {
+  l2: string;
+  youtube_ids: string[];
+  check_transcripts?: boolean;
+}
+
+/**
+ * Screen up to 50 ids: stored-row verdicts from the DB, YouTube metadata in
+ * one batched call, then the L2 caption-track listing. No transcript is
+ * downloaded and nothing is written; this is the discovery phase only.
+ */
+export async function screenVideos(input: ScreenOptions): Promise<ScreeningResponse> {
+  const response = await request<ScreeningResponse>(
+    '/admin/videos/screen',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api screen', {
+    l2: input.l2,
+    requested: input.youtube_ids.length,
+    in_db: response.summary?.in_db,
+    eligible: response.summary?.eligible,
+    caption_error: response.caption_error,
   });
   return response;
 }
