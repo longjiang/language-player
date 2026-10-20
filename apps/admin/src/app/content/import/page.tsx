@@ -27,6 +27,7 @@ import {
   buildPreflight,
   eligibleRows as eligibleRowsFor,
   mergeScreenedRows,
+  needsTranscriptCheck,
   type ScreeningRowState,
 } from '@/lib/screening';
 import { parseVideoIds } from '@/lib/video-ids';
@@ -54,6 +55,12 @@ type Mode = 'single' | 'batch' | 'channel' | 'playlist';
 /** The backend accepts at most 50 ids per screening call. */
 const SCREEN_BATCH = 50;
 /**
+ * The transcript check is the slow, rate-limited phase. Ten rows per request
+ * gives the table a visible per-row spinner without spending minutes inside
+ * one request.
+ */
+const TRANSCRIPT_BATCH = 10;
+/**
  * Adding 50 videos means 50 serial transcript downloads + scoring inside one
  * request. Keep the add page at 25 so a slow language/scoring run stays under
  * the Cloudflare/gunicorn timeout (a 502 there looks like a CORS failure in
@@ -62,6 +69,8 @@ const SCREEN_BATCH = 50;
 const ADD_BATCH = 25;
 
 type Stage = 'idle' | 'listing' | 'screening' | 'done' | 'stopped' | 'error';
+type CheckStage = 'idle' | 'checking' | 'done' | 'stopped' | 'error';
+type Phase = 'discover' | 'check' | 'add';
 
 const EMPTY_ADD_COUNTS = { added: 0, updated: 0, skipped: 0, failed: 0 };
 
@@ -91,10 +100,14 @@ export default function ImportPage() {
   const [talk, setTalk] = useState('');
   const [tvShow, setTvShow] = useState('');
 
+  // Three phases: Discover (metadata only) -> Check transcripts -> Add.
+  const [phase, setPhase] = useState<Phase>('discover');
   // Discovery run.
   const [stage, setStage] = useState<Stage>('idle');
   const [running, setRunning] = useState(false);
-  const [retrying, setRetrying] = useState(false);
+  // Transcript-check run.
+  const [checkStage, setCheckStage] = useState<CheckStage>('idle');
+  const [checking, setChecking] = useState(false);
   const [rows, setRows] = useState<ScreeningRowState[]>([]);
   const [invalidIds, setInvalidIds] = useState<string[]>([]);
   const [l2Locales, setL2Locales] = useState<string[]>([]);
@@ -110,6 +123,11 @@ export default function ImportPage() {
   const mismatchDescription = useMismatchDescription();
 
   const stopRef = useRef(false);
+  const checkStopRef = useRef(false);
+  // Synchronous guards: a double click can fire before the state disables the
+  // button, which would otherwise start two discovery/check loops.
+  const runningRef = useRef(false);
+  const checkingRef = useRef(false);
   const cursorRef = useRef<ImportCursor | null>(null);
   const queueRef = useRef<string[]>([]);
   const sourceDoneRef = useRef(true);
@@ -137,6 +155,7 @@ export default function ImportPage() {
 
   function resetDiscovery() {
     stopRef.current = false;
+    checkStopRef.current = false;
     cursorRef.current = null;
     queueRef.current = [];
     sourceDoneRef.current = true;
@@ -150,13 +169,16 @@ export default function ImportPage() {
     setPending(false);
     setListed(0);
     setStage('idle');
+    setCheckStage('idle');
+    setChecking(false);
+    setPhase('discover');
   }
 
   /** Reset the result set when the admin picks a different language. */
   function changeLanguage(next: string | null) {
     if (next === l2) return;
     setL2(next);
-    if (!running) resetDiscovery();
+    if (!running && !checking) resetDiscovery();
   }
 
   /** Seed the queue from the selected source. Returns false on invalid input. */
@@ -215,17 +237,18 @@ export default function ImportPage() {
   /**
    * Drive the read-only discovery phase one bounded page at a time.
    *
-   * For a pasted list, the queue is seeded up front and screened in batches of
-   * 50. For a channel/playlist, one id page is listed, then screened, then the
-   * next page is listed — so results appear while a large channel is still
-   * being walked, and no server-side job survives the request.
+   * For a pasted list, the queue is seeded up front and fetched in batches of
+   * 50. For a channel/playlist, one id page is listed, then its metadata is
+   * fetched, then the next page is listed — so videos appear while a large
+   * channel is still being walked, and no server-side job survives the
+   * request. No caption track is listed here; that is the Check phase.
    */
   async function runDiscovery(resume: boolean) {
     if (!l2) {
       toast.error(t('msg.language_required'));
       return;
     }
-    if (running) return;
+    if (runningRef.current || checkingRef.current) return;
     if (!resume) {
       resetDiscovery();
       if (!prepareSource()) return;
@@ -235,7 +258,9 @@ export default function ImportPage() {
 
     const targetL2 = l2;
     stopRef.current = false;
+    runningRef.current = true;
     setRunning(true);
+    setPhase('discover');
     setError('');
     setCaptionError(null);
     setPending(false);
@@ -271,8 +296,13 @@ export default function ImportPage() {
 
         const batch = queueRef.current.splice(0, SCREEN_BATCH);
         setStage('screening');
-        log('import discovery screen batch', { l2: targetL2, size: batch.length });
-        const response = await screenVideos({ l2: targetL2, youtube_ids: batch });
+        log('import discovery metadata batch', { l2: targetL2, size: batch.length });
+        const response = await screenVideos({
+          l2: targetL2,
+          youtube_ids: batch,
+          // Discover is metadata-only; transcripts are a separate phase.
+          check_transcripts: false,
+        });
         applyScreenResponse(response);
         if (response.caption_error) {
           // Do not hammer a rate-limited caption service. The rows already in
@@ -303,45 +333,86 @@ export default function ImportPage() {
       setPending(queueRef.current.length > 0 || !sourceDoneRef.current);
       setStage('error');
     } finally {
+      runningRef.current = false;
       setRunning(false);
+      // Even a stopped/errored discovery can hand the found videos to the
+      // Check phase; the check card only appears once there is something.
+      if (listedSetRef.current.size > 0) setPhase('check');
     }
   }
 
-  /** Re-list captions for rows the service blocked, without re-enumerating. */
-  async function retryUnchecked() {
-    if (!l2 || retrying) return;
-    const ids = rows
-      .filter(
-        (row) =>
-          !row.in_db &&
-          (row.transcript_status === 'not_checked' ||
-            row.transcript_status === 'caption_service_unavailable'),
-      )
-      .map((row) => row.youtube_id);
-    if (ids.length === 0) return;
+  /**
+   * Phase 2: list the caption tracks for rows that still need it.
+   *
+   * Each batch of 10 is marked `checking` first, so the table shows a spinner
+   * against those videos while the request runs. The listing itself is cached
+   * by the backend per video (`list/<hash>` in the two-tier caption cache), so
+   * re-running this phase only re-lists videos that were never listed before.
+   * A stopped or rate-limited run leaves the remaining rows `not_checked`;
+   * pressing the same button again continues from there.
+   */
+  async function runTranscriptCheck() {
+    if (!l2 || checkingRef.current || runningRef.current) return;
+    const ids = rows.filter(needsTranscriptCheck).map((row) => row.youtube_id);
+    if (ids.length === 0) {
+      setCheckStage('done');
+      setPhase('add');
+      return;
+    }
 
-    setRetrying(true);
+    checkStopRef.current = false;
+    checkingRef.current = true;
+    setChecking(true);
+    setCheckStage('checking');
+    setPhase('check');
     setCaptionError(null);
     setError('');
     try {
-      let retried = 0;
-      for (let start = 0; start < ids.length; start += SCREEN_BATCH) {
-        const slice = ids.slice(start, start + SCREEN_BATCH);
-        const response = await screenVideos({ l2, youtube_ids: slice });
+      for (let start = 0; start < ids.length; start += TRANSCRIPT_BATCH) {
+        if (checkStopRef.current) break;
+        const slice = ids.slice(start, start + TRANSCRIPT_BATCH);
+        log('import transcript check batch', { l2, size: slice.length, offset: start });
+        setRows((previous) =>
+          previous.map((row) =>
+            slice.includes(row.youtube_id) ? { ...row, checking: true } : row,
+          ),
+        );
+        const response = await screenVideos({
+          l2,
+          youtube_ids: slice,
+          check_transcripts: true,
+        });
         applyScreenResponse(response);
-        retried += slice.length;
+        setRows((previous) =>
+          previous.map((row) =>
+            slice.includes(row.youtube_id) ? { ...row, checking: false } : row,
+          ),
+        );
         if (response.caption_error) {
           setCaptionError(response.caption_error);
-          break;
+          setCheckStage('stopped');
+          return;
         }
       }
-      log('import discovery retried transcripts', { retried });
-      toast.success(t('msg.retry_done', { count: retried }));
+
+      if (checkStopRef.current) {
+        log('import transcript check stopped');
+        setCheckStage('stopped');
+      } else {
+        log('import transcript check finished', { checked: ids.length });
+        setCheckStage('done');
+        setPhase('add');
+      }
     } catch (err) {
-      logerr('import discovery retry failed', err);
+      logerr('import transcript check failed', err);
       setError(err instanceof Error ? err.message : t('error.general'));
+      setCheckStage('error');
     } finally {
-      setRetrying(false);
+      checkingRef.current = false;
+      setChecking(false);
+      setRows((previous) =>
+        previous.map((row) => (row.checking ? { ...row, checking: false } : row)),
+      );
     }
   }
 
@@ -475,20 +546,45 @@ export default function ImportPage() {
     void run(ids);
   }
 
-  const busy = running || addingAll || retrying || addingId !== null || !authReady;
+  const busy = running || checking || addingAll || addingId !== null || !authReady;
 
   const eligible = useMemo(() => eligibleRowsFor(rows, force), [rows, force]);
   const newRows = useMemo(() => rows.filter((row) => !row.in_db), [rows]);
-  const uncheckedCount = useMemo(
-    () =>
-      rows.filter(
-        (row) =>
-          !row.in_db &&
-          (row.transcript_status === 'not_checked' ||
-            row.transcript_status === 'caption_service_unavailable'),
-      ).length,
+  // Rows the Check phase can ask YouTube about. Hard blocks and already-stored
+  // rows are excluded; a previous caption-service failure is retried.
+  const checkCandidates = useMemo(
+    () => rows.filter((row) => !row.in_db && row.available && row.embeddable !== false),
     [rows],
   );
+  const pendingTranscripts = useMemo(
+    () => checkCandidates.filter(needsTranscriptCheck),
+    [checkCandidates],
+  );
+  const checkedTranscripts = useMemo(
+    () =>
+      checkCandidates.filter(
+        (row) =>
+          row.transcript_status === 'found' || row.transcript_status === 'no_transcript',
+      ).length,
+    [checkCandidates],
+  );
+  const checkTotal = checkCandidates.length;
+  const uncheckedCount = pendingTranscripts.length;
+
+  // Move to Add once Discover has produced rows and every checkable row has a
+  // result. A stopped/rate-limited check leaves pendingTranscripts non-empty,
+  // so the page stays in the Check phase.
+  useEffect(() => {
+    if (phase !== 'check') return;
+    if (rows.length === 0) {
+      if (!running && listed === 0) setPhase('discover');
+      return;
+    }
+    if (!checking && pendingTranscripts.length === 0) {
+      setPhase('add');
+      setCheckStage('done');
+    }
+  }, [phase, rows.length, running, listed, checking, pendingTranscripts.length]);
 
   const preflight = useMemo(
     () =>
@@ -499,7 +595,7 @@ export default function ImportPage() {
   );
 
   const progress = useMemo(() => {
-    // Rows that were already in the DB when the source was screened. A row
+    // Rows that were already in the DB when the source was discovered. A row
     // added during this session also has `in_db: true`, but it went through
     // the metadata/transcript checks, so it must count on that side instead.
     const discoveredInDb = rows.filter((row) => row.in_db && !row.add_status).length;
@@ -507,12 +603,6 @@ export default function ImportPage() {
       screened: rows.length,
       inDb: discoveredInDb,
       metadata: rows.length - discoveredInDb,
-      transcripts: rows.filter(
-        (row) =>
-          row.transcript_status === 'found' ||
-          row.transcript_status === 'no_transcript' ||
-          row.transcript_status === 'caption_service_unavailable',
-      ).length,
     };
   }, [rows]);
 
@@ -527,20 +617,27 @@ export default function ImportPage() {
     return counts;
   }, [rows]);
 
-  const stageText =
-    stage === 'listing'
+  const stageText = running
+    ? stage === 'listing'
       ? t('msg.screening_listing')
-      : stage === 'screening'
-        ? t('msg.screening_checking')
-        : stage === 'done'
-          ? t('msg.screening_done')
-          : stage === 'stopped'
-            ? t('msg.screening_stopped')
-            : stage === 'idle'
-              ? t('msg.screening_idle')
-              : '';
+      : t('msg.discovery_fetching')
+    : checking
+      ? t('msg.checking_transcripts')
+      : phase === 'add'
+        ? t('msg.transcript_check_done')
+        : stage === 'stopped'
+          ? t('msg.discovery_stopped')
+          : checkStage === 'stopped'
+            ? t('msg.transcript_check_stopped')
+            : checkStage === 'error'
+              ? ''
+              : stage === 'done'
+                ? t('msg.discovery_done')
+                : stage === 'idle' && checkStage === 'idle'
+                  ? t('msg.screening_idle')
+                  : '';
 
-  const languageLocked = running || addingAll || retrying || addingId !== null;
+  const languageLocked = running || checking || addingAll || addingId !== null;
 
   return (
     <AdminShell>
@@ -708,13 +805,13 @@ export default function ImportPage() {
               </Button>
             )}
             {!running && pending && (
-              <Button variant="secondary" onClick={() => void runDiscovery(true)}>
+              <Button variant="secondary" disabled={busy} onClick={() => void runDiscovery(true)}>
                 <Play className="h-4 w-4" />
                 {t('action.continue')}
               </Button>
             )}
             {!running && (rows.length > 0 || stage !== 'idle') && (
-              <Button variant="outline" onClick={resetDiscovery}>
+              <Button variant="outline" disabled={busy} onClick={resetDiscovery}>
                 <RefreshCw className="h-4 w-4" />
                 {t('action.clear')}
               </Button>
@@ -722,12 +819,12 @@ export default function ImportPage() {
             {stageText && (
               <span className="text-xs text-muted-foreground">{stageText}</span>
             )}
-            {(running || retrying) && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {(running || checking) && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           </div>
         </CardContent>
       </Card>
 
-      {(rows.length > 0 || stage !== 'idle') && (
+      {(rows.length > 0 || stage !== 'idle' || checkStage !== 'idle') && (
         <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
           <Badge variant="secondary">
             {t('label.screened')}: {progress.screened}
@@ -738,27 +835,21 @@ export default function ImportPage() {
           <Badge variant="secondary">
             {t('label.metadata_checked')}: {progress.metadata}
           </Badge>
-          <Badge variant="secondary">
-            {t('label.transcripts_checked')}: {progress.transcripts}
+          <Badge variant={checkTotal > 0 && checkedTranscripts === checkTotal ? 'success' : 'secondary'}>
+            {t('msg.checked_of_total', {
+              checked: checkedTranscripts,
+              total: checkTotal,
+            })}
           </Badge>
           <Badge variant={eligible.length > 0 ? 'success' : 'secondary'}>
             {t('label.eligible')}: {eligible.length}
           </Badge>
-          {uncheckedCount > 0 && !running && (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busy}
-              onClick={() => void retryUnchecked()}
-            >
-              {retrying ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-              {t('action.retry_unchecked', { count: uncheckedCount })}
-            </Button>
-          )}
+        </div>
+      )}
+
+      {!running && !checking && stage === 'done' && rows.length === 0 && (
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+          {t('msg.screening_empty')}
         </div>
       )}
 
@@ -785,9 +876,9 @@ export default function ImportPage() {
                 variant="outline"
                 className="mt-2"
                 disabled={busy || uncheckedCount === 0}
-                onClick={() => void retryUnchecked()}
+                onClick={() => void runTranscriptCheck()}
               >
-                {retrying ? (
+                {checking ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <RefreshCw className="h-4 w-4" />
@@ -809,11 +900,52 @@ export default function ImportPage() {
         </p>
       )}
 
-      <div className="mt-5">
-        <LanguageCheckNotice response={preflight} checking={running && stage === 'screening'} />
-      </div>
+      {rows.length > 0 && !running && (
+        <Card className="mt-5">
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">{t('title.check_phase')}</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">{t('msg.check_phase_hint')}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">
+                  {t('msg.checked_of_total', {
+                    checked: checkedTranscripts,
+                    total: checkTotal,
+                  })}
+                </Badge>
+                {checking ? (
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      checkStopRef.current = true;
+                    }}
+                  >
+                    <CircleStop className="h-4 w-4" />
+                    {t('action.stop')}
+                  </Button>
+                ) : pendingTranscripts.length > 0 ? (
+                  <Button disabled={busy} onClick={() => void runTranscriptCheck()}>
+                    <Play className="h-4 w-4" />
+                    {t('action.check_transcripts', { count: pendingTranscripts.length })}
+                  </Button>
+                ) : (
+                  <Badge variant="success">{t('msg.transcript_check_complete')}</Badge>
+                )}
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{t('msg.transcript_cache_hint')}</p>
+            {checkStage === 'stopped' && pendingTranscripts.length > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('msg.transcript_check_stopped')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      {rows.length > 0 && (
+      {rows.length > 0 && !running && (
         <Card className="mt-5">
           <CardContent className="pt-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -893,12 +1025,17 @@ export default function ImportPage() {
         </Card>
       )}
 
+      <div className="mt-5">
+        <LanguageCheckNotice response={preflight} checking={running && stage === 'screening'} />
+      </div>
+
       {rows.length > 0 && (
         <ScreeningTable
           rows={rows}
           force={force}
           busy={busy}
           addingId={addingId}
+          filterEnabled={phase === 'add'}
           onAdd={(row) =>
             guardAdd([row.youtube_id], async (ids) => {
               const id = ids[0];

@@ -89,12 +89,15 @@ export function ScreeningTable({
   busy,
   addingId,
   onAdd,
+  filterEnabled,
 }: {
   rows: ScreeningRowState[];
   force: boolean;
   busy: boolean;
   addingId: string | null;
   onAdd: (row: ScreeningRowState) => void;
+  /** False during Discover/Check: show every found video, no filtering yet. */
+  filterEnabled: boolean;
 }) {
   const t = useT();
   const [shown, setShown] = useState<Record<FilterKey, boolean>>(ALL_HIDDEN);
@@ -114,21 +117,24 @@ export function ScreeningTable({
 
   const filtered = useMemo(
     () =>
-      rows.filter((row) => {
-        // Eligible rows are the default view.
-        if (isEligible(row, force)) return true;
-        // A non-eligible row (including one just added, which is now in the
-        // DB) appears only when one of its categories is explicitly on.
-        return FILTERS.some((filter) => shown[filter.key] && filter.matches(row));
-      }),
-    [rows, shown, force],
+      // Discover/Check show every found video; filtering belongs to Add.
+      !filterEnabled
+        ? rows
+        : rows.filter((row) => {
+            // Eligible rows are the default view.
+            if (isEligible(row, force)) return true;
+            // A non-eligible row (including one just added, which is now in
+            // the DB) appears only when one of its categories is on.
+            return FILTERS.some((filter) => shown[filter.key] && filter.matches(row));
+          }),
+    [rows, shown, force, filterEnabled],
   );
 
   // A new screen page (or a filter change) starts from the first page again;
   // adding a row does not reset the scroll because the row count is unchanged.
   useEffect(() => {
     setLimit(PAGE);
-  }, [rows.length, shown]);
+  }, [rows.length, shown, filterEnabled]);
 
   const anyShown = Object.values(shown).some(Boolean);
 
@@ -147,7 +153,7 @@ export function ScreeningTable({
     return () => observer.disconnect();
   }, [filtered.length]);
 
-  const hidden = rows.length - filtered.length;
+  const hidden = filterEnabled ? rows.length - filtered.length : 0;
   const visible = filtered.slice(0, limit);
 
   function transcriptLabel(row: ScreeningRowState) {
@@ -164,43 +170,52 @@ export function ScreeningTable({
   return (
     <Card className="mt-5">
       <CardContent className="pt-6">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-sm font-medium">{t('label.show')}</span>
-          {FILTERS.map((filter) => (
-            <label key={filter.key} className="flex items-center gap-1.5 text-sm">
-              <Checkbox
-                checked={shown[filter.key]}
-                onChange={(event) =>
-                  setShown((current) => ({ ...current, [filter.key]: event.target.checked }))
-                }
-              />
-              {t(filter.labelKey)}
-              <span className="text-xs text-muted-foreground">({counts[filter.key]})</span>
-            </label>
-          ))}
-          {Object.values(shown).some((value) => !value) && (
-            <Button variant="ghost" size="sm" onClick={() => setShown(ALL_SHOWN)}>
-              {t('action.show_all')}
-            </Button>
-          )}
-          {anyShown && (
-            <Button variant="ghost" size="sm" onClick={() => setShown(ALL_HIDDEN)}>
-              {t('action.reset')}
-            </Button>
-          )}
-          {hidden > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {t('label.hidden_by_filters', { count: hidden })}
-            </span>
-          )}
-        </div>
-
-        <p className="mt-2 text-xs text-muted-foreground">{t('msg.screening_filter_hint')}</p>
+        {filterEnabled ? (
+          <>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="text-sm font-medium">{t('label.show')}</span>
+              {FILTERS.map((filter) => (
+                <label key={filter.key} className="flex items-center gap-1.5 text-sm">
+                  <Checkbox
+                    checked={shown[filter.key]}
+                    onChange={(event) =>
+                      setShown((current) => ({ ...current, [filter.key]: event.target.checked }))
+                    }
+                  />
+                  {t(filter.labelKey)}
+                  <span className="text-xs text-muted-foreground">({counts[filter.key]})</span>
+                </label>
+              ))}
+              {Object.values(shown).some((value) => !value) && (
+                <Button variant="ghost" size="sm" onClick={() => setShown(ALL_SHOWN)}>
+                  {t('action.show_all')}
+                </Button>
+              )}
+              {anyShown && (
+                <Button variant="ghost" size="sm" onClick={() => setShown(ALL_HIDDEN)}>
+                  {t('action.reset')}
+                </Button>
+              )}
+              {hidden > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {t('label.hidden_by_filters', { count: hidden })}
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{t('msg.screening_filter_hint')}</p>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('msg.showing_all_discovered')}</p>
+        )}
         <p className="mt-1 text-xs text-muted-foreground">{t('msg.transcript_listing_hint')}</p>
 
         {filtered.length === 0 ? (
           <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-            {anyShown ? t('msg.screening_no_matches') : t('msg.screening_no_eligible')}
+            {filterEnabled
+              ? anyShown
+                ? t('msg.screening_no_matches')
+                : t('msg.screening_no_eligible')
+              : t('msg.screening_empty')}
           </div>
         ) : (
           <>
@@ -282,11 +297,20 @@ export function ScreeningTable({
                           )}
                         </td>
                         <td className="px-3 py-2">
-                          <span className="font-mono text-xs">{transcriptLabel(row)}</span>
-                          {row.transcript?.language && (
-                            <div className="text-xs text-muted-foreground">
-                              {row.transcript.language}
-                            </div>
+                          {row.checking ? (
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              {t('msg.checking_transcript')}
+                            </span>
+                          ) : (
+                            <>
+                              <span className="font-mono text-xs">{transcriptLabel(row)}</span>
+                              {row.transcript?.language && (
+                                <div className="text-xs text-muted-foreground">
+                                  {row.transcript.language}
+                                </div>
+                              )}
+                            </>
                           )}
                         </td>
                         <td className="px-3 py-2">
@@ -316,9 +340,6 @@ export function ScreeningTable({
                                   {t('label.caption_service_unavailable')}
                                 </Badge>
                               )}
-                            {!row.in_db && row.transcript_status === 'not_checked' && (
-                              <Badge variant="secondary">{t('label.not_checked')}</Badge>
-                            )}
                             {addable && <Badge variant="success">{t('label.eligible')}</Badge>}
                             {row.add_status && row.add_status !== 'adding' && (
                               <Badge
