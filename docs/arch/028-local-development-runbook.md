@@ -235,6 +235,12 @@ be signed in simultaneously. Web keeps the `authjs.*` defaults. If you change
 the cookie config, **restart the admin dev server** — HMR does not reload the
 Auth.js module and the terminal keeps serving the old cookie names until then.
 
+If you signed into admin before this change, your browser still has an
+admin-issued `authjs.session-token`. Web's proxy only checks that the cookie
+exists, so it treats it as a web session and bounces `/login` back into the
+app. Visit http://localhost:3000/logout once (or clear localhost cookies) to
+remove it.
+
 ### Logs
 
 Same conventions as web: `[LP Admin]` prefix,

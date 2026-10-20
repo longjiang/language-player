@@ -186,6 +186,13 @@ Restart the admin dev server after changing the auth/cookie config — Next's
 HMR does not reload the Auth.js module, so the running server keeps serving the
 old cookie names.
 
+**Upgrading with an old admin session:** a browser that signed into admin
+before this change still holds an admin-issued `authjs.session-token` (30-day
+expiry). `apps/web/src/proxy.ts` only checks that the cookie exists, so it
+treats that stale cookie as a web session and redirects `/login` back into the
+app. Visit `/logout` on web once after upgrading (or clear the site's cookies)
+to remove it; admin itself ignores the old cookie.
+
 ## Operational Notes
 
 ### Raw fetches need the session token mirror
