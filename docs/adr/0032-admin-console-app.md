@@ -63,3 +63,22 @@ management and subscription fixes). The options:
   `routes/admin.py` does **not** cover them — they are gated per route, and
   `test_app.py::test_subscription_admin_endpoints_reject_non_admins` pins
   that.
+
+## Amendment (2026-10-19) — the admin app owns a separate cookie namespace
+
+The separate-app decision needed one more boundary: a separate **identity in
+the browser**. Cookies are scoped by host, not port, so in local development
+(`localhost:3000` for web, `localhost:3100` for admin) both apps share a single
+cookie jar. Both used Auth.js's default `authjs.session-token`, so signing into
+one overwrote the other's session. Since the apps have different `AUTH_SECRET`s,
+the replaced cookie could not be decrypted and the user appeared to be silently
+signed out — admin logged `JWTSessionError: no matching decryption secret` when
+it received web's cookie.
+
+`apps/admin/src/auth.ts` now sets `lp-admin.session-token`,
+`lp-admin.csrf-token`, and `lp-admin.callback-url` (with the `__Secure-` /
+`__Host-` prefixes on HTTPS, derived from `AUTH_URL`). `apps/web` keeps the
+`authjs.*` defaults, so existing web sessions stay valid and its proxy keeps
+its cookie-presence check. The two apps can now be signed in simultaneously;
+in production they are on separate hosts anyway, so this mainly fixes local
+development. See SPEC-060 § "Session cookies are namespaced (`lp-admin.*`)".

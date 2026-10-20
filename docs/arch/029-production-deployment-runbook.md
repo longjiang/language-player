@@ -841,6 +841,13 @@ why it is `.next` rather than `apps/admin/.next`.
 `NEXT_PUBLIC_API_URL` is inlined at **build** time, so its scope must include
 `builds` and changing it needs a **redeploy**, not a function restart.
 
+With `AUTH_URL` on HTTPS, the admin app's Auth.js cookies are
+`__Secure-lp-admin.session-token`, `__Host-lp-admin.csrf-token`, and
+`__Secure-lp-admin.callback-url` (locally, `lp-admin.*` without the prefixes).
+They are deliberately distinct from `apps/web`'s `authjs.*` cookies so the two
+apps never overwrite each other's session in a shared cookie jar
+(SPEC-060 § "Session cookies are namespaced").
+
 ### 11.4 Backend CORS prerequisite
 
 `zerotohero-python-server/app.py` must list
