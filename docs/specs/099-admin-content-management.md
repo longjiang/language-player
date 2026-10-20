@@ -13,11 +13,12 @@
   (videos), `a0ec0e5d` (import), `f0c9c909` (discover), `324f41d7` (shows),
   `e9a72137` (channels + sweep). `zerotohero-python-server` — `de20196`
   (`_show_dict`), `4af6f33` (`q` filter).
-- **Updated**: 2026-10-19 — `/content/import` is now two phases
-  (Discover → Add). Discovery uses the new read-only
+- **Updated**: 2026-10-19 — `/content/import` is now three phases
+  (Discover → Check transcripts → Add). Discovery uses the new read-only
   `/admin/videos/ids` + `/admin/videos/screen` endpoints (backend
-  `7f6025e`), shows a filterable infinite-scroll table, and the add phase
-  imports individual rows or every eligible row across the full result set.
+  `7f6025e`), shows the found videos before spending caption calls, then
+  checks transcripts with a per-row spinner. The add phase imports
+  individual rows or every eligible row across the full result set.
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - [ADR-0032 — Admin Console as a Separate Next.js App](<../adr/0032-admin-console-app.md>)
@@ -48,10 +49,11 @@ This spec adds that surface to `apps/admin`:
 - a **videos** manager (browse / filter by L2 / search / edit / create /
   delete / bulk-assign to a talk or show),
 - an **import** screen (single id, batch, channel, playlist) split into a
-  read-only **Discover** phase and an **Add** phase: it enumerates ids,
-  screens them (DB / metadata / transcript-track listing), shows a
-  filterable infinite-scroll table, then imports individual rows or every
-  eligible row through the SPEC-096 pipeline,
+  read-only **Discover** phase, a **Check transcripts** phase and an
+  **Add** phase: it enumerates ids and fetches metadata first (so the admin
+  sees whether videos were found), then lists caption tracks with a per-row
+  spinner, then imports eligible rows through the SPEC-096 pipeline with a
+  filterable infinite-scroll table,
 - a **discovery** screen (SPEC-098) that reviews candidates before importing,
 - a **shows & talks** manager (list by L2, create / edit / delete, member
   videos),
@@ -160,7 +162,7 @@ dashboard) moves to `/users`; `/` becomes a redirect to `/users`.
 | `/users` | user search (moved from `/`) | `GET /admin/users/search` |
 | `/users/[id]` | user detail (unchanged) | `GET /admin/users/<id>` + subscription/admin mutations |
 | `/content/videos` | video manager: filter by L2, search by title, sort, page; edit / create / delete / bulk assign / bulk delete | `GET /admin/videos`, `POST /admin/videos`, `PATCH /admin/videos/<id>`, `DELETE /admin/videos/<id>` |
-| `/content/import` | **Discover → Add**: single · batch · channel · playlist; discovery lists ids and screens them (DB / metadata / transcript listing), shows an infinite-scroll table with opt-in *Show* filters, then adds individual rows or all eligible rows | `POST /admin/videos/ids`, `POST /admin/videos/screen`, `POST /admin/videos/add`, `POST /admin/videos/add-batch`, `GET /admin/channels/resolve` |
+| `/content/import` | **Discover → Check transcripts → Add**: single · batch · channel · playlist; Discover fetches ids + metadata, Check lists caption tracks with per-row spinners, Add shows an infinite-scroll table with opt-in *Show* filters and imports individual/all eligible rows | `POST /admin/videos/ids`, `POST /admin/videos/screen`, `POST /admin/videos/add`, `POST /admin/videos/add-batch`, `GET /admin/channels/resolve` |
 | `/content/discover` | discovery: generate/review candidates, then import selected | `POST /admin/videos/preflight`, `POST /admin/videos/discover` |
 | `/content/shows` | TV shows + talks: list by L2 (incl. hidden), create / edit / delete, member videos | `GET /tv-shows`, `GET /talks`, `GET /tv-shows|/talks/<id>/episodes`, `POST|PATCH|DELETE /admin/tv-shows|/admin/talks` |
 | `/content/channels` | channels: list by L2, click a row for its channel page, resolve a handle, import uploads | `GET /channels`, `GET /admin/channels/resolve`, `POST /admin/channels/add` |
@@ -260,10 +262,10 @@ deliberately. The panel always adds the honest caveat — YouTube omits
   returns bare `{data: [...]}` with no total, so the UI shows "showing N" and
   disables *next* when a short page comes back.
 
-### `/content/import` — Discover → Add
+### `/content/import` — Discover → Check transcripts → Add
 
-Two phases on one screen. **Discover** writes nothing; **Add** calls the
-ordinary SPEC-096 importer.
+Three phases on one screen. **Discover** and **Check transcripts** write
+nothing; **Add** calls the ordinary SPEC-096 importer.
 
 | Mode | Input | Discovery source |
 |---|---|---|
@@ -274,26 +276,59 @@ ordinary SPEC-096 importer.
 
 Channel/playlist modes also expose `match_keywords` (comma-separated
 regexes). The old `limit` / `max_pages` / `use_circuit_break` fields are gone:
-discovery walks the source to the end (or until *Stop*) and the add phase
-uses fixed 50-id batches.
+discovery walks the source to the end (or until *Stop*); the check phase uses
+10-id batches and the add phase 25-id batches.
 
-**Discover**
+**1. Discover**
 
 - *Find videos* runs a browser-driven loop. A pasted list is enqueued up
   front; a channel/playlist asks `/admin/videos/ids` for one page (max 50) of
-  ids at a time. Each batch of ≤50 goes to `/admin/videos/screen`, which
-  answers already-stored ids from the DB, batches `videos.list` for the rest,
-  and lists each available video's L2 caption track (no transcript download).
-- Live progress: *IDs found*, *Screened*, *Already in DB*, *Metadata checked*,
-  *Transcripts checked*, *Eligible*, plus a stage line (listing / checking /
-  finished / stopped). *Stop* takes effect after the in-flight request;
-  *Continue* resumes from the queue/cursor.
-- A caption-service failure shows a **short** message, stops further
-  listings in that batch, and offers *Retry unchecked (N)*. The same button
-  is available beside the progress line whenever unchecked rows remain. The
-  backend throttles listings (default 0.2s) and retries one rate-limited
-  listing, but a sustained YouTube `/sorry/index` 429 can still stop a run;
-  the full upstream exception is only in the server log.
+  ids at a time. Each batch of ≤50 goes to `/admin/videos/screen` with
+  **`check_transcripts: false`**, so this phase answers already-stored ids
+  from the DB and batches `videos.list` for the rest — **no caption request
+  is spent here**.
+- The table appears as soon as the first metadata batch lands. All found
+  videos are shown (the *Show* filters are disabled until Add) so the admin
+  can confirm the source actually yielded videos before paying for transcript
+  lookups. The transcript column reads *Not checked*.
+- Live progress: *IDs found*, *Screened*, *Already in DB*, *Metadata
+  checked*, *0 of N transcripts checked*, *Eligible* (0 here), plus a stage
+  line (listing / fetching metadata / finished / stopped). *Stop* takes
+  effect after the in-flight request; *Continue* resumes from the
+  queue/cursor. An empty result is reported explicitly.
+- Invalid ids are listed once (first 10 in the line, all in the tooltip).
+- Language mismatch uses the rows' own raw metadata verdicts, so the panel
+  grows as pages arrive and never costs a second YouTube call.
+
+**2. Check transcripts**
+
+- *Check transcripts (N)* walks the rows that still need a listing in
+  batches of **10**. Each batch is marked `checking` before the request, so
+  the table shows a spinner in the transcript column for those videos; the
+  result (manual / auto-generated / no transcript / caption failure) replaces
+  the spinner when the batch returns.
+- It calls `/admin/videos/screen` with `check_transcripts: true`. The backend
+  lists the caption tracks only — no transcript download. Rows already in the
+  DB, unavailable, or non-embeddable are skipped; a previous caption-service
+  failure is retried.
+- **Caption listings are cached.** `list_transcripts_result()` reads
+  `load_from_caption_cache(video_id, type='list')` before calling YouTube and
+  writes the successful listing back to the two-tier `caption` bucket (local
+  disk → shared host), keyed per video (the listing contains every track, so
+  it is language-independent). Re-running this phase only lists videos that
+  were never listed; failures are not cached.
+- Progress is *checked / total* with *Stop* and resume. A caption-service
+  failure shows a **short** message, stops further listings in that batch,
+  and offers *Retry unchecked (N)*. The backend throttles listings (default
+  0.2s) and retries one rate-limited listing, but a sustained YouTube
+  `/sorry/index` 429 can still stop a run; the full upstream exception is
+  only in the server log.
+- All rows remain visible during this phase (filters still disabled), so the
+  admin can watch results instead of rows disappearing. When every checkable
+  row has a result, the page moves to Add and enables the *Show* filters.
+
+**3. Add**
+
 - The result table is **client-side infinite scroll**: it renders 50 rows per
   step from the full accumulated array via an `IntersectionObserver` sentinel
   (with a *Load more* fallback), so "all rows" really means the whole result
@@ -309,12 +344,10 @@ uses fixed 50-id batches.
   every category; *Reset* unchecks them all (back to eligible-only). The
   hidden count is shown, and an empty table explains that categories can be
   enabled. The previous *Eligible only* toggle is gone — eligible-only is the
-  default.
-- Invalid ids are listed once (first 10 in the line, all in the tooltip).
-- Language mismatch uses the rows' own raw verdicts, so the panel grows as
-  pages arrive and never costs a second YouTube call.
-
-**Add**
+  default in this phase.
+- The add card is visible once Discover has rows (so the admin can add rows
+  already checked if the check was stopped early); its buttons are disabled
+  while a check is running.
 
 - Options: `force`, `clean_generated`, `refresh_existing`, talk, TV show.
 - `force` changes eligibility exactly as the importer does: region-restricted
@@ -547,7 +580,7 @@ channel-CRUD open question.
 
 ### 5. `POST /admin/videos/ids` + `POST /admin/videos/screen` (new, 2026-10-19)
 
-The two-phase import needs a read-only discovery step that neither the
+The three-phase import needs a read-only discovery step that neither the
 importer nor `preflight` provides:
 
 - **`/admin/videos/ids`** enumerates candidate ids from a pasted list, a
@@ -582,7 +615,7 @@ carries the updated `admin_bp` route list.
 | `apps/admin/src/app/page.tsx` | `/` → redirect to `/users` |
 | `apps/admin/src/app/users/page.tsx` | User search dashboard (moved from `/`) |
 | `apps/admin/src/app/content/videos/page.tsx` | Video manager |
-| `apps/admin/src/app/content/import/page.tsx` | Discover → Add: enumeration loop, screening progress, add phase |
+| `apps/admin/src/app/content/import/page.tsx` | Discover → Check transcripts → Add: enumeration/metadata loop, per-row transcript check, add phase |
 | `apps/admin/src/components/content/screening-table.tsx` | Filterable infinite-scroll result table (view toggles, per-row Add) |
 | `apps/admin/src/lib/screening.ts` | Eligibility/force rule, raw preflight builder, ISO duration formatting, row merge |
 | `apps/admin/src/app/content/discover/page.tsx` | Candidate review + import |
@@ -726,10 +759,15 @@ so the deployed admin origin cannot be dropped without a failing test
   - an already-stored zh id (`tPy6JzKR7cs`) returned `in_db: true`,
     `checked_metadata: 0`, `transcript_status: stored`, and made no YouTube
     call.
+  - the caption **list** cache is real: `load_from_caption_cache(
+    'dQw4w9WgXcQ', type='list')` returned 6 tracks, and a second
+    `list_transcripts_result` completed in ~0.0s from the local cache (154
+    list entries on disk at the time of the check).
 - Admin: `tsc --noEmit` and ESLint pass.
 - Manual: needs an admin account (none of the test users is an admin), so the
-  full Discover → Add click-through — listing, screening progress, filter
-  toggles, per-row Add and Add all — still needs one pass in the browser.
+  full Discover → Check transcripts → Add click-through — listing, metadata
+  progress, per-row transcript spinners, filter toggles, per-row Add and
+  Add all — still needs one pass in the browser.
   Restart `next dev` after `sync-translations` (see the i18n note above).
 
 ## Known limitations
@@ -775,9 +813,22 @@ so the deployed admin origin cannot be dropped without a failing test
   preflight call); `/content/discover` still uses
   `POST /admin/videos/preflight` and audits a selection before importing.
 - **The import discovery result set lives only in the browser.** There is no
-  server-side job, so a reload loses the screened rows; re-running is
+  server-side job, so a reload loses the discovered rows; re-running is
   read-only and successful caption listings are cached. The add phase is
   unaffected — rows already imported stay in the DB.
+- **The *Show* filters only run in the Add phase.** Discover and Check show
+  every found row (with a hint saying so), because during those phases the
+  admin is answering "did we find videos?" and "what did the transcript check
+  say?", not narrowing an add set. The filters default to eligible-only once
+  Check finishes.
+- **The Check phase reuses `/admin/videos/screen`.** Each 10-id check batch
+  therefore also re-fetches metadata (one batched `videos.list` call and one
+  DB query). That is cheap compared with 10 caption listings, but a
+  transcript-only endpoint could remove it if the extra quota ever matters.
+- **Caption listings are cached per video** in the two-tier `caption` bucket
+  (`list/<hash>`); only successful listings are stored and failures are not.
+  A re-run of the Check phase is near-instant for videos that were already
+  listed.
 - **The discovery transcript column is a track listing, not a transcript.**
   It proves a track in the L2 locale family exists; the add phase still
   enforces the 4-line minimum and can report `transcript_too_short`.
@@ -795,14 +846,15 @@ so the deployed admin origin cannot be dropped without a failing test
   scroll and rows whose category is toggled off. Use the per-row *Add*
   buttons for a filtered subset. A row that becomes in-DB after an add is
   hidden again unless `Already in DB` is checked.
-- **A screen call caps at 50 ids and lists captions serially.** This keeps a
-  request inside gunicorn's timeout and respects YouTube's rate limit; a
-  500-video channel therefore takes ten screen calls (plus listing calls)
-  even before the add phase. Listings are throttled (0.2s by default) and a
-  rate-limited listing is retried once, but a sustained `/sorry/index` 429
-  still stops the run and leaves the rest for *Retry unchecked*. The add
-  phase uses **25-id** pages because each id downloads and scores a
-  transcript inside the request.
+- **The screen endpoint caps at 50 ids; the console uses smaller pages for
+  the slow work.** Discover uses 50-id metadata pages, Check uses **10-id**
+  listing pages (so a batch of spinners turns into results quickly), and Add
+  uses **25-id** pages (each id downloads and scores a transcript inside the
+  request). This keeps a request inside gunicorn's timeout and respects
+  YouTube's rate limit; a 500-video channel still takes many calls across the
+  three phases. Listings are throttled (0.2s by default) and a rate-limited
+  listing is retried once, but a sustained `/sorry/index` 429 still stops the
+  check and leaves the rest for *Retry unchecked*.
 
 ## Open Questions
 

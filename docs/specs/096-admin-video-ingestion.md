@@ -416,6 +416,16 @@ Order matters for cost:
    import, so their track is listed too — a force-add therefore needs no
    second discovery pass.
 
+The console drives this endpoint in two modes, matching its three phases.
+**Discover** sends `check_transcripts: false` and gets DB verdicts + metadata
+only, so the admin sees the found videos before any caption request.
+**Check transcripts** sends `check_transcripts: true` in 10-id batches and
+shows a spinner against those rows until the listing returns. Successful
+listings are cached by `list_transcripts_result()` in the two-tier `caption`
+bucket (`list/<hash>`, per video, language-independent), so re-running the
+check phase only calls YouTube for videos that were never listed; failures
+are not cached.
+
 ```json
 {
   "l2": "zh",
