@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-09-06
-- **Last Updated**: 2026-10-18
+- **Last Updated**: 2026-10-19
 - **ROADMAP Phase**: Phase 3 — Explore + Video Player
 - **Scope**: `zerotohero-python-server/` (Flask), Web + Mobile clients
 
@@ -236,30 +236,55 @@ WHERE l2 = 'zh'
   AND abs(difficulty - lex_div/word_freq) > 0.01 * abs(difficulty);
 ```
 
-## Dependencies: wordfreq + jieba
+## Dependencies: wordfreq + its CJK tokenizer data
 
-- jieba `>= 0.42` is required by `wordfreq` 3.0.3 for Chinese
-  (`Requires-Dist: jieba (>=0.42); extra == "jieba"`), because `wordfreq`
-  calls `jieba.Tokenizer`, an API only present in jieba 0.42+.
-- `requirements.txt` now **pins** both (`jieba==0.42.1`, `wordfreq==3.0.3`); they were unpinned when this incident happened, which is how environments drifted.
-- The local dev environment was found in a corrupted state: pip metadata
-  (dist-info) says jieba 0.42.1 and its RECORD lists a 19,809-byte
-  `__init__.py`, but the on-disk files are jieba 0.34 (13,200 bytes,
-  `__version__ = '0.34'`). Result: Chinese `zipf_frequency()` crashes with
+`wordfreq` 3.0.3 tokenizes Chinese with jieba and Japanese/Korean with MeCab.
+Those tokenizers need data packages that `wordfreq` does not install by
+default — the `wordfreq[cjk]` extra:
+
+| L2 | pip package | Failure if missing |
+|---|---|---|
+| `zh` | `jieba>=0.42` | with jieba < 0.42: `AttributeError: module 'jieba' has no attribute 'Tokenizer'` |
+| `ja` | `ipadic>=1.0,<2` | `ModuleNotFoundError: No module named 'ipadic'` |
+| `ko` | `mecab-ko-dic>=1.0,<2` | `ModuleNotFoundError: No module named 'mecab_ko_dic'` |
+
+`requirements.txt` pins all of them: `jieba==0.42.1`, `ipadic==1.0.0`,
+`mecab-ko-dic==1.0.0`, `mecab-python3==1.0.8`, `wordfreq==3.0.3`. They were
+unpinned once, which is how environments drifted.
+
+**Symptom when a dictionary is missing:** `compute_word_freq()` raises, but
+`score_lemmas()` catches the exception and continues with
+`word_freq = None`. The video is therefore still imported with `lex_div` set
+and `word_freq` / `difficulty` NULL, and the admin import reports it as
+`added`. The only trace is a server line such as:
+
+```
+-- Cannot calculate word_freq for l2=ja from 22 lemmas (ModuleNotFoundError): No module named 'ipadic'
+```
+
+The video then has no difficulty level. Refresh the affected videos after
+installing the data (re-import the channel / re-save the video with
+**Refresh existing**): `_backfill_metrics()` computes the missing half in
+place. Rows are not repaired automatically.
+
+- The local dev environment was once found in a corrupted state for jieba:
+  pip metadata (dist-info) said 0.42.1 and its RECORD listed a 19,809-byte
+  `__init__.py`, but the on-disk files were jieba 0.34 (13,200 bytes,
+  `__version__ = '0.34'`). Result: Chinese `zipf_frequency()` crashed with
   `AttributeError: module 'jieba' has no attribute 'Tokenizer'`.
-- Verified in an isolated venv with jieba 0.42.1: `zipf_frequency('的',
-  'zh') = 7.79`, `jieba.Tokenizer` present, and `set_dictionary` +
-  `jieba.posseg` (the APIs `lemmatize_chinese.py` uses, per ADR-0019) all
-  work.
+- Verified with the pinned versions: `zipf_frequency('的', 'zh') = 7.79`,
+  `zipf_frequency('の', 'ja') = 7.72`, `zipf_frequency('의', 'ko') = 7.23`.
+  jieba's 0.34→0.42.1 upgrade is safe for the server: the APIs in use
+  (`Tokenizer`, `set_dictionary`, `posseg`) are stable, and already-scored
+  rows are untouched. jieba's segmentation changed slightly between
+  versions, so a future re-scoring pass may produce slightly different
+  `lex_div`/`word_freq` for re-scored videos than the current archive values.
 
-**Recommendation:** pin `jieba>=0.42.1` (and `wordfreq>=3`) in
-`requirements.txt` and repair the envelope
-(`pip install --force-reinstall jieba==0.42.1` — or reinstall
-`wordfreq[jieba]`). Upgrading is safe for the server: the APIs in use are
-stable across 0.34→0.42.1, and already-scored rows are untouched. Note that
-jieba's segmentation changed slightly between versions, so a future
-re-scoring pass may produce slightly different `lex_div`/`word_freq` for
-re-scored videos than the current archive values.
+**Recommendation:** install from `requirements.txt`
+(`python3.10 -m pip install -r requirements.txt`). For a ja/ko-only repair:
+`python3.10 -m pip install ipadic==1.0.0 mecab-ko-dic==1.0.0` (or
+`wordfreq[cjk]`). No server restart is needed — wordfreq imports the
+dictionary lazily on the first `ja`/`ko` call.
 
 ## Key files
 
