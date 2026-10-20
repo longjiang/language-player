@@ -210,6 +210,11 @@ YouTube's raw auto-generated captions, and LLM-normalizing every caption line
 would make bulk imports orders of magnitude slower and more expensive. The
 flag can be turned on per request.
 
+The importer still accepts ASR tracks. The admin console's discovery screen
+is stricter: it marks auto-generated tracks as ineligible so the table only
+offers manually created transcripts (SPEC-099 § `/content/import`). That is a
+console policy, not a change to this pipeline.
+
 ### 4. Lemmatization cache (ARCH-034)
 
 `utils_video_lemma.lemmatize_and_score_video()` calls `lemmatize_video()`,
@@ -423,7 +428,7 @@ Order matters for cost:
     "declared_audio_locale": "zh-CN", "audio_matches_l2": true,
     "available": true, "embeddable": true, "region_restricted": false,
     "block_reason": null,
-    "transcript": { "language_code": "zh", "language": "Chinese", "is_generated": true },
+    "transcript": { "language_code": "zh", "language": "Chinese", "is_generated": false },
     "transcript_status": "found",
     "transcript_error": null
   }],
@@ -432,7 +437,8 @@ Order matters for cost:
   "summary": {
     "requested": 1, "invalid": 0, "in_db": 0, "checked_metadata": 1,
     "unavailable": 0, "not_embeddable": 0, "region_restricted": 0,
-    "locale_mismatch": 0, "transcript_found": 1, "no_transcript": 0,
+    "locale_mismatch": 0, "transcript_found": 1,
+    "auto_generated_transcript": 0, "no_transcript": 0,
     "caption_service_unavailable": 0, "not_checked": 0, "eligible": 1
   }
 }
@@ -449,12 +455,29 @@ caption lookup in the same batch blocked the service).
 null. The console decides eligibility for its current `force` setting from
 these raw flags; the backend does not bake `force` into the screen.
 
+**Manual transcripts only.** `summary.eligible` counts new rows with no hard
+block and a `found` track whose `is_generated` is **false**. An auto-generated
+(ASR) track is counted in `auto_generated_transcript` and is never eligible:
+SPEC-099's admin import policy only offers manually created captions. The
+importer itself still accepts ASR for other callers (ARCH-035), so this is a
+discovery-screen rule, not a change to ingestion.
+
 A **caption-service failure** is returned as `caption_error` and stops
 further listings in that call (remaining ids are `not_checked`). It is never
 recorded as `no_transcript`, and the console can retry just those rows
-without re-enumerating the source. A **metadata failure** is a `502`, never a
-page of ids marked unavailable. The endpoint is otherwise read-only (no
-commit, no cache writes except the caption layer's own listing cache).
+without re-enumerating the source. The upstream exception is logged in full
+on the server; the API returns a short, readable message (for a rate limit:
+"YouTube temporarily blocked the caption lookup (HTTP 429). Progress is
+saved; retry the unchecked rows later."). A **metadata failure** is a `502`,
+never a page of ids marked unavailable. The endpoint is otherwise read-only
+(no commit, no cache writes except the caption layer's own listing cache).
+
+Listings are **throttled** (`CAPTION_LIST_DELAY_SECONDS`, default 0.2s
+between tracks) and a rate-limited listing is retried once
+(`CAPTION_RATE_LIMIT_RETRIES` / `CAPTION_RATE_LIMIT_BACKOFF_SECONDS`). This
+reduces the chance of tripping YouTube's `/sorry/index` 429 but cannot
+eliminate it: it is an anti-bot/IP block on the caption proxy, so the console
+retains the stop-and-retry flow.
 
 ### `GET /admin/channels/resolve`
 
@@ -501,7 +524,10 @@ transcript download, so a single synchronous call would outlive gunicorn's
 
 - **Flat list** (`add-batch`): `limit` (default 50, max 500) plus
   `cursor: {"offset": n}`; the response's `next_cursor` is null on the last
-  page.
+  page. The admin console sends **25** per page: each id downloads and scores
+  a transcript inside the request, and a 50-id page can outlive the
+  Cloudflare/gunicorn timeout (whose 502 has no CORS header and looks like a
+  CORS failure).
 - **Playlist / channel**: `limit` plus an opaque
   `cursor: {"page_token": …, "skip": n}`. `skip` lets a call that stops
   mid-page resume exactly there, instead of re-listing the playlist from the
@@ -552,7 +578,7 @@ caption *listings* are cached by the caption layer, not the table rows.
 | `zerotohero-python-server/caption_selection.py` | The caption rule the transcript step uses (ARCH-035) |
 | `zerotohero-python-server/app_youtubecaptions.py` | Transcript download, shared with every other caption consumer |
 | `zerotohero-python-server/test_admin_video_import.py` | Importer unit + route tests (64 cases) |
-| `zerotohero-python-server/test_admin_video_screening.py` | Discovery enumeration + screening tests (16 cases) |
+| `zerotohero-python-server/test_admin_video_screening.py` | Discovery enumeration + screening tests (18 cases) |
 | `zerotohero-python-server/test_video_discovery.py` | Discovery tests (12 cases) |
 
 ## Testing
@@ -581,9 +607,13 @@ caption *listings* are cached by the caption layer, not the table rows.
 - metadata runs before caption listing, and hard-blocked videos (unavailable /
   non-embeddable) cost no caption request,
 - soft blocks (region / declared locale) still get a caption listing,
-- `no_transcript` is distinct from `caption_service_unavailable`, and a
+- a manual transcript is eligible; an auto-generated one is listed/counted
+  but **not** eligible,
+- `no_transcript` is distinct from `caption_service_unavailable`, a
   caption-service failure stops further listings (remaining rows are
-  `not_checked`),
+  `not_checked`), and the public error is concise while the full upstream
+  message is not returned,
+- a rate-limited listing is retried once when the retry budget allows,
 - duplicate/invalid ids, the 50-id cap, metadata failure → `YouTubeApiError`,
 - `/admin/videos/ids` paging for a pasted list, a channel's uploads playlist,
   validation, and playlist failure → 502,
@@ -633,6 +663,16 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   a track in the L2's locale family exists; it does not prove the ≥4-line
   minimum (`transcript_too_short`) or that the transcript is any good. The
   add phase still reports those outcomes per video.
+- **The discovery screen excludes ASR from eligibility.** A `found` track
+  with `is_generated: true` is listed and counted (`auto_generated_transcript`)
+  but never eligible; SPEC-099's table only offers manually created
+  transcripts. The importer itself still accepts ASR (ARCH-035), so calling
+  `/admin/videos/add` or `/add-batch` directly can still store an
+  auto-generated transcript.
+- **Caption listing can still be rate-limited.** The throttle + one retry
+  reduce the chance, but a sustained `/sorry/index` 429 is an IP/proxy block;
+  the call then stops, preserves the rows already screened, and the console
+  offers *Retry unchecked*. The full upstream error is only in the server log.
 - **Already-stored rows skip YouTube entirely.** Their title/duration/locale
   come from `youtube_videos`, and no caption listing is made even when
   `subs_l2` is empty (`transcript_status: "not_checked"`). This keeps a

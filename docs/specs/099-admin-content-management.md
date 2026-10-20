@@ -160,7 +160,7 @@ dashboard) moves to `/users`; `/` becomes a redirect to `/users`.
 | `/users` | user search (moved from `/`) | `GET /admin/users/search` |
 | `/users/[id]` | user detail (unchanged) | `GET /admin/users/<id>` + subscription/admin mutations |
 | `/content/videos` | video manager: filter by L2, search by title, sort, page; edit / create / delete / bulk assign / bulk delete | `GET /admin/videos`, `POST /admin/videos`, `PATCH /admin/videos/<id>`, `DELETE /admin/videos/<id>` |
-| `/content/import` | **Discover → Add**: single · batch · channel · playlist; discovery lists ids and screens them (DB / metadata / transcript listing), shows an infinite-scroll table with view filters, then adds individual rows or all eligible rows | `POST /admin/videos/ids`, `POST /admin/videos/screen`, `POST /admin/videos/add`, `POST /admin/videos/add-batch`, `GET /admin/channels/resolve` |
+| `/content/import` | **Discover → Add**: single · batch · channel · playlist; discovery lists ids and screens them (DB / metadata / transcript listing), shows an infinite-scroll table with opt-in *Show* filters, then adds individual rows or all eligible rows | `POST /admin/videos/ids`, `POST /admin/videos/screen`, `POST /admin/videos/add`, `POST /admin/videos/add-batch`, `GET /admin/channels/resolve` |
 | `/content/discover` | discovery: generate/review candidates, then import selected | `POST /admin/videos/preflight`, `POST /admin/videos/discover` |
 | `/content/shows` | TV shows + talks: list by L2 (incl. hidden), create / edit / delete, member videos | `GET /tv-shows`, `GET /talks`, `GET /tv-shows|/talks/<id>/episodes`, `POST|PATCH|DELETE /admin/tv-shows|/admin/talks` |
 | `/content/channels` | channels: list by L2, click a row for its channel page, resolve a handle, import uploads | `GET /channels`, `GET /admin/channels/resolve`, `POST /admin/channels/add` |
@@ -288,21 +288,28 @@ uses fixed 50-id batches.
   *Transcripts checked*, *Eligible*, plus a stage line (listing / checking /
   finished / stopped). *Stop* takes effect after the in-flight request;
   *Continue* resumes from the queue/cursor.
-- A caption-service failure shows its `kind` and message, stops further
+- A caption-service failure shows a **short** message, stops further
   listings in that batch, and offers *Retry unchecked (N)*. The same button
-  is available beside the progress line whenever unchecked rows remain.
+  is available beside the progress line whenever unchecked rows remain. The
+  backend throttles listings (default 0.2s) and retries one rate-limited
+  listing, but a sustained YouTube `/sorry/index` 429 can still stop a run;
+  the full upstream exception is only in the server log.
 - The result table is **client-side infinite scroll**: it renders 50 rows per
   step from the full accumulated array via an `IntersectionObserver` sentinel
   (with a *Load more* fallback), so "all rows" really means the whole result
   set. Columns: thumbnail, title + YouTube id + channel, duration, views,
   audio locale, transcript locale (`code (auto|manual)` / `Stored` / `Not
   checked`), status badges, *Add*.
-- View filters, each with a count: already in DB, unavailable/not embeddable,
-  region restricted, audio ≠ L2, no transcript/caption-service failure. A row
-  is hidden if **any** category it belongs to is hidden — hiding "already in
-  DB" also hides an in-DB row that has no transcript. *Show all* resets them;
-  *Eligible only* filters to addable rows and ignores the category toggles.
-  The hidden count is shown.
+- **Only eligible rows are shown by default.** A *Show* row has one opt-in
+  checkbox per excluded category, each with a count: already in DB,
+  unavailable/not embeddable, region restricted, audio ≠ L2, no transcript,
+  auto-generated transcript, and transcript not checked/caption lookup
+  failed. Checking a category includes those rows; a non-eligible row is
+  shown when at least one of its categories is checked. *Show all* checks
+  every category; *Reset* unchecks them all (back to eligible-only). The
+  hidden count is shown, and an empty table explains that categories can be
+  enabled. The previous *Eligible only* toggle is gone — eligible-only is the
+  default.
 - Invalid ids are listed once (first 10 in the line, all in the tooltip).
 - Language mismatch uses the rows' own raw verdicts, so the panel grows as
   pages arrive and never costs a second YouTube call.
@@ -312,16 +319,22 @@ uses fixed 50-id batches.
 - Options: `force`, `clean_generated`, `refresh_existing`, talk, TV show.
 - `force` changes eligibility exactly as the importer does: region-restricted
   and declared-locale-mismatch rows become addable; unavailable,
-  non-embeddable and no-transcript rows never do. A row is eligible when
+  non-embeddable and no-transcript rows never do. **Auto-generated
+  transcripts are never eligible.** A row is eligible when
   `!in_db && blockReasonFor(row, force) === null &&
-  transcript_status === 'found'`.
+  transcript_status === 'found' && transcript.is_generated === false`.
+  This is a console/import policy: the importer itself still accepts ASR for
+  other callers (ARCH-035).
 - *Add all eligible (N)* adds the **full eligible set** — not just the rows
-  currently rendered, and not only the rows passing the view filters — in
-  batches of 50 through `POST /admin/videos/add-batch`. Individual rows use
-  `POST /admin/videos/add`.
+  currently rendered, and not only the rows passing the *Show* filters — in
+  batches of **25** through `POST /admin/videos/add-batch` (50 transcript
+  downloads inside one request can outlive the Cloudflare/gunicorn timeout;
+  a 502 gateway response has no CORS header and surfaces as a misleading
+  CORS error). Individual rows use `POST /admin/videos/add`.
 - Per-row results (`added` / `updated` / `skipped` / `failed` + reason) and
-  the summary chips stay visible; the row keeps `in_db` and its add status so
-  the table is a record of the run.
+  the summary chips stay visible. A row that becomes in-DB after an add
+  follows the normal `Already in DB` rule: it is hidden unless that *Show*
+  category is checked.
 - The language-mismatch confirm runs before a bulk or single add whose rows
   declare another language. That is only reachable with `force` on, because
   without it those rows are not eligible.
@@ -554,7 +567,7 @@ The full body/response contract, the caption-failure semantics
 [SPEC-096](096-admin-video-ingestion.md#post-adminvideosscreen). The backend
 files are `utils_video_screening.py`, `utils_video_import.list_video_ids()`
 and `utils_content.get_videos_for_screening()`; `test_admin_video_screening.py`
-covers them (16 cases). Both routes are on `admin_bp`, so the structural
+covers them (18 cases). Both routes are on `admin_bp`, so the structural
 401/403 test covers them automatically.
 
 No other route changes. [ARCH-003](../arch/003-python-backend-architecture.md)
@@ -588,7 +601,7 @@ carries the updated `admin_bp` route list.
 | `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)`, `get_videos_for_screening`, `get_channel` / `count_channel_videos` / `delete_channel` |
 | `zerotohero-python-server/routes/admin.py` | `q` query parameter, `POST /admin/videos/preflight`, `POST /admin/videos/ids`, `POST /admin/videos/screen`, `GET` / `DELETE` on `/admin/channels/<id>` |
 | `zerotohero-python-server/utils_video_screening.py` | The read-only discovery screen (DB + metadata + caption listing) |
-| `zerotohero-python-server/test_admin_video_screening.py` | Screening decisions, caption failure, enumeration, routes (16 cases) |
+| `zerotohero-python-server/test_admin_video_screening.py` | Screening decisions, caption failure, enumeration, routes (18 cases) |
 | `zerotohero-python-server/test_admin_videos_list.py` | `q` filter + escaping + route tests |
 | `zerotohero-python-server/test_content_shows.py` | `_show_dict` regression test (`l2Code` present, keys preserved) |
 | `zerotohero-python-server/test_admin_video_preflight.py` | Preflight decisions and validation (no DB access) |
@@ -703,7 +716,7 @@ so the deployed admin origin cannot be dropped without a failing test
 
 ### Two-phase import (2026-10-19)
 
-- Backend: `python3.10 -m pytest test_admin_video_screening.py` — 16 passed;
+- Backend: `python3.10 -m pytest test_admin_video_screening.py` — 18 passed;
   the combined `test_admin_video_import.py test_admin_video_preflight.py
   test_video_discovery.py` run stays at 98 passed.
 - Real-data smoke checks against the local Supabase + YouTube:
@@ -768,18 +781,28 @@ so the deployed admin origin cannot be dropped without a failing test
 - **The discovery transcript column is a track listing, not a transcript.**
   It proves a track in the L2 locale family exists; the add phase still
   enforces the 4-line minimum and can report `transcript_too_short`.
+- **Auto-generated transcripts are shown but never addable here.** The table
+  and `summary.auto_generated_transcript` include ASR, but eligibility
+  requires `transcript.is_generated === false`. The importer itself still
+  accepts ASR when called directly (ARCH-035), so this is a console policy,
+  not a server-side rejection.
 - **Already-in-DB rows skip YouTube entirely.** Their title/duration/locale
   come from the database and their transcript column shows `Stored` (or
   `Not checked` when `subs_l2` is empty), so the table cannot show their
   transcript locale.
-- **"Add all eligible" ignores the view filters by design.** It covers the
-  full result set, including rows hidden by the category toggles and rows
-  not yet rendered by the infinite scroll. Use the per-row *Add* buttons for
-  a filtered subset.
+- **"Add all eligible" ignores the *Show* filters by design.** It covers the
+  full eligible result set, including rows not yet rendered by the infinite
+  scroll and rows whose category is toggled off. Use the per-row *Add*
+  buttons for a filtered subset. A row that becomes in-DB after an add is
+  hidden again unless `Already in DB` is checked.
 - **A screen call caps at 50 ids and lists captions serially.** This keeps a
   request inside gunicorn's timeout and respects YouTube's rate limit; a
   500-video channel therefore takes ten screen calls (plus listing calls)
-  even before the add phase.
+  even before the add phase. Listings are throttled (0.2s by default) and a
+  rate-limited listing is retried once, but a sustained `/sorry/index` 429
+  still stops the run and leaves the rest for *Retry unchecked*. The add
+  phase uses **25-id** pages because each id downloads and scores a
+  transcript inside the request.
 
 ## Open Questions
 
