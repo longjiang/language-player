@@ -243,20 +243,28 @@ export default function ChannelsPage() {
           </Field>
 
           {resolved && (
-            <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm">
-              <div className="font-medium">{resolved.title}</div>
-              <div className="mt-1 grid gap-x-4 gap-y-0.5 text-xs text-muted-foreground sm:grid-cols-2">
-                <span className="font-mono">{resolved.channel_id}</span>
-                <span>{resolved.handle}</span>
-                <span>
-                  {t('label.subscribers')}: {resolved.subscribers ?? '—'}
-                </span>
-                <span>
-                  {t('label.videos')}: {resolved.video_count ?? '—'}
-                </span>
-                <span className="font-mono">{resolved.uploads_playlist_id}</span>
+            // The lookup result is the same channel the list rows open, so it
+            // navigates to the detail page instead of being a dead-end card.
+            <Link
+              href={channelHref(resolved.channel_id)}
+              className="group flex items-start justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3 text-sm transition-colors hover:border-primary/40 hover:bg-muted/50"
+            >
+              <div className="min-w-0">
+                <div className="font-medium group-hover:text-primary">{resolved.title}</div>
+                <div className="mt-1 grid gap-x-4 gap-y-0.5 text-xs text-muted-foreground sm:grid-cols-2">
+                  <span className="font-mono">{resolved.channel_id}</span>
+                  <span>{resolved.handle}</span>
+                  <span>
+                    {t('label.subscribers')}: {resolved.subscribers ?? '—'}
+                  </span>
+                  <span>
+                    {t('label.videos')}: {resolved.video_count ?? '—'}
+                  </span>
+                  <span className="font-mono">{resolved.uploads_playlist_id}</span>
+                </div>
               </div>
-            </div>
+              <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+            </Link>
           )}
 
           <div className="border-t border-border" />
