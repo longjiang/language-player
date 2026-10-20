@@ -677,8 +677,12 @@ What was run when this shipped:
 
 Manual check when the backend is up: log in as an admin and exercise
 videos / import / discover / shows / channels / sweep against a real
-language. Login requires `app_metadata.is_admin = true`; Flask's CORS
-allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
+language. Login requires `app_metadata.is_admin = true`. Flask's CORS
+allowlist contains both `http://localhost:3100` and
+`https://language-player-admin.netlify.app`, and
+`test_admin_cors_preflight_is_not_authenticated` is parametrized over both,
+so the deployed admin origin cannot be dropped without a failing test
+(ARCH-029 § 11.4).
 
 ### Channel detail & delete (2026-10-19)
 
