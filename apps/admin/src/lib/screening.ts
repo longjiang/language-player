@@ -1,12 +1,14 @@
 /**
- * Presentation/eligibility helpers for the two-phase import (SPEC-099).
+ * Presentation/eligibility helpers for the three-phase import (SPEC-099).
  *
- * The backend returns the raw flags; the console decides what the current
- * `force` setting makes addable. The rule stays deliberately thin: only
- * `region_restricted` and a declared audio-locale mismatch are soft, exactly
- * like `utils_youtube.video_import_block_reason(force=True)`. Hard blocks
- * (`unavailable`, `not_embeddable`) and a missing transcript are never
- * addable.
+ * Discover fetches metadata only, Check transcripts fills the transcript
+ * columns, Add imports the eligible rows. The backend returns the raw flags;
+ * the console decides what the current `force` setting makes addable. The
+ * rule stays deliberately thin: only `region_restricted` and a declared
+ * audio-locale mismatch are soft, exactly like
+ * `utils_youtube.video_import_block_reason(force=True)`. Hard blocks
+ * (`unavailable`, `not_embeddable`), a missing transcript, and an
+ * auto-generated transcript are never addable.
  */
 
 import type {
@@ -20,7 +22,26 @@ import type {
 export type ScreeningRowState = ScreeningRow & {
   add_status?: 'adding' | 'added' | 'updated' | 'skipped' | 'failed';
   add_reason?: string | null;
+  /** Client-only: the transcript-check request currently covers this row. */
+  checking?: boolean;
 };
+
+/**
+ * Whether the Check-transcripts phase still has work for this row.
+ *
+ * Only new, available, embeddable videos can produce a usable track. Hard
+ * blocks and already-stored rows are skipped; a previous caption-service
+ * failure is retried.
+ */
+export function needsTranscriptCheck(row: ScreeningRow): boolean {
+  return (
+    !row.in_db &&
+    row.available &&
+    row.embeddable !== false &&
+    (row.transcript_status === 'not_checked' ||
+      row.transcript_status === 'caption_service_unavailable')
+  );
+}
 
 /** The metadata verdict, without applying `force`. */
 export function rawBlockReason(row: ScreeningRow): PreflightBlockReason | null {
