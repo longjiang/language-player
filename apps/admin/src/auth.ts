@@ -28,7 +28,52 @@ function tokenExpiry(token: string): number {
   }
 }
 
+/**
+ * Auth.js cookie namespace for the admin app.
+ *
+ * Browsers scope cookies by host, **not by port**. Locally, `apps/web`
+ * (localhost:3000) and `apps/admin` (localhost:3100) therefore share one
+ * cookie jar, and Auth.js names its session cookie `authjs.session-token` in
+ * both apps by default. The second app to sign in overwrites the first app's
+ * cookie, and because each app has its own `AUTH_SECRET` the leftover JWT
+ * cannot be decrypted by the other — so signing into admin silently logs web
+ * out, and vice versa.
+ *
+ * Keep web on the Auth.js default (existing web sessions stay valid) and give
+ * admin its own `lp-admin.*` names. In production the apps live on separate
+ * hosts, where cookies are already isolated; this makes local dev match that.
+ *
+ * The `__Secure-`/`__Host-` prefixes mirror Auth.js's own HTTPS defaults. They
+ * are derived from `AUTH_URL` because a prefix that disagrees with the actual
+ * scheme makes the browser drop the cookie.
+ */
+const authUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? '';
+const secureCookies = authUrl.startsWith('https://');
+const securePrefix = secureCookies ? '__Secure-' : '';
+const hostPrefix = secureCookies ? '__Host-' : '';
+
+const adminCookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  path: '/',
+  secure: secureCookies,
+};
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  cookies: {
+    sessionToken: {
+      name: `${securePrefix}lp-admin.session-token`,
+      options: adminCookieOptions,
+    },
+    callbackUrl: {
+      name: `${securePrefix}lp-admin.callback-url`,
+      options: adminCookieOptions,
+    },
+    csrfToken: {
+      name: `${hostPrefix}lp-admin.csrf-token`,
+      options: adminCookieOptions,
+    },
+  },
   providers: [
     Credentials({
       name: 'credentials',
