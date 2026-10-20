@@ -28,6 +28,7 @@ import type {
   ResolvedChannel,
   ScreeningResponse,
   ShowInput,
+  TranscriptCheckResponse,
   ShowKind,
   SweepCursor,
   SweepResponse,
@@ -321,6 +322,33 @@ export async function screenVideos(input: ScreenOptions): Promise<ScreeningRespo
     requested: input.youtube_ids.length,
     in_db: response.summary?.in_db,
     eligible: response.summary?.eligible,
+    caption_error: response.caption_error,
+  });
+  return response;
+}
+
+export interface TranscriptCheckOptions {
+  l2: string;
+  youtube_ids: string[];
+}
+
+/**
+ * List caption tracks only — no metadata, no DB, no transcript download.
+ * This is the Check phase; the console sends one id per call so the table can
+ * show a spinner against exactly one video.
+ */
+export async function checkTranscripts(
+  input: TranscriptCheckOptions,
+): Promise<TranscriptCheckResponse> {
+  const response = await request<TranscriptCheckResponse>(
+    '/admin/videos/transcripts',
+    jsonInit('POST', input as unknown as Record<string, unknown>),
+    input as unknown as Record<string, unknown>,
+  );
+  log('content-api transcript check', {
+    l2: input.l2,
+    requested: input.youtube_ids.length,
+    status: response.results?.[0]?.transcript_status,
     caption_error: response.caption_error,
   });
   return response;
