@@ -1,0 +1,142 @@
+/**
+ * Presentation/eligibility helpers for the two-phase import (SPEC-099).
+ *
+ * The backend returns the raw flags; the console decides what the current
+ * `force` setting makes addable. The rule stays deliberately thin: only
+ * `region_restricted` and a declared audio-locale mismatch are soft, exactly
+ * like `utils_youtube.video_import_block_reason(force=True)`. Hard blocks
+ * (`unavailable`, `not_embeddable`) and a missing transcript are never
+ * addable.
+ */
+
+import type {
+  PreflightBlockReason,
+  PreflightResponse,
+  PreflightRow,
+  PreflightSummary,
+  ScreeningRow,
+} from '@/types/content';
+
+export type ScreeningRowState = ScreeningRow & {
+  add_status?: 'adding' | 'added' | 'updated' | 'skipped' | 'failed';
+  add_reason?: string | null;
+};
+
+/** The metadata verdict, without applying `force`. */
+export function rawBlockReason(row: ScreeningRow): PreflightBlockReason | null {
+  if (!row.available) return 'unavailable';
+  if (row.embeddable === false) return 'not_embeddable';
+  if (row.region_restricted) return 'region_restricted';
+  if (row.audio_matches_l2 === false) return 'locale_mismatch';
+  return null;
+}
+
+/** The verdict the importer would reach with this `force` setting. */
+export function blockReasonFor(
+  row: ScreeningRow,
+  force: boolean,
+): PreflightBlockReason | null {
+  const reason = rawBlockReason(row);
+  if (reason === 'region_restricted' || reason === 'locale_mismatch') {
+    return force ? null : reason;
+  }
+  return reason;
+}
+
+/** Whether an individual row can be added right now. */
+export function isEligible(row: ScreeningRow, force: boolean): boolean {
+  return (
+    !row.in_db &&
+    blockReasonFor(row, force) === null &&
+    row.transcript_status === 'found'
+  );
+}
+
+/** Rows the importer would accept with this `force` setting. */
+export function eligibleRows(
+  rows: ScreeningRowState[],
+  force: boolean,
+): ScreeningRowState[] {
+  return rows.filter(
+    (row) =>
+      isEligible(row, force) &&
+      row.add_status !== 'added' &&
+      row.add_status !== 'updated',
+  );
+}
+
+/**
+ * Build the shape `LanguageCheckNotice` already understands from screened
+ * rows. Raw verdicts are used on purpose: the panel should keep warning about
+ * a declared-language mismatch even when Force is on, because that is still
+ * information the admin wants before importing.
+ */
+export function buildPreflight(
+  rows: ScreeningRow[],
+  l2: string,
+  l2Locales: string[] = [],
+  invalid: string[] = [],
+): PreflightResponse {
+  const results: PreflightRow[] = rows.map((row) => ({
+    youtube_id: row.youtube_id,
+    title: row.title,
+    declared_locale: row.declared_audio_locale,
+    matches_l2: row.audio_matches_l2,
+    block_reason: rawBlockReason(row),
+  }));
+
+  const count = (reason: PreflightBlockReason) =>
+    results.filter((row) => row.block_reason === reason).length;
+
+  const summary: PreflightSummary = {
+    total: results.length,
+    mismatched: count('locale_mismatch'),
+    unavailable: count('unavailable'),
+    not_embeddable: count('not_embeddable'),
+    region_restricted: count('region_restricted'),
+    invalid: invalid.length,
+  };
+
+  return { l2, l2_locales: l2Locales, results, invalid, summary };
+}
+
+const ISO_DURATION =
+  /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/;
+
+/**
+ * `PT3M44S` → `3:44`, `P1DT2H3M4S` → `26:03:04`.
+ *
+ * Imports store the raw ISO-8601 string (SPEC-096), so the table formats it
+ * for display instead of changing the stored value.
+ */
+export function formatDuration(value: string | null | undefined): string {
+  if (!value) return '—';
+  const match = ISO_DURATION.exec(value);
+  if (!match) return value;
+  const days = Number(match[1] ?? 0);
+  const hours = Number(match[2] ?? 0) + days * 24;
+  const minutes = Number(match[3] ?? 0);
+  const seconds = Math.floor(Number(match[4] ?? 0));
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/** Immutable merge of a later screening page into the accumulated rows. */
+export function mergeScreenedRows(
+  previous: ScreeningRowState[],
+  incoming: ScreeningRow[],
+): ScreeningRowState[] {
+  const merged = new Map(previous.map((row) => [row.youtube_id, row]));
+  for (const row of incoming) {
+    const old = merged.get(row.youtube_id);
+    merged.set(row.youtube_id, {
+      ...row,
+      // Re-screening must not forget an add that already happened.
+      add_status: old?.add_status,
+      add_reason: old?.add_reason,
+    });
+  }
+  return [...merged.values()];
+}
