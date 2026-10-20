@@ -367,6 +367,8 @@ export interface ScreeningRow {
 export interface ScreeningSummary {
   requested: number;
   invalid: number;
+  /** Duration <= the Shorts threshold (default 3 min); removed from results. */
+  shorts_excluded: number;
   in_db: number;
   checked_metadata: number;
   unavailable: number;
@@ -400,6 +402,33 @@ export interface ScreeningResponse {
   /** Set when the caption listing itself failed; listings stop at that row. */
   caption_error: CaptionError | null;
   summary: ScreeningSummary;
+}
+
+/** One row of `POST /admin/videos/transcripts` (no metadata fields). */
+export interface TranscriptCheckRow {
+  youtube_id: string;
+  transcript: ScreeningTranscript | null;
+  transcript_status: TranscriptStatus;
+  transcript_error: string | null;
+}
+
+export interface TranscriptCheckSummary {
+  requested: number;
+  invalid: number;
+  transcript_found: number;
+  auto_generated_transcript: number;
+  no_transcript: number;
+  caption_service_unavailable: number;
+  not_checked: number;
+}
+
+export interface TranscriptCheckResponse {
+  l2: string;
+  results: TranscriptCheckRow[];
+  invalid: string[];
+  /** Set when the caption listing itself failed; listings stop at that row. */
+  caption_error: CaptionError | null;
+  summary: TranscriptCheckSummary;
 }
 
 /** `POST /admin/videos/ids` — one page of candidate ids, never imports. */

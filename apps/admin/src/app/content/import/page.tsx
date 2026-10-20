@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthReady } from '@/hooks/use-auth-ready';
 import { useT } from '@/hooks/use-t';
 import {
+  checkTranscripts,
   importBatch,
   importSingle,
   listVideoIds,
@@ -37,6 +38,7 @@ import type {
   ImportVideoResult,
   ResolvedChannel,
   ScreeningResponse,
+  TranscriptCheckResponse,
 } from '@/types/content';
 import {
   AlertCircle,
@@ -55,11 +57,11 @@ type Mode = 'single' | 'batch' | 'channel' | 'playlist';
 /** The backend accepts at most 50 ids per screening call. */
 const SCREEN_BATCH = 50;
 /**
- * The transcript check is the slow, rate-limited phase. Ten rows per request
- * gives the table a visible per-row spinner without spending minutes inside
- * one request.
+ * The transcript check is the slow, rate-limited phase. It runs one video per
+ * request so the table shows a single spinner, with a short gap between
+ * requests to avoid a burst at the caption endpoint.
  */
-const TRANSCRIPT_BATCH = 10;
+const TRANSCRIPT_GAP_MS = 250;
 /**
  * Adding 50 videos means 50 serial transcript downloads + scoring inside one
  * request. Keep the add page at 25 so a slow language/scoring run stays under
@@ -115,6 +117,7 @@ export default function ImportPage() {
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [listed, setListed] = useState(0);
+  const [shortsExcluded, setShortsExcluded] = useState(0);
 
   // Add run.
   const [addingAll, setAddingAll] = useState(false);
@@ -168,6 +171,7 @@ export default function ImportPage() {
     setError('');
     setPending(false);
     setListed(0);
+    setShortsExcluded(0);
     setStage('idle');
     setCheckStage('idle');
     setChecking(false);
@@ -231,6 +235,28 @@ export default function ImportPage() {
     if (response.invalid?.length) {
       setInvalidIds((previous) => [...new Set([...previous, ...response.invalid])]);
     }
+    if (response.summary?.shorts_excluded) {
+      setShortsExcluded((previous) => previous + response.summary.shorts_excluded);
+    }
+    if (response.caption_error) setCaptionError(response.caption_error);
+  }
+
+  /** Merge a transcript-only result into the existing metadata row. */
+  function applyTranscriptResponse(response: TranscriptCheckResponse) {
+    const byId = new Map(response.results.map((item) => [item.youtube_id, item]));
+    setRows((previous) =>
+      previous.map((row) => {
+        const update = byId.get(row.youtube_id);
+        if (!update) return row;
+        return {
+          ...row,
+          transcript: update.transcript,
+          transcript_status: update.transcript_status,
+          transcript_error: update.transcript_error,
+          checking: false,
+        };
+      }),
+    );
     if (response.caption_error) setCaptionError(response.caption_error);
   }
 
@@ -368,30 +394,28 @@ export default function ImportPage() {
     setCaptionError(null);
     setError('');
     try {
-      for (let start = 0; start < ids.length; start += TRANSCRIPT_BATCH) {
+      for (let index = 0; index < ids.length; index += 1) {
         if (checkStopRef.current) break;
-        const slice = ids.slice(start, start + TRANSCRIPT_BATCH);
-        log('import transcript check batch', { l2, size: slice.length, offset: start });
-        setRows((previous) =>
-          previous.map((row) =>
-            slice.includes(row.youtube_id) ? { ...row, checking: true } : row,
-          ),
-        );
-        const response = await screenVideos({
+        const id = ids[index];
+        if (!id) continue;
+        log('import transcript check row', {
           l2,
-          youtube_ids: slice,
-          check_transcripts: true,
+          checked: index + 1,
+          total: ids.length,
         });
-        applyScreenResponse(response);
+        // Exactly one row is "checking" at a time, matching the spinner.
         setRows((previous) =>
-          previous.map((row) =>
-            slice.includes(row.youtube_id) ? { ...row, checking: false } : row,
-          ),
+          previous.map((row) => ({ ...row, checking: row.youtube_id === id })),
         );
+        const response = await checkTranscripts({ l2, youtube_ids: [id] });
+        applyTranscriptResponse(response);
         if (response.caption_error) {
           setCaptionError(response.caption_error);
           setCheckStage('stopped');
           return;
+        }
+        if (index < ids.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, TRANSCRIPT_GAP_MS));
         }
       }
 
@@ -835,6 +859,11 @@ export default function ImportPage() {
           <Badge variant="secondary">
             {t('label.metadata_checked')}: {progress.metadata}
           </Badge>
+          {shortsExcluded > 0 && (
+            <Badge variant="secondary">
+              {t('label.shorts_excluded')}: {shortsExcluded}
+            </Badge>
+          )}
           <Badge variant={checkTotal > 0 && checkedTranscripts === checkTotal ? 'success' : 'secondary'}>
             {t('msg.checked_of_total', {
               checked: checkedTranscripts,
