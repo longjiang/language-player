@@ -53,6 +53,13 @@ type Mode = 'single' | 'batch' | 'channel' | 'playlist';
 
 /** The backend accepts at most 50 ids per screening call. */
 const SCREEN_BATCH = 50;
+/**
+ * Adding 50 videos means 50 serial transcript downloads + scoring inside one
+ * request. Keep the add page at 25 so a slow language/scoring run stays under
+ * the Cloudflare/gunicorn timeout (a 502 there looks like a CORS failure in
+ * the browser because the gateway response carries no CORS header).
+ */
+const ADD_BATCH = 25;
 
 type Stage = 'idle' | 'listing' | 'screening' | 'done' | 'stopped' | 'error';
 
@@ -421,8 +428,8 @@ export default function ImportPage() {
     setError('');
     const submitted = new Set(ids);
     try {
-      for (let start = 0; start < ids.length; start += SCREEN_BATCH) {
-        const slice = ids.slice(start, start + SCREEN_BATCH);
+      for (let start = 0; start < ids.length; start += ADD_BATCH) {
+        const slice = ids.slice(start, start + ADD_BATCH);
         for (const id of slice) {
           setRows((previous) =>
             previous.map((row) =>

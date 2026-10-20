@@ -374,10 +374,16 @@ export interface ScreeningSummary {
   region_restricted: number;
   locale_mismatch: number;
   transcript_found: number;
+  /** `found` tracks YouTube reports as auto-generated (ASR). */
+  auto_generated_transcript: number;
   no_transcript: number;
   caption_service_unavailable: number;
   not_checked: number;
-  /** New rows the importer would accept with the current force setting. */
+  /**
+   * New rows the importer would accept with the current force setting. The
+   * import policy requires a **manually created** transcript, so ASR rows are
+   * counted in `auto_generated_transcript`, never here (SPEC-099).
+   */
   eligible: number;
 }
 
