@@ -262,7 +262,7 @@ table.
 
 ## API Endpoints
 
-All five are registered on `routes/admin.py`'s blueprint and gated by
+All of these are registered on `routes/admin.py`'s blueprint and gated by
 `require_admin()` (Supabase JWT `app_metadata.is_admin`).
 
 ### Authorization
@@ -545,7 +545,7 @@ caption *listings* are cached by the caption layer, not the table rows.
 | `zerotohero-python-server/utils_video_import.py` | The ingestion pipeline (single, list, channel, playlist), show assignment, the unavailable sweep; `list_video_ids()` enumerates without importing |
 | `zerotohero-python-server/utils_video_screening.py` | The read-only discovery screen: DB existence, metadata, caption-track listing, summary |
 | `zerotohero-python-server/utils_video_discovery.py` | Search terms, scraping, vetting — [SPEC-098](098-video-discovery.md) |
-| `zerotohero-python-server/routes/admin.py` | The seven endpoints |
+| `zerotohero-python-server/routes/admin.py` | The admin ingestion, discovery and sweep endpoints |
 | `zerotohero-python-server/utils_youtube.py` | Batched `videos.list` + availability, `video_import_block_reason()`, `l2_locales()`, channel/playlist reference parsing and resolution |
 | `zerotohero-python-server/utils_video_lemma.py` | `compute_lex_div` / `compute_word_freq` / `score_lemmas` / `lemmatize_and_score_video`; cache-key translation in `get_lemmas_from_video` |
 | `zerotohero-python-server/utils_content.py` | `next_video_id()`, `get_videos_by_youtube_ids()`, show lookup + survey, sweep paging |
