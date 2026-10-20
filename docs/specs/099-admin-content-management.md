@@ -6,13 +6,18 @@
 - **Feature**: The `apps/admin` content-management surface: discover, import,
   and manage videos, channels, TV shows and talks per language (L2), plus a
   two-group navigation shell (Users / Content)
-- **Status**: complete (2026-10-16)
+- **Status**: complete (2026-10-16); `/content/import` reworked 2026-10-19
 - **Created**: 2026-10-16
 - **Implemented**: 2026-10-16. `apps/admin` — `defc95bc` (shell + `/users`),
   `7ab9ee4e` (content API + types), `fd2fb6aa` (i18n keys), `02bf34e4`
   (videos), `a0ec0e5d` (import), `f0c9c909` (discover), `324f41d7` (shows),
   `e9a72137` (channels + sweep). `zerotohero-python-server` — `de20196`
   (`_show_dict`), `4af6f33` (`q` filter).
+- **Updated**: 2026-10-19 — `/content/import` is now two phases
+  (Discover → Add). Discovery uses the new read-only
+  `/admin/videos/ids` + `/admin/videos/screen` endpoints (backend
+  `7f6025e`), shows a filterable infinite-scroll table, and the add phase
+  imports individual rows or every eligible row across the full result set.
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - [ADR-0032 — Admin Console as a Separate Next.js App](<../adr/0032-admin-console-app.md>)
@@ -42,8 +47,11 @@ This spec adds that surface to `apps/admin`:
   existing user management and the new content management are both reachable,
 - a **videos** manager (browse / filter by L2 / search / edit / create /
   delete / bulk-assign to a talk or show),
-- an **import** screen (single id, batch, channel, playlist) that drives the
-  SPEC-096 pipeline including its cursor paging,
+- an **import** screen (single id, batch, channel, playlist) split into a
+  read-only **Discover** phase and an **Add** phase: it enumerates ids,
+  screens them (DB / metadata / transcript-track listing), shows a
+  filterable infinite-scroll table, then imports individual rows or every
+  eligible row through the SPEC-096 pipeline,
 - a **discovery** screen (SPEC-098) that reviews candidates before importing,
 - a **shows & talks** manager (list by L2, create / edit / delete, member
   videos),
@@ -52,7 +60,7 @@ This spec adds that surface to `apps/admin`:
   that language),
 - an **unavailable sweep** screen (report first, delete opt-in).
 
-It also documents four backend changes (see § "Backend changes"), all in
+It also documents five backend changes (see § "Backend changes"), all in
 `zerotohero-python-server` and committed there.
 
 Everything is admin-gated server-side: the app's NextAuth credentials provider
@@ -76,6 +84,10 @@ and what it costs.
 - As an admin, I want to add one video, a batch of ids, a channel, or a
   playlist, and watch the per-video results stream in page by page, so I know
   what was added, skipped and why.
+- As an admin, I want to see which candidates are already stored, unavailable,
+  region-restricted, in another declared language, or missing a transcript
+  before anything is written, and hide any of those groups, so I can choose
+  what to add from one review table.
 - As an admin, I want discovery to show me candidates before they are
   imported, so the fragile Google scrape can't silently fill the catalogue.
 - As an admin, I want to be warned when the content I am importing declares a
@@ -148,7 +160,7 @@ dashboard) moves to `/users`; `/` becomes a redirect to `/users`.
 | `/users` | user search (moved from `/`) | `GET /admin/users/search` |
 | `/users/[id]` | user detail (unchanged) | `GET /admin/users/<id>` + subscription/admin mutations |
 | `/content/videos` | video manager: filter by L2, search by title, sort, page; edit / create / delete / bulk assign / bulk delete | `GET /admin/videos`, `POST /admin/videos`, `PATCH /admin/videos/<id>`, `DELETE /admin/videos/<id>` |
-| `/content/import` | import: single · batch · channel · playlist, with cursor paging, a live result log and the language check | `POST /admin/videos/preflight`, `POST /admin/videos/add`, `/admin/videos/add-batch`, `GET /admin/channels/resolve`, `POST /admin/channels/add`, `POST /admin/playlists/add` |
+| `/content/import` | **Discover → Add**: single · batch · channel · playlist; discovery lists ids and screens them (DB / metadata / transcript listing), shows an infinite-scroll table with view filters, then adds individual rows or all eligible rows | `POST /admin/videos/ids`, `POST /admin/videos/screen`, `POST /admin/videos/add`, `POST /admin/videos/add-batch`, `GET /admin/channels/resolve` |
 | `/content/discover` | discovery: generate/review candidates, then import selected | `POST /admin/videos/preflight`, `POST /admin/videos/discover` |
 | `/content/shows` | TV shows + talks: list by L2 (incl. hidden), create / edit / delete, member videos | `GET /tv-shows`, `GET /talks`, `GET /tv-shows|/talks/<id>/episodes`, `POST|PATCH|DELETE /admin/tv-shows|/admin/talks` |
 | `/content/channels` | channels: list by L2, click a row for its channel page, resolve a handle, import uploads | `GET /channels`, `GET /admin/channels/resolve`, `POST /admin/channels/add` |
@@ -187,18 +199,26 @@ for a set of ids — `declared_locale` (`snippet.defaultAudioLanguage`),
 `matches_l2`, and `block_reason` (`unavailable` / `not_embeddable` /
 `region_restricted` / `locale_mismatch`) — computed with the same
 `video_import_block_reason()` and `l2_locales()` the importer applies. The
-console never re-implements the rule: doing that client-side would flag real
-locale variants (`zh-Hant` under `zh`, `pt-BR` under `pt`, `nb` under `no`).
+console never re-implements locale matching: doing that client-side would
+flag real locale variants (`zh-Hant` under `zh`, `pt-BR` under `pt`, `nb`
+under `no`). `/admin/videos/screen` now carries the same raw verdict on every
+screened row, so the import screen gets the warning without a second YouTube
+call; `preflight` remains the endpoint for `/content/discover` (SPEC-098).
 
 Wiring:
 
 | Where | When | What the admin sees |
 |---|---|---|
-| Import → single | before `add` | the check panel; a confirm dialog if the id declares another language |
-| Import → batch | before the first page, for the whole list | same, with the mismatch count and a sample of ids |
-| Import → channel / playlist | after **each** page (the ids only exist as the walk returns them) | the panel grows per page; the header note says the walk is checked page by page |
+| Import → Discover | while screening, and again before any add | the check panel built from the screened rows' raw flags (`declared_audio_locale`, `audio_matches_l2`, `block_reason`); it grows page by page |
+| Import → Add all eligible | before the batch | a confirm dialog if any row being added declares another language (only possible for a soft block with Force on) |
+| Import → single-row Add | before that add | the same confirm for that row |
 | Discover | after *Find candidates*, and again before importing the selection | the check panel; confirm before importing a mismatching selection |
 | Discover → Import top results | advisory only | a caveat note, because that path re-runs the search and may import different ids |
+
+The console applies only the documented **Force** override (region and
+declared-locale are soft; unavailable, non-embeddable and no-transcript are
+not) when it decides which rows are eligible. The underlying locale verdict
+still comes from the backend.
 
 The confirm dialog exists because `Force` legitimately overrides
 `locale_mismatch`: the console explains that the importer will **skip** the
@@ -240,29 +260,74 @@ deliberately. The panel always adds the honest caveat — YouTube omits
   returns bare `{data: [...]}` with no total, so the UI shows "showing N" and
   disables *next* when a short page comes back.
 
-### `/content/import`
+### `/content/import` — Discover → Add
 
-Four modes in tabs; shared option block (L2, `force`, `clean_generated`,
-`refresh_existing`, `talk`, `tv_show`, `limit`).
+Two phases on one screen. **Discover** writes nothing; **Add** calls the
+ordinary SPEC-096 importer.
 
-| Mode | Input | Endpoint |
+| Mode | Input | Discovery source |
 |---|---|---|
-| Single | one YouTube id / URL | `POST /admin/videos/add` |
-| Batch | a textarea of ids (newlines or commas) | `POST /admin/videos/add-batch` with `cursor.offset` |
-| Channel | `@handle` / `UC…` / channel URL, with a *Resolve* button showing title, handle, subscribers, video count, uploads playlist | `GET /admin/channels/resolve`, then `POST /admin/channels/add` with `cursor.{page_token,skip}` |
-| Playlist | playlist id or any URL containing `list=` | `POST /admin/playlists/add` with `cursor.{page_token,skip}` |
+| Single | one YouTube id / URL | the id itself |
+| Batch | a textarea of ids (newlines or commas) | the pasted list, paged by `cursor.offset` |
+| Channel | `@handle` / `UC…` / channel URL, with a *Resolve* button showing title, handle, subscribers, video count, uploads playlist | `POST /admin/videos/ids` |
+| Playlist | playlist id or any URL containing `list=` | `POST /admin/videos/ids` |
 
-Channel/playlist modes also expose `match_keywords` (comma-separated regexes)
-and `use_circuit_break`.
+Channel/playlist modes also expose `match_keywords` (comma-separated
+regexes). The old `limit` / `max_pages` / `use_circuit_break` fields are gone:
+discovery walks the source to the end (or until *Stop*) and the add phase
+uses fixed 50-id batches.
 
-**Cursor loop**: *Start* runs one page, appends its `results` to a log table,
-adds its `summary`, and re-calls with `next_cursor` until it is `null`,
-`circuit_broken` is true, the user presses *Stop*, or `max_pages` (default 20)
-is reached (then a *Continue* button appears). The loop is `async` with an
-`AbortController`-style `useRef` flag, so *Stop* takes effect before the next
-page. Each page commits server-side (`import_videos()` commits per video), so
-stopping early loses nothing. Failure of a page surfaces the Flask error body
-(400/404/502) and stops the loop.
+**Discover**
+
+- *Find videos* runs a browser-driven loop. A pasted list is enqueued up
+  front; a channel/playlist asks `/admin/videos/ids` for one page (max 50) of
+  ids at a time. Each batch of ≤50 goes to `/admin/videos/screen`, which
+  answers already-stored ids from the DB, batches `videos.list` for the rest,
+  and lists each available video's L2 caption track (no transcript download).
+- Live progress: *IDs found*, *Screened*, *Already in DB*, *Metadata checked*,
+  *Transcripts checked*, *Eligible*, plus a stage line (listing / checking /
+  finished / stopped). *Stop* takes effect after the in-flight request;
+  *Continue* resumes from the queue/cursor.
+- A caption-service failure shows its `kind` and message, stops further
+  listings in that batch, and offers *Retry unchecked (N)*. The same button
+  is available beside the progress line whenever unchecked rows remain.
+- The result table is **client-side infinite scroll**: it renders 50 rows per
+  step from the full accumulated array via an `IntersectionObserver` sentinel
+  (with a *Load more* fallback), so "all rows" really means the whole result
+  set. Columns: thumbnail, title + YouTube id + channel, duration, views,
+  audio locale, transcript locale (`code (auto|manual)` / `Stored` / `Not
+  checked`), status badges, *Add*.
+- View filters, each with a count: already in DB, unavailable/not embeddable,
+  region restricted, audio ≠ L2, no transcript/caption-service failure. A row
+  is hidden if **any** category it belongs to is hidden — hiding "already in
+  DB" also hides an in-DB row that has no transcript. *Show all* resets them;
+  *Eligible only* filters to addable rows and ignores the category toggles.
+  The hidden count is shown.
+- Invalid ids are listed once (first 10 in the line, all in the tooltip).
+- Language mismatch uses the rows' own raw verdicts, so the panel grows as
+  pages arrive and never costs a second YouTube call.
+
+**Add**
+
+- Options: `force`, `clean_generated`, `refresh_existing`, talk, TV show.
+- `force` changes eligibility exactly as the importer does: region-restricted
+  and declared-locale-mismatch rows become addable; unavailable,
+  non-embeddable and no-transcript rows never do. A row is eligible when
+  `!in_db && blockReasonFor(row, force) === null &&
+  transcript_status === 'found'`.
+- *Add all eligible (N)* adds the **full eligible set** — not just the rows
+  currently rendered, and not only the rows passing the view filters — in
+  batches of 50 through `POST /admin/videos/add-batch`. Individual rows use
+  `POST /admin/videos/add`.
+- Per-row results (`added` / `updated` / `skipped` / `failed` + reason) and
+  the summary chips stay visible; the row keeps `in_db` and its add status so
+  the table is a record of the run.
+- The language-mismatch confirm runs before a bulk or single add whose rows
+  declare another language. That is only reachable with `force` on, because
+  without it those rows are not eligible.
+- `utils_video_import.import_videos()` commits per video, so stopping or
+  failing an add batch loses nothing already imported. Page failures surface
+  the Flask error body (400/404/502) and mark the in-flight rows `failed`.
 
 ### `/content/discover`
 
@@ -430,7 +495,10 @@ POST /admin/videos/preflight   { "l2": "ja", "youtube_ids": ["dQw4w9WgXcQ"] }
 
 - Metadata only. The transcript checks (`no_transcript`,
   `transcript_too_short`, `caption_service_unavailable`) are deliberately not
-  run — each needs a caption download, which is the import itself.
+  run — `transcript_too_short`/`caption_service_unavailable` need a caption
+  download, which is the import itself. (The import screen's discovery phase
+  instead uses `/admin/videos/screen`, which lists caption *tracks* without
+  downloading them; `/content/discover` keeps using `preflight`.)
 - `matches_l2` is `null` (not `true`) when YouTube returned no video, so "no
   verdict" cannot be read as "compatible".
 - No database access: it is a pure read of the YouTube API plus the locale
@@ -464,6 +532,31 @@ the 404/400 paths, the admin gate and the L2 scoping. This reverses the
 earlier "channels are read-only" decision and resolves the delete half of the
 channel-CRUD open question.
 
+### 5. `POST /admin/videos/ids` + `POST /admin/videos/screen` (new, 2026-10-19)
+
+The two-phase import needs a read-only discovery step that neither the
+importer nor `preflight` provides:
+
+- **`/admin/videos/ids`** enumerates candidate ids from a pasted list, a
+  channel's uploads playlist, or a playlist — one YouTube page (max 50) per
+  call, no import.
+- **`/admin/videos/screen`** accepts up to 50 ids and returns, per id: the
+  stored-row verdict (`in_db`, stored title/duration/locale), YouTube
+  metadata (one batched `videos.list` call), and the L2 caption-track listing
+  (no download). Already-stored ids skip both API calls; metadata runs before
+  caption listing, so unavailable/non-embeddable videos cost no caption
+  request. Soft blocks (region / declared locale) still get a listing so
+  `force` adds need no second pass.
+
+The full body/response contract, the caption-failure semantics
+(`caption_error` + `not_checked`, never a false `no_transcript`) and the
+50-id cap are documented in
+[SPEC-096](096-admin-video-ingestion.md#post-adminvideosscreen). The backend
+files are `utils_video_screening.py`, `utils_video_import.list_video_ids()`
+and `utils_content.get_videos_for_screening()`; `test_admin_video_screening.py`
+covers them (16 cases). Both routes are on `admin_bp`, so the structural
+401/403 test covers them automatically.
+
 No other route changes. [ARCH-003](../arch/003-python-backend-architecture.md)
 carries the updated `admin_bp` route list.
 
@@ -476,7 +569,9 @@ carries the updated `admin_bp` route list.
 | `apps/admin/src/app/page.tsx` | `/` → redirect to `/users` |
 | `apps/admin/src/app/users/page.tsx` | User search dashboard (moved from `/`) |
 | `apps/admin/src/app/content/videos/page.tsx` | Video manager |
-| `apps/admin/src/app/content/import/page.tsx` | Single / batch / channel / playlist importer |
+| `apps/admin/src/app/content/import/page.tsx` | Discover → Add: enumeration loop, screening progress, add phase |
+| `apps/admin/src/components/content/screening-table.tsx` | Filterable infinite-scroll result table (view toggles, per-row Add) |
+| `apps/admin/src/lib/screening.ts` | Eligibility/force rule, raw preflight builder, ISO duration formatting, row merge |
 | `apps/admin/src/app/content/discover/page.tsx` | Candidate review + import |
 | `apps/admin/src/app/content/shows/page.tsx` | TV shows + talks manager |
 | `apps/admin/src/app/content/channels/page.tsx` | Channels browser + resolve + import; row click opens the detail page |
@@ -489,9 +584,11 @@ carries the updated `admin_bp` route list.
 | `apps/admin/src/hooks/use-auth-ready.ts` | Wait for the mirrored access token before the first fetch |
 | `apps/admin/src/lib/content-api.ts` | Typed clients for every content route |
 | `apps/admin/src/lib/video-ids.ts` | Extract ids from pasted ids/URLs |
-| `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, `AdminChannelDetail`, import/discovery/sweep result types |
-| `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)`, `get_channel` / `count_channel_videos` / `delete_channel` |
-| `zerotohero-python-server/routes/admin.py` | `q` query parameter, `POST /admin/videos/preflight`, `GET` / `DELETE` on `/admin/channels/<id>` |
+| `apps/admin/src/types/content.ts` | `AdminVideo`, `AdminShow`, `AdminChannel`, `AdminChannelDetail`, `ScreeningRow` / `ScreeningResponse`, import/discovery/sweep result types |
+| `zerotohero-python-server/utils_content.py` | `_show_dict` de-duplication, `list_admin_videos(q=…)`, `get_videos_for_screening`, `get_channel` / `count_channel_videos` / `delete_channel` |
+| `zerotohero-python-server/routes/admin.py` | `q` query parameter, `POST /admin/videos/preflight`, `POST /admin/videos/ids`, `POST /admin/videos/screen`, `GET` / `DELETE` on `/admin/channels/<id>` |
+| `zerotohero-python-server/utils_video_screening.py` | The read-only discovery screen (DB + metadata + caption listing) |
+| `zerotohero-python-server/test_admin_video_screening.py` | Screening decisions, caption failure, enumeration, routes (16 cases) |
 | `zerotohero-python-server/test_admin_videos_list.py` | `q` filter + escaping + route tests |
 | `zerotohero-python-server/test_content_shows.py` | `_show_dict` regression test (`l2Code` present, keys preserved) |
 | `zerotohero-python-server/test_admin_video_preflight.py` | Preflight decisions and validation (no DB access) |
@@ -528,8 +625,10 @@ arguments at the call site — is worth automating (Open Questions).
 `apps/admin/src/lib/logger.ts` (`[LP Admin]`, `NEXT_PUBLIC_LOG_LEVEL`) is used
 for every request/response and branch on these screens: the request body sent
 (never the whole `subs_l2` blob — length only), the per-page summary, the
-cursor transition, the stop/continue decision, and every error body. All of
-these are `log()` (info, `LOG_LEVEL=3`) per the project's
+cursor transition, the stop/continue decision, and every error body. Discovery
+adds one line per listed page (cursor + source), one per screened batch
+(size), one per add batch (size + offset), and the stop/finish decisions. All
+of these are `log()` (info, `LOG_LEVEL=3`) per the project's
 "logging defaults to INFO" rule; only caught exceptions use `logerr()`.
 
 ## Testing & verification
@@ -598,6 +697,24 @@ allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
   report `isAdmin: false`), so the detail page, delete confirmation and
   load-more flow still need one click-through by an admin.
 
+### Two-phase import (2026-10-19)
+
+- Backend: `python3.10 -m pytest test_admin_video_screening.py` — 16 passed;
+  the combined `test_admin_video_import.py test_admin_video_preflight.py
+  test_video_discovery.py` run stays at 98 passed.
+- Real-data smoke checks against the local Supabase + YouTube:
+  - `screen_videos('zh', ['dQw4w9WgXcQ'])` returned metadata (`PT3M34S`,
+    `defaultAudioLanguage: en`) and `no_transcript` for the zh locale family,
+    with `block_reason: locale_mismatch`;
+  - an already-stored zh id (`tPy6JzKR7cs`) returned `in_db: true`,
+    `checked_metadata: 0`, `transcript_status: stored`, and made no YouTube
+    call.
+- Admin: `tsc --noEmit` and ESLint pass.
+- Manual: needs an admin account (none of the test users is an admin), so the
+  full Discover → Add click-through — listing, screening progress, filter
+  toggles, per-row Add and Add all — still needs one pass in the browser.
+  Restart `next dev` after `sync-translations` (see the i18n note above).
+
 ## Known limitations
 
 - **No single-video GET.** `GET /admin/videos/<id>` does not exist, so the
@@ -636,12 +753,29 @@ allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
   (up to 1000 rows); the public listing has no search parameter.
 - **The language warning is only as good as YouTube's declaration.**
   `defaultAudioLanguage` is absent on many uploads, and the check says so —
-  a clean panel means "nothing declared otherwise", not "verified". Channel
-  and playlist walks are audited *after* each page commits, because their ids
-  do not exist before the walk; a mismatch there is reported, not prevented.
-- **A batch preflight costs one request per 50 ids** (plus a YouTube
-  `videos.list` call server-side). A 500-id paste therefore spends 10
-  preflight calls before the first import page.
+  a clean panel means "nothing declared otherwise", not "verified". The
+  import screen's panel is built from the screened rows (no separate
+  preflight call); `/content/discover` still uses
+  `POST /admin/videos/preflight` and audits a selection before importing.
+- **The import discovery result set lives only in the browser.** There is no
+  server-side job, so a reload loses the screened rows; re-running is
+  read-only and successful caption listings are cached. The add phase is
+  unaffected — rows already imported stay in the DB.
+- **The discovery transcript column is a track listing, not a transcript.**
+  It proves a track in the L2 locale family exists; the add phase still
+  enforces the 4-line minimum and can report `transcript_too_short`.
+- **Already-in-DB rows skip YouTube entirely.** Their title/duration/locale
+  come from the database and their transcript column shows `Stored` (or
+  `Not checked` when `subs_l2` is empty), so the table cannot show their
+  transcript locale.
+- **"Add all eligible" ignores the view filters by design.** It covers the
+  full result set, including rows hidden by the category toggles and rows
+  not yet rendered by the infinite scroll. Use the per-row *Add* buttons for
+  a filtered subset.
+- **A screen call caps at 50 ids and lists captions serially.** This keeps a
+  request inside gunicorn's timeout and respects YouTube's rate limit; a
+  500-video channel therefore takes ten screen calls (plus listing calls)
+  even before the add phase.
 
 ## Open Questions
 
@@ -660,3 +794,14 @@ allowlist already contains `http://localhost:3100` (ARCH-029 § 11).
   authoring retired with the crawler?
 - Should the sidebar group the maintenance-style screens (import / discover /
   sweep) separately from the browsing screens (videos / shows / channels)?
+- Should discovery persist its screened rows (session storage or a table) so
+  a reload or a very large channel can resume without re-screening? Deferred:
+  the re-run is read-only and caption listings are cached, and a persisted
+  result would need invalidation when the catalogue changes.
+- Should the screening table offer row checkboxes (add a selected subset) in
+  addition to per-row *Add* and *Add all eligible*? The current two paths
+  cover "one" and "everything"; a middle path would need its own selection
+  state and i18n.
+- Should `/admin/videos/screen` list captions with a bounded worker pool
+  (2–4) instead of serially? Faster on large channels, but needs a measured
+  rate-limit trial before changing it.
