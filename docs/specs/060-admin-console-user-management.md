@@ -155,6 +155,37 @@ The admin app is part of the npm workspace, so `npx turbo dev`,
 repo root. Only users whose Supabase `app_metadata.is_admin` is `true` can
 log in, and every Flask admin endpoint independently re-verifies that claim.
 
+### Session cookies are namespaced (`lp-admin.*`)
+
+Browsers scope cookies by **host, not port**, so `apps/web` (`localhost:3000`)
+and `apps/admin` (`localhost:3100`) share one cookie jar in local development.
+Both apps use Auth.js, whose default cookies are named `authjs.*`. Left at the
+defaults, the second app to sign in overwrites the first app's session cookie;
+because each app has its own `AUTH_SECRET`, the surviving JWT cannot be
+decrypted by the other app — so signing into admin silently signs web out (and
+vice versa), and admin's log shows
+`JWTSessionError: no matching decryption secret`.
+
+`apps/admin/src/auth.ts` therefore overrides the three cookies it uses:
+
+| Purpose | Cookie (HTTP / HTTPS) |
+|---|---|
+| Session JWT | `lp-admin.session-token` / `__Secure-lp-admin.session-token` |
+| CSRF token | `lp-admin.csrf-token` / `__Host-lp-admin.csrf-token` |
+| Post-login callback | `lp-admin.callback-url` / `__Secure-lp-admin.callback-url` |
+
+The prefix is derived from `AUTH_URL`, matching Auth.js's own HTTPS defaults.
+`apps/web` intentionally keeps the `authjs.*` defaults: existing web sessions
+stay valid, and `apps/web/src/proxy.ts`'s cookie-presence check keeps reading
+the same name. In production the two apps are on separate hosts, where cookies
+are already isolated; this change makes local development match production.
+`apps/mobile` is unaffected — it stores its tokens in SecureStore, not in
+browser cookies, so its session never shares a jar with either web app.
+
+Restart the admin dev server after changing the auth/cookie config — Next's
+HMR does not reload the Auth.js module, so the running server keeps serving the
+old cookie names.
+
 ## Operational Notes
 
 ### Raw fetches need the session token mirror

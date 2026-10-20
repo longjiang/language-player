@@ -218,6 +218,22 @@ The script is `next dev --port 3100`. Requires Flask on 5001.
 - `lsof -ti:3100` returns a PID
 - Open http://localhost:3100
 - Sign in with an admin account; non-admins get rejected at login
+- You stay signed in to web on :3000 and admin on :3100 at the same time
+  (see "Session cookies" below)
+
+### Session cookies
+
+Cookies are scoped by host, not port, so `localhost:3000` and
+`localhost:3100` share one cookie jar. Web and admin both use Auth.js, whose
+default session cookie is `authjs.session-token`; with the defaults, signing
+into one app overwrote the other's cookie and silently signed it out (the
+admin log showed `JWTSessionError: no matching decryption secret`).
+
+Admin now sets its own `lp-admin.session-token`, `lp-admin.csrf-token`, and
+`lp-admin.callback-url` cookies (`apps/admin/src/auth.ts`), so the two apps can
+be signed in simultaneously. Web keeps the `authjs.*` defaults. If you change
+the cookie config, **restart the admin dev server** — HMR does not reload the
+Auth.js module and the terminal keeps serving the old cookie names until then.
 
 ### Logs
 
