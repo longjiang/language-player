@@ -267,6 +267,12 @@ installing the data (re-import the channel / re-save the video with
 **Refresh existing**): `_backfill_metrics()` computes the missing half in
 place. Rows are not repaired automatically.
 
+Not every NULL `word_freq` is a dependency failure. A transcript containing
+only music cues or punctuation produces **zero lemmas**, so `score_lemmas()`
+has nothing to score: it returns `lex_div = 0` and leaves `word_freq` /
+`difficulty` NULL. Those rows need a content decision (hide or remove them),
+not a rescore.
+
 - The local dev environment was once found in a corrupted state for jieba:
   pip metadata (dist-info) said 0.42.1 and its RECORD listed a 19,809-byte
   `__init__.py`, but the on-disk files were jieba 0.34 (13,200 bytes,
