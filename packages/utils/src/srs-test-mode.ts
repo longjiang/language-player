@@ -223,6 +223,27 @@ export function normalizeTestChoice(choice: string): string {
   return choice.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 }
 
+/**
+ * How many distractors the app asks the model for.
+ *
+ * It asks for a superset of what a question needs (5) because the model
+ * reliably emits some candidates the app must reject — most often the correct
+ * reading itself, or a truncated fragment of it (暗澹 → あんたん / あんた).
+ * Filtering those still leaves enough to fill a 4-choice question, where asking
+ * for exactly 3 made any single bad candidate fatal (SPEC-066).
+ */
+export const CONFOUNDER_CANDIDATE_COUNT = 5;
+
+/** Distractors a finished multiple-choice question uses (4 choices total). */
+export const CONFOUNDER_TARGET_COUNT = 3;
+
+/** Hiragana + the long-vowel mark — the only characters a ja reading may use. */
+const JAPANESE_READING = /^[\u3040-\u309fー\s]+$/;
+
+function baseCodeOf(l2Code: string): string {
+  return (l2Code.split('-')[0] ?? '').toLowerCase();
+}
+
 // ── Spell mode ────────────────────────────────────────────────────────────
 //
 // Spell mode asks the learner to type the exact surface/inflected form that is
@@ -940,6 +961,158 @@ export function validateSrsPronunciationChoices(question: {
 }
 
 /**
+ * Deterministic near-miss readings of a correct kana reading, best-first:
+ *
+ * 1. **促音 insertion** after the first mora (いちばん → いっちばん) — the most
+ *    plausible misreading. Inserted only when the next mora starts with a
+ *    consonant: っ cannot follow ん, a vowel, or another っ.
+ * 2. **Voicing/devoicing** of each mora (いちばん → いちはん). ち↔ぢ and つ↔づ
+ *    are deliberately absent: outside rendaku they read as misspellings rather
+ *    than plausible readings, so they make poor confounders.
+ * 3. **Gojūon vowel swaps** within the same row (あんたん → あんてん,
+ *    あんとん) — the top-up of last resort when the model has not supplied
+ *    enough usable candidates. A swapped reading is a plausible-looking
+ *    misreading, never the correct reading itself.
+ *
+ * Appended long vowels are never produced: they contain the correct reading and
+ * are rejected by `isObviousPronunciationWrong`.
+ */
+export function japaneseReadingVariants(correct: string): string[] {
+  // ち↔ぢ and つ↔づ are deliberately absent: outside rendaku they read as
+  // misspellings rather than plausible readings, so they make poor confounders.
+  const VOICE: Record<string, string> = {
+    か: 'が', が: 'か', き: 'ぎ', ぎ: 'き', く: 'ぐ', ぐ: 'く', け: 'げ', げ: 'け', こ: 'ご', ご: 'こ',
+    さ: 'ざ', ざ: 'さ', し: 'じ', じ: 'し', す: 'ず', ず: 'す', せ: 'ぜ', ぜ: 'せ', そ: 'ぞ', ぞ: 'そ',
+    た: 'だ', だ: 'た', て: 'で', で: 'て', と: 'ど', ど: 'と',
+    は: 'ば', ば: 'は', ひ: 'び', び: 'ひ', ふ: 'ぶ', ぶ: 'ふ', へ: 'べ', べ: 'へ', ほ: 'ぼ', ぼ: 'ほ',
+  };
+  // Vowel row あ い う え お; a consonant row keeps the consonant and swaps the
+  // vowel. や行 is incomplete in modern kana, so it only offers its own vowels.
+  const GOJUON_ROWS = [
+    'あいうえお', 'かきくけこ', 'さしすせそ', 'たちつてと', 'なにぬねの',
+    'はひふへほ', 'まみむめも', 'やゆよ', 'らりるれろ', 'わをん',
+    'がぎぐげご', 'ざじずぜぞ', 'だぢづでど', 'ばびぶべぼ', 'ぱぴぷぺぽ',
+  ];
+  // Vowels only start a mora for the あ行; ん is a mora without a vowel, so っ
+  // can never precede it and it has no vowel to swap.
+  const CONSONANT_ROWS = GOJUON_ROWS.slice(1);
+  const isConsonantMora = (char: string) =>
+    char !== 'ん' && CONSONANT_ROWS.some((row) => row.includes(char));
+
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const chars = [...correct];
+  const push = (value: string) => {
+    if (value === correct || seen.has(value)) return;
+    seen.add(value);
+    out.push(value);
+  };
+
+  // 1. 促音 insertion — only before a consonant mora.
+  if (chars.length >= 2 && chars[1] && isConsonantMora(chars[1])) {
+    push([chars[0]!, 'っ', ...chars.slice(1)].join(''));
+  }
+
+  // 2. Voicing / devoicing, one mora at a time.
+  chars.forEach((char, index) => {
+    const voiced = VOICE[char];
+    if (!voiced) return;
+    push([...chars.slice(0, index), voiced, ...chars.slice(index + 1)].join(''));
+  });
+
+  // 3. Gojūon vowel swaps, nearest vowel first (た → て, と, ち, つ).
+  chars.forEach((char, index) => {
+    if (char === 'ん') return;
+    const row = GOJUON_ROWS.find((candidate) => candidate.includes(char));
+    if (!row) return;
+    const at = row.indexOf(char);
+    [...Array.from({ length: row.length }, (_, i) => i)]
+      .filter((other) => other !== at)
+      .sort((a, b) => Math.abs(a - at) - Math.abs(b - at) || a - b)
+      .forEach((other) => {
+        push([...chars.slice(0, index), row[other]!, ...chars.slice(index + 1)].join(''));
+      });
+  });
+
+  return out;
+}
+
+/** Why a model-supplied distractor was not usable. */
+export type ConfounderRejectionReason = 'duplicate' | 'wrong-script' | 'obvious-wrong';
+
+export interface RejectedConfounder {
+  value: string;
+  reason: ConfounderRejectionReason;
+}
+
+export interface PronunciationConfounderSelection {
+  /** Up to `limit` usable, distinct distractors. */
+  confounders: string[];
+  /** Every candidate that was dropped, with the reason — surfaced in diagnostics. */
+  rejected: RejectedConfounder[];
+}
+
+/**
+ * Turn the model's distractor candidates into the choices of a pronunciation
+ * question, instead of rejecting the whole question when one candidate is bad.
+ *
+ * The model is asked for `CONFOUNDER_CANDIDATE_COUNT` candidates, but it still
+ * tends to include the correct reading itself (the most plausible "near-miss"
+ * for a two-kanji word) or a truncated fragment of it. Previously a single such
+ * candidate made the question unusable ("Invalid question choices"), and a
+ * regeneration re-asked the same prompt, so the same candidates came back. Here
+ * the bad candidates are dropped, and — for Japanese, whose reading space is
+ * small — the set is topped up with deterministic near-miss readings so a
+ * 4-choice question is still produced.
+ *
+ * Only when fewer than `limit` usable candidates remain (Japanese with no
+ * variants left) is the caller told the question is unusable.
+ */
+export function selectPronunciationConfounders(
+  correctAnswer: string,
+  candidates: readonly unknown[],
+  l2Code: string,
+  options: { limit?: number; topUp?: boolean } = {},
+): PronunciationConfounderSelection {
+  const limit = options.limit ?? CONFOUNDER_TARGET_COUNT;
+  const base = baseCodeOf(l2Code);
+  const correct = correctAnswer.trim();
+  const seen = new Set<string>([normalizeTestChoice(correct)]);
+  const confounders: string[] = [];
+  const rejected: RejectedConfounder[] = [];
+
+  const accept = (raw: unknown) => {
+    if (confounders.length >= limit) return;
+    if (typeof raw !== 'string') return;
+    const value = raw.trim();
+    if (!value) return;
+    const key = normalizeTestChoice(value);
+    if (seen.has(key)) {
+      rejected.push({ value, reason: 'duplicate' });
+      return;
+    }
+    if (base === 'ja' && !JAPANESE_READING.test(value)) {
+      rejected.push({ value, reason: 'wrong-script' });
+      return;
+    }
+    if (isObviousPronunciationWrong(value, correct)) {
+      rejected.push({ value, reason: 'obvious-wrong' });
+      return;
+    }
+    seen.add(key);
+    confounders.push(value);
+  };
+
+  for (const candidate of candidates) accept(candidate);
+
+  if (options.topUp !== false && confounders.length < limit && base === 'ja') {
+    for (const variant of japaneseReadingVariants(correct)) accept(variant);
+  }
+
+  return { confounders: confounders.slice(0, limit), rejected };
+}
+
+/**
  * Validate a generated definition question against the answer-length leak
  * (SPEC-066 test mode). The LLM tends to return the correct answer as the
  * longest, most precisely-worded option, so a learner can pick the correct
@@ -1070,16 +1243,21 @@ export function buildSrsQuestionPrompt(input: {
     ? ' For mixed kana+kanji words, keep the written kana identical in every choice and vary only the kanji reading.'
     : '';
   const hasGroundTruth = Boolean(input.pronunciation);
+  // Ask for a superset of the 3 distractors a question uses (SPEC-066): the app
+  // drops candidates that repeat the correct reading or are fragments of it, and
+  // still has enough left to build 4 choices. Asking for exactly 3 made one bad
+  // candidate fatal, and a retry reproduced the same bad candidate.
+  const wanted = CONFOUNDER_CANDIDATE_COUNT;
   const answerInstruction = hasGroundTruth
-    ? 'The correct_answer is given. Generate ONLY 3 confounder (wrong) readings — do NOT write a question, do NOT repeat the correct_answer.'
-    : `correct_answer + 3 confounders: ${notation}; all 4 distinct.`;
+    ? `The correct_answer is given. Generate ONLY ${wanted} confounder (wrong) readings — do NOT write a question, do NOT repeat the correct_answer.`
+    : `correct_answer + ${wanted} confounders: ${notation}; all distinct.`;
   const countRule = hasGroundTruth
-    ? `3 confounders: ${notation}; exactly 3 distinct, none equal to the correct_answer.`
-    : `4 choices total: ${notation}; all distinct.`;
+    ? `${wanted} confounders: ${notation}; all ${wanted} distinct and none equal to the correct_answer.`
+    : `${wanted + 1} choices total: ${notation}; all distinct.`;
   const confounderRule = 'Confounders: plausible wrong readings or near-misses — never a valid reading of the target, never containing (or contained by) the correct_answer, and never derived/inflected forms of it.' + extraRule;
   const outputShape = hasGroundTruth
-    ? `Output valid JSON only, no markdown: {"kind":"pronunciation","confounders":["...","...","..."]}`
-    : `Output valid JSON only, no markdown: {"kind":"pronunciation","correct_answer":"...","confounders":["...","...","..."]}`;
+    ? `Output valid JSON only, no markdown: {"kind":"pronunciation","confounders":["...","...","...","...","..."]}`
+    : `Output valid JSON only, no markdown: {"kind":"pronunciation","correct_answer":"...","confounders":["...","...","...","...","..."]}`;
 
   return [
     `Write a multiple-choice quiz that tests the pronunciation of the ${langName} headword "${input.word}" — the lemma, never the surface form or a sub-component of a compound.`,

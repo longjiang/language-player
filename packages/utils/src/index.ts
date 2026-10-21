@@ -42,7 +42,6 @@ export {
 export { rawByeonggi, normalizeByeonggi, resolveByeonggi } from './han-script';
 export {
   buildFallbackTestQuestion,
-  japaneseReadingVariants,
   rankSimilarWords,
 } from './srs-test-fallback';
 export type { SrsFallbackInput } from './srs-test-fallback';
@@ -169,9 +168,25 @@ export {
   scrabbleFallsBackToSpell,
   scrabbleNeedsEntryFetch,
   supportsScrabbleKeyboard,
+  japaneseReadingVariants,
+  selectPronunciationConfounders,
+  CONFOUNDER_CANDIDATE_COUNT,
+  CONFOUNDER_TARGET_COUNT,
 } from './srs-test-mode';
-export type { SrsTestQuestion, TestQuestionKind, SrsWordFormInfo, ReviewMode, SpellHintKind, SpellHintInfo, ScrabbleBlock, SrsScrabbleEntryLike } from './srs-test-mode';
-export { SrsTestCacheStore, SrsTestManager } from './srs-test-manager';
+export type {
+  SrsTestQuestion,
+  TestQuestionKind,
+  SrsWordFormInfo,
+  ReviewMode,
+  SpellHintKind,
+  SpellHintInfo,
+  ScrabbleBlock,
+  SrsScrabbleEntryLike,
+  RejectedConfounder,
+  ConfounderRejectionReason,
+  PronunciationConfounderSelection,
+} from './srs-test-mode';
+export { SrsTestCacheStore, SrsTestManager, formatSrsTestDiagnostic } from './srs-test-manager';
 export type {
   SrsTestCacheStorage,
   SrsTestDiagnostic,

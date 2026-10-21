@@ -8,6 +8,8 @@ import {
   hiraganaToKatakana,
   isInflectingLanguage,
   isObviousPronunciationWrong,
+  japaneseReadingVariants,
+  selectPronunciationConfounders,
   kanaVariants,
   lemmaFormOf,
   pronunciationTargetOf,
@@ -101,6 +103,67 @@ describe('validateSrsPronunciationChoices', () => {
       correctAnswer: 'つきもの',
       choices: ['つきもの', 'つきぶつ', 'つきもつ', 'つきがみ'],
     })).toBeNull();
+  });
+});
+
+describe('japaneseReadingVariants (near-miss top-up)', () => {
+  it('offers gojūon vowel swaps so an all-kanji reading still gets distractors', () => {
+    // 暗澹 = あんたん had no usable variants for a っ insertion (ん cannot be
+    // followed by っ) or a voicing swap on ん, so vowel swaps are the top-up.
+    const variants = japaneseReadingVariants('あんたん');
+    expect(variants).toContain('あんてん');
+    expect(variants).toContain('あんとん');
+    expect(variants).not.toContain('あんたん');
+    // Never insert っ before ん — that is not a legal kana sequence.
+    expect(variants).not.toContain('あっんたん');
+    for (const variant of variants) {
+      expect(isObviousPronunciationWrong(variant, 'あんたん')).toBe(false);
+    }
+  });
+});
+
+describe('selectPronunciationConfounders (repair instead of failing)', () => {
+  it('drops a confounder that repeats the correct reading and keeps the rest', () => {
+    const selection = selectPronunciationConfounders(
+      'あんたん',
+      ['あんだん', 'あんたん', 'あんてん'],
+      'ja',
+      { topUp: false },
+    );
+    expect(selection.confounders).toEqual(['あんだん', 'あんてん']);
+    expect(selection.rejected).toEqual([{ value: 'あんたん', reason: 'duplicate' }]);
+  });
+
+  it('drops fragments and wrong-script candidates, then tops up with kana variants', () => {
+    const selection = selectPronunciationConfounders('あんたん', ['あんた', 'あんたん'], 'ja');
+    expect(selection.rejected).toEqual([
+      { value: 'あんた', reason: 'obvious-wrong' },
+      { value: 'あんたん', reason: 'duplicate' },
+    ]);
+    // Topped up from deterministic variants, never the correct reading itself.
+    expect(selection.confounders.length).toBeGreaterThanOrEqual(3);
+    expect(selection.confounders).not.toContain('あんたん');
+  });
+
+  it('never returns more than the 3 distractors a question uses', () => {
+    const selection = selectPronunciationConfounders(
+      'あんたん',
+      ['あんざん', 'あんてん', 'あんとん', 'あんとう', 'あんぱん'],
+      'ja',
+    );
+    expect(selection.confounders).toHaveLength(3);
+    expect(selection.rejected).toHaveLength(0);
+  });
+
+  it('rejects a Latin-script candidate for a Japanese question', () => {
+    const selection = selectPronunciationConfounders('あんたん', ['antan', 'あんざん'], 'ja');
+    expect(selection.rejected).toEqual([{ value: 'antan', reason: 'wrong-script' }]);
+  });
+
+  it('does not invent variants for a non-Japanese language', () => {
+    const selection = selectPronunciationConfounders('xuéxí', ['xuéxí', 'xuéxī'], 'zh');
+    expect(selection.confounders).toEqual(['xuéxī']);
+    expect(selection.rejected).toEqual([{ value: 'xuéxí', reason: 'duplicate' }]);
   });
 });
 
@@ -289,10 +352,10 @@ describe('buildSrsQuestionPrompt (terse, language-specific)', () => {
     expect(ja).toContain('hiragana only');
     expect(ja).toContain('never derived/inflected forms of it');
     expect(ja).toContain('correct_answer (the headword\'s reading): おしきる');
-    expect(ja).toContain('Generate ONLY 3 confounder');
+    expect(ja).toContain('Generate ONLY 5 confounder');
     expect(ja).toContain('Output valid JSON only, no markdown');
     // Grounded → the model must NOT write the correct answer.
-    expect(ja).not.toContain('correct_answer + 3 confounders');
+    expect(ja).not.toContain('correct_answer + 5 confounders');
     expect(ja).not.toContain('pinyin');
     expect(ja).not.toContain('Chinese');
   });
@@ -303,9 +366,9 @@ describe('buildSrsQuestionPrompt (terse, language-specific)', () => {
       l1Code: 'en', l2Code: 'ja', kind: 'pronunciation', // no pronunciation ground truth
     });
     expect(ja).toContain('tests the pronunciation of the Japanese headword');
-    expect(ja).toContain('correct_answer + 3 confounders');
+    expect(ja).toContain('correct_answer + 5 confounders');
     expect(ja).toContain('"correct_answer"');
-    expect(ja).not.toContain('Generate ONLY 3 confounder');
+    expect(ja).not.toContain('Generate ONLY 5 confounder');
     expect(ja).toContain('hiragana only');
   });
 
