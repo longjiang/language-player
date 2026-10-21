@@ -744,7 +744,9 @@ answering the final question reveals the card back and the rating buttons.
   the word, how many attempts were made, the prompt sent to the LLM, the raw
   LLM response, and the error (`formatSrsTestDiagnostic` in
   `packages/utils/src/srs-test-manager.ts`, so both apps render the same
-  report). On mobile the
+  report). The expanded block carries a **Copy** action that copies that
+  plain-text report (the button flips to "Copied" for 1.5 s), so a failure can
+  be pasted into a bug report without transcribing the screen. On mobile the
   programmatic fallback ([Offline test generation](#offline-test-generation-programmatic-confounders))
   runs between the retry and the error box: when it can build a valid question,
   the error box never appears for that test.
@@ -1550,6 +1552,10 @@ orphaned.
   `951f6f1d` + the two review pages): obvious-wrong confounders are rejected
   and auto-retried, and mixed kana/kanji words keep their written-kana part
   constant across choices.
+- ✅ **Copyable diagnostic** — implemented (2026-10-21, web + mobile review
+  pages): the Diagnostic disclosure has a Copy action using the shared
+  `formatSrsTestDiagnostic` text (kind, word, attempts, prompt, response,
+  error); mobile's report is also selectable.
 - ✅ **Pronunciation confounders are repaired, not fatal** — implemented
   (2026-10-21, shared `selectPronunciationConfounders` /
   `japaneseReadingVariants` + manager): the model is asked for 5 candidate

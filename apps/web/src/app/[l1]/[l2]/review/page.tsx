@@ -43,8 +43,10 @@ import {
   type SrsTestPriority,
   type TestQuestionKind,
   type ReviewMode,
+  formatSrsTestDiagnostic,
 } from '@langplayer/utils';
 import { getSrsTestManager } from '@/lib/srs-test-manager';
+import { copyText } from '@/lib/clipboard';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import {
   getCachedEntries,
@@ -92,6 +94,8 @@ import {
   Keyboard,
   Shuffle,
   Blocks,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -114,27 +118,58 @@ type TestSlot = {
 
 /**
  * Tiny "Diagnostic" link shown next to a test error. It reveals, in plain
- * text, the prompt that was sent to the LLM, the raw LLM response, and the
- * error — deliberately hidden behind a link so the normal error UI stays
- * generic. The expanded block renders as its own full-width row BELOW the
- * buttons (never squeezed beside them).
+ * text, the test kind, the word, the prompt that was sent to the LLM, the raw
+ * LLM response, and the error — deliberately hidden behind a link so the normal
+ * error UI stays generic. The expanded block renders as its own full-width row
+ * BELOW the buttons (never squeezed beside them), and carries a Copy action so a
+ * failure can be pasted into a bug report without transcribing the log.
  */
 function DiagnosticButton({ diagnostic }: { diagnostic?: SrsTestDiagnostic }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
   if (!diagnostic) return null;
+  const diagnosticText = formatSrsTestDiagnostic(diagnostic);
+  const handleCopy = async () => {
+    const ok = await copyText(diagnosticText);
+    if (!ok) {
+      log('[SRS Test] diagnostic copy failed', { kind: diagnostic.kind });
+      return;
+    }
+    setCopied(true);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+    log('[SRS Test] diagnostic copied', { kind: diagnostic.kind });
+  };
   return (
     <div className="w-full">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className="text-[10px] font-medium text-muted-foreground/70 underline underline-offset-2 hover:text-muted-foreground"
-      >
-        {t('review.diagnostic')}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="text-[10px] font-medium text-muted-foreground/70 underline underline-offset-2 hover:text-muted-foreground"
+        >
+          {t('review.diagnostic')}
+        </button>
+        {open && (
+          <button
+            type="button"
+            onClick={() => void handleCopy()}
+            aria-label={copied ? t('label.copied') : t('action.copy')}
+            className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/70 underline underline-offset-2 hover:text-muted-foreground"
+          >
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            <span>{copied ? t('label.copied') : t('action.copy')}</span>
+          </button>
+        )}
+      </div>
       {open && (
         <pre className="mt-1 max-h-48 w-full overflow-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-[10px] leading-relaxed text-muted-foreground">
-          {`Prompt:\n${diagnostic.prompt}\n\nResponse:\n${diagnostic.response ?? '(none)'}\n\nError:\n${diagnostic.error}`}
+          {diagnosticText}
         </pre>
       )}
     </div>
