@@ -20,10 +20,14 @@
 import {
   buildPronunciationQuestionText,
   buildSrsQuestionPrompt,
+  CONFOUNDER_CANDIDATE_COUNT,
+  CONFOUNDER_TARGET_COUNT,
   normalizeTestChoice,
   parseSrsQuestionResponse,
+  selectPronunciationConfounders,
   validateSrsDefinitionChoices,
   validateSrsPronunciationChoices,
+  type RejectedConfounder,
   type SrsTestQuestion,
   type TestQuestionKind,
 } from './srs-test-mode';
@@ -40,6 +44,10 @@ export interface SrsTestDiagnostic {
   response: string | null;
   /** Human-readable failure reason. */
   error: string;
+  /** The word the question was generated for (shown in the copied report). */
+  wordForm?: string;
+  /** Which attempt produced this failure (1 = first try, 2 = the auto-retry). */
+  attempts?: number;
 }
 
 export interface SrsTestGenerationInput {
@@ -125,14 +133,77 @@ const PRIORITY_RANK: Record<SrsTestPriority, number> = { user: 2, current: 1, pr
 /** One fresh attempt plus exactly one automatic retry. */
 const MAX_ATTEMPTS = 2;
 const MAX_CACHE_ENTRIES = 600;
+/** Failed generation reports are kept for retry feedback; bounded FIFO. */
+const MAX_REMEMBERED_FAILURES = 200;
 
 function diagnosticFor(
   kind: TestQuestionKind,
   prompt: string,
   response: string | null,
   error: string,
+  extra: { wordForm?: string; attempts?: number } = {},
 ): SrsTestDiagnostic {
-  return { kind, prompt, response, error };
+  return { kind, prompt, response, error, ...extra };
+}
+
+/**
+ * Plain-text rendering of a failed generation — the format shown by the
+ * Diagnostic disclosure and copied by its Copy action on web and mobile.
+ *
+ * One canonical shape (kind, word, attempts, prompt, raw response, error) keeps
+ * a copied report self-contained wherever it is pasted: the prompt and response
+ * are the evidence, the error is what the app rejected it for.
+ */
+export function formatSrsTestDiagnostic(diagnostic: SrsTestDiagnostic): string {
+  const header = [`Test: ${diagnostic.kind}`, `Word: ${diagnostic.wordForm ?? '(unknown)'}`];
+  if (diagnostic.attempts) header.push(`Attempts: ${diagnostic.attempts}`);
+  return [
+    ...header,
+    '',
+    'Prompt:',
+    diagnostic.prompt,
+    '',
+    'Response:',
+    diagnostic.response ?? '(none)',
+    '',
+    'Error:',
+    diagnostic.error,
+  ].join('\n');
+}
+
+/** Keep a retry prompt small while still showing the model what it returned. */
+function clip(text: string, max: number): string {
+  const trimmed = text.trim();
+  return trimmed.length > max ? `${trimmed.slice(0, max)}…` : trimmed;
+}
+
+function clipValue(value: string, max = 24): string {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
+}
+
+/**
+ * Summarize rejected distractor candidates for the diagnostic error message and
+ * the retry prompt: grouped by reason, with a couple of example values so a bug
+ * report shows exactly what the model returned (e.g. `1 duplicate of the correct
+ * reading ("あんたん")`).
+ */
+function describeRejectedConfounders(rejected: readonly RejectedConfounder[]): string {
+  if (rejected.length === 0) return '';
+  const label: Record<RejectedConfounder['reason'], string> = {
+    duplicate: 'duplicate of the correct reading',
+    'wrong-script': 'wrong writing system',
+    'obvious-wrong': 'fragment or extension of the correct reading',
+  };
+  const groups = new Map<RejectedConfounder['reason'], string[]>();
+  for (const item of rejected) {
+    const values = groups.get(item.reason) ?? [];
+    const example = `"${clipValue(item.value)}"`;
+    if (values.length < 3 && !values.includes(example)) values.push(example);
+    groups.set(item.reason, values);
+  }
+  return [...groups.entries()]
+    .map(([reason, values]) => `${label[reason]} (${values.join(', ')})`)
+    .join('; ');
 }
 
 /**
@@ -224,6 +295,8 @@ export class SrsTestManager {
   private inflight: QueuedRequest | null = null;
   /** Dedupe map: `${cardKey}:${kind}` → the queued/in-flight request. */
   private pending = new Map<string, QueuedRequest>();
+  /** Last failure per dedupe key — fed back into the next request's prompt. */
+  private rememberedFailures = new Map<string, SrsTestDiagnostic>();
   private nextId = 1;
   readonly cache: SrsTestCacheStore;
   private readonly onLog?: (event: string, data?: Record<string, unknown>) => void;
@@ -424,7 +497,14 @@ export class SrsTestManager {
     let lastDiagnostic: SrsTestDiagnostic | null = null;
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      const prompt = this.buildPrompt(input, attempt);
+      // A retry (automatic or the user's "Try again" after a failed test) tells
+      // the model exactly what was rejected and what it returned. Without that
+      // feedback the prompt is effectively unchanged, so the model reproduces
+      // the same bad candidate set (SPEC-066: 暗澹 → あんたん repeated).
+      const previous = attempt > 0
+        ? lastDiagnostic
+        : this.rememberedFailures.get(request.dedupeKey) ?? null;
+      const prompt = this.buildPrompt(input, previous);
       let response: string | null = null;
       try {
         this.log('request-start', {
@@ -433,6 +513,7 @@ export class SrsTestManager {
           attempt: attempt + 1,
           cache: !input.regenerate && attempt === 0,
           promptLength: prompt.length,
+          feedback: Boolean(previous),
         });
         response = await this.transport.generate(prompt, {
           cache: !input.regenerate && attempt === 0,
@@ -443,12 +524,16 @@ export class SrsTestManager {
           attempt: attempt + 1,
           responseLength: response.length,
         });
-        const question = this.parseAndValidate(response, input);
+        const question = this.parseAndValidate(response, input, { cardKey, attempt });
         this.cache.set(this.cacheKey(cardKey, input), question);
+        this.rememberedFailures.delete(request.dedupeKey);
         return { ok: true, question, fromCache: false, source: 'llm' };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        lastDiagnostic = diagnosticFor(input.kind, prompt, response, message);
+        lastDiagnostic = diagnosticFor(input.kind, prompt, response, message, {
+          wordForm: input.wordForm,
+          attempts: attempt + 1,
+        });
         this.log('generation-failed', {
           cardKey,
           kind: input.kind,
@@ -461,6 +546,8 @@ export class SrsTestManager {
         }
       }
     }
+
+    if (lastDiagnostic) this.rememberFailure(request.dedupeKey, lastDiagnostic);
 
     // Every attempt failed. Before giving up, build a question from local data
     // (SPEC-066 § "Offline test generation"). A fallback question is
@@ -492,7 +579,21 @@ export class SrsTestManager {
     return { ok: false, diagnostic: lastDiagnostic! };
   }
 
-  private buildPrompt(input: SrsTestGenerationInput, attempt: number): string {
+  /** Bounded FIFO of the last failure per question, used as retry feedback. */
+  private rememberFailure(dedupeKey: string, diagnostic: SrsTestDiagnostic): void {
+    this.rememberedFailures.delete(dedupeKey);
+    this.rememberedFailures.set(dedupeKey, diagnostic);
+    while (this.rememberedFailures.size > MAX_REMEMBERED_FAILURES) {
+      const oldest = this.rememberedFailures.keys().next().value;
+      if (oldest === undefined) break;
+      this.rememberedFailures.delete(oldest);
+    }
+  }
+
+  private buildPrompt(
+    input: SrsTestGenerationInput,
+    previous: SrsTestDiagnostic | null,
+  ): string {
     const prompt = buildSrsQuestionPrompt({
       word: input.wordForm,
       contextSentence: input.context,
@@ -503,23 +604,41 @@ export class SrsTestManager {
       pronunciation: input.pronunciation,
     });
     const hints: string[] = [];
-    if (input.regenerate || attempt > 0) {
-      hints.push(`Fresh variation for attempt ${attempt + 1}; do not repeat prior output.`);
-    }
-    if (attempt > 0) {
-      const baseL2 = (input.l2Code.split('-')[0] ?? '').toLowerCase();
-      if (baseL2 === 'ja') {
-        hints.push('Last output was invalid. Keep written kana fixed, vary only kanji readings, never extend/truncate the correct reading or use its derived forms, all choices distinct, valid JSON only.');
-      } else if (baseL2 === 'zh' || baseL2 === 'yue') {
-        hints.push('Last output was invalid. Correct pinyin with tone marks, plausible wrong tones/syllables, never contain the correct answer or use its derived forms, all choices distinct, valid JSON only.');
-      } else {
-        hints.push('Last output was invalid. Plausible near-miss readings, never contain the correct answer or use its derived forms, all choices distinct, valid JSON only.');
-      }
+    if (previous) {
+      // Feedback, not just "invalid": name the reason, show the rejected output,
+      // and restate the exact rule that failed. This is what makes a retry a
+      // different request instead of a resample of the same prompt.
+      hints.push(`Your previous output was rejected: ${clip(previous.error, 240)}`);
+      if (previous.response) hints.push(`Previous output: ${clip(previous.response, 320)}`);
+      hints.push(this.revisionHint(input));
+    } else if (input.regenerate) {
+      hints.push('Fresh variation; do not repeat any earlier output.');
     }
     return hints.length ? `${prompt}\n\n${hints.join('\n\n')}` : prompt;
   }
 
-  private parseAndValidate(raw: string, input: SrsTestGenerationInput): SrsTestQuestion {
+  /** The per-language rule restated on a retry (and what a fresh answer must be). */
+  private revisionHint(input: SrsTestGenerationInput): string {
+    const baseL2 = (input.l2Code.split('-')[0] ?? '').toLowerCase();
+    if (input.kind === 'definition') {
+      return 'Return a fresh question with 4 distinct options of comparable length and precision, valid JSON only.';
+    }
+    const notation = baseL2 === 'ja'
+      ? 'hiragana only'
+      : baseL2 === 'zh' || baseL2 === 'yue'
+        ? 'pinyin with tone marks'
+        : `the standard ${input.l2Code} script`;
+    const forbidden = input.pronunciation
+      ? `"${input.pronunciation}" is the correct reading and must not appear as a confounder — not as a fragment of it and not inside a longer choice. `
+      : '';
+    return `Choose different candidates. ${forbidden}Return ${CONFOUNDER_CANDIDATE_COUNT} different wrong readings, ${notation}, all distinct, valid JSON only.`;
+  }
+
+  private parseAndValidate(
+    raw: string,
+    input: SrsTestGenerationInput,
+    meta: { cardKey: string; attempt: number },
+  ): SrsTestQuestion {
     const parsed = parseSrsQuestionResponse(raw);
     if (parsed.kind !== input.kind) {
       throw new Error('LLM returned the wrong question type');
@@ -527,7 +646,7 @@ export class SrsTestManager {
 
     // ── Pronunciation. When the app supplies a ground-truth kana reading
     // (Japanese EDICT has alternate/phonetic_detail.kana) it owns the correct
-    // answer and the LLM supplies ONLY the 3 distractor readings — so the
+    // answer and the LLM supplies ONLY the distractor readings — so the
     // correct option is never the model's guess (homographs like 反る = そる vs
     // かえる). When NO reading is available (e.g. an LLM entry with only
     // romaji), the model generates both correct_answer and confounders, so the
@@ -536,38 +655,42 @@ export class SrsTestManager {
     if (input.kind === 'pronunciation') {
       const baseL2 = (input.l2Code.split('-')[0] ?? '').toLowerCase();
       const groundTruth = (input.pronunciation ?? '').trim();
-      const confounders = (Array.isArray(parsed.confounders) ? parsed.confounders : [])
-        .filter((x): x is string => typeof x === 'string');
-      let correct: string;
-      let rawChoices: string[];
-      if (groundTruth) {
-        correct = groundTruth;
-        rawChoices = [correct, ...confounders];
-      } else {
-        correct = typeof parsed.correct_answer === 'string' ? parsed.correct_answer.trim() : '';
-        rawChoices = [parsed.correct_answer, ...confounders];
-      }
+      const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
+      const correct = groundTruth
+        || (typeof parsed.correct_answer === 'string' ? parsed.correct_answer.trim() : '');
       if (!correct) {
         throw new Error('Missing ground-truth pronunciation');
       }
       if (baseL2 === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(correct)) {
         throw new Error('Japanese pronunciation must be hiragana');
       }
-      const deduped = rawChoices
-        .filter((x): x is string => typeof x === 'string' && !!x.trim())
-        .filter(
-          (choice, index) =>
-            rawChoices.findIndex(
-              (candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice),
-            ) === index,
+
+      // Drop unusable candidates (a repeat of the correct reading, a fragment,
+      // wrong script) and top up with deterministic kana variants. A single bad
+      // candidate must not fail the whole question — asking for a superset of
+      // candidates is what makes a 4-choice question reliable.
+      const selection = selectPronunciationConfounders(correct, confounders, input.l2Code);
+      if (selection.rejected.length > 0) {
+        this.log('confounders-repaired', {
+          cardKey: meta.cardKey,
+          kind: input.kind,
+          attempt: meta.attempt + 1,
+          correct,
+          rejected: selection.rejected,
+          used: selection.confounders,
+        });
+      }
+      if (selection.confounders.length < CONFOUNDER_TARGET_COUNT) {
+        const detail = describeRejectedConfounders(selection.rejected);
+        throw new Error(
+          `Invalid question choices: only ${selection.confounders.length} of ${CONFOUNDER_TARGET_COUNT} usable confounders for "${correct}"`
+          + (detail ? ` (dropped ${detail})` : ''),
         );
-      if (deduped.length !== 4) {
-        throw new Error('Invalid question choices');
       }
       const question: SrsTestQuestion = {
         kind: input.kind,
         prompt: buildPronunciationQuestionText(input.wordForm, input.l1Code),
-        choices: deduped.sort(() => Math.random() - 0.5),
+        choices: [correct, ...selection.confounders].sort(() => Math.random() - 0.5),
         correctAnswer: correct,
       };
       const problem = validateSrsPronunciationChoices(question);
@@ -594,7 +717,9 @@ export class SrsTestManager {
       )
       .slice(0, 4);
     if (choices.length !== 4) {
-      throw new Error('Invalid question choices');
+      throw new Error(
+        `Invalid question choices: ${choices.length} distinct option(s) after deduplication (need 4)`,
+      );
     }
     const definitionQuestion: SrsTestQuestion = {
       kind: input.kind,

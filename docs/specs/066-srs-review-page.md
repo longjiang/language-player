@@ -740,8 +740,11 @@ answering the final question reveals the card back and the rating buttons.
   automatically shows "There was a problem, trying again…" and retries
   **exactly once**. If it still fails, the test shows a generic error
   (no error specifics) with a **Retry** button and a **Skip** button, plus a
-  very small **Diagnostic** link that reveals — in plain text — the prompt
-  sent to the LLM, the raw LLM response, and the error. On mobile the
+  very small **Diagnostic** link that reveals — in plain text — the test kind,
+  the word, how many attempts were made, the prompt sent to the LLM, the raw
+  LLM response, and the error (`formatSrsTestDiagnostic` in
+  `packages/utils/src/srs-test-manager.ts`, so both apps render the same
+  report). On mobile the
   programmatic fallback ([Offline test generation](#offline-test-generation-programmatic-confounders))
   runs between the retry and the error box: when it can build a valid question,
   the error box never appears for that test.
@@ -761,8 +764,9 @@ answering the final question reveals the card back and the rating buttons.
   language-specific.
 - **Pronunciation question is app-owned (2026-08-26)** — for the
   pronunciation test the app composes the question text and, when the
-  dictionary has a kana reading, the correct answer; the LLM supplies only the
-  3 distractor readings. The question text is deterministic via
+  dictionary has a kana reading, the correct answer; the LLM supplies only
+  distractor candidates (5 are requested; the app validates them and picks the
+  3 choices). The question text is deterministic via
   `buildPronunciationQuestionText` (always the headword, L1-localized via
   `PRONUNCIATION_QUESTION_I18N`), so it can never drift into asking about a
   compound's components (e.g. 「手」和「落ち」 for 手落ち). The correct answer is
@@ -821,16 +825,34 @@ answering the final question reveals the card back and the rating buttons.
   the test from that question, and hides the revealed back so the user
   re-answers before rating. The whole-test retry (Try Again) remains for
   generation failures.
-- **Pronunciation confounders (2026-08-25)** — confounders are validated
-  against `isObviousPronunciationWrong()` / `validateSrsPronunciationChoices()`:
+- **Pronunciation confounders (2026-08-25; repaired instead of rejected
+  2026-10-21)** — confounders are validated against
+  `isObviousPronunciationWrong()` / `validateSrsPronunciationChoices()`:
   a confounder that contains the correct reading as a substring (e.g.
   `つきものぬ`/`つきものだ` from `つきもの`) or is a truncated fragment is
-  rejected, and the pronunciation question is auto-retried once with a strict
-  hint. The prompt additionally instructs: for **mixed kana/kanji words** the
-  written-kana part is fixed — confounders must keep it identical and vary
+  unusable. The prompt additionally instructs: for **mixed kana/kanji words**
+  the written-kana part is fixed — confounders must keep it identical and vary
   only the kanji readings with real or plausible readings of the same kanji
   (e.g. `憑き物` = `つきもの` → `つきぶつ`, `つきもつ`, `つきもち`), and must
   never extend/truncate/reorder the correct reading.
+  **The model is asked for 5 candidate readings, and the app builds the
+  4 choices itself** (`selectPronunciationConfounders` in
+  `packages/utils/src/srs-test-mode.ts`): candidates that repeat the correct
+  reading, are a fragment/extension of it, or use the wrong script are dropped
+  — a duplicate of the correct answer is no longer fatal — and a Japanese set
+  still short of 3 is topped up with deterministic kana variants
+  (`japaneseReadingVariants`: 促音 insertion, voicing swaps, and gojūon vowel
+  swaps such as あんたん → あんてん). Asking for exactly 3 made one bad
+  candidate fail the whole question; for a two-kanji word like `暗澹` the
+  model's most natural "near-miss" IS the correct reading `あんたん`, so the
+  old prompt failed repeatedly no matter how many times it was regenerated.
+- **Retry carries the rejection back (2026-10-21)** — a retry (the automatic
+  second attempt and a user-initiated retry after a failure) sends the model
+  the rejected output plus the concrete reason ("only 1 of 3 usable confounders
+  … duplicate of the correct reading "あんたん""), the correct reading named as
+  forbidden, and asks for 5 different candidates. This makes a retry a
+  different request rather than a resample of the same prompt, which is what
+  made the same bad candidate set come back on every regeneration.
 
 ### Offline test generation (programmatic confounds)
 
@@ -857,7 +879,8 @@ skipping every test. Since 2026-09-16 a failed generation falls back to a
   kanji with the headword** (real readings a learner would actually weigh),
   best-first by shared characters then `stringSimilarity`, topped up when needed
   by deterministic kana variants of the correct reading (voicing/rendaku swaps,
-  促音 insertion). The existing validity rules apply unchanged: hiragana only,
+  促音 insertion, gojūon vowel swaps) — the same `japaneseReadingVariants` the
+  LLM-response repair uses. The existing validity rules apply unchanged: hiragana only,
   every choice distinct, and no choice that contains or is contained by the
   correct reading (`isObviousPronunciationWrong`) — which is why
   appended-long-vowel variants are never used. An entry with **no** kana reading
@@ -1527,6 +1550,13 @@ orphaned.
   `951f6f1d` + the two review pages): obvious-wrong confounders are rejected
   and auto-retried, and mixed kana/kanji words keep their written-kana part
   constant across choices.
+- ✅ **Pronunciation confounders are repaired, not fatal** — implemented
+  (2026-10-21, shared `selectPronunciationConfounders` /
+  `japaneseReadingVariants` + manager): the model is asked for 5 candidate
+  readings, unusable ones are dropped, and a Japanese set is topped up with
+  deterministic kana variants, so a confounder that repeats the correct
+  reading (暗澹 → あんたん) no longer fails the question; retries send the
+  rejected output and reason back to the model.
 - ✅ **Choose-mode marking rules** — implemented (2026-08-25, shared
   `scoreTestResult` + both review pages): each test 0/1, scaled so perfect = 2,
   time-adjusted via the 10 s/test slow and 5 s/test fast thresholds → again /

@@ -24,8 +24,8 @@
 
 import {
   buildPronunciationQuestionText,
-  isObviousPronunciationWrong,
   normalizeTestChoice,
+  selectPronunciationConfounders,
   stringSimilarity,
   validateSrsDefinitionChoices,
   type SrsTestQuestion,
@@ -76,67 +76,35 @@ function pushUnique(out: string[], seen: Set<string>, raw: string): void {
 }
 
 /**
- * Deterministic near-miss readings of a correct kana reading: voicing/devoicing
- * of each mora and 促音 (small っ) insertion. These are the variants that stay
- * *outside* the correct reading — appended long vowels would contain it and are
- * rejected by `isObviousPronunciationWrong`.
+ * Deterministic near-miss readings of a correct kana reading — voicing/devoicing,
+ * 促音 insertion, and gojūon vowel swaps. Re-exported here for existing imports;
+ * the implementation lives with the other pronunciation helpers in
+ * `srs-test-mode.ts`, so the offline fallback and the LLM-response repair in
+ * `srs-test-manager.ts` derive their top-up readings the same way.
  */
-export function japaneseReadingVariants(correct: string): string[] {
-  // ち↔ぢ and つ↔づ are deliberately absent: outside rendaku they read as
-  // misspellings rather than plausible readings, so they make poor confounders.
-  const VOICE: Record<string, string> = {
-    か: 'が', が: 'か', き: 'ぎ', ぎ: 'き', く: 'ぐ', ぐ: 'く', け: 'げ', げ: 'け', こ: 'ご', ご: 'こ',
-    さ: 'ざ', ざ: 'さ', し: 'じ', じ: 'し', す: 'ず', ず: 'す', せ: 'ぜ', ぜ: 'せ', そ: 'ぞ', ぞ: 'そ',
-    た: 'だ', だ: 'た', て: 'で', で: 'て', と: 'ど', ど: 'と',
-    は: 'ば', ば: 'は', ひ: 'び', び: 'ひ', ふ: 'ぶ', ぶ: 'ふ', へ: 'べ', べ: 'へ', ほ: 'ぼ', ぼ: 'ほ',
-  };
-  const out: string[] = [];
-  const seen = new Set<string>();
-  const chars = [...correct];
-
-  // 促音 insertion after the first mora first (いちばん → いっちばん): the most
-  // plausible misreading of the three kinds of variant.
-  if (chars.length >= 2) {
-    pushUnique(out, seen, [chars[0]!, 'っ', ...chars.slice(1)].join(''));
-  }
-
-  // Then voicing/devoicing, one mora at a time (いちばん → いちはん).
-  chars.forEach((char, index) => {
-    const voiced = VOICE[char];
-    if (!voiced) return;
-    const variant = [...chars.slice(0, index), voiced, ...chars.slice(index + 1)].join('');
-    pushUnique(out, seen, variant);
-  });
-
-  return out;
-}
+export { japaneseReadingVariants } from './srs-test-mode';
 
 function pronunciationFallback(input: SrsFallbackInput): SrsTestQuestion | null {
   const correct = input.correctAnswer.trim();
   if (!correct) return null;
   if (baseL2(input.l2Code) === 'ja' && !HIRAGANA_ONLY.test(correct)) return null;
 
-  const seen = new Set<string>([normalizeTestChoice(correct)]);
-  const confounders: string[] = [];
-  const accept = (raw: string) => {
-    const value = raw.replace(/\s+/g, '').trim();
-    if (!value) return;
-    if (baseL2(input.l2Code) === 'ja' && !HIRAGANA_ONLY.test(value)) return;
-    if (isObviousPronunciationWrong(value, correct)) return;
-    pushUnique(confounders, seen, value);
-  };
-
-  for (const candidate of input.readingCandidates ?? []) accept(candidate);
-  if (confounders.length < TARGET_CONFOUNDERS && baseL2(input.l2Code) === 'ja') {
-    for (const variant of japaneseReadingVariants(correct)) accept(variant);
-  }
+  // Same filtering/top-up as the LLM path, so a fallback question is built from
+  // the same validity rules (distinct, right script, no obvious wrongs) and the
+  // same deterministic kana variants when the candidate pool runs dry.
+  const { confounders } = selectPronunciationConfounders(
+    correct,
+    input.readingCandidates ?? [],
+    input.l2Code,
+    { limit: TARGET_CONFOUNDERS },
+  );
 
   if (confounders.length < TARGET_CONFOUNDERS) return null;
   return {
     kind: 'pronunciation',
     prompt: buildPronunciationQuestionText(input.word, input.l1Code),
     correctAnswer: correct,
-    choices: [correct, ...confounders.slice(0, TARGET_CONFOUNDERS)],
+    choices: [correct, ...confounders],
   };
 }
 

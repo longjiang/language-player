@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SrsTestManager, type SrsTestCacheStorage, type SrsTestGenerationInput, type SrsTestTransport } from './srs-test-manager';
+import { SrsTestManager, formatSrsTestDiagnostic, type SrsTestCacheStorage, type SrsTestGenerationInput, type SrsTestTransport } from './srs-test-manager';
 import type { SrsTestQuestion, TestQuestionKind } from './srs-test-mode';
 
 const sleep = (ms = 5) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -302,8 +302,13 @@ describe('SrsTestManager retry + diagnostics', () => {
       expect(result.diagnostic.error).toBe('boom');
       expect(result.diagnostic.response).toBeNull();
       expect(result.diagnostic.prompt).toContain('Word: word');
-      expect(result.diagnostic.prompt).toContain('attempt 2'); // retry hint
+      // Retry hint: the second prompt carries the rejection reason back to the
+      // model, so a retry is a different request rather than a resample.
+      expect(result.diagnostic.prompt).toContain('Your previous output was rejected: boom');
+      expect(result.diagnostic.prompt).toContain('Return a fresh question with 4 distinct options');
       expect(result.diagnostic.kind).toBe('definition');
+      expect(result.diagnostic.wordForm).toBe('word');
+      expect(result.diagnostic.attempts).toBe(2);
     }
   });
 
@@ -470,5 +475,138 @@ describe('SrsTestManager fallback upgrade', () => {
     expect(a).toMatchObject({ ok: true, source: 'fallback' });
     expect(b).toMatchObject({ ok: true, source: 'fallback' });
     expect(fallback).toHaveBeenCalledTimes(1); // exactly one fallback build
+  });
+});
+
+describe('SrsTestManager pronunciation confounder repair (SPEC-066)', () => {
+  /** The reported screenshot: the model echoed the correct reading as a confounder. */
+  const anntanInput: SrsTestGenerationInput = {
+    kind: 'pronunciation',
+    wordForm: '暗澹',
+    context: '本田ひとりで何ができるかということになると、暗澹たる気持ちにならざるをえません。',
+    l1Code: 'zh',
+    l2Code: 'ja',
+    pronunciation: 'あんたん',
+  };
+
+  it('drops the confounder that repeats the correct reading instead of failing the question', async () => {
+    const { transport } = recordingTransport(async () => JSON.stringify({
+      kind: 'pronunciation',
+      confounders: ['あんだん', 'あんたん', 'あんてん'],
+    }));
+    const manager = new SrsTestManager(transport);
+    const res = await manager.requestTest({ cardKey: 'k', priority: 'current', input: anntanInput });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.question.correctAnswer).toBe('あんたん');
+    expect(res.question.choices).toHaveLength(4);
+    expect(new Set(res.question.choices).size).toBe(4);
+    // The correct reading appears exactly once, and the model's usable
+    // distractors are kept — the question is repaired, not resampled.
+    expect(res.question.choices.filter((c) => c === 'あんたん')).toHaveLength(1);
+    expect(res.question.choices).toEqual(expect.arrayContaining(['あんだん', 'あんてん']));
+  });
+
+  it('accepts more usable candidates than it needs (no fatal over-count)', async () => {
+    const { transport } = recordingTransport(async () => JSON.stringify({
+      kind: 'pronunciation',
+      confounders: ['あんざん', 'あんてん', 'あんとん', 'あんとう', 'あんぱん'],
+    }));
+    const manager = new SrsTestManager(transport);
+    const res = await manager.requestTest({ cardKey: 'k', priority: 'current', input: anntanInput });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.question.choices).toHaveLength(4);
+  });
+
+  it('tops up from deterministic kana variants when too few candidates are usable', async () => {
+    const { transport } = recordingTransport(async () => JSON.stringify({
+      kind: 'pronunciation',
+      confounders: ['あんたん', 'あんた'],
+    }));
+    const manager = new SrsTestManager(transport);
+    const res = await manager.requestTest({ cardKey: 'k', priority: 'current', input: anntanInput });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.question.choices).toHaveLength(4);
+    expect(res.question.choices).not.toContain('あんた');
+  });
+
+  it('feeds the rejected output back into the automatic retry prompt', async () => {
+    const prompts: string[] = [];
+    let call = 0;
+    const transport: SrsTestTransport = {
+      async generate(prompt: string) {
+        prompts.push(prompt);
+        call += 1;
+        return call === 1
+          ? JSON.stringify({ kind: 'pronunciation', confounders: ['xuéxī'] })
+          : JSON.stringify({ kind: 'pronunciation', confounders: ['xuéxī', 'xuéxì', 'xuéxǐ'] });
+      },
+    };
+    const manager = new SrsTestManager(transport);
+    const res = await manager.requestTest({
+      cardKey: 'k',
+      priority: 'current',
+      input: { kind: 'pronunciation', wordForm: '学习', context: '我每天学习中文。', l1Code: 'en', l2Code: 'zh', pronunciation: 'xuéxí' },
+    });
+    expect(res.ok).toBe(true);
+    expect(prompts).toHaveLength(2);
+    expect(prompts[1]).toContain('Your previous output was rejected');
+    expect(prompts[1]).toContain('Previous output: {"kind":"pronunciation","confounders":["xuéxī"]}');
+    expect(prompts[1]).toContain('"xuéxí" is the correct reading and must not appear');
+    expect(prompts[1]).toContain('Return 5 different wrong readings');
+  });
+
+  it('remembers the failure so a manual regeneration also carries the feedback', async () => {
+    // 学习 has no deterministic top-up variants (only Japanese has them), so a
+    // response made entirely of the correct reading fails — and the learner's
+    // "Try again" must send the rejection back rather than resample.
+    const xuexiInput: SrsTestGenerationInput = {
+      kind: 'pronunciation',
+      wordForm: '学习',
+      context: '我每天学习中文。',
+      l1Code: 'en',
+      l2Code: 'zh',
+      pronunciation: 'xuéxí',
+    };
+    const prompts: string[] = [];
+    let failing = true;
+    const transport: SrsTestTransport = {
+      async generate(prompt: string) {
+        prompts.push(prompt);
+        return failing
+          ? JSON.stringify({ kind: 'pronunciation', confounders: ['xuéxí', 'xuéxí', 'xuéxí'] })
+          : JSON.stringify({ kind: 'pronunciation', confounders: ['xuéxī', 'xuéxì', 'xuéxǐ'] });
+      },
+    };
+    const manager = new SrsTestManager(transport);
+    const first = await manager.requestTest({ cardKey: 'k', priority: 'current', input: xuexiInput });
+    expect(first.ok).toBe(false);
+    if (!first.ok) {
+      // The error names the actual reason and the offending value.
+      expect(first.diagnostic.error).toContain('only 0 of 3 usable confounders');
+      expect(first.diagnostic.error).toContain('duplicate of the correct reading ("xuéxí")');
+      expect(first.diagnostic.attempts).toBe(2);
+      expect(first.diagnostic.wordForm).toBe('学习');
+      const copied = formatSrsTestDiagnostic(first.diagnostic);
+      expect(copied).toContain('Test: pronunciation');
+      expect(copied).toContain('Word: 学习');
+      expect(copied).toContain('Attempts: 2');
+      expect(copied).toContain('Prompt:');
+      expect(copied).toContain('Response:');
+      expect(copied).toContain('Error:');
+    }
+
+    failing = false;
+    const retry = await manager.requestTest({
+      cardKey: 'k',
+      priority: 'user',
+      input: { ...xuexiInput, regenerate: true },
+    });
+    expect(retry.ok).toBe(true);
+    const retryPrompt = prompts[prompts.length - 1]!;
+    expect(retryPrompt).toContain('Your previous output was rejected');
+    expect(retryPrompt).toContain('duplicate of the correct reading');
   });
 });
