@@ -1594,7 +1594,8 @@ orphaned.
 - ✅ **Auto-retry-once + generic error + Diagnostic link** — implemented
   (2026-08-25, both review pages): on error, "There was a problem, trying
   again…" + exactly one automatic retry; a second failure shows a generic
-  error + Retry and a tiny Diagnostic link (prompt / raw response / error).
+  error + Retry and a tiny Diagnostic link (kind / word / attempts / prompt /
+  raw response / error), whose report can be copied (2026-10-21).
 - ✅ **Card-test cache, prefetch, single-flight queue** — implemented
   (2026-08-25, shared `SrsTestManager` + both review pages): all test
   generation/regeneration routes through one priority queue
