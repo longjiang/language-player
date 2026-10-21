@@ -52,6 +52,7 @@ import {
   type SrsTestPriority,
   type TestQuestionKind,
   type ReviewMode,
+  formatSrsTestDiagnostic,
 } from '@langplayer/utils';
 import { getSrsTestManager } from '@/lib/srs-test-manager';
 import { createSrsTestFallback, resolveSavedWordEntry } from '@/lib/srs-test-fallback';
@@ -62,8 +63,9 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { toTraditional, toSimplified } from '@/lib/chinese-script';
 import Toast from 'react-native-toast-message';
+import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CheckCircle2, BookOpen, RefreshCw, Brain, ListChecks, Keyboard, ChevronDown, Shuffle, Blocks } from 'lucide-react-native';
+import { CheckCircle2, BookOpen, RefreshCw, Brain, ListChecks, Keyboard, ChevronDown, Shuffle, Blocks, Copy, Check } from 'lucide-react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
@@ -128,30 +130,63 @@ type TestSlot = {
 
 /**
  * Tiny "Diagnostic" link shown next to a test error. It reveals, in plain
- * text, the prompt that was sent to the LLM, the raw LLM response, and the
- * error — deliberately hidden behind a link so the normal error UI stays
- * generic. The expanded block renders as its own full-width row BELOW the
- * buttons (never squeezed beside them).
+ * text, the test kind, the word, the prompt that was sent to the LLM, the raw
+ * LLM response, and the error — deliberately hidden behind a link so the normal
+ * error UI stays generic. The expanded block renders as its own full-width row
+ * BELOW the buttons (never squeezed beside them), and carries a Copy action so a
+ * failure can be pasted into a bug report without transcribing the log.
  */
 function DiagnosticButton({ diagnostic }: { diagnostic?: SrsTestDiagnostic }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
   if (!diagnostic) return null;
+  const diagnosticText = formatSrsTestDiagnostic(diagnostic);
+  const handleCopy = async () => {
+    try {
+      await Clipboard.setStringAsync(diagnosticText);
+      setCopied(true);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+      log('diagnostic copied', { kind: diagnostic.kind });
+    } catch (error) {
+      log('diagnostic copy failed', { error: String(error) });
+    }
+  };
   return (
     <View className="w-full">
-      <Pressable
-        onPress={() => setOpen((prev) => !prev)}
-        accessibilityRole="button"
-        accessibilityLabel={t('review.diagnostic')}
-        className="self-start py-1"
-      >
-        <Text className="text-[10px] font-medium text-muted-foreground underline">
-          {t('review.diagnostic')}
-        </Text>
-      </Pressable>
+      <View className="flex-row items-center gap-3">
+        <Pressable
+          onPress={() => setOpen((prev) => !prev)}
+          accessibilityRole="button"
+          accessibilityLabel={t('review.diagnostic')}
+          className="py-1"
+        >
+          <Text className="text-[10px] font-medium text-muted-foreground underline">
+            {t('review.diagnostic')}
+          </Text>
+        </Pressable>
+        {open && (
+          <Pressable
+            onPress={() => void handleCopy()}
+            accessibilityRole="button"
+            accessibilityLabel={copied ? t('label.copied') : t('action.copy')}
+            className="flex-row items-center gap-1 py-1"
+          >
+            {copied ? <Check size={10} color={ICON_PRIMARY} /> : <Copy size={10} color={ICON_MUTED} />}
+            <Text className="text-[10px] font-medium text-muted-foreground underline">
+              {copied ? t('label.copied') : t('action.copy')}
+            </Text>
+          </Pressable>
+        )}
+      </View>
       {open && (
-        <Text className="mt-1 w-full rounded bg-muted p-2 text-[10px] leading-relaxed text-muted-foreground">
-          {`Prompt:\n${diagnostic.prompt}\n\nResponse:\n${diagnostic.response ?? '(none)'}\n\nError:\n${diagnostic.error}`}
+        <Text selectable className="mt-1 w-full rounded bg-muted p-2 text-[10px] leading-relaxed text-muted-foreground">
+          {diagnosticText}
         </Text>
       )}
     </View>
