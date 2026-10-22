@@ -4,8 +4,8 @@
 
 - **Spec ID**: SPEC-099
 - **Feature**: The `apps/admin` content-management surface: discover, import,
-  and manage videos, channels, TV shows and talks per language (L2), plus a
-  two-group navigation shell (Users / Content)
+  and manage videos, channels, TV shows and talks per language (L2), plus the
+  navigation shell (Insights / Users / Content, current order)
 - **Status**: complete (2026-10-16); `/content/import` reworked 2026-10-19
 - **Created**: 2026-10-16
 - **Implemented**: 2026-10-16. `apps/admin` — `defc95bc` (shell + `/users`),

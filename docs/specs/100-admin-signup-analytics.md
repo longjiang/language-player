@@ -4,6 +4,11 @@
 > between **New Signups** and **Revenue**. The original single-metric behavior
 > is described below; see [Amendment 2026-10-17](#amendment-2026-10-17--analytics-metric-toggle).
 
+> **Amendment 2026-10-22:** **Analytics is the console's home.** `/` now
+> redirects to `/analytics` (was `/users`), and the Insights nav group
+> (Analytics, Transactions) is the first group in the sidebar. The proxy's
+> post-login and wrong-surface redirects land on `/analytics` for admins.
+
 ## Metadata
 
 - **Spec ID**: SPEC-100
@@ -12,7 +17,8 @@
   new signups and estimated revenue
 - **Status**: complete (2026-10-17)
 - **Created**: 2026-10-17
-- **Updated**: 2026-10-17
+- **Updated**: 2026-10-22 — `/` and post-login land on `/analytics`; Insights
+  is the first nav group
 - **Implemented**: 2026-10-17.
   `zerotohero-python-server` — `e1ba33f` (signup endpoint + tests),
   `207c1df` (generic metric endpoint + revenue series).
