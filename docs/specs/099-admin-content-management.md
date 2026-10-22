@@ -6,7 +6,8 @@
 - **Feature**: The `apps/admin` content-management surface: discover, import,
   and manage videos, channels, TV shows and talks per language (L2), plus the
   navigation shell (Insights / Users / Content, current order)
-- **Status**: complete (2026-10-16); `/content/import` reworked 2026-10-19
+- **Status**: complete (2026-10-16); `/content/import` reworked 2026-10-19;
+  add phase imports one video per request 2026-10-22
 - **Created**: 2026-10-16
 - **Implemented**: 2026-10-16. `apps/admin` — `defc95bc` (shell + `/users`),
   `7ab9ee4e` (content API + types), `fd2fb6aa` (i18n keys), `02bf34e4`
@@ -22,6 +23,13 @@
   (duration ≤ `SHORTS_MAX_SECONDS`, default 180s) are excluded in Discover.
   The add phase imports individual rows or every eligible row across the full
   result set.
+- **Updated**: 2026-10-22 — *Add all eligible* now imports **one video per
+  request** through `POST /admin/videos/add` instead of 25 ids per
+  `/admin/videos/add-batch` call, mirroring the Check phase: one row spins, a
+  250ms gap between videos, *Stop* takes effect between them, and the first
+  HTTP failure stops the run leaving the rest pending. The batch endpoint and
+  its 25/50-id paging are unchanged for `/content/discover` and the
+  channel/playlist walkers.
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - [ADR-0032 — Admin Console as a Separate Next.js App](<../adr/0032-admin-console-app.md>)
@@ -215,7 +223,7 @@ Wiring:
 | Where | When | What the admin sees |
 |---|---|---|
 | Import → Discover | while screening, and again before any add | the check panel built from the screened rows' raw flags (`declared_audio_locale`, `audio_matches_l2`, `block_reason`); it grows page by page |
-| Import → Add all eligible | before the batch | a confirm dialog if any row being added declares another language (only possible for a soft block with Force on) |
+| Import → Add all eligible | before the run | a confirm dialog if any row being added declares another language (only possible for a soft block with Force on) |
 | Import → single-row Add | before that add | the same confirm for that row |
 | Discover | after *Find candidates*, and again before importing the selection | the check panel; confirm before importing a mismatching selection |
 | Discover → Import top results | advisory only | a caveat note, because that path re-runs the search and may import different ids |
@@ -279,8 +287,8 @@ nothing; **Add** calls the ordinary SPEC-096 importer.
 
 Channel/playlist modes also expose `match_keywords` (comma-separated
 regexes). The old `limit` / `max_pages` / `use_circuit_break` fields are gone:
-discovery walks the source to the end (or until *Stop*); the check phase uses
-one-id requests and the add phase 25-id batches.
+discovery walks the source to the end (or until *Stop*); the check and add
+phases both use one-id requests.
 
 **1. Discover**
 
@@ -368,11 +376,29 @@ one-id requests and the add phase 25-id batches.
   This is a console/import policy: the importer itself still accepts ASR for
   other callers (ARCH-035).
 - *Add all eligible (N)* adds the **full eligible set** — not just the rows
-  currently rendered, and not only the rows passing the *Show* filters — in
-  batches of **25** through `POST /admin/videos/add-batch` (50 transcript
-  downloads inside one request can outlive the Cloudflare/gunicorn timeout;
-  a 502 gateway response has no CORS header and surfaces as a misleading
-  CORS error). Individual rows use `POST /admin/videos/add`.
+  currently rendered, and not only the rows passing the *Show* filters — **one
+  video per request** through `POST /admin/videos/add`, exactly like the Check
+  phase. The row being imported spins in the status column and the next one
+  starts only after it returns, with the same 250ms gap the transcript check
+  uses.
+  It used to send 25 ids per `POST /admin/videos/add-batch` call, which put 25
+  serial transcript downloads behind one request: the caption endpoint
+  rate-limits that burst, and a page that overruns the gateway timeout comes
+  back as a headerless 502 that the browser reports as a CORS error. One id per
+  request keeps a single download in flight and makes each request short.
+  `POST /admin/videos/add-batch` is unchanged and still backs
+  `/content/discover` (*Import selected*) and the channel/playlist walkers,
+  which page their results per request.
+- **Stop** is available while an add run is going: it takes effect between
+  videos. Nothing is lost by stopping — `utils_video_import` commits per video,
+  so imported rows stay imported and the remaining eligible rows can be added
+  by pressing the button again. A **Stop** click does not mark the remaining
+  rows failed; they stay pending.
+- The **first HTTP failure stops the run**: the failing row is marked `failed`
+  with the Flask error message, the remaining rows are left pending (so a
+  retry continues where it stopped), and the error appears in the panel. A
+  per-video `skipped`/`failed` *result* (HTTP 200, e.g. `no_transcript`) does
+  not stop the run — only a failed request does.
 - Per-row results (`added` / `updated` / `skipped` / `failed` + reason) and
   the summary chips stay visible. A row that becomes in-DB after an add
   follows the normal `Already in DB` rule: it is hidden unless that *Show*
@@ -687,7 +713,8 @@ for every request/response and branch on these screens: the request body sent
 (never the whole `subs_l2` blob — length only), the per-page summary, the
 cursor transition, the stop/continue decision, and every error body. Discovery
 adds one line per listed page (cursor + source), one per screened batch
-(size), one per add batch (size + offset), and the stop/finish decisions. All
+(size), and the Check/Add runs add one line per video (`checking`/`adding` and
+`total`) plus the stop/finish decisions. All
 of these are `log()` (info, `LOG_LEVEL=3`) per the project's
 "logging defaults to INFO" rule; only caught exceptions use `logerr()`.
 
@@ -783,14 +810,35 @@ so the deployed admin origin cannot be dropped without a failing test
     'dQw4w9WgXcQ', type='list')` returned 6 tracks, and a second
     `list_transcripts_result` completed in ~0.0s from the local cache (154
     list entries on disk at the time of the check). Video metadata
-    (`videos.list`) is **not** cached; it is fetched once in Discover and the
-    Check phase does not re-fetch it.
+    (`videos.list`) was **not** cached at the time; it is fetched once in
+    Discover and the Check phase does not re-fetch it. It has since become a
+    24h per-video cache for the discover-phase probes
+    ([SPEC-098 § Metadata cache](098-video-discovery.md#metadata-cache)).
 - Admin: `tsc --noEmit` and ESLint pass.
 - Manual: needs an admin account (none of the test users is an admin), so the
   full Discover → Check transcripts → Add click-through — listing, metadata
   progress, per-row transcript spinners, filter toggles, per-row Add and
   Add all — still needs one pass in the browser.
   Restart `next dev` after `sync-translations` (see the i18n note above).
+
+### Add one video at a time (2026-10-22)
+
+- Admin: `../../node_modules/.bin/tsc --noEmit` from `apps/admin` **pass**;
+  `npx turbo lint --filter=@langplayer/admin` **pass**.
+- Automated verification: none of the admin screens has a test harness, and the
+  request loop is the browser's — no backend changed, so the Flask suites were
+  not re-run for this item.
+- Manual (needs an admin account — no test user has `is_admin`): on
+  `/content/import`, finish Check and press *Add all eligible*. Expect one
+  `[LP Admin] import add row {"adding": n, "total": N}` line per video
+  (`NEXT_PUBLIC_LOG_LEVEL=3`, console filter Verbose), exactly one row spinning
+  in the table at a time, the *Stop* button replacing the add button while the
+  run lasts, and — if the caption service starts refusing — the run stopping on
+  the first failure with the message shown and the remaining rows still
+  eligible.
+- Not verified here: how many videos a real run imported before failing (the
+  reason for this change was an add run that appeared to stall/fail after about
+  ten videos). The new per-row log lines make that count explicit.
 
 ## Known limitations
 
@@ -846,10 +894,13 @@ so the deployed admin origin cannot be dropped without a failing test
   admin is answering "did we find videos?" and "what did the transcript check
   say?", not narrowing an add set. The filters default to eligible-only once
   Check finishes.
-- **The Check phase makes one request per video.** It uses
-  `/admin/videos/transcripts`, so the spinner is exactly one row, but a
-  500-video check is 500 small requests. Each is a caption listing or a cache
-  hit; Stop/Continue and the cache keep it practical.
+- **The Check and Add phases make one request per video.** Check uses
+  `/admin/videos/transcripts` and Add uses `/admin/videos/add`, so the spinner
+  is exactly one row, but a 500-video run is 500 small requests. A check is a
+  caption listing or a cache hit, an add is a transcript download + scoring;
+  Stop/Continue (and, for Check, the listing cache) keep it practical. This is
+  deliberate: batching the add phase put a burst of transcript downloads behind
+  one request, which the caption endpoint rate-limits.
 - **Video metadata is not cached.** Discover fetches `videos.list` once per
   video; the transcript-only Check does not re-fetch it. Re-running Discover
   does fetch metadata again. The caption **listings** are cached per video in
