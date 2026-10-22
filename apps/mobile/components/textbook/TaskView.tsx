@@ -69,7 +69,7 @@ export function TaskView({
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center py-10">
+      <View className="flex-1 items-center justify-center bg-background py-10">
         <ActivityIndicator />
         <Text className="mt-2 text-sm text-muted-foreground">{t('msg.loading')}</Text>
       </View>
@@ -78,7 +78,7 @@ export function TaskView({
 
   if (!book || !task) {
     return (
-      <View className="flex-1 items-center justify-center py-10">
+      <View className="flex-1 items-center justify-center bg-background py-10">
         <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
       </View>
     );
@@ -120,10 +120,18 @@ export function useBookTree(bookId: string): { tree: TocTree | null; loading: bo
   return { tree, loading };
 }
 
-/** Scrollable container shared by the picker and the TOC list. */
+/**
+ * Scrollable container shared by the picker and the TOC list.
+ *
+ * It paints `bg-background` itself: a native stack scene has no themed
+ * background of its own, so without this the screen shows the platform's white
+ * and every `text-foreground` label is invisible under the app's default dark
+ * theme (`DISPLAY_DEFAULTS.theme === 'dark'`, ADR-0011). Every other mobile
+ * screen paints its own `bg-background` for the same reason.
+ */
 export function TextbookScroll({ children }: { children: React.ReactNode }) {
   return (
-    <ScrollView className="flex-1" contentContainerClassName="gap-4 px-4 py-4">
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="gap-4 px-4 py-4">
       {children}
     </ScrollView>
   );

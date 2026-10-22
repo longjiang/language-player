@@ -156,7 +156,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
     <KeyboardAwareScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerClassName="gap-5 pb-16"
-      className="flex-1"
+      className="flex-1 bg-background"
       stickyHeaderIndices={hasTaskAudio ? [1] : undefined}
     >
       <View className="flex-row items-start gap-3">

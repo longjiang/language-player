@@ -18,7 +18,7 @@ export default function BookTocScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center py-10">
+      <View className="flex-1 items-center justify-center bg-background py-10">
         <ActivityIndicator />
         <Text className="mt-2 text-sm text-muted-foreground">{t('msg.loading')}</Text>
       </View>
@@ -27,7 +27,7 @@ export default function BookTocScreen() {
 
   if (!tree) {
     return (
-      <View className="flex-1 items-center justify-center py-10">
+      <View className="flex-1 items-center justify-center bg-background py-10">
         <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
       </View>
     );
