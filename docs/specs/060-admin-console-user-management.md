@@ -5,6 +5,7 @@
 - **Feature**: Admin console web app (`apps/admin`) with user management
 - **Status**: complete
 - **Created**: 2026-08-09
+- **Updated**: 2026-10-22 — `/` redirects to `/analytics` (SPEC-100)
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - `docs/adr/0032-admin-console-app.md` — why a separate admin app
@@ -102,7 +103,8 @@ and the existing `user_subscriptions` row shape are preserved.
   valid but not an administrator, and a distinct one when the auth backend
   (Flask → GoTrue) cannot be reached.
 - `/users` — user search dashboard (was `/` until SPEC-099 added the
-  Users/Content navigation shell; `/` now redirects here). One query box
+  three-group navigation shell; `/` now redirects to `/analytics` per
+  SPEC-100's 2026-10-22 amendment). One query box
   searches all supported fields; results show name, email, plan/admin badges,
   saved-word count, watch count, hours, and creation date. Rows link to the
   user page.

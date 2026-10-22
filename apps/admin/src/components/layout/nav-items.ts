@@ -15,10 +15,11 @@ import {
 } from 'lucide-react';
 
 /**
- * The admin console's menu. Three groups: user management, insights
- * (signup analytics + transactions, SPEC-100/101), and content management
- * (SPEC-099). Labels are `translations.csv` keys resolved with `useT()` so
- * the menu follows the project i18n convention.
+ * The admin console's menu. Three groups: insights (signup analytics +
+ * transactions, SPEC-100/101) first because analytics is the console's home,
+ * then user management, then content management (SPEC-099). Labels are
+ * `translations.csv` keys resolved with `useT()` so the menu follows the
+ * project i18n convention.
  */
 export interface NavItem {
   href: string;
@@ -33,18 +34,18 @@ export interface NavGroup {
 
 export const NAV_GROUPS: NavGroup[] = [
   {
+    labelKey: 'title.insights',
+    items: [
+      { href: '/analytics', labelKey: 'title.analytics', icon: TrendingUp },
+      { href: '/transactions', labelKey: 'title.transactions', icon: Receipt },
+    ],
+  },
+  {
     labelKey: 'label.users',
     items: [
       { href: '/users', labelKey: 'title.user_management', icon: Search },
       { href: '/affiliates', labelKey: 'label.affiliates', icon: UsersRound },
       { href: '/coupons', labelKey: 'label.coupons', icon: TicketPercent },
-    ],
-  },
-  {
-    labelKey: 'title.insights',
-    items: [
-      { href: '/analytics', labelKey: 'title.analytics', icon: TrendingUp },
-      { href: '/transactions', labelKey: 'title.transactions', icon: Receipt },
     ],
   },
   {

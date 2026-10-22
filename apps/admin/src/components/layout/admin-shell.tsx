@@ -8,9 +8,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 /**
- * The admin console shell: the shared header plus the Users / Content menu
- * (SPEC-099). Every authenticated page renders this instead of a bare
- * `<AppHeader>` so both halves of the console are always reachable.
+ * The admin console shell: the shared header plus the Insights / Users /
+ * Content menu (SPEC-099/100). Every authenticated page renders this instead
+ * of a bare `<AppHeader>` so every surface of the console is always reachable.
  *
  * Desktop shows a vertical sidebar; below `md` the same menu becomes a
  * horizontal, scrollable row so a phone can still navigate.

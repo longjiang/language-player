@@ -25,12 +25,12 @@ export const proxy = auth((req) => {
   }
   if (isLoggedIn && pathname === '/login') {
     return Response.redirect(
-      new URL(isAdmin ? '/users' : '/affiliate', req.nextUrl.origin),
+      new URL(isAdmin ? '/analytics' : '/affiliate', req.nextUrl.origin),
     );
   }
   if (isLoggedIn) {
     if (isAffiliatePath && !isAffiliate) {
-      return Response.redirect(new URL(isAdmin ? '/users' : '/login', req.nextUrl.origin));
+      return Response.redirect(new URL(isAdmin ? '/analytics' : '/login', req.nextUrl.origin));
     }
     if (!isAffiliatePath && !isAdmin) {
       return Response.redirect(new URL('/affiliate', req.nextUrl.origin));
