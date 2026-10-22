@@ -8,7 +8,8 @@
   fetching metadata, downloading the L2 transcript, populating the
   lemmatization cache and scoring difficulty
 - **Status**: complete (2026-10-16); extended 2026-10-19 with the read-only
-  discovery and transcript-check phases
+  discovery and transcript-check phases; 2026-10-22 added the discover-phase
+  metadata cache (SPEC-098)
 - **Created**: 2026-10-16
 - **Implemented**: 2026-10-16 — five commits, `ec70774` → `1df1911`
   (`zerotohero-python-server`). 2026-10-19 — `7f6025e` added
@@ -151,6 +152,15 @@ dead.
 Ids are validated against `^[A-Za-z0-9_-]{11}$` **before** the request
 (`normalize_video_ids`), because one malformed id makes the YouTube API reject
 the entire batch with `400 invalid`.
+
+#### Cached variant — discover phase only
+
+`get_video_details_cached()` wraps the same 3-tuple with a 24-hour per-video
+cache: it serves each cached resource, hands only the uncached ids to
+`get_video_details_batched()` (still 50 per request), and records the answer —
+including an "unavailable" verdict — as one file per video. Which callers use
+it, and why the importer and the sweep do **not**, is documented in
+[SPEC-098 § Metadata cache](098-video-discovery.md#metadata-cache).
 
 ### 2. Eligibility (`utils_youtube.video_import_block_reason`)
 
@@ -748,10 +758,16 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   maximum) is the proxy. A normal 2–3 minute video is filtered too; lower the
   env var to 60 for classic short-form only. A Short already in the DB is
   filtered from Discover as well.
-- **Video metadata is not cached.** `videos.list` is fetched once per video
-  during Discover; the transcript-only Check endpoint does not re-fetch it.
-  Re-running Discover does fetch metadata again. Caption **listings** are
-  cached (the `list/<hash>` entries), so re-running Check is the cheap one.
+- **Video metadata is cached for the discover phase only.** The read-only
+  probes (`/admin/videos/preflight`, `/admin/videos/screen`, discovery vetting)
+  share a 24-hour per-video cache, so re-running Discover and the follow-up
+  preflight/screen calls only pay for ids never probed — see
+  [SPEC-098 § Metadata cache](098-video-discovery.md#metadata-cache). The
+  importer and `sweep-unavailable` keep fetching live metadata, because a stale
+  resource would hide a video that disappeared (or store one that is gone). The
+  transcript-only Check endpoint re-fetches nothing either way. Caption
+  **listings** are cached (the `list/<hash>` entries), so re-running Check is
+  the cheap one.
 - **Already-stored rows skip YouTube entirely.** Their title/duration/locale
   come from `youtube_videos`, and no caption listing is made even when
   `subs_l2` is empty (`transcript_status: "not_checked"`). This keeps a
@@ -785,8 +801,9 @@ lemmatizer, database) is faked; the tests assert the ingestion *decisions*.
   registry.
 - Should discovery persist its screened rows (session storage or a table) so
   a page reload or a long channel walk can resume without re-screening?
-  Deferred: the re-run is read-only and caption listings are cached, and a
-  persisted result would need invalidation when the catalogue changes.
+  Deferred: the re-run is read-only, caption listings are cached and (since
+  2026-10-22) so is the metadata, and a persisted result would need
+  invalidation when the catalogue changes.
 - Should `screen` batch caption listings with a small worker pool? The
   current serial loop is deliberate (rate limits), but a bounded pool (2–4)
   could make a 500-video channel noticeably faster. Needs a measured

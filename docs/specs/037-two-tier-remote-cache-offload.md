@@ -104,6 +104,22 @@ uses this layer. Direct-file cache modules are converted too:
 Remote failures are non-fatal: a timeout/connection error is treated as a
 cache miss and the request continues to compute locally.
 
+## Local-only buckets
+
+`remote_cache.LOCAL_ONLY_BUCKETS` lists the buckets that skip both tiers:
+
+| Bucket | Why | TTL |
+|---|---|---|
+| `video_metadata` | Ephemeral; see [SPEC-098 § Metadata cache](098-video-discovery.md#metadata-cache) | 24 hours (`VIDEO_METADATA_CACHE_TTL_HOURS`) |
+
+These entries are read from local disk only (`remote_cache.get_local_json()`),
+so a cold batch costs no shared-host round trips — 50 uncached ids would
+otherwise be 50 HTTP GETs — and they are never offloaded: an entry that has
+gone cold is already stale, so `prune_cache.py` deletes rather than uploads
+and `offload_cache.py` skips the bucket. They are the exception that proves the
+two-tier rule: the remote tier exists to keep *reusable* data off the VPS disk,
+and there is nothing reusable about a 24-hour cache of a YouTube resource.
+
 ## Offload Job
 
 `prune_cache.py` runs on the Flask VPS via cron (every 6 hours) and keeps

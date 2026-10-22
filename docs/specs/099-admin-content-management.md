@@ -836,8 +836,11 @@ so the deployed admin origin cannot be dropped without a failing test
   `POST /admin/videos/preflight` and audits a selection before importing.
 - **The import discovery result set lives only in the browser.** There is no
   server-side job, so a reload loses the discovered rows; re-running is
-  read-only and successful caption listings are cached. The add phase is
-  unaffected — rows already imported stay in the DB.
+  read-only and successful caption listings are cached, and the video metadata
+  Discover fetches is cached for 24 hours
+  ([SPEC-098 § Metadata cache](098-video-discovery.md#metadata-cache)), so a
+  re-run inside that window re-probes nothing. The add phase is unaffected —
+  rows already imported stay in the DB.
 - **The *Show* filters only run in the Add phase.** Discover and Check show
   every found row (with a hint saying so), because during those phases the
   admin is answering "did we find videos?" and "what did the transcript check
