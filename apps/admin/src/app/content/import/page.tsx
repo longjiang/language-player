@@ -17,7 +17,6 @@ import { useAuthReady } from '@/hooks/use-auth-ready';
 import { useT } from '@/hooks/use-t';
 import {
   checkTranscripts,
-  importBatch,
   importSingle,
   listVideoIds,
   resolveChannel,
@@ -57,18 +56,11 @@ type Mode = 'single' | 'batch' | 'channel' | 'playlist';
 /** The backend accepts at most 50 ids per screening call. */
 const SCREEN_BATCH = 50;
 /**
- * The transcript check is the slow, rate-limited phase. It runs one video per
- * request so the table shows a single spinner, with a short gap between
+ * The check and add phases are the slow, rate-limited ones. Both run one video
+ * per request so the table shows a single spinner, with a short gap between
  * requests to avoid a burst at the caption endpoint.
  */
-const TRANSCRIPT_GAP_MS = 250;
-/**
- * Adding 50 videos means 50 serial transcript downloads + scoring inside one
- * request. Keep the add page at 25 so a slow language/scoring run stays under
- * the Cloudflare/gunicorn timeout (a 502 there looks like a CORS failure in
- * the browser because the gateway response carries no CORS header).
- */
-const ADD_BATCH = 25;
+const ROW_GAP_MS = 250;
 
 type Stage = 'idle' | 'listing' | 'screening' | 'done' | 'stopped' | 'error';
 type CheckStage = 'idle' | 'checking' | 'done' | 'stopped' | 'error';
@@ -127,6 +119,7 @@ export default function ImportPage() {
 
   const stopRef = useRef(false);
   const checkStopRef = useRef(false);
+  const addStopRef = useRef(false);
   // Synchronous guards: a double click can fire before the state disables the
   // button, which would otherwise start two discovery/check loops.
   const runningRef = useRef(false);
@@ -415,7 +408,7 @@ export default function ImportPage() {
           return;
         }
         if (index < ids.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, TRANSCRIPT_GAP_MS));
+          await new Promise((resolve) => setTimeout(resolve, ROW_GAP_MS));
         }
       }
 
@@ -485,11 +478,8 @@ export default function ImportPage() {
     };
   }
 
-  /** Add one id through the single import; a batch of one would also work. */
-  async function addSingleRow(youtubeIdToAdd: string) {
-    if (!l2) return;
-    setAddingId(youtubeIdToAdd);
-    setError('');
+  /** Mark exactly one row as being imported, so the table shows one spinner. */
+  function markRowAdding(youtubeIdToAdd: string) {
     setRows((previous) =>
       previous.map((row) =>
         row.youtube_id === youtubeIdToAdd
@@ -497,6 +487,24 @@ export default function ImportPage() {
           : row,
       ),
     );
+  }
+
+  function markRowFailed(youtubeIdToAdd: string, message: string) {
+    setRows((previous) =>
+      previous.map((row) =>
+        row.youtube_id === youtubeIdToAdd
+          ? { ...row, add_status: 'failed', add_reason: message }
+          : row,
+      ),
+    );
+  }
+
+  /** Add one id through the single import (the per-row *Add* button). */
+  async function addSingleRow(youtubeIdToAdd: string) {
+    if (!l2) return;
+    setAddingId(youtubeIdToAdd);
+    setError('');
+    markRowAdding(youtubeIdToAdd);
     try {
       const result = await importSingle({ ...addOptions(), l2, youtube_id: youtubeIdToAdd });
       applyAddResult(result);
@@ -504,57 +512,76 @@ export default function ImportPage() {
       logerr('import single failed', err);
       const message = err instanceof Error ? err.message : t('error.general');
       setError(message);
-      setRows((previous) =>
-        previous.map((row) =>
-          row.youtube_id === youtubeIdToAdd
-            ? { ...row, add_status: 'failed', add_reason: message }
-            : row,
-        ),
-      );
+      markRowFailed(youtubeIdToAdd, message);
     } finally {
       setAddingId(null);
     }
   }
 
-  /** Add a set of ids in bounded batches (one page per request). */
+  /**
+   * Add a set of ids **one video per request** (SPEC-099 § Add).
+   *
+   * This used to send 25 ids per `/admin/videos/add-batch` call, which put 25
+   * transcript downloads back to back through a single page: the caption
+   * endpoint rate-limits that burst, and a page that overruns the gateway
+   * timeout returns a headerless 502 that reads as a CORS error in the
+   * browser. One id per request keeps exactly one download in flight, spins
+   * only the row being imported (like the transcript-check phase), and lets
+   * *Stop* take effect between videos. Nothing is lost by stopping: the
+   * importer commits per video, so imported rows stay imported.
+   *
+   * The first HTTP failure stops the run — a blocked caption service would
+   * otherwise be hit once per remaining video — leaving the rest pending so
+   * pressing the button again continues where it left off.
+   */
   async function addIds(ids: string[]) {
     if (!l2 || ids.length === 0) return;
+    addStopRef.current = false;
     setAddingAll(true);
     setError('');
-    const submitted = new Set(ids);
+    let imported = 0;
     try {
-      for (let start = 0; start < ids.length; start += ADD_BATCH) {
-        const slice = ids.slice(start, start + ADD_BATCH);
-        for (const id of slice) {
-          setRows((previous) =>
-            previous.map((row) =>
-              row.youtube_id === id ? { ...row, add_status: 'adding', add_reason: null } : row,
-            ),
-          );
+      for (let index = 0; index < ids.length; index += 1) {
+        if (addStopRef.current) break;
+        const id = ids[index];
+        if (!id) continue;
+        log('import add row', { l2, adding: index + 1, total: ids.length });
+        markRowAdding(id);
+        try {
+          const result = await importSingle({ ...addOptions(), l2, youtube_id: id });
+          applyAddResult(result);
+          imported += 1;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : t('error.general');
+          // non-info-level: the request itself failed (502/timeout/blocked
+          // caption service) — the stack trace is what identifies which call.
+          logerr('import add failed', {
+            youtube_id: id,
+            added: index,
+            total: ids.length,
+            error: message,
+            cause: err,
+          });
+          setError(message);
+          markRowFailed(id, message);
+          return;
         }
-        log('import add batch', { l2, size: slice.length, offset: start });
-        const response = await importBatch({
-          ...addOptions(),
-          l2,
-          youtube_ids: slice,
-          limit: slice.length,
-        });
-        for (const result of response.results ?? []) applyAddResult(result);
+        if (index < ids.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, ROW_GAP_MS));
+        }
       }
+      if (addStopRef.current) {
+        log('import add run stopped', { added: imported, total: ids.length });
+        return;
+      }
+      log('import add run finished', { added: imported, total: ids.length });
       toast.success(t('msg.import_finished'));
-    } catch (err) {
-      logerr('import add failed', err);
-      const message = err instanceof Error ? err.message : t('error.general');
-      setError(message);
-      setRows((previous) =>
-        previous.map((row) =>
-          submitted.has(row.youtube_id) && row.add_status === 'adding'
-            ? { ...row, add_status: 'failed', add_reason: message }
-            : row,
-        ),
-      );
     } finally {
       setAddingAll(false);
+      // A stopped/failed run leaves nothing spinning.
+      setRows((previous) =>
+        previous.map((row) => (row.add_status === 'adding' ? { ...row, add_status: undefined } : row)),
+      );
     }
   }
 
@@ -982,17 +1009,25 @@ export default function ImportPage() {
                 <h2 className="text-lg font-semibold">{t('title.add_phase')}</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">{t('msg.add_phase_hint')}</p>
               </div>
-              <Button
-                disabled={busy || !l2 || eligible.length === 0}
-                onClick={() => guardAdd(eligible.map((row) => row.youtube_id), addIds)}
-              >
-                {addingAll ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
+              {addingAll ? (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    addStopRef.current = true;
+                  }}
+                >
+                  <CircleStop className="h-4 w-4" />
+                  {t('action.stop')}
+                </Button>
+              ) : (
+                <Button
+                  disabled={busy || !l2 || eligible.length === 0}
+                  onClick={() => guardAdd(eligible.map((row) => row.youtube_id), addIds)}
+                >
                   <Upload className="h-4 w-4" />
-                )}
-                {t('action.add_all_eligible', { count: eligible.length })}
-              </Button>
+                  {t('action.add_all_eligible', { count: eligible.length })}
+                </Button>
+              )}
             </div>
 
             <FormSection title={t('title.import_options')}>

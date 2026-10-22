@@ -354,6 +354,13 @@ for a malformed id or an unknown language, `502` when the YouTube API fails.
 `youtube_ids` also accepts a comma-separated string. Always `200`; the body
 carries one result per processed id:
 
+The console's *Add all eligible* does **not** use this endpoint: it calls
+`POST /admin/videos/add` once per video, so only one transcript download is in
+flight at a time ([SPEC-099 § 3 Add](099-admin-content-management.md#3-add)).
+`add-batch` remains the right call where a page of results is the unit of
+work — `/content/discover`'s *Import selected* and the channel/playlist
+walkers — and its per-request `limit`/`cursor` paging still applies there.
+
 ```json
 {
   "results": [
