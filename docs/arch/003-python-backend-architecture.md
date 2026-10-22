@@ -430,6 +430,9 @@ The Next.js app currently uses this Python backend. Important notes:
 | `save_to_images_cache(term, lang, images)` | Save image search to cache |
 | `load_from_channel_avatar_cache(channel_id)` | Load cached channel avatar |
 | `save_to_channel_avatar_cache(channel_id, img_bytes, content_type)` | Save channel avatar |
+| `load_from_video_metadata_cache(youtube_id)` | Load one 24h-cached `videos.list` resource (or an unavailable tombstone); local disk only, deletes an expired entry |
+| `save_to_video_metadata_cache(youtube_id, video)` | Cache one video resource, or the unavailable tombstone when `video` is None (SPEC-098) |
+| `video_metadata_cache_ttl_seconds()` | `VIDEO_METADATA_CACHE_TTL_HOURS` (default 24; `0` disables the cache) |
 
 ### `utils_csv.py` — CSV utilities
 
@@ -603,7 +606,8 @@ the admin import endpoints (SPEC-096) and the discovery endpoint (SPEC-098).
 |---|---|
 | `get_info_from_youtube(youtube_ids)` | Get basic video info from YouTube API |
 | `youtube_videos_list(ids, part)` | Low-level `videos.list`; returns `(items, error)` so a quota/auth failure is not mistaken for missing videos |
-| `get_video_details_batched(youtube_ids)` | Batch `videos.list` at the API max of 50; returns `(details, unavailable, error)` |
+| `get_video_details_batched(youtube_ids)` | Batch `videos.list` at the API max of 50; returns `(details, unavailable, error)` — the **live** path for the importer and the sweep |
+| `get_video_details_cached(youtube_ids)` | Same 3-tuple, but serves each video from the 24h `video_metadata` cache and sends only the misses to `videos.list`; discover-phase probes only (SPEC-098) |
 | `normalize_video_ids(ids)` | Split input ids into `(valid, invalid)` by the 11-char id shape (one bad id rejects a whole API batch) |
 | `video_import_block_reason(video, force, l2_code)` | `unavailable` / `not_embeddable` / `region_restricted` / `locale_mismatch` / None (`force` bypasses the two soft checks) |
 | `l2_locales(l2_code)` / `video_locale_matches_l2(video, l2_code)` | Locale candidates for an L2 — the single definition, used by the importer's eligibility check |
