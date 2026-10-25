@@ -31,7 +31,9 @@
  * App Store Connect metadata + submission (no EAS needed):
  *   node scripts/upload.mjs appstore status
  *   node scripts/upload.mjs appstore prepare <version> [--whats-new <text>]
+ *     [--release-type manual|after-approval|scheduled] [--build <buildId>]
  *   node scripts/upload.mjs appstore submit <version> [--whats-new <text>]
+ *     [--release-type manual|after-approval|scheduled]
  *   node scripts/upload.mjs appstore metadata <version>
  *     [--description <text>] [--promo-text <text>] [--keywords <text>] [--whats-new <text>]
  *   Requires (scripts/.env.upload, gitignored):
@@ -311,6 +313,7 @@ function positionals() {
   const out = [];
   const valueFlags = new Set([
     '--track', '--status', '--itc-provider', '--whats-new', '--build', '--version',
+    '--release-type',
   ]);
   const raw = process.argv.slice(2);
   for (let i = 0; i < raw.length; i++) {
@@ -485,13 +488,27 @@ async function appstore() {
     'GET',
     `/v1/apps/${appId}/appStoreVersions?filter[platform]=IOS&filter[versionString]=${versionArg}&fields[appStoreVersions]=versionString,appStoreState`,
   );
+  // Release type: after a public release is approved, either it goes live by
+  // itself (AFTER_APPROVAL) or it waits for an explicit Release in App Store
+  // Connect (MANUAL, the default Apple applies when the attribute is omitted).
+  const RELEASE_TYPES = { manual: 'MANUAL', 'after-approval': 'AFTER_APPROVAL', scheduled: 'SCHEDULED' };
+  const releaseTypeFlag = flagValue('--release-type');
+  if (releaseTypeFlag && !RELEASE_TYPES[releaseTypeFlag]) {
+    fail(`--release-type must be one of: ${Object.keys(RELEASE_TYPES).join(', ')}`);
+  }
+  const releaseType = RELEASE_TYPES[releaseTypeFlag] ?? null;
+
   let versionId = version[0]?.id;
   if (!versionId) {
-    console.log(`[appstore] Creating version ${versionArg}…`);
+    console.log(`[appstore] Creating version ${versionArg}${releaseType ? ` (${releaseType})` : ''}…`);
     version = await ascApi(token, 'POST', '/v1/appStoreVersions', {
       data: {
         type: 'appStoreVersions',
-        attributes: { platform: 'IOS', versionString: versionArg },
+        attributes: {
+          platform: 'IOS',
+          versionString: versionArg,
+          ...(releaseType ? { releaseType } : {}),
+        },
         relationships: { app: { data: { type: 'apps', id: appId } } },
       },
     });
@@ -499,6 +516,12 @@ async function appstore() {
   } else {
     console.log(`[appstore] Version ${versionArg} already exists (${version[0].attributes.appStoreState}).`);
     versionId = version[0].id;
+    if (releaseType) {
+      console.log(`[appstore] Setting release type ${releaseType} on the existing version…`);
+      await ascApi(token, 'PATCH', `/v1/appStoreVersions/${versionId}`, {
+        data: { type: 'appStoreVersions', id: versionId, attributes: { releaseType } },
+      });
+    }
   }
 
   // 2. Attach the build that matches the shared build number.

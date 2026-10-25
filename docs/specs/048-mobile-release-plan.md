@@ -35,11 +35,12 @@ remain documented here so future releases are one-command and correct.
 | Production API URL | `https://pythonvps.zerotohero.ca` | same |
 
 **Launch status:** both stores are live. iOS shipped **3.0.0 (b1)** and has
-uploaded through **3.7.3 (b28, TestFlight)**; the current App Store submission
-is **b25** (submitted 2026-09-25, `releaseType AFTER_APPROVAL`). Android
-shipped **3.0.0 (b1)** and **b2 is live in Production**, but the last Android
-upload on record is **3.5.0 (b21, Internal testing)** — Production has not been
-bumped since launch. Per-release history lives in
+uploaded through **3.7.3 (b28, TestFlight)**; **3.7.0 (b25)** is the version
+live on the App Store, and **3.7.3 (b28)** was submitted for review on
+2026-10-26 (`releaseType AFTER_APPROVAL`, so it publishes itself once approved).
+Android shipped **3.0.0 (b1)** and **b2 is live in Production**, but the last
+Android upload on record is **3.5.0 (b21, Internal testing)** — Production has
+not been bumped since launch. Per-release history lives in
 [`docs/versioning/build-ledger.md`](../versioning/build-ledger.md) — that file,
 not this one, is the source of truth for what shipped.
 

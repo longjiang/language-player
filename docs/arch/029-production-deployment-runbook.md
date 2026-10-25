@@ -229,9 +229,13 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.7.3 build 28 → App Store Connect / TestFlight (2026-10-06;
-TestFlight-only — SRS review/sync fixes, AI-explanation regenerate, and the
-dictionary's Bing + Google image links) ·
+**last upload:** 3.7.3 build 28 → App Store Connect / TestFlight (uploaded
+2026-10-05, in TestFlight 2026-10-06 — SRS review/sync fixes, AI-explanation
+regenerate, and the dictionary's Bing + Google image links) ·
+**in review:** 3.7.3 build 28 was submitted for App Store review 2026-10-26
+(review submission `b61afc68`, release type `AFTER_APPROVAL`, so it goes live by
+itself once approved). Note the binary is the 2026-10-05 upload: everything merged
+after `c44aafd2` is *not* in this release and ships in the next cut ·
 **live:** 3.7.0 build 25 was approved and is `READY_FOR_SALE` (checked
 2026-10-01; submitted 2026-09-25, review submission `6b81745f`, release type
 `AFTER_APPROVAL`). Note 3.5.0–3.6.2 and 3.7.1 (b26) and 3.7.2 (b27) were
@@ -428,12 +432,40 @@ node scripts/upload.mjs appstore metadata 3.1.0 \
   --keywords "<100 chars, comma-separated>"             # update listing copy
 ```
 
+`prepare`/`submit` attach the build whose number matches
+`packages/shared/src/version.json` (`PRODUCT_BUILD_NUMBER`) **and** whose
+marketing version equals `<version>`; pass `--build <id>` to attach a specific
+build when the two disagree. Both accept
+`--release-type manual|after-approval|scheduled` (`MANUAL` is what Apple applies
+when the attribute is omitted, so a promoted build otherwise sits
+approved-but-unreleased until someone clicks Release): `after-approval`
+publishes by itself once approved, `manual` holds it.
+
+**Promoting an already-uploaded TestFlight build to the App Store** is just
+`prepare` + `submit` for that build's marketing version — nothing is rebuilt or
+re-uploaded, so no new build number is consumed:
+
+```bash
+node scripts/upload.mjs appstore status                     # find the newest VALID build
+node scripts/upload.mjs appstore prepare 3.7.3 \
+  --release-type after-approval --whats-new "$(cat tmp/whats-new-<version>.txt)"
+node scripts/upload.mjs appstore submit 3.7.3 \
+  --release-type after-approval --whats-new "$(cat tmp/whats-new-<version>.txt)"
+```
+
+⚠️ Pass `--whats-new` to **`submit` as well**: `submit` re-runs the prepare
+steps, and omitting the flag overwrites the What's New you just wrote with the
+script's built-in fallback text. This is how 3.7.3 (b28) was submitted
+(2026-10-26); note that a promoted build ships the code from its own upload
+date, not from `HEAD`.
+
 This is exactly how 3.1.0 was submitted (2026-08-14). Listing copy
 (description/promo/keywords) can be updated via `appstore metadata` even
 while the version is waiting for review. Screenshots are per-version in App
 Store Connect but are carried forward from the previous version (verified on
 3.1.0: same sets as 3.0.0 — iPhone 6.7" ×10, iPad Pro 12.9" ×3, iPad Pro
-12.9" 3rd gen ×9). This does **not** replace the required per-build
+12.9" 3rd gen ×9; re-verified on 3.7.3: the same 22 shots across the same three
+sets). This does **not** replace the required per-build
 TestFlight metadata in § 4.3.1.
 
 ### 4.4 After upload
