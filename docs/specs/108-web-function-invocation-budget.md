@@ -356,6 +356,16 @@ building it:
   script runs before the body parses — but the server HTML advertises `lang="en"`
   for the other 17 locales. **SPEC-080's `<html lang={l1.code}>` no longer
   describes this**; see the note added there.
+- **`setRequestLocale()` alone did not carry the locale into the request
+  config** — found on the deployed site, not in the build. `/de/ja/explore`
+  rendered English with `<html lang="en">` while `/zh-Hans/ja` was correct, and a
+  temporary log showed `requestLocale` resolving to `"en"` for `/de/ja`. Every
+  server-side next-intl call now passes `{ locale }` explicitly
+  (`getMessages`, `getTimeZone`, `getTranslations`); `getConfig` prefers that
+  argument over its request cache and over the `X-NEXT-INTL-LOCALE` header, so
+  it is the only reliable source under on-demand static generation. Verified:
+  de → German, zh-Hans → Chinese, en → English; public routes still follow
+  `NEXT_LOCALE`; the 404 still renders.
 - **Two pairs are seeded in `generateStaticParams`** (`en/ja`, `en/zh`) as a
   build-time canary: if a request-time API ever creeps into the subtree, the
   build fails instead of silently going dynamic.

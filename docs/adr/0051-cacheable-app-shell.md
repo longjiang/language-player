@@ -55,6 +55,7 @@ The pages themselves need no function. Every route under `/[l1]/[l2]/` is a `'us
 3. `generateStaticParams`, `dynamicParams` and `revalidate = false` stay on the `[l1]/[l2]` layout.
 4. `app/not-found.tsx` stays free of request-time APIs.
 5. Any cached API response names its varying query params (`cachedJson` in `src/lib/api-cache.ts`).
+6. Any server-side next-intl call passes `{ locale }` explicitly. `setRequestLocale()` alone did not reach the request config under on-demand static generation (deployed regression, 2026-10-27).
 
 ## Alternatives considered
 
