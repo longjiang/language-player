@@ -571,8 +571,26 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Passed an explicit length so regenerate can rebuild the history of the
   // turns that SURVIVE its truncation without waiting for a state commit.
   const buildHistory = useCallback(
-    (count: number): StreamHistoryTurn[] => buildAiChatHistory(messages, count),
-    [messages],
+    (count: number): StreamHistoryTurn[] => {
+      const turns = buildAiChatHistory(messages, count);
+      // Diagnostic (ARCH-027 `ask-ai` domain): the EXACT turns handed to
+      // `stream()` → `POST /chatgpt/stream`. A follow-up that loses the word
+      // context is either an empty/partial history here or a server-side drop,
+      // and only these values can tell the two apart.
+      askAiLogger.log('history built', {
+        word,
+        walkCount: count,
+        transcript: messages.length,
+        transcriptRoles: messages.map((m) => m.role),
+        transcriptHasText: messages.map((m) => (m.text ?? '').length > 0),
+        transcriptHasPrompt: messages.map((m) => !!m.prompt),
+        turnRoles: turns.map((t) => t.role),
+        turnChars: turns.map((t) => t.content.length),
+        turnPreviews: turns.map((t) => t.content.slice(0, 80)),
+      });
+      return turns;
+    },
+    [messages, word],
   );
 
   /**

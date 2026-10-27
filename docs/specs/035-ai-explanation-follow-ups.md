@@ -74,6 +74,32 @@ regenerated reply — is reconstructed from the live transcript:
 - Preset buttons' used-once state is derived from the live transcript, so a
   preset spent by a turn the regenerate removed is offered again.
 
+### Restored sessions lose the opening request (known leak, 2026-10-28)
+
+A transcript persisted under a `storageKey` (reader / web reader / note / image /
+book / video Ask AI) stores only `role` / `text` / `label` / `presetKey` — never
+`prompt`, which embeds the full preloaded content and would blow the
+`localStorage` / `AsyncStorage` quota. On restore, the opening request is
+therefore gone, and `buildAiChatHistory`'s fallback fills the first **user** turn
+with the assistant's own reply text (no preceding user bubble exists for the
+initial explanation). The model is asked a follow-up whose grounding turn is its
+own prior answer, not the request that produced it.
+
+`apps/web/src/components/ai-explanation.test.tsx` characterization test
+("sends the assistant reply as the user turn when the session was restored")
+pins this behavior down. The fix is to persist a **compact** context (the word /
+form / sentence, or a short `prompt` when it is small) and rebuild the opening
+request on restore — the same approach `buildFreeFormPrompt` already uses for
+regenerate — and to stop fabricating a user turn from `text`. Not implemented
+yet.
+
+Otherwise the multi-turn contract is verified end to end: `ai-explanation.test.tsx`
+asserts the exact `POST /chatgpt/stream` body for the initial + free-form,
+multi-turn and preset flows (the prior conversation is always attached), and a
+live probe against the deployed endpoint answered a bare "请帮我区分容易混淆的
+词" follow-up with "你上一轮问的是 `加わる`…", i.e. the server forwards
+`messages` as documented.
+
 ### Configurable presets (`followUpPresets` prop)
 
 Preset buttons are now a prop, not hardcoded. `AiExplanation` takes
