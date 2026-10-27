@@ -543,6 +543,23 @@ snapshot**:
 - No tap-to-rate zones on the card — rating is only via the explicit buttons
   ([SPEC-049 §6](049-mobile-feature-parity.md#6-review-flashcards)).
 
+### Text selection (2026-10-28)
+
+Everything inside the review card is **selectable and copyable** again: context
+sentence, revealed definition, examples, translations, and the failed-test
+diagnostic. The card carried `select-none` since 2026-07-18 (`821e570b`), added
+only so the then-existing tap gestures (tap front to reveal, tap the left/right
+half to rate) could not select text. Those gestures were removed on 2026-09-02
+(`aacce97a8`, reveal is button/keyboard-only), which left the class suppressing
+selection with nothing left to protect.
+
+Decorative annotations keep their own `select-none` — ruby readings (`rt`),
+the inline quick gloss, the byeonggi reading, and the blanked-token underscores
+in quiz/spell mode — so a copied passage contains the readable text only.
+Selecting across tokenized words also re-enables the selection UI those
+surfaces already provide (`useSelectionPopup` in `TokenizedText`, the
+text-action menu on the context).
+
 ### Context playback (2026-09-xx)
 
 When a saved word's context is from a YouTube video (its `SavedWordContext`

@@ -2060,9 +2060,16 @@ export default function ReviewPage() {
 
       {/* Card — reveal is button/keyboard-only: tapping the card no longer
           flips it (accidental taps revealed the answer before the user was
-          ready). Rating stays on the explicit buttons below. */}
+          ready). Rating stays on the explicit buttons below.
+          No `select-none` here: it was added (821e570b, 2026-07-18) only to stop
+          tap-gestures from selecting text, and those gestures were removed with
+          the reveal change (aacce97a8, 2026-09-02). Leaving it on made every
+          child — context sentence, definitions, examples, translations, test
+          diagnostics — unselectable and uncopyable. Decorative annotations
+          (ruby readings, the inline quick gloss, blanked-token underscores)
+          keep their own `select-none` so a copied passage excludes them. */}
       <div
-        className="bg-card border rounded-xl p-4 sm:p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none"
+        className="bg-card border rounded-xl p-4 sm:p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center"
       >
         {/* Context sentence — always visible, tokenized/interactive */}
         {wordCtx.text && (
