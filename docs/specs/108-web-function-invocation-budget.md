@@ -129,6 +129,17 @@ shell** static/cacheable.
   mechanism the committed `/api/python/*` and `/api/directus/*` rules already
   use. The route handlers stay for the cases a rewrite cannot express
   (Wiktionary audio, whose `Special:FilePath` redirects off-host).
+
+  **Considered and rejected — proxying thumbnails through Flask.** Flask is
+  already the app's data origin, already relays images
+  (`/channel-thumbnail`), and sits outside China, so it would satisfy ADR-0046
+  just as well. It loses on every other axis: the bytes move off Netlify's
+  included 1 TB onto the VPS's shared bandwidth; every uncached thumbnail
+  becomes a trans-Pacific round trip with no PoP cache in front of it; a Flask
+  outage would blank every thumbnail in the app; and it needs a route, a byte
+  cache and rate limiting where the rewrite needs four lines of TOML. The one
+  thing Flask can do that a rewrite cannot is set its own cache headers — see
+  the cache-window note under Phase 1.
 - **D2 — The app shell becomes cacheable (ISR), not read request-time APIs.**
   Locale must come from the URL segment (`setRequestLocale` + `requestLocale`)
   rather than `cookies()`/`headers()`; the root layout must stop resolving
@@ -217,6 +228,28 @@ therefore needs the host allowlist and error handling.
 
 **Rollback**: revert the three `netlify.toml` rules. No app code changes.
 
+**Post-change behaviour** (what the app does differently afterwards):
+
+- **Thumbnails** keep their URLs — `/api/asset-proxy/img.youtube.com/vi/<id>/mqdefault.jpg` —
+  so `assetProxyUrl()` and every `<img>` are untouched; only the responder
+  changes. The cache window, however, becomes `img.youtube.com`'s own
+  `public, max-age=7200` + `etag` instead of our
+  `max-age=86400, s-maxage=604800, immutable`: two hours in the browser instead
+  of one day. A proxy rule cannot set response headers, so this is the price of
+  removing the function; a Flask relay is the fallback if the shorter window
+  turns out to matter.
+- **Rare glyphs** need no app change. `rare-glyph-provider.tsx` still calls
+  `/api/glyph-font/manifest?cps=…&style=…` and then
+  `/api/glyph-font/<hash>.woff2`, builds a `FontFace` from the bytes and adds it
+  to `document.fonts`. The rewrite serves both from Flask's existing
+  `/glyph-font/*` endpoints, still same-origin. Caching comes from Flask's own
+  headers: subsets are immutable with an `ETag` (one year), the manifest is
+  `max-age=3600` with no `ETag` — so manifest freshness relaxes from five
+  minutes (today's `revalidate: 300`) to at most an hour. Path validation moves
+  to Flask, whose `glyph_font_file` already rejects anything that is not
+  `[0-9a-f]{16}` plus a known extension. If Flask is unreachable, glyphs fall
+  back to the chip, exactly as they do today.
+
 ### Phase 2 — cacheable app shell
 
 **Goal**: the HTML for `(l1, l2, route)` is generated once per deploy and then
@@ -257,12 +290,23 @@ what `revalidate` says.
    component, following `ThemeSync`). Verify for all 18 L1s.
 6. Keep the 9 `loading.tsx` boundaries: prefetch becomes free once the target is
    cached, and the boundaries are what enable prefetch at all.
-7. Verify Netlify will store a page response that sets cookies. Every
-   `[l1]/[l2]` page response currently carries three `set-cookie` headers (`l1`,
-   `l2`, `NEXT_LOCALE`) from the middleware. If the CDN refuses to cache them,
-   stop stamping `l1`/`l2` on page responses and read the pair from the URL
-   instead — the cookies are only needed by the `/` redirect,
-   `/language-select`, and the Classic adapter's default pair.
+7. Make the page response cookie-free. Every `[l1]/[l2]` response currently
+   carries three `set-cookie` headers from the middleware — `l1`, `l2` and
+   `NEXT_LOCALE` ([proxy.ts:216-218](../../apps/web/src/proxy.ts#L216-L218)) —
+   and a shared cache is generally unwilling to store a response that sets a
+   cookie: one stored copy would hand the same cookie to every visitor, and for
+   a session cookie that is a leak. Verify first (Q4), then move the write to the
+   client: a small effect in the `[l1]/[l2]` layout writes the same three cookies
+   after hydration, the way
+   [locale-provider.tsx:75](../../apps/web/src/providers/locale-provider.tsx#L75)
+   and [capacitor-redirect.tsx:44](../../apps/web/src/components/layout/capacitor-redirect.tsx#L44)
+   already do. `/`, `/language-select` and the auth redirects keep setting them
+   server-side — those responses are not cached.
+
+   **Not in scope**: `lp_aff`, the affiliate attribution cookie. It is
+   consent-gated and written by `POST /api/affiliate/consent` ([SPEC-102 §
+   Cookie consent](102-affiliates-and-coupons.md#cookie-consent)), so it never
+   rides on a page response.
 
 **Expected effect**: one invocation per `(pair, route)` per deploy plus one per
 newly visited pair, instead of one per view / prefetch / navigation.
@@ -335,6 +379,7 @@ Without the header, `?l2=ja` and `?l2=zh` share a cache entry.
 | `output: 'export'` | Forbids middleware; kills route handlers and NextAuth |
 | `prefetch={false}` on video cards | Trades navigation latency for invocations; Phase 2 makes prefetch free |
 | Downgrading the add-on now | Blocked mid-cycle while usage exceeds 125k, and it re-upgrades at the next threshold crossing |
+| Flask proxy for thumbnails | Satisfies ADR-0046 equally, but moves traffic onto VPS bandwidth, adds a trans-Pacific hop, couples thumbnails to Flask uptime, and cannot be expressed in fewer lines than the rewrite (D1) |
 | Migrating to credit-based plans | 20 credits/GB across 32 GB+ of bandwidth, against 1 TB included (D5) |
 | Deleting the idle sites | `cheapbooze`, `czh-*`, `language-player-nitro`, the 2 auto-named sites and `zerotohero-nuxt` have zero function usage — housekeeping, not savings |
 
@@ -437,3 +482,8 @@ against the live site:
   keep prefetch enabled, which is now free — recommend keeping them.
 - **Q3**: Is the residual, post-Phase-3 count likely to clear 125k? If traffic
   makes Level 0 unreachable, the target is the 2M ceiling, not $0.
+- **Q4**: Does Netlify store a response that carries `Set-Cookie`? Unstated in
+  the caching docs. Test: after the first Phase 2 deploy, request
+  `/en/ja/explore` twice and read `Cache-Status` — `fwd=uri-miss; stored` then
+  `hit; ttl=…` means cookies do not block storage; `stored=false` or a repeated
+  `fwd=bypass` means Phase 2 step 7 is mandatory, not optional.
