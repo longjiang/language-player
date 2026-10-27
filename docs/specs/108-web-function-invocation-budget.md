@@ -7,7 +7,7 @@
   ~1.1M per billing cycle to below the legacy Pro plan's included 125k, by
   removing avoidable function calls (CDN-level proxies, a cacheable app shell,
   cacheable read-only API responses)
-- **Status**: draft
+- **Status**: in progress
 - **Created**: 2026-10-27
 - **ROADMAP Phase**: Cross-cutting (deployment & infrastructure)
 - **See also**:
