@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { getLocale, getMessages, getTimeZone } from 'next-intl/server';
+import { SUPPORTED_L1S } from '@langplayer/shared';
 import { ThemeProvider } from '@/components/theme-provider';
-import { LocaleProvider } from '@/providers/locale-provider';
 import { SessionProvider } from '@/providers/session-provider';
-import { CookieConsent, AffiliateCapture } from '@/components/consent/cookie-consent';
+import { AffiliateCapture } from '@/components/consent/cookie-consent';
 import { Suspense } from 'react';
 import { ApiClientProvider } from '@/components/api-client-provider';
 import { UserDataProvider } from '@/providers/user-data-provider';
@@ -12,7 +11,6 @@ import { SavedWordsProvider } from '@/providers/saved-words-provider';
 import { SubscriptionProvider } from '@/providers/subscription-provider';
 import SupabaseSessionHandler from '@/components/auth/supabase-session-handler';
 import { CapacitorRedirect } from '@/components/layout/capacitor-redirect';
-import { PublicHeader } from '@/components/layout/public-header';
 import { Toaster } from '@/components/ui/sonner';
 import ogVideos from '@/data/og-videos.json';
 import './globals.css';
@@ -104,42 +102,49 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-  const timeZone = await getTimeZone();
+/**
+ * `<html lang>` and `data-ui-lang` cannot be known here: the root layout has no
+ * access to the `[l1]` segment without reading the request, which would make
+ * every route dynamic (SPEC-108 Phase 2). They are therefore written by the
+ * inline script below *before the body parses*, so there is no flash and no
+ * hydration mismatch — and the segment layouts still render the localized
+ * content. The trade-off is that the server HTML advertises `lang="en"` for the
+ * other 17 locales; see SPEC-108 § Risks.
+ */
+const LANG_BOOTSTRAP = `(function(){try{var L=${JSON.stringify(
+  SUPPORTED_L1S,
+)},s=location.pathname.split('/').filter(Boolean),l=s[0];if(!l||L.indexOf(l)<0)return;var r=document.documentElement;r.lang=l;r.dataset.uiLang=l;r.dir=l==='ar'?'rtl':'ltr';}catch(e){}})();`;
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={locale} data-ui-lang={locale} suppressHydrationWarning>
+    <html lang="en" data-ui-lang="en" suppressHydrationWarning>
       {/* No preconnect / dns-prefetch hint for YouTube: youtube.com and
           i.ytimg.com are blocked in mainland China, so the hint only opens a
           handshake that can never complete (ADR-0046). Thumbnails are served
           same-origin through /api/asset-proxy instead. */}
-      <head />
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LANG_BOOTSTRAP }} />
+      </head>
       <body className={`${inter.variable} font-sans`}>
-        <LocaleProvider locale={locale} messages={messages} timeZone={timeZone}>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <SessionProvider>
-              <ApiClientProvider>
-                <UserDataProvider>
-                  <SavedWordsProvider>
-                    <SubscriptionProvider>
-                      <SupabaseSessionHandler />
-                      <CapacitorRedirect />
-                      <PublicHeader />
-                      <Suspense fallback={null}>
-                        <AffiliateCapture />
-                        <CookieConsent />
-                      </Suspense>
-                      {children}
-                    </SubscriptionProvider>
-                  </SavedWordsProvider>
-                </UserDataProvider>
-              </ApiClientProvider>
-            </SessionProvider>
-            <Toaster richColors closeButton={false} position="top-center" />
-          </ThemeProvider>
-        </LocaleProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <SessionProvider>
+            <ApiClientProvider>
+              <UserDataProvider>
+                <SavedWordsProvider>
+                  <SubscriptionProvider>
+                    <SupabaseSessionHandler />
+                    <CapacitorRedirect />
+                    <Suspense fallback={null}>
+                      <AffiliateCapture />
+                    </Suspense>
+                    {children}
+                  </SubscriptionProvider>
+                </SavedWordsProvider>
+              </UserDataProvider>
+            </ApiClientProvider>
+          </SessionProvider>
+          <Toaster richColors closeButton={false} position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -337,6 +337,34 @@ still produces a ƒ route and a green build.
    Cookie consent](102-affiliates-and-coupons.md#cookie-consent)), so it never
    rides on a page response.
 
+**Implementation notes (2026-10-27, as shipped)** — four things only surfaced by
+building it:
+
+- **`app/not-found.tsx` must not read the request.** It is part of the tree of
+  *every* route, so a single `cookies()` call there kept all 60 routes dynamic
+  even with the `[l1]/[l2]` exports correct and no error in the build. The global
+  404 is now static English (with `setRequestLocale('en')`, because next-intl
+  otherwise falls back to `headers()`); localized 404s come from
+  `[l1]/[l2]/not-found.tsx`, which has the app provider above it.
+- **Pages that call `useSearchParams()` need a Suspense boundary above them** or
+  prerendering bails out ("should be wrapped in a suspense boundary"). One
+  boundary around `{children}` in the `[l1]/[l2]` layout covers every route that
+  lacks its own `loading.tsx`; routes that have one keep the closer boundary.
+- **`<html lang>` / `data-ui-lang` / `dir` are written by an inline pre-paint
+  script** built from `SUPPORTED_L1S` and `location.pathname`, because the root
+  layout has no access to `l1` without a request read. Nothing flashes — the
+  script runs before the body parses — but the server HTML advertises `lang="en"`
+  for the other 17 locales. **SPEC-080's `<html lang={l1.code}>` no longer
+  describes this**; see the note added there.
+- **Two pairs are seeded in `generateStaticParams`** (`en/ja`, `en/zh`) as a
+  build-time canary: if a request-time API ever creeps into the subtree, the
+  build fails instead of silently going dynamic.
+
+Verified on the built output (`next build` + `next start`, 2026-10-27):
+`/en/ja/explore` → `x-nextjs-cache: HIT`, `Cache-Control: s-maxage=31536000`, no
+`set-cookie`; an unseeded pair (`/de/fr/explore`) → `MISS` then `HIT`; `/login`
+still `no-store` (dynamic, correct — it varies by `Accept-Language`/cookie).
+
 **Expected effect**: one invocation per `(pair, route)` per deploy plus one per
 newly visited pair, instead of one per view / prefetch / navigation.
 
