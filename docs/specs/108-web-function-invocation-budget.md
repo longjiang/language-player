@@ -257,8 +257,10 @@ served from the CDN edge — no invocation per view, prefetch or navigation.
 
 **Prerequisite (blocking)**: no request-time API in the render path.
 [src/i18n.ts](../../apps/web/src/i18n.ts) calls `headers()` and `cookies()`,
-which Next treats as a signal to render the route at request time, no matter
-what `revalidate` says.
+which Next treats as a signal to render the route at request time. Measured, not
+assumed (Q1): with `generateStaticParams`, `dynamicParams` and
+`revalidate = false` all present, a single `await cookies()` in the layout
+still produces a ƒ route and a green build.
 
 **Changes** (in order):
 
@@ -470,14 +472,25 @@ against the live site:
 
 ## Open Questions
 
-- **Q1 (answered from the docs; confirm at build)**: `revalidate` alone is not
-  enough. The framework's `generate-static-params` reference states that without
-  a `generateStaticParams` export the route "will be dynamically rendered", while
-  `dynamicParams = true` is what lets unknown `(l1, l2)` pairs generate at
-  request time. Phase 2 therefore ships `generateStaticParams` returning `[]`
-  (or a seeded subset) and confirms on the first `build:check` that
-  `/en/ja/explore` comes back cacheable. If it does not, the fallback is
-  `dynamic = 'force-static'` on the segment layout.
+- **Q1 — closed 2026-10-27 by an isolated probe** (Next 16.3.0, webpack
+  pipeline: a throwaway app, three builds, no repo changes). Results:
+
+  | Probe route | Segment config | Build symbol |
+  |---|---|---|
+  | `/[a]/[b]` + child page, no exports | — | **○ Static** |
+  | `/[a]/[b]` + child, no control flow | `generateStaticParams → []`, `dynamicParams`, `revalidate = false` | **● SSG** (children inherit it) |
+  | same, with `await cookies()` in the layout, one real param | as above | **ƒ Dynamic** |
+  | `forced/[d]`, `cookies()` in layout | `dynamic = 'force-static'` | **○ Static** |
+
+  Conclusions: (a) `revalidate` alone is not enough — `generateStaticParams` is
+  the opt-in, and an empty array is legal; (b) one export on the `[l1]/[l2]`
+  layout covers every child page, so the 50 pages need no per-page export;
+  (c) **but a request-time API anywhere in the tree silently flips the whole
+  subtree back to ƒ with a green build** — which is why Phase 2 step 1 is a hard
+  prerequisite, not an optimization; (d) `dynamic = 'force-static'` does survive
+  `cookies()`, but only by making it return empty, which would resolve every
+  visitor's locale to `en` — not a shortcut here.
+
 - **Q2**: Should the 9 `loading.tsx` boundaries stay once pages are cached? They
   keep prefetch enabled, which is now free — recommend keeping them.
 - **Q3**: Is the residual, post-Phase-3 count likely to clear 125k? If traffic
