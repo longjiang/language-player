@@ -17,6 +17,7 @@
   - [SPEC-059 — Web Release QA Checklist](059-web-release-qa-checklist.md) — the `/api/python/*` rewrite this spec's Phase 1 mirrors
   - [SPEC-104 — Rare Han Glyph Subsets](104-rare-han-glyph-subsets.md) — the `/api/glyph-font` proxy
   - [ADR-0025 — Next.js 16 upgrade](../adr/0025-nextjs-16-turbopack-upgrade.md) — `proxy.ts` (formerly `middleware.ts`)
+  - [ADR-0051 — The `[l1]/[l2]` app shell is static](../adr/0051-cacheable-app-shell.md) — the architectural decision Phase 2 implements
 
 ## Overview
 
@@ -432,9 +433,9 @@ paths stay uncached: only the success return of each handler goes through
   metered-add-on ladder (125k → Level 1 $25 → 2M → $19/500k), the
   `/sites/{id}/usage` recipe, and that page-level cost is a property of the
   rendering model, not a Netlify setting.
-- New ADR (0051) — the cacheable-shell decision: locale from the URL segment,
-  `revalidate = false`, shell-only caching, and the rule that no session-scoped
-  value may be server-rendered under `[l1]/[l2]`.
+- [ADR-0051](../adr/0051-cacheable-app-shell.md) — the cacheable-shell decision:
+  locale from the URL segment, `revalidate = false`, shell-only caching, and the
+  five invariants that keep it true.
 - This spec — status → complete, with measured before/after numbers.
 
 **Acceptance**: ARCH-029's numbers match `/sites/{id}/usage` at cycle close.
@@ -534,6 +535,33 @@ against the live site:
   and the first wave of prefetches re-renders them once. Expected, bounded.
 - **`revalidate` interacts with `notFound()`** on invalid pairs; confirm 404s are
   not cached.
+
+## Outcome (2026-10-27)
+
+| Phase | Commit | What shipped |
+|---|---|---|
+| 1 | `920c0e4b` | Three CDN rewrites (thumbnails, glyph fonts); middleware no longer runs on `/api/*` or `/og` |
+| 2 | `ffb8303f` | `[l1]/[l2]` shell is static: `requestLocale` + `generateStaticParams` + `revalidate = false`; `(public)` route group; cookie-free page responses; static global 404 |
+| 3 | `a2da66e1` | Read-only API responses keyed on their real query params (`cachedJson`), fixing a live `?l2=` cache collision |
+| 4 | this commit | ADR-0051, ARCH-029 § 2.2/§ 2.6, this outcome |
+
+Verified locally on a production build (Phase 2):
+
+- `/en/ja/explore` → `x-nextjs-cache: HIT`, `Cache-Control: s-maxage=31536000`,
+  **no `set-cookie`**
+- `/de/fr/explore` (unseeded pair) → `MISS` on first request, `HIT` after
+- `/login` → `private, no-cache, no-store` (dynamic on purpose — it varies by
+  `Accept-Language`/cookie)
+- `/garbage` → 404, from the now-static global not-found
+
+**Still pending, and why this spec stays `in progress`:**
+
+1. **Deploy** — every Phase 1–3 claim is about Netlify's edge, not `next start`.
+2. **Q4** — confirm the deployed page response is stored (`Cache-Status`:
+   `fwd=uri-miss; stored` then `hit`). Locally the responses are cookie-free, so
+   this should now pass; it is still unverified on the CDN.
+3. **Cycle close** — `/sites/{id}/usage` against the 403,611 baseline, then this
+   section gets the real numbers and the status moves to `complete`.
 
 ## Open Questions
 
