@@ -79,6 +79,31 @@ Live-site evidence for the causes below (all reproduced with `curl -D-`):
 Mechanisms 1–3 and 4 are the multipliers that make 36k/day possible without
 36k humans: one explore view can cost a dozen invocations before a click.
 
+## Platform mechanics (how one invocation happens)
+
+Netlify runs the app through the OpenNext adapter. What that means for cost, per
+[Netlify: Next.js on Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/):
+
+- **One serverless function** (`___netlify-server-handler`) serves SSR, ISR
+  regeneration, PPR, every route handler and every server action. There is no
+  per-route function to inspect — the bill counts requests to this one function.
+- **Middleware runs as an edge function** — a separate, separately metered
+  product (2M invocations included). It does not itself invoke the serverless
+  function, but a page request passing through it usually then does.
+- **Static pages are not free forever**: they are "stored in Next.js route cache,
+  and fetched from the route cache by a function invocation when first accessed
+  after a deploy", then served from the edge. A deploy therefore costs one
+  invocation per cache entry that someone actually visits — not one per visitor.
+- **ISR pages** re-invoke the function once per revalidate window per visited
+  route, and are edge-served in between.
+- **Response caching is keyed by the `netlify-vary` header**, which the adapter
+  does not populate with application query params by default (D4).
+
+A request costs an invocation when, and only when, the edge cache cannot answer
+it: a dynamic page render, an RSC payload for a navigation or prefetch, a
+route-handler call, or a cache miss/revalidation of a static page. Those are
+exactly the requests Phases 1–3 remove or cache.
+
 ## Why not a fully static site
 
 `output: 'export'` is not available: it forbids middleware, and `apps/web`
@@ -100,7 +125,8 @@ shell** static/cacheable.
 - **D2 — The app shell becomes cacheable (ISR), not read request-time APIs.**
   Locale must come from the URL segment (`setRequestLocale` + `requestLocale`)
   rather than `cookies()`/`headers()`; the root layout must stop resolving
-  locale; `[l1]/[l2]/layout.tsx` then sets `revalidate`.
+  locale; `[l1]/[l2]/layout.tsx` then exports `generateStaticParams` (to leave
+  the dynamic path), `dynamicParams = true`, and `revalidate = false`.
 - **D3 — Cache only shell HTML, never user data.** No user-specific value is
   server-rendered today, so a shared cache entry is safe. Any future
   server-rendered user data must not inherit the segment's `revalidate`.
@@ -115,88 +141,203 @@ shell** static/cacheable.
 
 ## Design
 
-### Phase 1 — CDN-level relays (config only, no behavior change)
+Each phase is independently shippable and independently measurable, ordered by
+savings ÷ risk: Phase 1 cannot change rendered output, Phase 2 changes the
+rendering model, Phase 3 changes cache keys, Phase 4 records the outcome.
 
-`netlify.toml`, before the `/*` legacy rule:
+### Phase 1 — CDN-level relays
 
-```toml
-[[redirects]]
-  from = "/api/asset-proxy/img.youtube.com/*"
-  to = "https://img.youtube.com/:splat"
-  status = 200
-  force = true
+**Goal**: no thumbnail or glyph-font request reaches the function.
 
-[[redirects]]
-  from = "/api/asset-proxy/i.ytimg.com/*"
-  to = "https://i.ytimg.com/:splat"
-  status = 200
-  force = true
+**Changes**
 
-[[redirects]]
-  from = "/api/glyph-font/*"
-  to = "https://pythonvps.zerotohero.ca/glyph-font/:splat"
-  status = 200
-  force = true
-```
+1. `netlify.toml` — three rules inserted **before** the `/*` legacy rule (rules
+   evaluate top-down, and that one is a catch-all gated on the `lp_legacy`
+   cookie):
 
-`proxy.ts`: add `api/` and `og/` to the matcher exclusion list ([proxy.ts:267](../../apps/web/src/proxy.ts#L267)).
-Those paths already early-return from `proxy()`, so this is pure edge-invocation
-saving, not a behavior change.
+   ```toml
+   [[redirects]]
+     from = "/api/asset-proxy/img.youtube.com/*"
+     to = "https://img.youtube.com/:splat"
+     status = 200
+     force = true
 
-### Phase 2 — cacheable app shell (the main fix)
+   [[redirects]]
+     from = "/api/asset-proxy/i.ytimg.com/*"
+     to = "https://i.ytimg.com/:splat"
+     status = 200
+     force = true
 
-1. `src/i18n.ts`: take `locale` from next-intl's `getRequestConfig({requestLocale})`
-   instead of `cookies()`/`headers()`; delete the header-based `resolveTimeZone()`
-   and use the existing `DEFAULT_TIME_ZONE` (Netlify sets neither
-   `x-vercel-ip-timezone` nor `x-timezone`, so the fallback is already what every
-   render gets — verify during implementation).
-2. `[l1]/[l2]/layout.tsx`: `setRequestLocale(params.l1)` (next-intl 4.13.5
-   exports it) so the locale is resolved from the segment, then
-   `export const revalidate = 3600`.
-3. Root layout: stop calling `getLocale()/getMessages()/getTimeZone()`. The intl
-   provider moves to `[l1]/[l2]/layout.tsx` (locale known from params) and to a
-   small provider layout for the non-language routes (login, register, docs,
-   landing, …). `PublicHeader` moves with the public provider because it uses
-   `useT()`.
-4. Confirm `<html lang>` and `data-ui-lang` still match the URL for all 18 L1s
-   (the locale switcher's `switchLocale()` path must keep working).
+   [[redirects]]
+     from = "/api/glyph-font/*"
+     to = "https://pythonvps.zerotohero.ca/glyph-font/:splat"
+     status = 200
+     force = true
+   ```
 
-Expected effect: one render per `(l1, l2, route)` per hour instead of one per
-request; prefetch and navigation are then served from the CDN edge.
+2. [proxy.ts:267](../../apps/web/src/proxy.ts#L267) — widen the matcher
+   exclusion:
+
+   ```ts
+   matcher: ['/((?!api/|og/|_next/static|_next/image|favicon.ico).*)'],
+   ```
+
+   `proxy()` already early-returns for `/api/...` and `/og/...`
+   ([proxy.ts:63-79](../../apps/web/src/proxy.ts#L63-L79)), so today the edge
+   function runs only to stamp a `NEXT_LOCALE` cookie on responses that never
+   read it.
+
+3. **Optional, dashboard-only — drop crawler traffic at the edge.** If the
+   request shape shows many requests per session (crawlers, AI scrapers), a
+   Netlify Firewall traffic rule or the User Agent Blocker extension removes
+   those requests before they reach the function. ⚠️ Verify Googlebot and Bingbot
+   stay allowed (SEO), and confirm the premise first: measure requests vs.
+   sessions before adding a rule.
+
+**Why it is safe**: the rewrites are same-origin proxies resolved at Netlify's
+edge, exactly like the committed `/api/python/*` and `/api/directus/*` rules
+([netlify.toml:9-19](../../netlify.toml#L9-L19)). The asset-proxy handler stays for
+Wiktionary audio, whose `Special:FilePath` 302s to `upload.wikimedia.org` and
+therefore needs the host allowlist and error handling.
+
+**Acceptance**
+
+- `curl -sI .../api/asset-proxy/img.youtube.com/vi/<id>/mqdefault.jpg` → 200,
+  `content-type: image/jpeg`
+- `/sites/{id}/usage` does not move after fetching 20 distinct thumbnails
+- `lp_legacy` proxy, `/api/python/*` and a `/api/glyph-font/manifest` call still
+  work (SPEC-071 § 12 checklist)
+
+**Rollback**: revert the three `netlify.toml` rules. No app code changes.
+
+### Phase 2 — cacheable app shell
+
+**Goal**: the HTML for `(l1, l2, route)` is generated once per deploy and then
+served from the CDN edge — no invocation per view, prefetch or navigation.
+
+**Prerequisite (blocking)**: no request-time API in the render path.
+[src/i18n.ts](../../apps/web/src/i18n.ts) calls `headers()` and `cookies()`,
+which Next treats as a signal to render the route at request time, no matter
+what `revalidate` says.
+
+**Changes** (in order):
+
+1. `src/i18n.ts` — take the locale from
+   `getRequestConfig({ requestLocale })`; delete the header/cookie reads in
+   `resolveLocale()` and the header read in `resolveTimeZone()`; keep
+   `DEFAULT_TIME_ZONE`.
+2. `[l1]/[l2]/layout.tsx` — `await setRequestLocale(params.l1)` (next-intl
+   4.13.5 exports it), render `<LocaleProvider>` with that locale's messages, and
+   export:
+   - `generateStaticParams` returning `[]` (every pair generated on demand) or a
+     seeded subset. **This export is what takes the route off the dynamic path** —
+     see Q1.
+   - `dynamicParams = true` (the default; documenting the on-demand generation)
+   - `revalidate = false` — the shell changes only on deploy. A 3600s revalidate
+     would re-invoke the function up to 24×/day per visited pair, which can keep
+     the site above 125k by itself.
+3. `src/app/layout.tsx` — drop `getLocale()/getMessages()/getTimeZone()` and the
+   `<LocaleProvider>` wrapper; keep `<html>` and the providers that need no
+   messages.
+4. New `src/app/(public)/layout.tsx` — a route group (no URL change) providing
+   locale/messages for `login`, `register`, `forgot-password`,
+   `password-reset`, `language-select`, `auth/*`, `docs/*`, `go-pro-*` and the
+   landing page. These may keep the cookie read: they are low-traffic and their
+   dynamic rendering costs nothing measurable. `PublicHeader` moves here because
+   it calls `useT()`.
+5. `<html lang>` / `data-ui-lang` — the app shell now renders inside
+   `[l1]/[l2]`, so the attribute must be set there (or by a small client sync
+   component, following `ThemeSync`). Verify for all 18 L1s.
+6. Keep the 9 `loading.tsx` boundaries: prefetch becomes free once the target is
+   cached, and the boundaries are what enable prefetch at all.
+
+**Expected effect**: one invocation per `(pair, route)` per deploy plus one per
+newly visited pair, instead of one per view / prefetch / navigation.
+
+**Acceptance**
+
+- Second request for `/en/ja/explore` → `cache-status: … hit`, `age > 0`, and
+  `/sites/{id}/usage` flat
+- `<html lang>` matches the URL for en, de, zh-Hans and ja; the switcher still
+  retranslates without a reload
+- an authenticated page still renders (nothing user-scoped was server-rendered)
+- an invalid pair still 404s, and the 404 is not cached
+
+**Rollback**: drop `revalidate`/`generateStaticParams` and restore the root
+provider — the route returns to per-request rendering with no data-model change.
+
+**Risk**: highest of the four. The i18n restructure is the only part that can
+ship a user-visible regression.
 
 ### Phase 3 — cacheable read-only API responses
 
-Add to `videos/[videoId]`, `videos/[videoId]/subtitles`, `videos/subscribed`,
-`channels`, `channels/[channelId]` (and `recommend` only if it can be keyed):
+**Goal**: repeat reads of the same video / subtitles / channel payload hit the
+CDN instead of the function.
+
+**Changes**: add two headers to `videos/[videoId]/route.ts`,
+`videos/[videoId]/subtitles/route.ts`, `videos/subscribed/route.ts`,
+`channels/route.ts` and `channels/[channelId]/route.ts`:
 
 ```
 Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400
-Netlify-Vary: query=l2,level,page,page_size,clean_generated,channelIds
+Netlify-Vary: query=l2,clean_generated,page,page_size,channelIds
 ```
 
-Per D4, never add `Cache-Control` without the matching `Netlify-Vary`.
+`videos/recommend` is **excluded**: it calls `auth()` and varies by user id, so
+its response is not shareable. That is also why recommendation traffic stays a
+floor cost under any design.
+
+**Why `Netlify-Vary` is mandatory**: the adapter's own `netlify-vary` lists only
+`__nextDataReq|_rsc` plus request headers (observed on the live response) — the
+same path-only keying that made ADR-0046 serve one image for every thumbnail.
+Without the header, `?l2=ja` and `?l2=zh` share a cache entry.
+
+**Acceptance**
+
+- `?l2=ja` and `?l2=zh` return different payloads, each `cache-status: hit` on
+  repeat
+- a second load of the same watch page costs 0 invocations
+
+**Rollback**: delete the two headers. No schema or API change.
+
+### Phase 4 — documentation and decision record
+
+**Changes**
+
+- `docs/arch/029-production-deployment-runbook.md` § 2 and § 11 — record the
+  metered-add-on ladder (125k → Level 1 $25 → 2M → $19/500k), the
+  `/sites/{id}/usage` recipe, and that page-level cost is a property of the
+  rendering model, not a Netlify setting.
+- New ADR (0051) — the cacheable-shell decision: locale from the URL segment,
+  `revalidate = false`, shell-only caching, and the rule that no session-scoped
+  value may be server-rendered under `[l1]/[l2]`.
+- This spec — status → complete, with measured before/after numbers.
+
+**Acceptance**: ARCH-029's numbers match `/sites/{id}/usage` at cycle close.
 
 ### Rejected alternatives
 
 | Option | Why rejected |
 |---|---|
-| `output: 'export'` | No middleware, no route handlers, no NextAuth |
+| `output: 'export'` | Forbids middleware; kills route handlers and NextAuth |
 | `prefetch={false}` on video cards | Trades navigation latency for invocations; Phase 2 makes prefetch free |
-| Downgrade the add-on now | Blocked mid-cycle while usage exceeds 125k, and it re-upgrades on the next threshold crossing |
-| Migrating to credit-based plans | 20 credits/GB on 32 GB+ of bandwidth vs 1 TB included (D5) |
-| Deleting the idle sites | `cheapbooze`, `czh-*`, `language-player-nitro`, 2 unnamed sites and `zerotohero-nuxt` have zero function usage — housekeeping, not savings |
+| Downgrading the add-on now | Blocked mid-cycle while usage exceeds 125k, and it re-upgrades at the next threshold crossing |
+| Migrating to credit-based plans | 20 credits/GB across 32 GB+ of bandwidth, against 1 TB included (D5) |
+| Deleting the idle sites | `cheapbooze`, `czh-*`, `language-player-nitro`, the 2 auto-named sites and `zerotohero-nuxt` have zero function usage — housekeeping, not savings |
 
-## Phases
+## Phase summary
 
-| Phase | Work | Expected invocations |
-|---|---|---|
-| 1 | 3 rewrites + matcher | every thumbnail and glyph-font call leaves the function |
-| 2 | cacheable shell (D2/D3) | page renders, prefetches and navigations → ~1/pair/route/hour |
-| 3 | API cache headers (D4) | repeat video/subtitle/channel reads → CDN |
+| Phase | Work | Ship risk | Expected invocations |
+|---|---|---|---|
+| 1 | 3 `netlify.toml` rewrites + matcher (+ optional firewall rule) | none (config) | every thumbnail and glyph-font call leaves the function |
+| 2 | cacheable shell: `requestLocale`, `generateStaticParams`, `revalidate = false`, root-layout/provider restructure | medium (i18n) | page renders, prefetches and navigations → ~1 per pair/route per deploy |
+| 3 | API cache headers + `Netlify-Vary` | low (cache key) | repeat video/subtitle/channel reads → CDN |
+| 4 | ARCH-029 + ADR-0051 + close-out | none (docs) | — |
 
 ## Verification
 
-Measurement is totals-only — there is no per-route API. Use both:
+Measurement is totals-only — there is no per-route API on the Netlify side. Use
+both sources:
 
 ```bash
 # per-site metered usage (current cycle)
@@ -204,41 +345,53 @@ curl -s -H "Authorization: Bearer $NF_TOKEN" \
   "https://api.netlify.com/api/v1/sites/796f983a-ac9c-42e4-a066-5605d8b73e5c/usage"
 ```
 
-and **Project → Functions → Metrics** in the dashboard. Checks per phase:
+and **Project → Functions → Metrics** in the dashboard. Checks per phase, all
+against the live site:
 
-1. Phase 1: a thumbnail URL returns the image with **no** function invocation
-   (`/sites/{id}/usage` unchanged after a burst of thumbnail fetches); the
-   `lp_legacy` proxy and `/api/python/*` still work (SPEC-071 § 12 checklist).
-2. Phase 2: the HTML for `/en/ja/explore` returns a **cacheable** response
-   (`age > 0` / `cache-status: hit` on the second request) and `<html lang>`
-   matches the URL for en/de/zh-Hans/ja; a second identical request adds no
-   invocation.
-3. Phase 3: `/api/videos/<id>?l2=ja` and `?l2=zh` return different payloads with
-   `cache-status: hit` on repeats (guards D4).
-4. Cycle close: `403,611 → < 125,000` would return the site to Level 0; anything
-   lower than 2M keeps it at $25 flat.
+| Phase | Check | Pass condition |
+|---|---|---|
+| 1 | `curl -sI` a thumbnail and a `/api/glyph-font/manifest` URL | 200 + correct `content-type`; `/sites/{id}/usage` flat after 20 distinct thumbnails |
+| 1 | SPEC-071 § 12 checklist | `lp_legacy` proxy and `/api/python/*` unchanged |
+| 2 | second request for `/en/ja/explore` | `cache-status: … hit`, `age > 0`, usage flat |
+| 2 | `curl` `/de/ja/explore`, `/zh-Hans/ja/explore` | `<html lang>` / `data-ui-lang` match the URL |
+| 2 | an invalid pair, e.g. `/xx/yy/explore` | 404, and the 404 is not publicly cacheable |
+| 3 | `/api/videos/<id>?l2=ja` vs `?l2=zh`, twice each | different payloads, both `hit` on repeat |
+| close | `/sites/{id}/usage` at cycle end | < 125,000 → Level 0; < 2,000,000 → stays at $25 flat |
 
 ## Acceptance criteria
 
+**Phase 1**
 - [ ] No thumbnail or glyph-font request invokes a function.
-- [ ] A repeat page request for the same `(l1, l2, route)` within the revalidate
-      window is served from the CDN (no function invocation).
-- [ ] `<html lang>`/UI language still follow the URL; the language switcher still
-      retranslates without a reload.
+- [ ] `lp_legacy`, `/api/python/*` and `/api/glyph-font` behave as before.
+
+**Phase 2**
+- [ ] A repeat page request for the same `(l1, l2, route)` is edge-served with no
+      function invocation.
+- [ ] `<html lang>`/UI language follow the URL; the switcher retranslates without
+      a reload.
+- [ ] Authenticated pages still render; 404s are not cached.
+
+**Phase 3**
 - [ ] Cached API responses vary on every query parameter that changes the payload.
+- [ ] A second load of the same watch page costs 0 invocations.
+
+**Phase 4**
+- [ ] ARCH-029 records the add-on ladder and the measurement recipe; ADR-0051 is
+      accepted; this spec is closed with measured numbers.
+
+**Outcome**
 - [ ] `language-player` drops below 125k/cycle, or — if traffic makes that
       impossible — stays well clear of the 2M threshold and the $19/500k ladder.
 - [ ] `npx turbo typecheck` and `npm run build:check -w apps/web` pass.
 
 ## Files
 
-- `netlify.toml` — Phase 1 rewrites
-- `apps/web/src/proxy.ts` — matcher exclusions
-- `apps/web/src/i18n.ts` — `requestLocale`, no request-time APIs
-- `apps/web/src/app/layout.tsx` — drop locale resolution, move the provider
-- `apps/web/src/app/[l1]/[l2]/layout.tsx` — `setRequestLocale`, `revalidate`
-- `apps/web/src/app/api/{videos,channels}/**/route.ts` — Phase 3 headers
-- `apps/web/src/components/layout/public-header.tsx` — moves with the public provider
+| Phase | Files |
+|---|---|
+| 1 | [netlify.toml](../../netlify.toml), [apps/web/src/proxy.ts](../../apps/web/src/proxy.ts) |
+| 2 | [apps/web/src/i18n.ts](../../apps/web/src/i18n.ts), [apps/web/src/app/layout.tsx](../../apps/web/src/app/layout.tsx), [apps/web/src/app/[l1]/[l2]/layout.tsx](<../../apps/web/src/app/[l1]/[l2]/layout.tsx>), new `apps/web/src/app/(public)/layout.tsx`, [public-header.tsx](../../apps/web/src/components/layout/public-header.tsx) |
+| 3 | `apps/web/src/app/api/videos/**/route.ts`, `apps/web/src/app/api/channels/**/route.ts` |
+| 4 | [docs/arch/029-production-deployment-runbook.md](../arch/029-production-deployment-runbook.md), new `docs/adr/0051-*.md`, this spec |
 
 ## Risks
 
@@ -254,21 +407,16 @@ and **Project → Functions → Metrics** in the dashboard. Checks per phase:
 - **`revalidate` interacts with `notFound()`** on invalid pairs; confirm 404s are
   not cached.
 
-## Documentation to update
-
-- ARCH-029 § 2 — add the metered-add-on economics (125k → Level 1 $25 → 2M →
-  $19/500k) and the "measure with `/sites/{id}/usage`" recipe. It documents the
-  deploy surface but says nothing about what it costs.
-- ADR-0051 (number to be assigned) — the cacheable-shell decision (D2/D3), to be
-  written if Phase 2 is approved; it is an architectural decision (rendering
-  model + where locale is resolved), not just a spec detail.
-
 ## Open Questions
 
-- **Q1**: Does `revalidate` alone (no `generateStaticParams`) give on-demand ISR
-  for `[l1]/[l2]` routes in this Next 16 version, or must the layouts also export
-  `generateStaticParams`? Verify on the first Phase 2 build before committing to
-  the shape.
+- **Q1 (answered from the docs; confirm at build)**: `revalidate` alone is not
+  enough. The framework's `generate-static-params` reference states that without
+  a `generateStaticParams` export the route "will be dynamically rendered", while
+  `dynamicParams = true` is what lets unknown `(l1, l2)` pairs generate at
+  request time. Phase 2 therefore ships `generateStaticParams` returning `[]`
+  (or a seeded subset) and confirms on the first `build:check` that
+  `/en/ja/explore` comes back cacheable. If it does not, the fallback is
+  `dynamic = 'force-static'` on the segment layout.
 - **Q2**: Should the 9 `loading.tsx` boundaries stay once pages are cached? They
   keep prefetch enabled, which is now free — recommend keeping them.
 - **Q3**: Is the residual, post-Phase-3 count likely to clear 125k? If traffic
