@@ -21,7 +21,10 @@ import { NotFoundBody } from '@/components/layout/not-found-body';
  */
 export default async function NotFound() {
   setRequestLocale('en');
-  const [messages, timeZone] = await Promise.all([getMessages(), getTimeZone()]);
+  const [messages, timeZone] = await Promise.all([
+    getMessages({ locale: 'en' }),
+    getTimeZone({ locale: 'en' }),
+  ]);
 
   return (
     <LocaleProvider locale="en" messages={messages} timeZone={timeZone}>

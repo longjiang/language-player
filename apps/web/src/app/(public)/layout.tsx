@@ -21,7 +21,10 @@ export default async function PublicLayout({ children }: { children: React.React
   const locale = SUPPORTED_L1S.includes(raw as any) ? raw : 'en';
   setRequestLocale(locale);
 
-  const [messages, timeZone] = await Promise.all([getMessages(), getTimeZone()]);
+  const [messages, timeZone] = await Promise.all([
+    getMessages({ locale }),
+    getTimeZone({ locale }),
+  ]);
 
   return (
     <LocaleProvider locale={locale} messages={messages} timeZone={timeZone}>

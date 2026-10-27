@@ -1,8 +1,13 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations();
+export async function generateMetadata(
+  props: { params: Promise<{ l1: string; l2: string }> },
+): Promise<Metadata> {
+  // Locale is passed explicitly: `setRequestLocale` from the segment layout did
+  // not reach the request config (SPEC-108 Phase 2 follow-up).
+  const { l1 } = await props.params;
+  const t = await getTranslations({ locale: l1 });
   return {
     title: t('title.liked_videos'),
     description: t('msg.liked_videos_description'),

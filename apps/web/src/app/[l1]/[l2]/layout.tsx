@@ -66,8 +66,16 @@ export default async function LanguageLayout(
 
   // Tell next-intl the locale is a known route segment, so it resolves messages
   // without touching the request. Must run before any `getMessages()`.
+  // `setRequestLocale` alone did not take effect here (measured: the request
+  // config still resolved to `en` for /de/ja), so the locale is passed
+  // explicitly as well. next-intl's `getConfig` prefers that argument over its
+  // request cache and over the X-NEXT-INTL-LOCALE header, which makes it the
+  // only reliable source under on-demand static generation.
   setRequestLocale(params.l1);
-  const [messages, timeZone] = await Promise.all([getMessages(), getTimeZone()]);
+  const [messages, timeZone] = await Promise.all([
+    getMessages({ locale: params.l1 }),
+    getTimeZone({ locale: params.l1 }),
+  ]);
 
   return (
     <LocaleProvider locale={params.l1} messages={messages} timeZone={timeZone}>
