@@ -156,6 +156,33 @@ shell** static/cacheable.
 - **D5 — Do not migrate the team to credit-based pricing.** At 32 GB of
   bandwidth and 1 TB included on legacy Pro, the credit model (20 credits/GB,
   3,000 credits on Pro) would cost far more.
+- **D6 — Keep the nine `loading.tsx` boundaries.** A boundary's second job is
+  that it makes a *dynamic* route prefetchable, which is why today each visible
+  video card costs an invocation before anyone clicks. That cost belongs to the
+  route being dynamic, not to the file: once Phase 2 caches the page, a prefetch
+  is a CDN hit and the boundary is free — while still being the instant-feedback
+  path for a cold cache (the first visit after a deploy). Removing them would buy
+  a saving Phase 2 already delivers and pay for it in permanent latency.
+  Re-examine only a route that turns out to stay dynamic after Phase 2.
+- **D7 — Target headroom under the 2M ceiling, not Level 0.** What survives
+  Phases 1–3 is exactly the part that cannot be shared: `/api/auth/session`
+  (once per full page load) and `/api/videos/recommend` (per-user, ≈1.5× per
+  explore view) — call it **2.5 invocations per page load**. Against the 125k
+  line:
+
+  | Full page loads/day | Invocations/month | Level 0 ($0)? |
+  |---|---|---|
+  | 1,000 | ~75,000 | yes |
+  | **1,650** | **~125,000** | **break-even** |
+  | 2,000 | ~150,000 | no — still $25 flat |
+  | 5,000 | ~375,000 | no — still $25 flat |
+
+  So Level 0 is a traffic ceiling (~1,600 page loads/day), not an engineering
+  target. Reaching $0 at real traffic would mean deleting a per-user call —
+  dropping recommend's personalisation (a product cost) or moving session out of
+  the render path (an auth refactor) — and neither is worth $25/month. Measure
+  the real volume after Phase 2; revisit when the count approaches 2M, where the
+  $19/500k ladder starts to bite.
 
 ## Design
 
@@ -472,6 +499,14 @@ against the live site:
 
 ## Open Questions
 
+- **Q4** — Does Netlify store a response that carries `Set-Cookie`? Unstated in
+  the caching docs. Test: after the first Phase 2 deploy, request
+  `/en/ja/explore` twice and read `Cache-Status` — `fwd=uri-miss; stored` then
+  `hit; ttl=…` means cookies do not block storage; `stored=false` or a repeated
+  `fwd=bypass` means Phase 2 step 7 is mandatory, not optional.
+
+### Resolved
+
 - **Q1 — closed 2026-10-27 by an isolated probe** (Next 16.3.0, webpack
   pipeline: a throwaway app, three builds, no repo changes). Results:
 
@@ -490,13 +525,5 @@ against the live site:
   prerequisite, not an optimization; (d) `dynamic = 'force-static'` does survive
   `cookies()`, but only by making it return empty, which would resolve every
   visitor's locale to `en` — not a shortcut here.
-
-- **Q2**: Should the 9 `loading.tsx` boundaries stay once pages are cached? They
-  keep prefetch enabled, which is now free — recommend keeping them.
-- **Q3**: Is the residual, post-Phase-3 count likely to clear 125k? If traffic
-  makes Level 0 unreachable, the target is the 2M ceiling, not $0.
-- **Q4**: Does Netlify store a response that carries `Set-Cookie`? Unstated in
-  the caching docs. Test: after the first Phase 2 deploy, request
-  `/en/ja/explore` twice and read `Cache-Status` — `fwd=uri-miss; stored` then
-  `hit; ttl=…` means cookies do not block storage; `stored=false` or a repeated
-  `fwd=bypass` means Phase 2 step 7 is mandatory, not optional.
+- **Q2** — resolved by **D6**: keep the boundaries.
+- **Q3** — resolved by **D7**: target headroom, not Level 0.
