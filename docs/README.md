@@ -135,6 +135,7 @@ docs/
 | 105 | [Video Content Index Cleanup & Schema Reproducibility](specs/105-video-content-index-cleanup.md) | 9 | ✅ Complete |
 | 106 | [Derived Content Data Maintenance — One Pipeline, Cheapest Guarantee](specs/106-derived-data-maintenance.md) | 9 | ✅ Complete |
 | 107 | [Tag Search and Video-Tag Pills](specs/107-tag-search-and-video-tag-pills.md) | 3 | ✅ Complete |
+| 108 | [Web Function Invocation Budget — Cut Netlify Serverless Usage](specs/108-web-function-invocation-budget.md) | — | ⬜ Draft |
 
 ## ADRs
 
