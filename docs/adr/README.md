@@ -66,3 +66,4 @@ Every ADR carries a Metadata block with **Date** and **Status** (`accepted`, `su
 | 0047 | [Mobile inputs stay visible: a keyboard-aware layout, not a bigger scroll area](0047-mobile-keyboard-aware-inputs.md) | accepted | 2026-09-17 |
 | 0048 | [Sale windows are gated on the client clock; sale amounts stay in the backend price rows](0048-client-side-sale-window-gating.md) | accepted | 2026-09-22 |
 | 0049 | [A web EPUB/PDF record that can no longer be read is badged and removed, never silently deleted](0049-unreadable-epub-record-recovery.md) | accepted | 2026-10-16 |
+| 0051 | [The `[l1]/[l2]` app shell is static; the request-time APIs live in the API routes](0051-cacheable-app-shell.md) | accepted | 2026-10-27 |

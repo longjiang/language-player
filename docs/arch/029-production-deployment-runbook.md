@@ -7,7 +7,7 @@
 - **Type**: runbook / reference
 - **Status**: draft
 - **Created**: 2026-08-14
-- **Last Updated**: 2026-10-18
+- **Last Updated**: 2026-10-27
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic web (v2), Next.js web (v3), admin console (`apps/admin`), iOS App Store, Google Play, Chrome Web Store, Flask backend
 - **See also**:
@@ -123,6 +123,15 @@ Key production behaviors:
 - `/api/python/*` → `https://pythonvps.zerotohero.ca/:splat` (200 rewrite)
 - `/api/directus/*` → `https://directusvps.zerotohero.ca/zerotohero/:splat`
   (200 rewrite)
+- `/api/asset-proxy/img.youtube.com/*` → `https://img.youtube.com/:splat`, and
+  the same for `i.ytimg.com` (200 rewrites) — video thumbnails are blocked in
+  mainland China (ADR-0046), so they are relayed same-origin. Proxied at the CDN
+  rather than served by a function, so they cost no invocation (SPEC-108
+  Phase 1). The asset-proxy route handler still serves Wiktionary audio, whose
+  `Special:FilePath` redirects off-host.
+- `/api/glyph-font/*` → `https://pythonvps.zerotohero.ca/glyph-font/:splat`
+  (200 rewrite) — rare-Han font subsets (SPEC-104). Flask answers with immutable
+  cache headers plus an ETag, so the CDN stores them.
 - `/*` with `lp_legacy` cookie → `https://v2.languageplayer.io/:splat`
   (200 rewrite for the legacy iOS Capacitor wrapper; must stay **after** the
   API rules — the committed file already has this order). The full cookie
@@ -175,6 +184,32 @@ watch page, and one Classic-only redirect (e.g. `/en/ja/books` →
 > response body for the actual backend host if in doubt.
 
 ---
+
+### 2.6 What a deploy costs: the metered Functions add-on
+
+Legacy Pro includes **125,000 serverless invocations per site per month**.
+Crossing it auto-upgrades the site to **Functions Level 1 — $25/month for 2M
+requests and 1,000 runtime hours** — and the level persists into the next cycle
+(it does not fall back on its own). Past 2M requests the plan buys add-on packs
+at **$19 per 500k requests + 500 runtime hours**. Edge Functions are a separate
+meter: 2M invocations included, then $2/million.
+
+This is a property of the rendering model, not a Netlify setting. A route
+rendered on demand costs one invocation per request, and — because nine routes
+carry a `loading.tsx` — every prefetch of a dynamic route costs one too.
+`language-player` crossed the line in September 2026 (403,611 invocations in 11
+days); SPEC-108 returned the hot paths to cached static rendering.
+
+Measure it per site (totals only — there is no per-route breakdown):
+
+```bash
+curl -s -H "Authorization: Bearer $NF_TOKEN" \
+  "https://api.netlify.com/api/v1/sites/796f983a-ac9c-42e4-a066-5605d8b73e5c/usage"
+```
+
+Attribute cost from the code instead: a page is cached when it answers
+`x-nextjs-cache: HIT` with a `s-maxage`, and uncached when it answers
+`cache-control: private, no-cache, no-store` (see SPEC-108 § Verification).
 
 ## 3. Flask backend — `pythonvps.zerotohero.ca`
 
