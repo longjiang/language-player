@@ -325,8 +325,7 @@ still produces a ƒ route and a green build.
    `NEXT_LOCALE` ([proxy.ts:216-218](../../apps/web/src/proxy.ts#L216-L218)) —
    and a shared cache is generally unwilling to store a response that sets a
    cookie: one stored copy would hand the same cookie to every visitor, and for
-   a session cookie that is a leak. Verify first (Q4), then move the write to the
-   client: a small effect in the `[l1]/[l2]` layout writes the same three cookies
+   a session cookie that is a leak. The write therefore moved to the client: a small effect in the `[l1]/[l2]` layout writes the same three cookies
    after hydration, the way
    [locale-provider.tsx:75](../../apps/web/src/providers/locale-provider.tsx#L75)
    and [capacitor-redirect.tsx:44](../../apps/web/src/components/layout/capacitor-redirect.tsx#L44)
@@ -554,22 +553,40 @@ Verified locally on a production build (Phase 2):
   `Accept-Language`/cookie)
 - `/garbage` → 404, from the now-static global not-found
 
+**Deploy verification (2026-10-27, deploy `6ae06c03` @ `4a88930d`)**
+
+| Check | Result |
+|---|---|
+| `/en/ja/explore`, twice | `"Netlify Durable"; hit; ttl=31535895`, `"Next.js"; hit` — **Q4 answered: the page response is stored.** No `set-cookie` on any page. |
+| `/de/fr/explore` (never visited) | `fwd=uri-miss; stored` → `hit; ttl=31535998` — on-demand generation is cached, as designed |
+| Thumbnail `/api/asset-proxy/img.youtube.com/vi/<id>/mqdefault.jpg` | 200 `image/jpeg`, `cache-control: public,max-age=7200` (YouTube's own headers, so the proxy served it, not the function) |
+| `/api/videos/<id>?l2=ja` vs `?l2=zh` | `Netlify-Vary: query=__nextDataReq\|_rsc\|l2`; `fwd=stale` vs `fwd=vary-miss` — **payloads now differ** (the live collision is gone) |
+| Guest gating | `/en/ja/about` still sets `guest-nav-count=1` — server-enforced as intended |
+| Classic adapter | `/en/ja/books` → 307 `https://v2.languageplayer.io/en/ja/books` |
+| Invalid pair / login | `/xx/yy/explore` → 404, `/login` → 200 |
+
+**Phase 1 partial rollback — the glyph-font rewrite.** `/api/glyph-font/manifest`
+answers **429** with `copper-block-reason: Global blocklist` and
+`retry-after: 300`: Netlify's firewall blocklists the literal path segment
+`manifest` before the request reaches Flask, so the proxy can never work for that
+endpoint. The immutable files (`/api/glyph-font/<hash>.woff2`) proxy fine
+(200 `font/woff2`), but splitting the prefix is not expressible in a redirect
+rule, so the whole glyph rewrite is reverted and the Next handler stays. The cost
+is negligible: the manifest is one call per rare-glyph batch per session, and the
+font bytes are browser-cached for a year. `/api/python/*` is unaffected — other
+paths through the same origin return 200.
+
 **Still pending, and why this spec stays `in progress`:**
 
-1. **Deploy** — every Phase 1–3 claim is about Netlify's edge, not `next start`.
-2. **Q4** — confirm the deployed page response is stored (`Cache-Status`:
-   `fwd=uri-miss; stored` then `hit`). Locally the responses are cookie-free, so
-   this should now pass; it is still unverified on the CDN.
-3. **Cycle close** — `/sites/{id}/usage` against the 403,611 baseline, then this
-   section gets the real numbers and the status moves to `complete`.
+- **Cycle close (2026-11-15)** — `/sites/{id}/usage` against the 403,611
+  baseline. At 2026-10-27 09:23 UTC the cycle stood at 405,382 invocations
+  (403,611 of which predate the deploy, and the deploy itself re-warmed the
+  cache), so the next full cycle is the first honest number. Then this section
+  gets it and the status moves to `complete`.
 
 ## Open Questions
 
-- **Q4** — Does Netlify store a response that carries `Set-Cookie`? Unstated in
-  the caching docs. Test: after the first Phase 2 deploy, request
-  `/en/ja/explore` twice and read `Cache-Status` — `fwd=uri-miss; stored` then
-  `hit; ttl=…` means cookies do not block storage; `stored=false` or a repeated
-  `fwd=bypass` means Phase 2 step 7 is mandatory, not optional.
+_None open._
 
 ### Resolved
 
@@ -592,4 +609,9 @@ Verified locally on a production build (Phase 2):
   `cookies()`, but only by making it return empty, which would resolve every
   visitor's locale to `en` — not a shortcut here.
 - **Q2** — resolved by **D6**: keep the boundaries.
+- **Q4** — resolved 2026-10-27 on the deployed site: the `[l1]/[l2]` page
+  response is stored (`Netlify Durable; hit`, ttl ≈ 1 year). Phase 2 step 7 was
+  implemented rather than merely verified — pages carry no `Set-Cookie` at all —
+  so the question is moot for this subtree, and the guest counter remains the
+  documented exception.
 - **Q3** — resolved by **D7**: target headroom, not Level 0.

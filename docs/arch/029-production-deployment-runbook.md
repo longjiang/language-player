@@ -129,9 +129,11 @@ Key production behaviors:
   rather than served by a function, so they cost no invocation (SPEC-108
   Phase 1). The asset-proxy route handler still serves Wiktionary audio, whose
   `Special:FilePath` redirects off-host.
-- `/api/glyph-font/*` → `https://pythonvps.zerotohero.ca/glyph-font/:splat`
-  (200 rewrite) — rare-Han font subsets (SPEC-104). Flask answers with immutable
-  cache headers plus an ETag, so the CDN stores them.
+- `/api/glyph-font/*` is **not** proxied: Netlify's firewall answers the
+  `manifest` path with `429` (`copper-block-reason: Global blocklist`) before the
+  request reaches Flask, so the Next route handler still serves rare-Han font
+  subsets (SPEC-104). The immutable files would proxy fine; splitting the prefix
+  is not expressible in a redirect rule.
 - `/*` with `lp_legacy` cookie → `https://v2.languageplayer.io/:splat`
   (200 rewrite for the legacy iOS Capacitor wrapper; must stay **after** the
   API rules — the committed file already has this order). The full cookie
