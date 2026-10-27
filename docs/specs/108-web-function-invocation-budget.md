@@ -414,6 +414,16 @@ Without the header, `?l2=ja` and `?l2=zh` share a cache entry.
 
 **Rollback**: delete the two headers. No schema or API change.
 
+**Implementation notes (2026-10-27, as shipped)**: the two headers are set by a
+shared helper, `src/lib/api-cache.ts` `cachedJson(body, { vary })`, so no route
+can ship `Cache-Control` without a matching vary list. The collision this guards
+against was **live**: `/api/videos/Qgzv_LBictg?l2=ja` and `?l2=zh` returned
+byte-identical payloads with `Cache-Status: Netlify Durable; hit` on the second
+(measured 2026-10-27) — that route had `Cache-Control` since before this spec and
+no `Netlify-Vary`, so one language's captions were served for the other. Error
+paths stay uncached: only the success return of each handler goes through
+`cachedJson`, so a Flask 502 is never stored for an hour.
+
 ### Phase 4 — documentation and decision record
 
 **Changes**

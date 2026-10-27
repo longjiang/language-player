@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedJson } from '@/lib/api-cache';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { logerr } from '@/lib/logger';
@@ -51,12 +52,15 @@ export async function GET(
       channel_id: item.channel_id,
     }));
 
-    return NextResponse.json({
-      channel: data.channel,
-      videos,
-      page: data.page,
-      hasMore: data.hasMore,
-    });
+    return cachedJson(
+      {
+        channel: data.channel,
+        videos,
+        page: data.page,
+        hasMore: data.hasMore,
+      },
+      { vary: ['l2', 'page', 'page_size'] },
+    );
   } catch (error) {
     logerr('Channel API error:', error);
     return NextResponse.json({ error: 'Failed to fetch channel videos' }, { status: 500 });

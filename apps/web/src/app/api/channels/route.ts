@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedJson } from '@/lib/api-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
 /** GET /api/channels?l2=ja — channel list for a language (SPEC-072). */
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to load channels' }, { status: 502 });
     }
     const data = await res.json();
-    return NextResponse.json({ channels: Array.isArray(data) ? data : [] });
+    return cachedJson({ channels: Array.isArray(data) ? data : [] }, { vary: ['l2'] });
   } catch {
     return NextResponse.json({ error: 'Failed to load channels' }, { status: 500 });
   }

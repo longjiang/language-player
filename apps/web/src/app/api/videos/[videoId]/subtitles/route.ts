@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedJson } from '@/lib/api-cache';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { logerr } from '@/lib/logger';
@@ -36,10 +37,10 @@ export async function GET(request: Request, props: { params: Promise<{ videoId: 
       l2Line: l.l2Line ?? l.line ?? '',
     }));
 
-    return NextResponse.json({
-      lines,
-      isGenerated: data?.isGenerated === true,
-    });
+    return cachedJson(
+      { lines, isGenerated: data?.isGenerated === true },
+      { vary: ['l2', 'clean_generated'] },
+    );
   } catch (err) {
     logerr('Subtitle fetch error:', err);
     return NextResponse.json({ lines: [], isGenerated: false });
