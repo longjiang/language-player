@@ -212,13 +212,21 @@ export default function proxy(req: NextRequest) {
   }
 
   if (l1 && l2 && SUPPORTED_L1S.includes(l1 as any) && SUPPORTED_L2S.includes(l2 as any)) {
+    // Deliberately no cookies on app pages. `l1`, `l2` and `NEXT_LOCALE` are
+    // written by LanguagePairCookies after hydration and the pair is read from
+    // the URL, so nothing needs them during a render. A `Set-Cookie` on the
+    // response stops the CDN storing it, which is the whole point of this
+    // subtree being static (SPEC-108 Phase 2 step 7).
+    //
+    // The guest navigation counter below is the one remaining exception: it is
+    // per-visitor state the server must enforce, so guest views of the few
+    // counted pages stay uncached. That is acceptable — they are the cold ones.
+    //
+    // A stale `guest-nav-count` is no longer cleared on sign-in; it is only read
+    // for guests, and an authenticated visitor never reaches the guest branch.
     const response = NextResponse.next();
-    response.cookies.set('l1', l1, { path: '/', maxAge: 365 * 24 * 60 * 60 });
-    response.cookies.set('l2', l2, { path: '/', maxAge: 365 * 24 * 60 * 60 });
-    response.cookies.set('NEXT_LOCALE', l1, { path: '/', maxAge: 365 * 24 * 60 * 60 });
 
     if (isAuthenticated) {
-      response.cookies.set('guest-nav-count', '', { path: '/', maxAge: 0 });
       return response;
     }
 

@@ -1,24 +1,31 @@
-'use client';
+import { getMessages, getTimeZone, setRequestLocale } from 'next-intl/server';
+import { LocaleProvider } from '@/providers/locale-provider';
+import { NotFoundBody } from '@/components/layout/not-found-body';
 
-import Link from 'next/link';
-import { useT } from '@/hooks/use-t';
-
-export default function NotFound() {
-  const t = useT();
+/**
+ * The global 404, for URLs that match no route at all.
+ *
+ * It is deliberately **static and English**. `app/not-found.tsx` is part of the
+ * tree of *every* route, so a request-time API here (`cookies()`, `headers()`)
+ * marks the entire app dynamic — a `cookies()` call in this file alone was
+ * enough to keep all 60 routes out of the prerender cache (SPEC-108 Phase 2).
+ *
+ * Localized 404s still happen where users actually hit them: an unknown language
+ * pair, video or channel renders `[l1]/[l2]/not-found.tsx`, which has the app's
+ * locale provider above it. Only a top-level unmatched path (`/garbage`) falls
+ * back to this English page.
+ *
+ * `setRequestLocale` is required even for English: without a cached locale,
+ * next-intl falls back to reading `headers()`, which would reintroduce exactly
+ * the dynamic rendering this file must avoid.
+ */
+export default async function NotFound() {
+  setRequestLocale('en');
+  const [messages, timeZone] = await Promise.all([getMessages(), getTimeZone()]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      <h1 className="text-6xl font-bold text-muted-foreground/30">404</h1>
-      <h2 className="mt-4 text-xl font-semibold">{t('title.page_not_found')}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {t('msg.page_not_found_desc')}
-      </p>
-      <Link
-        href="/language-select"
-        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-      >
-        {t('action.go_to_language_selection')}
-      </Link>
-    </div>
+    <LocaleProvider locale="en" messages={messages} timeZone={timeZone}>
+      <NotFoundBody />
+    </LocaleProvider>
   );
 }

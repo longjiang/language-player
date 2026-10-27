@@ -21,6 +21,14 @@ whose nearest tagged ancestor is Simplified Chinese renders Chinese glyphs in
 a Japanese word — a subtle, hard-to-notice defect for a language learning
 product whose whole job is showing authentic text.
 
+> **Amendment 2026-10-27 (SPEC-108 Phase 2):** `<html lang>`, `data-ui-lang` and
+> `dir` are no longer server-rendered from the locale. The root layout has no
+> access to the `[l1]` segment without a request-time API, which would make every
+> route uncacheable, so an inline pre-paint script sets all three from the URL
+> before the body parses. The rules below are unchanged — elements and text still
+> carry the correct `lang` — but the server HTML now advertises `lang="en"` for
+> every locale.
+
 In `apps/web` the `<html lang>` is set to the **L1** (UI locale), but L2
 (content) text — subtitles, transcripts, dictionary entries, reader/epub
 pages, examples, collocations, inflections, saved words — lives in the same
