@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedJson } from '@/lib/api-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
 /** GET /api/videos/subscribed?l2=ja&channelIds=a,b,c — newest videos from subscribed channels (SPEC-072). */
@@ -22,7 +23,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to load subscribed videos' }, { status: 502 });
     }
     const data = await res.json();
-    return NextResponse.json({ videos: Array.isArray(data) ? data : [] });
+    return cachedJson(
+      { videos: Array.isArray(data) ? data : [] },
+      { vary: ['l2', 'channelIds', 'limit'] },
+    );
   } catch {
     return NextResponse.json({ error: 'Failed to load subscribed videos' }, { status: 500 });
   }

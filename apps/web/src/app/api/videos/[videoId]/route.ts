@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedJson } from '@/lib/api-cache';
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import { parseCSVSubtitles } from '@/lib/subtitle-csv';
@@ -107,14 +108,9 @@ export async function GET(request: Request, props: { params: Promise<{ videoId: 
       notes: parseNotes(item.notes),
     };
 
-    return NextResponse.json(
-      { video, lines: syncedLines, isGenerated },
-      {
-        headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-        },
-      },
-    );
+    // `l2` is in the query string, so it MUST be in the cache key — without
+    // Netlify-Vary these variants shared one entry (SPEC-108 Phase 3).
+    return cachedJson({ video, lines: syncedLines, isGenerated }, { vary: ['l2'] });
   } catch {
     return NextResponse.json({ error: 'Failed to fetch video' }, { status: 500 });
   }
