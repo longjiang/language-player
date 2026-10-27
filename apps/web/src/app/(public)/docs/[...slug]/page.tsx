@@ -267,9 +267,11 @@ function extractToc(markdown: string): TocItem[] {
 export default async function DocPage(props0: Props) {
   const [params, searchParams] = await Promise.all([props0.params, props0.searchParams]);
   const headerList = await headers();
-  const t = await getTranslations();
   const { slug } = params;
   const l1 = resolveDocsL1(searchParams.l1, headerList.get('accept-language'));
+  // Resolved after `l1`: passing it explicitly is the only way next-intl's
+  // request config sees the docs locale (SPEC-108 Phase 2 follow-up).
+  const t = await getTranslations({ locale: l1 });
   const doc = getDoc(l1, slug);
   const docs = getAllDocs(l1);
   const searchIndex = getSearchIndex(l1);
