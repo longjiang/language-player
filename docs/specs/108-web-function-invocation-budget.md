@@ -96,8 +96,15 @@ Netlify runs the app through the OpenNext adapter. What that means for cost, per
   invocation per cache entry that someone actually visits — not one per visitor.
 - **ISR pages** re-invoke the function once per revalidate window per visited
   route, and are edge-served in between.
-- **Response caching is keyed by the `netlify-vary` header**, which the adapter
-  does not populate with application query params by default (D4).
+- **Function, edge-function and proxy responses are not cached by default**
+  ([Netlify: Caching overview](https://docs.netlify.com/build/caching/caching-overview/));
+  a response is only stored when it carries `Cache-Control`/`Netlify-CDN-Cache-Control`.
+  Netlify would otherwise key on the full query string, but the adapter's own
+  `Netlify-Vary` narrows the key to `__nextDataReq|_rsc` (D4) — which is why an
+  application param like `?l2=` must be re-declared to be part of the key.
+- **Cacheable responses from the Next runtime use the durable cache**
+  automatically (runtime ≥ 5.5): one edge node generates, every other edge node
+  reuses instead of re-invoking.
 
 A request costs an invocation when, and only when, the edge cache cannot answer
 it: a dynamic page render, an RSC payload for a navigation or prefetch, a
@@ -250,6 +257,12 @@ what `revalidate` says.
    component, following `ThemeSync`). Verify for all 18 L1s.
 6. Keep the 9 `loading.tsx` boundaries: prefetch becomes free once the target is
    cached, and the boundaries are what enable prefetch at all.
+7. Verify Netlify will store a page response that sets cookies. Every
+   `[l1]/[l2]` page response currently carries three `set-cookie` headers (`l1`,
+   `l2`, `NEXT_LOCALE`) from the middleware. If the CDN refuses to cache them,
+   stop stamping `l1`/`l2` on page responses and read the pair from the URL
+   instead — the cookies are only needed by the `/` redirect,
+   `/language-select`, and the Classic adapter's default pair.
 
 **Expected effect**: one invocation per `(pair, route)` per deploy plus one per
 newly visited pair, instead of one per view / prefetch / navigation.
@@ -402,6 +415,9 @@ against the live site:
   `<html lang>` and the message provider; moving them can flash English or
   hydrate mismatched. Verify all 18 L1s plus the switcher.
 - **Wrong cache key on API routes** (D4) silently serves the wrong language.
+- **Middleware `Set-Cookie` may defeat page caching.** Page responses stamp
+  `l1`, `l2` and `NEXT_LOCALE`. If the CDN stores them anyway, fine; if not,
+  Phase 2 step 7 is mandatory, not optional.
 - **Prefetch burst on deploy.** After Phase 2, a deploy invalidates cached shells
   and the first wave of prefetches re-renders them once. Expected, bounded.
 - **`revalidate` interacts with `notFound()`** on invalid pairs; confirm 404s are
