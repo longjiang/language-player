@@ -264,5 +264,10 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // `/api/*` and `/og` are excluded because every branch below that handles them
+  // only forwards the request (it stamps NEXT_LOCALE, which no API response
+  // reads). Leaving them in the matcher bought one edge invocation per API call
+  // for no behaviour (SPEC-108 Phase 1). `/api/asset-proxy` and `/api/glyph-font`
+  // no longer reach Next at all — they are CDN rewrites in netlify.toml.
+  matcher: ['/((?!api/|og/|_next/static|_next/image|favicon.ico).*)'],
 };

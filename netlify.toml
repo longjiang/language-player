@@ -18,6 +18,33 @@
   status = 200
   force = true
 
+# Same-origin relays for blocked third-party media, served by the CDN instead of
+# the Next server function (SPEC-108 Phase 1). These must stay above the
+# cookie-gated `/*` rule below. The YouTube hosts are blocked in mainland China
+# (ADR-0046), so the browser must never fetch them directly; proxying here keeps
+# the URL same-origin and moves the fetch to Netlify's network. A proxy rule
+# cannot set response headers, so caching is whatever the origin sends
+# (`img.youtube.com` answers `public, max-age=7200` + `etag`).
+[[redirects]]
+  from = "/api/asset-proxy/img.youtube.com/*"
+  to = "https://img.youtube.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/asset-proxy/i.ytimg.com/*"
+  to = "https://i.ytimg.com/:splat"
+  status = 200
+  force = true
+
+# Rare-Han glyph subsets (SPEC-104). Flask answers these with immutable cache
+# headers plus an ETag, so the CDN can store them without the function.
+[[redirects]]
+  from = "/api/glyph-font/*"
+  to = "https://pythonvps.zerotohero.ca/glyph-font/:splat"
+  status = 200
+  force = true
+
 # Legacy iOS Capacitor wrapper (server.url = languageplayer.io): when the
 # webview sets lp_legacy, proxy the whole origin to the Classic Nuxt app on
 # v2.languageplayer.io. A 200 rewrite keeps the navigation inside the webview;
