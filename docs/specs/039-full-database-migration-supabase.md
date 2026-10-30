@@ -1109,6 +1109,15 @@ trial.
 after `/auth/verify-email` or on first confirmed login), or explicitly decide
 to drop the free trial.
 
+**Completed 2026-10-30:** both paths now grant it. `/auth/verify-email` covers
+code entry; `POST /auth/session` covers confirmation-link signups, which GoTrue
+confirms server-side and the web app then exchanges for a session. The link
+path runs the same hook only when the user has no subscription row, so a
+returning customer is never re-enrolled (that would rewrite their MailerLite
+`role` from signup metadata). Measured before the fix: 373 of 1,483 confirmed
+signups since 2026-09-01 (25%) had no subscription row and no MailerLite
+subscriber. See ARCH-022 § Free Trial.
+
 ### M2 — MailerLite is absent from the migration scope (partially resolved 2026-08-10 — see audit below)
 
 **Resolved 2026-08-10:** verified users are enrolled through the same

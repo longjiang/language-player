@@ -1167,6 +1167,12 @@ interim path until it lands.
     their paid groups (`backfill_mailerlite_group_sync.py --apply`, verified 0
     wrong-group remaining). The 8 absent subscribers were deliberately not
     created; that is the consent decision that still needs to be made.
+    **Fixed 2026-10-30:** the largest source of "no subscriber at all" —
+    confirmation-link signups that never ran the enrollment hook — is closed.
+    `POST /auth/session` now runs `grant_trial_and_enroll_mailerlite` for users
+    with no subscription row (ARCH-022 § Free Trial, SPEC-039 M1). The
+    remaining cause is the deferred B66 decision above: a payer who has no
+    subscriber record for any other reason still gets no group.
 
 11. **`/user-subscription` returns the first row even when expired:** confirm every frontend treats expired rows as free; consider returning `{"subscription": null}` when no active row exists (B47/B92/B93).
 12. **Existing automated payment tests are shallow:** several `test_app.py` rows are marked “to be implemented” or assert against stale recorded JSON fixtures; replace them with the mock-based cases in 2.6.
