@@ -1163,6 +1163,10 @@ interim path until it lands.
     outcome at INFO (ARCH-022 § MailerLite → Behavior notes). `B66`'s
     `test_assign_mailerlite_group_subscriber_not_found` still pins the
     skip-on-missing-subscriber behavior — change it only together with an upsert.
+    **Applied 2026-10-30:** the 5 wrong-group subscribers were reconciled into
+    their paid groups (`backfill_mailerlite_group_sync.py --apply`, verified 0
+    wrong-group remaining). The 8 absent subscribers were deliberately not
+    created; that is the consent decision that still needs to be made.
 
 11. **`/user-subscription` returns the first row even when expired:** confirm every frontend treats expired rows as free; consider returning `{"subscription": null}` when no active row exists (B47/B92/B93).
 12. **Existing automated payment tests are shallow:** several `test_app.py` rows are marked “to be implemented” or assert against stale recorded JSON fixtures; replace them with the mock-based cases in 2.6.
