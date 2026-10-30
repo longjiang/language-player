@@ -365,14 +365,24 @@ Note: the handler recomputes `expires_on` from the payment time (`now + 32/367 d
 
 ## Free Trial — Granted on GoTrue Email Verification
 
-New users get their trial from `POST /auth/verify-email` (SPEC-039 M1/M2,
-resolved 2026-08-10). After GoTrue confirms the email, the route calls
+New users get their trial from **either** confirmation path (SPEC-039 M1/M2,
+resolved 2026-08-10; link path fixed 2026-10-30). Both call
 `utils_subscription.grant_trial_and_enroll_mailerlite(email)`:
 
 ```
+A. code entry (6-digit code typed on the register page)
 signup → POST /auth/register
-  → verification link/code → POST /auth/verify-email
+  → POST /auth/verify-email
   → grant_trial_and_enroll_mailerlite(email)
+
+B. confirmation link clicked in the email
+signup → GoTrue /auth/v1/verify (confirms the email, returns a session)
+  → web /auth/confirm → POST /auth/session
+  → _enroll_link_confirmed_signup(user)
+      • no subscription row for this user? → grant_trial_and_enroll_mailerlite(email)
+      • any row → skip (never re-enroll a returning customer)
+
+  grant_trial_and_enroll_mailerlite(email):
       • give_free_trial_if_no_subscription_exists(user_id)
           - no subscription row of any type? → insert
             {type: "trial", expires_on: now + 7 days, notes: "Free trial subscription."}
@@ -383,11 +393,28 @@ signup → POST /auth/register
                                    group_name="trial" if a trial was granted)
 ```
 
-Enrollment failures are logged and never fail the verification response. The
-legacy `/verification_email*` HTTP flow was removed in SPEC-039 M5. The only
-survivor is the DreamHost support pipe (`auto_verify_email.py`, reached via
-`verify_email@zerotohero.ca`), which confirms the user through the GoTrue
-admin API and calls the same `grant_trial_and_enroll_mailerlite` hook.
+**Why the link path matters (2026-10-30).** Path B used to skip the hook
+entirely: GoTrue confirms the email and the app only exchanged the session, so
+those users verified, signed in, and got neither the trial nor a MailerLite
+record. Measured across confirmed signups since 2026-09-01: **373 of 1,483
+(25%) had no subscription row**, and 11 of 12 sampled had no MailerLite
+subscriber (the twelfth came from the CZH funnel). The rate is steady across
+Aug–Oct (50% in Aug 5–19 right after the cutover, ~25% since), so it was never a
+regression at one date.
+
+Path B is deliberately guarded by the "no subscription row" check: a returning
+customer who signs in through a link must not be re-enrolled, because
+`new_mailer_lite_subscriber` rewrites `role` / `last_name` / `auth_user_id` from
+signup metadata — and the signup `role` (3 = free) would overwrite their Pro
+value. Both paths log every branch (`[auth] link-confirm enrollment …`,
+`[subscription] verify-email enrollment …`) so a future gap is readable from
+`logs/application.log` instead of inferred from the database.
+
+Enrollment failures are logged and never fail the verification *or login*
+response. The legacy `/verification_email*` HTTP flow was removed in SPEC-039
+M5. The only survivor is the DreamHost support pipe (`auto_verify_email.py`,
+reached via `verify_email@zerotohero.ca`), which confirms the user through the
+GoTrue admin API and calls the same `grant_trial_and_enroll_mailerlite` hook.
 
 ---
 
