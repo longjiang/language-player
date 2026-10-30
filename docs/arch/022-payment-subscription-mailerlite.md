@@ -617,6 +617,10 @@ Ways to mitigate:
     **account** subscribe date, not the group-join date, so it understates recent
     paid-group growth: the Sep/Oct 2026 purchasers who joined `lifetime` are
     older accounts that sort below the newest account in that column.
+  - `backfill_mailerlite_group_sync.py` reproduces the audit and, with
+    `--apply`, performs the missing assignments. It is dry-run by default;
+    `--create-missing` (subscriber creation) is separate because a 404 cannot
+    distinguish "never existed" from "unsubscribed/forgotten".
 
 ---
 
