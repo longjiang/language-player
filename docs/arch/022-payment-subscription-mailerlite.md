@@ -621,6 +621,11 @@ Ways to mitigate:
     `--apply`, performs the missing assignments. It is dry-run by default;
     `--create-missing` (subscriber creation) is separate because a 404 cannot
     distinguish "never existed" from "unsubscribed/forgotten".
+  - **Reconciled 2026-10-30:** the 5 wrong-group subscribers were assigned to
+    their paid groups and re-verified (0 wrong group remaining). The 8 absent
+    subscribers were **not** created — that needs an explicit consent decision,
+    since re-creating a previously unsubscribed/forgotten address would resume
+    emailing someone who opted out.
 
 ---
 
