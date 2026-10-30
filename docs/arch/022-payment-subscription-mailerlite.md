@@ -596,6 +596,27 @@ Ways to mitigate:
 - The `role` custom field is copied from the user record at subscriber creation; the code comment documents `3` = Free User, `4` = Pro User.
 - Subscriber creation now happens on the GoTrue `/auth/verify-email` path (SPEC-039 M1/M2), not the legacy Directus flow. Group assignment still only works if the email already exists as a MailerLite subscriber, so payment/renewal paths do not upsert missing subscribers yet (SPEC-054 B66).
 - Every assignment call is wrapped in `try/except` in `utils_subscription.py`; a MailerLite error is logged and the subscription grant still succeeds. Subscriber creation inside `grant_trial_and_enroll_mailerlite` is also wrapped, so a MailerLite outage never fails email verification.
+- **Sync outcomes are logged as of 2026-10-30.** `utils_mailer_lite.py` and
+  `grant_trial_and_enroll_mailerlite` emit one INFO line per outcome on the root
+  logger (`logs/application.log` in production): subscriber created, assigned,
+  assign failed, and — the case that used to be invisible — **assign skipped
+  because no MailerLite subscriber exists**. `POST /auth/session` logs
+  link-based confirmations, which do not run the enrollment hook.
+  Before this, a 404 on the subscriber lookup returned `None` with no trace, so
+  a mailing-list gap could persist unnoticed.
+- **Audit snapshot 2026-10-30** (live MailerLite API vs Supabase):
+  - 105 active paid users who paid since 2026-06-01: **92 in the correct paid
+    group, 5 in the wrong group, 8 absent from MailerLite entirely**.
+  - 12 lifetime purchases/upgrades since 2026-08-22 — **11 are in the `lifetime`
+    group**; the one miss (`milouhermes@outlook.com`, 2026-09-26) bought
+    lifetime as their first action and never had a subscriber record.
+  - ~27% of confirmed signups (Sept: 614 confirmed / 442 trial; Oct: 900 / 682)
+    never receive a trial row, and therefore never receive a MailerLite record —
+    both live in the same verification hook.
+  - The MailerLite group view's "Subscribed" column is the subscriber's
+    **account** subscribe date, not the group-join date, so it understates recent
+    paid-group growth: the Sep/Oct 2026 purchasers who joined `lifetime` are
+    older accounts that sort below the newest account in that column.
 
 ---
 

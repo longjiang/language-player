@@ -1152,6 +1152,18 @@ interim path until it lands.
    non-atomic check-then-insert in `update_or_add_subscription` is an
    idempotency problem, not an id-allocation problem (see #8 / M3).
 10. **MailerLite subscriber creation only happens at email verification:** group assignment for users who are not already MailerLite subscribers fails silently. Decide whether payment/renewal paths should upsert subscribers (B66).
+    **Status 2026-10-30 — decision deferred, gap measured and instrumented.**
+    The owner chose to keep current behavior (no upsert on payment), so a user
+    without a MailerLite record still gets no group. Measured against the live
+    API: 8 of 105 active paid users who paid since 2026-06-01 are absent from
+    MailerLite entirely, 5 more sit in the wrong group, and 12 lifetime
+    purchases since 2026-08-22 landed 11 correctly (the one miss bought lifetime
+    as their first action). The skip is no longer silent: `utils_mailer_lite.py`,
+    `grant_trial_and_enroll_mailerlite` and `/auth/session` now log every
+    outcome at INFO (ARCH-022 § MailerLite → Behavior notes). `B66`'s
+    `test_assign_mailerlite_group_subscriber_not_found` still pins the
+    skip-on-missing-subscriber behavior — change it only together with an upsert.
+
 11. **`/user-subscription` returns the first row even when expired:** confirm every frontend treats expired rows as free; consider returning `{"subscription": null}` when no active row exists (B47/B92/B93).
 12. **Existing automated payment tests are shallow:** several `test_app.py` rows are marked “to be implemented” or assert against stale recorded JSON fixtures; replace them with the mock-based cases in 2.6.
 13. **`user_acquisition.id` default — resolved 2026-08-09:** converted to
