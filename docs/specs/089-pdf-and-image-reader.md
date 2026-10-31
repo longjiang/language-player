@@ -53,10 +53,11 @@ clicking the image toggles zoom (1× ↔ 2×), pinch (mobile) / Ctrl+wheel
 (trackpad pinch, web) zooms continuously, and dragging pans while zoomed.
 Clicking a *different* thumbnail selects it instead.
 
-The gallery persists across navigation/refresh and is restored on mount:
+The gallery persists across navigation/refresh and is restored on mount —
+**web only**:
 - **Web**: IndexedDB (`apps/web/src/lib/image-reader-store.ts`).
-- **Mobile**: a JSON file in the app documents
-  (`apps/mobile/lib/image-reader-store.ts`).
+- **Mobile**: **not persisted** — the gallery lives in component state and is
+  lost on restart (see SPEC-090 § Persistence).
 Images are re-OCR'd lazily if they have no stored result (the `/vision`
 results are cached server-side).
 
@@ -65,12 +66,16 @@ text written in the image**, in **natural reading order**, with each logical
 element (paragraph, sentence, receipt/list/menu row, caption, speech bubble)
 reflowed into **one continuous line** (wrapped image rows merged) and distinct
 elements separated by blank lines — so sentences never fragment and reflow on
-both web and mobile. The prompt also allows an **optional** leading
-`# <title>` heading giving a short, human-readable image title when the image
-has an obvious document title (which the reader extracts and uses for the
-title bar and the saved-word context — not the raw filename). There is **no**
-client-side post-processing of the OCR text. The PDF page→markdown path uses
-the same style (minus the title heading).
+both web and mobile. The image reader's prompt (`IMAGE_READER_OCR_PROMPT`)
+**requires** a leading `# <title>` heading: the image's visible document title
+when it has one, otherwise a short **LLM-generated** descriptive title in the
+image's own language. The reader extracts that heading for the title bar, the
+thumbnail label and the saved-word context, so a raw filename is no longer the
+title of a normal image (it is only the last-resort fallback). The title line is
+the single allowed addition to the transcription. There is **no** client-side
+post-processing of the OCR body. The PDF page→markdown path uses the same body
+rules minus the title heading (`IMAGE_OCR_PROMPT`), because an invented heading
+per page would read as book content.
 
 > **Full detail moved to [SPEC-090 — Image Reader](090-image-reader.md).** This
 > section is a summary; the standalone image reader (routes, entry surfaces,

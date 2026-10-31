@@ -52,33 +52,44 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
    prompt + image bytes. The request is aborted after 90s (`OCR_TIMEOUT_MS`) on
    **both** apps, so the spinner can never hang forever and there is always a
    failure state to retry from.
-3. **OCR prompt** requests clean markdown in the original language that emits
-   **only** the text literally present in the image and reflows like normal
-   reading while preserving structure. Each logical element (a paragraph, a
-   sentence, a receipt/list/menu row, a table row, a caption, or a speech
-   bubble) is emitted as **one continuous line** (its wrapped image rows
-   merged), and distinct elements are separated by a blank line. The model
-   must not add any other text — no intro, summary, description, translation,
-   guesses about blurry/cut-off text, page/panel numbers, panel/sound-effect
-   labels, or a code fence wrapper. (Verified against `/vision`: the model
-   keeps blank-line-separated blocks and does not collapse the whole page into
-   one block.) The previous prompt emitted soft line breaks (`\n`) inside a
-   block and relied on the reader to collapse them: the web reader does (HTML
-   `white-space: normal`) but the mobile reader (React Native `<Text>`, which
-   renders `block.text` directly) **preserves** `\n` as a hard line break, so
-   sentences fragmented on mobile instead of reflowing. One continuous line
-   per element reflows identically on both, so the reader needs no
-   post-processing.
-4. The reader **opportunistically** pulls a leading `# <title>` heading out as
-   the image title (web `extractTitle`; used for the title bar and the
-   saved-word context). The prompt asks for a `# <title>` line **only when the
-   image has an obvious document title**; otherwise it emits none and the
-   title falls back to the filename. The body is then parsed into reader
-   blocks (web `parseMarkdown`; mobile `useEpubPagination`, whose
+3. **OCR prompt** (`IMAGE_READER_OCR_PROMPT`, `packages/shared/src/markdown/
+   vision.ts`) requests clean markdown in the original language. It opens with
+   a mandatory single `# <title>` line — **the only text the model may add** —
+   and then emits **only** the text literally present in the image, reflowed
+   like normal reading while preserving structure. Each logical element (a
+   paragraph, a sentence, a receipt/list/menu row, a table row, a caption, or a
+   speech bubble) is emitted as **one continuous line** (its wrapped image rows
+   merged), and distinct elements are separated by a blank line. Apart from the
+   title line the model must not add any other text — no intro, summary,
+   description, translation, guesses about blurry/cut-off text, page/panel
+   numbers, panel/sound-effect labels, or a code fence wrapper. (Verified
+   against `/vision`: with the title instruction the model still emits
+   blank-line-separated blocks, keeps the body strictly literal — e.g. a clean
+   Chinese paragraph under `# 一段中文短文` — and reuses a visible document title
+   verbatim — e.g. `# EXAMPLE CAFE` above a receipt.) The previous prompt
+   emitted soft line breaks (`\n`) inside a block and relied on the reader to
+   collapse them: the web reader does (HTML `white-space: normal`) but the
+   mobile reader (React Native `<Text>`, which renders `block.text` directly)
+   **preserves** `\n` as a hard line break, so sentences fragmented on mobile
+   instead of reflowing. One continuous line per element reflows identically on
+   both, so the reader needs no post-processing.
+4. The reader **always** pulls the leading `# <title>` heading out as the image
+   title (web + mobile `extractTitle`; used for the title bar, the thumbnail
+   label and the saved-word context). The **LLM generates it**: the visible
+   document title when the image has one, otherwise a short descriptive title
+   in the image's own language (at most 8 words). A raw filename is therefore
+   no longer the title of a normal image — it is only the last-resort fallback
+   if the model omits the heading altogether. The body is then parsed into
+   reader blocks (web `parseMarkdown`; mobile `useEpubPagination`, whose
    `parseMarkdownBlocks` shim keeps OCR image/PDF markdown's blank-line-
-   separated blocks intact).
-   An OCR that yields **only** a title (an image that is just a heading)
-   renders that heading as its body rather than an empty reader.
+   separated blocks intact). An OCR that yields **only** a title (an image that
+   is just a heading) renders that heading as its body rather than an empty
+   reader.
+   The **PDF page → markdown** path (web) keeps the title-less
+   `IMAGE_OCR_PROMPT` — same body rules, no `# ` heading — because its output is
+   concatenated into the book text, where an invented heading per page would
+   read as content. That prompt is byte-frozen so existing `/vision` cache
+   entries stay valid.
 5. OCR is **lazy per image**; the first pasted/dropped/picked image is opened
    by default and OCR'd immediately.
 
@@ -141,13 +152,18 @@ and restores them on mount. Images without a stored result are re-OCR'd lazily.
 
 ## Saved-word context
 
-The image title (LLM title → file name) is used as `SavedWordContext.textTitle`
-on web, so saved words carry proper context instead of a raw filename.
+The **LLM-generated** image title (falling back to the file name only if the
+model omitted the heading) is used as `SavedWordContext.textTitle` on web and in
+the mobile reader's `ctx`, so saved words carry proper context instead of a raw
+filename.
 
 ## Cache
 
 Vision results are cached server-side by `/vision` (keyed by prompt + image
-bytes), so re-opening an image is instant and free.
+bytes), so re-opening an image is instant and free. The image reader's prompt
+changed when the mandatory title line was added, so image-reader entries created
+with the older prompt miss once and are re-OCR'd; PDF page entries are
+unaffected because `IMAGE_OCR_PROMPT` is byte-frozen.
 
 ## i18n
 
@@ -230,7 +246,9 @@ what "recognized nothing" actually looks like in the response.
 - The Retry button in that failure state re-runs OCR for the same image and
   turns back into the "Recognizing text…" spinner — no file picker, no
   re-selecting the thumbnail.
-- Title bar shows the human-readable title; saved-word context uses it.
+- Title bar shows the LLM-generated title — not the filename — even for an
+  image with no visible document title (`# <title>` first line of the OCR); the
+  sidebar label and the saved-word context use the same title.
 - Sidebar collapses on desktop / sheets on mobile; the add-next tile adds
   images.
 - Preview opens on clicking the current thumbnail; click/pinch zoom + drag pan.
@@ -240,6 +258,21 @@ what "recognized nothing" actually looks like in the response.
 
 ## Revision
 
+- **LLM-generated image title (2026-11-01)**: the image reader no longer falls
+  back to the file name for a normal image. `IMAGE_READER_OCR_PROMPT` (new,
+  `packages/shared/src/markdown/vision.ts`) now opens with a **mandatory**
+  `# <title>` line — the visible document title when the image has one,
+  otherwise a short descriptive title in the image's own language, at most 8
+  words — and the reader extracts it for the title bar, the thumbnail label and
+  the saved-word context. The title line is the **single deliberate exception**
+  to "output only the text in the image" (the previous spec text forbade any
+  added text and made the title optional); everything after it stays strictly
+  literal. Verified against `/vision` on two generated images: a Chinese
+  paragraph with no title → `# 一段中文短文` + the exact paragraph, and a receipt
+  → `# EXAMPLE CAFE` + its rows. The PDF page→markdown path keeps the title-less
+  `IMAGE_OCR_PROMPT`, which was refactored onto the shared body fragments and
+  verified **byte-identical**, so its `/vision` cache entries are unaffected;
+  image-reader cache entries made with the old prompt miss once.
 - **Retry without re-selecting; web failures no longer blank (2026-11-01)**:
   (1) The OCR failure state on both apps now carries an `action.retry` button
   that re-runs the OCR for the already-loaded image, so a failure never means

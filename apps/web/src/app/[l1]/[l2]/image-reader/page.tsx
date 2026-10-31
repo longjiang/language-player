@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import { IMAGE_OCR_PROMPT, type SavedWordContext } from '@langplayer/shared';
+import { IMAGE_READER_OCR_PROMPT, type SavedWordContext } from '@langplayer/shared';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -238,7 +238,7 @@ export default function ImageReaderPage() {
       const res = await fetch(`${PYTHON_API_URL}/vision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: payload, prompt: IMAGE_OCR_PROMPT }),
+        body: JSON.stringify({ image: payload, prompt: IMAGE_READER_OCR_PROMPT }),
         signal: controller.signal,
       });
       // Read the body once, as text. A failed request must be reported, never
@@ -272,7 +272,7 @@ export default function ImageReaderPage() {
         return;
       }
       // Diagnostics: log the exact prompt sent and the full markdown returned.
-      epubLog(`image reader OCR prompt: ${IMAGE_OCR_PROMPT}`);
+      epubLog(`image reader OCR prompt: ${IMAGE_READER_OCR_PROMPT}`);
       epubLog(`image reader OCR response:\n${md}`);
       const { title, body } = extractTitle(md);
       // A title-only OCR (e.g. an image that is just a chapter heading) must

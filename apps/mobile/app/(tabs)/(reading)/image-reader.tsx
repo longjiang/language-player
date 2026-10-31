@@ -17,7 +17,7 @@ import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
 import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader/reader-toc-search';
 import { ContextMenu } from '@/components/ui/context-menu';
 import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
-import { IMAGE_OCR_PROMPT } from '@langplayer/shared';
+import { IMAGE_READER_OCR_PROMPT } from '@langplayer/shared';
 import { downscaleImage } from '@/lib/downscale-image';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logerr, logwarn } from '@/lib/logger';
@@ -193,7 +193,7 @@ export default function ImageReaderScreen() {
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: payload, prompt: IMAGE_OCR_PROMPT }),
+        body: JSON.stringify({ image: payload, prompt: IMAGE_READER_OCR_PROMPT }),
         signal: controller.signal,
       });
       // Read the body once, as text. A failed request must be reported, never
@@ -226,7 +226,7 @@ export default function ImageReaderScreen() {
         return;
       }
       // Diagnostics: log the exact prompt sent and the full markdown returned.
-      log('[image-reader] OCR prompt: ' + IMAGE_OCR_PROMPT);
+      log('[image-reader] OCR prompt: ' + IMAGE_READER_OCR_PROMPT);
       log('[image-reader] OCR response:\n' + md);
       const { title, body } = extractTitle(md);
       // A title-only OCR (e.g. an image that is just a chapter heading) must
