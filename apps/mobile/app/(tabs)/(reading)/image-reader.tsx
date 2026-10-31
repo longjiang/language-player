@@ -23,7 +23,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logerr, logwarn } from '@/lib/logger';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import {
-  ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X, Camera, Images, FolderOpen,
+  ArrowLeft, ImageIcon, Clipboard as ClipboardIcon, X, Camera, Images, FolderOpen, RefreshCw,
 } from 'lucide-react-native';
 
 /** One loaded image and its vision-OCR result (lazy, per selection). */
@@ -229,9 +229,13 @@ export default function ImageReaderScreen() {
       log('[image-reader] OCR prompt: ' + IMAGE_OCR_PROMPT);
       log('[image-reader] OCR response:\n' + md);
       const { title, body } = extractTitle(md);
+      // A title-only OCR (e.g. an image that is just a chapter heading) must
+      // still render something: the extracted heading itself becomes the body,
+      // otherwise the reader would show a blank page with no error.
+      const content = body.trim() ? body : md;
       log(`[image-reader] OCR md length=${md.length} title=${title ?? '(none)'}`);
       setImages((prev) => prev.map((im) => (
-        im.id === id ? { ...im, md: body, title: title ?? im.title, converting: false, detail: undefined } : im
+        im.id === id ? { ...im, md: content, title: title ?? im.title, converting: false, detail: undefined } : im
       )));
     } catch (err) {
       const detail = (err as Error)?.name === 'AbortError'
@@ -250,6 +254,14 @@ export default function ImageReaderScreen() {
     setCurrentId(id);
     const entry = imagesRef.current.find((im) => im.id === id);
     if (entry && !entry.md && !entry.converting) void runOcr(id);
+  }, [runOcr]);
+
+  /** Retry a failed OCR for this image, without the user having to pick the
+   *  photo again (or reselect its thumbnail). The failed entry is handed over
+   *  directly so there is no dependency on `imagesRef` catching up. */
+  const retryOcr = useCallback((entry: ImageEntry) => {
+    log('[image-reader] OCR retry', { name: entry.name, detail: entry.detail ?? '(none)' });
+    void runOcr(entry.id, entry);
   }, [runOcr]);
 
   /** Append entries, select the first new one, and OCR it immediately.
@@ -591,11 +603,22 @@ export default function ImageReaderScreen() {
             <Text className="mt-3 text-sm text-muted-foreground">{t('msg.recognizing_text')}</Text>
           </View>
         ) : current.error ? (
-          <View className="flex-1 items-center justify-center px-8">
+          <View className="flex-1 items-center justify-center gap-3 px-8">
             <Text className="text-center text-sm text-destructive">{t('msg.image_reader_ocr_error')}</Text>
             {current.detail && (
-              <Text className="mt-2 text-center text-xs text-muted-foreground">{current.detail}</Text>
+              <Text className="text-center text-xs text-muted-foreground">{current.detail}</Text>
             )}
+            {/* Retry re-runs the OCR for this same image — the photo is already
+                loaded, so there is nothing to pick again. */}
+            <Pressable
+              onPress={() => retryOcr(current)}
+              className="flex-row items-center gap-1.5 rounded-md border border-border px-3.5 py-2 active:bg-muted"
+              accessibilityRole="button"
+              accessibilityLabel={t('action.retry')}
+            >
+              <RefreshCw size={14} color={ICON_MUTED} />
+              <Text className="text-xs font-medium text-foreground">{t('action.retry')}</Text>
+            </Pressable>
           </View>
         ) : (
           <PaginatedReader

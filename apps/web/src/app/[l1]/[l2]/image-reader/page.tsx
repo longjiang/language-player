@@ -16,10 +16,18 @@ import { loadImageGallery, saveImageGallery } from '@/lib/image-reader-store';
 import { isUnreadableRecordError } from '@/lib/epub-store';
 import { epubStorageErr } from '@/lib/epub-log';
 import { downscaleImage } from '@/lib/downscale-image';
-import { ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose, TriangleAlert } from 'lucide-react';
+import { logerr, logwarn } from '@/lib/logger';
+import {
+  ImageIcon, Loader2, Clipboard, Upload, X, Plus, PanelRight, PanelRightClose, TriangleAlert, RefreshCw,
+} from 'lucide-react';
 
 /** Accepted image MIME types (mirrors msg.image_reader_supported). */
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif,image/webp';
+
+/** One OCR request must not spin forever. The vision model can take ~30s for a
+ *  dense page; a request that never settles would leave the spinner up with no
+ *  way to retry. Mirrors the mobile image reader (SPEC-090 § Vision pipeline). */
+const OCR_TIMEOUT_MS = 90_000;
 
 /** One loaded image and its vision-OCR result (lazy, per selection). */
 interface ImageEntry {
@@ -32,6 +40,11 @@ interface ImageEntry {
   blocks: ReaderBlock[] | null;
   converting: boolean;
   error?: boolean;
+  /** Why the OCR failed — the HTTP status + server message, the caught error,
+   *  or a timeout. Rendered under the error text (diagnostic text, not prose:
+   *  deliberately untranslated). Kept in memory only — the persisted record
+   *  stores just the `error` flag, and a retry regenerates the detail. */
+  detail?: string;
 }
 
 function isSupportedImage(file: File): boolean {
@@ -52,6 +65,18 @@ function readAsDataUrl(file: File): Promise<string> {
     reader.onerror = () => reject(new Error('read failed'));
     reader.readAsDataURL(file);
   });
+}
+
+/** Best-effort human-readable reason from a failed `/vision` response body
+ *  (Flask answers `{ status, message }`). Empty string when there is none. */
+function serverMessage(body: string): string {
+  try {
+    const parsed = JSON.parse(body) as { message?: unknown } | null;
+    if (parsed && typeof parsed.message === 'string') return parsed.message.slice(0, 160);
+  } catch {
+    // Not JSON (or truncated JSON) — fall through to the raw-body case.
+  }
+  return '';
 }
 
 /** Pull the leading `# <title>` heading out of the OCR markdown as the image's
@@ -179,14 +204,33 @@ export default function ImageReaderPage() {
     });
   }, [images, currentId, initialized, t]);
 
+  /** Ids with an OCR request in flight. The `converting` flag lives in state
+   *  (and only reaches `imagesRef` a render later), so a retry clicked twice —
+   *  or a thumbnail tap racing a retry — could otherwise start two requests
+   *  for the same image. Mirrors the mobile image reader. */
+  const ocrInFlight = useRef<Set<string>>(new Set());
+
   /** Run the vision OCR for an image entry (idempotent; no-op if already
    *  OCR'd). Takes the entry directly so a fresh add/paste can OCR immediately
-   *  without waiting for the images ref to catch up. */
+   *  without waiting for the images ref to catch up, and so the error state's
+   *  Retry button can re-run the failed image without a re-selection. */
   const runOcr = useCallback(async (entry: ImageEntry) => {
     if (!entry || entry.md || entry.converting) return;
     const { id } = entry;
-    setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: true, error: false } : im)));
+    if (ocrInFlight.current.has(id)) return;
+    ocrInFlight.current.add(id);
+    setImages((prev) => prev.map((im) => (
+      im.id === id ? { ...im, converting: true, error: false, detail: undefined } : im
+    )));
     epubLog(`image reader OCR start file=${entry.name}`);
+    /** Put the image into the failed state, keeping the reason for the UI. */
+    const fail = (detail: string) => {
+      setImages((prev) => prev.map((im) => (
+        im.id === id ? { ...im, converting: false, error: true, detail } : im
+      )));
+    };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
     try {
       // Downscale + re-encode before /vision to cap token usage.
       const payload = await downscaleImage(entry.dataUrl);
@@ -195,25 +239,72 @@ export default function ImageReaderPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: payload, prompt: IMAGE_OCR_PROMPT }),
+        signal: controller.signal,
       });
-      const data = res.ok ? await res.json() : null;
-      const md = typeof data?.response === 'string' ? data.response : '';
+      // Read the body once, as text. A failed request must be reported, never
+      // swallowed into empty markdown: `res.ok ? await res.json() : null` used
+      // to leave a blank reader with no explanation and nothing to retry
+      // (SPEC-090 § A gallery or image that can no longer be read).
+      const bodyText = await res.text();
+      if (!res.ok) {
+        const message = serverMessage(bodyText);
+        const detail = `HTTP ${res.status}${message ? ` — ${message}` : ''}`;
+        // non-info-level: the request failed and this status/body line is the
+        // only record of why; it is what a failure report needs.
+        logerr(`image reader OCR HTTP ${res.status} — ${message || '(no message)'} body=${bodyText.slice(0, 300)}`);
+        fail(detail);
+        return;
+      }
+      let data: unknown = null;
+      try {
+        data = JSON.parse(bodyText);
+      } catch {
+        data = null;
+      }
+      const md = typeof (data as { response?: unknown } | null)?.response === 'string'
+        ? (data as { response: string }).response
+        : '';
+      if (!md) {
+        // non-info-level: the server answered 200 with nothing usable — a real
+        // failure whose body is needed to tell "cached empty" from "model gave up".
+        logerr(`image reader OCR empty response body=${bodyText.slice(0, 300)}`);
+        fail('Empty OCR response');
+        return;
+      }
       // Diagnostics: log the exact prompt sent and the full markdown returned.
       epubLog(`image reader OCR prompt: ${IMAGE_OCR_PROMPT}`);
       epubLog(`image reader OCR response:\n${md}`);
       const { title, body } = extractTitle(md);
+      // A title-only OCR (e.g. an image that is just a chapter heading) must
+      // still render something: the extracted heading itself becomes the body,
+      // otherwise the reader would show a blank page with no error.
+      const content = body.trim() ? body : md;
       epubLog(`image reader OCR md length=${md.length} title=${title ?? '(none)'}`);
-      epubLog(`image reader OCR sample: ${body.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
+      epubLog(`image reader OCR sample: ${content.slice(0, 160).replace(/\n/g, ' ⏎ ')}`);
       setImages((prev) => prev.map((im) => (
         im.id === id
-          ? { ...im, title: title ?? im.title, md: body, blocks: body ? parseMarkdown(body) : [], converting: false }
+          ? { ...im, title: title ?? im.title, md: content, blocks: parseMarkdown(content), converting: false, detail: undefined }
           : im
       )));
     } catch (err) {
-      epubLog(`image reader OCR failed: ${(err as Error)?.message ?? err}`);
-      setImages((prev) => prev.map((im) => (im.id === id ? { ...im, converting: false, error: true } : im)));
+      const detail = (err as Error)?.name === 'AbortError'
+        ? `Timed out after ${Math.round(OCR_TIMEOUT_MS / 1000)}s`
+        : String((err as Error)?.message ?? err).slice(0, 200);
+      logwarn(`image reader OCR failed: ${detail}`);
+      fail(detail);
+    } finally {
+      clearTimeout(timer);
+      ocrInFlight.current.delete(id);
     }
   }, []);
+
+  /** Retry a failed OCR for the given image, without the user having to pick
+   *  the file again (or reselect the thumbnail). The failed entry comes from the
+   *  current render, so `runOcr` clears its error state and starts over. */
+  const retryOcr = useCallback((entry: ImageEntry) => {
+    epubLog(`image reader OCR retry file=${entry.name} detail=${entry.detail ?? '(none)'}`);
+    void runOcr(entry);
+  }, [runOcr]);
 
   // After restore, OCR the current image if it has no result yet.
   useEffect(() => {
@@ -501,8 +592,21 @@ export default function ImageReaderPage() {
                   <span className="text-sm text-muted-foreground">{t('msg.recognizing_text')}</span>
                 </div>
               ) : current.error ? (
-                <div className="flex flex-1 items-center justify-center text-sm text-destructive">
-                  {t('msg.image_reader_ocr_error')}
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+                  <p className="text-sm text-destructive">{t('msg.image_reader_ocr_error')}</p>
+                  {current.detail && (
+                    <p className="max-w-full break-words text-xs text-muted-foreground">{current.detail}</p>
+                  )}
+                  {/* Retry re-runs the OCR for this same image — the file is
+                      already loaded, so there is nothing to pick again. */}
+                  <button
+                    type="button"
+                    onClick={() => retryOcr(current)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {t('action.retry')}
+                  </button>
                 </div>
               ) : (
                 <ReaderPanel

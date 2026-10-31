@@ -49,8 +49,9 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
      nothing fits, the smallest payload produced is sent anyway. Longest side,
      format and byte size of every attempt are logged.
 2. **`POST /vision`** (`deepseek-v4-flash-vision-exp`), cached server-side by
-   prompt + image bytes. The request is aborted after 90s (`OCR_TIMEOUT_MS`) so
-   the spinner can never hang forever.
+   prompt + image bytes. The request is aborted after 90s (`OCR_TIMEOUT_MS`) on
+   **both** apps, so the spinner can never hang forever and there is always a
+   failure state to retry from.
 3. **OCR prompt** requests clean markdown in the original language that emits
    **only** the text literally present in the image and reflows like normal
    reading while preserving structure. Each logical element (a paragraph, a
@@ -76,6 +77,8 @@ paginated reader, with a thumbnail sidebar for multi-image navigation. It is
    blocks (web `parseMarkdown`; mobile `useEpubPagination`, whose
    `parseMarkdownBlocks` shim keeps OCR image/PDF markdown's blank-line-
    separated blocks intact).
+   An OCR that yields **only** a title (an image that is just a heading)
+   renders that heading as its body rather than an empty reader.
 5. OCR is **lazy per image**; the first pasted/dropped/picked image is opened
    by default and OCR'd immediately.
 
@@ -169,7 +172,9 @@ The OCR failure state renders `msg.image_reader_ocr_error` plus an
 **untranslated** diagnostic line (`detail`): `HTTP <status> — <server message>`,
 the caught error message, or a timeout notice. That line exists so a
 Release-build failure can be reported from a screenshot without a device-console
-capture.
+capture. Both apps show it, and both draw an `action.retry` button under it:
+retrying re-runs the OCR for the image that is already loaded, so a failure
+never means picking the photo again.
 
 ## A gallery or image that can no longer be read
 
@@ -188,7 +193,11 @@ capture.
   mobile, `allSettled` on web).
 - **OCR**: preparing an image (`downscaleImage`) has its own deadline on mobile
   (30 s) because the 90 s request timeout does not cover it — a hung native
-  manipulator used to leave the image "converting" forever.
+  manipulator used to leave the image "converting" forever. A failed OCR is
+  **retryable in place** on both apps: the image stays selected and
+  `action.retry` re-runs the request against the loaded copy, so a failure never
+  asks the user to re-pick the file. An image whose OCR returns only a title
+  heading renders that heading as its body instead of a blank reader.
 
 ## Logging
 
@@ -204,6 +213,11 @@ prints in a Release build, where `LOG_LEVEL` defaults to 1 — the resolved
 `message`, and the first 300 bytes of the body. Each payload-ladder attempt
 (size, format, quality, byte count, budget) is logged on the info channel.
 
+Web logs the same request failure on the app-wide error channel (`logerr`, not
+the default-off `epubLog` gate): the HTTP status, the server's `message`, and
+the first 300 bytes of the body — an empty 200 is reported too, since that is
+what "recognized nothing" actually looks like in the response.
+
 ## Verification
 
 - Load images via picker / drop / paste (OS file-open is unimplemented) →
@@ -213,15 +227,32 @@ prints in a Release build, where `LOG_LEVEL` defaults to 1 — the resolved
 - A failed `/vision` call (HTTP error, empty response, or timeout) shows
   `msg.image_reader_ocr_error` plus the diagnostic detail — never a blank
   reader.
+- The Retry button in that failure state re-runs OCR for the same image and
+  turns back into the "Recognizing text…" spinner — no file picker, no
+  re-selecting the thumbnail.
 - Title bar shows the human-readable title; saved-word context uses it.
 - Sidebar collapses on desktop / sheets on mobile; the add-next tile adds
   images.
 - Preview opens on clicking the current thumbnail; click/pinch zoom + drag pan.
-- Gallery persists across navigation/refresh (web + mobile).
+- Gallery persists across navigation/refresh on web (IndexedDB); mobile keeps it
+  in memory only (§ Persistence).
 - Typecheck both apps (`apps/web`, `apps/mobile`).
 
 ## Revision
 
+- **Retry without re-selecting; web failures no longer blank (2026-11-01)**:
+  (1) The OCR failure state on both apps now carries an `action.retry` button
+  that re-runs the OCR for the already-loaded image, so a failure never means
+  picking the photo again. (2) **Web swallowed a non-OK or empty `/vision`
+  response into empty markdown** (`res.ok ? await res.json() : null` → empty
+  body, `error` never set) — the same bug mobile had fixed on 2026-10-01 — so a
+  web OCR failure presented as a **blank reader with nothing to retry from**.
+  Web now reports the failure with the same HTTP status + server-message
+  `detail` mobile shows, and aborts the request after 90 s (`OCR_TIMEOUT_MS`).
+  (3) Both apps hold an **in-flight set** so one image cannot start two OCR
+  requests (a fast retry tap or a thumbnail tap racing the first request), and a
+  **title-only** OCR result renders the extracted heading as the body instead of
+  an empty reader.
 - **OCR starts on paste/pick; failures are reported (2026-10-01)**: three bugs
   fixed together. (1) `append` called `runOcr` with only an id, and the lookup
   went through `imagesRef`, which only catches up with `setImages` on the next
