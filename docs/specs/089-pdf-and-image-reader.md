@@ -121,6 +121,12 @@ PDF thumbnails and the rendered cover are cached locally in the app.
   (`[runtime not ready]: TypeError: Cannot read property 'timeout' of
   undefined`; no crash report; Debug unaffected). Files are imported via the
   in-app pickers.
+- **Known gap — a failed PDF page→markdown render is a blank page.** When
+  `/vision` fails for a PDF page, `pdf-reader-panel.tsx` (`openPage`) swallows
+  it into `{ md: '', blocks: [] }`, so the reader shows an empty page with no
+  error and no retry. The image reader gained an error state + Retry button
+  (SPEC-090, 2026-11-01); that fix was deliberately **not** applied to the PDF
+  panel, so this failure mode remains open.
 
 ## Revision
 
