@@ -266,18 +266,19 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.7.3 build 28 → App Store Connect / TestFlight (uploaded
-2026-10-05, in TestFlight 2026-10-06 — SRS review/sync fixes, AI-explanation
-regenerate, and the dictionary's Bing + Google image links) ·
+**last upload:** 3.8.0 build 29 → App Store Connect / TestFlight (uploaded
+2026-11-01 — image-reader retry + LLM titles, rare-Han subset loading,
+interactive textbook sections, tag search, and sync/storage hardening) ·
 **in review:** 3.7.3 build 28 was submitted for App Store review 2026-10-26
 (review submission `b61afc68`, release type `AFTER_APPROVAL`, so it goes live by
 itself once approved). Note the binary is the 2026-10-05 upload: everything merged
-after `c44aafd2` is *not* in this release and ships in the next cut ·
+after `c44aafd2` is *not* in this release and ships in the next cut — 3.8.0
+(b29) carries all of it ·
 **live:** 3.7.0 build 25 was approved and is `READY_FOR_SALE` (checked
 2026-10-01; submitted 2026-09-25, review submission `6b81745f`, release type
-`AFTER_APPROVAL`). Note 3.5.0–3.6.2 and 3.7.1 (b26) and 3.7.2 (b27) were
-TestFlight-only, and 3.4.0 was the previous public version, so the 3.7.0 listing
-copy covers everything since then.
+`AFTER_APPROVAL`). Note 3.5.0–3.6.2 and 3.7.1 (b26), 3.7.2 (b27) and 3.8.0 (b29)
+were TestFlight-only, and 3.4.0 was the previous public version, so the 3.7.0
+listing copy covers everything since then.
 
 ### 4.1 Version gate
 
@@ -346,6 +347,24 @@ xcodebuild -exportArchive \
 ```
 
 The IPA lands at `tmp/release/LP3-<version>-export/LanguagePlayer3.ipa`.
+
+> **Export fails with `No signing certificate "iOS Distribution" found` or
+> `Cloud signing permission error`? Check the Program License Agreement before
+> touching signing.** The gate is account-level, not local: with the App Store
+> Connect API key, `GET /v1/certificates`, `/v1/bundleIds` and `/v1/profiles`
+> all return `403 FORBIDDEN_ERROR.PLA_NOT_ACCEPTED` — "your team's Account
+> Holder … must agree to the latest Program License Agreement" — until the
+> Account Holder accepts it (App Store Connect → *Agreements, Tax, and
+> Banking*; the row must read **Active**). Until then Xcode cannot mint the
+> cloud-managed Apple Distribution certificate, and the
+> `-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID`
+> flags do **not** work around it (they fail the same way). Read-only API
+> access to builds/metadata keeps working, so `upload.mjs appstore status` is
+> not a PLA indicator. Once accepted, a plain
+> `xcodebuild -exportArchive -allowProvisioningUpdates …` succeeds and
+> `DistributionSummary.plist` reports
+> `certificate.type = "Cloud Managed Apple Distribution"` — no local
+> Distribution identity needed. Hit and resolved on 3.8.0 (b29), 2026-11-01.
 
 ### 4.3 Upload (no EAS needed)
 

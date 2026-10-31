@@ -84,6 +84,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 65 | f2a134e1 | 2026-10-01 | — | dev 42 (Debug; active; lp-dev-42-ios-device-f2a134e1ff99.zip; 5d6120a94189fd2e26f33d171e4a0ef17c24a5ea75daf483b6a453ab158cbccd) |
 | 66 | 1af62494 | 2026-10-01 | 3.7.2 — iOS TestFlight (b27, consumed) | — |
 | 67 | c44aafd2 | 2026-10-06 | 3.7.3 — iOS TestFlight (b28, consumed) · iOS App Store (b28, submitted for review 2026-10-26, review submission `b61afc68`; releaseType AFTER_APPROVAL) | — |
+| 68 | 79da10ff | 2026-11-01 | 3.8.0 — iOS TestFlight (b29, consumed) | — |
 
 ## Preserved working builds (deleted 2026-08-29)
 
