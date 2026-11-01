@@ -5,8 +5,8 @@
  * subs-search hit, and a highlighted run inside tokenized text all paint the
  * same background and the same foreground. The colors come from the shared
  * design tokens `highlight` / `highlightForeground` (SPEC-046 §1.4): light mode
- * keeps the brand-purple text, dark mode uses a very bright near-white version
- * of it so highlighted text stays legible on the tinted background.
+ * keeps the brand-purple text, dark mode uses a brighter version of it so
+ * highlighted text stays legible on the tinted background.
  *
  * Surfaces append only box-model / weight utilities (e.g.
  * `${HIGHLIGHT_CLASS} rounded-sm px-0.5 font-semibold`) and never reintroduce

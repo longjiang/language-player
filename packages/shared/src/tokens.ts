@@ -113,7 +113,7 @@ export interface SemanticColors {
   warningForeground: string;
   /** Background of highlighted text (matched term, search hit, highlighted run). */
   highlight: string;
-  /** Foreground of highlighted text — near white in dark mode for legibility. */
+  /** Foreground of highlighted text — bright brand purple in dark mode. */
   highlightForeground: string;
   border: string;
   input: string;
@@ -176,12 +176,13 @@ export const darkSemantic: SemanticColors = {
   successForeground: '0 0% 100%',
   warning: colors.yellow[500],
   warningForeground: '0 0% 100%',
-  // Highlighted text, dark mode: the tinted background stays purple, but the
-  // foreground is a very bright version of the brand token (near white,
-  // #f6effb). A dark primary foreground on the purple tint was illegible
-  // (≈1.6:1); this pair is 11.09:1. See SPEC-046 §1.4.
+  // Highlighted text, dark mode: the tinted background stays purple, and the
+  // foreground is a bright version of the brand token (274 60% 66% → #af74dc,
+  // 3.78:1 on the tint). A dark primary foreground was illegible (≈1.6:1);
+  // 70% reaches 4.46:1 and 72% 4.80:1 if AA for normal text is required.
+  // See SPEC-046 §1.4.
   highlight: '274 45% 26%',
-  highlightForeground: '274 60% 96%',
+  highlightForeground: '274 60% 66%',
   border: '230 20% 22%',
   input: '230 20% 22%',
   ring: '274 60% 46%',

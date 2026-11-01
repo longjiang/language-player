@@ -1451,7 +1451,7 @@ function renderBlock(
           <Text>
             {translation.slice(0, pair.tr.start)}
             {/* The active translation sentence uses the shared highlight pair
-                (SPEC-046 §1.4): near-white foreground in dark mode. */}
+                (SPEC-046 §1.4): bright-purple foreground in dark mode. */}
             <Text className={HIGHLIGHT_CLASS}>{translation.slice(pair.tr.start, pair.tr.end)}</Text>
             {translation.slice(pair.tr.end)}
           </Text>

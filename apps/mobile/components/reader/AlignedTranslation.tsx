@@ -261,7 +261,7 @@ function AlignedTranslationImpl({
                   )}
                   {/* The active translation sentence uses the shared highlight
                       pair (SPEC-046 §1.4): the dark-mode foreground is a
-                      near-white version of the brand purple. */}
+                      bright version of the brand purple. */}
                   <Text className={HIGHLIGHT_CLASS}>
                     {lineText.slice(
                       Math.max(0, highlight!.start - off.start),

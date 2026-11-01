@@ -106,16 +106,17 @@ apps: every surface paints the same background and the same foreground.
 | **Light** | `highlight` | `274 45% 88%` | `#e2d3ee` | — |
 | **Light** | `highlightForeground` | `274 60% 38%` | `#69279c` | 6.25:1 |
 | **Dark** | `highlight` | `274 45% 26%` | `#462460` | — |
-| **Dark** | `highlightForeground` | `274 60% 96%` | `#f6effb` | 11.09:1 |
+| **Dark** | `highlightForeground` | `274 60% 66%` | `#af74dc` | 3.78:1 |
 
 - **Light mode keeps its text color.** `highlightForeground` is the light brand purple
   (`#69279c`) — the color highlighted text already used. The background is the single
   highlight tint (≈ `primary` at 25% over white, resolved to a solid value so both
   platforms paint the identical color).
-- **Dark mode uses a very bright version of the brand purple.** `text-primary` on the
-  purple tint measured ≈1.6:1 and was illegible; keeping the hue/saturation and pushing
-  lightness to 96% (near white, `#f6effb`) preserves the brand purple and reaches
-  11.09:1.
+- **Dark mode uses a bright version of the brand purple.** `text-primary` on the purple
+  tint measured ≈1.6:1 and was illegible; keeping hue 274 / saturation 60% and raising
+  lightness to 66% (`#af74dc`) gives 3.78:1 — clear of the 3:1 large-text floor, just
+  under the 4.5:1 normal-text bar. If a surface needs AA for normal-size text, 70%
+  (4.46:1) or 72% (4.80:1) is the next step up.
 - **One class recipe, both apps.** Highlighted surfaces use
   `bg-highlight text-highlight-foreground` — web in `apps/web/src/lib/highlight.ts`,
   mobile mirror in `apps/mobile/lib/highlight.ts`. Surfaces append only box-model and

@@ -128,7 +128,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
   const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
   const highlightTextClass = overlayText ? 'text-primary-foreground' : 'text-primary';
   // Highlighted text (SPEC-046 §1.4): one highlight look in both apps — a
-  // near-white foreground in dark mode so it reads on the tinted background.
+  // bright-purple foreground in dark mode so it reads on the tinted background.
   const highlightForegroundHex = overlayText ? rubyColors.primaryForeground : rubyColors.highlightForeground;
 
   // Ruby segments are rebuilt only when the pieces change (displayText,
@@ -275,7 +275,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
   const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
   const highlightTextClass = overlayText ? 'text-primary-foreground' : 'text-primary';
   // Highlighted text (SPEC-046 §1.4): one highlight look in both apps — a
-  // near-white foreground in dark mode so it reads on the tinted background.
+  // bright-purple foreground in dark mode so it reads on the tinted background.
   const highlightForegroundHex = overlayText ? rubyColors.primaryForeground : rubyColors.highlightForeground;
 
   const rubySegs = useMemo<RubySegment[]>(() => {

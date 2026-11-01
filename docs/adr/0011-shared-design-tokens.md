@@ -131,7 +131,7 @@ scripts/build-tokens.mts             ← generator
     --foreground: 0 0% 95%;
     --primary: 274 60% 46%;
     --highlight: 274 45% 26%;
-    --highlight-foreground: 274 60% 96%;   /* near white — see SPEC-046 §1.4 */
+    --highlight-foreground: 274 60% 66%;   /* bright purple — see SPEC-046 §1.4 */
     /* ... */
   }
 }

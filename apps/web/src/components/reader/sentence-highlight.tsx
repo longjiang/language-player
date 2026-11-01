@@ -80,8 +80,8 @@ export function SegmentedTranslation({
         <span
           key={i}
           // The active translation sentence uses the shared highlight pair
-          // (SPEC-046 §1.4): the dark-mode foreground is a near-white version
-          // of the brand purple, because a primary-colored foreground was
+          // (SPEC-046 §1.4): the dark-mode foreground is a bright version of
+          // the brand purple, because a primary-colored foreground was
           // illegible on the tinted background.
           className={i === activeTrIndex ? `rounded-sm ${HIGHLIGHT_CLASS}` : undefined}
         >
