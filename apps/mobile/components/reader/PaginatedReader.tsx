@@ -26,6 +26,7 @@ import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
 import { resolveReaderImageSource } from '@/lib/reader-assets';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 import { computeRubyLayout, typeFaceFontFamily } from '@/lib/ruby-layout';
 import { glyphLangTag, isHanLanguage } from '@langplayer/shared';
 import {
@@ -1449,10 +1450,9 @@ function renderBlock(
         highlightedTranslation = (
           <Text>
             {translation.slice(0, pair.tr.start)}
-            {/* The active translation sentence must read clearly in dark
-                mode: stronger primary background + primary foreground
-                (bg-primary/15 alone was invisible on dark backgrounds). */}
-            <Text className="bg-primary/25 text-primary">{translation.slice(pair.tr.start, pair.tr.end)}</Text>
+            {/* The active translation sentence uses the shared highlight pair
+                (SPEC-046 §1.4): near-white foreground in dark mode. */}
+            <Text className={HIGHLIGHT_CLASS}>{translation.slice(pair.tr.start, pair.tr.end)}</Text>
             {translation.slice(pair.tr.end)}
           </Text>
         );

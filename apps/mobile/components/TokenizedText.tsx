@@ -367,6 +367,9 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
   const rubyForeground = overlayText ? rubyColors.primaryForeground : rubyColors.foreground;
   const rubyMutedForeground = overlayText ? rubyColors.primaryForeground : rubyColors.mutedForeground;
   const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
+  // Highlighted text (SPEC-046 §1.4): the same two tokens the className paths
+  // use, resolved to hex for the native paragraph runs.
+  const highlightForegroundHex = overlayText ? rubyColors.primaryForeground : rubyColors.highlightForeground;
   const l2Settings = getL2(l2Code);
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showPhonetics = phoneticsOverride === false ? false : phonetics.show !== false;
@@ -1725,9 +1728,11 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                     text: seg.text,
                     ...(seg.reading ? { reading: seg.reading } : {}),
                     tappable: true,
-                    color: isTokenSelected || isHighlighted
+                    color: isTokenSelected
                       ? rubyPrimary
-                      : rubyForeground,
+                      : isHighlighted || isSearchHighlight
+                        ? highlightForegroundHex
+                        : rubyForeground,
                     readingColor: isTokenSelected
                       ? rubyPrimary
                       : rubyMutedForeground,
@@ -1735,7 +1740,7 @@ function TokenizedTextImpl({ text: rawText, l2Code, highlightTerms, highlightEnt
                     underline: !isBlanked && isLink,
                     italic: !isBlanked && isItalicFormat,
                     ...(isHighlighted || isSearchHighlight
-                      ? { background: rubyColors.primary, backgroundAlpha: 0.2 }
+                      ? { background: rubyColors.highlight, backgroundAlpha: 1 }
                       : isSavedWord
                         ? { background: MOBILE_RUBY_SAVED_BG, backgroundAlpha: 0.2 }
                         : {}),

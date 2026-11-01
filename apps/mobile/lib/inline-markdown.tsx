@@ -2,6 +2,7 @@ import React from 'react';
 import { Text } from 'react-native';
 import { splitInlineMarkdown } from '@langplayer/shared';
 import type { EpubFormatRange } from '@/lib/epub-parser';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
 /**
  * Mobile inline-markdown wrappers (SPEC-083 Task 5).
@@ -45,9 +46,9 @@ export function parseInlineMarkdownRanges(text: string): {
  * emits (it bolds highlighted terms with `**…**`). Handles **bold**, *italic*,
  * and `code`; anything else passes through untouched.
  *
- * With `markBold`, the bolded term renders as a prominent highlight
- * (bg-primary/15 + text-primary) instead of plain bold — matching web's
- * renderInlineMarkdown({ markBold: true }).
+ * With `markBold`, the bolded term renders as the shared highlight
+ * (`bg-highlight text-highlight-foreground` — SPEC-046 §1.4) instead of plain
+ * bold — matching web's renderInlineMarkdown({ markBold: true }).
  */
 export function renderInlineMarkdown(
   text: string,
@@ -61,7 +62,7 @@ export function renderInlineMarkdown(
     } else if (part.type === 'bold') {
       parts.push(
         opts?.markBold ? (
-          <Text key={key} className="rounded bg-primary/15 px-0.5 font-semibold text-primary">
+          <Text key={key} className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}>
             {part.value}
           </Text>
         ) : (

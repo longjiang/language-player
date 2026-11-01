@@ -17,6 +17,7 @@ import { buildRuby } from '@langplayer/utils';
 import { collectRareCodePoints, rareGlyphLabel } from '@langplayer/shared';
 import { RubyText, RubyTextParagraph, type RubyTextProps } from '@/components/RubyText';
 import { NATIVE_RUBY_ACTIVE, useMobileRubyColors } from '@/lib/ruby-layout';
+import { HIGHLIGHT_BG_CLASS, HIGHLIGHT_FG_CLASS } from '@/lib/highlight';
 import type { GridLine } from '@/lib/aligned-translation';
 import { tokenizedTextLogger } from '@/lib/logger';
 import { useRareGlyphState } from '@/contexts/RareGlyphContext';
@@ -126,6 +127,9 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
   const rubyMutedForeground = overlayText ? rubyColors.primaryForeground : rubyColors.mutedForeground;
   const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
   const highlightTextClass = overlayText ? 'text-primary-foreground' : 'text-primary';
+  // Highlighted text (SPEC-046 §1.4): one highlight look in both apps — a
+  // near-white foreground in dark mode so it reads on the tinted background.
+  const highlightForegroundHex = overlayText ? rubyColors.primaryForeground : rubyColors.highlightForeground;
 
   // Ruby segments are rebuilt only when the pieces change (displayText,
   // pronunciation, script); they are a fresh array each render otherwise,
@@ -166,7 +170,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
         <View
           className={`flex-row items-end${
             NATIVE_RUBY_ACTIVE && !isBlanked && (isHighlighted || isSearchHighlight || isSavedWord)
-              ? ` ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim()
+              ? ` ${isHighlighted || isSearchHighlight ? `${HIGHLIGHT_BG_CLASS} rounded` : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim()
               : ''
           }`}
         >
@@ -182,7 +186,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
               rubyPull={rubyPull}
               baseLeading={baseLeading}
               textStyle={textStyle}
-              colorHex={isTokenSelected || isHighlighted ? rubyPrimary : rubyForeground}
+              colorHex={isTokenSelected ? rubyPrimary : isHighlighted || isSearchHighlight ? highlightForegroundHex : rubyForeground}
               readingColorHex={isTokenSelected ? rubyPrimary : rubyMutedForeground}
               bold={!isBlanked && (isHighlighted || isBoldFormat)}
               underline={!isBlanked && isLink}
@@ -192,7 +196,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
                   ? 'text-foreground'
                   : isTokenSelected
                     ? highlightTextClass
-                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted || isSearchHighlight ? HIGHLIGHT_FG_CLASS : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isHighlighted || isSearchHighlight ? `${HIGHLIGHT_BG_CLASS} rounded` : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
               }
               fallbackReadingClassName={isTokenSelected ? highlightTextClass : (textColor ?? 'text-muted-foreground')}
             />
@@ -270,6 +274,9 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
   const rubyMutedForeground = overlayText ? rubyColors.primaryForeground : rubyColors.mutedForeground;
   const rubyPrimary = overlayText ? rubyColors.primaryForeground : rubyColors.primary;
   const highlightTextClass = overlayText ? 'text-primary-foreground' : 'text-primary';
+  // Highlighted text (SPEC-046 §1.4): one highlight look in both apps — a
+  // near-white foreground in dark mode so it reads on the tinted background.
+  const highlightForegroundHex = overlayText ? rubyColors.primaryForeground : rubyColors.highlightForeground;
 
   const rubySegs = useMemo<RubySegment[]>(() => {
     if (!hasRuby || !pronunciation) return [{ text: displayText }];
@@ -301,7 +308,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
           rubyPull={rubyPull}
           baseLeading={baseLeading}
           textStyle={textStyle}
-          colorHex={isTokenSelected || isHighlighted ? rubyPrimary : rubyForeground}
+          colorHex={isTokenSelected ? rubyPrimary : isHighlighted || isSearchHighlight ? highlightForegroundHex : rubyForeground}
           readingColorHex={isTokenSelected ? rubyPrimary : rubyMutedForeground}
           bold={!isBlanked && (isHighlighted || isBoldFormat)}
           underline={!isBlanked && isLink}
@@ -315,7 +322,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
               ? 'text-foreground'
                 : isTokenSelected
                 ? highlightTextClass
-                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? highlightTextClass : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted || isSearchHighlight ? HIGHLIGHT_FG_CLASS : (textColor ?? 'text-foreground')} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? `underline ${highlightTextClass}` : ''} ${isHighlighted || isSearchHighlight ? `${HIGHLIGHT_BG_CLASS} rounded` : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
           }
           fallbackReadingClassName={isTokenSelected ? highlightTextClass : (textColor ?? 'text-muted-foreground')}
         />
@@ -567,7 +574,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
       {isBlanked ? (
         <Text className={textColor}>{'＿'.repeat(Math.max(1, word.length))}</Text>
       ) : (
-        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}><RareGlyphText text={displayText} /></Text>
+        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted || isSearchHighlight ? HIGHLIGHT_FG_CLASS : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isHighlighted || isSearchHighlight ? `${HIGHLIGHT_BG_CLASS} rounded` : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}><RareGlyphText text={displayText} /></Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
       {showQuickGloss ? <Text lang={quickGlossLang} style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}

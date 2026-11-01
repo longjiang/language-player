@@ -4,6 +4,7 @@ import { Pressable } from '@/components/ui/pressable';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { extractNoteMarkers } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
 /** mm:ss clock label for a subtitle timestamp or video duration. */
 export function formatTime(seconds: number): string {
@@ -75,7 +76,7 @@ function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
     }
     if (bestIdx > pos) nodes.push(<Text key={`pre-${pos}`}>{cleanText.slice(pos, bestIdx)}</Text>);
     nodes.push(
-      <Text key={`hit-${bestIdx}-${bestLen}`} className="font-semibold text-primary">
+      <Text key={`hit-${bestIdx}-${bestLen}`} className={`font-semibold ${HIGHLIGHT_CLASS}`}>
         {cleanText.slice(bestIdx, bestIdx + bestLen)}
       </Text>,
     );

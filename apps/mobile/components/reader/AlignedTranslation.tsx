@@ -44,6 +44,7 @@ import { Text, View } from 'react-native';
 import type { TextLayoutEvent } from 'react-native';
 import { lineOffsets, type GridLine, type TextLayoutLine } from '@/lib/aligned-translation';
 import { readerLogger } from '@/lib/logger';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
 const { log } = readerLogger;
 
@@ -258,11 +259,10 @@ function AlignedTranslationImpl({
                   {off.start < highlight!.start && (
                     <Text>{lineText.slice(0, highlight!.start - off.start)}</Text>
                   )}
-                  {/* The active translation sentence must read clearly in
-                      dark mode: stronger primary background + primary
-                      foreground (bg-primary/15 alone was invisible on dark
-                      backgrounds). */}
-                  <Text className="bg-primary/25 text-primary">
+                  {/* The active translation sentence uses the shared highlight
+                      pair (SPEC-046 §1.4): the dark-mode foreground is a
+                      near-white version of the brand purple. */}
+                  <Text className={HIGHLIGHT_CLASS}>
                     {lineText.slice(
                       Math.max(0, highlight!.start - off.start),
                       Math.min(lineText.length, highlight!.end - off.start),
@@ -284,7 +284,7 @@ function AlignedTranslationImpl({
           {leftoverHl ? (
             <>
               {leftoverHl.start > 0 && <Text>{leftover.slice(0, leftoverHl.start)}</Text>}
-              <Text className="bg-primary/15">
+              <Text className={HIGHLIGHT_CLASS}>
                 {leftover.slice(leftoverHl.start, leftoverHl.end)}
               </Text>
               {leftoverHl.end < leftover.length && <Text>{leftover.slice(leftoverHl.end)}</Text>}

@@ -6,6 +6,7 @@ import { findTextMatches } from '@langplayer/utils';
 import { Search } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 
 interface EpubSearchPanelProps {
@@ -167,7 +168,7 @@ function HighlightSnippet({
   return (
     <Text>
       {snippet.slice(0, matchStart)}
-      <Text className="font-bold text-primary">{snippet.slice(matchStart, matchStart + matchLen)}</Text>
+      <Text className={`font-bold ${HIGHLIGHT_CLASS}`}>{snippet.slice(matchStart, matchStart + matchLen)}</Text>
       {snippet.slice(matchStart + matchLen)}
     </Text>
   );
