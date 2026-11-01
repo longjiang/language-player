@@ -43,6 +43,12 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Highlighted text (term marks, search hits, highlighted runs).
+        // One look everywhere — see SPEC-046 §1.4.
+        highlight: {
+          DEFAULT: 'hsl(var(--highlight))',
+          foreground: 'hsl(var(--highlight-foreground))',
+        },
         brand: {
           50: '#f6edfa',
           100: '#ecdbf5',

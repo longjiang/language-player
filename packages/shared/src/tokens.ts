@@ -111,6 +111,10 @@ export interface SemanticColors {
   successForeground: string;
   warning: string;
   warningForeground: string;
+  /** Background of highlighted text (matched term, search hit, highlighted run). */
+  highlight: string;
+  /** Foreground of highlighted text — near white in dark mode for legibility. */
+  highlightForeground: string;
   border: string;
   input: string;
   ring: string;
@@ -138,6 +142,13 @@ export const lightSemantic: SemanticColors = {
   successForeground: '0 0% 100%',
   warning: colors.yellow[500],
   warningForeground: '0 0% 100%',
+  // Highlighted text (one look for term marks, search hits, and highlighted
+  // runs — SPEC-046 §1.4). Light foreground is the brand purple, so light mode
+  // renders exactly as before; the background is the single highlight tint
+  // (≈ primary at 25% over white, resolved to a solid value so web and mobile
+  // paint the identical color). Contrast 6.25:1.
+  highlight: '274 45% 88%',
+  highlightForeground: '274 60% 38%',
   border: colors.neutral[200],
   input: colors.neutral[200],
   ring: '274 60% 38%',
@@ -165,6 +176,12 @@ export const darkSemantic: SemanticColors = {
   successForeground: '0 0% 100%',
   warning: colors.yellow[500],
   warningForeground: '0 0% 100%',
+  // Highlighted text, dark mode: the tinted background stays purple, but the
+  // foreground is a very bright version of the brand token (near white,
+  // #f6effb). A dark primary foreground on the purple tint was illegible
+  // (≈1.6:1); this pair is 11.09:1. See SPEC-046 §1.4.
+  highlight: '274 45% 26%',
+  highlightForeground: '274 60% 96%',
   border: '230 20% 22%',
   input: '230 20% 22%',
   ring: '274 60% 46%',

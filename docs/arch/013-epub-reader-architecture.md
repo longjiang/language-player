@@ -766,8 +766,9 @@ links, falling back to headings).
 - **Space scrolls the page** (Shift+Space scrolls up); it never turns the
   page (SPEC-087 keyboard section updated).
 - **Short pages mid-align** vertically (immersive epub reader).
-- **Translation-sentence highlight** strengthened (`bg-primary/25 text-primary`)
-  for dark-mode visibility.
+- **Translation-sentence highlight** uses the shared highlight tokens
+  (`bg-highlight text-highlight-foreground`, SPEC-046 §1.4) so it reads clearly
+  in dark mode on both apps.
 - **Content-container clamp**: the text column's maximum width is
   `min(CONTENT_CONTAINER_WIDTH, screen − 2 × L)` — the container width
   (1248 px = the top bar's max-w-7xl content span, logo → avatar) on wide

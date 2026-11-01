@@ -184,8 +184,8 @@ returned translation. Clients render the markers per surface:
 
 - **Subs-search result list & subtitles (Pattern 2)**: the translation is
   rendered with ReactMarkdown and a `strong → <mark>` override, so the matched
-  term shows as the same highlight ring (`bg-primary/15 … ring-primary/30`)
-  used on the tokenized L2 text.
+  term shows as the same highlight (`bg-highlight text-highlight-foreground`,
+  SPEC-046 §1.4) used on the tokenized L2 text.
 - **Review context (Pattern 3)**: the `form` is sent so the server keeps the
   translation focused on the word under review.
 
@@ -229,7 +229,7 @@ The biggest gap is **Pattern 1 (page-level translation)** on mobile. The other t
 6. **Term emphasis**: when the text being translated contains the word being
    studied, pass it via `form`/`forms` so the server bolds it, and render the
    returned `**…**` markers as a `<mark>` highlight — consistent with the
-   highlight ring on the original tokenized text.
+   highlight on the original tokenized text (SPEC-046 §1.4).
 
 ### Implementation Plan
 

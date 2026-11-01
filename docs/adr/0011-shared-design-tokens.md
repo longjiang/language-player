@@ -120,14 +120,18 @@ scripts/build-tokens.mts             ← generator
   :root {
     --background: 0 0% 100%;        /* light */
     --foreground: 222 47% 11%;
-    --primary: 228 74% 59%;
-    /* ... all 23 semantic colors */
+    --primary: 274 60% 38%;
+    --highlight: 274 45% 88%;        /* highlighted-text background */
+    --highlight-foreground: 274 60% 38%;
+    /* ... all 25 semantic colors */
   }
 
   .dark:root {                       /* .dark on web, .dark:root on mobile */
     --background: 230 30% 8%;       /* dark */
     --foreground: 0 0% 95%;
-    --primary: 228 74% 65%;
+    --primary: 274 60% 46%;
+    --highlight: 274 45% 26%;
+    --highlight-foreground: 274 60% 96%;   /* near white — see SPEC-046 §1.4 */
     /* ... */
   }
 }
@@ -156,7 +160,7 @@ colors: {
 
 The generator reads `lightSemantic` and `darkSemantic` from `packages/shared/src/tokens.ts` and writes two files:
 
-1. **`apps/mobile/global.css`** — `@tailwind` directives + `@layer base { :root { ... } .dark:root { ... } }` with all 23 semantic colors as CSS custom properties. Raw HSL channels only (no `hsl()` wrapper — the wrapper lives in the Tailwind config).
+1. **`apps/mobile/global.css`** — `@tailwind` directives + `@layer base { :root { ... } .dark:root { ... } }` with all 25 semantic colors as CSS custom properties. Raw HSL channels only (no `hsl()` wrapper — the wrapper lives in the Tailwind config).
 
 2. **`apps/mobile/tailwind.config.js`** — NativeWind preset + `darkMode: 'class'` + colors referencing `hsl(var(--xxx) / <alpha-value>)`. The `<alpha-value>` placeholder preserves Tailwind opacity modifier support (`bg-primary/20`).
 
@@ -216,7 +220,7 @@ Both platforms now use the same mechanism:
 ## Consequences
 
 - **Single source of truth**: `packages/shared/src/tokens.ts` → all colors, typography, spacing, border radius
-- **Both platforms use CSS custom properties**: Light/dark mode works identically — toggle the `.dark` class (web) or call `setColorScheme()` (mobile), and all 23 semantic colors swap simultaneously
+- **Both platforms use CSS custom properties**: Light/dark mode works identically — toggle the `.dark` class (web) or call `setColorScheme()` (mobile), and all 25 semantic colors swap simultaneously
 - **No per-component migration**: Unlike the original ADR-0011 plan (which called for `dark:` overrides on every component), the CSS variable approach swaps all colors globally
 - **`build-tokens.mts`**: Run after token changes to regenerate `global.css` and `tailwind.config.js` for mobile
 - **`hslToHex()` and `semanticColorsForMobile()`**: Retained in `packages/shared/src/tokens.ts` for potential non-NativeWind mobile usage (e.g., `theme-colors.ts` for lucide icon colors), but no longer the primary mobile theming mechanism

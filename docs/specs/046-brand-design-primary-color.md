@@ -64,6 +64,7 @@ The rest of the semantic palette stays as defined in ADR-0011 and `packages/shar
 - `background` / `foreground`
 - `card` / `cardForeground`
 - `secondary`, `muted`, `accent`, `destructive`, `success`, `warning`
+- `highlight` / `highlightForeground` (highlighted text — see [§1.4](#14-highlight-tokens-highlighted-text))
 - `border`, `input`, `ring`
 
 The `ring` color should follow the primary (so focus rings match the brand purple).
@@ -92,6 +93,38 @@ brand: {
   900: '#2d1143',
 }
 ```
+
+### 1.4 Highlight tokens (highlighted text)
+
+Highlighted text — the purple mark on a matched term in a translation, a reader or
+subs-search hit, or a highlighted run inside tokenized text — uses a dedicated token
+pair rather than borrowing `primary`. There is exactly **one** highlight look in both
+apps: every surface paints the same background and the same foreground.
+
+| Mode | Token | HSL | Hex | Contrast (fg on bg) |
+|---|---|---|---|---|
+| **Light** | `highlight` | `274 45% 88%` | `#e2d3ee` | — |
+| **Light** | `highlightForeground` | `274 60% 38%` | `#69279c` | 6.25:1 |
+| **Dark** | `highlight` | `274 45% 26%` | `#462460` | — |
+| **Dark** | `highlightForeground` | `274 60% 96%` | `#f6effb` | 11.09:1 |
+
+- **Light mode keeps its text color.** `highlightForeground` is the light brand purple
+  (`#69279c`) — the color highlighted text already used. The background is the single
+  highlight tint (≈ `primary` at 25% over white, resolved to a solid value so both
+  platforms paint the identical color).
+- **Dark mode uses a very bright version of the brand purple.** `text-primary` on the
+  purple tint measured ≈1.6:1 and was illegible; keeping the hue/saturation and pushing
+  lightness to 96% (near white, `#f6effb`) preserves the brand purple and reaches
+  11.09:1.
+- **One class recipe, both apps.** Highlighted surfaces use
+  `bg-highlight text-highlight-foreground` — web in `apps/web/src/lib/highlight.ts`,
+  mobile mirror in `apps/mobile/lib/highlight.ts`. Surfaces append only box-model and
+  weight utilities (`rounded-sm px-0.5 font-semibold`); they never reintroduce
+  `bg-primary/…`, `dark:bg-primary/…`, or `text-primary` for a highlight, and the
+  background is never boosted per context.
+- **Native ruby runs.** The mobile paragraph renderer takes colors as hex, so
+  `TokenizedText` passes `highlight` with `backgroundAlpha: 1` and
+  `highlightForeground` from `semanticColorsForMobile()` — the same two tokens.
 
 ## 2. Play Button Logo
 

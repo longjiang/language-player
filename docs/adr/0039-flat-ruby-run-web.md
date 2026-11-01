@@ -49,7 +49,7 @@ The CSS platform has caught up with the typography side:
 
 The only reason the wrappers exist is interactivity and styling: click → token
 dictionary popup, `title` tooltip, hover background, saved-word highlight,
-highlight ring, karaoke dimming, quiz blanking, quick gloss, interlinear
+highlight tint, karaoke dimming, quiz blanking, quick gloss, interlinear
 definitions, byeonggi, and markdown format wrappers (bold/italic/code/mark/
 link).
 
@@ -111,9 +111,10 @@ into real text, only into punctuation blanks and line edges.
   styling — boxed-mode parity, no token column.
 - Markdown formats (`formats` prop): folded into element classes instead of
   `<strong>/<em>/<mark>/<code>/<link>` wrappers — `font-semibold`,
-  `italic`, `bg-primary/40`, `font-mono`, `text-primary underline`. The
-  `code` and `mark` formats' horizontal padding is dropped in flat mode
-  (padding is a box-model property); the boxed path keeps it.
+  `italic`, `bg-highlight text-highlight-foreground`, `font-mono`,
+  `text-primary underline`. The `code` and `mark` formats' horizontal padding
+  is dropped in flat mode (padding is a box-model property); the boxed path
+  keeps it.
 
 ### CSS
 

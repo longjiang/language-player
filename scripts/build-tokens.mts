@@ -97,6 +97,7 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './contexts/**/*.{ts,tsx}',
+    './lib/**/*.{ts,tsx}',
   ],
   darkMode: 'class',
   theme: {

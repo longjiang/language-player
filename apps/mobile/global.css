@@ -24,6 +24,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+    --highlight: 274 45% 88%;
+    --highlight-foreground: 274 60% 38%;
     --border: 214 20% 85%;
     --input: 214 20% 85%;
     --ring: 274 60% 38%;
@@ -50,6 +52,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+    --highlight: 274 45% 26%;
+    --highlight-foreground: 274 60% 96%;
     --border: 230 20% 22%;
     --input: 230 20% 22%;
     --ring: 274 60% 46%;

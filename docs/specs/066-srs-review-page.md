@@ -533,9 +533,10 @@ snapshot**:
   same split stage as the source text, splitting the straddled tokens into an
   atomic phrase token plus re-lemmatized fragments. The highlighted keyword
   gets a **text background** for notability, matching the rest of the app
-  (web: `bg-primary/15` + ring in `token-span.tsx`; mobile: `bg-primary/20`
-  in all `TokenizedText` render paths, parity added 2026-08-24; the
-  cross-boundary split is web-only for now — see SPEC-033 Open Questions).
+  (both apps: the shared highlight tokens `bg-highlight text-highlight-foreground`,
+  SPEC-046 §1.4; web in `token-span.tsx`, mobile in every `TokenizedText`
+  render path, parity added 2026-08-24; the cross-boundary split is web-only
+  for now — see SPEC-033 Open Questions).
 - A text-action menu (copy / speak / AI explain / translate) on the context.
 - Source attribution (video/book title + localized date).
 - SRS info line: `{interval}d` (or "new") and reviewed count.

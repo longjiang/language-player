@@ -11,6 +11,7 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './contexts/**/*.{ts,tsx}',
+    './lib/**/*.{ts,tsx}',
   ],
   darkMode: 'class',
   theme: {
@@ -36,6 +37,8 @@ module.exports = {
         'success-foreground': 'hsl(var(--success-foreground) / <alpha-value>)',
         warning: 'hsl(var(--warning) / <alpha-value>)',
         'warning-foreground': 'hsl(var(--warning-foreground) / <alpha-value>)',
+        highlight: 'hsl(var(--highlight) / <alpha-value>)',
+        'highlight-foreground': 'hsl(var(--highlight-foreground) / <alpha-value>)',
         border: 'hsl(var(--border) / <alpha-value>)',
         input: 'hsl(var(--input) / <alpha-value>)',
         ring: 'hsl(var(--ring) / <alpha-value>)',
