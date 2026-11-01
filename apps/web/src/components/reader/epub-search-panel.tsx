@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '@/hooks/use-t';
 import { logwarn } from '@/lib/logger';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { EpubSearchResult } from '@/hooks/use-epub';
 
@@ -46,7 +47,7 @@ function HighlightSnippet({
   return (
     <>
       {snippet.slice(0, matchStart)}
-      <mark className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
+      <mark className={`rounded-sm px-0.5 ${HIGHLIGHT_CLASS}`}>
         {snippet.slice(matchStart, matchStart + matchLen)}
       </mark>
       {snippet.slice(matchStart + matchLen)}

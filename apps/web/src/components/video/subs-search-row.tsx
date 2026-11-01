@@ -9,6 +9,7 @@ import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { NoteBadge, NotePopup } from '@/components/note-popup';
 import { log } from '@/lib/logger';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
 /** mm:ss clock label for a subtitle timestamp or video duration. */
 export function formatTime(seconds: number): string {
@@ -146,7 +147,7 @@ function HighlightLine({
       nodes.push(
         <mark
           key={`hl-${seg.start}-${seg.end}`}
-          className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30"
+          className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}
         >
           {text}
         </mark>,
@@ -248,7 +249,7 @@ export function SubsSearchRow({
                         components={{
                           p: ({ children }) => <span>{children}</span>,
                           strong: ({ children }) => (
-                            <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                            <mark className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}>
                               {children}
                             </mark>
                           ),

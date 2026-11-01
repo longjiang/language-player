@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { renderInlineMarkdown } from '@/components/text-action-panels';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 import {
   buildSentenceMap,
   sentenceIndexAt,
@@ -78,10 +79,11 @@ export function SegmentedTranslation({
       {map.tr.map((seg, i) => (
         <span
           key={i}
-          // The active translation sentence must read clearly in dark mode:
-          // a stronger primary background plus a primary-colored foreground
-          // (bg-primary/10 alone was invisible on dark backgrounds).
-          className={i === activeTrIndex ? 'rounded-sm bg-primary/25 text-primary' : undefined}
+          // The active translation sentence uses the shared highlight pair
+          // (SPEC-046 §1.4): the dark-mode foreground is a near-white version
+          // of the brand purple, because a primary-colored foreground was
+          // illegible on the tinted background.
+          className={i === activeTrIndex ? `rounded-sm ${HIGHLIGHT_CLASS}` : undefined}
         >
           {renderInlineMarkdown(text.slice(seg.start, seg.end))}
         </span>

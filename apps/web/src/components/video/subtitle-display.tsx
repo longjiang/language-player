@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { isReaderTapSuppressed } from '@/lib/reader-tap-guard';
 import { log } from '@/lib/logger';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import type { SubtitleLine, VideoNote } from '@langplayer/shared';
@@ -613,7 +614,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tok
                   components={{
                     p: ({ children }) => <span>{children}</span>,
                     strong: ({ children }) => (
-                      <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                      <mark className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}>
                         {children}
                       </mark>
                     ),
@@ -717,7 +718,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, notes, tok
                       components={{
                         p: ({ children }) => <span>{children}</span>,
                         strong: ({ children }) => (
-                          <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                          <mark className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}>
                             {children}
                           </mark>
                         ),

@@ -48,6 +48,7 @@ import { useTextbookTask } from './textbook/task-provider';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup, type TextSelectionInfo } from '@/hooks/use-selection-popup';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
 // Re-exported for callers that imported the constant from this component
 // before it moved to lib/text-scale.
@@ -74,7 +75,7 @@ function highlightPlainText(text: string, formats: FormatRange[] | undefined): R
     }
     if (end > start) {
       out.push(
-        <mark key={start} className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
+        <mark key={start} className={`rounded-sm px-0.5 ${HIGHLIGHT_CLASS}`}>
           <RareGlyphText text={text.slice(start, end)} />
         </mark>,
       );
@@ -1192,7 +1193,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           if (fmt === 'italic') return withCjkBreak(<em>{tokenSpan}</em>);
           if (fmt === 'highlight') {
             return withCjkBreak(
-              <mark className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
+              <mark className={`rounded-sm px-0.5 ${HIGHLIGHT_CLASS}`}>
                 {tokenSpan}
               </mark>
             );

@@ -4,15 +4,16 @@ import type { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
 /**
  * Render a translation string with the inline markdown the translate backend
  * emits (it bolds highlighted terms with `**…**`). Handles **bold**, *italic*,
  * and `code`; anything else passes through untouched.
  *
- * With `markBold`, the bolded term renders as a prominent <mark> highlight
- * (bg-primary/15 + ring — the same emphasis as subs-search translations)
- * instead of plain <strong>.
+ * With `markBold`, the bolded term renders as the shared highlight
+ * (`bg-highlight text-highlight-foreground` — SPEC-046 §1.4), the same
+ * emphasis as subs-search translations, instead of plain <strong>.
  */
 export function renderInlineMarkdown(text: string, opts?: { markBold?: boolean }): ReactNode {
   const parts: ReactNode[] = [];
@@ -29,7 +30,7 @@ export function renderInlineMarkdown(text: string, opts?: { markBold?: boolean }
         opts?.markBold ? (
           <mark
             key={key}
-            className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30"
+            className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}
           >
             {inner}
           </mark>

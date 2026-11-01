@@ -9,6 +9,7 @@ import { getCachedEntries, getCachedEntryById, getL1CachedEntry } from '@/lib/di
 import { useSettingsContext } from '@/providers/settings-provider';
 import { RareGlyphText } from '@/components/rare-glyph-text';
 import { baseCode } from '@/lib/language-data';
+import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
 // ── Module-level L1 definition cache ──
@@ -448,7 +449,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     isSelected
       ? 'bg-primary/20 text-primary'
       : isHighlighted
-        ? 'bg-primary/15 text-primary font-semibold ring-1 ring-primary/30'
+        ? `${HIGHLIGHT_CLASS} font-semibold`
         : isQuizBlanking
           ? 'hover:bg-muted/80 border-b-2 border-dashed border-muted-foreground/40'
           : 'hover:bg-muted/80'
@@ -481,7 +482,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       : format === 'italic' ? 'italic'
       : format === 'code' ? 'rounded bg-muted font-mono text-[0.9em]'
       : format === 'link' ? 'text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary'
-      : format === 'highlight' ? 'rounded-sm bg-primary/40 text-primary dark:bg-primary/60'
+      : format === 'highlight' ? `${HIGHLIGHT_CLASS} rounded-sm`
       : format === 'strikethrough' ? 'line-through decoration-muted-foreground/60'
       : ''
     : '';
