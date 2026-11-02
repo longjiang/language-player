@@ -5,7 +5,8 @@
 - **Feature**: Admin console web app (`apps/admin`) with user management
 - **Status**: complete
 - **Created**: 2026-08-09
-- **Updated**: 2026-10-22 — `/` redirects to `/analytics` (SPEC-100)
+- **Updated**: 2026-11-03 — permanent user deletion (Danger zone) added
+- **Previously updated**: 2026-10-22 — `/` redirects to `/analytics` (SPEC-100)
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
   - `docs/adr/0032-admin-console-app.md` — why a separate admin app
@@ -35,6 +36,9 @@ remove actions for subscriptions.
   quickly.
 - As an admin, I want to grant, change, or remove a user's subscription, so I
   can fix billing issues without touching the database.
+- As an admin, I want to permanently delete a user account (and everything it
+  owns) from the user page, so I can honour erasure requests and clean up
+  spam/test accounts without touching the database.
 - As an admin, I want to be the only kind of user who can log in, so the
   admin surface never leaks to regular accounts.
 
@@ -64,6 +68,7 @@ All routes require `Authorization: Bearer <Supabase access token>` with
 | GET | `/admin/users/search?q=&limit=` | Substring search across auth.users (id, email, phone, first/last name), user_id_map (legacy id, email), and user_subscriptions (id, payment email/id/customer id, notes). Returns compact user rows with subscription summary, saved-word count, watch count, and total hours. |
 | GET | `/admin/users/<user_id>` | Full profile (auth + legacy ids, admin flag, dates) plus subscriptions, per-L2 progress, saved words (totals, per-L2 counts, recent 50 with contexts), watch history (recent 30), likes, playlists, notes, phrases, bookshelf, history, SRS, settings, and acquisition survey. Accepts a legacy Directus numeric id too. |
 | POST | `/admin/users/<user_id>/subscriptions` | Grant a subscription. `type` is required (`monthly` / `annual` / `lifetime` / `trial`); `expires_on` is auto-computed from the plan when omitted; optional `status`, payment fields, and `notes`. |
+| DELETE | `/admin/users/<user_id>` | Permanently delete the account: GoTrue admin delete (cascades every `auth_user_id`-owned row) + best-effort MailerLite GDPR-forget. Four guards can refuse it — see § Danger zone. Accepts a legacy Directus numeric id too. Returns `{success, userId, email}`. |
 | PATCH | `/admin/users/<user_id>/admin` | Grant (`{"isAdmin": true}`) or remove (`{"isAdmin": false}`) a user's admin privilege. Fetches the current GoTrue `app_metadata`, merges `is_admin`, and persists via the GoTrue admin API. Admins cannot demote themselves (400). |
 | PATCH | `/admin/subscriptions/<id>` | Change subscription fields. When `type` changes and `expires_on` is not supplied, the expiry is recomputed from the new plan. |
 | DELETE | `/admin/subscriptions/<id>` | Remove a subscription entirely. |
@@ -112,7 +117,8 @@ and the existing `user_subscriptions` row shape are preserved.
   - **Overview**: profile (email, phone, IDs, dates, acquisition source),
     subscription manager (grant/edit/remove dialogs), SRS summary, settings
     presence, and admin-privilege control (grant/remove admin with a confirm
-    dialog; self-demotion is disabled).
+    dialog; self-demotion is disabled), plus the Danger zone card that
+    permanently deletes the account.
   - **Learning Progress**: per-L2 table with level, time watched, weekly goal.
   - **Saved Words**: totals, per-L2 breakdown, and the 50 most recent words
     with their saved contexts.
@@ -128,12 +134,55 @@ the plan changes and the admin does not override the date. Removal requires
 an explicit confirm dialog. All mutations re-fetch the user detail so the
 summary badges stay correct.
 
-## i18n
+## Danger zone: permanent user deletion
+
+The Overview tab ends with a **Danger zone** card whose **Delete user** button
+opens a confirmation dialog. The admin must type the user's email address
+before the destructive button enables — the same type-to-confirm idea as
+SPEC-041, but keyed to the account being deleted so a wrong-account click
+cannot be confirmed by muscle memory.
+
+Deletion is **permanent** and reuses the user-initiated semantics from
+SPEC-041: Flask calls GoTrue `DELETE /auth/v1/admin/users/<id>`, which cascades
+to every `public` row whose `auth_user_id` references `auth.users` (learning
+data, subscriptions, acquisition, affiliate/payment rows — SPEC-039 M6), and
+GDPR-forgets the MailerLite subscriber first, best-effort. Anything that only
+referenced the old text `user_id` and has no `auth_user_id` FK is left as an
+orphan, exactly as with user-initiated deletion.
+
+Before the irreversible call, Flask enforces four guards. Each refusal returns
+`{"error": "<english>", "code": "<code>"}` so the console can render a
+translated message (the admin app maps `code`; `error` is the fallback):
+
+| Code | Status | Rule |
+|---|---|---|
+| `self_deletion` | 400 | An admin cannot delete their own account from this screen (same reasoning as the self-demotion block). |
+| `target_is_admin` | 400 | Demote the account first. Prevents accidentally wiping another administrator. |
+| `active_subscription` | 409 | A `monthly`/`annual` row with a `payment_customer_id` and a future `expires_on` is still auto-renewing. Remove or cancel it first (SPEC-041 / SPEC-054 B54 parity). Expired and lifetime rows do not block. |
+| `affiliate_history` | 409 | The user is an affiliate with commission or statement history. `affiliate_commissions` and `affiliate_statements` reference `affiliates` with `ON DELETE RESTRICT`, so the delete would fail with an FK violation; deactivate the affiliate instead. |
+
+Unlike `/auth/delete-account` (which proceeds when the subscription read
+fails, so a database hiccup can never brick a user's own erasure), the admin
+endpoint **refuses** when it cannot read the subscription state (500, nothing
+deleted): deleting an account Stripe is still billing starts a payment dispute,
+and an admin can simply retry.
+
+On success the console shows a toast and navigates back to `/users`, because
+the detail page no longer has anything to load. The Flask route logs the
+deleted id, its email, and the calling admin; refusals log their code.
+
+
 
 69 admin keys were added through `scripts/add-translation-key.mjs`, then
 `scripts/sync-translations.mjs csv-to-json` regenerated
 `packages/shared/locales/*.json`. Existing keys (`action.search`,
 `title.subscription`, `subscription.monthly`, …) are reused where possible.
+
+The Danger zone (2026-11-03) added 9 more keys the same way (`label.danger_zone`,
+`action.delete_user`, `msg.delete_user_warning`, `msg.delete_user_type_email`,
+`msg.user_deleted`, `msg.cannot_delete_self`, `msg.delete_user_demote_admin`,
+`msg.delete_user_cancel_subscription`, `msg.delete_user_affiliate_history`).
+Reused: `action.cancel`, `action.confirm_deletion`, `msg.delete_account_irreversible`.
 
 `error.auth_unreachable` was added later by the same route, with all 18
 locales (the list was trimmed 31 → 18 by SPEC-063). It is app-agnostic and is
@@ -255,10 +304,16 @@ self-demotion so the last admin can't lock themselves out.
   `/admin/check_user_subscription` endpoints be gated with `require_admin()`
   now, or after Classic is archived? (Tracked in ADR-0032.)
 - Which admin surfaces should come next: content moderation (videos/shows),
-  dictionary health, payment logs, or user account actions (delete/reset)?
+  dictionary health, payment logs, or the remaining user account actions?
   — content management shipped as [SPEC-099](099-admin-content-management.md);
   analytics shipped as [SPEC-100](100-admin-signup-analytics.md);
   transactions shipped as [SPEC-101](101-admin-transactions.md);
   affiliates and coupons are proposed in [SPEC-102](102-affiliates-and-coupons.md)
   (draft; requires an ADR-0032 amendment for the affiliate login surface);
-  payment logs and account actions are still open.
+  permanent user deletion shipped 2026-11-03 (§ Danger zone); the payment log
+  viewer and a password-reset action are still open.
+- Should the deleted user's MailerLite subscriber be forgotten by the admin
+  path with a different (`role`/group) semantic than SPEC-041's GDPR-forget,
+  e.g. a "do not contact" suppression instead of an erasure, for accounts
+  removed for abuse rather than at the owner's request? Currently the admin
+  path reuses the GDPR-forget for parity. (Open — no behaviour depends on it.)

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SubscriptionManager } from '@/components/users/subscription-manager';
 import { AffiliateCard } from '@/components/users/affiliate-card';
 import { AdminPrivilegeControl } from '@/components/users/admin-privilege';
+import { DeleteUserDangerZone } from '@/components/users/delete-user';
 import { useT } from '@/hooks/use-t';
 import { fetchUserDetail } from '@/lib/admin-api';
 import { formatDate, formatHours, formatSeconds, initials } from '@/lib/format';
@@ -142,6 +143,8 @@ function OverviewTab({ detail, onChanged }: { detail: UserDetail; onChanged: () 
           </CardContent>
         </Card>
       </div>
+
+      <DeleteUserDangerZone user={user} />
     </div>
   );
 }

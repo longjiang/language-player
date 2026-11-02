@@ -174,7 +174,10 @@
   management, opt-in attribution, lifetime Stripe coupons, payment ledger,
   commissions, statements, and manual PayPal payouts. Invitation emails,
   Classic, automated payouts, and the Stripe refund webhook are deferred
-- ⬜ Payment log viewer and account actions (delete / reset / demote admin)
+- ✅ Account actions — permanent user deletion from the admin user page
+  (guards: self, other admins, active auto-renew, affiliate history;
+  type-the-email confirmation). SPEC-060 § Danger zone
+- ⬜ Payment log viewer and a password-reset action
 
 ## Known Issues
 
@@ -198,8 +201,8 @@
 
 - **Phase 10 — Admin Console:** affiliates/coupons rollout (SPEC-102 v1
   shipped; invitation emails, automated payouts, and the Stripe refund
-  webhook deferred), then the payment log viewer and account actions
-  (delete / reset / demote admin).
+  webhook deferred), then the payment log viewer and a password-reset action
+  (permanent user deletion shipped 2026-11-03).
 - **Mobile release maintenance:** iOS is at 3.7.3 / build 28 (TestFlight) with
   b25 submitted to the App Store; Android's last upload was 3.5.0 / b21
   (Internal testing) while Production still runs b2 — Android Production needs

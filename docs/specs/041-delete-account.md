@@ -47,6 +47,16 @@ an active auto-renewing subscription are asked to cancel it first.
 - `DELETE /auth/delete-account` — existing Flask endpoint (SPEC-039 5.7);
   also GDPR-forgets the MailerLite subscriber best-effort (M6).
 
+### Admin parity
+
+Admins can delete any other account from the admin console's user page
+(`DELETE /admin/users/<id>`, see [SPEC-060](060-admin-console-user-management.md)
+§ Danger zone). It performs the same GoTrue delete + MailerLite forget, but adds
+guards the user-facing flow does not need: no self-deletion, no deleting
+another admin, no deletion while an auto-renewing subscription is active, and
+no deletion of an affiliate with commission/statement history. Unlike this
+endpoint, the admin one refuses when the subscription state cannot be read.
+
 ### States
 
 - **Blocked**: active auto-renewing subscription — shows cancel-first message.

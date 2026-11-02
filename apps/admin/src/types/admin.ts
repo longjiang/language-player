@@ -34,6 +34,12 @@ export interface AdminPrivilegeResult {
   isAdmin: boolean;
 }
 
+export interface DeleteUserResult {
+  success: boolean;
+  userId: string;
+  email: string;
+}
+
 export interface AdminSubscription {
   id: number;
   status: string;
