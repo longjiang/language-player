@@ -11,8 +11,8 @@
 
 ## Overview
 The subs-search results component (`SubsSearchResults`) shows a nav bar above the
-result list. Next to the existing exact-match forms toggle ("This form / All
-forms"), we render a group of content-filter pills: **All**, **TV Shows**,
+result list. Next to the forms filter (All forms / lemma / **…** — see
+SPEC-109), we render a group of content-filter pills: **All**, **TV Shows**,
 **Entertainment**, and **Other**. They filter the fetched results client-side by
 the video's YouTube `category` and `tv_show` membership, so a learner can e.g.
 restrict examples to TV-show dialogue, to entertainment videos (music and
@@ -76,8 +76,8 @@ No route changes — `SubsSearchResults` is embedded in the dictionary entry tab
   no TV-show hits may have entertainment hits).
 - **Error**: unchanged (error text only).
 - **Edge cases**: switching a pill resets `currentIndex` to 0 since the list may
-  shrink; the exact-match cached-path rows carry `category`/`tv_show` because
-  they come from the same fetch mapping.
+  shrink; the cached-path rows (local subset filtering, SPEC-109) carry
+  `category`/`tv_show` because they come from the same fetch mapping.
 
 ## Amendment — 2026-11-08
 The pills were relabeled and reordered in both clients:

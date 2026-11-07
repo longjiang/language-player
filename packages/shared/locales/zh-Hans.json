@@ -479,6 +479,7 @@
         "filters": "筛选",
         "font": "字体",
         "force": "强制（覆盖软性检查）",
+        "forms_to_include": "要包含的形式",
         "free_account": "免费账户",
         "free_user": "免费",
         "from": "从",

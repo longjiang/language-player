@@ -7,6 +7,8 @@ import { baseCode } from '@/lib/language-data';
 import {
   reduceSearchTerms,
   writtenFormVariants,
+  entryKanaForm,
+  inflectionEndpoint,
   type WrittenFormEntry,
 } from '@langplayer/utils';
 
@@ -19,25 +21,14 @@ export interface UseInflectedSearchTermsResult {
   loading: boolean;
   /** How many distinct forms are being searched (for UI indicator). 0 before load. */
   formCount: number;
+  /** Kana reading of the head form (Japanese only), or null. */
+  kanaTerm: string | null;
+  /** Conjugated + corpus-discovered surface forms (SPEC-109). */
+  inflectedTerms: string[];
 }
 
-/** Languages that have a Python inflection endpoint. */
-const INFLECTABLE_LANGS: Record<string, string> = {
-  ja: '/inflect-japanese',
-  ko: '/inflect-korean',
-  ru: '/inflect-pymorphy',
-  uk: '/inflect-pymorphy',
-  en: '/inflect-pattern',
-  fr: '/inflect-pattern',
-  de: '/inflect-pattern',
-  es: '/inflect-pattern',
-  it: '/inflect-pattern',
-  nl: '/inflect-pattern',
-};
-
-function inflectionEndpoint(l2Code: string): string | null {
-  return INFLECTABLE_LANGS[l2Code] ?? null;
-}
+// The inflection endpoint map lives in @langplayer/utils so web and mobile
+// request exactly the same conjugations (SPEC-109).
 
 // ── Corpus-discovered forms store (category "other") ──────────────────
 // TokenizedText reports the surface form of every token that resolves to a
@@ -97,6 +88,7 @@ export function useInflectedSearchTerms(
   l2Code: string,
 ): UseInflectedSearchTermsResult {
   const [allTerms, setAllTerms] = useState<string[]>([]);
+  const [inflectedForms, setInflectedForms] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const base = baseCode(l2Code);
 
@@ -160,6 +152,7 @@ export function useInflectedSearchTerms(
       const all = reduceSearchTerms(e.head, { variants, inflected });
 
       setAllTerms(all);
+      setInflectedForms(inflected);
       setLoading(false);
     }
 
@@ -182,9 +175,29 @@ export function useInflectedSearchTerms(
     return out;
   }, [allTerms, extraForms, headTerm]);
 
+  // SPEC-109 form groups: the kana reading (Japanese only) and the
+  // conjugated forms (endpoint output + corpus-discovered surface forms).
+  const kanaTerm = useMemo(
+    () => (entry ? entryKanaForm(entry, base) : null),
+    [entry, base],
+  );
+
+  const inflectedTerms = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const f of [...inflectedForms, ...extraForms]) {
+      if (!f || f.length <= 1 || f === headTerm || f === kanaTerm || seen.has(f)) continue;
+      seen.add(f);
+      out.push(f);
+    }
+    return out;
+  }, [inflectedForms, extraForms, headTerm, kanaTerm]);
+
   return {
     allTerms: mergedTerms.length > 0 ? mergedTerms : headTerm ? [headTerm] : [],
     headTerm,
+    kanaTerm,
+    inflectedTerms,
     loading,
     formCount: mergedTerms.length,
   };

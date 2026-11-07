@@ -488,6 +488,7 @@
         "filters": "Filtry",
         "font": "Czcionka",
         "force": "Wymuś (pomiń miękkie kontrole)",
+        "forms_to_include": "Formy do uwzględnienia",
         "free_account": "Darmowe konto",
         "free_user": "Bezpłatnie",
         "from": "Od",

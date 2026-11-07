@@ -22,7 +22,7 @@ How the "Examples" tab on dictionary entry pages finds and displays video subtit
 │                        USER INTERFACE                           │
 │  Dictionary Entry Page → Examples tab → SubsSearchResults      │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │ Nav bar (video n of total, exact-match toggle, Watch link) │  │
+│  │ Nav bar (video n of total, forms filter, content pills)    │  │
 │  │ YouTube mini-player (embedded, autoplay seeks to match)    │  │
 │  │ Playback controls (prev/next video, prev/next line)        │  │
 │  │ SubtitleDisplay (singleline mode — current sub line)       │  │
@@ -83,7 +83,8 @@ SubsSearchResults
 ├── <div> card container (rounded-xl border shadow-sm)
 │   ├── Nav bar
 │   │   ├── <span> video counter (t('msg.video_n_of_total'))
-│   │   ├── <button> exact-match toggle (only when formCount > 1)
+│   │   ├── forms filter: All forms pill · lemma pill · "…" dialog (SPEC-109)
+│   │   ├── content-filter pills (All / TV Shows / Entertainment / Other)
 │   │   ├── <Link> "Watch" → /[l1]/[l2]/watch/[youtubeId]
 │   │   └── <Button> "List All" → opens modal
 │   ├── YouTubePlayer (ref={playerRef}, startTime, autoplay)
@@ -349,12 +350,22 @@ MySQL BOOLEAN MODE considers these scattered bigram matches sufficient to return
 
 ```
 SubsSearchResults
-├── Nav bar (video counter, exact-match toggle, Watch link, List All button)
+├── Nav bar (forms filter, content-filter pills, advanced search)
 ├── YouTubePlayer (embedded iframe, autoplay, startTime=matched line)
 ├── Playback controls (prev/next video, prev/next line, play/pause)
 ├── SubtitleDisplay (singleline mode, sorted initialLines, highlightTerms)
 └── Result list modal (filter by text, sort by views/likes/date/length/context)
 ```
+
+### Forms filter (SPEC-109)
+
+The nav bar's forms group is **All forms · lemma · "…"**. Selecting the lemma
+searches only the head form; **…** opens a multi-select dialog (All forms,
+Lemma, Kana for Japanese, Conjugations) that decides which forms are sent as
+the comma-separated `terms`. An empty selection means All forms, and the
+selection is applied only on **Apply** (closing without Apply discards the
+draft). Switching to a subset of the last fetched term set filters the cached
+results locally instead of re-querying. See SPEC-109 for the full semantics.
 
 ### Data Flow
 

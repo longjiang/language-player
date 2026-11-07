@@ -111,3 +111,88 @@ export function reduceSearchTerms(
   // Never drop the exact head word, even if some form is a substring of it.
   return pruned.includes(head) ? pruned : [head, ...pruned];
 }
+
+// ── Forms filter (SPEC-109) ──────────────────────────────────────────────
+
+/**
+ * Languages whose Python backend exposes an inflection endpoint. Shared so
+ * web and mobile request exactly the same conjugations.
+ */
+export const INFLECTION_ENDPOINTS: Record<string, string> = {
+  ja: '/inflect-japanese',
+  ko: '/inflect-korean',
+  ru: '/inflect-pymorphy',
+  uk: '/inflect-pymorphy',
+  en: '/inflect-pattern',
+  fr: '/inflect-pattern',
+  de: '/inflect-pattern',
+  es: '/inflect-pattern',
+  it: '/inflect-pattern',
+  nl: '/inflect-pattern',
+};
+
+/** The inflection endpoint for an L2 code, or null when the language has none. */
+export function inflectionEndpoint(l2Code: string): string | null {
+  const base = (l2Code.split('-')[0] ?? l2Code).toLowerCase();
+  return INFLECTION_ENDPOINTS[base] ?? null;
+}
+
+/** The form groups a learner can include in a subs search (SPEC-109). */
+export type SearchFormGroup = 'head' | 'kana' | 'inflected';
+
+/** Form data the forms dialog and the search-term builder need. */
+export interface SearchFormGroups {
+  /** Dictionary lemma (head form). */
+  head: string;
+  /** Kana reading of the head — Japanese only, null when absent or identical. */
+  kana?: string | null;
+  /** Conjugated forms (+ corpus-discovered surface forms). */
+  inflected?: string[];
+}
+
+/**
+ * The kana reading of a dictionary entry's head form, Japanese only.
+ * Returns null when the entry has no kana reading or the head is already kana
+ * (searching both would duplicate the same term).
+ */
+export function entryKanaForm(
+  entry: WrittenFormEntry,
+  l2Code: string,
+): string | null {
+  const base = (l2Code.split('-')[0] ?? l2Code).toLowerCase();
+  if (base !== 'ja') return null;
+  const kana = entry.phonetic_detail?.kana?.trim();
+  if (!kana || kana === entry.head) return null;
+  return kana;
+}
+
+/**
+ * Search terms for a form-group selection. An empty selection means
+ * "All forms" and returns `allTerms` (already including written variants and
+ * corpus-discovered forms). For a specific selection the union of the chosen
+ * groups is pruned with the same substring rules as `reduceSearchTerms`, but
+ * the head is only forced in when the learner actually selected it — so
+ * "conjugations only" really searches conjugations without the lemma.
+ */
+export function buildFormSearchTerms(
+  allTerms: string[],
+  groups: SearchFormGroups,
+  selected: SearchFormGroup[],
+): string[] {
+  if (selected.length === 0) return allTerms;
+
+  const picked: string[] = [];
+  if (selected.includes('head') && groups.head) picked.push(groups.head);
+  if (selected.includes('kana') && groups.kana && groups.kana !== groups.head) {
+    picked.push(groups.kana);
+  }
+  if (selected.includes('inflected')) picked.push(...(groups.inflected ?? []));
+
+  const pruned = minimalSearchTerms(picked);
+  if (picked.includes(groups.head) && !pruned.includes(groups.head)) {
+    return [groups.head, ...pruned];
+  }
+  // A group with no terms (e.g. "conjugations" before they load) falls back
+  // to the head so the search never stalls on an empty term string.
+  return pruned.length > 0 ? pruned : [groups.head];
+}

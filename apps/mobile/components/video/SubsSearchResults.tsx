@@ -39,18 +39,22 @@ import { SubsSearchRow } from './SubsSearchRow';
 import { SubsSearchPlaybackModal } from './SubsSearchPlaybackModal';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
-import { baseCode } from '@langplayer/utils';
+import { baseCode, buildFormSearchTerms, type SearchFormGroup } from '@langplayer/utils';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { X, ChevronDown, ChevronRight, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
+import { X, ChevronDown, ChevronRight, MoreHorizontal, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
 import { SaleNotice } from '@/components/SaleNotice';
 
 interface SubsSearchResultsProps {
-  term: string;
-  /** Dictionary head form — shown as the "exact form" pill label. */
+  /** All searchable forms (head + written variants + conjugated forms). */
+  allTerms: string[];
+  /** Dictionary head form — the "lemma" quick-filter pill. */
   headTerm?: string;
-  exactMatch?: boolean;
-  onExactToggle?: (exact: boolean) => void;
-  formCount?: number;
+  /** Kana reading of the head form (Japanese only), when it differs. */
+  kanaTerm?: string | null;
+  /** Conjugated forms + corpus-discovered surface forms (SPEC-109). */
+  inflectedTerms?: string[];
+  /** True while the form list is still being generated. */
+  formsLoading?: boolean;
 }
 
 /** ADR-0034: free users see the first 5 subs-search hits. */
@@ -94,7 +98,13 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
+export function SubsSearchResults({
+  allTerms,
+  headTerm = '',
+  kanaTerm = null,
+  inflectedTerms = [],
+  formsLoading = false,
+}: SubsSearchResultsProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const { getL2, search } = useSettingsContext();
   // Translation lines are PER-L2 (`l2[code].display.translation`).
@@ -121,6 +131,12 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [currentIndex, setCurrentIndex] = useState(0);
   // Content filter pill (All / TV Shows / Entertainment / Other) — SPEC-082 Task 6.
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
+  // ── Forms filter (SPEC-109) ──
+  // Category-list semantics: an empty selection means All forms. The dialog
+  // edits a draft; only Apply commits it to the selection that drives search.
+  const [selectedForms, setSelectedForms] = useState<SearchFormGroup[]>([]);
+  const [formsDialogOpen, setFormsDialogOpen] = useState(false);
+  const [draftForms, setDraftForms] = useState<SearchFormGroup[]>([]);
   // List: text filter + sort (SPEC-082 Task 8).
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SubsSearchSortKey>('views');
@@ -139,9 +155,25 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [showsExpanded, setShowsExpanded] = useState(true);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
+  // Form groups + the terms they contribute for the current selection.
+  // "All forms" (empty selection) uses `allTerms`, which already includes
+  // written variants. A new word starts from All forms.
+  const formGroups = useMemo(
+    () => ({ head: headTerm, kana: kanaTerm, inflected: inflectedTerms }),
+    [headTerm, kanaTerm, inflectedTerms],
+  );
+  const formTerms = useMemo(
+    () => buildFormSearchTerms(allTerms, formGroups, selectedForms),
+    [allTerms, formGroups, selectedForms],
+  );
+  useEffect(() => {
+    setSelectedForms([]);
+    setFormsDialogOpen(false);
+  }, [headTerm]);
+
   // The term string actually searched: custom terms win over the auto-derived
-  // head + inflections. Everything below uses this effective term.
-  const searchTerm = customTerms.trim() ? customTerms : term;
+  // form selection. Everything below uses this effective term.
+  const searchTerm = customTerms.trim() ? customTerms : formTerms.join(',');
   const isAdvancedActive =
     customTerms.trim().length > 0 ||
     excludeTerms.trim().length > 0 ||
@@ -586,11 +618,47 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   }, [currentVideo, fullSubsMap, loadingFullSubs, l2Lang.code, t]);
 
   // ── Fetch ──
+  // Cache of the most recent fetch (its term string + parsed results), so a
+  // narrower form selection can be filtered locally instead of re-querying.
+  const cachedVideosRef = useRef<SubsSearchVideo[]>([]);
+  const cachedTermRef = useRef('');
+
   useEffect(() => {
     if (!searchTerm) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
+
+    const searchForms = searchTerm.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+
+    // Subset switch: every selected form already appeared in the cached fetch,
+    // so those results contain all candidate videos — filter them locally.
+    const cachedForms = cachedTermRef.current
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+    const isSubset =
+      searchForms.length > 0 &&
+      cachedForms.length > 0 &&
+      searchForms.every((f) => cachedForms.includes(f));
+    log('[subsSearch] forms filter', {
+      term: searchTerm,
+      terms: searchForms.length,
+      cachedSubset: isSubset,
+    });
+    if (isSubset && cachedVideosRef.current.length > 0) {
+      const filtered = cachedVideosRef.current
+        .filter((v) =>
+          v.subs_l2.some((l) => searchForms.some((f) => l.line.toLowerCase().includes(f))),
+        )
+        .map((v) => ({ ...v, matchLineIndex: findMatchLine(v.subs_l2, searchTerm) }));
+      if (filtered.length > 0) {
+        applyVideos(filtered);
+        setCurrentIndex(0);
+        setLoading(false);
+        return;
+      }
+    }
 
     // Advanced filters: category / tv_show narrow server-side; exclude terms
     // drop matching videos client-side after the fetch.
@@ -611,7 +679,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     })
       .then((data) => {
         if (cancelled) return;
-        const searchForms = searchTerm.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
         const parsed: SubsSearchVideo[] = data
           .map((v: any) => {
             const lines = parseSubsL2(v.subs_l2 ?? '');
@@ -656,6 +723,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               : null,
           });
         applyVideos(parsed);
+        cachedVideosRef.current = parsed;
+        cachedTermRef.current = searchTerm;
         setCurrentIndex(0);
         setLoading(false);
       })
@@ -702,7 +771,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS),
         listSearch,
         listSort,
-        term,
+        searchTerm,
       );
       let nextIndex = currentIndex;
       if (erroredIndex !== -1 && currentIndex > erroredIndex) nextIndex = currentIndex - 1;
@@ -981,34 +1050,160 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     </>
   );
 
+  // ── Forms filter (SPEC-109) ──
+  // Groups offered by the dialog: lemma, kana (Japanese only, when it differs
+  // from the head), then conjugated forms (only when the language has any).
+  const formOptions = useMemo(() => {
+    const options: { key: SearchFormGroup; labelKey: string; count: number }[] = [
+      { key: 'head', labelKey: 'label.lemma', count: 1 },
+    ];
+    if (kanaTerm && kanaTerm !== headTerm) {
+      options.push({ key: 'kana', labelKey: 'word.kana', count: 1 });
+    }
+    if (inflectedTerms.length > 0) {
+      options.push({
+        key: 'inflected',
+        labelKey: 'title.conjugations',
+        count: inflectedTerms.length,
+      });
+    }
+    return options;
+  }, [kanaTerm, headTerm, inflectedTerms]);
+
+  const hasFormsFilter = allTerms.length > 1 && !formsLoading;
+  const lemmaSelected = selectedForms.length === 1 && selectedForms[0] === 'head';
+  const customFormsSelected = selectedForms.length > 0 && !lemmaSelected;
+  const lemmaLabel = headTerm || allTerms[0] || '';
+
+  const openFormsDialog = () => {
+    setDraftForms(selectedForms);
+    setFormsDialogOpen(true);
+  };
+
+  const toggleDraftForm = (group: SearchFormGroup) => {
+    setDraftForms((prev) => {
+      const next = prev.includes(group)
+        ? prev.filter((g) => g !== group)
+        : [...prev, group];
+      // Category-list semantics: checking every available group means "all".
+      const allKeys = formOptions.map((o) => o.key);
+      return allKeys.length > 0 && allKeys.every((k) => next.includes(k)) ? [] : next;
+    });
+  };
+
+  const applyDraftForms = () => {
+    setSelectedForms(draftForms);
+    setFormsDialogOpen(false);
+  };
+
+  const resetDraftForms = () => {
+    // Reset restores All forms immediately (like the advanced-search Reset).
+    setDraftForms([]);
+    setSelectedForms([]);
+  };
+
+  // The quick forms filter: All forms, the lemma itself, and "…" for the
+  // multi-select dialog. "All forms" is first per SPEC-109.
+  const formsFilterGroup = hasFormsFilter ? (
+    <View className="flex-row items-center rounded-full bg-muted p-0.5">
+      <Pressable
+        onPress={() => setSelectedForms([])}
+        className={`rounded-full px-2.5 py-0.5 ${!customFormsSelected ? 'bg-primary/10' : ''}`}
+        accessibilityRole="button"
+        accessibilityState={{ selected: !customFormsSelected }}
+        accessibilityLabel={t('msg.exact_match_searching', { n: allTerms.length })}
+      >
+        <Text className={`text-[11px] font-medium ${!customFormsSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+          {t('msg.all_forms')}
+        </Text>
+      </Pressable>
+      <Pressable
+        onPress={() => setSelectedForms(['head'])}
+        className={`rounded-full px-2.5 py-0.5 ${lemmaSelected ? 'bg-primary/10' : ''}`}
+        accessibilityRole="button"
+        accessibilityState={{ selected: lemmaSelected }}
+        accessibilityLabel={t('msg.exact_match_searching_only', { term: lemmaLabel, n: allTerms.length })}
+      >
+        <Text className={`text-[11px] font-medium ${lemmaSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+          {lemmaLabel}
+        </Text>
+      </Pressable>
+      <Pressable
+        onPress={openFormsDialog}
+        className={`rounded-full px-2 py-0.5 ${customFormsSelected ? 'bg-primary/10' : ''}`}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: formsDialogOpen }}
+        accessibilityLabel={t('label.forms_to_include')}
+      >
+        <MoreHorizontal size={14} color={customFormsSelected ? ICON_PRIMARY : ICON_MUTED} />
+      </Pressable>
+    </View>
+  ) : null;
+
+  const formsModalContent = (
+    <>
+      <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+        <View className="flex-row items-center gap-2">
+          <MoreHorizontal size={16} color={ICON_PRIMARY} />
+          <Text className="text-base font-bold text-foreground">{t('label.forms_to_include')}</Text>
+        </View>
+        <Dialog.Close className="rounded-full bg-muted p-2">
+          <X size={16} color={ICON_MUTED} />
+        </Dialog.Close>
+      </View>
+
+      <ScrollView className="max-h-[60vh] p-4">
+        <Pressable
+          onPress={() => setDraftForms([])}
+          className="flex-row items-center gap-2 rounded px-2 py-1.5 active:bg-muted"
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: draftForms.length === 0 }}
+        >
+          <View className={`h-4 w-4 items-center justify-center rounded border ${draftForms.length === 0 ? 'border-primary bg-primary' : 'border-border'}`}>
+            {draftForms.length === 0 && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
+          </View>
+          <Text className="min-w-0 flex-1 text-sm text-foreground">{t('msg.all_forms')}</Text>
+          <Text className="text-xs text-muted-foreground">{allTerms.length}</Text>
+        </Pressable>
+
+        {formOptions.map((option) => {
+          const checked = draftForms.includes(option.key);
+          return (
+            <Pressable
+              key={option.key}
+              onPress={() => toggleDraftForm(option.key)}
+              className="flex-row items-center gap-2 rounded px-2 py-1.5 active:bg-muted"
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked }}
+            >
+              <View className={`h-4 w-4 items-center justify-center rounded border ${checked ? 'border-primary bg-primary' : 'border-border'}`}>
+                {checked && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
+              </View>
+              <Text className="min-w-0 flex-1 text-sm text-foreground">{t(option.labelKey)}</Text>
+              <Text className="text-xs text-muted-foreground">{option.count}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      <View className="flex-row items-center justify-between gap-2 border-t border-border px-4 py-3">
+        <Button onPress={resetDraftForms} variant="ghost" size="sm" accessibilityRole="button">
+          <Text className={buttonTextClass('ghost')}>{t('action.reset')}</Text>
+        </Button>
+        <Button onPress={applyDraftForms} accessibilityRole="button">
+          <Text className={buttonTextClass('default')}>{t('action.apply')}</Text>
+        </Button>
+      </View>
+    </>
+  );
+
   // ── Render (list-first, SPEC-082 Task 13) ──
   return (
     <View className="my-4">
-      {/* Nav bar — forms toggle + content-filter pills on one line (web
+      {/* Nav bar — forms filter + content-filter pills on one line (web
           parity; wraps only when the row is too narrow) */}
       <View className="mb-2 flex-row flex-wrap items-center justify-center gap-2">
-        {formCount > 1 && (
-          <View className="flex-row items-center rounded-full bg-muted p-0.5">
-            <Pressable
-              onPress={() => onExactToggle?.(true)}
-              className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
-              accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-            >
-              <Text className={`text-[11px] font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                {headTerm || term}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => onExactToggle?.(false)}
-              className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
-              accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
-            >
-              <Text className={`text-[11px] font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                {t('msg.all_forms')}
-              </Text>
-            </Pressable>
-          </View>
-        )}
+        {formsFilterGroup}
 
         {/* Content-filter pills (All / TV Shows / Entertainment / Other) — same
             segmented pattern as the forms toggle (SPEC-082 Task 6). */}
@@ -1215,6 +1410,30 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           ) : (
             <Dialog.SheetContent className="max-h-[92%]">
               {advancedModalContent}
+            </Dialog.SheetContent>
+          )}
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* ── Forms filter modal (SPEC-109) ── */}
+      <Dialog.Root
+        open={formsDialogOpen}
+        onOpenChange={(open) => {
+          // Closing without Apply discards the draft.
+          if (!open) setDraftForms(selectedForms);
+          setFormsDialogOpen(open);
+        }}
+      >
+        <Dialog.Portal>
+          {isMd ? (
+            <View className="absolute inset-0 items-center justify-center px-4">
+              <View className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-background">
+                {formsModalContent}
+              </View>
+            </View>
+          ) : (
+            <Dialog.SheetContent className="max-h-[80%]">
+              {formsModalContent}
             </Dialog.SheetContent>
           )}
         </Dialog.Portal>

@@ -488,6 +488,7 @@
         "filters": "Filters",
         "font": "Lettertype",
         "force": "Forceren (zachte controles negeren)",
+        "forms_to_include": "Op te nemen vormen",
         "free_account": "Gratis account",
         "free_user": "Gratis",
         "from": "Van",

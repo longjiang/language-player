@@ -488,6 +488,7 @@
         "filters": "フィルター",
         "font": "フォント",
         "force": "強制（ソフト判定を無視）",
+        "forms_to_include": "含める活用形",
         "free_account": "無料アカウント",
         "free_user": "無料",
         "from": "開始",

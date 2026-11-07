@@ -511,6 +511,7 @@
         "filters": "Filters",
         "font": "Font",
         "force": "Force (override soft checks)",
+        "forms_to_include": "Forms to include",
         "free_account": "Free Account",
         "free_user": "Free",
         "from": "From",

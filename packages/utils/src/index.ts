@@ -125,8 +125,17 @@ export {
   writtenFormVariants,
   minimalSearchTerms,
   reduceSearchTerms,
+  entryKanaForm,
+  buildFormSearchTerms,
+  inflectionEndpoint,
+  INFLECTION_ENDPOINTS,
 } from './search-terms';
-export type { WrittenFormEntry, ReduceSearchTermsOptions } from './search-terms';
+export type {
+  WrittenFormEntry,
+  ReduceSearchTermsOptions,
+  SearchFormGroup,
+  SearchFormGroups,
+} from './search-terms';
 export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';
 export { splitPhraseTokens, type SplitPhraseTokensResult } from './split-phrase-tokens';

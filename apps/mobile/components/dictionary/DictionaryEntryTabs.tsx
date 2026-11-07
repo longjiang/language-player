@@ -73,10 +73,14 @@ export function DictionaryEntryTabs({
     if (!isControlled) setInternalTab(key);
   };
 
-  // ── Inflected search terms ──
-  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entry, l2Code);
-  const [exactMatch, setExactMatch] = useState(false);
-  const searchTermString = exactMatch ? headTerm : allTerms.join(',');
+  // ── Inflected search terms (SPEC-109: groups + loading feed the forms filter) ──
+  const {
+    allTerms,
+    headTerm,
+    kanaTerm,
+    inflectedTerms,
+    loading: formsLoading,
+  } = useInflectedSearchTerms(entry, l2Code);
 
   // Only languages with an inflection endpoint get the Conjugations tab
   // (e.g. hidden entirely for Chinese, Thai, Vietnamese).
@@ -128,11 +132,11 @@ export function DictionaryEntryTabs({
   );
   const examplesPanel = (
     <SubsSearchResults
-      term={searchTermString}
-      headTerm={entry.head}
-      exactMatch={exactMatch}
-      onExactToggle={setExactMatch}
-      formCount={formCount}
+      allTerms={allTerms}
+      headTerm={headTerm}
+      kanaTerm={kanaTerm}
+      inflectedTerms={inflectedTerms}
+      formsLoading={formsLoading}
     />
   );
   const deepseekPanel = (

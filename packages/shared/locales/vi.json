@@ -488,6 +488,7 @@
         "filters": "Bộ lọc",
         "font": "Phông chữ",
         "force": "Buộc (bỏ qua kiểm tra mềm)",
+        "forms_to_include": "Các dạng cần bao gồm",
         "free_account": "Tài khoản miễn phí",
         "free_user": "Miễn phí",
         "from": "Từ",

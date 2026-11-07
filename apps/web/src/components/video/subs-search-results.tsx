@@ -19,10 +19,12 @@ import {
   buildAiPayload,
   buildAiPrompt,
   buildAiOrderedVideos,
+  buildFormSearchTerms,
   contextChar,
   durationToSeconds,
   parseAiResponse,
   type AiGroupingResult,
+  type SearchFormGroup,
   type SubsSearchSortKey,
 } from '@langplayer/utils';
 import {
@@ -39,6 +41,7 @@ import {
   Search,
   ChevronDown,
   ChevronRight,
+  MoreHorizontal,
   Settings2,
 } from 'lucide-react';
 import {
@@ -52,17 +55,18 @@ import {
 // ── Types ──────────────────────────────────────
 
 interface SubsSearchResultsProps {
-  term: string;
-  /** The dictionary head form — shown as the "exact form" pill label. */
+  /** All searchable forms (head + written variants + conjugated forms). */
+  allTerms: string[];
+  /** The dictionary head form — the "lemma" quick-filter pill. */
   headTerm?: string;
+  /** Kana reading of the head form (Japanese only), when it differs. */
+  kanaTerm?: string | null;
+  /** Conjugated forms + corpus-discovered surface forms (SPEC-109). */
+  inflectedTerms?: string[];
+  /** True while the form list is still being generated. */
+  formsLoading?: boolean;
   /** When true, removes outer card styling so the component fills its parent container. */
   embedded?: boolean;
-  /** When true, search only the exact head form. Default: false (fuzzy, all forms). */
-  exactMatch?: boolean;
-  /** Called when the exact-match toggle is clicked. */
-  onExactToggle?: (exact: boolean) => void;
-  /** Number of distinct forms being searched. 0 or undefined hides the indicator. */
-  formCount?: number;
 }
 
 /** ADR-0034: free users see the first 5 subs-search hits. */
@@ -107,7 +111,14 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
 
 // ── Main Component ─────────────────────────────
 
-export function SubsSearchResults({ term, headTerm = '', embedded = false, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
+export function SubsSearchResults({
+  allTerms,
+  headTerm = '',
+  kanaTerm = null,
+  inflectedTerms = [],
+  formsLoading = false,
+  embedded = false,
+}: SubsSearchResultsProps) {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const { getL2, search } = useSettingsContext();
@@ -138,8 +149,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const [fullSubsMap, setFullSubsMap] = useState<Record<string, SubtitleLine[]>>({});
   const [loadingFullSubs, setLoadingFullSubs] = useState(false);
 
-  const prevTermRef = useRef(term);
-  const prevExactRef = useRef(exactMatch);
+  // Last term string the fetch used — lets a form-selection change count as
+  // user-initiated (close the playback modal) without re-running on `isPro`.
+  const prevSearchTermRef = useRef('');
 
   // Scroll container for the page list (lazy-translation observer).
   const listRef = useRef<HTMLDivElement>(null);
@@ -148,6 +160,13 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const [listSort, setListSort] = useState<SortKey>('views');
   // Content filter pill (All / TV Shows / Entertainment / Other).
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
+
+  // ── Forms filter (SPEC-109) ──
+  // Category-list semantics: an empty selection means All forms. The dialog
+  // edits a draft; only Apply commits it to the selection that drives search.
+  const [selectedForms, setSelectedForms] = useState<SearchFormGroup[]>([]);
+  const [formsDialogOpen, setFormsDialogOpen] = useState(false);
+  const [draftForms, setDraftForms] = useState<SearchFormGroup[]>([]);
 
   // ── Advanced search (custom terms / exclude terms / shows / categories) ──
   // Empty tvShowIds / categoryIds mean "all". `customTerms` replaces the
@@ -162,10 +181,28 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const [showsExpanded, setShowsExpanded] = useState(true);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
+  // Form groups + the terms they contribute for the current selection.
+  // "All forms" (empty selection) uses `allTerms`, which already includes
+  // written variants and corpus-discovered forms.
+  const formGroups = useMemo(
+    () => ({ head: headTerm, kana: kanaTerm, inflected: inflectedTerms }),
+    [headTerm, kanaTerm, inflectedTerms],
+  );
+  const formTerms = useMemo(
+    () => buildFormSearchTerms(allTerms, formGroups, selectedForms),
+    [allTerms, formGroups, selectedForms],
+  );
+
+  // A new word starts from All forms (selection is per-entry, not persisted).
+  useEffect(() => {
+    setSelectedForms([]);
+    setFormsDialogOpen(false);
+  }, [headTerm]);
+
   // The term string actually searched: custom terms win over the auto-derived
-  // head + inflections. Everything below (highlighting, matching, grouping,
+  // form selection. Everything below (highlighting, matching, grouping,
   // AI analysis) uses this effective term.
-  const searchTerm = customTerms.trim() ? customTerms : term;
+  const searchTerm = customTerms.trim() ? customTerms : formTerms.join(',');
   const isAdvancedActive =
     customTerms.trim().length > 0 ||
     excludeTerms.trim().length > 0 ||
@@ -439,68 +476,57 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   // ── Fetch ────────────────────────────────────
 
-  // Cache of the most recent all-forms search (keyed by its term string), so
-  // toggling exact-match can filter locally instead of re-querying the server.
-  const allFormVideosRef = useRef<SubsSearchVideo[]>([]);
-  const allFormTermRef = useRef('');
+  // Cache of the most recent fetch (its term string + parsed results), so a
+  // narrower form selection can be filtered locally instead of re-querying.
+  const cachedVideosRef = useRef<SubsSearchVideo[]>([]);
+  const cachedTermRef = useRef('');
 
   useEffect(() => {
     if (!searchTerm) return;
 
-    // A change of term or exact-match toggle is "user initiated" — used to
-    // return to the list below. Non-user re-runs (e.g. `isPro` finishing load)
-    // must not disturb the current view.
-    const termChanged = prevTermRef.current !== term;
-    const exactToggled = prevExactRef.current !== exactMatch;
-    prevTermRef.current = term;
-    prevExactRef.current = exactMatch;
-    const userInitiated = termChanged || exactToggled;
+    // A change of term (new word, new form selection, advanced filters) is
+    // "user initiated" — used to return to the list below. Non-user re-runs
+    // (e.g. `isPro` finishing load) must not disturb the current view.
+    const termChanged = prevSearchTermRef.current !== searchTerm;
+    prevSearchTermRef.current = searchTerm;
+    if (termChanged) setVideoOpen(false);
 
-    // A new search (new word, or exact-match toggle) returns to the list —
-    // close the playback modal so it never shows a stale result.
-    if (userInitiated) setVideoOpen(false);
+    const searchForms = searchTerm.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
 
-    const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
-
-    // Exact-match switch: the all-forms results were already fetched and
-    // contain this exact form → filter them client-side, no new request.
-    // Only applies when the exact term belongs to the cached all-forms search
-    // (i.e. this is a mode toggle on the same word, not a new word search).
-    const cachedForms = allFormTermRef.current
+    // Subset switch: every selected form already appeared in the cached fetch,
+    // so those results contain all candidate videos — filter them locally and
+    // skip the request (this is how the lemma/kana/conjugation switches and
+    // returning to All forms stay instant).
+    const cachedForms = cachedTermRef.current
       .split(',')
       .map((t) => t.trim().toLowerCase())
       .filter(Boolean);
-    const isSameWord =
-      cachedForms.length > 0 && searchForms.every((f) => cachedForms.includes(f));
+    const isSubset =
+      searchForms.length > 0 &&
+      cachedForms.length > 0 &&
+      searchForms.every((f) => cachedForms.includes(f));
 
-    if (exactMatch && isSameWord && allFormVideosRef.current.length > 0) {
-      const exactVideos = allFormVideosRef.current
+    log('[subsSearch] forms filter', {
+      term: searchTerm,
+      terms: searchForms.length,
+      cachedSubset: isSubset,
+    });
+
+    if (isSubset && cachedVideosRef.current.length > 0) {
+      const filtered = cachedVideosRef.current
         .filter((v) =>
           v.subs_l2.some((l) =>
             searchForms.some((f) => l.line.toLowerCase().includes(f)),
           ),
         )
         .map((v) => ({ ...v, matchLineIndex: findMatchLine(v.subs_l2, searchTerm) }));
-      if (exactVideos.length > 0) {
-        applyVideos(exactVideos);
+      if (filtered.length > 0) {
+        applyVideos(filtered);
         setCurrentIndex(0);
         setLoading(false);
         setError(null);
         return;
       }
-    }
-
-    // Back to all forms: restore the cached all-forms results.
-    if (
-      !exactMatch &&
-      allFormTermRef.current === searchTerm &&
-      allFormVideosRef.current.length > 0
-    ) {
-      applyVideos(allFormVideosRef.current);
-      setCurrentIndex(0);
-      setLoading(false);
-      setError(null);
-      return;
     }
 
     let cancelled = false;
@@ -566,10 +592,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             return !excludeList.some((x) => lower.includes(x));
           });
         applyVideos(parsed);
-        if (!exactMatch) {
-          allFormVideosRef.current = parsed;
-          allFormTermRef.current = searchTerm;
-        }
+        cachedVideosRef.current = parsed;
+        cachedTermRef.current = searchTerm;
         setCurrentIndex(0);
         setLoading(false);
       })
@@ -583,7 +607,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return () => {
       cancelled = true;
     };
-  }, [searchTerm, l2.code, exactMatch, search.expandSubsSearch, isPro, categoryIds, tvShowIds, excludeTerms]);
+  }, [searchTerm, l2.code, search.expandSubsSearch, isPro, categoryIds, tvShowIds, excludeTerms]);
 
   // ── Seek to match when video changes ─────────
   // startTime is passed to YouTubePlayer (via the shared playback modal), which
@@ -621,7 +645,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS),
           listSearch,
           listSort,
-          term,
+          searchTerm,
         );
       }
       const contentFiltered = applyVideoFilter(nextBase);
@@ -1025,6 +1049,158 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     </button>
   );
 
+  // ── Forms filter (SPEC-109) ──
+  // Groups offered by the dialog: lemma, kana (Japanese only, when it differs
+  // from the head), then conjugated forms (only when the language has any).
+  const formOptions = useMemo(() => {
+    const options: { key: SearchFormGroup; labelKey: string; count: number }[] = [
+      { key: 'head', labelKey: 'label.lemma', count: 1 },
+    ];
+    if (kanaTerm && kanaTerm !== headTerm) {
+      options.push({ key: 'kana', labelKey: 'word.kana', count: 1 });
+    }
+    if (inflectedTerms.length > 0) {
+      options.push({
+        key: 'inflected',
+        labelKey: 'title.conjugations',
+        count: inflectedTerms.length,
+      });
+    }
+    return options;
+  }, [kanaTerm, headTerm, inflectedTerms]);
+
+  const hasFormsFilter = allTerms.length > 1 && !formsLoading;
+  const lemmaSelected = selectedForms.length === 1 && selectedForms[0] === 'head';
+  const customFormsSelected = selectedForms.length > 0 && !lemmaSelected;
+  const lemmaLabel = headTerm || allTerms[0] || '';
+
+  const openFormsDialog = () => {
+    setDraftForms(selectedForms);
+    setFormsDialogOpen(true);
+  };
+
+  const toggleDraftForm = (group: SearchFormGroup) => {
+    setDraftForms((prev) => {
+      const next = prev.includes(group)
+        ? prev.filter((g) => g !== group)
+        : [...prev, group];
+      // Category-list semantics: checking every available group means "all".
+      const allKeys = formOptions.map((o) => o.key);
+      return allKeys.length > 0 && allKeys.every((k) => next.includes(k)) ? [] : next;
+    });
+  };
+
+  const applyDraftForms = () => {
+    setSelectedForms(draftForms);
+    setFormsDialogOpen(false);
+  };
+
+  const resetDraftForms = () => {
+    // Reset restores All forms immediately (explicit action, like the
+    // advanced-search Reset), while Apply commits the other checkboxes.
+    setDraftForms([]);
+    setSelectedForms([]);
+  };
+
+  // The quick forms filter: All forms, the lemma itself, and "…" for the
+  // multi-select dialog. "All forms" is first per SPEC-109.
+  const formsFilterGroup = hasFormsFilter ? (
+    <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+      <button
+        onClick={() => setSelectedForms([])}
+        className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+          !customFormsSelected
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+        title={t('msg.exact_match_searching', { n: allTerms.length })}
+      >
+        {t('msg.all_forms')}
+      </button>
+      <button
+        onClick={() => setSelectedForms(['head'])}
+        className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+          lemmaSelected
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+        title={t('msg.exact_match_searching_only', { term: lemmaLabel, n: allTerms.length })}
+      >
+        {lemmaLabel}
+      </button>
+      <button
+        onClick={openFormsDialog}
+        className={`rounded-full px-2 py-0.5 transition-colors ${
+          customFormsSelected
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+        title={t('label.forms_to_include')}
+        aria-label={t('label.forms_to_include')}
+        aria-haspopup="dialog"
+        aria-expanded={formsDialogOpen}
+      >
+        <MoreHorizontal className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  ) : null;
+
+  const formsDialog = (
+    <Dialog
+      open={formsDialogOpen}
+      onOpenChange={(open) => {
+        // Closing without Apply discards the draft.
+        if (!open) setDraftForms(selectedForms);
+        setFormsDialogOpen(open);
+      }}
+    >
+      <DialogContent className="max-w-sm p-4">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <MoreHorizontal className="h-4 w-4" />
+            {t('label.forms_to_include')}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="mt-2 space-y-1">
+          <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40">
+            <input
+              type="checkbox"
+              checked={draftForms.length === 0}
+              onChange={() => setDraftForms([])}
+            />
+            <span className="min-w-0 flex-1 break-words">{t('msg.all_forms')}</span>
+            <span className="text-xs text-muted-foreground">{allTerms.length}</span>
+          </label>
+          {formOptions.map((option) => (
+            <label
+              key={option.key}
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40"
+            >
+              <input
+                type="checkbox"
+                checked={draftForms.includes(option.key)}
+                onChange={() => toggleDraftForm(option.key)}
+              />
+              <span className="min-w-0 flex-1 break-words">{t(option.labelKey)}</span>
+              <span className="text-xs text-muted-foreground">{option.count}</span>
+            </label>
+          ))}
+        </div>
+
+        <DialogFooter className="mt-4 flex items-center justify-between gap-2">
+          <Button variant="ghost" size="sm" onClick={resetDraftForms}>
+            {t('action.reset')}
+          </Button>
+          <Button size="sm" onClick={applyDraftForms}>
+            {t('action.apply')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+
   // Distinct categories present in the current result pool — the checklist
   // source for "categories to include". Known categories get real names;
   // the rest fall back to "Category {n}".
@@ -1059,17 +1235,14 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   if (loading) {
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-        {/* Nav bar — pills are clickable while loading; toggle shown as skeleton */}
-        <div className="flex items-center justify-center gap-2 py-2">
-          {formCount > 1 && (
-            <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
-              <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
-              <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
-            </div>
-          )}
+        {/* Nav bar — pills are clickable while loading; forms group appears
+            once the form list resolves */}
+        <div className="flex flex-wrap items-center justify-center gap-2 py-2">
+          {formsFilterGroup}
           {filterPills}
           {advancedButton}
         </div>
+        {formsDialog}
         {/* List skeleton — filter toolbar + rows */}
         <div className="space-y-3 p-3">
           <div className="flex items-center gap-2">
@@ -1099,37 +1272,13 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   if (videos.length === 0) {
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-        {/* Nav bar — keep toggle + pills accessible even when empty */}
-        <div className="flex items-center justify-center gap-2 py-2">
-          {formCount > 1 && (
-            <div className="inline-flex items-center rounded-full bg-muted p-0.5">
-              <button
-                onClick={() => onExactToggle?.(true)}
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                  exactMatch
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-              >
-                {headTerm || term}
-              </button>
-              <button
-                onClick={() => onExactToggle?.(false)}
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                  !exactMatch
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={t('msg.exact_match_searching', { n: formCount })}
-              >
-                {t('msg.all_forms')}
-              </button>
-            </div>
-          )}
+        {/* Nav bar — keep forms filter + pills accessible even when empty */}
+        <div className="flex flex-wrap items-center justify-center gap-2 py-2">
+          {formsFilterGroup}
           {filterPills}
           {advancedButton}
         </div>
+        {formsDialog}
 
         {/* Empty list */}
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
@@ -1144,37 +1293,13 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-      {/* ── Nav bar (above list) — forms toggle + content-filter pills ── */}
-      <div className="flex items-center justify-center gap-2 py-2">
-        {formCount > 1 && (
-          <div className="inline-flex items-center rounded-full bg-muted p-0.5">
-            <button
-              onClick={() => onExactToggle?.(true)}
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                exactMatch
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-            >
-              {headTerm || term}
-            </button>
-            <button
-              onClick={() => onExactToggle?.(false)}
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                !exactMatch
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              title={t('msg.exact_match_searching', { n: formCount })}
-            >
-              {t('msg.all_forms')}
-            </button>
-          </div>
-        )}
+      {/* ── Nav bar (above list) — forms filter + content-filter pills ── */}
+      <div className="flex flex-wrap items-center justify-center gap-2 py-2">
+        {formsFilterGroup}
         {filterPills}
         {advancedButton}
       </div>
+      {formsDialog}
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
         <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">

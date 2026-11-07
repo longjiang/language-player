@@ -305,6 +305,7 @@ commit** (no duplicated sources). Port or adapt existing web tests into
 - SPEC-053 (mobile durable outbox sync engine) — Task 17 touches its server counterpart.
 - SPEC-077/078 (web reader splitter/pagination) — design references for Tasks 3–5.
 - SPEC-079 (filter pills), SPEC-081 (AI sort) — behavior references for Tasks 6, 10.
+- SPEC-109 (forms filter) — the forms filter that replaced the two-way exact-match toggle; mobile also gained the inflection fetch there.
 - ADR-0040 — Task 17.
 - `packages/shared` types already updated (`translationSize`, `translationSplit`, `SubsSearchVideo.category/tv_show`) — no type work needed beyond consumers.
 - Web files listed above remain the source of truth until their logic moves to `packages/`.

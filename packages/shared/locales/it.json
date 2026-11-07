@@ -488,6 +488,7 @@
         "filters": "Filtri",
         "font": "Carattere",
         "force": "Forza (ignora i controlli soft)",
+        "forms_to_include": "Forme da includere",
         "free_account": "Account gratuito",
         "free_user": "Gratis",
         "from": "Da",

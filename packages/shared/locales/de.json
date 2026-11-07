@@ -488,6 +488,7 @@
         "filters": "Filter",
         "font": "Schriftart",
         "force": "Erzwingen (weiche Prüfungen übergehen)",
+        "forms_to_include": "Einzuschließende Formen",
         "free_account": "Kostenloses Konto",
         "free_user": "Kostenlos",
         "from": "Von",

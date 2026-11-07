@@ -488,6 +488,7 @@
         "filters": "Filtreler",
         "font": "Yazı Tipi",
         "force": "Zorla (esnek kontrolleri aş)",
+        "forms_to_include": "Dahil edilecek biçimler",
         "free_account": "Ücretsiz Hesap",
         "free_user": "Ücretsiz",
         "from": "Başlangıç",

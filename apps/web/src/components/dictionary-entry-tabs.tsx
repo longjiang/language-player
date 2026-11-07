@@ -77,9 +77,14 @@ export function DictionaryEntryTabs({
     return tr && tr.trim() ? tr : undefined;
   }, [entry]);
 
-  // ── Inflected search terms ──
-  const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entry, l2Code);
-  const [exactMatch, setExactMatch] = useState(false);
+  // ── Inflected search terms (SPEC-109: groups + loading feed the forms filter) ──
+  const {
+    allTerms,
+    headTerm,
+    kanaTerm,
+    inflectedTerms,
+    loading: inflectionsLoading,
+  } = useInflectedSearchTerms(entry, l2Code);
   // Stable id array so TokenizedText's highlightEntryIdSet memo doesn't churn.
   const corpusHighlightEntryIds = useMemo(() => [entry.id], [entry.id]);
   // Stable forms array so the corpus sections don't re-derive/retranslate on
@@ -88,8 +93,6 @@ export function DictionaryEntryTabs({
     () => (allTerms.length ? allTerms : [entry.head]),
     [allTerms, entry.head],
   );
-  // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
-  const searchTermString = exactMatch ? headTerm : (inflectionsLoading ? '' : allTerms.join(','));
 
   // Only languages with an inflection endpoint get the Conjugations tab
   // (e.g. hidden entirely for Chinese, Thai, Vietnamese).
@@ -169,11 +172,11 @@ export function DictionaryEntryTabs({
             Switching tabs only toggles visibility, so nothing is loaded twice. */}
         <div className={effectiveTab === 'examples' ? '' : 'hidden'}>
           <SubsSearchResults
-            term={searchTermString}
+            allTerms={allTerms}
             headTerm={headTerm}
-            exactMatch={exactMatch}
-            onExactToggle={setExactMatch}
-            formCount={formCount}
+            kanaTerm={kanaTerm}
+            inflectedTerms={inflectedTerms}
+            formsLoading={inflectionsLoading}
             embedded
           />
         </div>

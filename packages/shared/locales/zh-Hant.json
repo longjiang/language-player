@@ -479,6 +479,7 @@
         "filters": "篩選",
         "font": "字體",
         "force": "強制（覆寫軟性檢查）",
+        "forms_to_include": "要包含的形式",
         "free_account": "免費帳戶",
         "free_user": "免費",
         "from": "從",

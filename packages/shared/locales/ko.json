@@ -488,6 +488,7 @@
         "filters": "필터",
         "font": "글꼴",
         "force": "강제(소프트 검사 무시)",
+        "forms_to_include": "포함할 형태",
         "free_account": "무료 계정",
         "free_user": "무료",
         "from": "시작",
