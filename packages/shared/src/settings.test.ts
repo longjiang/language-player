@@ -81,10 +81,10 @@ describe('per-L2 translation migration', () => {
       },
     } as unknown as Partial<SettingsV2>);
 
-    expect(restored.l2.ja.display.translation).toBe(true);
-    expect(restored.l2.zh.display.translation).toBe(true);
+    expect(restored.l2.ja!.display.translation).toBe(true);
+    expect(restored.l2.zh!.display.translation).toBe(true);
     // The unrelated per-L2 values survive the fold-in untouched.
-    expect(restored.l2.zh.display.traditional).toBe(true);
+    expect(restored.l2.zh!.display.traditional).toBe(true);
   });
 
   it('folds a legacy global translation=false into every configured language', () => {
@@ -95,7 +95,7 @@ describe('per-L2 translation migration', () => {
       l2: { ja: { display: { traditional: false, byeonggi: true } } },
     } as unknown as Partial<SettingsV2>);
 
-    expect(restored.l2.ja.display.translation).toBe(false);
+    expect(restored.l2.ja!.display.translation).toBe(false);
   });
 
   it('a per-L2 value wins over the legacy global one', () => {
@@ -106,7 +106,7 @@ describe('per-L2 translation migration', () => {
       l2: { ja: { display: { translation: false, traditional: false, byeonggi: true } } },
     } as unknown as Partial<SettingsV2>);
 
-    expect(restored.l2.ja.display.translation).toBe(false);
+    expect(restored.l2.ja!.display.translation).toBe(false);
   });
 
   it('a blob with no legacy global field falls back to the default (true)', () => {
@@ -116,7 +116,7 @@ describe('per-L2 translation migration', () => {
       l2: { ja: { display: { traditional: false, byeonggi: true } } },
     } as unknown as Partial<SettingsV2>);
 
-    expect(restored.l2.ja.display.translation).toBe(L2_DISPLAY_DEFAULTS.translation);
+    expect(restored.l2.ja!.display.translation).toBe(L2_DISPLAY_DEFAULTS.translation);
   });
 
   it('normalizeL2Settings fills every field of a sparse stored entry', () => {
@@ -136,7 +136,7 @@ describe('per-L2 translation migration', () => {
 
   it('createSettingsV2 seeds a new language with the per-L2 translation default', () => {
     const s = createSettingsV2('ja');
-    expect(s.l2.ja.display.translation).toBe(L2_DISPLAY_DEFAULTS.translation);
+    expect(s.l2.ja!.display.translation).toBe(L2_DISPLAY_DEFAULTS.translation);
     // The global field is gone from the schema entirely.
     expect((s.display as { translation?: unknown }).translation).toBeUndefined();
   });
