@@ -59,6 +59,7 @@ import { createSrsTestFallback, resolveSavedWordEntry } from '@/lib/srs-test-fal
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
+import { useNewCardLevels } from '@/hooks/use-new-card-levels';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { toTraditional, toSimplified } from '@/lib/chinese-script';
@@ -354,6 +355,19 @@ export default function ReviewScreen() {
   const dictAvailable = useOfflineDictionaryAvailable(l2Code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
+  // ── Dictionary levels for today's new-card candidates ──
+  // The blue deck is selected and served most-frequent-first (SPEC-066
+  // "Level-first new-card ordering"). Levels come from the saved word's
+  // canonicalEntry, the shared cache, the offline dictionary and finally one
+  // bounded batch lookup; `ready` gates the auto-init loop below so today's
+  // budget is never spent on the wrong words.
+  const { levels: wordLevels, ready: levelsReady } = useNewCardLevels(
+    l2Code,
+    l2SavedWords,
+    store.cards[l2Code],
+    { offlineDictionaryAvailable: dictAvailable },
+  );
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState<ReviewMode>('mixed');
   /** Generation session id — bumped whenever the current test is invalidated
@@ -471,6 +485,11 @@ export default function ReviewScreen() {
     // cards have been fetched (SPEC-066): a "new" card minted here can
     // overwrite a rated card from another device.
     if (user && !srsCloudHydrated) return;
+    // Wait for the dictionary levels of today's candidates: minting is
+    // permanent for the day, so the budget must not be spent on words the
+    // level-first ordering would not have picked (SPEC-066). Resolves to the
+    // newest-saved fallback if the lookup fails, so this never blocks a deck.
+    if (!levelsReady) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const budget = fsrs.getNewCardBudget(
@@ -480,14 +499,19 @@ export default function ReviewScreen() {
       Date.now(),
       dayStartHour,
     );
-    const candidates = fsrs.countNewCardCandidates(l2SavedWords, langCards);
+    const candidateWords = fsrs.getNewCardCandidates(l2SavedWords, langCards);
+    const candidates = candidateWords.length;
     const plan = fsrs.planNewDeck(
       l2SavedWords,
       langCards,
       newCardLimit,
       Date.now(),
       dayStartHour,
+      wordLevels,
     );
+    const leveledCandidates = candidateWords.filter(
+      (sw) => typeof wordLevels[sw.id] === 'number',
+    ).length;
     log('[srs] planNewDeck', {
       l2: l2Code,
       dailyNewLimit,
@@ -502,6 +526,8 @@ export default function ReviewScreen() {
       olderUnrated: budget.olderUnrated,
       remaining: budget.remaining,
       candidates,
+      leveledCandidates,
+      levelsReady,
       toCreate: plan.toCreate.length,
       inactiveNewCards: plan.toRemove.length,
     });
@@ -522,7 +548,7 @@ export default function ReviewScreen() {
     // selected for review. This makes changing the daily limit reversible and
     // avoids one DELETE request per card during page load.
 
-    // Introduce: create due-now cards for the newest unrated words lacking one.
+    // Introduce: create due-now cards for today's most frequent unrated words.
     if (plan.toCreate.length > 0) {
       setInitializing(true);
       for (const id of plan.toCreate) {
@@ -530,7 +556,7 @@ export default function ReviewScreen() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, newCardLimit, dailyNewLimit, isPro, dayStartHour, updateCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, newCardLimit, dailyNewLimit, isPro, dayStartHour, wordLevels, levelsReady, updateCard]);
 
   // ── Reconcile orphaned SRS cards ──
   // Cards only make sense for words that are still saved; unsaving through
@@ -583,22 +609,15 @@ export default function ReviewScreen() {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const activeNewCardIds = new Set(
-      fsrs.getActiveNewCardIds(l2SavedWords, langCards, newCardLimit),
+      fsrs.getActiveNewCardIds(l2SavedWords, langCards, newCardLimit, wordLevels),
     );
-    return l2SavedWords
-      .filter((sw) => {
-        const srs = langCards[sw.id];
-        if (!srs) return false;
-        if (fsrs.getCardState(srs) === 'new' && !activeNewCardIds.has(sw.id)) return false;
-        return srs.due <= now;
-      })
-      .sort((a, b) => {
-        const sa = langCards[a.id];
-        const sb = langCards[b.id];
-        if (!sa || !sb) return 0;
-        return sa.due - sb.due;
-      });
-  }, [l2SavedWords, store, l2Code, newCardLimit]);
+    return l2SavedWords.filter((sw) => {
+      const srs = langCards[sw.id];
+      if (!srs) return false;
+      if (fsrs.getCardState(srs) === 'new' && !activeNewCardIds.has(sw.id)) return false;
+      return srs.due <= now;
+    });
+  }, [l2SavedWords, store, l2Code, newCardLimit, wordLevels]);
 
   // ── Session deck — syncing must never disturb the card on screen ──
   // The deck the learner walks is a SNAPSHOT, not a live derivation. The mobile
@@ -629,7 +648,11 @@ export default function ReviewScreen() {
   const liveDeckCards = useMemo(() => liveDueCards.map((word) => ({
     word,
     srs: (store.cards[l2Code] ?? {})[word.id] || fsrs.newCard(),
-  })), [liveDueCards, store, l2Code]);
+  }))
+    // New cards: most-frequent-first (SPEC-066). Review/learning cards:
+    // oldest-due-first (compareReviewQueueEntries).
+    .sort((a, b) => fsrs.compareReviewQueueEntries(a, b, wordLevels)),
+  [liveDueCards, store, l2Code, wordLevels]);
   const deckIsStale = adoptedDeckGen !== deckGen;
   const deckIsEmptyButLive = sessionDeck.length === 0 && liveDeckCards.length > 0;
   const deckAdopted = deckIsStale || deckIsEmptyButLive;
@@ -2038,6 +2061,9 @@ export default function ReviewScreen() {
   // answering. New cards join the session deck when the learner advances.
   const isLoading = !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded
     || (initializing && cards.length === 0)
+    // Same "nothing to show" guard for the level lookup: the deck is waiting
+    // for today's new-card levels, and there is no card to display yet.
+    || (!levelsReady && cards.length === 0)
     || Boolean(user && (!savedWordsCloudHydrated || !srsCloudHydrated));
 
   // ── Log the loaded review deck once per language ──
