@@ -544,16 +544,58 @@ export function remainingNewCardsToday(
 }
 
 /** Saved words that are candidates for the blue deck (no card or unrated). */
+export function getNewCardCandidates<W extends { id: string }>(
+  savedWords: W[],
+  cards: Record<string, FsrsCard>,
+): W[] {
+  return savedWords.filter((sw) => {
+    const srs = cards[sw.id];
+    return !srs || isNewCard(srs);
+  });
+}
+
+/** Saved words that are candidates for the blue deck (no card or unrated). */
 export function countNewCardCandidates(
   savedWords: Array<{ id: string }>,
   cards: Record<string, FsrsCard>,
 ): number {
-  let count = 0;
-  for (const sw of savedWords) {
-    const srs = cards[sw.id];
-    if (!srs || isNewCard(srs)) count++;
-  }
-  return count;
+  return getNewCardCandidates(savedWords, cards).length;
+}
+
+/**
+ * Word id → dictionary difficulty level (1 = most frequent … 7 = rarest).
+ *
+ * Supplied by the callers from their resolved dictionary entries; `null` (or a
+ * missing key) means the word is **unclassified** (no frequency data, an LLM
+ * entry, or a lookup that has not resolved yet).
+ */
+export type NewCardLevels = Record<string, number | null | undefined>;
+
+/** A usable 1–7 level from the map, or `null` when the word is unclassified. */
+function levelOf(levels: NewCardLevels | undefined, wordId: string): number | null {
+  if (!levels) return null;
+  const raw = levels[wordId];
+  return typeof raw === 'number' && Number.isFinite(raw) && raw >= 1 && raw <= 7 ? raw : null;
+}
+
+/**
+ * New-card ordering (SPEC-066): the most frequent words come first.
+ *
+ * Classified words sort by ascending level (1 = most frequent before 7 =
+ * rarest); words with no level follow the classified ones, preserving the
+ * historical newest-saved-first order among themselves; newest-saved is the
+ * tie-break inside every group.
+ */
+function compareNewCardCandidates(
+  a: { id: string; date?: number },
+  b: { id: string; date?: number },
+  levels?: NewCardLevels,
+): number {
+  const la = levelOf(levels, a.id);
+  const lb = levelOf(levels, b.id);
+  if (la !== null && lb !== null && la !== lb) return la - lb;
+  if ((la !== null) !== (lb !== null)) return la !== null ? -1 : 1;
+  return (b.date ?? 0) - (a.date ?? 0);
 }
 
 /**
@@ -567,28 +609,35 @@ export function countNewCardCandidates(
  * Cards outside this window remain persisted as unrated cards. Changing the
  * daily limit is a budget/presentation change, so raising it again can make
  * those cards available without recreating them or issuing DELETE requests.
+ *
+ * Ordering is level-first (see `compareNewCardCandidates`), so the blue window
+ * holds today's most frequent unrated words, not simply the newest ones.
  */
 export function getActiveNewCardIds(
   savedWords: Array<{ id: string; date?: number }>,
   cards: Record<string, FsrsCard>,
   limit: number,
+  levels?: NewCardLevels,
 ): string[] {
   const cap = Math.max(0, Math.floor(limit));
-  return savedWords
+  return getNewCardCandidates(savedWords, cards)
     .filter((sw) => {
       const srs = cards[sw.id];
       return !!srs && isNewCard(srs);
     })
-    .sort((a, b) => (b.date ?? 0) - (a.date ?? 0))
+    .sort((a, b) => compareNewCardCandidates(a, b, levels))
     .slice(0, cap)
     .map((sw) => sw.id);
 }
 
 /**
- * Compute the blue ("new") deck for today: up to `limit` most recently saved
- * words that have no card yet or an unreviewed `state: new` card, newest-saved
- * first, but never more than today's remaining new-card budget. Rated cards
- * (learning/review/relearning) are never displaced.
+ * Compute the blue ("new") deck for today: up to `limit` of the most frequent
+ * words that have no card yet or an unreviewed `state: new` card, most
+ * frequent first (SPEC-066).
+ *
+ * Without a `levels` map — a language with no frequency data, or a lookup that
+ * has not resolved — this degrades to the historical newest-saved-first order.
+ * Rated cards (learning/review/relearning) are never displaced.
  *
  * `toRemove` is a soft-deactivation list for persisted blue cards outside the
  * active window (the same window `getActiveNewCardIds()` returns). Callers
@@ -601,19 +650,17 @@ export function planNewDeck(
   limit: number,
   now: number = Date.now(),
   dayStartHour: number = 4,
+  levels?: NewCardLevels,
 ): { toCreate: string[]; toRemove: string[] } {
   const cap = Math.max(0, Math.floor(limit));
   const remaining = remainingNewCardsToday(savedWords, cards, cap, now, dayStartHour);
 
-  const pool = savedWords
-    .filter((sw) => {
-      const srs = cards[sw.id];
-      return !srs || isNewCard(srs);
-    })
-    .sort((a, b) => (b.date ?? 0) - (a.date ?? 0));
+  const pool = getNewCardCandidates(savedWords, cards).sort((a, b) =>
+    compareNewCardCandidates(a, b, levels),
+  );
 
   const desired = pool.slice(0, cap);
-  const active = new Set(getActiveNewCardIds(savedWords, cards, cap));
+  const active = new Set(getActiveNewCardIds(savedWords, cards, cap, levels));
 
   return {
     toCreate: desired
@@ -627,4 +674,25 @@ export function planNewDeck(
       })
       .map((sw) => sw.id),
   };
+}
+
+/**
+ * Session serving order for the review queue.
+ *
+ * Review/learning/relearning cards keep the documented FSRS order
+ * (oldest-due-first). Among **new** cards — which are all due immediately, so
+ * their `due` says nothing — the most frequent word is served first (ascending
+ * level), with unclassified words after the classified ones and newest-saved
+ * as the final tie-break (SPEC-066).
+ */
+export function compareReviewQueueEntries(
+  a: { word: { id: string; date?: number }; srs: FsrsCard },
+  b: { word: { id: string; date?: number }; srs: FsrsCard },
+  levels?: NewCardLevels,
+): number {
+  if (isNewCard(a.srs) && isNewCard(b.srs)) {
+    const byLevel = compareNewCardCandidates(a.word, b.word, levels);
+    if (byLevel !== 0) return byLevel;
+  }
+  return a.srs.due - b.srs.due;
 }

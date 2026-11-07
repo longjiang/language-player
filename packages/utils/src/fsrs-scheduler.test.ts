@@ -3,6 +3,7 @@ import { State } from 'ts-fsrs';
 import {
   countDueCards,
   countDeckStates,
+  compareReviewQueueEntries,
   effectiveDailyNewLimit,
   FREE_SRS_DAILY_NEW_CARDS,
   deserializeSrsCard,
@@ -351,6 +352,85 @@ describe('fsrs-scheduler: deck budgeting', () => {
     const tomorrow = NOW + 86_400_000;
     expect(remainingNewCardsToday(saved, afterCards2, 2, tomorrow, 0)).toBe(1);
     expect(planNewDeck(saved, afterCards2, 2, tomorrow, 0).toCreate).toEqual(['c']);
+  });
+});
+
+describe('fsrs-scheduler: level-first new-card ordering (SPEC-066)', () => {
+  const words = [
+    { id: 'rare', date: NOW },
+    { id: 'common', date: NOW - 1000 },
+    { id: 'mid', date: NOW - 2000 },
+  ];
+  const levels = { rare: 7, common: 1, mid: 4 };
+
+  it('fills today\'s budget with the most frequent words, not the newest', () => {
+    const plan = planNewDeck(words, {}, 2, NOW, 0, levels);
+    // Newest-saved-first would have been ['rare', 'common'].
+    expect(plan.toCreate).toEqual(['common', 'mid']);
+  });
+
+  it('keeps newest-saved as the tie-break inside a level', () => {
+    const sameLevel = { rare: 3, common: 3, mid: 3 };
+    expect(planNewDeck(words, {}, 2, NOW, 0, sameLevel).toCreate).toEqual(['rare', 'common']);
+  });
+
+  it('falls back to newest-saved-first without a levels map', () => {
+    expect(planNewDeck(words, {}, 2, NOW, 0).toCreate).toEqual(['rare', 'common']);
+  });
+
+  it('places unclassified words after the classified ones', () => {
+    const withUnknown = [...words, { id: 'unknown', date: NOW + 1000 }];
+    const plan = planNewDeck(withUnknown, {}, 2, NOW, 0, levels);
+    expect(plan.toCreate).toEqual(['common', 'mid']);
+
+    // With room for one more, the unclassified (newest) word is last.
+    const wider = planNewDeck(withUnknown, {}, 4, NOW, 0, levels);
+    expect(wider.toCreate).toEqual(['common', 'mid', 'rare', 'unknown']);
+  });
+
+  it('orders the active blue window by level', () => {
+    const cards: Record<string, FsrsCard> = {
+      rare: newCard(NOW),
+      common: newCard(NOW),
+      mid: newCard(NOW),
+    };
+    expect(getActiveNewCardIds(words, cards, 3, levels)).toEqual(['common', 'mid', 'rare']);
+    expect(getActiveNewCardIds(words, cards, 2, levels)).toEqual(['common', 'mid']);
+  });
+
+  it('soft-deactivates rare cards pushed out of the level window', () => {
+    // All three already have blue cards, but the limit is 2. The level window
+    // keeps the two most frequent ('common', 'mid'), so the rare card is
+    // deactivated (persisted, not selected) instead of being deleted.
+    // Newest-saved-first would have kept 'rare' and 'common' and dropped 'mid'.
+    const cards: Record<string, FsrsCard> = {
+      rare: newCard(NOW),
+      mid: newCard(NOW),
+      common: newCard(NOW),
+    };
+    const plan = planNewDeck(words, cards, 2, NOW, 0, levels);
+    expect(plan.toCreate).toEqual([]);
+    expect(plan.toRemove).toEqual(['rare']);
+  });
+
+  it('serves new cards most-frequent-first and keeps review cards due-ordered', () => {
+    const newRare = { word: { id: 'rare', date: NOW }, srs: newCard(NOW) };
+    const newCommon = { word: { id: 'common', date: NOW - 1000 }, srs: newCard(NOW) };
+    const review = {
+      word: { id: 'review', date: NOW },
+      srs: { ...newCard(NOW), state: State.Review, due: NOW - 86_400_000 },
+    };
+    const sorted = [newRare, review, newCommon].sort((a, b) =>
+      compareReviewQueueEntries(a, b, levels),
+    );
+    expect(sorted.map((c) => c.word.id)).toEqual(['review', 'common', 'rare']);
+
+    // Unclassified new cards come after classified new cards.
+    const newUnknown = { word: { id: 'unknown', date: NOW + 1000 }, srs: newCard(NOW) };
+    const sortedUnknown = [newUnknown, newRare].sort((a, b) =>
+      compareReviewQueueEntries(a, b, levels),
+    );
+    expect(sortedUnknown.map((c) => c.word.id)).toEqual(['rare', 'unknown']);
   });
 });
 

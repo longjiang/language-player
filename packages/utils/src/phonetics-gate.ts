@@ -1,6 +1,7 @@
 import type { LemmatizedToken } from '@langplayer/shared';
 import { getCachedEntries } from './dictionary-cache';
 import { baseCode } from './language';
+import { entryDifficultyLevel } from './word-level';
 
 /**
  * Phonetics decision — the single pipeline rule shared by every tokenized-text
@@ -22,8 +23,9 @@ export type WordDifficulty =
   | { kind: 'classified'; value: number };
 
 /** Get the lowest (easiest) difficulty value for a word from its cached
- *  dictionary entries. Checks both `levels[].numeric` and `frequencyLevel`,
- *  returns the minimum. Mirrors apps/web `token-span.tsx` getWordDifficulty.
+ *  dictionary entries. The per-entry derivation (both `levels[].numeric` and
+ *  `frequencyLevel`, minimum wins) lives in `word-level.ts` so the review deck
+ *  ordering and this gate can never disagree.
  *
  *  `not_cached`  — no entry in cache yet (bulk lookup still pending).
  *  `unclassified`— cached entry exists but has no levels/frequency → unknown,
@@ -41,16 +43,8 @@ export function getWordDifficulty(
     if (!entries) continue;
     hasEntry = true;
     for (const entry of entries) {
-      if (entry.levels) {
-        for (const l of entry.levels) {
-          if (typeof l.numeric === 'number' && l.numeric >= 1 && l.numeric <= 7) {
-            if (lowest === null || l.numeric < lowest) lowest = l.numeric;
-          }
-        }
-      }
-      if (typeof entry.frequencyLevel === 'number' && entry.frequencyLevel >= 1 && entry.frequencyLevel <= 7) {
-        if (lowest === null || entry.frequencyLevel < lowest) lowest = entry.frequencyLevel;
-      }
+      const level = entryDifficultyLevel(entry);
+      if (level !== null && (lowest === null || level < lowest)) lowest = level;
     }
   }
   if (!hasEntry) return { kind: 'not_cached' };

@@ -14,7 +14,9 @@
   the mobile spell answer row is pinned above the software keyboard instead of
   sitting at the end of the card's scroll content (2026-09-17, ADR-0047);
   the session deck is frozen against background syncing so a sync can no longer
-  swap or remount the card being answered (2026-10-06)
+  swap or remount the card being answered (2026-10-06); the new-card deck is
+  selected and served **most-frequent-first** by dictionary difficulty level
+  instead of newest-saved-first (2026-11-08)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -157,7 +159,11 @@ without resetting it.
 - Due Review cards are served oldest-due-first, so the most overdue word
   appears before anything scheduled later.
 - New cards enter through the daily budget below and are interleaved with due
-  cards during a session.
+  cards during a session. Among themselves they are served
+  **most-frequent-first** — ascending dictionary difficulty level, with
+  unclassified words after the classified ones and newest-saved as the
+  tie-break (`compareReviewQueueEntries`) — while learning/review/relearning
+  cards keep their due order.
 
 **Settings**
 
@@ -217,14 +223,22 @@ compatibility window.
 
 New words enter the deck through a daily budget. Each local day (Anki "next
 day starts at", default 4 AM), up to `dailyNewLimit` unrated saved words are
-made available as new cards (default 20). ~~The "new" deck always holds the
+made available as new cards (default 20).
+
+**Selection is most-frequent-first (2026-11-08).** The budget is filled with
+the unrated words whose dictionary difficulty level is **lowest** (level 1 =
+the most common words), so a learner meets the words they are most likely to
+encounter before rarer ones. Newest-saved is only the tie-break: it decides
+between words of the same level, and orders unclassified words among
+themselves. See [Level-first new-card ordering](#level-first-new-card-ordering-2026-11-08).
+
+~~The "new" deck always holds the
 `dailyNewLimit` most recently saved
 words that haven't been rated yet; newer saves displace older unrated words
 when the budget is full. A card entering the deck is due immediately, and as
 soon as a rated word leaves the new deck, the next newest unrated word takes
 its place — the deck refills during the session rather than waiting for the
-next day.~~ Rated cards (whether passed or failed) are never displaced by
-newer saves.
+next day.~~ Rated cards (whether passed or failed) are never displaced.
 
 A card entering the deck is due immediately. Once today's new-card budget is
 used up, no more new cards are introduced until the next local day — the deck
@@ -246,6 +260,62 @@ keeps occupying its slot for the whole day even after it is rated, so rating
 it does not open a slot for a replacement card (`getNewCardBudget()` counts a
 card minted before today if it is still new or has been rated at any point
 today, keeping the budget monotone for the local day).
+
+### Level-first new-card ordering (2026-11-08)
+
+The blue deck is ordered by how common each unrated word is, not by when it
+was saved. This applies to **both** which words fill today's budget and the
+order the session serves them.
+
+**Level source.** A word's level is the one the dictionary already carries
+(ARCH-004 § "Frequency → level"): `frequencyLevel` (derived from the entry's
+Zipf score) or the canonical exam level (`levels[].numeric`, e.g. HSK / JLPT /
+TOPIK / CEFR), both normalized to the same 1–7 scale. The lowest value across
+an entry's levels and across the entries returned for a word wins. This is the
+same derivation the "Hard Words Only" phonetics gate uses
+(`packages/utils/src/word-level.ts` — `entryDifficultyLevel` /
+`lowestEntryLevel`), so the two features can never disagree.
+
+**Where the level comes from.** Saved words do **not** store a level
+(`SavedLexicalItemRecord` is id/forms/date/instances), so the review page
+resolves it when the deck is planned:
+
+- only **unrated** saved words are resolved (words with a learning/review card
+  never re-enter the new deck);
+- the shared dictionary cache is checked first (entries already looked up by
+  another surface);
+- remaining words go through one batched `POST /dictionary/lookup-batch` for
+  the language, and the returned entries are matched to the saved word by
+  entry id (`isSameEntryId`), then by head;
+- mobile also uses the saved word's `canonicalEntry` and the offline dictionary
+  (entry by id) before the network, and skips the network entirely in Offline
+  Mode.
+
+**No level = unclassified.** A word with no `frequencyLevel` and no numeric
+level (a language with no frequency data, an LLM-generated entry, or a lookup
+that missed) cannot be placed on the scale. Classified words always come
+first, ascending by level; unclassified words follow, newest-saved first —
+mirroring the phonetics gate's "unknown → treat as hard".
+
+**Failure and gating.** For a language with frequency data the auto-init loop
+waits for the level lookup to settle (or time out) before minting today's
+cards, so the budget is never spent on the wrong words; if the lookup fails,
+the page proceeds with the newest-saved-first fallback. Languages with no
+frequency data skip the lookup entirely and keep the historical behavior. The
+same fallback keeps the deck usable offline.
+
+**Consequences.**
+
+- The blue window (`getActiveNewCardIds`) is level-ordered, so a rare word
+  minted earlier can be soft-deactivated (not deleted) when lower-level words
+  become available — the existing reversible-window mechanism from
+  [Deck construction](#deck-construction) step 3 is unchanged.
+- Within a session, new cards are served most-frequent-first
+  (`compareReviewQueueEntries`); learning/relearning/review cards keep their
+  due order.
+- Level resolution is per device and per session (the shared cache is in
+  memory). A second device with a cold cache re-resolves the same levels; it
+  never re-mints or modifies cards to do so.
 
 ### Undo and the free allowance
 
@@ -336,23 +406,28 @@ isolation](#session-deck-isolation--syncing-never-disturbs-the-card-on-screen)).
 
 ### Deck construction
 
-1. `planNewDeck(savedWords, cards, dailyNewLimit)` computes the blue ("new")
-   deck for today: the most recently saved words that have no card or an
-   unreviewed blue card, newest-saved first, but never more than today's
-   remaining new-card budget.
+1. `planNewDeck(savedWords, cards, dailyNewLimit, now, dayStartHour, levels)`
+   computes the blue ("new") deck for today: the unrated words that have no
+   card or an unreviewed blue card, **most-frequent-first** by dictionary level
+   (classified words ascending by level, then unclassified words, newest-saved
+   as the tie-break — see [Level-first new-card
+   ordering](#level-first-new-card-ordering-2026-11-08)), but never more than
+   today's remaining new-card budget. Without a `levels` map the order degrades
+   to newest-saved-first.
 2. Words in `toCreate` get a brand-new card with `due = Date.now()`
    (due immediately) and count against today's budget.
-3. Blue cards outside the newest-`dailyNewLimit` window are soft-deactivated
-   for review selection. They remain persisted as unrated cards, so changing
-   the limit does not issue one DELETE request per card and raising the limit
-   later can restore them without recreating their state. The review window
-   (`getActiveNewCardIds()`) selects only saved words that already have a
-   `state: new` card — a cardless saved word is a creation candidate, never a
-   window occupant, so newer cardless words cannot push real blue cards out
-   of review selection.
+3. Blue cards outside today's level-ordered `dailyNewLimit` window are
+   soft-deactivated for review selection. They remain persisted as unrated
+   cards, so changing the limit does not issue one DELETE request per card and
+   raising the limit later can restore them without recreating their state. The
+   review window (`getActiveNewCardIds()`) selects only saved words that
+   already have a `state: new` card — a cardless saved word is a creation
+   candidate, never a window occupant, so cardless words cannot push real blue
+   cards out of review selection.
 4. Rated cards (green/red) are never displaced.
-5. Due cards = saved words whose card has `due <= now`, sorted by
-   `due` ascending (oldest due first).
+5. Due cards = saved words whose card has `due <= now`; review/learning cards
+   sort by `due` ascending (oldest due first), and new cards among themselves
+   sort most-frequent-first (`compareReviewQueueEntries`).
 6. The header shows three counts:
    - blue = unrated (`state: new`) cards in the blue deck — the deck is
      prefilled with today's new-card budget, so this is the remaining budget:
@@ -471,8 +546,8 @@ today" message.
   deck, because an empty-but-loading list must never be treated as "no saved
   words" (this previously wiped the whole deck when the page opened before
   hydration finished).
-- Cards are served oldest-due-first, with a small reveal delay so the previous
-  card settles before the next appears.
+- Due cards are served oldest-due-first and new cards most-frequent-first, with
+  a small reveal delay so the previous card settles before the next appears.
 
 ### Session deck isolation — syncing never disturbs the card on screen
 

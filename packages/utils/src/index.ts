@@ -55,6 +55,13 @@ export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
 export type { FuriganaSegment, RubySegment } from './furigana';
 export { getWordDifficulty, shouldShowPhonetics } from './phonetics-gate';
 export type { WordDifficulty, PhoneticsGateInput } from './phonetics-gate';
+export {
+  entryDifficultyLevel,
+  lowestEntryLevel,
+  MIN_WORD_LEVEL,
+  MAX_WORD_LEVEL,
+} from './word-level';
+export type { LevelBearingEntry } from './word-level';
 export type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 export {
   rate,
@@ -70,12 +77,14 @@ export {
   createSrsStore,
   getLanguageCards,
   getActiveNewCardIds,
+  getNewCardCandidates,
+  compareReviewQueueEntries,
   mergeSrsCards,
   reconcileCardsToServer,
   effectiveDailyNewLimit,
   FREE_SRS_DAILY_NEW_CARDS,
 } from './fsrs-scheduler';
-export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating, SrsReviewStatus } from './fsrs-scheduler';
+export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating, SrsReviewStatus, NewCardLevels } from './fsrs-scheduler';
 /** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …). */
 export * as fsrs from './fsrs-scheduler';
 export {
