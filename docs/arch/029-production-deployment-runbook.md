@@ -292,6 +292,16 @@ node scripts/verify-version.mjs  # gate after prebuild AND after the archive
 node scripts/tag-release.mjs --release   # v<version> + v<version>-bN at HEAD
 ```
 
+> **The gate is supposed to be red *after* a recorded iOS-only release, and
+> that is not a reason to bump anything.** It computes `pending` from
+> `build > ledger max` per platform, so once `record-build.mjs` writes
+> `3.9.0 — iOS TestFlight (b30, consumed)` while Android still has to consume
+> 30, `pending` stays true and two errors appear: `iOS build N does not exceed
+> the ledger max (N)` and `Release tag v<version> already exists at another
+> commit` (the plain `v<version>` tag points at the cut commit, the ledger row
+> at the record commit). Both clear on the next cut. Seen on 3.9.0 (b30),
+> 2026-11-08.
+
 ### 4.2 Build & verify
 
 Build the Release archive with
