@@ -7,7 +7,7 @@
 - **Type**: runbook / reference
 - **Status**: draft
 - **Created**: 2026-08-14
-- **Last Updated**: 2026-10-27
+- **Last Updated**: 2026-11-08
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic web (v2), Next.js web (v3), admin console (`apps/admin`), iOS App Store, Google Play, Chrome Web Store, Flask backend
 - **See also**:
@@ -266,19 +266,20 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.8.0 build 29 → App Store Connect / TestFlight (uploaded
-2026-11-01 — image-reader retry + LLM titles, rare-Han subset loading,
-interactive textbook sections, tag search, and sync/storage hardening) ·
-**in review:** 3.7.3 build 28 was submitted for App Store review 2026-10-26
-(review submission `b61afc68`, release type `AFTER_APPROVAL`, so it goes live by
-itself once approved). Note the binary is the 2026-10-05 upload: everything merged
-after `c44aafd2` is *not* in this release and ships in the next cut — 3.8.0
-(b29) carries all of it ·
-**live:** 3.7.0 build 25 was approved and is `READY_FOR_SALE` (checked
-2026-10-01; submitted 2026-09-25, review submission `6b81745f`, release type
-`AFTER_APPROVAL`). Note 3.5.0–3.6.2 and 3.7.1 (b26), 3.7.2 (b27) and 3.8.0 (b29)
-were TestFlight-only, and 3.4.0 was the previous public version, so the 3.7.0
-listing copy covers everything since then.
+**last upload:** 3.9.0 build 30 → App Store Connect / TestFlight (uploaded
+2026-11-08 — one highlight look for marked text, legible in dark mode) ·
+**in review:** nothing as of 2026-11-08 — 3.7.3 build 28 was submitted
+2026-10-26 (review submission `b61afc68`, release type `AFTER_APPROVAL`, so it
+went live by itself once approved; see **live**) ·
+**live:** 3.7.3 build 28 is `READY_FOR_SALE` (checked 2026-11-08;
+`upload.mjs appstore status` lists it alongside 3.7.0). Its binary is the
+2026-10-05 upload, so everything merged after `c44aafd2` is *not* in it —
+3.8.0 (b29) and 3.9.0 (b30) carry that work to testers only. 3.7.0 build 25
+was approved earlier (checked 2026-10-01; submitted 2026-09-25, review
+submission `6b81745f`, release type `AFTER_APPROVAL`). Note 3.5.0–3.6.2 and
+3.7.1 (b26), 3.7.2 (b27), 3.8.0 (b29) and 3.9.0 (b30) were TestFlight-only, and
+3.4.0 was the previous public version before 3.7.x, so the listing copy covers
+everything since then.
 
 ### 4.1 Version gate
 
@@ -365,6 +366,21 @@ The IPA lands at `tmp/release/LP3-<version>-export/LanguagePlayer3.ipa`.
 > `DistributionSummary.plist` reports
 > `certificate.type = "Cloud Managed Apple Distribution"` — no local
 > Distribution identity needed. Hit and resolved on 3.8.0 (b29), 2026-11-01.
+>
+> **If the probe above returns `200`s, the same export error is local, not
+> Apple.** `xcodebuild` prints `No Accounts` next to
+> `No signing certificate "iOS Distribution" found` when it can't reach the
+> signed-in Apple ID / login keychain at all — e.g. when the build runs under a
+> file sandbox that denies `~/Library/Developer/Xcode` and the keychain, even
+> though `xcodebuild archive` itself succeeded (its Development-signed archive
+> came from the project's automatic signing, not from cloud signing). Re-run the
+> export (and the Transporter upload, which needs `~/.itmstransporter`) outside
+> that sandbox instead of chasing certificates. Seen on 3.9.0 (b30),
+> 2026-11-08: under a workspace-only sandbox the export failed with
+> `No signing certificate` / `No Accounts` and the upload died in
+> `Transporter … FileUtil.userHomeDirectory` (NullPointerException); the same
+> commands succeeded unsandboxed, and `DistributionSummary.plist` again reported
+> the cloud-managed certificate.
 
 ### 4.3 Upload (no EAS needed)
 
