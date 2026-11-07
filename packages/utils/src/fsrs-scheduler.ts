@@ -554,6 +554,31 @@ export function getNewCardCandidates<W extends { id: string }>(
   });
 }
 
+/**
+ * Cap on how many unrated words one review-page load resolves levels for
+ * (SPEC-066). Without it a large saved-word backlog would turn every load into
+ * dozens of `/dictionary/lookup-batch` requests. The newest unrated words are
+ * resolved first; words outside the cap are treated as unclassified (they sort
+ * after the classified ones, newest-saved first) until they enter the pool as
+ * the newer words get rated.
+ */
+export const NEW_CARD_LEVEL_LOOKUP_LIMIT = 200;
+
+/**
+ * Unrated saved words whose level the deck needs, newest-saved first, capped at
+ * `limit` so the level lookup stays bounded (SPEC-066 "Level-first new-card
+ * ordering").
+ */
+export function getNewCardLevelCandidates<W extends { id: string; date?: number }>(
+  savedWords: W[],
+  cards: Record<string, FsrsCard>,
+  limit: number = NEW_CARD_LEVEL_LOOKUP_LIMIT,
+): W[] {
+  return getNewCardCandidates(savedWords, cards)
+    .sort((a, b) => (b.date ?? 0) - (a.date ?? 0))
+    .slice(0, Math.max(0, Math.floor(limit)));
+}
+
 /** Saved words that are candidates for the blue deck (no card or unrated). */
 export function countNewCardCandidates(
   savedWords: Array<{ id: string }>,

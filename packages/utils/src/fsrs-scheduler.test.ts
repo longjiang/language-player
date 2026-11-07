@@ -10,6 +10,7 @@ import {
   getActiveNewCardIds,
   getCardState,
   getDueCards,
+  getNewCardLevelCandidates,
   isDue,
   isNewCard,
   mergeSrsCards,
@@ -411,6 +412,21 @@ describe('fsrs-scheduler: level-first new-card ordering (SPEC-066)', () => {
     const plan = planNewDeck(words, cards, 2, NOW, 0, levels);
     expect(plan.toCreate).toEqual([]);
     expect(plan.toRemove).toEqual(['rare']);
+  });
+
+  it('caps the level-lookup pool at the newest unrated words', () => {
+    const many = Array.from({ length: 250 }, (_, i) => ({ id: `w${i}`, date: NOW + i }));
+    const pool = getNewCardLevelCandidates(many, {}, 200);
+    expect(pool).toHaveLength(200);
+    // Newest first: w249 … w50.
+    expect(pool[0]?.id).toBe('w249');
+    expect(pool[199]?.id).toBe('w50');
+
+    // Rated words are not level-lookup candidates at all.
+    const rated = { w249: rate(newCard(NOW), 'good', NOW) };
+    expect(getNewCardLevelCandidates(many, rated, 200)).not.toContainEqual(
+      expect.objectContaining({ id: 'w249' }),
+    );
   });
 
   it('serves new cards most-frequent-first and keeps review cards due-ordered', () => {

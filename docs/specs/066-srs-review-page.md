@@ -282,6 +282,11 @@ resolves it when the deck is planned:
 
 - only **unrated** saved words are resolved (words with a learning/review card
   never re-enter the new deck);
+- the pool is bounded to the **200 newest** unrated words
+  (`NEW_CARD_LEVEL_LOOKUP_LIMIT`, shared by both apps), so a large backlog can
+  never turn a review-page load into dozens of batch requests; words outside
+  the pool are unclassified (after the classified ones) and join it as the
+  newer words get rated;
 - the shared dictionary cache is checked first (entries already looked up by
   another surface);
 - remaining words go through one batched `POST /dictionary/lookup-batch` for

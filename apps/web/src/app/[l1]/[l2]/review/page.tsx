@@ -80,6 +80,7 @@ import { SavedWordSource } from '@/components/saved-word-source';
 import { SpellCharInput } from '@/components/review/spell-char-input';
 import { ScrabbleCharInput } from '@/components/review/scrabble-char-input';
 import { useT } from '@/hooks/use-t';
+import { useNewCardLevels } from '@/hooks/use-new-card-levels';
 import { log, logwarn } from '@/lib/logger';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -365,6 +366,17 @@ export default function ReviewPage() {
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
+  // ── Dictionary levels for today's new-card candidates ──
+  // The blue deck is selected and served most-frequent-first (SPEC-066
+  // "Level-first new-card ordering"). Levels are resolved from the dictionary
+  // (cached entries, then one bounded batch lookup) and gate the auto-init
+  // loop below, so today's budget is never spent on the wrong words.
+  const { levels: wordLevels, ready: levelsReady } = useNewCardLevels(
+    l2Code,
+    l2SavedWords,
+    store.cards[l2Code],
+  );
+
   // ── Auto-initialize SRS cards up to today's new-card budget ──
   // The blue ("new") deck holds at most `newCardLimit` new cards per local day
   // (the configured limit, bounded by the free daily allowance on the free tier).
@@ -375,6 +387,11 @@ export default function ReviewPage() {
     // cards have been fetched (SPEC-066): a "new" card minted here can
     // overwrite a rated card from another device.
     if (status === 'authenticated' && !srsCloudHydrated) return;
+    // Wait for the dictionary levels of today's candidates: minting is
+    // permanent for the day, so the budget must not be spent on words the
+    // level-first ordering would not have picked (SPEC-066). Resolves to the
+    // newest-saved fallback if the lookup fails, so this never blocks a deck.
+    if (!levelsReady) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const budget = fsrs.getNewCardBudget(
@@ -384,14 +401,19 @@ export default function ReviewPage() {
       Date.now(),
       dayStartHour,
     );
-    const candidates = fsrs.countNewCardCandidates(l2SavedWords, langCards);
+    const candidateWords = fsrs.getNewCardCandidates(l2SavedWords, langCards);
+    const candidates = candidateWords.length;
     const plan = fsrs.planNewDeck(
       l2SavedWords,
       langCards,
       newCardLimit,
       Date.now(),
       dayStartHour,
+      wordLevels,
     );
+    const leveledCandidates = candidateWords.filter(
+      (sw) => typeof wordLevels[sw.id] === 'number',
+    ).length;
     log('[SRS] planNewDeck', {
       l2: l2Code,
       dailyLimit,
@@ -406,6 +428,8 @@ export default function ReviewPage() {
       olderUnrated: budget.olderUnrated,
       remaining: budget.remaining,
       candidates,
+      leveledCandidates,
+      levelsReady,
       toCreate: plan.toCreate.length,
       inactiveNewCards: plan.toRemove.length,
     });
@@ -426,7 +450,7 @@ export default function ReviewPage() {
     // selected for review. This makes changing the daily limit reversible and
     // avoids one DELETE request per card during page load.
 
-    // Introduce: create due-now cards for the newest unrated words lacking one.
+    // Introduce: create due-now cards for today's most frequent unrated words.
     if (plan.toCreate.length > 0) {
       setInitializing(true);
       for (const id of plan.toCreate) {
@@ -434,7 +458,7 @@ export default function ReviewPage() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, newCardLimit, dailyLimit, isPro, dayStartHour, updateCard]);
+  }, [settingsLoaded, settingsCloudHydrated, srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, newCardLimit, dailyLimit, isPro, dayStartHour, wordLevels, levelsReady, updateCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -491,7 +515,7 @@ export default function ReviewPage() {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const activeNewCardIds = new Set(
-      fsrs.getActiveNewCardIds(l2SavedWords, langCards, newCardLimit),
+      fsrs.getActiveNewCardIds(l2SavedWords, langCards, newCardLimit, wordLevels),
     );
     return l2SavedWords
       .filter((sw) => {
@@ -500,17 +524,14 @@ export default function ReviewPage() {
         if (fsrs.getCardState(srs) === 'new' && !activeNewCardIds.has(sw.id)) return false;
         return srs.due <= now;
       })
-      .sort((a, b) => {
-        const sa = langCards[a.id];
-        const sb = langCards[b.id];
-        if (!sa || !sb) return 0;
-        return sa.due - sb.due;
-      })
       .map((sw) => ({
         word: sw,
         srs: langCards[sw.id] || fsrs.newCard(),
-      }));
-  }, [l2SavedWords, store, l2Code, newCardLimit]);
+      }))
+      // New cards: most-frequent-first (SPEC-066). Review/learning cards:
+      // oldest-due-first (compareReviewQueueEntries).
+      .sort((a, b) => fsrs.compareReviewQueueEntries(a, b, wordLevels));
+  }, [l2SavedWords, store, l2Code, newCardLimit, wordLevels]);
 
   // ── Session deck — syncing must never disturb the card on screen ──
   // The deck the learner walks is a SNAPSHOT of the live deck, not a live
@@ -1848,6 +1869,9 @@ export default function ReviewPage() {
   // isolation). New cards join the session deck when the learner advances.
   const isLoading = status === 'loading' || !settingsLoaded || !settingsCloudHydrated || !wordsLoaded || !srsLoaded
     || (initializing && cards.length === 0)
+    // Same "nothing to show" guard for the level lookup: the deck is waiting
+    // for today's new-card levels, and there is no card to display yet.
+    || (!levelsReady && cards.length === 0)
     || (status === 'authenticated' && (!cloudHydrated || !srsCloudHydrated));
 
   if (isLoading) {
