@@ -131,13 +131,13 @@ test) on every page.
 
 ## Task 6 — Subs search: content filter pills (SPEC-079)
 
-- **Web ref**: `2b92f317`; web pills All / Non-Music / Music / TV Shows next to the forms toggle; music = `category` 10|24, TV = non-falsy `tv_show`; shared type `SubsSearchVideo` gained `category?: number | null`, `tv_show?: number | null` (`packages/shared/src/types.ts:99-102`).
+- **Web ref**: `2b92f317`; web pills All / TV Shows / Entertainment / Other next to the forms toggle (relabeled and reordered 2026-11-08 — SPEC-079 § Amendment); entertainment = `category` 10|24, TV = non-falsy `tv_show`; shared type `SubsSearchVideo` gained `category?: number | null`, `tv_show?: number | null` (`packages/shared/src/types.ts:99-102`).
 - **Mobile state**: `components/video/SubsSearchResults.tsx` maps the fetch via `(v: any)` at `:248-266` and **drops both fields**; nav bar has no pills (`:506-543`).
 - **Plan**:
   1. Map `category: Number(v.category) || null` and `tv_show: Number(v.tv_show) || null` in the fetch mapping (match web `subs-search-results.tsx:650-651`).
-  2. Add the four pills to the nav bar row (reuse the existing pill/segmented pattern mobile already uses for the forms toggle); filter client-side over `videos` before list/player use: music = `category === 10 || 24`, nonMusic = excludes those, tvShows = `tv_show != null`.
+  2. Add the four pills to the nav bar row (reuse the existing pill/segmented pattern mobile already uses for the forms toggle); filter client-side over `videos` before list/player use: entertainment = `category === 10 || 24`, other = excludes those, tvShows = `tv_show != null`.
   3. Keep the filter applied to the player queue array (single filtered array drives list + prev/next — see Task 9).
-- **Test**: seed results with category 10/24 videos → Music pill shows only those; TV Shows pill only `tv_show` rows; queue follows the filtered set.
+- **Test**: seed results with category 10/24 videos → Entertainment pill shows only those; TV Shows pill only `tv_show` rows; queue follows the filtered set.
 
 ## Task 7 — Subs search: show only the matched line in rows
 

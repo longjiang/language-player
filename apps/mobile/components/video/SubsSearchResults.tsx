@@ -57,14 +57,16 @@ interface SubsSearchResultsProps {
 const FREE_SUBS_SEARCH_HITS = 5;
 
 /** Content filter pills shown in the nav bar next to the forms toggle
- *  (SPEC-079 parity, SPEC-082 Task 6). */
-type VideoFilterKey = 'all' | 'nonMusic' | 'music' | 'tvShows';
+ *  (SPEC-079 parity, SPEC-082 Task 6). "Entertainment" relabels the Music
+ *  pill but still matches YouTube Music (10) + Entertainment (24); "Other"
+ *  is its complement. Both labels reuse existing CSV keys. */
+type VideoFilterKey = 'all' | 'tvShows' | 'entertainment' | 'other';
 
 const FILTER_PILLS: { key: VideoFilterKey; labelKey: string }[] = [
   { key: 'all', labelKey: 'filter.all' },
-  { key: 'nonMusic', labelKey: 'filter.non_music' },
-  { key: 'music', labelKey: 'filter.music' },
   { key: 'tvShows', labelKey: 'title.tv_shows' },
+  { key: 'entertainment', labelKey: 'category.entertainment' },
+  { key: 'other', labelKey: 'label.other' },
 ];
 
 /** Sort options for the results toolbar (SPEC-082 Task 8; AI arrives in Task 10). */
@@ -117,7 +119,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  // Content filter pill (All / Non-Music / Music / TV Shows) — SPEC-082 Task 6.
+  // Content filter pill (All / TV Shows / Entertainment / Other) — SPEC-082 Task 6.
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
   // List: text filter + sort (SPEC-082 Task 8).
   const [listSearch, setListSearch] = useState('');
@@ -172,13 +174,13 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   // Content filter: narrows the fetched pool by category / TV-show membership.
   // Client-side over the already-fetched results, like the exact-match toggle
-  // (the server has no NOT-IN filter, so "Non-Music" can't be expressed there).
+  // (the server has no NOT-IN filter, so "Other" can't be expressed there).
   const applyVideoFilter = useCallback(
     (list: SubsSearchVideo[]): SubsSearchVideo[] => {
       switch (videoFilter) {
-        case 'music':
+        case 'entertainment':
           return list.filter((v) => v.category === 10 || v.category === 24);
-        case 'nonMusic':
+        case 'other':
           return list.filter((v) => v.category !== 10 && v.category !== 24);
         case 'tvShows':
           return list.filter((v) => !!v.tv_show);
@@ -1008,7 +1010,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           </View>
         )}
 
-        {/* Content-filter pills (All / Non-Music / Music / TV Shows) — same
+        {/* Content-filter pills (All / TV Shows / Entertainment / Other) — same
             segmented pattern as the forms toggle (SPEC-082 Task 6). */}
         {FILTER_PILLS.map((pill) => {
           const active = videoFilter === pill.key;

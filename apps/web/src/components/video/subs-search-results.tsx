@@ -75,14 +75,17 @@ const SUBTITLE_MODE_KEY = 'lp_subs_search_subtitle_mode';
 
 type SortKey = SubsSearchSortKey;
 
-/** Content filter pills shown in the nav bar next to the forms toggle. */
-type VideoFilterKey = 'all' | 'nonMusic' | 'music' | 'tvShows';
+/** Content filter pills shown in the nav bar next to the forms toggle.
+ *  SPEC-079: "Entertainment" is the relabeled Music pill and still matches
+ *  YouTube Music (10) + Entertainment (24); "Other" is its complement. Both
+ *  labels reuse existing CSV keys, so no new translations are needed. */
+type VideoFilterKey = 'all' | 'tvShows' | 'entertainment' | 'other';
 
 const FILTER_PILLS: { key: VideoFilterKey; labelKey: string }[] = [
   { key: 'all', labelKey: 'filter.all' },
-  { key: 'nonMusic', labelKey: 'filter.non_music' },
-  { key: 'music', labelKey: 'filter.music' },
   { key: 'tvShows', labelKey: 'title.tv_shows' },
+  { key: 'entertainment', labelKey: 'category.entertainment' },
+  { key: 'other', labelKey: 'label.other' },
 ];
 
 // ── Helpers ────────────────────────────────────
@@ -143,7 +146,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // List: filter + sort
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SortKey>('views');
-  // Content filter pill (All / Non-Music / Music / TV Shows).
+  // Content filter pill (All / TV Shows / Entertainment / Other).
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
 
   // ── Advanced search (custom terms / exclude terms / shows / categories) ──
@@ -201,13 +204,13 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   // Content filter: narrows the fetched pool by category / TV-show membership.
   // Client-side over the already-fetched results, like the exact-match toggle
-  // (the server has no NOT-IN filter, so "Non-Music" can't be expressed there).
+  // (the server has no NOT-IN filter, so "Other" can't be expressed there).
   const applyVideoFilter = useCallback(
     (list: SubsSearchVideo[]): SubsSearchVideo[] => {
       switch (videoFilter) {
-        case 'music':
+        case 'entertainment':
           return list.filter((v) => v.category === 10 || v.category === 24);
-        case 'nonMusic':
+        case 'other':
           return list.filter((v) => v.category !== 10 && v.category !== 24);
         case 'tvShows':
           return list.filter((v) => !!v.tv_show);
@@ -234,7 +237,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // key so toggling away and back doesn't re-request.
   //
   // Analysis is based on the raw `pool` (most-popular fetch order), NOT the
-  // video-filtered `videos`, so toggling the All/Music/Non-Music/TV-Show pill
+  // video-filtered `videos`, so toggling the All/TV-Shows/Entertainment/Other pill
   // doesn't invalidate the cache or trigger a new LLM call — it only filters
   // the already-grouped list below.
   const aiAnalyzed = useMemo(
@@ -979,7 +982,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     [listSort, t, allGroupKeys, collapseAll, expandAll, aiHeaderInfo],
   );
 
-  // Content-filter pills (All / Non-Music / Music / TV Shows), rendered in the
+  // Content-filter pills (All / TV Shows / Entertainment / Other), rendered in the
   // nav bar next to the forms toggle. Switching a pill resets to the first
   // result (the list may shrink, so the current index could go stale).
   const filterPills = (

@@ -65,7 +65,7 @@ sort — the `tv_shows` table has no year column.
   `apps/mobile/components/video/SubsSearchResults.tsx`
 - The advanced-search checklist labels every category in the result pool via
   `youTubeCategoryLabel` (previously only 10 and 24 had names). Counts and
-  the "All categories" row are unchanged. The All/Music/Non-Music/TV-Shows
+  the "All categories" row are unchanged. The All/TV Shows/Entertainment/Other
   pills keep their `category === 10 || 24` behavior (SPEC-079/082).
 - Long show/category labels wrap onto multiple lines in the checklist so the
   dialog never scrolls horizontally (`min-w-0` on the content grid item lets
