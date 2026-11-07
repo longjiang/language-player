@@ -289,9 +289,10 @@ resolves it when the deck is planned:
   newer words get rated;
 - the shared dictionary cache is checked first (entries already looked up by
   another surface);
-- remaining words go through one batched `POST /dictionary/lookup-batch` for
-  the language, and the returned entries are matched to the saved word by
-  entry id (`isSameEntryId`), then by head;
+- remaining words go through a batched `POST /dictionary/lookup-batch` for
+  the language (the shared lookup queue flushes in chunks of 100), and the
+  returned entries are matched to the saved word by entry id
+  (`isSameEntryId`), then by head;
 - mobile also uses the saved word's `canonicalEntry` and the offline dictionary
   (entry by id) before the network, and skips the network entirely in Offline
   Mode.
