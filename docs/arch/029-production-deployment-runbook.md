@@ -7,7 +7,7 @@
 - **Type**: runbook / reference
 - **Status**: draft
 - **Created**: 2026-08-14
-- **Last Updated**: 2026-11-08
+- **Last Updated**: 2026-11-09
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Classic web (v2), Next.js web (v3), admin console (`apps/admin`), iOS App Store, Google Play, Chrome Web Store, Flask backend
 - **See also**:
@@ -266,20 +266,21 @@ Restart with the previous dependency set if a new requirement broke the app
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
 `ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
-**last upload:** 3.9.0 build 30 → App Store Connect / TestFlight (uploaded
-2026-11-08 — one highlight look for marked text, legible in dark mode) ·
-**in review:** nothing as of 2026-11-08 — 3.7.3 build 28 was submitted
+**last upload:** 3.10.0 build 31 → App Store Connect / TestFlight (uploaded
+2026-11-09 — multi-select forms filter and relabeled content pills in subtitle
+search, most-frequent-first new-card ordering in review) ·
+**in review:** nothing as of 2026-11-09 — 3.7.3 build 28 was submitted
 2026-10-26 (review submission `b61afc68`, release type `AFTER_APPROVAL`, so it
 went live by itself once approved; see **live**) ·
 **live:** 3.7.3 build 28 is `READY_FOR_SALE` (checked 2026-11-08;
 `upload.mjs appstore status` lists it alongside 3.7.0). Its binary is the
 2026-10-05 upload, so everything merged after `c44aafd2` is *not* in it —
-3.8.0 (b29) and 3.9.0 (b30) carry that work to testers only. 3.7.0 build 25
-was approved earlier (checked 2026-10-01; submitted 2026-09-25, review
-submission `6b81745f`, release type `AFTER_APPROVAL`). Note 3.5.0–3.6.2 and
-3.7.1 (b26), 3.7.2 (b27), 3.8.0 (b29) and 3.9.0 (b30) were TestFlight-only, and
-3.4.0 was the previous public version before 3.7.x, so the listing copy covers
-everything since then.
+3.8.0 (b29), 3.9.0 (b30) and 3.10.0 (b31) carry that work to testers only.
+3.7.0 build 25 was approved earlier (checked 2026-10-01; submitted 2026-09-25,
+review submission `6b81745f`, release type `AFTER_APPROVAL`). Note 3.5.0–3.6.2
+and 3.7.1 (b26), 3.7.2 (b27), 3.8.0 (b29), 3.9.0 (b30) and 3.10.0 (b31) were
+TestFlight-only, and 3.4.0 was the previous public version before 3.7.x, so the
+listing copy covers everything since then.
 
 ### 4.1 Version gate
 

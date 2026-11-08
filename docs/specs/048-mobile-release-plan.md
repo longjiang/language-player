@@ -30,12 +30,12 @@ remain documented here so future releases are one-command and correct.
 |---|---|---|
 | App name | Language Player 3 | Language Player 3 |
 | Identifier | `ca.zerotohero.go` (bundle ID — replaces the GO listing) | `ca.zerotohero.go` (package, new Play launch) |
-| Version (repo) | `3.9.0` (build `30`) | `3.9.0` (versionCode `30` — next submission) |
+| Version (repo) | `3.10.0` (build `31`) | `3.10.0` (versionCode `31` — next submission) |
 | Min OS | iOS 16.4 | set in `app.config.js` |
 | Production API URL | `https://pythonvps.zerotohero.ca` | same |
 
 **Launch status:** both stores are live. iOS shipped **3.0.0 (b1)** and has
-uploaded through **3.9.0 (b30, TestFlight, 2026-11-08)**; **3.7.3 (b28)** is
+uploaded through **3.10.0 (b31, TestFlight, 2026-11-09)**; **3.7.3 (b28)** is
 the version live on the App Store (submitted 2026-10-26, approved and released
 — `READY_FOR_SALE` as of 2026-11-08), and **3.7.0 (b25)** was the pre-release
 live version.
