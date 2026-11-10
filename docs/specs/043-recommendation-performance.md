@@ -366,7 +366,7 @@ bounded to one first-hit per idle/deploy gap. Enable only if cold first-hits are
 1. For users with < 3 non-music videos, should discovery fall back to the seed (primary
    R6) or to the soft-penalty variant that surfaces ranked-down music (product option)?
 2. Should `ef=1000` ever be enabled for single-channel diversity (the only remaining L7
-   fill case, currently 3/17 for user-e)?
+   fill case, currently 3/17 for user E)?
 3. If R3 keep-warm is ever enabled, which languages to prioritize — request-volume-driven
    or static list?
 4. Should R1's cache also cover the *first-pass* HNSW for anonymous/no-signal users
