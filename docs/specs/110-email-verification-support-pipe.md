@@ -82,6 +82,21 @@ host holds no log of any message this pipe has processed. The automation is not
 "still working"; it is silently off, and the M5 code is the only part that
 survived the upgrade.
 
+### Phase A deployed (2026-11-11)
+
+| Check | Result |
+|---|---|
+| `auto_verify_email.sh` in the checkout, `~/.forward.postfix` repointed | wrapper runs the venv interpreter; old line backed up as `.forward.postfix.bak-2026-11-11` |
+| `./auto_verify_email.sh --selfcheck` on production | `config`, `database`, `gotrue`, `state_dir`, `sendmail` — all ok |
+| Pipe smoke test (`Subject: Hello`) | exit 0, logs "Ignoring email…", no mail sent, stderr empty |
+| `support@` sender | `sendmail -f support@zerotohero.ca` accepted; one test message sent to Jon |
+| Log rotation | 10 MiB in-script, previous file kept as `.1` |
+
+**Phase A restores execution, not correctness.** The address-extraction defect
+above is unchanged until Phase B, so do **not** broaden the DreamHost filter
+(§ 10.6) or trust auto-verification yet — the filter staying `Fwd`-only is
+load-bearing while the legacy parser is live.
+
 ### Reproduced extraction defect
 
 Replaying the real message with synthetic addresses (outer `From: jon.long@zerotohero.ca`,
@@ -586,10 +601,12 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    reason to the log and exit 75 (retry), not 1 (bounce).
 5. Log rotation for `email_processing.log` (DreamHost cron or `logrotate`) so
    the file does not grow unbounded like `application.log` (2.5 GB today).
-6. **Broaden the DreamHost filter.** It currently matches `Subject contains
-   Fwd`; change it to forward *all* mail to `verify_email@` to `dh_rqe96h`
-   (panel: Mail → Message Filters). Without this, `FW:`/localized forwards and
-   replies to `support@` never reach the pipe (Transport, above).
+6. **Broaden the DreamHost filter — Phase B prerequisite, not Phase A.** It
+   currently matches `Subject contains Fwd`; change it to forward *all* mail to
+   `verify_email@` to `dh_rqe96h` (panel: Mail → Message Filters). Do this only
+   once the hardened parser ships: with the legacy parser live, a broadened
+   filter would feed it `FW:`/localized forwards and replies it cannot parse
+   safely. Without the change, those never reach the pipe (Transport, above).
 7. Add the daily digest cron (`auto_verify_email.py --send-digest`, 09:00) and
    make sure `support@zerotohero.ca` exists and can send from the VPS
    (`sendmail -f support@zerotohero.ca` to your own address; SPF already
@@ -708,7 +725,7 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
 
 | Phase | Work | Gate |
 |---|---|---|
-| A (P0, today) | Wrapper script, `.forward.postfix`, `--selfcheck`, startup guard, log rotation | One real forward processed end-to-end |
+| A (P0) — **shipped 2026-11-11** | Wrapper script, `.forward.postfix`, `--selfcheck`, startup guard, log rotation, `support@` sender | Selfcheck 5/5 on production; ignored-message smoke test passes |
 | B | Intake/forwarded detection (18-locale label + marker tables), LLM identify + cross-check, **already-verified short-circuit**, match rule, decision table, thread store, notification matrix | Tests in § Tests green; dry-run replays of 5 real messages reviewed |
 | C | Docs: correct ARCH-003, record the as-built in this spec, add the Next.js contact-link gap to the roadmap | Review |
 
