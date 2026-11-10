@@ -13,6 +13,7 @@ docs/
 ├── arch/                      ← architecture analyses & references (3-digit: 001–999)
 │   └── archive/               ← superseded arch docs, kept for history
 ├── issues/                    ← open investigation write-ups (ISSUE-NNN)
+├── audits/                    ← one-off audits (privacy, cost, performance)
 ├── versioning/                ← build ledger (one row per commit)
 └── email-templates/           ← Supabase auth email templates
 ```

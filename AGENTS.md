@@ -409,6 +409,9 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
   `student@university.example`, `<uuid>`); never paste a real user's name,
   address, id, or subscription details. Project test accounts
   (`tester.mary@zerotohero.ca`, `tester.bob@zerotohero.ca`) are fine.
+- **Run `node scripts/check-docs-sensitive-data.mjs` before committing docs.**
+  It fails on real addresses, device ids, key formats, and credential rows;
+  add a commented allowlist entry for a genuine false positive.
 - Update `docs/specs/` if you implement a new feature or change behavior
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions
