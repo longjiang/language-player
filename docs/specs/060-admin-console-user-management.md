@@ -5,7 +5,9 @@
 - **Feature**: Admin console web app (`apps/admin`) with user management
 - **Status**: complete
 - **Created**: 2026-08-09
-- **Updated**: 2026-11-03 — permanent user deletion (Danger zone) added
+- **Updated**: 2026-11-10 — accounts with no user-data rows (no `user_settings`
+  row) render instead of failing with a 500
+- **Previously updated**: 2026-11-03 — permanent user deletion (Danger zone) added
 - **Previously updated**: 2026-10-22 — `/` redirects to `/analytics` (SPEC-100)
 - **ROADMAP Phase**: Phase 10: Admin Console
 - **See also**:
@@ -281,6 +283,27 @@ admin grants persist the status shown in the dialog.
 `user_progress.l2` stores ISO codes since 2026-08-04, but legacy rows can be
 numeric Directus language ids. The detail endpoint maps numeric ids to codes
 and passes ISO codes through untouched.
+
+### Accounts with no user-data rows must still render
+
+A newly registered account that has never signed in — commonly one whose
+email is still unconfirmed — has no `user_settings`, progress, saved-word,
+watch-history, or other `public.*` rows. `utils_user_data.get_settings` returns
+`None` for a missing row rather than a `(None, None)` pair, so the detail
+endpoint treats it as `{"settingsV2": null, "settingsClassic": null}` and
+returns the profile with empty sections; callers must not unpack the helper's
+return value directly.
+
+This was a 500 before 2026-11-10: `GET /admin/users/<id>` raised
+`cannot unpack non-iterable NoneType object` and the console rendered that
+Python message in place of the profile. The blast radius was not limited to
+unverified accounts — 36,257 of 78,073 live accounts had no `user_settings`
+row at the time, because most accounts never save settings. Regression test:
+`test_admin_users.py::test_get_user_detail_for_account_with_no_user_data`.
+
+The detail route now also logs a full traceback (`traceback.print_exc()`) with
+its `[admin_users] … failed: …` line, so a future 500 has a stack trace
+server-side; the JSON error body still carries the exception text.
 
 ### Debug action logging
 
