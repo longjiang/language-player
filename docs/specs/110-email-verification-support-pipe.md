@@ -387,7 +387,7 @@ requester may not own, and the retry email makes the exact match achievable.
 |---|---|---|---|
 | Account exists and `email_confirmed_at` is set (**checked first**, § 3) | ALREADY_VERIFIED | no | **queued for the Jon-only daily digest — user silent** |
 | LLM `intent=other` or no address identifiable | UNPARSEABLE | no | reply asking for the address, Cc Jon |
-| `requested != requester`, first failure in this thread | MISMATCH_RETRY | no | reply: "reply from `<requested>`", To both, Cc Jon |
+| `requested != requester`, first failure in this thread | MISMATCH_RETRY | no | reply: names both addresses, asks for a **spam-folder check**, and to reply from `<requested>` (§ Reply copy), To both, Cc Jon |
 | `requested != requester`, second or later failure | ESCALATE | no | reply: human will follow up; internal case summary to Jon |
 | Match, no `auth.users` row | NO_ACCOUNT | no | To requester + Jon (see § 7 note) |
 | Match, GoTrue non-2xx / unreachable | GOTRUE_ERROR | no | To both, Cc Jon, with the HTTP status |
@@ -446,6 +446,32 @@ subjects containing `Fwd` — so that reply is not processed until the filter is
 broadened (Transport, above). Until it is, the retry instruction still needs Jon
 to forward. The deployment step (§ 10) must either broaden the filter or accept
 that human hop.
+
+### Reply copy (MISMATCH_RETRY)
+
+The mismatch email goes to both addresses, so it must be short, neutral, and
+readable by someone who is not looking at the original thread. It contains, in
+this order:
+
+1. The two addresses, named explicitly: "you wrote from `<requester>`" and
+   "you asked us to verify `<requested>`".
+2. One sentence: we only verify an address when the request comes from that
+   address, because that is how we know it belongs to you.
+3. **A spam-folder check.** "Also check your spam/junk folder (and the All Mail
+   label, if you use Gmail): the verification email may have been filtered."
+   This matters because the most common reason someone asks for help is that the
+   email never arrived, not that the address is wrong.
+4. The next step: reply to this message **from `<requested>`**.
+5. A fallback: if it still does not arrive, reply and Jon will help directly.
+
+Constraints:
+
+- Never state whether `<requested>` has an account, is already verified, or has
+  a subscription. The mismatch reply is the only copy sent to an address whose
+  ownership we have not established, so it must not become a lookup oracle.
+- No marketing, no login link, no account details in this email.
+- Keep it to five short sentences; the thread quote is below it, not in place
+  of it.
 
 ### 8. Thread state
 
@@ -601,7 +627,9 @@ Unit (pytest, no network — extend `test_auto_verify_email.py`):
 2. The real message (synthetic addresses) → `MISMATCH_RETRY`, GoTrue never called.
 3. Direct message where `From == body address` → `VERIFIED`.
 4. Direct message where they differ → `MISMATCH_RETRY`, then `ESCALATE` on the
-   second attempt.
+   second attempt. The retry body names both addresses, asks the user to check
+   their spam/junk folder, and never states whether the requested address has an
+   account, is verified, or has a subscription.
 5. LLM returns an address absent from the message → discarded → UNPARSEABLE.
 6. LLM returns invalid JSON / times out → deterministic fallback, same
    decisions as 2–4.
@@ -636,7 +664,9 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
 2. Forwarding the real message produces `MISMATCH_RETRY`, **does not**
    confirm any address, and notifies the requester at both addresses with Jon
    `Cc`'d.
-3. Replying from `student@university.example` to that thread confirms the
+3. The mismatch reply names both addresses, asks the requester to check their
+   spam/junk folder, and discloses nothing about the requested account's state.
+   Replying from `student@university.example` to that thread confirms the
    account exactly once, grants the trial if none exists, and replies with
    "verified" in the same thread.
 4. A second mismatch escalates instead of verifying; Jon's copy names the
