@@ -339,7 +339,7 @@ The digest entry contains, in this order:
 | Requested address, `auth.users.id` | `_user_by_email` |
 | `email_confirmed_at` | GoTrue admin `GET /auth/v1/admin/users/<id>` |
 | `created_at`, `last_sign_in_at` | same |
-| **Last 5 sign-ins** | `auth.audit_log_entries` (`payload->>'action' = 'login'`, newest first). **That table is empty today** (0 rows: GoTrue audit logging is not on), so the entry prints `last_sign_in_at` and `signin_history=unavailable` until it is enabled or a login-event table is added — see Open questions |
+| **Last 5 sign-ins** | `auth.audit_log_entries`, `payload->>'action' in ('login','mfa_code_login')`, newest first. **The table is empty today** because Postgres audit-log storage is off by default; enable it (deployment step 8) and the field populates within minutes. Until then the entry prints `last_sign_in_at` and `signin_history=unavailable` |
 | Role, banned state (`banned_until` or "active") | GoTrue admin |
 | **Saved words**: total, per-language counts (top 5 + "other") | `public.user_saved_words` grouped by `l2` |
 | **Learning languages**: each `l2`, level, total hours, last activity | `public.user_progress` (`level`, `time_ms`, `updated_at`) |
@@ -594,6 +594,15 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    make sure `support@zerotohero.ca` exists and can send from the VPS
    (`sendmail -f support@zerotohero.ca` to your own address; SPF already
    includes DreamHost).
+8. **Enable Postgres audit-log storage** (sign-in history). Supabase captures
+   auth audit events automatically, but writing them to the database is off by
+   default: Authentication → Audit Logs → **"Write audit logs to the database"**
+   on ([Supabase Auth Audit Logs](https://supabase.com/docs/guides/auth/audit-logs),
+   updated 2026-10-31). Verify within a few minutes:
+   `select payload->>'action', count(*) from auth.audit_log_entries group by 1`
+   should show `login` rows; then confirm the digest prints five. Rows
+   accumulate, so keep 90 days and prune older rows (monthly cron or a
+   scheduled query) unless you decide otherwise.
 
 Verify by forwarding one real message and confirming both
 `logs/email_processing.log` and a reply in Jon's mailbox.
@@ -651,6 +660,9 @@ Unit (pytest, no network — extend `test_auto_verify_email.py`):
 12. Loop guards: `mailer-daemon`, `Auto-Submitted`, our own address.
 13. Repeat delivery of the same `Message-ID` sends nothing and verifies nothing.
 14. Self-check reports each failure mode.
+15. Sign-in history: five `login` audit rows render newest-first; an empty
+    `auth.audit_log_entries` degrades to `last_sign_in_at` plus
+    `signin_history=unavailable` instead of failing or printing noise.
 
 Existing `confirm_user_and_enroll` tests stay green unchanged.
 
@@ -688,6 +700,9 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
     `Reply-To: support@zerotohero.ca`.
 11. All 18 locale fixtures pass, and an unknown-label message asks for the
     address instead of verifying.
+12. Once Postgres audit-log storage is enabled, the digest lists the five most
+    recent sign-ins; before it is, the digest still sends and says the history
+    is unavailable.
 
 ## Rollout
 
@@ -717,17 +732,45 @@ capability the user already believes is on.
 5. **ALREADY_VERIFIED contents** — the report adds the last 5 sign-ins, saved
    words by language, and learning languages with level/hours (§ 3).
 6. **Digest** — already-verified notices batch into one daily email to Jon (§ 8).
+7. **Sign-in history** — enable Postgres audit-log storage in Supabase
+   (deployment step 8). The table is empty today only because that toggle is
+   off; no Flask change is needed.
+8. **Retention** — 90 days confirmed (§ 8), with older audit rows pruned to
+   match.
 
 ## Open questions
 
-1. **Sign-in history is not recorded yet.** `auth.audit_log_entries` has **0
-   rows**, so the digest can only print `last_sign_in_at` today and flags
-   `signin_history=unavailable`. Options: enable GoTrue audit logging, or write
-   a `user_login_events` row from Flask's `/auth/login` and `/auth/session`.
-   Which do you want? Until then the field degrades as described.
-2. **Retention** stays at 90 days because it is a correspondence cache, not a
-   record of truth (§ 8 lists exactly what it is used for). Say if you want it
-   shorter.
+None — every question raised on 2026-11-11 is answered above. Implementation
+remains: Phase A deployment (§ 10), then the pipe hardening (§ 2–8).
+
+## Related work (tracked here so it is not forgotten)
+
+### Supabase transactional email sender
+
+The pipe's own mail will come from `support@` (§ 7), but Supabase Auth still
+sends **confirm-signup, magic-link, invite, recovery, email-change,
+password-changed, reauthentication, and security-notification** emails from its
+own SMTP sender — today the Supabase default, not a `zerotohero.ca` address.
+Those are automated messages too, and the From line should match the address
+every UI link now points at.
+
+Tracked tasks:
+
+1. Configure **custom SMTP** (Authentication → Emails → SMTP settings) with
+   `Language Player <support@zerotohero.ca>` as the sender, using a dedicated
+   DreamHost mailbox credential stored only in the Supabase dashboard — never in
+   this repo.
+2. Verify SPF/DKIM/DMARC alignment for that sender and send a test of each
+   template. The reset-password "localhost" bug is already fixed (2026-08-05),
+   but re-check the redirect after the SMTP change.
+3. Update `docs/email-templates/*.html` if any template prints a contact
+   address; none does today.
+4. Acceptance: a real signup, magic-link, and password-reset email each show
+   `support@zerotohero.ca` as the sender, pass authentication, and land in the
+   inbox. Until then auth mail keeps the Supabase sender.
+
+Changing SMTP affects every auth email, so do it in a quiet window and re-test
+all flows.
 
 ## References
 
