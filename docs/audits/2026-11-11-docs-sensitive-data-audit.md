@@ -48,21 +48,31 @@ JSON, or database passwords. The `sk_test_…` / `whsec_…` mentions are ellips
 placeholders; the 64-hex strings in `docs/versioning/build-ledger.md` are
 artifact hashes.
 
-## Published history — the part git cannot fix
+## Published history — remediated 2026-11-11
 
-Items 1–5 were already on `origin/master`, so removing them from the tip does
-**not** unpublish them: GitHub still serves the old commits. Treat them as
-disclosed:
+Items 1–5 were already on `origin/master` at the time of the audit, so editing
+the tip did not unpublish them. Both remediation steps have now been taken:
 
-1. **Rotate the `tester.mary` / `tester.bob` passwords now.** They were public
-   while valid; changing the docs does not invalidate them. Rotate through the
-   GoTrue admin API and update `.env.e2e` only.
-2. **Decide on history.** Removing the addresses and UDIDs from history needs a
-   rewrite plus a force-push — destructive and outside this repo's "never push"
-   rule, so it needs an explicit decision. For a customer address already
-   public for weeks, rotation of anything sensitive is the higher-value action.
-3. Device UDIDs cannot be rotated; their exposure is low (they identify a
-   device, not an account), and the placeholders remain usable.
+1. **Credentials rotated.** `tester.mary` and `tester.bob` passwords were set to
+   new values through the GoTrue admin API and the new values verified by a
+   login (then logged out). The old values are dead; `.env.e2e` holds the
+   current ones.
+2. **History rewritten and force-pushed.** All refs were rewritten with
+   `git filter-repo --replace-text` (old `master` tip `c5bfa9c6`, new tip after
+   the rewrite), then `master` and the five remote feature branches were
+   force-pushed to their rewritten commits. A complete pre-rewrite backup
+   bundle was verified before the rewrite.
+
+Residual risk to understand:
+
+- GitHub may keep the old, now-unreachable commits addressable **by SHA** for a
+  while (and any clone or fork made before the rewrite still has them). The
+  repository has no forks today. If the bytes must disappear from GitHub
+  entirely, GitHub Support has to expire the cached objects; a force-push alone
+  does not.
+- Device UDIDs cannot be rotated; their exposure is low (they identify a
+  device, not an account), and the placeholders remain usable.
+- Anyone with an old clone should re-clone rather than merge.
 
 ## Repeating the audit
 
