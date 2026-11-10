@@ -635,7 +635,7 @@ Ways to mitigate:
   - 105 active paid users who paid since 2026-06-01: **92 in the correct paid
     group, 5 in the wrong group, 8 absent from MailerLite entirely**.
   - 12 lifetime purchases/upgrades since 2026-08-22 — **11 are in the `lifetime`
-    group**; the one miss (`redacted-customer@example.com`, 2026-09-26) bought
+    group**; the one miss (a 2026-09-26 lifetime buyer, address omitted) bought
     lifetime as their first action and never had a subscriber record.
   - ~27% of confirmed signups (Sept: 614 confirmed / 442 trial; Oct: 900 / 682)
     never receive a trial row, and therefore never receive a MailerLite record —
