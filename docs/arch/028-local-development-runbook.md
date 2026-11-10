@@ -164,8 +164,8 @@ login, video/channel APIs, and subtitle fetching.
 
 - `lsof -ti:3000` returns a PID
 - Open http://localhost:3000
-- Log in with the test credentials (Mary: `tester.mary@zerotohero.ca` /
-  `REDACTED_TEST_PASSWORD`)
+- Log in with the test credentials (Mary: `tester.mary@zerotohero.ca`, password
+  in `.env.e2e` as `E2E_MARY_PASS`)
 
 ### Logs
 

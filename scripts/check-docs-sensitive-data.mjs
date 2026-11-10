@@ -82,6 +82,21 @@ const SECRET_PATTERNS = [
 // e.g. "| Mary | `user@host` / `s3cretValue` |". Placeholders are excluded below.
 const CREDENTIAL_ROW_RE = /^\s*\|.*[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}.*\/\s*[`"'*_]{0,2}[A-Za-z0-9!@#$%^&*_-]{8,}\s*[`"'*_]{0,2}\s*\|/;
 const PASSWORD_ASSIGN_RE = /\b(?:password|passwd|pwd|secret|api[_-]?key|client[_-]?secret)\s*[:=]\s*[`"']?([^\s`"',;]{8,})/gi;
+// A password written as a bare backticked token in prose, near a credential
+// hint ("password", "test credentials", a test-account address). This is the
+// shape that let one password survive the first sweep:
+//   - Log in with the test credentials (Mary: `tester.mary@…` /
+//     `REDACTED_TEST_PASSWORD`)
+const BACKTICK_TOKEN_RE = /`([A-Za-z0-9!@#$%^&*_-]{10,40})`/g;
+const CREDENTIAL_HINT_RE = /password|passphrase|credential|\blog in\b|tester\.(?:mary|bob)@/i;
+// Tokens that are obviously not passwords.
+const NOT_A_PASSWORD_RES = [
+  /^[0-9a-f]{7,40}$/i, // commit/artifact hash
+  /^[A-Z][A-Z0-9_]{2,}$/, // ENV_VAR names (case-sensitive on purpose)
+  /^[a-z0-9.-]+\.[a-z]{2,}.*$/i, // domain or path
+  /^https?:/i,
+];
+
 const PLACEHOLDER_RE = /^(?:<|\$\{|\.\.\.|…|x{3,}|your|change-me|redacted|omitted)/i;
 // "password: appleid.apple.com" is prose about where to create an app-specific
 // password, not a value. Skip hostnames/URLs.
@@ -106,8 +121,10 @@ for (const file of files) {
   } catch {
     continue;
   }
-  text.split('\n').forEach((raw, i) => {
+  const lines = text.split('\n');
+  lines.forEach((raw, i) => {
     const line = i + 1;
+    const prevLine = i > 0 ? lines[i - 1] : '';
 
     for (const m of raw.matchAll(EMAIL_RE)) {
       const address = m[0];
@@ -138,8 +155,25 @@ for (const file of files) {
       if (PLACEHOLDER_RE.test(m[1]) || HOSTNAME_RE.test(m[1])) continue;
       add(file, line, 'password-like assignment', m[0].slice(0, 100));
     }
+
+    // Password-looking backticked token next to a credential hint.
+    const context = `${prevLine}\n${raw}`;
+    if (CREDENTIAL_HINT_RE.test(context)) {
+      for (const m of raw.matchAll(BACKTICK_TOKEN_RE)) {
+        const token = m[1];
+        if (NOT_A_PASSWORD_RES.some((re) => re.test(token)) || PLACEHOLDER_RE.test(token)) continue;
+        const classes = [/[a-z]/, /[A-Z]/, /[0-9]/].filter((re) => re.test(token)).length;
+        // Random-looking: lower + upper + digit, and not a code identifier.
+        if (classes < 3 || token.length < 12 || token.includes('*')) continue;
+        add(file, line, 'password-like literal', token);
+      }
+    }
   });
 }
+
+const unique = [...new Map(findings.map((f) => [`${f.file}:${f.line}:${f.value}`, f])).values()];
+findings.length = 0;
+findings.push(...unique);
 
 if (!QUIET) {
   console.log(`Scanned ${files.length} tracked doc files.`);

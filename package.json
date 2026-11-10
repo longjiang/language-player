@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:tokenizer-mobile": "vitest run --config vitest.mobile.config.ts",
     "test:redirects": "node scripts/check-redirects.mjs",
+    "check:docs": "node scripts/check-docs-sensitive-data.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",

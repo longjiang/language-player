@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-11
 **Scope**: every tracked documentation file that ships with the repository
-**Result**: current tip clean; 16 pre-existing findings; 1 action required outside git (rotate credentials)
+**Result**: current tip clean; 19 pre-existing findings; 1 action required outside git (rotate credentials)
 
 ## Scope and method
 
@@ -19,14 +19,17 @@ that get inlined into the apps). The scan looked for:
 
 Every distinct hit was then read in context before being classified. The scan is
 now repeatable: `node scripts/check-docs-sensitive-data.mjs` (exits 1 on
-findings). Run against the pre-fix tip it reports **16 findings**; against the
-current tree it reports none.
+findings). Run against the pre-fix tip it reports **19 findings**; against the
+current tree it reports none. The check's first version missed a password
+written as a bare backticked token in prose (ARCH-028), so a password-literal
+rule was added — the miss is why the check, not a generous allowlist, is the
+durable part of this audit.
 
 ## Findings
 
 | # | Finding | Where | Severity | Resolution |
 |---|---|---|---|---|
-| 1 | Two **live** test-account passwords (Mary, Bob), next to the login emails | `AGENTS.md` | **High** | Removed; values moved to the gitignored `.env.e2e` (`E2E_MARY_PASS`, `E2E_BOB_PASS`). Both accounts are confirmed and active on production |
+| 1 | Two **live** test-account passwords (Mary, Bob) in a table, plus one repeated in prose | `AGENTS.md` (table), `docs/arch/028-…` (prose) | **High** | Removed; values moved to the gitignored `.env.e2e` (`E2E_MARY_PASS`, `E2E_BOB_PASS`). Both accounts are confirmed and active on production |
 | 2 | A real MailerLite subscriber address, named in a migration note | `docs/specs/039-…` | **High** | Replaced with "one pre-cutover address … address omitted" |
 | 3 | A real customer address in the MailerLite audit snapshot | `docs/arch/022-…` | **High** | Replaced with the purchase date and shape (separate commit) |
 | 4 | Two Apple device UDIDs and a `devicectl` CoreDevice id | `docs/arch/028-…` (9), `docs/specs/064-…` | Medium | Replaced with `<ipad-udid>` / `<iphone-udid>` / `<ipad-devicectl-id>`; the runbook already documents how to read them |
