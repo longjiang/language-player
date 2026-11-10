@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SubscriptionManager } from '@/components/users/subscription-manager';
 import { AffiliateCard } from '@/components/users/affiliate-card';
 import { AdminPrivilegeControl } from '@/components/users/admin-privilege';
+import { EmailVerification } from '@/components/users/email-verification';
 import { DeleteUserDangerZone } from '@/components/users/delete-user';
 import { useT } from '@/hooks/use-t';
 import { fetchUserDetail } from '@/lib/admin-api';
@@ -49,6 +50,12 @@ function OverviewTab({ detail, onChanged }: { detail: UserDetail; onChanged: () 
           <div className="flex gap-2">
             <dt className="text-muted-foreground">{t('label.email')}:</dt>
             <dd className="break-all">{user.email}</dd>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <dt className="text-muted-foreground">{t('label.email_status')}:</dt>
+            <dd>
+              <EmailVerification user={user} onChanged={onChanged} />
+            </dd>
           </div>
           <div className="flex gap-2">
             <dt className="text-muted-foreground">{t('label.phone')}:</dt>

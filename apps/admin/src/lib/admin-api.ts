@@ -7,6 +7,7 @@ import type {
   DeleteUserResult,
   SubscriptionInput,
   UserDetail,
+  VerifyEmailResult,
 } from '@/types/admin';
 
 /**
@@ -110,6 +111,21 @@ export async function setUserAdmin(
     },
   );
   return parseJson<AdminPrivilegeResult>(res);
+}
+
+/**
+ * Confirm a user's email on their behalf (SPEC-060 § Manual email
+ * verification). Mirrors the verify_email@ support pipe: GoTrue confirms the
+ * address, then the trial + MailerLite hook runs for users with no
+ * subscription. Idempotent — an already-confirmed address returns
+ * `alreadyVerified: true` without re-running enrollment.
+ */
+export async function verifyUserEmail(userId: string): Promise<VerifyEmailResult> {
+  const res = await authenticatedFetch(
+    `${PYTHON_API_URL}/admin/users/${encodeURIComponent(userId)}/verify-email`,
+    { method: 'POST' },
+  );
+  return parseJson<VerifyEmailResult>(res);
 }
 
 /**

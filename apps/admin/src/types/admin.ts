@@ -18,6 +18,9 @@ export interface AdminUserSummary {
   createdAt: string | null;
   lastSignInAt: string | null;
   confirmedAt: string | null;
+  /** auth.users.email_confirmed_at — specifically the email, unlike
+   *  confirmedAt (LEAST of email/phone confirmation). */
+  emailConfirmedAt: string | null;
   directusId: number | null;
   subscriptions: SubscriptionSummary;
   savedWordsCount: number;
@@ -32,6 +35,15 @@ export interface AdminPrivilegeResult {
   firstName: string;
   lastName: string;
   isAdmin: boolean;
+}
+
+export interface VerifyEmailResult {
+  success: boolean;
+  userId: string;
+  email: string;
+  emailConfirmedAt: string | null;
+  /** True when the address was already confirmed, so nothing changed. */
+  alreadyVerified: boolean;
 }
 
 export interface DeleteUserResult {

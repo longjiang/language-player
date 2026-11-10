@@ -5,8 +5,9 @@
 - **Feature**: Admin console web app (`apps/admin`) with user management
 - **Status**: complete
 - **Created**: 2026-08-09
-- **Updated**: 2026-11-10 — accounts with no user-data rows (no `user_settings`
-  row) render instead of failing with a 500
+- **Updated**: 2026-11-10 — email-verification status and a manual "Verify
+  email" action; accounts with no user-data rows (no `user_settings` row)
+  render instead of failing with a 500
 - **Previously updated**: 2026-11-03 — permanent user deletion (Danger zone) added
 - **Previously updated**: 2026-10-22 — `/` redirects to `/analytics` (SPEC-100)
 - **ROADMAP Phase**: Phase 10: Admin Console
@@ -68,9 +69,10 @@ All routes require `Authorization: Bearer <Supabase access token>` with
 | Method | Route | Description |
 |---|---|---|
 | GET | `/admin/users/search?q=&limit=` | Substring search across auth.users (id, email, phone, first/last name), user_id_map (legacy id, email), and user_subscriptions (id, payment email/id/customer id, notes). Returns compact user rows with subscription summary, saved-word count, watch count, and total hours. |
-| GET | `/admin/users/<user_id>` | Full profile (auth + legacy ids, admin flag, dates) plus subscriptions, per-L2 progress, saved words (totals, per-L2 counts, recent 50 with contexts), watch history (recent 30), likes, playlists, notes, phrases, bookshelf, history, SRS, settings, and acquisition survey. Accepts a legacy Directus numeric id too. |
+| GET | `/admin/users/<user_id>` | Full profile (auth + legacy ids, admin flag, dates, email-verification state as `emailConfirmedAt`) plus subscriptions, per-L2 progress, saved words (totals, per-L2 counts, recent 50 with contexts), watch history (recent 30), likes, playlists, notes, phrases, bookshelf, history, SRS, settings, and acquisition survey. Accepts a legacy Directus numeric id too. |
 | POST | `/admin/users/<user_id>/subscriptions` | Grant a subscription. `type` is required (`monthly` / `annual` / `lifetime` / `trial`); `expires_on` is auto-computed from the plan when omitted; optional `status`, payment fields, and `notes`. |
 | DELETE | `/admin/users/<user_id>` | Permanently delete the account: GoTrue admin delete (cascades every `auth_user_id`-owned row) + best-effort MailerLite GDPR-forget. Four guards can refuse it — see § Danger zone. Accepts a legacy Directus numeric id too. Returns `{success, userId, email}`. |
+| POST | `/admin/users/<user_id>/verify-email` | Confirm the user's email on their behalf via the GoTrue admin API (`email_confirm`), then run the trial + MailerLite hook. Idempotent. See § Manual email verification. |
 | PATCH | `/admin/users/<user_id>/admin` | Grant (`{"isAdmin": true}`) or remove (`{"isAdmin": false}`) a user's admin privilege. Fetches the current GoTrue `app_metadata`, merges `is_admin`, and persists via the GoTrue admin API. Admins cannot demote themselves (400). |
 | PATCH | `/admin/subscriptions/<id>` | Change subscription fields. When `type` changes and `expires_on` is not supplied, the expiry is recomputed from the new plan. |
 | DELETE | `/admin/subscriptions/<id>` | Remove a subscription entirely. |
@@ -78,6 +80,33 @@ All routes require `Authorization: Bearer <Supabase access token>` with
 Subscription writes reuse `utils_subscription.add_subscription` /
 `update_subscription` / `delete_subscription`, so MailerLite group assignment
 and the existing `user_subscriptions` row shape are preserved.
+### Manual email verification
+
+Admins can confirm a user's email address from the Overview tab instead of
+waiting for the user to click the confirmation link. `POST
+/admin/users/<user_id>/verify-email` calls the GoTrue admin API with
+`{"email_confirm": true}`, then runs the same trial + MailerLite hook as
+`/auth/verify-email` and the `verify_email@zerotohero.ca` support pipe
+(`auto_verify_email.py`, SPEC-039 M5). A manually verified account therefore
+ends up in the state of one that used the link: email confirmed, 7-day trial
+when the user has no subscription of any type, MailerLite enrollment.
+
+The action is idempotent. The endpoint checks `auth.users.email_confirmed_at`
+first: an already-confirmed address returns `alreadyVerified: true` with no
+GoTrue call and no enrollment. The trial hook is self-limiting too — it only
+grants when the user has no subscription — so a retry cannot double-grant.
+
+The profile shows **Email status** from `emailConfirmedAt`, which is
+`auth.users.email_confirmed_at`. Do not use `confirmedAt` for this: Supabase
+generates that column as `LEAST(email_confirmed_at, phone_confirmed_at)`, so a
+phone-verified user would read as email-verified.
+
+`verify_user_email()` returns `{success, userId, email, emailConfirmedAt,
+alreadyVerified}`; 404 when the user does not exist, 400 when the account has
+no email address (phone-only signup), 500 when GoTrue refuses or is
+unreachable. The route logs the target email, `already_verified`, and the
+calling admin.
+
 
 ## Admin App (`apps/admin`)
 
@@ -116,8 +145,9 @@ and the existing `user_subscriptions` row shape are preserved.
   saved-word count, watch count, hours, and creation date. Rows link to the
   user page.
 - `/users/[id]` — user detail page with four tabs:
-  - **Overview**: profile (email, phone, IDs, dates, acquisition source),
-    subscription manager (grant/edit/remove dialogs), SRS summary, settings
+  - **Overview**: profile (email, phone, IDs, dates, acquisition source,
+    email-verification status with a manual "Verify email" action), subscription
+    manager (grant/edit/remove dialogs), SRS summary, settings
     presence, and admin-privilege control (grant/remove admin with a confirm
     dialog; self-demotion is disabled), plus the Danger zone card that
     permanently deletes the account.
