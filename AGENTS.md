@@ -399,6 +399,12 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 
 ### When You Make Changes
 
+- **Docs are public — never include real user data.** `docs/` is tracked in a
+  public GitHub repository. Describe support cases, customer records, and
+  testimonials with synthetic identifiers (`user@example.com`,
+  `student@university.example`, `<uuid>`); never paste a real user's name,
+  address, id, or subscription details. Project test accounts
+  (`tester.mary@zerotohero.ca`, `tester.bob@zerotohero.ca`) are fine.
 - Update `docs/specs/` if you implement a new feature or change behavior
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions

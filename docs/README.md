@@ -136,6 +136,7 @@ docs/
 | 106 | [Derived Content Data Maintenance — One Pipeline, Cheapest Guarantee](specs/106-derived-data-maintenance.md) | 9 | ✅ Complete |
 | 107 | [Tag Search and Video-Tag Pills](specs/107-tag-search-and-video-tag-pills.md) | 3 | ✅ Complete |
 | 108 | [Web Function Invocation Budget — Cut Netlify Serverless Usage](specs/108-web-function-invocation-budget.md) | — | 🔄 In progress |
+| 110 | [Email Verification Support Pipe — Sender Matching, LLM Triage, Outcome Notifications](specs/110-email-verification-support-pipe.md) | 9 | ⬜ Draft |
 
 ## ADRs
 
