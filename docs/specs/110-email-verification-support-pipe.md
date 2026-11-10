@@ -98,6 +98,30 @@ The forwarded branch then passes that address straight to
 `handle_mismatch`. A correct implementation would never confirm an address the
 sender does not control.
 
+### Transport (DreamHost panel, confirmed 2026-11-11)
+
+The mailbox's **Message Filters** screen confirms the panel side:
+
+- `verify_email@zerotohero.ca` has a filter that forwards a copy of mail whose
+  **subject contains `Fwd`** to shell account `dh_rqe96h` on `vps14733`.
+- A preceding filter copies the same mail into a `Fwd` folder.
+- `~/.forward.postfix` on `dh_rqe96h` pipes the raw message into the script.
+
+So forwarding is live. But the `Fwd` gate is a transport bug with two effects
+the earlier draft missed:
+
+1. **Only subjects containing `Fwd` reach the pipe.** Outlook forwards as
+   `FW:` and localized clients use prefixes such as `WG:` (de), `TR:` (fr/it),
+   `转发:` (zh), `転送:` (ja), `전달:` (ko). Those messages stay in the mailbox
+   and never reach the script, whatever § 1 accepts. Fix it in the filter, not
+   the script: forward **all** mail addressed to `verify_email@` — the mailbox
+   is dedicated to this pipe — and let the script's subject/intent checks
+   decide.
+2. **A reply to an automated message is `Re: …` and is therefore not piped.**
+   If `Reply-To` becomes `verify_email@` so a retry needs no human, the filter
+   must match `Email Verification Issue` as well, or (better) forward
+   everything.
+
 ## Detection across locales (2026-11-11)
 
 **Scope of "our languages".** `SUPPORTED_L1S` has **18** interface locales
@@ -246,6 +270,11 @@ stdin (raw MIME)
   `From` is our own support sender and the message is not forwarded; the body
   is empty; the subject matches neither `Email Verification Issue` nor a
   forward prefix (preserves today's subject filter).
+- **Transport reality:** the DreamHost filter only delivers messages whose
+  subject contains `Fwd` (see Transport above), so the direct-message branch is
+  unreachable until that filter is broadened. The script keeps both branches —
+  they are what will run once the filter forwards everything — but the
+  deployment step must not assume direct mail is already arriving.
 - Transient infrastructure failures (DB down, config missing) exit **75**
   (`EX_TEMPFAIL`) so postfix retries instead of bouncing.
 
@@ -292,24 +321,28 @@ Before the match rule and before any verification, look up `requested` with
 API (`GET /auth/v1/admin/users/<id>`) and check `email_confirmed_at`. If it is
 set, there is nothing to verify and **the user must not hear from us at all**:
 
-- Exactly one email, `To: jon.long@zerotohero.ca` only. **No** `To`, `Cc`, or
-  `Bcc` on any requester/requested address, and no copy of it in the thread
-  that is later sent to the user.
-- Subject: `[support] Already verified: <requested address>`.
+- **No immediate email.** Append the case to the Jon-only **daily digest**
+  queue (§ 8); one digest per day is sent to `jon.long@zerotohero.ca` only.
+  **No** `To`, `Cc`, or `Bcc` on any requester/requested address, and no copy
+  of it in the thread that is later sent to the user.
+- Digest entry subject line: `Already verified: <requested address>`.
 - No GoTrue call, and no trial/MailerLite run (that hook ran when the account
   was first verified; re-running it is pointless).
 - Thread status `already_verified`, `notified_user: false`.
 - Short-circuit: return before the match rule, so even a mismatched requester
   gets silence rather than the "reply from `<requested>`" instruction.
 
-The admin report contains, in this order:
+The digest entry contains, in this order:
 
 | Field | Source |
 |---|---|
 | Requested address, `auth.users.id` | `_user_by_email` |
 | `email_confirmed_at` | GoTrue admin `GET /auth/v1/admin/users/<id>` |
 | `created_at`, `last_sign_in_at` | same |
-| Role, banned state (`banned_until` or "active") | same |
+| **Last 5 sign-ins** | `auth.audit_log_entries` (`payload->>'action' = 'login'`, newest first). **That table is empty today** (0 rows: GoTrue audit logging is not on), so the entry prints `last_sign_in_at` and `signin_history=unavailable` until it is enabled or a login-event table is added — see Open questions |
+| Role, banned state (`banned_until` or "active") | GoTrue admin |
+| **Saved words**: total, per-language counts (top 5 + "other") | `public.user_saved_words` grouped by `l2` |
+| **Learning languages**: each `l2`, level, total hours, last activity | `public.user_progress` (`level`, `time_ms`, `updated_at`) |
 | Subscription summary — type, status, `expires_on`, `created_on`, payment processor — or "none" | `usub.get_subscriptions_by_owner(user_id)` |
 | Whether the requester address equals the account owner, and `possible_probe=1` when it does not | `requested == requester` |
 | Original subject, `Message-ID`, and the quoted thread | inbound message + thread store |
@@ -352,7 +385,7 @@ requester may not own, and the retry email makes the exact match achievable.
 
 | Condition | Decision | Verify? | Notify |
 |---|---|---|---|
-| Account exists and `email_confirmed_at` is set (**checked first**, § 3) | ALREADY_VERIFIED | no | **Jon only — user silent** |
+| Account exists and `email_confirmed_at` is set (**checked first**, § 3) | ALREADY_VERIFIED | no | **queued for the Jon-only daily digest — user silent** |
 | LLM `intent=other` or no address identifiable | UNPARSEABLE | no | reply asking for the address, Cc Jon |
 | `requested != requester`, first failure in this thread | MISMATCH_RETRY | no | reply: "reply from `<requested>`", To both, Cc Jon |
 | `requested != requester`, second or later failure | ESCALATE | no | reply: human will follow up; internal case summary to Jon |
@@ -371,12 +404,12 @@ has no subscription) and its failures never change the outcome.
 
 | Field | Value |
 |---|---|
-| `From` | `jon.long@zerotohero.ca` (unchanged; DKIM-aligned with DreamHost) |
-| `Reply-To` | `jon.long@zerotohero.ca` |
-| `To` | requester address **and** requested address, deduplicated, omitted when equal — **except ALREADY_VERIFIED, which is `jon.long@zerotohero.ca` only** |
+| `From` | `Language Player Support <support@zerotohero.ca>` (all automated mail; SPF already includes DreamHost) |
+| `Reply-To` | `support@zerotohero.ca` |
+| `To` | requester address **and** requested address, deduplicated, omitted when equal — **except ALREADY_VERIFIED, which is the daily digest to `jon.long@zerotohero.ca` only** |
 | `Cc` | `jon.long@zerotohero.ca` |
-| `Subject` | `Re: <subject with repeated Re:/Fwd: prefixes collapsed>`; ALREADY_VERIFIED uses `[support] Already verified: <address>` |
-| `In-Reply-To` | latest inbound `Message-ID` |
+| `Subject` | `Re: <subject with repeated Re:/Fwd: prefixes collapsed>`; the ALREADY_VERIFIED digest uses `[support] Already verified — <N> case(s)` |
+| `In-Reply-To` | latest inbound `Message-ID` (digest entry keeps the original as a quoted reference) |
 | `References` | all inbound `Message-ID`s in the thread, in order |
 | `Message-ID` | `<uuid@zerotohero.ca>` (generated, recorded) |
 | Body | outcome paragraph, next step, then every stored requester message quoted (`> `) with `On <date>, <from> wrote:` |
@@ -386,7 +419,7 @@ Recipients per outcome:
 
 | Outcome | `To` | `Cc` | User sees anything? |
 |---|---|---|---|
-| ALREADY_VERIFIED | `jon.long@zerotohero.ca` | — | **no** |
+| ALREADY_VERIFIED | `jon.long@zerotohero.ca` (daily digest) | — | **no** |
 | VERIFIED / GOTRUE_ERROR / MISMATCH_RETRY / ESCALATE | requester + requested | Jon | yes |
 | NO_ACCOUNT | requester | Jon | yes (requested address not mailed) |
 | UNPARSEABLE | requester | Jon | yes |
@@ -406,6 +439,13 @@ Recipients per outcome:
 
 Delivery is best-effort per recipient: one failure is logged and does not stop
 the other recipient or the GoTrue action.
+
+**Reply path.** `Reply-To: support@` means a user replying to an automated
+message lands in the support mailbox, and the mailbox filter only pipes
+subjects containing `Fwd` — so that reply is not processed until the filter is
+broadened (Transport, above). Until it is, the retry instruction still needs Jon
+to forward. The deployment step (§ 10) must either broaden the filter or accept
+that human hop.
 
 ### 8. Thread state
 
@@ -441,6 +481,40 @@ pruned on write, atomic replace (write temp + `os.replace`). `notified_user` is
 requirement was honoured. The file is plain text containing user
 correspondence — restrict permissions to `0600` and keep it out of the git
 checkout (it lives in `$HOME`, not in `/home/dh_rqe96h/zerotohero-python`).
+
+**What the thread state is for** (it is not a CRM; it exists so the pipe can be
+stateless per message yet behave consistently):
+
+1. **Attempt counting** — distinguishes the first mismatch (ask the user to
+   reply from the address) from the second (escalate). Without it every
+   mismatch would retry forever.
+2. **History for quoting** — the automated replies must include every earlier
+   message the requester sent, even though each run only receives one email.
+3. **Rate limiting** — max 3 outbound mails per address per 24 h, so the pipe
+   cannot be used as a mail amplifier.
+4. **Idempotency** — if postfix redelivers the same `Message-ID`, the pipe sees
+   it in `outbound` and does not send twice or verify twice.
+5. **Digest queue** — ALREADY_VERIFIED entries accumulate here for the daily
+   digest, and `notified_user: false` proves the silence rule held.
+
+90 days is kept: it covers any realistic retry window, and the files contain
+correspondence, so shorter is better than longer. A 24 h rate-limit window and
+the digest are the only things that need days, not months.
+
+### Digest queue
+
+`$AUTO_VERIFY_STATE_DIR/already_verified.jsonl`, one JSON object per case
+(`received_at`, `requested`, `requester`, `confirmed_at`, `possible_probe`,
+report body). A DreamHost cron runs once a day at 09:00 local:
+
+```
+auto_verify_email.py --send-digest
+```
+
+which sends one email to `jon.long@zerotohero.ca` from `support@`, subject
+`[support] Already verified — <N> case(s)`, body = every queued entry, then
+truncates the queue. A run that finds an empty queue sends nothing. If sending
+fails, the queue is left intact for the next day.
 
 ### 9. Logging
 
@@ -486,6 +560,14 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    reason to the log and exit 75 (retry), not 1 (bounce).
 5. Log rotation for `email_processing.log` (DreamHost cron or `logrotate`) so
    the file does not grow unbounded like `application.log` (2.5 GB today).
+6. **Broaden the DreamHost filter.** It currently matches `Subject contains
+   Fwd`; change it to forward *all* mail to `verify_email@` to `dh_rqe96h`
+   (panel: Mail → Message Filters). Without this, `FW:`/localized forwards and
+   replies to `support@` never reach the pipe (Transport, above).
+7. Add the daily digest cron (`auto_verify_email.py --send-digest`, 09:00) and
+   make sure `support@zerotohero.ca` exists and can send from the VPS
+   (`sendmail -f support@zerotohero.ca` to your own address; SPF already
+   includes DreamHost).
 
 Verify by forwarding one real message and confirming both
 `logs/email_processing.log` and a reply in Jon's mailbox.
@@ -524,19 +606,23 @@ Unit (pytest, no network — extend `test_auto_verify_email.py`):
 6. LLM returns invalid JSON / times out → deterministic fallback, same
    decisions as 2–4.
 7. Decision table coverage: NO_ACCOUNT, GOTRUE_ERROR.
-8. ALREADY_VERIFIED: an account with `email_confirmed_at` set produces exactly
-   one message, `To: jon.long@` only, containing the confirmation date, account
-   status and subscription summary; **no message to either user address**;
-   GoTrue is not called and the trial/MailerLite hook does not run. The same is
-   true when the requester is a different address (silence wins over the retry
-   email).
-9. Notification recipients: dedupe when addresses match, both when they differ,
-   Jon always `Cc`, requested address skipped for NO_ACCOUNT, Jon-only for
-   ALREADY_VERIFIED.
-10. Threading: `In-Reply-To`/`References` chain, quoted history contains every
+8. ALREADY_VERIFIED: an account with `email_confirmed_at` set appends one entry
+   to the digest queue and sends **no immediate mail** — nothing to either user
+   address — with the confirmation date, account status, subscription summary,
+   saved-word totals by language, and learning languages; GoTrue is not called
+   and the trial/MailerLite hook does not run. The same holds when the requester
+   is a different address (silence wins over the retry email).
+9. Digest: `--send-digest` renders queued entries into one mail to
+   `jon.long@` only, truncates the queue, sends nothing for an empty queue, and
+   leaves the queue intact when sendmail fails.
+10. Notification recipients: dedupe when addresses match, both when they differ,
+    Jon always `Cc`, requested address skipped for NO_ACCOUNT, digest-only for
+    ALREADY_VERIFIED; `From` is `support@zerotohero.ca` on every outcome.
+11. Threading: `In-Reply-To`/`References` chain, quoted history contains every
     stored message, `0600` permissions.
-11. Loop guards: `mailer-daemon`, `Auto-Submitted`, our own address.
-12. Self-check reports each failure mode.
+12. Loop guards: `mailer-daemon`, `Auto-Submitted`, our own address.
+13. Repeat delivery of the same `Message-ID` sends nothing and verifies nothing.
+14. Self-check reports each failure mode.
 
 Existing `confirm_user_and_enroll` tests stay green unchanged.
 
@@ -562,12 +648,16 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
    bouncing silently.
 7. No forwarded message reaches `confirm_user_and_enroll` without
    `requested == requester`.
-8. Requesting verification for an already-confirmed address sends exactly one
-   email, to Jon, stating the confirmation date, the account status block, and
-   the subscription summary (or "none"); neither the sender nor the requested
-   address receives any mail, and no GoTrue write occurs.
-9. All 18 locale fixtures pass, and an unknown-label message asks for the
-   address instead of verifying.
+8. Requesting verification for an already-confirmed address sends **no
+   immediate mail**; the case appears once in the next daily digest with the
+   confirmation date, account status, subscription summary (or "none"),
+   saved-word totals by language, and learning languages. Neither the sender nor
+   the requested address receives any mail, and no GoTrue write occurs.
+9. The digest is sent once per day to Jon only, and an empty day sends nothing.
+10. Every automated message has `From: support@zerotohero.ca` and
+    `Reply-To: support@zerotohero.ca`.
+11. All 18 locale fixtures pass, and an unknown-label message asks for the
+    address instead of verifying.
 
 ## Rollout
 
@@ -580,28 +670,34 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
 Phase A is independent: it can ship before any hardening and restores the
 capability the user already believes is on.
 
+## Resolved decisions (2026-11-11)
+
+1. **DreamHost filter** — confirmed from the panel screenshots: it forwards
+   subjects containing `Fwd` to `dh_rqe96h` on `vps14733`, and a preceding
+   filter files the same mail into `Fwd`. Broadening it to forward all mail is
+   deployment step § 10.6.
+2. **NO_ACCOUNT** — the requested address is not mailed; the open-relay guard
+   stands (§ 7).
+3. **Sender** — every automated message uses
+   `Language Player Support <support@zerotohero.ca>`, and every support address
+   in the web, mobile, and Classic UIs now points there too. SPF for
+   `zerotohero.ca` already includes DreamHost; § 10.7 verifies an actual send.
+4. **Escalation** — always require the reply-from-the-requested-address step.
+   `explains_mismatch` is recorded and never authorises a verification.
+5. **ALREADY_VERIFIED contents** — the report adds the last 5 sign-ins, saved
+   words by language, and learning languages with level/hours (§ 3).
+6. **Digest** — already-verified notices batch into one daily email to Jon (§ 8).
+
 ## Open questions
 
-1. Is the DreamHost mailbox filter for `verify_email@` still forwarding to the
-   shell account? The shell side is confirmed; the panel side is not readable
-   from here.
-2. Should the requested address be mailed when no account exists? Proposed: no
-   (§ 7), to keep the pipe from being an open relay.
-3. `From:` should perhaps become `Language Player Support
-   <support@zerotohero.ca>` once SPF/DKIM for that sender is confirmed. Current
-   proposal keeps `jon.long@zerotohero.ca`.
-4. Retention: 90 days for thread state — acceptable?
-5. Escalation threshold: first mismatch → retry, second → escalate. Should a
-   clearly explained mismatch (e.g. "I lost access to the school inbox") skip
-   straight to escalation, or always require the reply-from-that-address step?
-   Proposed: always require it; the LLM's `explains_mismatch` is recorded but
-   never authorises a verification.
-6. ALREADY_VERIFIED report contents: the proposed "status" block is
-   `email_confirmed_at`, `created_at`, `last_sign_in_at`, role, banned state,
-   and the subscription summary. Is there anything else Jon wants in that mail
-   (e.g. last 5 sign-ins, saved-word count, learning languages)?
-7. If one person writes repeatedly about an already-confirmed account, should
-   the Jon-only notices batch into a daily digest instead of one mail each?
+1. **Sign-in history is not recorded yet.** `auth.audit_log_entries` has **0
+   rows**, so the digest can only print `last_sign_in_at` today and flags
+   `signin_history=unavailable`. Options: enable GoTrue audit logging, or write
+   a `user_login_events` row from Flask's `/auth/login` and `/auth/session`.
+   Which do you want? Until then the field degrades as described.
+2. **Retention** stays at 90 days because it is a correspondence cache, not a
+   record of truth (§ 8 lists exactly what it is used for). Say if you want it
+   shorter.
 
 ## References
 
