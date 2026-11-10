@@ -26,7 +26,7 @@ export default function GoProErrorPage() {
         <Link href="/language-select">
           <Button variant="outline">{t('action.try_again')}</Button>
         </Link>
-        <a href="mailto:jon.long@zerotohero.ca">
+        <a href="mailto:support@zerotohero.ca">
           <Button>
             {t('action.email_support')}
           </Button>

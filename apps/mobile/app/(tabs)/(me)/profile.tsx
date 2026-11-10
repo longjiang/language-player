@@ -303,7 +303,7 @@ export default function ProfileScreen() {
               <Text className="text-center text-xs text-muted-foreground">
                 {t('msg.money_back_guarantee')}
               </Text>
-              <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')}>
+              <Pressable onPress={() => Linking.openURL('mailto:support@zerotohero.ca')}>
                 <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
               </Pressable>
             </View>

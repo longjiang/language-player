@@ -238,7 +238,7 @@ export default function ProfilePage() {
                 {t('action.upgrade_to_pro')} <ArrowRight className="h-3 w-3" />
               </Link>
               <p className="mt-2 text-xs text-muted-foreground">
-                {t('msg.money_back_guarantee')} <a href="mailto:jon.long@zerotohero.ca" className="underline">{t('action.contact_us')}</a>
+                {t('msg.money_back_guarantee')} <a href="mailto:support@zerotohero.ca" className="underline">{t('action.contact_us')}</a>
               </p>
             </div>
           </div>

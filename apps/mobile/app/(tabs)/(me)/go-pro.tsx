@@ -594,7 +594,7 @@ export default function GoProScreen() {
               <Text className="text-center text-xs text-muted-foreground">
                 {t('msg.money_back_guarantee')}
               </Text>
-              <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')}>
+              <Pressable onPress={() => Linking.openURL('mailto:support@zerotohero.ca')}>
                 <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
               </Pressable>
             </View>
@@ -618,7 +618,7 @@ export default function GoProScreen() {
       </Card>
 
       <Text className="mt-6 text-center text-xs text-muted-foreground">
-        {t('msg.contact_support_email', { email: 'jon.long@zerotohero.ca' })}
+        {t('msg.contact_support_email', { email: 'support@zerotohero.ca' })}
       </Text>
       </ScrollView>
     </PageContainer>

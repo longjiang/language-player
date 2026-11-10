@@ -15,7 +15,7 @@ export default function GoProErrorPage() {
   const { isSm } = useResponsive();
 
   const handleEmailSupport = () => {
-    Linking.openURL('mailto:jon.long@zerotohero.ca');
+    Linking.openURL('mailto:support@zerotohero.ca');
   };
 
   return (

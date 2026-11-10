@@ -520,7 +520,7 @@ export default function GoProPage() {
           {/* Money-back guarantee */}
           <p className="mt-4 text-center text-xs text-muted-foreground">
             {t('msg.money_back_guarantee')}{' '}
-            <a href="mailto:jon.long@zerotohero.ca" className="underline">
+            <a href="mailto:support@zerotohero.ca" className="underline">
               {t('action.contact_us')}
             </a>
           </p>

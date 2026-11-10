@@ -144,7 +144,7 @@ export function AboutDialog({
           <LinkRow
             icon={Mail}
             label={t('action.email_support')}
-            onPress={() => openLink('mailto:jon.long@zerotohero.ca')}
+            onPress={() => openLink('mailto:support@zerotohero.ca')}
           />
           <LinkRow
             icon={MessageCircle}

@@ -125,7 +125,7 @@ export function AboutContent({
           <LinkRow
             icon={Mail}
             label={t('action.email_support')}
-            href="mailto:jon.long@zerotohero.ca"
+            href="mailto:support@zerotohero.ca"
             external
           />
           <LinkRow
