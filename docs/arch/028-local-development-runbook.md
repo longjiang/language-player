@@ -396,7 +396,7 @@ is found. Check in this order:
    these outside a restricted sandbox:
    `xcrun devicectl list devices`
 2. Get each device's **hardware UDID**: the `Identifier` printed by
-   `devicectl` is a CoreDevice UUID (e.g. `2DFF9AA2-…`), which is **not** the
+   `devicectl` is a CoreDevice UUID (e.g. `<devicectl-uuid>`), which is **not** the
    UDID stored in provisioning profiles. Use:
    `xcrun devicectl list devices --json-output /tmp/devices.json`
    and read `hardwareProperties.udid` (e.g. `<ipad-udid>`).
@@ -747,6 +747,11 @@ profiles). Known devices:
 |---|---|
 | iPad Air 11-inch M4 | `<ipad-udid>` |
 | iPhone 15 Pro Max | `<iphone-udid>` |
+
+The real UDIDs are device identifiers and are deliberately not committed.
+Read them with
+`xcrun devicectl list devices --json-output /tmp/devices.json`
+(`hardwareProperties.udid`, per step 2 above).
 
 **2. Start Metro with the current IP** (check `lsof -ti:8081` first — one
 instance only)

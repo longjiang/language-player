@@ -165,8 +165,12 @@ Use these to log in during local development:
 
 | | |
 |---|---|
-| **Mary** | `tester.mary@zerotohero.ca` / `REDACTED_TEST_PASSWORD` |
-| **Bob** | `tester.bob@zerotohero.ca` / `REDACTED_TEST_PASSWORD` |
+| **Mary** | `tester.mary@zerotohero.ca` |
+| **Bob** | `tester.bob@zerotohero.ca` |
+
+The passwords live in the gitignored `.env.e2e` (`E2E_MARY_PASS`,
+`E2E_BOB_PASS`), never here: this file is in a public repository, and both
+accounts are live and confirmed on production.
 
 ### Pricing Tiers
 

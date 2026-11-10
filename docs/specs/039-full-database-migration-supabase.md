@@ -1160,7 +1160,8 @@ end-to-end yet:
   running until the GoTrue cutover.
 - Since the 2026-08-05 cutover, **no real Language Player signup has been
   added to MailerLite**: the only LP-group subscriber at cutover was
-  `redacted-subscriber@example.com` (00:08, numeric ID `86190`, `disengaged`),
+  one pre-cutover address (00:08, numeric ID `86190`, `disengaged`; address
+  omitted — this repo is public),
   and the only post-fix one is the bounced test account.
 - Root cause: the MailerLite `user_id` field is a **NUMBER** type, so it
   cannot store an `auth.users` UUID. The M1/M2 hook passes the UUID, but
