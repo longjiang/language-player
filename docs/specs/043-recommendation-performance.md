@@ -181,11 +181,11 @@ Verified live (ef=200, discovery, all levels — `tmp/test_r6_generalize.py`):
 | User (signal) | current music-nbrs / survivors | non-music vector music-nbrs / survivors |
 |---|---|---|
 | jon (8 likes, 73 nm) | 96 % / 6 (fallback) | 0–4 % / 190–198 |
-| user-a (hist 21) | 97 % / 5 | 11 % / 177 |
-| user-b (hist 63) | 100 % / 0 | 18 % / 158 |
-| user-c (hist 21) | 100 % / 1 | 16 % / 165 |
-| user-d (hist 109) | 5 % / 183 | 4 % / 184 (no regression) |
-| user-e (hist 35) | 0 % / 204 | 0 % / 206 (no regression) |
+| user A (hist 21) | 97 % / 5 | 11 % / 177 |
+| user B (hist 63) | 100 % / 0 | 18 % / 158 |
+| user C (hist 21) | 100 % / 1 | 16 % / 165 |
+| user D (hist 109) | 5 % / 183 | 4 % / 184 (no regression) |
+| user E (hist 35) | 0 % / 204 | 0 % / 206 (no regression) |
 
 Rescues starved users, no regression for healthy ones, and yields high-difficulty
 neighbors (jon: 145–160 L7 survivors vs 0) — covering the high-level band starvation that
