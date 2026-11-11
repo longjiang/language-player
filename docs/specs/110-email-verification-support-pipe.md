@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-110
 - **Feature**: `verify_email@zerotohero.ca` support pipe (`auto_verify_email.py`) — repair, sender-identity hardening, and success/failure notifications
-- **Status**: draft — awaiting approval before implementation
+- **Status**: in progress — Phase A and Phase B shipped 2026-11-11; one live forward pending
 - **Created**: 2026-11-11
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (auth/support tooling)
 - **Governing docs**: [SPEC-039 § M5](../specs/039-full-database-migration-supabase.md), [ADR-0023](../adr/0023-proxy-supabase-auth-through-flask.md)
@@ -103,6 +103,20 @@ the account the user asked about. That is the failure Phase B fixes.
 above is unchanged until Phase B, so do **not** broaden the DreamHost filter
 (§ 10.6) or trust auto-verification yet — the filter staying `Fwd`-only is
 load-bearing while the legacy parser is live.
+
+### Phase B deployed (2026-11-11)
+
+| Check | Result |
+|---|---|
+| Unit tests | **38 passed** — 18 locale fixtures, LLM rejection of fabricated addresses, decision table, thread state, digest, copy guard, sendmail |
+| Production `--selfcheck` | 5/5 (config, database, GoTrue, state dir, sendmail) |
+| Production dry run (`AUTO_VERIFY_DRY_RUN=1`) | real DeepSeek call → `source=llm`, requester `sender@example.com`, requested `student@university.example`, `MISMATCH_RETRY`, one `.eml` written, no send and no GoTrue write |
+| Digest cron | `0 16 * * *` server time (16:00 PST = 09:00 JST; one hour early during US daylight saving) |
+| Filter | **still `Fwd`-only by design** — step 6 is now safe to apply, but it is a panel change |
+
+The legacy parser is gone: identification is LLM + deterministic cross-checks,
+and a message only reaches `confirm_user_and_enroll` when the requested address
+equals the requester's.
 
 ### Reproduced extraction defect
 
@@ -614,10 +628,9 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    once the hardened parser ships: with the legacy parser live, a broadened
    filter would feed it `FW:`/localized forwards and replies it cannot parse
    safely. Without the change, those never reach the pipe (Transport, above).
-7. Add the daily digest cron (`auto_verify_email.py --send-digest`, 09:00) and
-   make sure `support@zerotohero.ca` exists and can send from the VPS
-   (`sendmail -f support@zerotohero.ca` to your own address; SPF already
-   includes DreamHost).
+7. **Done 2026-11-11:** daily digest cron installed at 16:00 server time
+   (09:00 JST; one hour earlier during PDT), and `support@zerotohero.ca`
+   confirmed to send and receive from the VPS.
 8. **Leave "Write audit logs to the database" OFF.** The dashboard's own note
    is accurate: Supabase keeps Auth logs outside the database either way, and
    the toggle only adds a permanent copy of *every* auth event to
@@ -736,7 +749,7 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
 | Phase | Work | Gate |
 |---|---|---|
 | A (P0) — **shipped 2026-11-11** | Wrapper script, `.forward.postfix`, `--selfcheck`, startup guard, log rotation, `support@` sender | Selfcheck 5/5 on production; ignored-message smoke test passes |
-| B | Intake/forwarded detection (18-locale label + marker tables), LLM identify + cross-check, **already-verified short-circuit**, match rule, decision table, thread store, notification matrix | Tests in § Tests green; dry-run replays of 5 real messages reviewed |
+| B — **shipped 2026-11-11** | Intake/forwarded detection (18-locale label + marker tables), LLM identify + cross-check, **already-verified short-circuit**, match rule, decision table, thread store, notification matrix, digest | 38 tests green; production dry run produced the expected `MISMATCH_RETRY` |
 | C | Docs: correct ARCH-003, record the as-built in this spec, add the Next.js contact-link gap to the roadmap | Review |
 
 Phase A is independent: it can ship before any hardening and restores the
