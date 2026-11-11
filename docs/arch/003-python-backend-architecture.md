@@ -163,9 +163,28 @@ were removed in SPEC-039 WS-8 (2026-08-10).
 
 Email verification now lives in `routes/auth.py` (`POST /auth/verify-email`,
 `POST /auth/resend-verification`, `POST /auth/session`). The legacy
-`/verification_email*` routes were removed in SPEC-039 M5 (2026-08-10). The
-`verify_email@zerotohero.ca` support pipe is a standalone stdin script,
-`auto_verify_email.py`, not an HTTP route — see SPEC-110.
+`/verification_email*` routes were removed in SPEC-039 M5 (2026-08-10).
+
+### Email verification support pipe (non-HTTP)
+
+`verify_email@zerotohero.ca` never reaches Flask. DreamHost's mailbox filter
+forwards the message to shell account `dh_rqe96h (vps14733)`, whose
+`~/.forward.postfix` runs `auto_verify_email.sh` (venv wrapper) around
+`auto_verify_email.py`. That script:
+
+- identifies the requester and the address they want verified (an LLM proposes,
+  deterministic checks judge, with an 18-locale fallback),
+- confirms the address through the GoTrue admin API (`email_confirm: true`) only
+  when it is the address the request came from,
+- grants the trial + MailerLite through `grant_trial_and_enroll_mailerlite`,
+  the same hook as `/auth/verify-email`,
+- replies from `support@zerotohero.ca` and queues already-verified cases for a
+  once-a-day digest to Jon.
+
+Thread state lives under `~/.local/state/languageplayer/email_verification/`,
+not in the database. Wrapper, selfcheck, digest cron, decision table and copy
+are specified in [SPEC-110](../specs/110-email-verification-support-pipe.md);
+tests are in `test_auto_verify_email.py`.
 
 ---
 

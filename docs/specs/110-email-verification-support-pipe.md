@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-110
 - **Feature**: `verify_email@zerotohero.ca` support pipe (`auto_verify_email.py`) — repair, sender-identity hardening, and success/failure notifications
-- **Status**: in progress — Phase A and Phase B shipped 2026-11-11; one live forward pending
+- **Status**: complete — Phase A, B and C shipped 2026-11-11 (the mailbox filter broadening remains a DreamHost panel action, § 10.6)
 - **Created**: 2026-11-11
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (auth/support tooling)
 - **Governing docs**: [SPEC-039 § M5](../specs/039-full-database-migration-supabase.md), [ADR-0023](../adr/0023-proxy-supabase-auth-through-flask.md)
@@ -746,8 +746,8 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
    saved-word totals by language, and learning languages. Neither the sender nor
    the requested address receives any mail, and no GoTrue write occurs.
 9. The digest is sent once per day to Jon only, and an empty day sends nothing.
-10. Every automated message has `From: support@zerotohero.ca` and
-    `Reply-To: support@zerotohero.ca`.
+10. Every automated message has `From: Language Player Support
+    <support@zerotohero.ca>` and `Reply-To: verify_email@zerotohero.ca`.
 11. All 18 locale fixtures pass, and an unknown-label message asks for the
     address instead of verifying.
 12. Once `user_login_events` is populated, the digest lists the five most
@@ -762,10 +762,30 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
 |---|---|---|
 | A (P0) — **shipped 2026-11-11** | Wrapper script, `.forward.postfix`, `--selfcheck`, startup guard, log rotation, `support@` sender | Selfcheck 5/5 on production; ignored-message smoke test passes |
 | B — **shipped 2026-11-11** | Intake/forwarded detection (18-locale label + marker tables), LLM identify + cross-check, **already-verified short-circuit**, match rule, decision table, thread store, notification matrix, digest | 38 tests green; production dry run produced the expected `MISMATCH_RETRY` |
-| C | Docs: correct ARCH-003, record the as-built in this spec, add the Next.js contact-link gap to the roadmap | Review |
+| C — **shipped 2026-11-11** | Docs: ARCH-003 as-built, this spec's as-built section, Next.js contact-link gap in ROADMAP | Reviewed |
 
 Phase A is independent: it can ship before any hardening and restores the
 capability the user already believes is on.
+
+## As-built (2026-11-11)
+
+| Piece | Where |
+|---|---|
+| Entry point | `zerotohero-python-server/auto_verify_email.py` (single module: intake, LLM triage, decision, thread state, digest) |
+| Pipe wrapper | `auto_verify_email.sh` — `cd` to the checkout, run `./venv/bin/python`, append stderr to `logs/email_processing.err`, pass `--selfcheck` / `--send-digest` through |
+| Host wiring | `~/.forward.postfix` on `dh_rqe96h` → the wrapper (old line kept as `.forward.postfix.bak-2026-11-11`) |
+| Mailbox | DreamHost `verify_email@` → filter forwards to shell account `dh_rqe96h (vps14733)`; `Fwd`-only until § 10.6 is applied |
+| Reply path | automated mail sets `Reply-To: verify_email@zerotohero.ca`; the visible `From` is `Language Player Support <support@zerotohero.ca>` |
+| State | `~/.local/state/languageplayer/email_verification/*.json` (0600, 90-day prune) plus `already_verified.jsonl` |
+| Digest | cron `0 16 * * *` server time (09:00 JST) → `--send-digest` |
+| LLM | `app_chatgpt.ask`, model `deepseek-v4-flash` (`AUTO_VERIFY_LLM_MODEL`), 20 s budget; `AUTO_VERIFY_DISABLE_LLM=1` for offline tests |
+| Dry run | `AUTO_VERIFY_DRY_RUN=1` writes `.eml` files to `AUTO_VERIFY_DRY_RUN_DIR`; no GoTrue write, no sendmail |
+| Logs | `logs/email_processing.log` (10 MiB rotation, `.1`) and `logs/email_processing.err` |
+| Tests | `test_auto_verify_email.py` — 38 tests |
+
+Operational entry points: `auto_verify_email.sh --selfcheck`,
+`auto_verify_email.sh --send-digest`, and a dry-run replay of a real message
+with `AUTO_VERIFY_DRY_RUN=1`.
 
 ## Resolved decisions (2026-11-11)
 

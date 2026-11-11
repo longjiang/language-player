@@ -181,7 +181,12 @@
 
 ## Known Issues
 
-- **Arabic lemmatization (offline arabic-stem)** — logged 2026-08-08. The server
+- **Email-verification "Having trouble?" link is Classic-only** — the Next.js
+  register page has no contact mailto, so web users have no path into the
+  support pipe (Classic has it at `zerotohero-nuxt/pages/verify-email.vue`).
+  Add the same pre-composed mailto, now to `support@zerotohero.ca`. Tracked
+  from SPEC-110 Phase C.
+- **Arabic lemmatization (offline arabic-stem)**** — logged 2026-08-08. The server
   side was resolved 2026-08-09 via CAMeL Tools MLE (`calima-msa-r13`): the
   Qalsadi bugs (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`) are fixed and
   pronunciation comes from CAMeL diacritization. Offline `arabic-stem` still
