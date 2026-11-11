@@ -305,11 +305,10 @@ stdin (raw MIME)
   `From` is our own support sender and the message is not forwarded; the body
   is empty; the subject matches neither `Email Verification Issue` nor a
   forward prefix (preserves today's subject filter).
-- **Transport reality:** at the time of writing the DreamHost filter still
-  only delivers subjects containing `Fwd`, so the direct-message branch is
-  unreachable until step 6 is applied. The script keeps both branches; once the
-  filter forwards everything, direct mail and replies arrive too. Until then,
-  do not assume they do.
+- **Transport reality:** the DreamHost filter now forwards everything
+  addressed to `verify_email@` (`To contains verify_email`), so the
+  direct-message branch and replies are live. The `Fwd`-prefix branch is kept
+  for forwards from clients that add a marker.
 - Transient infrastructure failures (DB down, config missing) exit **75**
   (`EX_TEMPFAIL`) so postfix retries instead of bouncing.
 
@@ -626,11 +625,12 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    `verify_email@` has two filters: one copies `Fwd`-subject mail into the
    `Fwd` folder, the other forwards `Fwd`-subject mail to `dh_rqe96h`.
 
-   - On the **forward** filter: remove the `Subject contains Fwd` condition
-     (the `−` next to it). If the panel insists on a condition, use
-     `To contains verify_email`. Keep
-     `Forward it to a shell account: dh_rqe96h (vps14733)` and
-     `execute and continue`.
+   - On the **forward** filter: replace `Subject contains Fwd` with
+     `To contains verify_email` (the panel requires a condition). Keep
+     `Forward it to a shell account: dh_rqe96h (vps14733)`, executed in
+     sequence (`here.`), `execute and continue`. **Applied 2026-11-11:** a
+     non-`Fwd` test message reached the pipe and was ignored by subject, as
+     designed.
    - The **copy** filter is optional filing: leave it, or broaden it the same
      way if every support message should be archived in `Fwd`.
 
@@ -774,7 +774,7 @@ capability the user already believes is on.
 | Entry point | `zerotohero-python-server/auto_verify_email.py` (single module: intake, LLM triage, decision, thread state, digest) |
 | Pipe wrapper | `auto_verify_email.sh` — `cd` to the checkout, run `./venv/bin/python`, append stderr to `logs/email_processing.err`, pass `--selfcheck` / `--send-digest` through |
 | Host wiring | `~/.forward.postfix` on `dh_rqe96h` → the wrapper (old line kept as `.forward.postfix.bak-2026-11-11`) |
-| Mailbox | DreamHost `verify_email@` → filter forwards to shell account `dh_rqe96h (vps14733)`; `Fwd`-only until § 10.6 is applied |
+| Mailbox | DreamHost `verify_email@` → filter `To contains verify_email` forwards to shell account `dh_rqe96h (vps14733)` (applied 2026-11-11) |
 | Reply path | automated mail sets `Reply-To: verify_email@zerotohero.ca`; the visible `From` is `Language Player Support <support@zerotohero.ca>` |
 | State | `~/.local/state/languageplayer/email_verification/*.json` (0600, 90-day prune) plus `already_verified.jsonl` |
 | Digest | cron `0 16 * * *` server time (09:00 JST) → `--send-digest` |
