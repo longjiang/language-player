@@ -469,33 +469,33 @@ broadened (Transport, above). Until it is, the retry instruction still needs Jon
 to forward. The deployment step (§ 10) must either broaden the filter or accept
 that human hop.
 
-### Reply copy (MISMATCH_RETRY)
+### User-facing copy
 
-The mismatch email goes to both addresses, so it must be short, neutral, and
-readable by someone who is not looking at the original thread. It contains, in
-this order:
+Every automated reply is plain, friendly, and free of internals. The rules:
 
-1. The two addresses, named explicitly: "you wrote from `<requester>`" and
-   "you asked us to verify `<requested>`".
-2. One sentence: we only verify an address when the request comes from that
-   address, because that is how we know it belongs to you.
-3. **A spam-folder check.** "Also check your spam/junk folder (and the All Mail
-   label, if you use Gmail): the verification email may have been filtered."
-   This matters because the most common reason someone asks for help is that the
-   email never arrived, not that the address is wrong.
-4. The next step: reply to this message **from `<requested>`**.
-5. A fallback: if it still does not arrive, reply and Jon will help directly.
+- **Never** print a table name, HTTP status, exception text, or the internal
+  `message` from `confirm_user_and_enroll` (it says things like "not found in
+  auth.users"). Those belong in `email_processing.log` only.
+- Sign off as `Automated Support, Language Player` — never a person's name.
+  `From` is `Language Player Support <support@zerotohero.ca>`.
+- Five sentences maximum before the quoted thread.
+- No account state, subscription, or login link in a message sent to an
+  address whose ownership is not established (MISMATCH_RETRY, NO_ACCOUNT).
 
-Constraints:
+| Outcome | Subject | Body |
+|---|---|---|
+| VERIFIED | `Your email is verified` | "Good news — `<address>` is now verified. You can sign in here: https://languageplayer.io/login" + "If you were waiting for a password, use 'Forgot password?' on the sign-in page to set one." |
+| MISMATCH_RETRY | `Re: Email Verification Issue` | Names both addresses, explains we can only verify from the same address, then: (1) check spam/junk and Gmail's All Mail for the verification email; (2) reply from `<requested>` and we will verify automatically; (3) if it still fails, reply and we will help |
+| NO_ACCOUNT | `Re: Email Verification Issue` | "We couldn't find a Language Player account for `<address>`. It's worth checking the spelling, and whether you signed up with a different address. If you're sure this is the right address, reply and we'll sort it out." |
+| GOTRUE_ERROR | `Re: Email Verification Issue` | "We hit a temporary problem while verifying `<address>`, so nothing is wrong on your side. Please reply and we'll finish it for you." |
+| ESCALATE | `Re: Email Verification Issue` | "Thanks for your patience — we're taking a closer look at your account and will get back to you shortly." |
+| UNPARSEABLE | `Re: Email Verification Issue` | "We couldn't tell which address you'd like us to verify. Please reply with just the address (for example you@example.com) and we'll take it from there." |
+| ALREADY_VERIFIED | — | No user copy at all (§ 3); the digest entry is internal. |
 
-- Never state whether `<requested>` has an account, is already verified, or has
-  a subscription. The mismatch reply is the only copy sent to an address whose
-  ownership we have not established, so it must not become a lookup oracle.
-- No marketing, no login link, no account details in this email.
-- Keep it to five short sentences; the thread quote is below it, not in place
-  of it.
+The quoted thread follows the message, so the user can see what they wrote
+without us repeating it in the body.
 
-### 8. Thread state
+### 8. Thread state### 8. Thread state
 
 Store one JSON document per thread under
 `$HOME/.local/state/languageplayer/email_verification/<sha256(primary)>.json`
@@ -685,6 +685,9 @@ Unit (pytest, no network — extend `test_auto_verify_email.py`):
 15. Sign-in history: five `user_login_events` rows render newest-first; an
     empty table degrades to `last_sign_in_at` plus `signin_history=unavailable`
     instead of failing or printing noise.
+16. Copy guard: no user-facing body contains `auth.users`, an HTTP status, a
+    traceback, or the internal `message` — for every outcome, including a
+    forced GoTrue failure whose reason mentions the table.
 
 Existing `confirm_user_and_enroll` tests stay green unchanged.
 
@@ -725,6 +728,8 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
 12. Once `user_login_events` is populated, the digest lists the five most
     recent sign-ins; before it is, the digest still sends and says the history
     is unavailable.
+13. No reply a user receives names a database table, an HTTP status, or an
+    exception, including when GoTrue fails.
 
 ## Rollout
 
