@@ -354,7 +354,7 @@ The digest entry contains, in this order:
 | Requested address, `auth.users.id` | `_user_by_email` |
 | `email_confirmed_at` | GoTrue admin `GET /auth/v1/admin/users/<id>` |
 | `created_at`, `last_sign_in_at` | same |
-| **Last 5 sign-ins** | `auth.audit_log_entries`, `payload->>'action' in ('login','mfa_code_login')`, newest first. **The table is empty today** because Postgres audit-log storage is off by default; enable it (deployment step 8) and the field populates within minutes. Until then the entry prints `last_sign_in_at` and `signin_history=unavailable` |
+| **Last 5 sign-ins** | `public.user_login_events` (Related work), newest first. Until that table exists the entry prints `auth.users.last_sign_in_at` and `signin_history=unavailable`. **Do not enable Supabase's database audit-log storage for this** — it records every auth event, including hourly token refreshes (see Related work) |
 | Role, banned state (`banned_until` or "active") | GoTrue admin |
 | **Saved words**: total, per-language counts (top 5 + "other") | `public.user_saved_words` grouped by `l2` |
 | **Learning languages**: each `l2`, level, total hours, last activity | `public.user_progress` (`level`, `time_ms`, `updated_at`) |
@@ -611,15 +611,13 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    make sure `support@zerotohero.ca` exists and can send from the VPS
    (`sendmail -f support@zerotohero.ca` to your own address; SPF already
    includes DreamHost).
-8. **Enable Postgres audit-log storage** (sign-in history). Supabase captures
-   auth audit events automatically, but writing them to the database is off by
-   default: Authentication → Audit Logs → **"Write audit logs to the database"**
-   on ([Supabase Auth Audit Logs](https://supabase.com/docs/guides/auth/audit-logs),
-   updated 2026-10-31). Verify within a few minutes:
-   `select payload->>'action', count(*) from auth.audit_log_entries group by 1`
-   should show `login` rows; then confirm the digest prints five. Rows
-   accumulate, so keep 90 days and prune older rows (monthly cron or a
-   scheduled query) unless you decide otherwise.
+8. **Leave "Write audit logs to the database" OFF.** The dashboard's own note
+   is accurate: Supabase keeps Auth logs outside the database either way, and
+   the toggle only adds a permanent copy of *every* auth event to
+   `auth.audit_log_entries` — including an hourly `token_refreshed` per live
+   session. With 5,553 live sessions that is on the order of 10^5 rows/day, and
+   it would become the largest table in an 8 GB database within weeks. Record
+   logins in `user_login_events` instead (Related work).
 
 Verify by forwarding one real message and confirming both
 `logs/email_processing.log` and a reply in Jon's mailbox.
@@ -677,9 +675,9 @@ Unit (pytest, no network — extend `test_auto_verify_email.py`):
 12. Loop guards: `mailer-daemon`, `Auto-Submitted`, our own address.
 13. Repeat delivery of the same `Message-ID` sends nothing and verifies nothing.
 14. Self-check reports each failure mode.
-15. Sign-in history: five `login` audit rows render newest-first; an empty
-    `auth.audit_log_entries` degrades to `last_sign_in_at` plus
-    `signin_history=unavailable` instead of failing or printing noise.
+15. Sign-in history: five `user_login_events` rows render newest-first; an
+    empty table degrades to `last_sign_in_at` plus `signin_history=unavailable`
+    instead of failing or printing noise.
 
 Existing `confirm_user_and_enroll` tests stay green unchanged.
 
@@ -717,7 +715,7 @@ and never calls GoTrue or sendmail. Used to replay real messages in review.
     `Reply-To: support@zerotohero.ca`.
 11. All 18 locale fixtures pass, and an unknown-label message asks for the
     address instead of verifying.
-12. Once Postgres audit-log storage is enabled, the digest lists the five most
+12. Once `user_login_events` is populated, the digest lists the five most
     recent sign-ins; before it is, the digest still sends and says the history
     is unavailable.
 
@@ -749,9 +747,11 @@ capability the user already believes is on.
 5. **ALREADY_VERIFIED contents** — the report adds the last 5 sign-ins, saved
    words by language, and learning languages with level/hours (§ 3).
 6. **Digest** — already-verified notices batch into one daily email to Jon (§ 8).
-7. **Sign-in history** — enable Postgres audit-log storage in Supabase
-   (deployment step 8). The table is empty today only because that toggle is
-   off; no Flask change is needed.
+7. **Sign-in history (revised 2026-11-11)** — **do not** enable database
+   audit logging. Its volume is dominated by token refreshes, which is the
+   wrong data for DAU/MAU and for "last five sign-ins". Record one row per
+   login in `user_login_events` (Related work); the digest reads that and falls
+   back to `last_sign_in_at` until it exists.
 8. **Retention** — 90 days confirmed (§ 8), with older audit rows pruned to
    match.
 
@@ -788,6 +788,41 @@ Tracked tasks:
 
 Changing SMTP affects every auth email, so do it in a quiet window and re-test
 all flows.
+
+### User login activity (DAU/MAU)
+
+Supabase's **"Write audit logs to the database"** toggle is not the right tool
+for activity analytics. The dashboard text is correct — Auth logs remain
+available without it — but enabling it copies *every* auth event into
+`auth.audit_log_entries`, and refreshes dominate: 5,553 live sessions and
+21,501 refresh tokens today, with `token_refreshed` firing about hourly per
+session. That is ~10^5 rows/day; at ~0.5–1 KB/row it is tens of GB per month,
+against an 8 GB database.
+
+What to build instead (tracked; not part of the pipe):
+
+```sql
+create table public.user_login_events (
+  id          bigserial primary key,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  occurred_at timestamptz not null default now(),
+  source      text,          -- 'password' | 'link-session'
+  ip          text
+);
+create index on public.user_login_events (user_id, occurred_at desc);
+create index on public.user_login_events (occurred_at);
+```
+
+- Write one row from Flask `/auth/login` and `/auth/session` (not on refresh).
+  At today's scale that is a few hundred rows/day.
+- Prune to 90 days with the same monthly job as the thread store.
+- Queries: DAU `count(distinct user_id) where occurred_at::date = current_date`;
+  MAU over 30 days; dormant users via `max(occurred_at)` or
+  `auth.users.last_sign_in_at`.
+- The pipe's digest reads the last five rows for the account, falling back to
+  `last_sign_in_at` until the table is populated.
+- **Leave the Supabase toggle off.** If per-event forensics is ever needed,
+  turn it on temporarily and prune aggressively, knowing refreshes dominate.
 
 ## References
 
