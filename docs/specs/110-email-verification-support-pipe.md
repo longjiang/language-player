@@ -153,10 +153,9 @@ the earlier draft missed:
    the script: forward **all** mail addressed to `verify_email@` — the mailbox
    is dedicated to this pipe — and let the script's subject/intent checks
    decide.
-2. **A reply to an automated message is `Re: …` and is therefore not piped.**
-   If `Reply-To` becomes `verify_email@` so a retry needs no human, the filter
-   must match `Email Verification Issue` as well, or (better) forward
-   everything.
+2. **A reply to an automated message is `Re: …`, which does not contain
+   `Fwd`.** `Reply-To` is `verify_email@`, so a reply arrives at this mailbox
+   and is piped only once the filter forwards everything (§ 10.6).
 
 ## Detection across locales (2026-11-11)
 
@@ -441,7 +440,7 @@ has no subscription) and its failures never change the outcome.
 | Field | Value |
 |---|---|
 | `From` | `Language Player Support <support@zerotohero.ca>` (all automated mail; SPF already includes DreamHost) |
-| `Reply-To` | `support@zerotohero.ca` |
+| `Reply-To` | `verify_email@zerotohero.ca` (the mailbox the pipe owns; see Reply path) |
 | `To` | requester address **and** requested address, deduplicated, omitted when equal — **except ALREADY_VERIFIED, which is the daily digest to `jon.long@zerotohero.ca` only** |
 | `Cc` | `jon.long@zerotohero.ca` |
 | `Subject` | `Re: <subject with repeated Re:/Fwd: prefixes collapsed>`; the ALREADY_VERIFIED digest uses `[support] Already verified — <N> case(s)` |
@@ -476,12 +475,13 @@ Recipients per outcome:
 Delivery is best-effort per recipient: one failure is logged and does not stop
 the other recipient or the GoTrue action.
 
-**Reply path.** `Reply-To: support@` means a user replying to an automated
-message lands in the support mailbox, and the mailbox filter only pipes
-subjects containing `Fwd` — so that reply is not processed until the filter is
-broadened (Transport, above). Until it is, the retry instruction still needs Jon
-to forward. The deployment step (§ 10) must either broaden the filter or accept
-that human hop.
+**Reply path.** `Reply-To: verify_email@zerotohero.ca` — the mailbox the pipe
+already owns — so a user replying to an automated message reaches the pipe as
+soon as that mailbox forwards all mail (§ 10.6). DreamHost's message filters can
+only forward to a shell account, never to an email address, and a mailbox-level
+forward of `support@` would push every unrelated support thread into the pipe.
+Pointing `Reply-To` at `verify_email@` keeps the pipe's input limited to its own
+mailbox with no extra forwarding rule.
 
 ### User-facing copy
 
@@ -634,11 +634,12 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    - The **copy** filter is optional filing: leave it, or broaden it the same
      way if every support message should be archived in `Fwd`.
 
-   Then close the reply loop: on the **support@** mailbox add a filter
-   `Subject contains Email Verification Issue` → **forward to
-   `verify_email@`** (not to the shell account). Automated mail is
-   `Re: Email Verification Issue`, so a user's reply reaches the pipe without
-   a human hop. Do **not** forward all of support@ to verify_email@.
+   **No support@ rule is needed.** DreamHost's message filters can only forward
+   to a *shell account*, not to an email address, and a mailbox-level forward of
+   all support@ mail would feed every unrelated thread into the pipe. Automated
+   mail sets `Reply-To: verify_email@`, so a user's reply lands directly on the
+   piped mailbox and is processed once the forward filter above covers all
+   mail.
 7. **Done 2026-11-11:** daily digest cron installed at 16:00 server time
    (09:00 JST; one hour earlier during PDT), and `support@zerotohero.ca`
    confirmed to send and receive from the VPS.
