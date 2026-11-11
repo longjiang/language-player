@@ -306,11 +306,11 @@ stdin (raw MIME)
   `From` is our own support sender and the message is not forwarded; the body
   is empty; the subject matches neither `Email Verification Issue` nor a
   forward prefix (preserves today's subject filter).
-- **Transport reality:** the DreamHost filter only delivers messages whose
-  subject contains `Fwd` (see Transport above), so the direct-message branch is
-  unreachable until that filter is broadened. The script keeps both branches —
-  they are what will run once the filter forwards everything — but the
-  deployment step must not assume direct mail is already arriving.
+- **Transport reality:** at the time of writing the DreamHost filter still
+  only delivers subjects containing `Fwd`, so the direct-message branch is
+  unreachable until step 6 is applied. The script keeps both branches; once the
+  filter forwards everything, direct mail and replies arrive too. Until then,
+  do not assume they do.
 - Transient infrastructure failures (DB down, config missing) exit **75**
   (`EX_TEMPFAIL`) so postfix retries instead of bouncing.
 
@@ -622,12 +622,23 @@ The GoTrue rewrite already shipped; the pipe line did not. Required:
    reason to the log and exit 75 (retry), not 1 (bounce).
 5. Log rotation for `email_processing.log` (DreamHost cron or `logrotate`) so
    the file does not grow unbounded like `application.log` (2.5 GB today).
-6. **Broaden the DreamHost filter — Phase B prerequisite, not Phase A.** It
-   currently matches `Subject contains Fwd`; change it to forward *all* mail to
-   `verify_email@` to `dh_rqe96h` (panel: Mail → Message Filters). Do this only
-   once the hardened parser ships: with the legacy parser live, a broadened
-   filter would feed it `FW:`/localized forwards and replies it cannot parse
-   safely. Without the change, those never reach the pipe (Transport, above).
+6. **Broaden the DreamHost filters — safe now that Phase B is live.**
+   `verify_email@` has two filters: one copies `Fwd`-subject mail into the
+   `Fwd` folder, the other forwards `Fwd`-subject mail to `dh_rqe96h`.
+
+   - On the **forward** filter: remove the `Subject contains Fwd` condition
+     (the `−` next to it). If the panel insists on a condition, use
+     `To contains verify_email`. Keep
+     `Forward it to a shell account: dh_rqe96h (vps14733)` and
+     `execute and continue`.
+   - The **copy** filter is optional filing: leave it, or broaden it the same
+     way if every support message should be archived in `Fwd`.
+
+   Then close the reply loop: on the **support@** mailbox add a filter
+   `Subject contains Email Verification Issue` → **forward to
+   `verify_email@`** (not to the shell account). Automated mail is
+   `Re: Email Verification Issue`, so a user's reply reaches the pipe without
+   a human hop. Do **not** forward all of support@ to verify_email@.
 7. **Done 2026-11-11:** daily digest cron installed at 16:00 server time
    (09:00 JST; one hour earlier during PDT), and `support@zerotohero.ca`
    confirmed to send and receive from the VPS.
