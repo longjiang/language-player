@@ -89,8 +89,15 @@ survived the upgrade.
 | `auto_verify_email.sh` in the checkout, `~/.forward.postfix` repointed | wrapper runs the venv interpreter; old line backed up as `.forward.postfix.bak-2026-11-11` |
 | `./auto_verify_email.sh --selfcheck` on production | `config`, `database`, `gotrue`, `state_dir`, `sendmail` — all ok |
 | Pipe smoke test (`Subject: Hello`) | exit 0, logs "Ignoring email…", no mail sent, stderr empty |
-| `support@` sender | `sendmail -f support@zerotohero.ca` accepted; one test message sent to Jon |
+| `support@` sender | `sendmail -f support@zerotohero.ca` accepted; test messages delivered |
+| **sendmail inside the pipe** | Postfix exports `MAIL_CONFIG=/etc/postfix` (and `SENDER`, `RECIPIENT`, `CLIENT_*`, `LOCAL`, `DOMAIN`) into the pipe. Inherited, sendmail used the system queue, could not write `maildrop`, and **blocked forever** — two forwards hung and sent nothing. `send_mail` now strips those variables, passes `-f support@`, times out at 30 s, and logs a non-zero exit. Verified: 0.0 s per send |
+| Full reply path | synthetic forward → "could not verify" reply from `support@`, no failure line, no hang |
 | Log rotation | 10 MiB in-script, previous file kept as `.1` |
+
+The first real forward (11 Nov, 09:18 JST) confirmed the legacy defect end to
+end: it extracted the quoted Gmail sender instead of the requested school
+address, so no verification happened and the address was never checked against
+the account the user asked about. That is the failure Phase B fixes.
 
 **Phase A restores execution, not correctness.** The address-extraction defect
 above is unchanged until Phase B, so do **not** broaden the DreamHost filter
