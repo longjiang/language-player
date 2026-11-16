@@ -427,6 +427,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.no_words_to_review` | No Words to Review |
 | `msg.not_authenticated` | Not authenticated |
 | `msg.options` | Options |
+| `msg.page_has_no_readable_text` | No readable text was found on this page. It may need JavaScript or a login. |
 | `msg.paid_via` | Paid via {processor} |
 | `msg.password_reset_sent` | If an account exists for {email}, we've sent a password reset link. |
 | `msg.paste_youtube_url` | You can also paste in YouTube URL to import. |
@@ -463,6 +464,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.show_phonetics_desc` | Show pinyin, furigana, or pronunciation above words in subtitles and texts. |
 | `msg.show_translation_desc` | Show the L1 translation line below each L2 subtitle. |
 | `msg.sign_in_to_review` | Sign in to review words. |
+| `msg.site_blocks_reading` | This site blocks automated reading. Open the page in your browser instead. |
 | `msg.sort_by` | Sort by: {sortBy} |
 | `msg.start_learning` | Start learning languages through authentic video content. |
 | `msg.subscription_cancel_error` | Error cancelling subscription |
