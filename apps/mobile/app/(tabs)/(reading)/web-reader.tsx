@@ -10,11 +10,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { localizedError } from '@/lib/errors';
+import { isOfflineModeError } from '@/lib/offline-mode';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
-import { fetchReaderPage } from '@langplayer/shared';
+import { extractTitle } from '@/lib/html-to-markdown';
+import { fetchReaderPage, readerPageMarkdown, readerErrorKey } from '@langplayer/shared';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { ReaderAskAiSheet } from '@/components/reader/ReaderAskAiSheet';
 import { READER_ASK_AI_TEXT_PRESETS, type ReaderAiContent } from '@langplayer/utils';
@@ -22,7 +22,7 @@ import { useReaderTocSearch, ReaderTocSearchOverlays } from '@/components/reader
 import { VisitedSitesSidebar } from '@/components/reader/VisitedSitesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveUrlAnchor, getUrlAnchor } from '@/lib/reader-storage';
-import { log as appLog } from '@/lib/logger';import {
+import { log as appLog, logerr } from '@/lib/logger';import {
   loadVisitedSites,
   recordVisit,
   removeVisitedSite,
@@ -124,15 +124,21 @@ export default function WebReaderScreen() {
 
     try {
       // Fetch + convert through the shared reader pipeline (same as web).
-      const raw = await fetchReaderPage(targetUrl, PYTHON_API_URL);
+      // A markdown response is already converted by the backend's reader-service
+      // fallback; an unreadable page throws instead of showing a blank reader
+      // (ADR-0052).
+      const page = await fetchReaderPage(targetUrl, PYTHON_API_URL);
       const tFetch = Date.now();
-      log(`[WebReader] ⏱️ fetch ${tFetch - t0}ms bytes=${raw.length} url=${targetUrl}`);
-      const md = htmlToMarkdown(raw, targetUrl);
+      log(`[WebReader] ⏱️ fetch ${tFetch - t0}ms bytes=${page.text.length} format=${page.format} url=${targetUrl}`);
+      const md = readerPageMarkdown(page, targetUrl);
       const tConvert = Date.now();
-      log(`[WebReader] ⏱️ htmlToMarkdown ${tConvert - tFetch}ms mdChars=${md.length}`);
-      // Fall back to the first h1, then the raw URL (same as web).
+      log(`[WebReader] ⏱️ markdown ${tConvert - tFetch}ms mdChars=${md.length}`);
+      // Fall back to the first h1, then the raw URL (same as web). A markdown
+      // fallback body has no HTML <title>, so its title comes from the H1.
       const titleMatch = md.match(/^#\s+(.+)$/m);
-      const extractedTitle = extractTitle(raw) || titleMatch?.[1]?.trim() || targetUrl;
+      const extractedTitle = (page.format === 'html' ? extractTitle(page.text) : null)
+        || titleMatch?.[1]?.trim()
+        || targetUrl;
       setTitle(extractedTitle);
       setText(md);
       setUrl(targetUrl);
@@ -143,8 +149,17 @@ export default function WebReaderScreen() {
       // Track the visit (SPEC-049 §10.3)
       recordVisit(targetUrl, extractedTitle).then(setVisitedSites);
     } catch (e: any) {
-      log(`[WebReader] ⏱️ fetch FAILED after ${Date.now() - t0}ms:`, e?.message ?? e);
-      setError(localizedError(t, e, 'msg.failed_to_load_url'));
+      logerr(`WebReader: load failed after ${Date.now() - t0}ms`, {
+        url: targetUrl,
+        reason: e?.reason,
+        status: e?.status,
+        error: e,
+      }); // non-info-level: caught load failure — stack trace needed
+      setError(
+        isOfflineModeError(e)
+          ? t('error.offline_mode_blocked')
+          : t(readerErrorKey(e)),
+      );
     } finally {
       setLoading(false);
     }

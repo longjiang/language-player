@@ -6,13 +6,13 @@ import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@langplayer/shared';
-import { fetchReaderPage, htmlToMarkdown } from '@langplayer/shared';
+import { fetchReaderPage, readerPageMarkdown, readerErrorKey } from '@langplayer/shared';
 import { autoNoteTitle } from '@langplayer/utils';
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { log, logwarn } from '@/lib/logger';
+import { log, logwarn, logerr } from '@/lib/logger';
 import {
   Loader2, FileText, PenLine,
   PanelRightClose, PanelRight,
@@ -26,8 +26,8 @@ import { getNotePosition, saveNotePosition } from '@/lib/reader-position';
 import { notesImportLogger } from '@/lib/logger';
 
 // HTML→Markdown conversion and the reader fetch live in @langplayer/shared
-// (htmlToMarkdown, fetchReaderPage) so web and mobile share one pipeline
-// (SPEC-083 / SPEC-087 §2).
+// (readerPageMarkdown, readerErrorKey, fetchReaderPage) so web and mobile share
+// one pipeline (SPEC-083 / SPEC-087 §2, ADR-0052).
 
 const READER_TEXT_KEY = 'lp_reader_text';
 const READER_TITLE_KEY = 'lp_reader_title';
@@ -448,15 +448,19 @@ export default function ReaderPage() {
   }, [text]);
 
   // Load from localStorage / URL params
-  const loadUrl = useCallback(async (url: string, isMarkdown: boolean) => {
+  const loadUrl = useCallback(async (url: string) => {
     setLoading(true); setError(null); setInitialLocation(null);
     router.replace(`/${l1.code}/${l2.code}/reader?url=${encodeURIComponent(url)}`, { scroll: false });
     try {
-      // Fetch + convert through the shared reader pipeline (same as mobile).
-      const raw = await fetchReaderPage(url, PYTHON_API_URL);
-      if (isMarkdown) setText(raw);
-      else setText(htmlToMarkdown(raw, url));
-    } catch (e: any) { setError(e?.message || t('msg.failed_to_load_url')); }
+      // Fetch through the shared reader pipeline (same as mobile). The backend
+      // may answer with markdown already (reader-service fallback, ADR-0052);
+      // `readerPageMarkdown` passes that through and converts HTML otherwise.
+      const page = await fetchReaderPage(url, PYTHON_API_URL);
+      setText(readerPageMarkdown(page, url));
+    } catch (e: any) {
+      logerr('reader: URL load failed', { url, reason: e?.reason, status: e?.status, error: e }); // non-info-level: caught load failure — stack trace needed
+      setError(t(readerErrorKey(e)));
+    }
     finally { setLoading(false); }
   }, [l1.code, l2.code, router, t]);
 
@@ -479,11 +483,10 @@ export default function ReaderPage() {
       setText(storedText); setTitle(storedTitle);
       setActiveTab('read'); setInitialLocation(null); return;
     }
-    if (urlParam) { setInitialLocation(null); loadUrl(decodeURIComponent(urlParam), false); return; }
+    if (urlParam) { setInitialLocation(null); loadUrl(decodeURIComponent(urlParam)); return; }
     if (method && arg) {
       if (['md', 'html', 'txt'].includes(method)) { setText(decodeURIComponent(arg)); setActiveTab('read'); setInitialLocation(null); }
-      else if (method === 'md-url') loadUrl(arg, true);
-      else if (method === 'html-url') loadUrl(arg, false);
+      else if (method === 'md-url' || method === 'html-url') loadUrl(arg);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

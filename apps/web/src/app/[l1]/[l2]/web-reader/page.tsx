@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { READING_CATEGORIES, getReadingSuggestions, fetchReaderPage, extractTitle, htmlToMarkdown } from '@langplayer/shared';
+import { READING_CATEGORIES, getReadingSuggestions, fetchReaderPage, readerPageMarkdown, readerErrorKey, extractTitle } from '@langplayer/shared';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import type { ReaderLoc } from '@/components/reader/paginated-reader';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Tr
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { log, logwarn } from '@/lib/logger';
+import { log, logwarn, logerr } from '@/lib/logger';
 
 interface VisitedSite {
   url: string;
@@ -74,8 +74,8 @@ function saveVisitedSites(sites: VisitedSite[]) {
 }
 
 // HTML→Markdown conversion and the reader fetch live in @langplayer/shared
-// (htmlToMarkdown, extractTitle, fetchReaderPage) so web and mobile share one
-// pipeline (SPEC-083 / SPEC-087 §2).
+// (readerPageMarkdown, readerErrorKey, extractTitle, fetchReaderPage) so web
+// and mobile share one pipeline (SPEC-083 / SPEC-087 §2, ADR-0052).
 
 export default function WebReaderPage() {
   const searchParams = useSearchParams();
@@ -141,22 +141,29 @@ export default function WebReaderPage() {
     setError(null);
     try {
       // Fetch + convert through the shared reader pipeline (same as mobile).
-      const raw = await fetchReaderPage(targetUrl, PYTHON_API_URL);
+      // A markdown response means the backend already converted the page via
+      // its reader-service fallback; an unreadable page throws here instead of
+      // rendering a blank reader (ADR-0052).
+      const page = await fetchReaderPage(targetUrl, PYTHON_API_URL);
       if (seq !== loadSeqRef.current) return;
-      const md = htmlToMarkdown(raw, targetUrl);
+      const md = readerPageMarkdown(page, targetUrl);
       if (seq !== loadSeqRef.current) return;
       // DIAGNOSTIC (images not loading): log the fetched→markdown output so the
       // conversion result can be inspected. Verbose level — run setLogLevel(3)
       // in the devtools console (or NEXT_PUBLIC_LOG_LEVEL=3) to see it.
       log('WebReader: markdown generated', {
         url: targetUrl,
+        format: page.format,
         mdLength: md.length,
         imageCount: (md.match(/!\[/g) || []).length,
       });
       log('WebReader: markdown output', md);
-      // Fall back to the first h1, then the raw URL.
+      // Fall back to the first h1, then the raw URL. A markdown fallback body
+      // has no HTML <title>, so its title comes from the injected H1.
       const titleMatch = md.match(/^#\s+(.+)$/m);
-      const pageTitle = extractTitle(raw) || titleMatch?.[1]?.trim() || targetUrl;
+      const pageTitle = (page.format === 'html' ? extractTitle(page.text) : null)
+        || titleMatch?.[1]?.trim()
+        || targetUrl;
       setTitle(pageTitle);
       document.title = pageTitle;
       setText(md);
@@ -189,7 +196,13 @@ export default function WebReaderPage() {
       });
     } catch (e: any) {
       if (seq !== loadSeqRef.current) return;
-      setError(e?.message || t('msg.failed_to_load_url'));
+      logerr('WebReader: load failed', {
+        url: targetUrl,
+        reason: e?.reason,
+        status: e?.status,
+        error: e,
+      }); // non-info-level: caught load failure — stack trace needed
+      setError(t(readerErrorKey(e)));
     } finally {
       if (seq === loadSeqRef.current) setLoading(false);
     }

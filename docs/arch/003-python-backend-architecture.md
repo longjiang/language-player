@@ -78,6 +78,7 @@ register_routes(MyApp)       # 29 blueprints
 |---|---|---|---|
 | `/` | GET | Health check / index | — |
 | `/chatgpt` | GET/POST | DeepSeek AI chat (cached). Params: `prompt`, `max_tokens`, `cache`. | 60/min |
+| `/proxy` | GET | Fetch a page for the reader. Validates http(s)/public hosts (every redirect hop), sends browser headers, detects anti-bot pages and falls back to Jina Reader — `text/html` or `text/markdown`; failures are JSON `{error, reason, status}` (ADR-0052). | — |
 | `/images/<term>` | GET | Bing image search for a word (see ADR-0024). Returns `{src, url, title}` objects. | — |
 | `/img/<term>/<index>` | GET | Proxy a specific image (by index). | — |
 | `/timedtext` | GET | YouTube captions. Params: `v` (video ID), `type=list`, `name`, `lang`, `tlangs`. | — |

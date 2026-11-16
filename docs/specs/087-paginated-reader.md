@@ -44,6 +44,7 @@ These are grouped by feature area. Each requirement describes the finished behav
 ### 2. Content parsing (markdown and HTML/EPUB)
 
 - **One shared pipeline.** Web and mobile use the same parser so a document renders identically on both.
+- **Web-page fetch contract (ADR-0052).** A URL is fetched through Flask `/proxy`, which validates the target (http/https, public addresses, every redirect hop), sends browser navigation headers, and classifies anti-bot challenge responses. A blocked page is retried through a reader service and returned as `text/markdown`; the shared `fetchReaderPage()` reports `{text, format}` and `readerPageMarkdown()` passes markdown through (HTML is converted with the shared converter). A page with no readable text is an error, not a blank pane: blocked pages show `msg.site_blocks_reading`, empty pages `msg.page_has_no_readable_text`. The reader never displays a raw `HTTP 403`.
 - **Block model.** Markdown and HTML become a flat list of blocks:
   - headings 1–6;
   - paragraphs;

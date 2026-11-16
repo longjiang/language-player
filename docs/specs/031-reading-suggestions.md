@@ -78,8 +78,10 @@ translation keys; link labels stay in the target language.
 2. Import it in `packages/shared/src/reading-suggestions/index.ts` and add it to
    `CURATED`.
 3. Verify each URL before shipping:
-   - Returns 200 to a plain GET with the proxy's `LanguagePlayer/1.0` UA, no
-     cookies, no JS execution.
+   - Returns 200 to the proxy's browser-header GET (current Chrome UA, `Referer`,
+     `Sec-Fetch-*` — ADR-0052), no cookies, no JS execution. Check that the
+     article body is in the HTML, not just the status: anti-bot challenge pages
+     also answer 200 (Baidu's challenge page carries the article's own title).
    - HTML contains `<article>` or `id="mw-content-text"` for clean extraction.
    - Not behind a login/paywall, and not a client-rendered SPA shell.
 
