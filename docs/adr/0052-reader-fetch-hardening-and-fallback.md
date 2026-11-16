@@ -65,8 +65,10 @@ rendering reader service.**
 3. **Classify the response before handing it to the client.** A response is
    "blocked" when it is 401/403/429/451 or a known anti-bot page (Baidu
    `__PARIS_CHALLENGE_START__`/`百度安全验证`, Cloudflare `cf-mitigated`/"Just a
-   moment…", DataDome, or a challenge `<title>` such as `安全验证`). A blocked
-   page is never returned as a 200 body.
+   moment…", DataDome, or a challenge `<title>` such as `安全验证` — the title
+   signal only counts when the response is an error or the page has almost no
+   visible text, so an article *about* captchas still reads). A blocked page is
+   never returned as a 200 body.
 4. **Retry blocked pages through Jina Reader** (`https://r.jina.ai/<url>`,
    configurable with `READER_FALLBACK_URL`, disabled with
    `READER_FALLBACK=0`). The service renders the page from its own network and
@@ -129,9 +131,10 @@ rendering reader service.**
 ## Verification
 
 - `test_reader_fetch.py` covers URL/private-host rejection, challenge
-  detection (Baidu body, Cloudflare header, challenge title, bare 403),
-  Jina-payload parsing, fallback/no-fallback paths, and the `/proxy` route
-  contract (`text/markdown` on fallback, JSON reason on blocked).
+  detection (Baidu body, Cloudflare header, challenge title, bare 403, and the
+  long-article false-positive guard), Jina-payload parsing, fallback/no-fallback
+  paths, and the `/proxy` route contract (`text/markdown` on fallback, JSON
+  reason on blocked).
 - `packages/shared/src/markdown/fetch-page.test.ts` covers format detection,
   error `reason`/`status` propagation, the markdown pass-through, and the
   empty-page guard.
