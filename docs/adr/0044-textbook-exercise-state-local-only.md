@@ -1,6 +1,7 @@
 # ADR-0044 — Textbook exercise state is local-only, with an append-only attempt log in SRS's shape
 
-**Status:** Accepted (2026-09-11)
+**Status:** Accepted (2026-09-11) — **superseded in part by [ADR-0053](0053-task-data-sync-and-recordings.md) (2026-11-24)**
+**Superseded:** decision 3 only. The store shape, the append-only attempt log with void semantics (decision 2), the content-version rule (decision 4), the SRS separation (decision 5) and the Pro-gating stance (decision 6) all stand. ADR-0053 keeps the local store as the device's working copy and adds the server copy this ADR declined, using the outbox + idempotency-key shape decision 3 named as the prerequisite. The text below is kept as written so the reasoning and its stated costs remain visible; read "Scope (2026-09-11): local only" as the state before ADR-0053.
 
 ## Context
 

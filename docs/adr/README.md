@@ -60,7 +60,7 @@ Every ADR carries a Metadata block with **Date** and **Status** (`accepted`, `su
 | 0041 | [Render subtitle `[n]` notes inside TokenizedText](0041-subtitle-notes-in-tokenized-text.md) | accepted | 2026-09-06 |
 | 0042 | [Settings is a modal, routes are deep-link targets](0042-settings-modal-container.md) | accepted | 2026-09-09 |
 | 0043 | [Serve textbook media from the existing shared host behind `ASSET_BASE_URL`](0043-textbook-media-hosted-on-shared-host.md) | accepted | 2026-09-11 |
-| 0044 | [Textbook exercise state is local-only, with an append-only attempt log in SRS's shape](0044-textbook-exercise-state-local-only.md) | accepted | 2026-09-11 |
+| 0044 | [Textbook exercise state is local-only, with an append-only attempt log in SRS's shape](0044-textbook-exercise-state-local-only.md) | superseded (in part, by 0053) | 2026-09-11 |
 | 0045 | [Mock apps are sandboxed, self-contained HTML behind a frozen bridge](0045-mock-apps-as-sandboxed-html.md) | accepted | 2026-09-11 |
 | 0046 | [The web app loads no third-party host that mainland China blocks](0046-china-blocked-third-party-hosts.md) | accepted | 2026-09-15 |
 | 0047 | [Mobile inputs stay visible: a keyboard-aware layout, not a bigger scroll area](0047-mobile-keyboard-aware-inputs.md) | accepted | 2026-09-17 |
@@ -68,3 +68,4 @@ Every ADR carries a Metadata block with **Date** and **Status** (`accepted`, `su
 | 0049 | [A web EPUB/PDF record that can no longer be read is badged and removed, never silently deleted](0049-unreadable-epub-record-recovery.md) | accepted | 2026-10-16 |
 | 0051 | [The `[l1]/[l2]` app shell is static; the request-time APIs live in the API routes](0051-cacheable-app-shell.md) | accepted | 2026-10-27 |
 | 0052 | [The reader fetches pages through a hardened `/proxy` with a reader-service fallback](0052-reader-fetch-hardening-and-fallback.md) | accepted | 2026-11-16 |
+| 0053 | [Task responses, attempts and recordings sync through Flask; recordings live in a private Supabase Storage bucket](0053-task-data-sync-and-recordings.md) | accepted | 2026-11-24 |
