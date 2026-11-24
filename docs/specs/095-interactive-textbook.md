@@ -1107,19 +1107,29 @@ on what the task asks for:
 | graded (`choose` / `type` / `free` blanks) | **Submit** · **Try again** · **Next** |
 | self-check (C ➌) | **Mark as complete** (→ *Completed*) · **Next** |
 | mock app (B ➍) | **Next** only — the panel owns Submit, one task at a time |
-| read-only (D ➍, E ➌ — nothing to answer) | **Next** only |
+| read-only (D ➍, E ➌ — nothing to answer) | **Mark as complete** (→ *Completed*) · **Next** |
 
 The result banner (correct/incorrect with the score, or *Saved*) sits **above** the control
 group: the outcome is read before the buttons that act on it, and a green *Correct 8 / 8* is not
 below the thing that produced it.
 
 **Next is disabled until the task is resolved** — that is, until the store holds an un-voided
-attempt, which a graded Submit and a self-check's Mark as complete both append; a mock-app task
-resolves when its panel records All Done!. A read-only task has nothing to resolve, so its Next
-is available immediately. Next is **hidden on the last task** in reading order (the student
-uses the TOC), and it moves to the next task via `adjacentTasks` and the platform's href helper
-(`taskHref` on web, `mobileTaskHref` in expo-router). Re-submitting after Try again does not
-disable it: an attempt has still been recorded.
+attempt, which a graded Submit, a self-check's Mark as complete, a read-only task's Mark as
+complete and a mock app's All Done! all append. Next is **hidden on the last task** in reading
+order (the student uses the TOC), and it moves to the next task via `adjacentTasks` and the
+platform's href helper (`taskHref` on web, `mobileTaskHref` in expo-router). Re-submitting after
+Try again does not disable it: an attempt has still been recorded.
+
+**A read-only task is completed by the student, not by an answer.** D ➍ is a read-along
+shadowing exercise and E ➌ is a model post — a recording and its text, with no blanks at all —
+so there is nothing to submit, check or score, and yet a student who has listened and read has
+done the task. It carries the same **Mark as complete** control as a self-check task
+(`TaskResponseStore.recordChecked()`), which records one `complete: true` attempt and no blanks,
+and its Next waits for that attempt like every other task's. The alternative — an ungated Next —
+advanced the student for free and left both tasks permanently unticked in the TOC, because a
+completion is only ever read from an attempt. The button reads *Completed* and disables itself
+once recorded, and the TOC tick and the picker's `complete/total` read the attempt like any
+other.
 
 ## Navigation and Information Architecture
 
@@ -1301,7 +1311,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 | `TextbookToc` | The tree itself: collapsible units → lessons → tasks, current lesson expanded |
 | `TaskTypeIcon` | A task's `type` as an icon (`Headphones`/`BookOpen`/`MessagesSquare`/`PenLine`) with the localized type name as its accessible label |
 | `TaskStimulus` | Renders `task.body` in authored order. **Every kind in the `Stimulus` union has a case here, on both platforms.** An unrendered kind is not a cosmetic gap: A ➊ shipped on web with only its instruction line and audio row, because web's `TaskStimulus` handled `passage`/`recall`/`audio` and returned `null` for the other nine — no map, no picture set, nothing to answer with. The two implementations are kept case-for-case (`switch` on `stimulus.kind`) so a missing case is visible |
-| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), the task controls, result banner — the consistency anchor. Its control group is Submit / Try again / **Mark as complete** (self-check) / **Next**, each rendered only for the tasks it applies to, with Next disabled until the task is resolved and hidden on the last task (see [Task controls and moving on](#task-controls-and-moving-on)). **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
+| `TaskShell` | Task number, type icon, audio, L2 tokenized instructions (+ machine-translated L1 when enabled), the task controls, result banner — the consistency anchor. Its control group is Submit / Try again / **Mark as complete** (self-check and read-only) / **Next**, each rendered only for the tasks it applies to, with Next disabled until the task is resolved and hidden on the last task (see [Task controls and moving on](#task-controls-and-moving-on)). **Also the task context provider**: `TaskProvider` wraps it so blanks read state without a prop (see the mobile re-render boundary) |
 | `TaskAudioProvider` | Owns the task's single player and active track, so every control shares it and only one track plays at a time. Given the **task**, not `task.audio[]`: it resolves a URL for every recording declared at any level (`audioTracksIn`), so an item's control cannot name a track the player cannot play |
 | `AudioPlayer` | A set of recordings as a row: play/pause, per-track selection, and a transport — scrub bar with elapsed time and replay on web, ±10 s steppers and replay on mobile (React Native has no range input). The transport is **scoped to this row's track keys**, so a page with several players shows progress only in the one playing. **Sticky** below the app header while its block is on screen (web), and pinned for the task's own row on mobile — see [A full bar stays in view](#a-full-bar-stays-in-view) |
 | `TrackControls` | A recording's controls as **one segmented pill**: play/pause, then the transcript when that recording has one, separated by a hairline divider inside one rounded border. The same pill in every place a recording is offered — beside a numbered slot and in the task's audio row, both read `① [▶|▤]`, the numeral printed by the caller as decoration. A recording with no transcript gets a one-segment pill — no disabled button, so the affordance never promises text that is not there |
@@ -1924,10 +1934,20 @@ and turns the control into *Hide answer*; checking all three stores the reveals
 complete* and a disabled **Next**; marking it complete records one attempt with
 `complete: true`, turns the button into *Completed*, enables **Next**, and Next moves to C ➍ —
 the book's TOC shows C ➌ ticked and lesson C at `1/4`. A graded task's **Next** behaves the
-same way around Submit (C ➍: disabled, then enabled), a read-only task (E ➌) offers an enabled
-Next with no Submit, and the last task (E ➍) shows no Next at all.
+same way around Submit (C ➍: disabled, then enabled), and the last task (E ➍) shows no Next at
+all. A read-only task (E ➌) offered an enabled Next with no Submit when this pass was run; that
+is no longer the behaviour — see the next paragraph.
 
-That pass also caught a real load failure on read-only tasks: `expandAcceptedVariants` returns
+**Read-only tasks were given Mark as complete afterwards, and that control is covered by a
+component test rather than a browser pass (2026-11-24).** D ➍'s read-along and E ➌'s model post
+now resolve the way C ➌ does: *Mark as complete* (→ *Completed*) beside a **Next** that stays
+disabled until the attempt exists, because the ungated Next left both tasks permanently unticked
+in the TOC. `task-shell.test.tsx` renders both tasks and asserts the control labels, the disabled
+Next, one `complete: true` attempt carrying no blanks, the idempotent second press, the move to
+D ➎, and that a graded task (C ➍) still shows Submit / Try again with no Mark as complete. No
+browser pass has been run over the read-only controls since the change.
+
+The C ➌ pass also caught a real load failure on read-only tasks: `expandAcceptedVariants` returns
 the task **synchronously** when there is nothing to convert (E ➌ has no `blanks`), and the task
 provider called `.then` on that value — "*… then is not a function*". Both providers now
 normalise it with `Promise.resolve`, and `task-provider.test.tsx` renders a no-blank task.

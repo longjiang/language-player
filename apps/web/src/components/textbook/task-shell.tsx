@@ -91,6 +91,15 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   /** A check-only task: questions to self-check, and nothing that could be submitted. */
   const isSelfCheckOnly =
     !hasAnswerable && Object.values(task.blanks ?? {}).some((b) => b.kind === 'selfCheck');
+  /**
+   * A read-only task (D ➍'s read-along, E ➌'s model post) asks nothing: no blanks, no mock app,
+   * nothing to grade and nothing to reveal. It still has to resolve — a student who has listened
+   * and read has done the task — so it is completed the same explicit way a self-check task is,
+   * rather than through an ungated Next that would leave it unticked forever.
+   */
+  const isReadOnly = !hasAnswerable && !isSelfCheckOnly && !hasMockApp;
+  /** A task whose completion the student records themselves: self-check, or nothing to answer. */
+  const needsExplicitCompletion = isSelfCheckOnly || isReadOnly;
   const answersOnPage = Object.values(task.blanks ?? {}).filter((b) => b.kind !== 'given').length;
 
   // ── Moving on ──
@@ -98,8 +107,9 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   const nextTask = adjacentTasks(book, task.id).next;
   /**
    * The latest un-voided attempt, as a primitive so it can be a store snapshot. A graded
-   * Submit and a self-check's Mark as complete both append one, so this is "the task has been
-   * resolved" — which is what enables Next.
+   * Submit, a self-check's Mark as complete, a read-only task's Mark as complete and a mock
+   * app's All Done! all append one, so this is "the task has been resolved" — which is what
+   * enables Next.
    */
   const getAttemptState = useCallback(() => {
     const latest = [...ctx.store.getAttempts()].reverse().find((attempt) => !attempt.voidedAt);
@@ -113,12 +123,11 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   );
   const completed = attemptState === 'complete';
   /**
-   * Next waits for the task to be resolved: submitted (right or wrong) or marked complete.
-   * A read-only task (D ➍'s read-along, E ➌'s model post) has nothing to resolve, so its Next
-   * is available immediately; a mock-app task resolves when its panel records All Done!.
+   * Next waits for an attempt. Every task has a way to record one — Submit, Mark as complete
+   * (self-check or read-only), or the mock app's own All Done! — so nothing advances without
+   * the task it leaves behind having been resolved.
    */
-  const canAdvance =
-    attemptState !== 'none' || (!hasAnswerable && !isSelfCheckOnly && !hasMockApp);
+  const canAdvance = attemptState !== 'none';
 
   return (
     // The playback engine wraps the whole task, so the audio row at the top and the
@@ -180,10 +189,9 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
           the panel's is the one that knows which task is being answered. The result banner
           above reports the outcome.
 
-          A self-check task has nothing to submit: it gets Mark as complete instead, and the
-          button says so once it has been recorded. Next sits beside whichever group applies,
-          disabled until the task is resolved (submitted, marked complete, or — for a
-          read-only task — immediately). */}
+          A self-check or read-only task has nothing to submit: it gets Mark as complete
+          instead, and the button says so once it has been recorded. Next sits beside
+          whichever group applies, disabled until the task is resolved by an attempt. */}
       {submitted && result && (
         <div
           role="status"
@@ -210,7 +218,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
         </div>
       )}
 
-      {(hasAnswerable || isSelfCheckOnly || nextTask) && (
+      {(hasAnswerable || needsExplicitCompletion || nextTask) && (
         <div className="flex flex-wrap items-center gap-3">
           {!hasMockApp && hasAnswerable && (
             <>
@@ -231,7 +239,7 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
               </button>
             </>
           )}
-          {!hasMockApp && isSelfCheckOnly && (
+          {!hasMockApp && needsExplicitCompletion && (
             <button
               type="button"
               onClick={() => ctx.store.recordChecked()}
