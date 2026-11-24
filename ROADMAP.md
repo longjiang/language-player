@@ -89,6 +89,7 @@
 - ✅ Documentation / Help
 - ✅ Ebook reader — bookshelf, EPUB, paginated reader, notes reader, web reader, PDF (web only) and image reader (vision OCR) (SPEC-085, SPEC-087, SPEC-089, SPEC-090)
 - ✅ Interactive textbook — `book > unit > lesson > task` with interactive blanks and per-activity widgets (SPEC-095)
+- ⬜ Task data sync and student recordings — server-side answers/attempts (cross-device) and in-app audio capture for speaking tasks (SPEC-111, ADR-0053; design only)
 
 ## Phase 6: User Features
 

@@ -9,7 +9,7 @@
 - [SPEC-053: Mobile offline mode](../specs/053-mobile-offline-mode.md) — the `sync.db` outbox / `entity_cache` / `/sync/pull` engine extended here
 - [SPEC-039: Full database migration](../specs/039-full-database-migration-supabase.md) — Supabase is the store; Flask is the only gateway
 - [SPEC-095: Interactive textbook](../specs/095-interactive-textbook.md) — the feature whose Non-Goals this supersedes
-- SPEC-111: Task data sync and student recordings — the implementation plan that follows this decision (its own file lands with it)
+- [SPEC-111: Task data sync and student recordings](../specs/111-task-data-sync-and-recordings.md) — the implementation plan that follows this decision
 
 ---
 
@@ -102,10 +102,12 @@ Storage bucket for the bytes. Local storage stays the device's working copy.**
    cascade` and owner RLS policies, and the two security-migration table arrays
    are extended so new tables inherit the same baseline.
 2. **Attempts keep ADR-0044's shape and gain a stable id.** A new attempt gets a
-   client-generated UUID at creation; the old `taskId#seq` form is retired
-   rather than migrated (no attempt has ever left a device, so there is nothing
-   to migrate). The UUID is the idempotency key — replaying a push cannot mint a
-   second attempt, and two devices cannot collide.
+   client-generated stable id at creation (`crypto.randomUUID()` on web, the
+   Hermes-safe `makeSyncId()` on mobile — the column is `text` so the format is
+   not a schema concern); the old `taskId#seq` form is retired rather than
+   migrated (no attempt has ever left a device, so there is nothing to migrate).
+   That id is the idempotency key — replaying a push cannot mint a second
+   attempt, and two devices cannot collide.
 3. **Completion stays derived.** No completion table and no `completed` flag: the
    latest un-voided attempt's `result.complete` is the answer, exactly as the
    TOC and picker compute it locally today (`taskProgress` /

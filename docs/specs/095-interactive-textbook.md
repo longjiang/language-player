@@ -13,7 +13,8 @@
 - **Web ref**: `apps/web/src/app/[l1]/[l2]/tasks/` (new), `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/app/docs/doc-sidebar.tsx` (TOC pattern)
 - **Mobile ref**: `apps/mobile/app/(tabs)/(vocab)/tasks.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
 - **Source content**: `tmp/interactive-text/` (workbook PDF, answer key PDF, audio transcript PDF, 47 mp3)
-- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0047 (mobile keyboard-aware inputs), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
+- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording — superseded in part by ADR-0053), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0047 (mobile keyboard-aware inputs), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
+- **Successor for state sync and recordings**: [SPEC-111](111-task-data-sync-and-recordings.md) (with [ADR-0053](../adr/0053-task-data-sync-and-recordings.md)) adds the server copy of task state and in-app audio capture. It supersedes this spec's "local only" Non-Goal and the `record` capability D ➐ needs; nothing else in this spec changes.
 
 > **Note on scope**: Classic/Nuxt (`zerotohero-nuxt/`) is treated as **out of scope** for this feature by explicit product decision. This spec is grounded in the source workbook and the active web/mobile codebase only.
 
@@ -46,7 +47,7 @@ The defining property of this content, and therefore of this feature, is that **
 | **D ➍** | the same recording + transcript | read along — no response | — |
 | **D ➎** | the same recording | 5 note cards, 1 printed as a worked example | free text |
 | **D ➏** | — | 5 note cards (a draft) | free text |
-| **D ➐** | ➏'s draft, recalled | 1 self-check note; the recording is out of band | — |
+| **D ➐** | ➏'s draft, recalled | 1 self-check note; the recording is out of band (in-app capture is [SPEC-111](111-task-data-sync-and-recordings.md) Phase 2) | — |
 | **E ➊ / ➋** | recordings + picture sets | boxed per-character dictation | typed, one box per character |
 | **E ➌** | a model social-media post | read it — no response | — |
 | **E ➍** | — | free writing (the model post is ➌'s) | — |
@@ -84,7 +85,7 @@ Consequently the feature is **not** 60 bespoke activity components. It is **two 
 Decided, not deferred — these are out of scope deliberately:
 
 - **Textbook performance does not feed SRS.** Completing tasks does not create review cards, and incorrect blanks are not auto-saved as words. This is a product decision, not a phasing one. `scoreTestResult` is reused only for its scoring shape.
-- **Exercise state is local only.** Answers, completion and attempt history live on the device (ADR-0044). There is no server-side exercise table, no sync, and no cross-device continuity — and none is planned here.
+- **Exercise state is local only.** Answers, completion and attempt history live on the device (ADR-0044) and there is no server-side exercise table, no sync and no cross-device continuity. **Superseded 2026-11-24:** [SPEC-111](111-task-data-sync-and-recordings.md) / [ADR-0053](../adr/0053-task-data-sync-and-recordings.md) add the server copy; the device store stays the working copy, so the local design described in this spec is unchanged.
 - **No pagination.** Long reading passages (B ➎, E ➌) render as a single continuous scrolling block. The existing paginated reader (`apps/web/src/components/reader/paginated-reader.tsx`, SPEC-087) is **not** integrated, and its measuring-window contract is not a dependency of this feature.
 - **No free-form conversation production or scoring** (see Phasing).
 - **No authoring UI.** Content is authored as files in the repository and validated in CI; there is no CMS screen for it.
@@ -1709,7 +1710,8 @@ Audio was a from-scratch build: there was no audio-file playback path on either 
 ## Dependencies
 
 - **ADR-0043** — asset hosting (`ASSET_BASE_URL`). Must be settled before any content file references an asset key.
-- **ADR-0044** — exercise state model and attempt recording.
+- **ADR-0044** — exercise state model and attempt recording. Its local-only scope is superseded in part by ADR-0053; the store shape, void semantics and content-version rule here still stand.
+- **SPEC-111** — task data sync and student recordings; owns the `record` stimulus D ➐ needs and the server copy of the state this spec keeps on the device.
 - **ADR-0041** — the `notes` inline seam this feature's `blank` seam mirrors.
 - **ADR-0045** — mock apps as sandboxed, self-contained HTML behind a frozen bridge; supplies the bridge contract, the sandbox and hosting rules, and the design-token carve-out.
 - **ADR-0003** — UI not shared between web and mobile.
@@ -1724,7 +1726,7 @@ All six questions this spec opened with were settled on 2026-09-11. Recorded her
 |---|---|---|
 | Instructions language | L2, rendered as **tokenized text**; L1 translation below, gated by the per-L2 `display.translation` setting | Instructions |
 | Does textbook performance feed SRS? | **No** — a product decision, not phasing | Non-Goals, Grading |
-| Attempt recording scope | **Local only** for now; no server-side exercise table or sync | Non-Goals, ADR-0044 |
+| Attempt recording scope | **Local only** for now; no server-side exercise table or sync. **Revised 2026-11-24:** server sync + recordings moved to [SPEC-111](111-task-data-sync-and-recordings.md) / [ADR-0053](../adr/0053-task-data-sync-and-recordings.md) | Non-Goals, ADR-0044, SPEC-111 |
 | Multi-book catalogue | Reached from **`Study` > `Tasks`**: the existing `Vocab` nav group is **renamed to `Study`** and `Tasks` is added **below `Review`** — no new top-level group, and not a bottom tab. Then a textbook picker, then the book's own full TOC list; opening a task shows a docs-style collapsible TOC of units → lessons → tasks **on the right**, beside the task | Navigation and Information Architecture |
 | `expectedLength` semantics | Circled numerals are **question indices** for answer-key lookup, **not** length hints. `expectedLength` defaults to `answer.length` and is set explicitly only for dictation (E ➊/➋), where the workbook prints one box per character | Schema rules #4 |
 | Pagination | **Not needed** — long passages render as one scrolling block | Non-Goals |
