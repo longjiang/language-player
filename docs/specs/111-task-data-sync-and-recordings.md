@@ -7,8 +7,8 @@
 - **Status**: draft — **design only, nothing implemented**. Every code change below is a plan, and none of it exists yet
 - **Created**: 2026-11-24
 - **ROADMAP Phase**: Phase 5 (Content Features)
-- **Supersedes (in scope only)**: this spec replaces two statements in [SPEC-095](095-interactive-textbook.md) — the Non-Goal "Exercise state is local only" and the resolved decision "Attempt recording scope". The architectural decision behind the change is [ADR-0053](../adr/0053-task-data-sync-and-recordings.md), which supersedes [ADR-0044](../adr/0044-textbook-exercise-state-local-only.md) decision 3
-- **Governing decision**: [ADR-0053](../adr/0053-task-data-sync-and-recordings.md)
+- **Supersedes (in scope only)**: this spec replaces two statements in [SPEC-095](095-interactive-textbook.md) — the Non-Goal "Exercise state is local only" and the resolved decision "Attempt recording scope". The architectural decision behind the change is [ADR-0053](../adr/0053-task-data-sync-and-user-files.md), which supersedes [ADR-0044](../adr/0044-textbook-exercise-state-local-only.md) decision 3
+- **Governing decision**: [ADR-0053](../adr/0053-task-data-sync-and-user-files.md)
 - **Web ref**: `apps/web/src/components/textbook/task-provider.tsx`, `apps/web/src/app/[l1]/[l2]/tasks/…`, `apps/web/src/components/textbook/task-shell.tsx`
 - **Mobile ref**: `apps/mobile/components/textbook/task-provider.tsx`, `apps/mobile/components/textbook/TaskView.tsx`, `apps/mobile/lib/sync-db.ts`, `apps/mobile/lib/sync-engine.ts`
 - **Backend ref**: `zerotohero-python-server/routes/sync.py`, `utils_sync.py`, `routes/user_data_columns.py`, `utils_user_data.py`, `routes/auth.py`

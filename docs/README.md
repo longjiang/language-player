@@ -195,7 +195,7 @@ docs/
 | 0050 | [Derived content data is maintained by the cheapest mechanism that guarantees correctness](adr/0050-derived-content-data-maintenance.md) | accepted | 2026-10-19 |
 | 0051 | [The `[l1]/[l2]` app shell is static; the request-time APIs live in the API routes](adr/0051-cacheable-app-shell.md) | accepted | 2026-10-27 |
 | 0052 | [The reader fetches pages through a hardened `/proxy` with a reader-service fallback](adr/0052-reader-fetch-hardening-and-fallback.md) | accepted | 2026-11-16 |
-| 0053 | [Task responses, attempts and recordings sync through Flask; recordings live in a private Supabase Storage bucket](adr/0053-task-data-sync-and-recordings.md) | accepted | 2026-11-24 |
+| 0053 | [Task state syncs through Flask, and user files live in a private store on the shared host](adr/0053-task-data-sync-and-user-files.md) | accepted | 2026-11-24 |
 | 0054 | [A sale is a featured coupon; the window lives on the coupon row](adr/0054-sale-window-on-coupon-row.md) | accepted | 2026-11-25 |
 
 ## Architecture Docs
