@@ -3,29 +3,29 @@
 ## Metadata
 
 - **Spec ID**: SPEC-112
-- **Feature**: Sales become coupon rows in the database instead of hardcoded
-  client-side date windows; one public endpoint is the single authority for
-  *when* a sale runs and *how much* it costs; a landing-page sale banner; and
-  a verified answer for what this can and cannot do through the App Store and
-  Google Play.
-- **Status**: **draft — proposal only, nothing implemented.** Decisions in
-  [Open decisions](#open-decisions) need product sign-off before code.
+- **Feature**: Sales become a **featured coupon** in the database instead of a
+  hardcoded client-side date window; a public endpoint serves it to the landing
+  banner, the pricing table, the go-pro page, and the in-app upgrade prompts;
+  the admin console gains the expiry **time zone** and **LLM-assisted,
+  editable translations** of the public sale title.
+- **Status**: **draft — decisions approved 2026-11-25; not implemented.**
 - **Created**: 2026-11-25
 - **ROADMAP Phase**: Phase 10 — Admin Console / payments
 - **See also**:
   - [ADR-0048 — Sale windows are gated on the client clock](0048-client-side-sale-window-gating.md)
-    — **Decision 1 is superseded by this spec** (see
+    — **decision 1 is superseded by this spec** (see
     [Documentation impact](#documentation-impact))
   - [SPEC-014 — Subscription & Payment System](014-subscription-payment-system.md)
-    § *Mid-Autumn sale* — the current sale mechanism this replaces
+    § *Mid-Autumn sale* — the sale mechanism this replaces
   - [SPEC-102 — Affiliates and Coupon Codes](102-affiliates-and-coupons.md) —
     the coupon model this extends
+  - [SPEC-101 — Admin Transactions](101-admin-transactions.md) — its
+    `sale_windows.csv` estimate adjustment is sunset by this spec
   - [ARCH-022 — Payment, Subscription & MailerLite](../arch/022-payment-subscription-mailerlite.md)
   - [ARCH-024 — Mobile In-App Purchase](../arch/024-mobile-iap-architecture.md)
-  - [ADR-0013 — App store strategy](../adr/0013-app-store-strategy.md)
   - `packages/shared/src/sale.ts`, `zerotohero-python-server/utils_coupons.py`,
-    `zerotohero-python-server/data/sale_windows.csv`,
-    `zerotohero-python-server/data/prices.csv`,
+    `zerotohero-python-server/routes/coupons.py`,
+    `zerotohero-python-server/routes/admin_transactions.py`,
     `apps/web/src/app/(public)/page.tsx`,
     `apps/web/src/components/landing/pricing-section.tsx`,
     `apps/web/src/app/[l1]/[l2]/go-pro/page.tsx`,
@@ -39,99 +39,61 @@
 Today a sale is **three separate hardcoded things**: a client-side date window
 (`packages/shared/src/sale.ts`), a set of discounted price rows
 (`data/prices.csv`), and a historical window list used only for reporting
-(`data/sale_windows.csv`). Running a campaign means editing constants, adding
-price rows, and shipping a web deploy — plus a mobile build for the window to
-change, because the same constants are compiled into the app.
+(`data/sale_windows.csv`) that also *blocks coupons* while any window is open.
+Running a campaign means editing constants and shipping a web deploy, plus a
+mobile build for the window to change.
 
-This spec makes a sale **one row**: a coupon in `public.coupons` that is marked
-as the public campaign. The coupon already carries the discount; it gains a
-start time, a customer-facing title, and a "this is the public sale" flag. A new
-public `GET /sale` endpoint exposes the active featured coupon, and every
-surface — landing banner, pricing table, go-pro page, in-app upgrade prompts —
-renders from that one response. Checkout already validates and reserves a
-coupon server-side; it keeps doing that.
+This spec makes a sale **one coupon row**, marked as the public sale. Coupons
+already exist (SPEC-102 v1) with redemption limits, a 30-minute reservation,
+lazy Stripe coupons, and per-user uniqueness; `BF50` is already in the
+database. The coupon gains a customer-facing title, its per-locale
+translations, a `featured` flag, and the expiry's time zone. A new public
+`GET /coupons/featured` returns the active featured coupon, and every surface
+renders from that one response. Checkout does not change: it already validates,
+reserves, applies, and confirms the coupon.
 
-The result: changing a campaign's dates, code, title, or percentage is a
-database/admin action, not a deploy. The advertised discount and the charged
-discount come from the same row. And Stripe **test** mode can finally exercise a
-sale, because coupons (unlike the `type=sale` price rows) have test Stripe
-coupon ids.
+The benefits:
 
-The second half of the spec answers the store question, because a web coupon
-cannot be redeemed through App Store or Play billing. The short answer, with
-the evidence in [App Store and Google Play](#app-store-and-google-play--how-a-coupon-sale-actually-works-on-mobile):
-**our `BF50` works only on web (Stripe card / PayPal, USD).** iOS and Android
-have their own promo/offer mechanisms with different constraints, and they do
-not read our database.
+- **No redeploy per campaign.** Dates, code, title, discount, and cap are data.
+- **One authority.** The advertised and the charged discount come from the same
+  row, via the same server arithmetic.
+- **Coupons start when created/featured and end at `expires_at`** — no separate
+  client clock, and therefore no per-device timezone disagreement.
+- **Testable.** Coupons have test Stripe coupon ids, so Stripe test mode can
+  finally exercise a sale (the `type=sale` price rows never could).
+- **`sale_windows.csv` is sunset** so a sale no longer disables the coupon that
+  *is* the sale.
 
-The concrete Black Friday campaign is just data — `BF50` is already in the
-database; ops sets its window, title, and featured flag.
-
-## Motivation
-
-### Three authorities instead of one
-
-| Authority | File | Answers | Problem |
-|---|---|---|---|
-| Client clock | `packages/shared/src/sale.ts` (`SALE_START_LOCAL`, `SALE_END_LOCAL`, `isSaleWindowOpen()`) | **When** is the sale? | Compiled into web **and** mobile; dates are constants. ADR-0048 chose per-device local time, so every device decides separately |
-| Price rows | `data/prices.csv` `type=sale` rows | **How much**? | Static CSV: a time-bounded offer needs a hand flip; no `test_price_id`, so the sale is untestable in Stripe test mode (ADR-0048 consequence) |
-| Reporting windows | `data/sale_windows.csv` | What did we *estimate* historically? | Also gates coupons via `utils_coupons._sale_active()`, so a coupon sale collides with its own window |
-
-Three sources that must agree, none of which can start or end a sale on its
-own. ADR-0048 already documented the failure mode: the backend `status` column
-cannot express a window, so the sale was permanently off until the client
-window was added — and then the amount came from the price row, not the window.
-
-### What we already have
-
-- **Coupons are implemented** (SPEC-102 v1): admin CRUD, public validation,
-  reservation for 30 minutes, `coupon_redemptions`, Stripe coupons created
-  lazily and cached (`stripe_coupon_id_live` / `_test`), PayPal support, and a
-  `payment_events` ledger.
-- **`BF50` already exists** in `public.coupons` (50% off, lifetime, USD) — the
-  campaign can be run today by typing the code at checkout; it just has no way
-  to advertise itself.
-- **Checkout already sends `coupon_code`** from the go-pro page in both the
-  Stripe and PayPal paths, reserves it, and confirms it on payment.
-- **The UI already previews the discounted amount** from the server
-  (`couponPreview.finalCents`), so "what you see is what is charged" for
-  coupon purchases is already true.
-
-### What is missing
-
-1. Coupons have no **start** time and no **customer-facing** name — only
-   `expires_at` and an `internal_name`.
-2. Coupons have no way to say "this one is the public sale".
-3. Coupons are **blocked while any `sale_windows.csv` window is open**
-   (`_sale_active()`), and the go-pro page disables the coupon input while the
-   client window is open — the sale and the coupon fight each other.
-4. The sale headline is the literal translation key `msg.sale_mid_autumn`,
-   hardcoded in go-pro, the pricing section, and `SaleNotice` (and mirrored by
-   the `SALE_NAME_KEY` constant). A new campaign needs new code + new
-   translations.
-5. There is no sale banner on the landing page — the original request that
-   started this work.
+Classic/Nuxt is deliberately out of scope: it keeps its own hardcoded sale
+constant, and the new coupon-driven sale will not appear there.
 
 ## Current state (as built)
 
-- `apps/web/src/hooks/use-sale.ts` resolves the window in an effect after
-  mount (never during SSR — a `'use client'` component is still server-
-  rendered), re-checking every 60s.
-- Consumers: `go-pro/page.tsx` (`showSale`, sale banner, sale price card,
-  `coupon_not_with_sale` guard), `landing/pricing-section.tsx` (fetch prices
-  only while the window is open), `sale-notice.tsx` (3 in-app upgrade
-  prompts), and mobile's `SaleNotice`, `profile.tsx`, `go-pro.tsx`,
-  `use-sale-pricing.ts`.
-- `GET /stripe-prices` returns regular and `type=sale` rows;
-  `findSalePrice()` deliberately ignores `status`.
-- `POST /coupons/validate` and `/create-stripe-checkout-session` reject a
-  coupon with `code: sale_active` whenever a `sale_windows.csv` window covers
-  today (`utils_coupons._sale_active()`).
-- CNY checkout uses prebuilt Stripe Payment Links, so it cannot accept a
-  coupon — a coupon sale is **USD-only** (Stripe card and PayPal).
-- Mobile sells lifetime Pro only through IAP (`pro_go`, non-consumable;
-  iOS deployment target 16.4), and never claims a discount unless the store's
-  own price is below our regular row (`hasStoreDiscount()`).
+- **Coupons (SPEC-102 v1) are implemented** in `utils_coupons.py` and
+  `routes/coupons.py`: admin CRUD, `POST /coupons/validate`, 30-minute
+  reservations, `coupon_redemptions`, lazily-created and cached Stripe coupons
+  (`stripe_coupon_id_live` / `_test`), PayPal support, and a `payment_events`
+  ledger.
+- **`BF50` already exists** in `public.coupons` (50% off, lifetime, USD). While
+  it is active and unexpired it is redeemable at checkout with no way to
+  advertise itself.
+- **Checkout already sends `coupon_code`** from go-pro in the Stripe and PayPal
+  paths, reserves it, and confirms it on payment.
+- **The UI already previews the discounted amount** from the server
+  (`couponPreview.finalCents`), so "what you see is what is charged" for coupon
+  purchases is already true.
+- **Coupons are blocked while any `sale_windows.csv` window is open**
+  (`utils_coupons._sale_active()`, error code `sale_active`), and the go-pro
+  page disables the coupon input while the client window is open — the sale and
+  the coupon fight each other.
+- **The sale headline is the literal translation key `msg.sale_mid_autumn`**,
+  hardcoded in go-pro, the pricing section, and `SaleNotice`; a new campaign
+  needs new code and new translations.
+- **Mobile has no coupon field** (confirmed: zero coupon references under
+  `apps/mobile`). It does have window-driven sale chrome (`SaleNotice`, go-pro
+  sale banner, strikethrough) — this spec removes it.
+- **Classic/Nuxt** has its own `lib/utils/variables.js` sale constant and is not
+  touched.
 
 ## Documentation impact
 
@@ -140,88 +102,110 @@ ADR-0048 is an accepted decision record. On approval:
 
 | Document | Change |
 |---|---|
-| `docs/adr/0048-client-side-sale-window-gating.md` | **Superseded in part.** Decisions 1 (client clock is the authority for *when*) and the "sale ends by itself" rationale move to a server-owned window on the coupon row. Decisions 2–5 (amount from backend rows, derived percentage, store prices read-never-claimed) still hold. Write **ADR-0054 — Sale window is stored on the coupon row; one public endpoint serves it**, and mark ADR-0048 as superseded with a pointer. |
-| `docs/specs/014-subscription-payment-system.md` | Replace § *Mid-Autumn sale* with § *Sales (coupon-driven)* and the behaviour matrix; keep the store-price sections but point at this spec for the store mechanisms. |
-| `docs/specs/102-affiliates-and-coupons.md` | Extend the coupon model (`starts_at`, `featured`, `public_title`), remove "coupons cannot be combined with a sale" in favour of "the sale *is* a coupon", and replace the claim that store billing "cannot accept a coupon" with the verified store mechanisms (offer codes / discount offers). |
-| `ROADMAP.md` | Phase 10 bullet for SPEC-112 while it is in progress. |
-| `docs/README.md` | Spec index row (added with this draft). |
+| `docs/adr/0048-client-side-sale-window-gating.md` | **Superseded in part.** Decision 1 (the client clock is the authority for *when*) and the "sale ends by itself" rationale move to the coupon row's `expires_at`, served by one public endpoint. Decisions 2–5 (amount from the backend, derived percentage, store prices read-never-claimed) still hold. Write **ADR-0054 — The sale window lives on the coupon row; one public endpoint serves it**, and mark ADR-0048 superseded with a pointer. |
+| `docs/specs/014-subscription-payment-system.md` | Replace § *Mid-Autumn sale* with § *Sales (coupon-driven)* and the behaviour matrix; keep the store-price text but point at this spec. |
+| `docs/specs/102-affiliates-and-coupons.md` | Extend the coupon model (`featured`, `public_title`, `public_title_i18n`, `expires_timezone`); replace "coupons cannot be combined with a sale" with "the sale *is* a coupon"; correct the claim that store billing can never accept a coupon (stores have their own offer mechanisms — noted, not implemented here). |
+| `docs/specs/101-admin-transactions.md`, `docs/specs/100-admin-signup-analytics.md`, `docs/arch/022-payment-subscription-mailerlite.md` | Remove the `sale_windows.csv` estimate adjustment and its documentation. |
+| `ROADMAP.md` / `docs/README.md` | Phase 10 bullet (added with this draft) and spec index row (added). |
 
-## Proposed design
+## Design
 
 ### 1. One authority: the featured coupon
 
-A campaign is a coupon row with:
+A sale is a coupon row where:
 
-- `featured = true` — this is the public sale; at most one at a time;
-- `public_title` — the customer-facing name ("Black Friday"), rendered as data,
-  not as a translation key;
-- `starts_at` / `expires_at` — the window. **Both are UTC instants, evaluated
-  by the server.** Display converts to the viewer's locale/timezone.
+- `featured = true` — this is the public sale; **at most one at a time**;
+- `public_title` — the customer-facing name ("Black Friday"), **data, not a
+  translation key**;
+- `public_title_i18n` — per-locale translations of that title, edited in the
+  admin console (LLM-assisted, manually adjustable);
+- `expires_at` — the end of the sale.
 
-The coupon's own `percent_off` / `amount_off_cents` is the discount. The
-featured coupon is valid on the same terms as every other coupon: lifetime
-only, USD only, one redemption per user, `max_redemptions` cap.
+**Start = now.** There is no `starts_at`: a coupon is usable from creation, and
+featuring it is the start action. To run a campaign later, create/feature it
+when the campaign should begin.
 
-> **Why UTC and not per-device local time (a deliberate change from ADR-0048).**
-> A coupon's expiry is enforced by the server. If the banner used a per-device
-> window, a user in UTC+13 could see "50% off" hours before the coupon is
-> actually redeemable, and a user in UTC-10 could see it after expiry. One
-> server instant is the only window that can match what checkout accepts.
-> The *display* is still localised ("ends Nov 30" in the user's locale).
+**Window = `featured AND active AND now < expires_at`** (and still redeemable:
+`remaining > 0`). Evaluated by the server against UTC instants, so every device
+agrees with checkout. The banner displays the end date in the viewer's locale;
+the campaign's own time zone is stored for the admin's benefit
+(see [Admin console](#5-admin-console)).
+
+The coupon's `percent_off` / `amount_off_cents` is the discount. All SPEC-102
+rules apply unchanged: lifetime only, USD only, one redemption per user,
+`max_redemptions` cap, immutable code/discount (archive and recreate).
 
 ### 2. Data model
 
-```sql
--- 202611250001_featured_sale_coupons.sql (proposed)
-alter table public.coupons
-  add column starts_at timestamptz,          -- null = usable immediately (back-compat)
-  add column featured boolean not null default false,
-  add column public_title text;              -- customer-facing, e.g. 'Black Friday'
+Extend `public.coupons` — **no new table**. `public_title` is only meaningful
+on the single featured coupon, exactly as you described:
 
--- At most one public sale at a time.
+```sql
+-- 202611250001_featured_sale_coupon.sql (proposed)
+alter table public.coupons
+  add column featured boolean not null default false,
+  add column public_title text,
+  add column public_title_i18n jsonb not null default '{}'::jsonb,
+  add column expires_timezone text not null default 'UTC';
+
+-- One public sale at a time.
 create unique index coupons_single_featured_idx
   on public.coupons ((featured)) where featured;
 
--- The public endpoint's lookup.
-create index coupons_featured_window_idx
-  on public.coupons (featured, active, starts_at, expires_at)
+create index coupons_featured_idx
+  on public.coupons (featured, active, expires_at)
   where featured;
 ```
 
-API-level constraints (in `utils_coupons.py`, not just the DB):
+API-level validation (`utils_coupons.py`, not only the DB):
 
-- A featured coupon must be `active`, `applies_to = 'lifetime'`,
-  `currency = 'usd'`, and have both `starts_at` and `expires_at` with
-  `starts_at < expires_at`.
-- A featured coupon must have `public_title` (trimmed, ≤ 60 chars).
-- `featured = true` on a second coupon is rejected with a clear error
-  (the partial unique index is the backstop).
-- Making a coupon featured does **not** change its discount. SPEC-102's rule
-  ("code/discount immutable; archive and recreate") stays.
+- `featured` requires `active`, `applies_to = 'lifetime'`, `currency = 'usd'`,
+  a non-empty `public_title` (≤ 60 chars), and `expires_at` in the future.
+- `public_title_i18n` must be an object whose keys are supported locales and
+  whose values are non-empty strings (≤ 120 chars); unknown locales are
+  rejected.
+- `expires_timezone` must be a valid IANA zone (`zoneinfo.ZoneInfo`); the
+  default is `UTC`.
+- Two featured coupons are rejected with a clear error (the partial unique
+  index is the backstop).
+- Unfeaturing keeps the title and translations, so a campaign can be rerun by
+  toggling `featured` and extending `expires_at`.
 
-Backfill: existing coupons get `starts_at = created_at` (they are already
-usable) and `featured = false`. `BF50` is then updated by ops:
+Backfill: existing coupons get `featured = false`, empty `public_title_i18n`,
+`expires_timezone = 'UTC'`.
+
+Campaign seed (ops, not a migration — the values are data):
 
 ```sql
--- ops, not a migration: the campaign values are data
+-- Black Friday 2026. Translations deliberately empty: they are entered through
+-- the admin "translate" button, which is what we want to exercise.
 update public.coupons
-   set public_title = 'Black Friday',
-       starts_at    = '2026-11-25T00:00:00Z',
-       expires_at   = '2026-12-01T00:00:00Z',
-       max_redemptions = 10000,
-       featured     = true
+   set featured         = true,
+       public_title     = 'Black Friday',
+       public_title_i18n = '{}'::jsonb,
+       expires_at       = '2026-12-01T08:00:00Z',   -- 2026-12-01 00:00 America/Vancouver
+       expires_timezone = 'America/Vancouver'
  where lower(code) = 'bf50';
 ```
 
-### 3. Public API: `GET /sale`
+### 3. Public API: `GET /coupons/featured`
 
-The only new endpoint. Unauthenticated, no user data, cacheable.
+**Your naming is correct.** A sale has no fields or lifecycle of its own: it is
+a coupon plus the public/featured flag. `/coupons/featured` names the resource
+truthfully, sits beside `/coupons/validate` and the admin `/admin/coupons`
+routes, and keeps the response key as `coupon`, so the data model is obvious
+from the URL. `featured` is documented as "the one public sale coupon" (the
+partial unique index enforces the singular). If a future "featured but not on
+sale" concept appears, that is the point to revisit the name — not before.
+
+Response:
 
 ```json
 {
-  "offer": {
+  "coupon": {
     "code": "BF50",
-    "title": "Black Friday",
+    "publicTitle": "Black Friday",
+    "publicTitleI18n": {},
     "plan": "lifetime",
     "currency": "usd",
     "discountType": "percent",
@@ -229,302 +213,265 @@ The only new endpoint. Unauthenticated, no user data, cacheable.
     "amountOffCents": null,
     "regularCents": 16900,
     "finalCents": 8450,
-    "startsAt": "2026-11-25T00:00:00+00:00",
-    "endsAt": "2026-12-01T00:00:00+00:00"
+    "expiresAt": "2026-12-01T08:00:00+00:00",
+    "expiresTimezone": "America/Vancouver"
   }
 }
 ```
 
-When there is no sale, `{"offer": null}` (200, not 404 — the client renders
-nothing, and a 404 would show up as an error in monitoring).
+No active sale: `{"coupon": null}` (200, not 404 — the client renders nothing
+and a 404 would be an error in monitoring).
 
 Rules:
 
-- Resolve from **one row**: `featured AND active AND starts_at <= now() AND
-  now() < expires_at` and `remaining > 0` (confirmed + live reservations).
-- `regularCents` comes from the current regular lifetime-USD row (the same
-  `lifetime_price_cents()` the validation path uses), so `finalCents` is
-  computed by the same arithmetic as `/coupons/validate` — one rounding rule,
-  one result.
-- `percentOff` is **derived** for `amount` coupons
+- Resolve from **one row**: `featured AND active AND now < expires_at` and
+  `remaining > 0` (confirmed + live reservations).
+- `regularCents` comes from the same `lifetime_price_cents()` that validation
+  uses; `finalCents` uses the same `_discount_cents()` clamp, so the banner and
+  the checkout cannot disagree.
+- `percentOff` is **derived** for amount coupons
   (`round((1 − final/regular) × 100)`), so the banner never invents a
-  percentage. For `percent` coupons it is the row's value.
-- Expired / exhausted / deactivated coupons return `null`, so the banner
-  disappears without a deploy.
-- Headers: `Cache-Control: public, max-age=60, s-maxage=60,
-  stale-while-revalidate=300`. The 60s cache bounds the start/end skew; that
-  is acceptable and documented (a user at the boundary may see the offer up to
-  60s stale, but checkout is still authoritative).
-- **No** coupon counts, redemption data, or admin fields are exposed.
+  percentage. For percent coupons it is the row value.
+- Expired / archived / exhausted / unfeatured coupons return `null`.
+- `Cache-Control: public, max-age=60, s-maxage=60,
+  stale-while-revalidate=300`. The 60s cache bounds start/end skew; checkout
+  remains authoritative.
+- **No** `id`, redemption counts, Stripe ids, or other admin fields are
+  exposed.
+- `publicTitleI18n` is returned whole; the client picks its locale and falls
+  back to `publicTitle`.
 
-`/coupons/validate` and checkout keep the same shape. `_sale_active()` is
-removed from the coupon path: the sale is now this coupon, so "cannot combine
-with a sale" becomes "one offer per purchase" (already enforced by the
-reservation and by one coupon per checkout).
+### 4. Checkout and `sale_windows`
 
-### 4. Checkout (unchanged mechanics, one new source)
+Checkout mechanics do not change: `/coupons/validate` (auth-required preview),
+then `/create-stripe-checkout-session` or the PayPal path (reserve → lazily
+create the Stripe coupon → apply), then `confirm_redemption()` on payment.
 
-- `POST /coupons/validate` — unchanged, still auth-required, still previews
-  `finalCents`.
-- `POST /create-stripe-checkout-session` — unchanged: reserve → lazily create
-  the Stripe coupon → `discounts: [{coupon}]`; remove the `sale_active`
-  rejection. Stripe test mode works because the test coupon id is cached on
-  the row.
-- PayPal path — unchanged (already server-computed).
-- CNY Payment Links — **cannot** carry a coupon. The go-pro page already hides
-  the CNY links when a coupon is applied; the spec keeps that behaviour and
-  states it in the UI copy (`msg.coupon_usd_only`).
-- Webhook / success callback — unchanged: `confirm_redemption()` writes the
-  confirmed redemption and the `payment_events` row.
+Changes:
+
+- **Remove `_sale_active()`** and the `sale_active` rejection from
+  `validate_coupon()` / `reserve_coupon()`. The sale *is* a coupon, so "cannot
+  combine with a sale" becomes "one coupon per purchase" (already enforced).
+- **Sunset `sale_windows`.** Delete `zerotohero-python-server/data/sale_windows.csv`,
+  `routes/admin_transactions.py`'s `sale_windows()` / `_sale_multiplier()` and
+  the `windows` plumbing, and stop adjusting historical price estimates by a
+  sale multiplier. **Consequence to be aware of:** pre-ledger Transactions and
+  Analytics revenue estimates for past sale dates revert to the regular price
+  (they will read higher). New purchases come from `payment_events` exact
+  amounts, so the effect is limited to rows recorded before the ledger. If
+  preserving the historical adjustment matters, freeze the CSV as
+  `data/historical_sale_windows.csv` and keep only the estimation read — but no
+  gating.
+- **USD only.** CNY's prebuilt Stripe Payment Links cannot carry a coupon, so a
+  coupon sale is available on Stripe card and PayPal (USD). The go-pro page
+  already hides the CNY links when a coupon is applied (`msg.coupon_usd_only`).
+- `msg.coupon_not_with_sale` and its UI branch are removed; the CSV row can stay
+  unused, like other retired keys.
 
 ### 5. Admin console
 
-`apps/admin` → Coupons (`apps/admin/src/app/coupons/page.tsx`):
+`apps/admin` → Coupons (`apps/admin/src/app/coupons/page.tsx`).
 
-- Create/edit form gains **Starts at**, **Public title**, and
-  **Feature on the landing page** (checkbox).
-- Validation mirrors the API rules; the featured toggle warns that it replaces
-  the current public sale.
-- List shows a "Featured" badge and the window, so ops can see what is live.
-- Archiving or deactivating the featured coupon ends the banner immediately
-  (no separate switch to forget).
+**Expiry with an explicit time zone.** The admin picks a local date/time and an
+IANA zone (default: the browser's zone; list from
+`Intl.supportedValuesOf('timeZone')`). The API accepts
+`expiresAtLocal` + `expiresTimezone` and converts to a UTC instant with
+`zoneinfo` server-side, so DST is resolved on the backend, not in the browser.
+The form shows the resolved instant back:
+
+> Expires **2026-12-01 00:00** `America/Vancouver` (PST, UTC−8)
+> → stored as **2026-12-01T08:00:00Z**
+
+Ambiguous/nonexistent local times (DST fold) resolve deterministically and the
+resolved UTC line makes the result visible before saving.
+
+**Public title translations, one click + manual editing.**
+
+- One English `public_title` input.
+- A translations grid for the 18 locales (`SUPPORTED_L1S`), each row: locale
+  name, an editable input (prefilled from `public_title_i18n`), a per-row
+  **Translate** button, and a **Translate all missing** button.
+- Translation calls a new admin endpoint
+  `POST /admin/coupons/translate-title` with `{ title, locale }`, which calls
+  the existing `chatgpt_translate_text_array` (context: "Public sale campaign
+  name shown in a banner; keep campaign/brand names such as Black Friday if
+  that is natural in the target locale"). The console loops the 18 locales with
+  a small concurrency, so one slow locale cannot fail the batch.
+- Results land in the editable inputs; the admin can correct any of them before
+  saving. Nothing is persisted until **Save**.
+- **Preview.** A panel renders the exact banner copy for each locale from the
+  current values: translated title, `msg.sale_banner`, `msg.sale_offer_ends`
+  (date formatted with `Intl.DateTimeFormat(locale)`), and `msg.sale_use_code`.
+  This is how the LLM output is reviewed before it goes live.
+- The preview templates come from `packages/shared/locales/*.json`. The coupons
+  page becomes a small server component that imports those 18 files, extracts
+  the three keys, and passes them to the client form — so no extra API route and
+  no bundle bloat.
+- List view: a "Featured" badge, the window with its zone, and the end instant.
+- Archiving/deactivating or unfeaturing ends the banner immediately — no
+  separate switch to forget.
 
 ### 6. Web surfaces
 
 | Surface | Change |
 |---|---|
 | `(public)/layout.tsx` | Render a slim `<SaleBanner />` above `<PublicHeader />`; the component renders only on `/` (pathname check), so login/docs/etc. are untouched |
-| New `SaleBanner` | One line, full-width strip, brand background, centred text: **`{title} — {pct}% off lifetime Pro`** + `ends {date}` + the code; the whole strip links to go-pro. Static (no marquee); `role`/`aria-label` from the translation key. Network: `GET /sale` once on mount + refetch every 5 min |
-| `landing/pricing-section.tsx` | Drive the sale row from `/sale` instead of `useSaleWindow()` + `/stripe-prices`; strike-through uses `regularCents`, sale price uses `finalCents`. No price fetch outside a sale |
-| `go-pro/page.tsx` | Remove `useSaleWindow`, `showSale`, and the disabled-while-sale coupon input. Render the offer strip; prefill the code from `?coupon=` or the offer; auto-validate when prefilled; keep the manual input |
-| `sale-notice.tsx` | Render from `/sale` (`title`, `pct`, `endsAt`) instead of `SALE_DISCOUNT` + `SALE_NAME_KEY`; renders nothing when no offer |
-| `hooks/use-sale.ts` | **Deleted** |
-| `packages/shared/src/sale.ts` | Remove `SALE_START_LOCAL`, `SALE_END_LOCAL`, `saleWindowStart/End`, `isSaleWindowOpen`, `isPlanOnSale`, `SALE_NAME`, `SALE_NAME_KEY`, `SALE_DISCOUNT`, `SALE_PLANS`. Keep `StripePrice`, `findSalePrice`, `findRegularPrice`, `getSaleDiscount`, `formatPriceAmount`, `hasStoreDiscount` (mobile store-price truth), `resolvePlanPriceForWindow` only if still used |
-| `lib/prices.ts` | Keep for regular-price display; drop the sale-row fallbacks if unused |
+| New `SaleBanner` | One line, full-width strip, brand background, centred: **`{title}: {pct}% off lifetime Pro`** · `ends {date}` · `Use code {code}`. The whole strip links to go-pro with `?coupon=` prefilled. Static (no marquee). Fetches `GET /coupons/featured` on mount, re-checks every 60s (matching the cache TTL) and on tab visibility |
+| `landing/pricing-section.tsx` | Sale row driven by `/coupons/featured`; strike-through uses `regularCents`, sale price `finalCents`; sale row links to go-pro with the code; no price fetch outside a sale |
+| `go-pro/page.tsx` | Remove `useSaleWindow`/`showSale` and the disabled-while-sale coupon input. Render the offer strip from `/coupons/featured`; prefill from `?coupon=` or the offer; auto-validate when a session exists; keep the manual input |
+| `sale-notice.tsx` | Render from `/coupons/featured` (title, pct, end, code) instead of `SALE_DISCOUNT` + `msg.sale_mid_autumn`; renders nothing when there is no coupon |
+| `hooks/use-sale.ts` | **Deleted**; replaced by `use-featured-coupon.ts` |
+| `packages/shared/src/sale.ts` | Remove the window constants, sale name/keys, `isSaleWindowOpen`, `isPlanOnSale`, `findSalePrice`, `getSaleDiscount`, `resolvePlanPriceForWindow`, `hasStoreDiscount`, `isSaleActive`. Keep `StripePrice`, `findRegularPrice`, `formatPriceAmount` (and the `StorePrice` type); trim `sale.test.ts` with it |
+| `lib/prices.ts` | Keep for regular prices; drop the sale-row notes |
 
-**i18n.** The campaign *name* is data; the sentence around it is translated.
-Reuse `msg.sale_discount` ("Save {pct}% on select plans!"), `msg.sale_offer_ends`
-("Offer ends {date}"), and `msg.sale_lifetime_price` where a price is quoted.
-One new key is needed for the banner strip — `msg.sale_use_code`
-("Use code {code} at checkout") — added to `translations.csv` for all 18
-locales and regenerated with `scripts/sync-translations.mjs csv-to-json`.
-`msg.sale_mid_autumn` becomes unused (keep the row; other campaigns may use it)
-and `SALE_NAME_KEY` is deleted.
+**Banner copy (i18n).** Two new keys in `translations.csv`, all 18 locales:
+`msg.sale_banner` = "{title}: {pct}% off lifetime Pro" and
+`msg.sale_use_code` = "Use code {code}". Reuse `msg.sale_offer_ends` for the
+date. `public_title` itself is data and is translated in the admin console —
+the English title is the fallback when a locale is empty (which is exactly the
+state we start in, so the one-click translate feature is exercised).
 
-### 7. Mobile (Phase 1: no web-sale chrome)
+CTA target: `/{lastL1}/{lastL2}/go-pro?coupon={code}` when a last language pair
+exists (the existing `getLastLanguagePair()` helper), otherwise
+`/language-select` — the same fallback `getExploreUrl()` uses.
 
-`BF50` is a Stripe coupon. It cannot be redeemed through StoreKit or Play
-Billing (see the next section), so the app must not advertise it. Phase 1:
+### 7. Mobile
 
-- Delete `apps/mobile/hooks/use-sale.ts` and `apps/mobile/components/SaleNotice.tsx`
-  usage (or make `SaleNotice` render `null`), plus the `saleOpen`/sale-chrome
-  branches in `app/(tabs)/(me)/go-pro.tsx` and `profile.tsx`.
-- `use-sale-pricing.ts` keeps the store price as the only price and keeps
-  `hasStoreDiscount()` for a truthful strike-through when the store's own
-  number is below our regular row. No campaign banner, no code entry.
-- `isPlanOnSale` disappears from mobile with the shared constants.
-- This is a deliberate, visible regression: during a web-only sale the app
-  simply shows the regular store price. It is the only behaviour that cannot
-  misrepresent what the store will charge.
+**Confirmed:** mobile currently has **no coupon code field** (coupon validation
+is web-only, USD-only, SPEC-102), and its sale promotion elements are entirely
+window-driven. **We are not running sales in the mobile apps**: store-billed
+purchases are charged at the console price and cannot be discounted by a Stripe
+coupon. After consideration, the app simply shows the store price.
 
-Phase 2 (separate spec, see [Store mirror](#store-mirror-option-b--separate-spec))
-adds store-native offers when we want the discount in-app.
+Changes:
 
-## App Store and Google Play — how a coupon sale actually works on mobile
+- Remove `SaleNotice` from the three upgrade prompts (`ReviewSettings`,
+  `SubtitleDisplay`, `SubsSearchResults`) and the sale banner/strikethrough
+  branches from `go-pro.tsx` and `profile.tsx`.
+- `hooks/use-sale-pricing.ts` is still used (by go-pro and profile) for the
+  **store price** and the regular USD prices of the non-IAP cards. Keep that,
+  drop the sale half: rename to `hooks/use-store-pricing.ts`, returning
+  `prices`, `storePrice`, `loadingPrices`, `priceError`, and `priceFor()`
+  (lifetime = StoreKit/Play `displayPrice`; monthly/annual = regular USD row).
+  Delete `saleOpen`, `endsAt`, `salePct`, `discountConfirmed`, and the
+  strikethrough (`DisplayPrice.regular`).
+- `apps/mobile/hooks/use-sale.ts` and the `isPlanOnSale`/`SALE_*` imports are
+  deleted with the shared constants.
+- Net effect: the app never claims a discount, and shows exactly what the store
+  will charge.
 
-**Verified 2026-11-25** from Apple and Google documentation (sources at the
-end). This is the answer to "does BF50 work in the apps?".
+### 8. Classic/Nuxt
 
-### The store mechanisms are not our coupons
-
-| Mechanism | Where configured | What it can express | Limits | Code entry |
-|---|---|---|---|---|
-| **Apple offer codes** | App Store Connect → In-App Purchases → Offers | A discount or free period for **all** IAP types — consumables, non-consumables, non-renewing, auto-renewable. Non-consumables (our `pro_go`) are supported from **iOS 16.3**; our deployment target is 16.4 | Up to **10 active offers** at a time; **1,000,000 codes per app per quarter** (10,000 sandbox codes/quarter). One-time-use codes: 500–25,000 per batch, expiry required, ≤ 6 months. **Custom codes** (`BF50` works) are named by you, have a redemption limit you set, can be redeemed via redemption URL or in-app (not typed into the App Store). The app must be *Ready for Distribution* and the IAP *Approved* to generate codes | In-app redemption sheet (`presentCodeRedemptionSheetIOS`), redemption URL, or (one-time-use codes) entering the code in the App Store |
-| **Apple promo codes** | App Store Connect → Promo codes | **Free** copy only (no percentage discount) | **100 per IAP product**; **1,000 total per app per six months**; non-commercial use; codes expire **28 days** after generation | App Store redeem |
-| **Google Play promo codes** | Play Console → Promo codes | **Free** one-time product, or a **free trial** for subscriptions — never a percentage discount | **500 promo codes per quarter** for one-time products; 10,000 one-time-use codes/quarter per subscription product; custom codes are subscriptions-only (2,000–99,999 redemptions) | Play Store redeem, in-app purchase-screen "Redeem", or `https://play.google.com/redeem?code=…` |
-| **Google Play one-time product discount offers** | Play Console (purchase option → offer) | **Percentage or absolute discount**, with country/region eligibility, per-user purchase limit, and a limited time window | No code at all — eligible users see the offer; the app must pass its `offerToken` at purchase | No code |
-
-Conclusion: **`BF50` is a Stripe coupon; none of the store mechanisms reads it.**
-A user who taps "Buy" in the app pays whatever App Store Connect / Play Console
-is configured to charge. The store can only discount through *its own* offer
-objects, created in those consoles, with their own codes or eligibility rules.
-
-### Store policy: what the app may say
-
-- **Apple, Guideline 3.1.1(a)**: "These entitlements are not required for
-  developers to include buttons, external links, or other calls to action in
-  their **United States storefront** apps." And: "In all other storefronts,
-  except for the United States storefront, where this prohibition does not
-  apply, apps and their metadata **may not include buttons, external links, or
-  other calls to action that direct customers to purchasing mechanisms other
-  than in-app purchase**."
-- **Apple, Guideline 3.1.1**: in-app unlocking must use in-app purchase; "apps
-  may not use their own mechanisms to unlock content or functionality, such as
-  license keys…". A coupon-entry field that grants Pro inside the app would be
-  exactly that.
-- **Google Play**: since **29 Oct 2025**, for users in the **United States**,
-  Google does not prohibit communicating external pricing/payment options or
-  linking out — through the *external content links* / *alternative billing*
-  programs, with service fees and transaction/download reporting (fees from
-  1 Oct 2026; download reporting until 1 Feb 2027). Outside that US-specific
-  regime, Google Play Billing is still required for in-app digital goods.
-
-So "use code BF50 on languageplayer.io" inside the app is defensible **only for
-the US storefront**, and even there it is a program with fees and reporting.
-Worldwide, it is a rejection/removal risk. That is why Phase 1 keeps the app
-silent about the web sale.
-
-### Store mirror (Option B — separate spec)
-
-When we want the discount in the apps, it must be re-created in each console,
-per campaign, and the app must handle store offers:
-
-- **iOS**: create a **Paid Offer** on `pro_go` (50% off, one-time) in App
-  Store Connect, then a **custom offer code** `BF50` with a redemption limit.
-  Custom codes are named by you and redeemed through a redemption URL or the
-  in-app sheet — not by typing into the App Store (that path exists for
-  one-time-use codes). The app can present the system redemption sheet
-  (`presentCodeRedemptionSheetIOS`, available in expo-iap 5.2.4). Custom-code
-  redemption requires iOS 16.3+ (our minimum is 16.4). The backend's JWS
-  verification must accept offer-code transactions (`offerType: code`) and
-  still grant lifetime — it currently verifies bundle/product/transaction and
-  does not branch on offers, so this needs a check, not necessarily a change.
-- **Android**: create a **discount offer** on the one-time product (50% off,
-  limited time, purchase limit 1). There is **no code**; all eligible users see
-  the discounted price, and the app must purchase with the offer's
-  `offerToken` (`requestPurchase` accepts `offerToken`; expo-iap 5.2.4 exposes
-  it). This uses the newer one-time product purchase-option/offer model, so the
-  bundled Play Billing version must be verified at implementation. Google Play
-  promo codes cannot help (free only).
-- **Consoles are authority**: the app can only display the store's own reported
-  price/discount, exactly as `hasStoreDiscount()` does today. Both offers must
-  be created before the campaign and expire on their own; Apple caps active
-  offers at 10, Google's discount offer is per product/purchase option.
-- **Redemption tracking splits**: an iOS `BF50` redeemed through the
-  redemption URL or the in-app sheet is Apple's offer redemption (server
-  notification `OFFER_REDEEMED` / `ONE_TIME_CHARGE`), not a
-  `coupon_redemptions` row. Reporting must union the two.
-
-This is real work and a separate approval; SPEC-113 (proposed) would cover it.
-
-### Options considered
-
-| Option | What happens in the app | Verdict |
-|---|---|---|
-| **A. Web-only sale** (Phase 1, recommended) | App sells at the store price and says nothing about BF50 | Zero review risk, no build, honest pricing. Loses in-app conversion during the campaign |
-| **B. Mirror offers in both stores** | iOS offer code `BF50` + Android discount offer; app displays store prices/offers | Works, but per-campaign console setup and a build; tracking splits |
-| **C. Remove IAP; web checkout only** | App links to the website for purchases | Rejected: removes the only in-app purchase path, and steering rules still apply in most storefronts |
+Not touched. Its `lib/utils/variables.js` window stays as-is; the coupon-driven
+sale will not appear there (and its last hardcoded window already ended
+2026-09-27). Classic remains reference-only per `AGENTS.md`.
 
 ## Migration plan (task items)
 
-Each item is a commit on its own; no item ships without its documentation.
+Each item is its own commit with its documentation.
 
-1. **Schema + admin + `/sale`** — migration, `utils_coupons` changes
-   (featured validation, `public_sale()`), `GET /sale`, remove
-   `_sale_active()` from the coupon path, admin form fields, tests.
-2. **Web** — banner above the header on `/`, pricing section, go-pro, sale
-   notice, prefill `?coupon=`, delete `use-sale.ts`, trim `sale.ts`,
-   `translations.csv` key + regenerate locales, ADR-0054 + SPEC-014/102
-   amendments.
-3. **Mobile de-chrome** — remove window-based sale UI, keep store-price truth;
-   docs updated.
-4. **Store mirror (optional, separate spec)** — iOS offer + Android discount
-   offer, purchase/verification handling, reporting.
+1. **Schema + admin backend + public endpoint** — migration, `utils_coupons`
+   validation and `featured_coupon()` lookup, `GET /coupons/featured`,
+   `POST /admin/coupons/translate-title`, expiry-zone conversion,
+   remove `_sale_active()`, delete `sale_windows.csv` and its estimate
+   adjustment, tests.
+2. **Admin console UI** — expiry zone picker + resolved-instant line, title
+   translations grid with LLM translate and manual edit, per-locale banner
+   preview, featured toggle/badge.
+3. **Web** — `use-featured-coupon`, banner above the header on `/`, pricing
+   section, go-pro prefill, sale notice, delete the client window, trim
+   `sale.ts`, add the two translation keys, ADR-0054 + SPEC-014/102/101/100 and
+   ARCH-022 updates.
+4. **Mobile de-chrome** — remove sale promo elements, `use-store-pricing.ts`,
+   docs update.
 
 ## Acceptance criteria
 
-- With a featured coupon whose window contains now, `/` shows a one-line sale
-  strip above the header with the coupon's `public_title`, a percentage
-  derived from the coupon, the end date in the viewer's locale, and the code;
-  the rest of the public pages show nothing.
-- The strip disappears without a deploy when the coupon expires, is archived,
-  is exhausted, or `featured` is turned off.
-- The advertised percentage and the checkout amount agree: both come from the
-  same coupon row and the same server arithmetic (verified for a `percent` and
-  an `amount` coupon).
-- A featured coupon can be changed (title, code, dates, percentage, cap) from
-  the admin console and the landing page reflects it within 60 seconds.
-- The go-pro page no longer disables coupon entry during a sale; `BF50`
-  validates, applies, and checks out (Stripe **test** mode included).
-- A second featured coupon is rejected; an invalid featured coupon (missing
-  window/title, CNY, non-lifetime) is rejected at create/update time.
-- Mobile shows the live store price and never mentions BF50 or claims a
-  discount the store will not charge.
-- No user-facing English is hardcoded; `translations.csv` has the new key for
-  all 18 locales.
+- `/` shows a one-line sale strip **above the header** while a featured coupon
+  is active and unexpired; no other public page shows it; the strip contains
+  the translated title, the derived percentage, the end date, and the code, and
+  links to go-pro with `?coupon=BF50` when a language pair is known
+  (otherwise `/language-select`).
+- The strip disappears within 60 seconds of the coupon expiring, being archived,
+  being exhausted, or being unfeatured — with no deploy.
+- Featuring a coupon starts the sale immediately (no `starts_at` anywhere).
+- The percentage and amount shown equal what Stripe charges (same row, same
+  arithmetic), for both percentage and amount coupons.
+- The admin can enter an expiry as local time + IANA zone, sees the resolved
+  UTC instant, and the stored value round-trips when the form is reopened.
+- In the admin, one click fills the 18 title translations via the LLM; every
+  value is editable; the preview shows the banner sentence in each locale
+  before saving; saving and reloading preserves manual edits.
+- `BF50` validates, applies, and checks out in Stripe **test** mode.
+- No `sale_active` rejection exists; no `sale_windows.csv` is read; the
+  Transactions/Analytics pages still render (estimates no longer apply a sale
+  multiplier).
+- Mobile has no coupon field and no sale promotion elements; go-pro shows the
+  live store price only.
+- Classic/Nuxt is unchanged.
 
 ## Test plan
 
-- **Unit (Flask)**: window boundaries (`starts_at` inclusive, `expires_at`
-  exclusive), exhausted/archived/inactive → `null`, amount→percent
-  derivation, featured validation errors, `GET /sale` excludes admin/count
-  fields, cache headers present.
-- **Integration (Stripe test)**: create a featured test coupon → `/sale` →
-  `/coupons/validate` → create checkout session → confirm redemption via the
-  success/webhook path → the same user re-applying gets `already_used`; an
-  exhausted coupon returns `exhausted`; an expired one returns `expired`.
-- **Web**: banner renders only on `/`; hidden outside the window; link
-  carries `?coupon=BF50` and go-pro prefills/validates it; pricing table
-  shows `US$169` struck through with `US$84.50`; refetch after the 60s cache
-  boundary flips the display.
-- **Mobile**: go-pro shows the store price; no coupon field; no "50% off"
-  claim; upgrade prompts show no sale chrome.
-- **Manual (Phase 4 only)**: sandbox Apple offer-code redemption and a Play
-  test purchase using a discount offer token.
-- **Docs**: `npm run check:docs` passes; the spec index and ROADMAP are
-  updated.
+- **Unit (Flask)**: featured validation (missing title, past expiry, non-lifetime,
+  non-USD, second featured, bad zone, bad i18n keys); `featured_coupon()`
+  returns null for archived/expired/exhausted/unfeatured; percent derivation
+  for amount coupons; cache headers; `expiresAtLocal` + zone → UTC across a DST
+  boundary.
+- **Integration (Stripe test)**: create a featured test coupon → `GET
+  /coupons/featured` → `/coupons/validate` → checkout session → confirm
+  redemption → same user gets `already_used`; expired and exhausted cases.
+- **Admin**: translate one locale, translate all, manual override, preview
+  matches the locale templates, save/reload preserves values, time-zone
+  round-trip.
+- **Web**: banner renders on `/` only; hidden outside the window; `?coupon=`
+  prefill; pricing strikethrough; 60s cache flip.
+- **Mobile**: go-pro and profile show store price, no sale chrome; no coupon
+  entry.
+- **Docs**: `npm run check:docs`; the spec index and ROADMAP are updated.
 
 ## Risks and mitigations
 
 | Risk | Mitigation |
 |---|---|
-| Public endpoint is hot / abusable | It returns one public offer with no counts; 60s CDN cache; no DB write path |
-| Code shared on deal sites | Intended; bounded by `max_redemptions` and one-use-per-user |
-| Start/end skew (up to 60s) | Documented; checkout is still authoritative; `max-age` small |
-| A refunded coupon purchase cannot be re-used (unique `(coupon_id, user_id)`) | Existing SPEC-102 rule; support can release the redemption; note it in the spec |
+| Historical revenue estimates change when `sale_windows` is deleted | Called out as a consequence; the ledger supplies exact amounts for new purchases; the alternative (frozen historical CSV, no gating) is documented |
+| Public endpoint is hot | One public offer, no counts/writes, 60s CDN cache |
+| Code shared on deal sites | Intended; `max_redemptions` + one-per-user bound the exposure |
+| Start/end skew (≤ 60s) | Documented; checkout is authoritative |
+| A refunded coupon purchase cannot be re-used (unique `(coupon_id, user_id)`) | Existing SPEC-102 rule; support releases the redemption |
 | Two campaigns at once | Partial unique index + admin error |
-| Featured coupon with a bad price/plan | API validation (lifetime, USD, window, title); admin copy |
-| Removing `sale.ts` breaks mobile | Mobile change ships in the same task item; grep the exports |
-| Stripe test-mode preview can differ from the test charge: `lifetime_price_cents()` reads the **live** regular amount while checkout uses the test `price_id` | Keep test and live regular prices equal, or let `lifetime_price_cents()` take the mode; called out in the test plan |
-| CNY customers cannot use the sale | Stated in UI (`msg.coupon_usd_only`); the old CNY sale price link is no longer advertised |
-| Misleading store claims | Phase 1 removes web-sale chrome from the app entirely; Phase 4 only displays store-reported prices |
+| LLM title translation is odd or keeps English where it should not | Every value is editable and the preview shows the final sentence; nothing goes live before Save |
+| DST makes an expiry ambiguous | Converted server-side with `zoneinfo` and the resolved UTC instant is shown in the form |
+| Stripe test-mode preview vs charge use different regular amounts (`lifetime_price_cents()` reads live) | Keep test and live regular prices equal, or make `lifetime_price_cents()` mode-aware |
+| CNY customers cannot use the sale | Stated in the UI (`msg.coupon_usd_only`); the old CNY sale link is not advertised |
 
-## Open decisions
+## Decisions (approved 2026-11-25)
 
-1. **Schema**: extend `public.coupons` (recommended) vs a new `sales` table
-   referencing a coupon. Extending reuses validation, reservations, Stripe
-   coupons, and the admin UI.
-2. **Window semantics**: one UTC instant worldwide (recommended, matches how
-   the coupon is enforced) vs per-device local time (ADR-0048's choice).
-3. **Mobile now**: web-only sale with no in-app mention (recommended) vs
-   mirroring in the stores immediately (SPEC-113).
-4. **Legacy removal**: delete the client window and stop gating coupons on
-   `sale_windows.csv` now (recommended) vs keep both for a release.
-5. **Banner**: above the header, landing only, static, not dismissible, links
-   to go-pro with the code prefilled (recommended) — confirm.
-6. **BF50 campaign values**: `public_title = "Black Friday"`, window, cap, and
-   expiry. The dates are data; the current draft uses
-   `2026-11-25 → 2026-12-01` (UTC) as an example only.
+| Topic | Decision |
+|---|---|
+| Schema | **Extend `public.coupons`**; no `sales` table. `public_title` etc. live on the featured coupon |
+| Start time | **None.** A coupon is usable from creation; featuring it starts the sale |
+| On-sale condition | `featured AND active AND now < expires_at` (+ remaining redemptions) |
+| Window timezone | Server-evaluated UTC instant; expiry entered as local + IANA zone in admin |
+| Public API | **`GET /coupons/featured`**, response `{ coupon: ... }` |
+| `sale_windows` | Sunset: gating removed and the CSV/estimate mechanism deleted (historical-estimate consequence accepted) |
+| Banner | Above the header, landing `/` only, static, not dismissible, links to go-pro with code prefilled |
+| Mobile | **No sales in the apps**; remove sale promo elements; store price only; no coupon field |
+| Classic | **Untouched**; sales stop working there by design |
+| Admin i18n | Public title translated with one click (LLM), manually editable, with a per-locale preview |
+| BF50 | `public_title = "Black Friday"`, expiry `2026-12-01 00:00 America/Vancouver`, translations **left empty** so the admin translate flow can be tested |
 
-## Sources
+## Open questions
 
-- Apple — [Supporting offer codes in your app](https://developer.apple.com/documentation/storekit/supporting-offer-codes-in-your-app)
-  (all IAP types, iOS 16.3 for non-consumables, 10 active offers, 1,000,000
-  codes/app/quarter, redemption APIs)
-- Apple — [Promo codes overview](https://help.apple.com/app-store-connect/en.lproj/dev50869de4a.html)
-  (free only; 100 per IAP product; 1,000 per app/6 months; 28-day expiry;
-  non-commercial)
-- Apple — [App Review Guidelines 3.1.1 / 3.1.1(a)](https://developer.apple.com/app-store/review/guidelines/)
-  (US storefront external links; prohibition elsewhere; no in-app unlock via
-  keys/codes)
-- Google — [Promo codes (Play Billing)](https://developer.android.com/google/play/billing/promo)
-  (free products/trials; 500/quarter for one-time products; 10,000 one-time-use
-  codes per subscription product per quarter; deep link)
-- Google — [One-time product purchase options and offers](https://developer.android.com/google/play/billing/one-time-product-multi-purchase-options-offers)
-  (percentage/absolute discount offers, country targeting, purchase limits,
-  time windows, `offerToken`)
-- Google — [Update on Play policies for developers serving users in the US](https://support.google.com/googleplay/android-developer/answer/15582165)
-  (29 Oct 2025 injunction changes; external content links / alternative
-  billing programs; fees and reporting)
-- expo-iap 5.2.4 (installed): `presentCodeRedemptionSheetIOS`,
-  `openRedeemOfferCodeAndroid`, `offerToken` in `requestPurchase`
+None blocking. One consequence to confirm before implementation: deleting
+`sale_windows.csv` removes the sale adjustment from **historical** revenue
+estimates on the Transactions/Analytics pages. If that history must keep its
+sale-adjusted numbers, say so and we freeze the CSV for estimation only (no
+gating) instead of deleting it.
+
+## References
+
+- [ADR-0048](0048-client-side-sale-window-gating.md), [SPEC-014](014-subscription-payment-system.md),
+  [SPEC-102](102-affiliates-and-coupons.md), [SPEC-101](101-admin-transactions.md)
+- [Apple offer codes](https://developer.apple.com/documentation/storekit/supporting-offer-codes-in-your-app)
+  and [Google Play promo codes](https://developer.android.com/google/play/billing/promo)
+  — background for why the apps do not reference the web coupon
