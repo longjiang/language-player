@@ -482,7 +482,15 @@ path.
 
 ## Open Questions
 
-1. **Which kind is second?** The registry shape is reviewed against `user_avatar`, `note_attachment` and `export`; picking one deliberately is what proves G8.
+1. **Which kind is second?** G8 claims a new kind costs a registry entry plus a client surface. That is a claim, not evidence, until a second kind exists — and the three candidates stress different halves of the contract:
+
+   | Candidate | What it would prove |
+   |---|---|
+   | `user_avatar` (raster images, 1 MiB, replaces, `inline`) | The replace path outside audio, and image serving without opening an XSS door |
+   | `note_attachment` (PDF/PNG/JPEG, 8 MiB, appends, `attachment`) | Append semantics (`live_key` null), several live files for one owner, a download rather than a playback disposition |
+   | `export` (zip, 64 MiB, appends, `attachment`) | The byte cap well above audio, streaming assembly at scale, and a kind that must never be served `inline` |
+
+   Picking one is a product/roadmap call; the store is shaped so any of them is additive.
 2. **Virus/malware scanning.** Not needed for audio-only in v1; it becomes a real question the moment a kind accepts PDFs or archives.
 3. **Per-user quota.** Not enforced in v1; add a byte cap per user only if measured usage justifies it.
 4. **Export.** A student cannot yet download all their files; a zip export is a separate feature.

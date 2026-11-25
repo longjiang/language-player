@@ -1116,7 +1116,8 @@ below the thing that produced it.
 
 **Next is disabled until the task is resolved** — that is, until the store holds an attempt,
 which a graded Submit, a self-check's Mark as complete, a read-only task's Mark as complete and
-a mock app's All Done! all write. Re-submitting replaces that attempt rather than adding one
+a mock app's All Done! all write. (A required recording gates **completion**, not Next: a
+student may move on while a take uploads.) Re-submitting replaces that attempt rather than adding one
 (ADR-0053 rev. 2). Next is **hidden on the last task** in reading
 order (the student uses the TOC), and it moves to the next task via `adjacentTasks` and the
 platform's href helper (`taskHref` on web, `mobileTaskHref` in expo-router). Re-submitting after
@@ -1297,7 +1298,7 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 - **`gradeTask(task, responses)`** — normalisation and alternate acceptance. Script-variant matching is *not* in here: `expandAcceptedVariants` runs first, in the app, and adds the converted form to each blank's `accept[]` so grading itself stays a pure string comparison (and works offline, which matters on mobile).
 - **Task store** — per-task, per-blank response state with subscribe/select, so blank components re-render independently of the token tree.
 - **Attempt persistence** — one attempt per task in local storage (ADR-0044; ADR-0053 rev. 2 replaces the append-only log).
-- **Progress** — `bookProgress` / `summarizeProgress` roll the saved per-task attempts up through the book's own hierarchy, without a second store: the picker shows `complete/total`, each lesson a count, and each task a tick or a dot. The task's attempt is the one that counts; a re-submit replaces it, so a student who got it wrong and then right has completed it.
+- **Progress** — `bookProgress` / `summarizeProgress` roll the saved per-task attempts up through the book's own hierarchy, without a second store: the picker shows `complete/total`, each lesson a count, and each task a tick or a dot. The task's attempt is the one that counts; a re-submit replaces it, so a student who got it wrong and then right has completed it. A task that requires a recording (SPEC-111) is complete only once that take is stored, so its tick may lag its result.
 - **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`, plus the shared default base URL constant.
 - **`assetKeysIn(task)`** — every asset key a task references, wherever it is declared (task, blank, table row, block, map pin, bank option, mock-app fallback), each with the location that declared it. The validator and the manifest test both call it, so a new declaration point cannot make the two disagree.
 - **Grading helpers** — `normalizeAnswer`, `acceptedAnswers`, `isBlankCorrect` (set comparison for `multiple`), `isBlankScoreable`, `expandAcceptedVariants`.

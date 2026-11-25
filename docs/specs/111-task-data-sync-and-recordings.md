@@ -115,6 +115,7 @@ Decided, not deferred:
 | G8 | Recordings are private to their owner | An unauthenticated or other-user request for the bytes is refused; no host URL ever reaches a client (SPEC-113 G1/G2) |
 | G9 | Deleting an account deletes its recordings | After account deletion, no object remains under that user's prefix and no `user_files` row survives (SPEC-113 G7) |
 | G10 | Nothing about the sync blocks rendering | The task page paints the same HTML it paints today; server state is adopted after hydration on web and after the route's existing async load on mobile |
+| G11 | A recording-required task completes only with a stored take | With `required` record slots missing, the task shows **not complete** in the TOC and picker even when the attempt is graded/checked; once every required slot has a live `user_files` row, it shows complete. Delete the take and it returns to incomplete |
 
 ## Content Model: Declaring a Recording
 
@@ -136,6 +137,10 @@ export interface RecordStimulus {
    *  suggest about a minute). **Client-enforced only** — the server bounds storage
    *  by bytes, not by time (ADR-0053 rev. 3). */
   maxDurationSec?: number;
+  /** Whether the task cannot be completed until this take is stored.
+   *  Defaults to `true`: a `record` stimulus is a requirement unless the content
+   *  says otherwise. Set `false` for practice takes that do not gate completion. */
+  required?: boolean;
 }
 ```
 
@@ -144,6 +149,15 @@ export interface RecordStimulus {
   (`audioTracksIn` in `packages/textbooks/src/types.ts:713`) — `recordingSlotsIn(task)`
   is the parallel helper, and the validator gains a rule that two `record` stimuli
   in one task cannot share a `slotId`.
+- **`required` decides whether the take gates completion.** A task that asks the
+  student to produce speech (D ➐) is not complete until the take is **stored** —
+  uploaded, not merely recorded on the device. Adding, removing or flipping `required`
+  on a shipped task changes when it completes, so it is a content change and must bump
+  the content version like any other. A task that only asks the student to
+  read along with a model (D ➍, E ➌ — shadowing, no `record` stimulus) completes from
+  its own control, as today. A `record` stimulus with `required: false` is practice
+  whose absence never blocks completion. **The recording is still never graded**; this
+  is a completion gate, not a score.
 - D ➐'s authored instruction is the workbook's own: *"按照你写的草稿，录一段介绍自己城市
   的公共交通的音频。"* The current note that *"neither app captures audio … the
   recording is out of band"* (`packages/textbooks/src/content/tblt-hsk4/u06/lesson-d.ts:405-415`)
@@ -251,6 +265,12 @@ SPEC-039 decision 5) and Flask connects as its own role. It matters because
 `SUPABASE_REQUIRE_APP_DB_ROLE` can pin Flask to a restricted role
 (`utils_db_context.py:70-82`), and because a future client-side mistake should fail
 closed.
+
+Completion has no column and no table: it is `attempt.result.complete` **and** every
+`required` recording slot having a live file. The second input is `user_files`
+(SPEC-113), so the predicate lives client-side in `taskProgress()` and is not stored
+server-side; a task whose content requires a take therefore reads as incomplete until
+the upload is confirmed (see § Student Recordings).
 
 ### Why two task tables, plus the store
 
@@ -407,6 +427,10 @@ supply.
   (`live_key = task_recording:task:<task_id>:<slot>`), not a convention.
 - **The slot** is the task id plus the stimulus's `slotId` (`'task'` by default), so two
   `record` stimuli in one task need distinct slots — a validator rule.
+- **Completion gate.** For every `record` slot with `required: true`, a live
+  `user_files` row (kind `task_recording`, un-voided) must exist before the task counts
+  as complete. Replacing the take keeps it complete; deleting it makes the task
+  incomplete again, because the predicate is derived, not snapshotted.
 
 ### Capture (clients)
 
@@ -517,9 +541,13 @@ which is the only question the task page asks.
   under the same content-version rule.
 - `persisted-state.ts` (new) — `normalisePersistedTaskState()`, the one-time collapse
   of a legacy `attempts[]` array to the latest entry, used by both apps' adapters.
-- `recordings.ts` (new) — `recordingSlotsIn(task)`, `formatDuration(ms)`,
-  `RECORDING_MAX_SEC = 1800`, `RECORDING_BYTES_CAP = 32 MiB`, `chunkCount(bytes)`.
-  Pure functions only (AGENTS.md rule 1).
+- `progress.ts` — `taskProgress(task, state, liveRecordingSlots)` and
+  `bookProgress(book, states, filesByTask)`: completion is
+  `attempt.result.complete && requiredRecordingsPresent`. Still pure; the apps pass in
+  the slots they know have a stored take.
+- `recordings.ts` (new) — `recordingSlotsIn(task)`, `requiredRecordingSlotsIn(task)`,
+  `formatDuration(ms)`, `RECORDING_MAX_SEC = 1800`, `RECORDING_BYTES_CAP = 32 MiB`,
+  `chunkCount(bytes)`. Pure functions only (AGENTS.md rule 1).
 - `schema.ts` — validator rules: unique `slotId` per task, `record` only on
   speaking-ish task types, `maxDurationSec` bounds.
 
@@ -577,8 +605,19 @@ New keys, added through `scripts/add-translation-key.mjs` + `sync-translations.m
 - **Sync failed**: the queue is kept, the marker says "not saved yet", and a retry is
   offered. Silence is not acceptable — a student must not believe their work is safe
   when it is not.
-- **Permission denied / no microphone**: the record control explains how to enable
-  it; the task remains completable, because the recording is not scored.
+- **Permission denied / no microphone**: the control explains how to enable it. On a
+  task whose `record` slot is required, the task **cannot be completed** until the
+  student grants the microphone and records — the UI says so rather than showing a dead
+  button over a completable task. On a task with no required take (shadowing, reading),
+  nothing changes.
+- **Required take missing**: the task is graded/checked but shows **not complete**; the
+  TOC and picker agree, and the shell points at the missing slot.
+- **Take pending upload**: recorded and queued but not stored yet — still **not
+  complete**. The marker says "saving your recording…", and completion flips when the
+  upload (or its resume) succeeds. Offline, this is the one state where the network
+  gates a completion, deliberately.
+- **Take deleted**: deleting a required take returns the task to incomplete; the
+  attempt and its result are untouched.
 - **Too long**: recording stops at `maxDurationSec` (30 min by default) with a notice;
   the take so far is uploaded and offered for keeping.
 - **Uploading a long take**: chunked upload shows progress and can be paused/resumed;
@@ -632,6 +671,12 @@ build, recorder component, wipe parity. Requires a device build; not a web-only 
   re-submit replaces the row (still one row); an older `submitted_at` arriving late is
   `dropped` and does not overwrite; `GET /tasks/state` caps `taskIds`; RLS denies an
   `anon` read (run once with the anon key).
+- **Completion gate**: a `required` slot with no live file keeps `complete: false` even
+  when the attempt is `complete: true`; a pending (queued, unuploaded) take does **not**
+  satisfy it; a stored take flips it to `true`; replacing the take keeps it `true`;
+  deleting it flips back to `false`; an optional (`required: false`) or absent `record`
+  stimulus never affects completion; a self-check task with a required take needs
+  **both** gates (all questions checked **and** the file present).
 - **Kind registration**: the `task_recording` entry validates under SPEC-113's registry
   rules; an unknown kind is still rejected; a second upload for a live task slot → `409`.
 - **Web components** (existing pattern: `task-audio.test.tsx`,
@@ -680,6 +725,8 @@ owes:
 | Task answers leak across accounts on a shared device | Logout wipe gains `lp:textbook:` once the server copy exists (§ Defects) |
 | `user_sync_log` rows outlive the account | Explicit cleanup in `routes/auth.py` (§ Verification 4) |
 | A new native dependency slips into a "docs only" release | Phase 3 is the only phase that needs a build; Phases 0–2 ship without one |
+| An offline student cannot finish a recording-required task | Accepted: the take records offline but completion waits for the upload to be stored. The UI names the wait ("saving your recording…") instead of pretending; a resumed chunk upload clears it |
+| Deleting a take silently un-completes a task | The delete control is next to the player and says the task will return to incomplete; the attempt and result are preserved |
 | Students believe local work is safe when it is not | Explicit "not saved yet" marker and retry |
 
 ## Open Questions
@@ -687,7 +734,6 @@ owes:
 1. **Should a teacher ever hear a recording?** Out of scope now (Non-Goals), but it is the obvious next request and needs its own consent model.
 2. **Keep every take, for Pro?** Deferred; it is a store-level retention choice (SPEC-113) plus a UI, so it is additive rather than a rewrite.
 3. **Analytics reads.** Attempt rows make "which blanks are wrong" possible; who may query it, and does the admin console get a report? Not decided here.
-4. **Should a speaking task count as complete without a recording?** Today completion is graded, and a recording is never scored; whether a missing take should block "complete" is a content decision.
 
 ## Dependencies
 
@@ -708,9 +754,10 @@ owes:
 |---|---|
 | Scope of sync | Responses + attempts + completion, and recordings through SPEC-113 |
 | In-progress drafts across devices | Yes — per-blank LWW, not per-task |
-| Completion storage | Derived from the task's one attempt; no column |
+| Completion storage | Derived from the task's one attempt **and** its required takes; no column |
 | Attempt identity | **One mutable row per task**, keyed `(user_id, task_id)`; no attempt id, no void column; LWW on `submitted_at`; local `attempts[]` collapses to one on load |
 | Recording bytes | SPEC-113's store; this spec registers the `task_recording` kind |
 | Recording limits | 30 min (recorder), 16–24 kbps mono; the store bounds 32 MiB |
+| Completion of a recording-required task | **Not complete until the take is stored.** `record` stimuli default to `required: true`; content that only asks the student to shadow a model keeps completing from its own control |
 | Capture scope | Included, phased — sync first, web capture, then mobile capture |
 | Docs | ADR-0053 (rev. 1–3) + this spec + SPEC-113 |

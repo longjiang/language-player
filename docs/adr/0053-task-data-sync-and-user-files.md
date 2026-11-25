@@ -1,6 +1,12 @@
 # ADR-0053 — Task state syncs through Flask, and user files live in a private store on the shared host
 
 **Status:** Accepted (2026-11-24), revised (2026-11-25)
+**Revision 4 (2026-11-25):** completion is no longer just "the attempt is complete".
+A task whose content requires a take (`record` stimulus, `required: true` by default) is
+complete only when that take is **stored** — uploaded, not merely recorded — and
+deleting it returns the task to incomplete. Tasks that only ask a student to read along
+with a model (shadowing) keep completing from their own control. Completion stays
+derived; it now has two inputs instead of one.
 **Revision 3 (2026-11-25):** takes may run to **30 minutes**. Two things changed with it.
 The server enforces **only bytes** (32 MiB per file): duration is a recorder/UI rule,
 because storage and request work scale with bytes and a container-duration parser would be
@@ -184,9 +190,11 @@ by Flask. Both are general mechanisms, not one-off features.**
    same shape `user_task_responses` and `user_srs_cards` already use. There is no
    attempt id and no void column: a task's attempt is present or absent, and the
    local `AttemptRecord[]` collapses to one on load.
-3. **Completion stays derived.** No completion table and no `completed` flag: the
-   attempt's `result.complete` is the answer, exactly as the TOC and picker compute
-   it locally today.
+3. **Completion stays derived, from two inputs.** No completion table and no
+   `completed` flag: a task is complete when its attempt's `result.complete` is true
+   **and** every `required` recording slot has a live stored file. A task with no
+   required take (a shadowing exercise with no `record` stimulus) is unaffected, which
+   keeps D ➍/E ➌ completing from their own control as they do today.
 4. **Responses are per-blank last-write-wins.** Per blank, not per task. Rows carry
    the `content_version` they were written against and a read drops rows whose
    version no longer matches — the local store's existing rule. Stale rows are
