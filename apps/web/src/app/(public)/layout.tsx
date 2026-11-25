@@ -4,6 +4,7 @@ import { getMessages, getTimeZone, setRequestLocale } from 'next-intl/server';
 import { SUPPORTED_L1S } from '@langplayer/shared';
 import { LocaleProvider } from '@/providers/locale-provider';
 import { PublicHeader } from '@/components/layout/public-header';
+import { SaleBanner } from '@/components/sale-banner';
 import { CookieConsent } from '@/components/consent/cookie-consent';
 
 /**
@@ -28,6 +29,9 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <LocaleProvider locale={locale} messages={messages} timeZone={timeZone}>
+      {/* SPEC-112 — the thin public-sale strip, landing page only (the
+          component checks the pathname). */}
+      <SaleBanner />
       <PublicHeader />
       <Suspense fallback={null}>
         <CookieConsent />

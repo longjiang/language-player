@@ -8,15 +8,13 @@ import { useT } from '@/hooks/use-t';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
-import { getStripePrices, isStripeTestMode, type StripePrice } from '@/lib/prices';
+import { getStripePrices, type StripePrice } from '@/lib/prices';
+import { findRegularPrice, formatPriceAmount } from '@langplayer/shared';
 import {
-  findRegularPrice,
-  findSalePrice,
-  formatPriceAmount,
-  getSaleDiscount,
-  resolvePlanPriceForWindow,
-} from '@langplayer/shared';
-import { useSaleWindow, formatSaleDate } from '@/hooks/use-sale';
+  couponTitle,
+  formatCouponDate,
+  useFeaturedCoupon,
+} from '@/hooks/use-featured-coupon';
 import { log } from '@/lib/logger';
 import {
   Crown,
@@ -77,42 +75,16 @@ const PLANS: PlanCard[] = [
   },
 ];
 
-// ── Sale helpers ──
+// ── Price helpers ──
 
-/** The price row the checkout must send: the sale row while the sale applies,
- *  else the regular row.
- *
- *  ⚠️ In Stripe test mode `findSalePrice()` finds nothing, because the sale
- *  rows in `prices.csv` carry no `test_price_id`. `resolvePlanPriceForWindow`
- *  then falls back to the regular price — logged here so the fallback is
- *  visible instead of silently charging more than the UI advertised. */
-function checkoutPrice(
+/** Regular-row display price; the coupon supplies any discount (SPEC-112). */
+function regularPriceDisplay(
   prices: StripePrice[],
   plan: string,
-  currency: 'usd' | 'cny',
-  saleOpen: boolean,
-): StripePrice | undefined {
-  const { price, onSale } = resolvePlanPriceForWindow(prices, plan, currency, saleOpen);
-  if (saleOpen && !onSale && isStripeTestMode()) {
-    log(`[LP Web] sale: no ${currency} test price id for "${plan}" — using the regular price`);
-  }
-  return price;
-}
-
-/** Card display prices for a plan, derived from the fetched rows so the card
- *  can never disagree with the checkout. The hardcoded `PLANS[].price` is only
- *  the pre-fetch fallback. */
-function cardPrices(
-  prices: StripePrice[],
-  plan: string,
-  saleOpen: boolean,
-): { regular?: string; sale?: string } {
-  const regularRow = findRegularPrice(prices, plan, 'usd');
-  const saleRow = saleOpen ? findSalePrice(prices, plan, 'usd') : undefined;
-  return {
-    regular: regularRow ? `$${formatPriceAmount(regularRow.amount)}` : undefined,
-    sale: saleRow ? `$${formatPriceAmount(saleRow.amount)}` : undefined,
-  };
+  fallback: string,
+): string {
+  const row = findRegularPrice(prices, plan, 'usd');
+  return row ? `$${formatPriceAmount(row.amount)}` : fallback;
 }
 
 export default function GoProPage() {
@@ -137,15 +109,12 @@ export default function GoProPage() {
   const [couponError, setCouponError] = useState<string | null>(null);
   const [checkingCoupon, setCheckingCoupon] = useState(false);
 
-  // Sale window, resolved against the device clock after mount (never during
-  // SSR — see useSaleWindow). `saleOpen` drives both the banner and which
-  // price id the checkout sends, so the two can never disagree.
-  const { open: saleOpen, endsAt } = useSaleWindow();
-  const saleDiscountPct = saleOpen ? getSaleDiscount(prices, 'lifetime') : null;
-  const lifetimeSaleUsd = saleOpen ? findSalePrice(prices, 'lifetime', 'usd') : undefined;
-  // Classic hides the sale when the viewer already owns lifetime
-  // (`components/Sale.vue`: `subscription.type !== 'lifetime'`).
-  const showSale = saleOpen && subscription?.type !== 'lifetime';
+  // The public sale (SPEC-112): a featured coupon served by the backend, so the
+  // banner and the charged amount share one source and there is no client
+  // clock. Classic hides the sale when the viewer already owns lifetime.
+  const { coupon: offer } = useFeaturedCoupon();
+  const offerTitle = offer ? couponTitle(offer, l1.code) : null;
+  const showOffer = !!offer && subscription?.type !== 'lifetime';
 
   // Redirect unauthenticated
   useEffect(() => {
@@ -184,8 +153,8 @@ export default function GoProPage() {
     return row ? decodeURIComponent(row.split('=').slice(1).join('=')) : null;
   }
 
-  async function applyCoupon() {
-    const code = couponCode.trim().toUpperCase();
+  async function applyCoupon(codeOverride?: string) {
+    const code = (codeOverride ?? couponCode).trim().toUpperCase();
     if (!code) return;
     setCheckingCoupon(true);
     setCouponError(null);
@@ -213,6 +182,18 @@ export default function GoProPage() {
     }
   }
 
+  // SPEC-112: the landing banner links here with ?coupon=BF50 and the featured
+  // offer applies itself once the visitor is signed in.
+  useEffect(() => {
+    if (!userId || !offer || checkingCoupon) return;
+    if (couponPreview || couponError) return;
+    const param = new URLSearchParams(window.location.search).get('coupon');
+    const target = (param || offer.code).toUpperCase();
+    if (couponCode !== target) setCouponCode(target);
+    void applyCoupon(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, offer, couponCode, couponPreview, couponError, checkingCoupon]);
+
   // ── Stripe Credit Card checkout ──
   const handleStripeCheckout = useCallback(async () => {
     if (!selectedPlan || !userId) return;
@@ -220,15 +201,15 @@ export default function GoProPage() {
     setError(null);
 
     try {
-      // Sale-aware: sends the sale price id while the window is open, so the
-      // amount Stripe charges matches the card and the banner.
-      const usdPrice = checkoutPrice(prices, selectedPlan, 'usd', saleOpen);
+      // The regular price id; the coupon discount is applied server-side, so
+      // the charged amount matches the preview the server returned.
+      const usdPrice = findRegularPrice(prices, selectedPlan, 'usd');
       if (!usdPrice) {
         setError(t('msg.no_usd_price'));
         setCheckingOut(false);
         return;
       }
-      log(`[LP Web] checkout: plan=${selectedPlan} price=${usdPrice.id} amount=${usdPrice.amount} sale=${saleOpen}`);
+      log(`[LP Web] checkout: plan=${selectedPlan} price=${usdPrice.id} amount=${usdPrice.amount} coupon=${couponPreview?.code ?? 'none'}`);
 
       // Ask the Python backend to create a Stripe Checkout Session.
       // Must be authenticated: the endpoint binds `user_id` to the caller's
@@ -264,19 +245,18 @@ export default function GoProPage() {
       setError(err?.message ?? t('msg.unexpected_error'));
       setCheckingOut(false);
     }
-  }, [selectedPlan, userId, prices, saleOpen, t, couponPreview]);
+  }, [selectedPlan, userId, prices, t, couponPreview]);
 
   // ── WeChat / Alipay (CNY Payment Link) ──
-  // Sale-aware: the CNY sale row carries its own Payment Link, and the Stripe
-  // Payment Link is what fixes the amount charged — so the link must be the
-  // sale link for the amount to match the displayed sale price.
-  const cnyPrice = selectedPlan ? checkoutPrice(prices, selectedPlan, 'cny', saleOpen) : undefined;
+  // A prebuilt Payment Link cannot carry a coupon, so CNY checkout is the
+  // regular price (the coupon UI says USD only).
+  const cnyPrice = selectedPlan ? findRegularPrice(prices, selectedPlan, 'cny') : undefined;
   const cnyPaymentLink = cnyPrice?.paymentLink
     ? `${cnyPrice.paymentLink}?client_reference_id=${userId ?? ''}`
     : null;
 
   // Card (USD) checkout price — the same row `handleStripeCheckout` sends.
-  const usdPrice = selectedPlan ? checkoutPrice(prices, selectedPlan, 'usd', saleOpen) : undefined;
+  const usdPrice = selectedPlan ? findRegularPrice(prices, selectedPlan, 'usd') : undefined;
 
   // ── Loading / unauthenticated states ──
   if (status === 'loading') {
@@ -300,24 +280,18 @@ export default function GoProPage() {
         </p>
       </div>
 
-      {/* ── Sale Banner (Mid-Autumn) ── */}
-      {showSale && (
+      {/* ── Public sale (SPEC-112) ── */}
+      {showOffer && offer && offerTitle && (
         <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-800 dark:bg-amber-950">
           <p className="text-base font-bold text-amber-900 dark:text-amber-100">
-            🥮 {t('msg.sale_mid_autumn')}
+            {t('msg.sale_banner', { title: offerTitle, pct: offer.percentOff ?? 0 })}
           </p>
-          {saleDiscountPct !== null && (
-            <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
-              {lifetimeSaleUsd
-                ? t('msg.sale_lifetime_price', {
-                    pct: saleDiscountPct,
-                    price: `$${formatPriceAmount(lifetimeSaleUsd.amount)}`,
-                  })
-                : t('msg.sale_discount', { pct: saleDiscountPct })}
-            </p>
-          )}
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-            {t('msg.sale_offer_ends', { date: formatSaleDate(endsAt, l1.code) })}
+          <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+            {t('msg.sale_use_code', { code: offer.code })}
+            {' · '}
+            {t('msg.sale_offer_ends', {
+              date: formatCouponDate(offer.expiresAt, l1.code),
+            })}
           </p>
         </div>
       )}
@@ -326,8 +300,7 @@ export default function GoProPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         {PLANS.map((plan) => {
           const isSelected = selectedPlan === plan.planKey;
-          const { regular, sale } = cardPrices(prices, plan.planKey, showSale);
-          const regularDisplay = regular ?? plan.price;
+          const regularDisplay = regularPriceDisplay(prices, plan.planKey, plan.price);
           return (
             <button
               key={plan.planKey}
@@ -338,25 +311,11 @@ export default function GoProPage() {
                   : 'border-border bg-card hover:border-primary/30'
               }`}
             >
-              {sale && (
-                <span className="mb-2 inline-block rounded-full bg-destructive px-2 py-0.5 text-xs font-bold text-destructive-foreground">
-                  {t('msg.sale_mid_autumn')}
-                </span>
-              )}
               <p className="text-lg font-bold">{t(plan.nameKey)}</p>
-              {sale ? (
-                <p className="mt-1 flex items-baseline gap-2">
-                  <span className="text-sm font-normal text-muted-foreground line-through">
-                    {regularDisplay}
-                  </span>
-                  <span className="text-2xl font-bold text-red-600 dark:text-red-400">{sale}</span>
-                </p>
-              ) : (
-                <p className="mt-1 text-2xl font-bold">
-                  {regularDisplay}
-                  {plan.intervalKey && <span className="text-sm font-normal text-muted-foreground">{t(plan.intervalKey)}</span>}
-                </p>
-              )}
+              <p className="mt-1 text-2xl font-bold">
+                {regularDisplay}
+                {plan.intervalKey && <span className="text-sm font-normal text-muted-foreground">{t(plan.intervalKey)}</span>}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">{t(plan.descKey)}</p>
               <ul className="mt-3 space-y-1">
                 {plan.benefitKeys.map((key) => (
@@ -411,13 +370,11 @@ export default function GoProPage() {
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     placeholder={t('placeholder.coupon_code')}
                     className="h-9 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm"
-                    disabled={saleOpen}
                   />
-                  <Button variant="outline" onClick={applyCoupon} disabled={checkingCoupon || !couponCode.trim() || saleOpen}>
+                  <Button variant="outline" onClick={() => applyCoupon()} disabled={checkingCoupon || !couponCode.trim()}>
                     {checkingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : t('action.apply')}
                   </Button>
                 </div>
-                {saleOpen && <p className="mt-2 text-xs text-muted-foreground">{t('msg.coupon_not_with_sale')}</p>}
                 {couponError && <p className="mt-2 text-xs text-destructive">{couponError}</p>}
                 {couponPreview && (
                   <>
@@ -488,7 +445,7 @@ export default function GoProPage() {
             )}
 
             {/* PayPal — lifetime only, Orders v2 */}
-            {selectedPlan === 'lifetime' && userId && usdPrice && PAYPAL_ENABLED && !saleOpen && (
+            {selectedPlan === 'lifetime' && userId && usdPrice && PAYPAL_ENABLED && (
               <div className="rounded-lg border border-border bg-muted/30 p-4">
                 <p className="mb-2 text-center text-xs text-muted-foreground">
                   {t('msg.paypal_available')}

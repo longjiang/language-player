@@ -42,7 +42,6 @@ import { localizedError } from '@/lib/errors';
 import { baseCode, buildFormSearchTerms, type SearchFormGroup } from '@langplayer/utils';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { X, ChevronDown, ChevronRight, MoreHorizontal, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
-import { SaleNotice } from '@/components/SaleNotice';
 
 interface SubsSearchResultsProps {
   /** All searchable forms (head + written variants + conjugated forms). */
@@ -1250,7 +1249,6 @@ export function SubsSearchResults({
             <Text className="text-xs text-muted-foreground">
               {t('msg.upgrade_to_pro_banner')}
             </Text>
-            <SaleNotice className="mt-1" />
           </View>
           <Button
             variant="link"

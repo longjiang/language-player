@@ -17,9 +17,8 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { baseCode } from '@langplayer/utils';
-import { isPlanOnSale, primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
-import { useSalePricing } from '@/hooks/use-sale-pricing';
-import { formatSaleDate } from '@/hooks/use-sale';
+import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
+import { useStorePricing } from '@/hooks/use-store-pricing';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE, ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { User, Mail, Clock, BookOpen, Crown, Star, ArrowRight, Check, ChevronDown, Trash2, AlertTriangle, ListVideo, Heart, Bookmark, RotateCcw } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -27,7 +26,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 /** Plan list for the free-user upgrade card.
  *
  *  `price` is only the pre-fetch fallback: the rendered price comes from
- *  `useSalePricing().priceFor()`, which for lifetime is the live StoreKit /
+ *  `useStorePricing().priceFor()`, which for lifetime is the live StoreKit /
  *  Play Billing price — the only price an IAP purchase can actually charge. */
 const PLANS = [
   { nameKey: 'subscription.monthly_cap' as const, price: '$10', interval: '/mo', planKey: 'monthly' },
@@ -81,8 +80,9 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { l1Lang, l2Lang } = useLanguage();
 
-  // Sale + prices, shared with the go-pro screen so the two cannot disagree.
-  const { saleOpen, endsAt, discountConfirmed, salePct, priceFor } = useSalePricing();
+  // Store price resolution, shared with the go-pro screen so the two cannot
+  // disagree (SPEC-112: no sales in the mobile apps).
+  const { priceFor } = useStorePricing();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2Lang.code));
   const { resetNotInterested } = useChannelPreferences();
   const router = useRouter();
@@ -245,32 +245,9 @@ export default function ProfileScreen() {
             </View>
             <Text className="text-sm text-muted-foreground mb-4">{t('msg.upgrade_to_pro_banner')}</Text>
 
-            {/* ── Sale (Mid-Autumn) ── */}
-            {/* The discount is claimed only once the STORE confirms it: mobile
-                has no non-store purchase path, so until the App Store Connect /
-                Play Console price is lowered, a "50% off" line here would be a
-                promise the purchase sheet cannot keep. The plan cards below
-                always show the store's own price, so nothing on this screen can
-                contradict what will be charged. */}
-            {saleOpen && isPlanOnSale('lifetime') && (
-              <View className="mb-4 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3">
-                <Text className="text-center text-sm font-bold text-amber-900 dark:text-amber-100">
-                  🥮 {t('msg.sale_mid_autumn')}
-                </Text>
-                {discountConfirmed && (
-                  <Text className="mt-1 text-center text-xs text-amber-700 dark:text-amber-300">
-                    {t('msg.sale_discount', { pct: salePct })}
-                  </Text>
-                )}
-                <Text className="mt-0.5 text-center text-xs text-amber-700 dark:text-amber-300">
-                  {t('msg.sale_offer_ends', { date: formatSaleDate(endsAt, l1Lang.code) })}
-                </Text>
-              </View>
-            )}
-
             <View className={`${isSm ? 'flex-row flex-wrap' : ''} gap-2 mb-4`}>
               {PLANS.map((plan) => {
-                const { current, regular } = priceFor(plan.planKey, plan.price);
+                const { current } = priceFor(plan.planKey, plan.price);
                 return (
                   <View
                     key={plan.planKey}
@@ -281,14 +258,7 @@ export default function ProfileScreen() {
                       <Text className="text-lg font-semibold text-foreground">{t(plan.nameKey)}</Text>
                       <Text className="text-sm text-muted-foreground">{plan.interval}</Text>
                     </View>
-                    {regular ? (
-                      <View className="mt-1 flex-row items-center gap-1">
-                        <Text className="text-sm text-muted-foreground line-through">{regular}</Text>
-                        <Text className="text-2xl font-bold text-foreground">{current}</Text>
-                      </View>
-                    ) : (
-                      <Text className="mt-1 text-2xl font-bold text-foreground">{current}</Text>
-                    )}
+                    <Text className="mt-1 text-2xl font-bold text-foreground">{current}</Text>
                   </View>
                 );
               })}

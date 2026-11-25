@@ -8,9 +8,9 @@
   banner, the pricing table, the go-pro page, and the in-app upgrade prompts;
   the admin console gains the expiry **time zone** and **LLM-assisted,
   editable translations** of the public sale title.
-- **Status**: **in progress — backend implemented 2026-11-25** (migration,
-  `GET /coupons/featured`, admin translate endpoint, `sale_windows` sunset).
-  Admin UI, web surfaces and mobile de-chrome are the remaining task items.
+- **Status**: **implemented 2026-11-25** — backend, admin console, landing
+  banner and the mobile de-chrome. Ops still apply the migration and set the
+  `BF50` campaign row; the store-offer mirror is out of scope.
 - **Created**: 2026-11-25
 - **ROADMAP Phase**: Phase 10 — Admin Console / payments
 - **See also**:
@@ -485,10 +485,10 @@ gating) instead of deleting it.
 
 | Item | Status |
 |---|---|
-| Migration `202611250001_featured_sale_coupons.sql` | written — **apply it before running the API** |
+| Migration `202611250001_featured_sale_coupons.sql` | written — **ops must apply it** (and set `BF50`) |
 | `utils_coupons` (featured validation, expiry zone, `featured_coupon()`, `translate_public_title()`) | done |
 | `GET /coupons/featured`, `POST /admin/coupons/translate-title` | done |
 | `sale_active` rejection removed; `sale_windows.csv` + estimate adjustment deleted | done |
 | Admin console UI (time zone, title translations, preview) | done |
-| Web (banner, pricing, go-pro, sale notice, client-window removal, i18n keys) | pending |
-| Mobile de-chrome (`use-store-pricing`) | pending |
+| Web (banner, pricing, go-pro, sale notice, client-window removal, i18n keys) | done |
+| Mobile de-chrome (`use-store-pricing`) | done |

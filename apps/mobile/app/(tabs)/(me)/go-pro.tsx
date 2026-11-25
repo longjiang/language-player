@@ -12,10 +12,8 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { IAP_AVAILABLE, ANDROID_IAP_PRODUCT_ID, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
-import { isPlanOnSale, CONTENT_L2_COUNT } from '@langplayer/shared';
-import { useSalePricing } from '@/hooks/use-sale-pricing';
-import { formatSaleDate } from '@/hooks/use-sale';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { CONTENT_L2_COUNT } from '@langplayer/shared';
+import { useStorePricing } from '@/hooks/use-store-pricing';
 import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw, CreditCard } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -143,16 +141,7 @@ export default function GoProScreen() {
 
   // Prices + store price + sale window, shared with the profile plan list so
   // the two screens cannot show different numbers.
-  const {
-    prices,
-    loadingPrices,
-    priceError,
-    saleOpen,
-    endsAt,
-    discountConfirmed,
-    salePct,
-    priceFor,
-  } = useSalePricing();
+  const { prices, loadingPrices, priceError, priceFor } = useStorePricing();
 
   // Surface a price-fetch failure the same way the inline fetch used to.
   useEffect(() => {
@@ -241,8 +230,6 @@ export default function GoProScreen() {
     })();
   }, [iapResult, user?.id, fetchSubscription, router, t]);
 
-  // ── Sale ──
-  const { l1Lang } = useLanguage();
   const lifetimePriced = priceFor('lifetime', '$169');
 
   const selectedPlanData = PLANS.find((p) => p.planKey === selectedPlan);
@@ -257,17 +244,6 @@ export default function GoProScreen() {
   /** User already owns lifetime (IAP/Stripe/PayPal) — no repurchase possible. */
   const isLifetimeOwner = !!sub && sub.type === 'lifetime';
 
-  /** Whether to render the sale banner at all. Classic hides it for lifetime
-   *  owners (`components/Sale.vue`: `subscription.type !== 'lifetime'`).
-   *
-   *  ⚠️ `discountConfirmed` (from useSalePricing) gates the *discount claim*
- *  separately. Mobile
-   *  has no non-store purchase path, so until the App Store Connect / Play
-   *  Console price is lowered, an in-app "50% off" would be a promise the
-   *  purchase sheet cannot keep. The banner then degrades to the headline and
-   *  the deadline, and the card shows the full store price with no
-   *  strike-through. */
-  const showSale = saleOpen && isPlanOnSale('lifetime') && !isLifetimeOwner;
 
   // ── IAP Purchase (iOS only) ──
   const handleIapPurchase = useCallback(async () => {
@@ -348,26 +324,6 @@ export default function GoProScreen() {
         </Text>
       </View>
 
-      {/* ── Sale Banner (Mid-Autumn) ── */}
-      {showSale && (
-        <View className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3">
-          <Text className="text-center text-sm font-bold text-amber-900 dark:text-amber-100">
-            🥮 {t('msg.sale_mid_autumn')}
-          </Text>
-          {/* The discount is only claimed once the store price proves it — see
-              `showSale`. Because mobile has no non-store purchase path, the
-              banner never quotes a price: the card and the IAP button show the
-              store's own localized price string. */}
-          {discountConfirmed && (
-            <Text className="mt-1 text-center text-xs text-amber-700 dark:text-amber-300">
-              {t('msg.sale_discount', { pct: salePct })}
-            </Text>
-          )}
-          <Text className="mt-0.5 text-center text-xs text-amber-700 dark:text-amber-300">
-            {t('msg.sale_offer_ends', { date: formatSaleDate(endsAt, l1Lang.code) })}
-          </Text>
-        </View>
-      )}
 
       {/* ── Current Subscription Status ── */}
       {subLoaded && isPro && (
@@ -422,11 +378,10 @@ export default function GoProScreen() {
             const restrictedOnStore = isStoreGatedPlan(plan.planKey);
             // Store price for lifetime (the only purchase path on mobile);
             // regular USD row otherwise.
-            const { current: planDisplayPrice, regular: planRegularPrice } = priceFor(
+            const { current: planDisplayPrice } = priceFor(
               plan.planKey,
               plan.defaultPrice,
             );
-            const planOnSale = !!planRegularPrice;
 
             return (
               <Pressable
@@ -465,14 +420,7 @@ export default function GoProScreen() {
                     )}
                   </View>
                   <View className="items-end">
-                    {planOnSale ? (
-                      <View className="flex-row items-center gap-1">
-                        <Text className="text-sm text-muted-foreground line-through">{planRegularPrice}</Text>
-                        <Text className="text-2xl font-bold text-foreground">{planDisplayPrice}</Text>
-                      </View>
-                    ) : (
-                      <Text className="text-2xl font-bold text-foreground">{planDisplayPrice}</Text>
-                    )}
+                    <Text className="text-2xl font-bold text-foreground">{planDisplayPrice}</Text>
                   </View>
                 </View>
                 {isSelected && !restrictedOnStore && (
