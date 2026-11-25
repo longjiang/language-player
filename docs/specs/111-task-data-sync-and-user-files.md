@@ -482,9 +482,10 @@ registry entry, not a new subsystem.
 ### Layout and keys
 
 - Root on the shared host: `~/zerothero-user-files` — a **sibling of the public
-  content tree**, outside the web root. Verified for the cache tree that this
-  position is not web-reachable (`GET /zerothero-server-flask-cache/` → `404`); the
-  same 404 must be confirmed for the new tree after the first deploy.
+  content tree**, outside the web root. Created 2026-11-25 (mode `0750`) and confirmed
+  not web-reachable: `GET /zerothero-user-files/` → `404` and a probe file inside it →
+  `404`, because the docroot exposes a directory only through a symlink and this tree
+  has none. There is no `.htaccess` in the web root to override anything.
 - Object key: `{user_id}/{kind}/{file_id}.{ext}`. The user prefix is what makes
   account deletion a known-set delete; `file_id` makes an upload idempotent and the
   bytes immutable (no overwrite in normal operation, so no cache invalidation).
@@ -704,9 +705,9 @@ Voice is personal data, and the product must behave accordingly:
   next to the player, not buried in settings.
 - Deleting the account deletes the bytes (§ Replace, delete, retention), and the
   privacy copy must list voice recordings explicitly when this ships.
-- **Backup retention is an open question, not an assumption**: whether the host's
-  backups keep a deleted recording, and for how long, must be established before the
-  copy says "deleted".
+- **Backup retention is now known**: DreamHost keeps ~2 weeks of backups and does not
+  guarantee them, so the copy must say *deleted immediately from live storage; our
+  host's backups may retain a copy for up to about two weeks* — never a bare "deleted".
 
 ### Cost
 
@@ -983,36 +984,21 @@ transcription/pronunciation scoring, per-user export.
 
 ## Verification Before Implementation
 
-Resolved by measurement on 2026-11-25 — the host is PHP **8.3** (panel), no per-domain
-overrides, `post_max_size` 512 MB, `memory_limit` 128 MB, `max_execution_time` 120 s,
-no Apache body limit, no CDN. § The measured host envelope records the details and the
-32 MiB cap is set inside it.
+### Confirmed on the host (2026-11-25, measured over SSH / HTTP)
 
-Still open, and still measured rather than assumed:
+| Item | Status | Evidence |
+|---|---|---|
+| The file tree is private | ✅ **confirmed** | `~/zerothero-user-files` created (mode `0750`); `GET /zerothero-user-files/` → **404** and a probe file inside it → **404**. Only paths that are symlinked *inside* the docroot are public (`data -> ~/zerothero-server-data` serves `/data/` with 200; `cache` and `lemmatized-subs-cache` are symlinks too). The new tree is a sibling with **no** symlink, and there is **no `.htaccess` in the web root at all** |
+| `Range` reaches the host | ◐ host side confirmed | A published textbook mp3 answers `HTTP/2 206` with `accept-ranges: bytes`, `content-range: bytes 0-1023/129084`, `content-type: audio/mpeg`. Nothing in the path strips `Range`. The existing `load-flask-cache.php` has **no** range support (source read), so the remaining work is our `load-user-file.php` + the Flask relay; PHP 8.3 has `fopen`/`fseek` |
+| Key plumbing | ◐ file shape confirmed | `apikeys.json` holds `cacheKey` (plus three unrelated keys) and **no `filesKey`**; the guard is `hash_equals()` over that file. Still to do: generate `filesKey` on the host and `USER_FILES_KEY` on the VPS, then prove the two credentials are not interchangeable |
+| Backup retention | ✅ **confirmed** | DreamHost's docs: *"DreamHost generally retains a 2-week backup … this backup is not guaranteed"*; the panel offers most-recent (1 h–1 d), mid-range (1 d–2 w) and oldest (2 w+). So a deleted take is gone from live storage immediately but **may persist in host backups for up to ~2 weeks** — see § Privacy |
+| Id generator | ✅ **confirmed** | `makeSyncId()` is exported (`apps/mobile/lib/sync-db.ts:51`); mobile has no `crypto.randomUUID` and no polyfill, so `makeSyncId()` is the only option there. Web has no uuid usage yet, and `crypto.randomUUID()` is Chrome 92+ / Safari 15.4+ / Firefox 95+ — the app is HTTPS in production and localhost in dev, so the secure-context requirement is met |
+| Disk accounting | ❌ needs uploads | Plan storage is unlimited; measured 2026-11-25: 18 TB volume, 3.9 TB free |
+| Real take sizes per platform | ❌ needs devices | The bitrate is a request, not a contract. Record 30 s on iOS Safari, Chrome and the mobile app and compare bytes/second with 16–24 kbps. If a platform overshoots badly, lower `maxDurationSec` for that kind or raise the cap — **never** add duration parsing |
 
-1. **The new tree is actually private.** After creating `~/zerothero-user-files`,
-   confirm `GET /zerothero-user-files/` → `404` and that no `.htaccess` rule in the web
-   root exposes it.
-2. **`Range` works end to end** — PHP `206` with a correct `Content-Range`, and Flask
-   relaying it unchanged, for both WebM and MP4.
-3. **New key plumbing.** `apikeys.json` gains `filesKey`; the VPS env gains
-   `USER_FILES_KEY`; a request with the cache key is rejected (`401`) and vice versa —
-   the two credentials must not be interchangeable.
-4. **Disk accounting.** `du -sh ~/zerothero-user-files` after the first hundred
-   uploads, to confirm the per-student estimate (30 min at 24 kbps = 5.2 MiB; worst
-   case ≈ 31 MiB per student per book).
-5. **Backup retention.** Ask the host (or read its backup policy) how long a deleted
-   file survives in backups; this decides the privacy copy, not a code change.
-6. **The id generator per platform, for file ids only.** Attempts no longer need an
-   id, but `file_id` still does. Confirm `makeSyncId()` is reachable from the recording
-   path on mobile (it lives in `sync-db.ts`, no new dependency) and that web runs in a
-   secure context so `crypto.randomUUID()` exists. If either fails, use the ms+random
-   form on both sides — the columns are `text` precisely so the format is not a schema
-   concern.
-7. **Real take sizes on the target platforms.** The bitrate is a request, not a
-   contract: record 30 s on iOS Safari, Chrome, and the mobile app and compare actual
-   bytes/second against 16–24 kbps. If a platform overshoots badly, lower
-   `maxDurationSec` for that kind or raise the byte cap — do not add duration parsing.
+The PHP envelope was measured too and is recorded in § The measured host envelope (PHP 8.3, 512 MB body, 128 MB memory, 120 s, no overrides, no CDN).
+
+Remaining before implementation: the two ❌ above, the cross-credential test, and the `Range` relay once the endpoint exists. Every other item is a fact with a date.
 
 ## Risks and Mitigations
 
@@ -1038,7 +1024,7 @@ Still open, and still measured rather than assumed:
 
 1. **Should a teacher ever hear a recording?** Out of scope now (Non-Goals), but it is the obvious next request and needs its own consent model.
 2. **Keep every take, for Pro?** Deferred; the schema already allows it (voided rows keep metadata), so it is additive.
-3. **Backup retention on the shared host** — unknown, and it gates what the privacy copy may claim (§ Privacy, Verification 6).
+3. **Backup retention** is settled in principle (~2 weeks, not guaranteed — § Privacy); what remains is whether the account's *off-site* backup tier differs, which only DreamHost support can answer.
 4. **Which kind is second?** The registry is shaped for avatar/attachment/export; picking the second one is what proves G11, and it should be chosen deliberately rather than assumed.
 5. **Analytics reads.** Attempt rows make "which blanks are wrong" possible; who may query it, and does the admin console get a report? Not decided here.
 6. **A per-user total cap** is not enforced in v1. If measurement (Verification 5) shows a student can exceed a few tens of MB, add a per-user byte cap rather than a per-file one.
