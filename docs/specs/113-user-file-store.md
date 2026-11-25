@@ -469,16 +469,24 @@ path.
 | Deletion | ✅ **confirmed** | Single delete → `OK`, then `404`; batch delete of one present + one absent file → `{"deleted":1,"missing":1,"invalid":0}`. |
 | Key plumbing | ✅ **confirmed** | A wrong or absent `X-User-Files-Key` → **401**; the key lives in the now-denied `apikeys.json`. |
 | PHP envelope | ✅ **confirmed** | PHP 8.3; `post_max_size` 512 MB, `upload_max_filesize` 512 MB, `memory_limit` 128 MB, `max_execution_time` 120 s; no per-domain overrides; no Apache body limit; no CDN. |
-| Flask ↔ host, live | ◐ **not yet** | The API is unit-tested against fakes and the host passes the probe, but the running Flask has not been restarted with the new blueprint and `USER_FILES_KEY`, so the composed path has not been exercised end to end. |
+| Flask ↔ host, live | ✅ **confirmed** | An in-process pass through the real Flask app, the real host and the real `user_files` table: **26/26** — upload → read → range (206, `bytes 100-199/2052`) → signed URL with no JWT → listing → replace (old row voided, bytes deleted) → chunk user → complete → delete → junk refused (415). Auth was stubbed to a real `auth.users` id; scratch rows and objects were removed afterwards. |
 | Disk accounting | ❌ needs uploads | Plan storage unlimited; 18 TB volume, 3.9 TB free today. |
 
-The probe is reproducible: `scripts/probe-user-files.sh` (needs the key in
+The host probe is reproducible: `scripts/probe-user-files.sh` (needs the key in
 `$USER_FILES_KEY_FILE`, default `~/.uf.key`) exits non-zero if any check fails — **18/18
-pass** as of 2026-11-25.
+pass** as of 2026-11-25. The composed pass is not committed: it stubs auth and writes
+scratch rows to the live database, so it was run once, cleaned up, and its results are
+recorded here. Unit tests (`test_user_files.py`, **43**) cover the same contract without
+touching either the host or the database.
 
-Still open, and outside the host: the end-to-end pass through Flask after a restart, the
-real take sizes per platform (SPEC-111), and the rotation of the keys that were public
-before the `.htaccess` (§ Current State).
+The end-to-end pass immediately found a real defect the unit tests could not: `open_file`
+built a `Range` header and dropped it, so every seek returned the whole file with `200`.
+The fake replaced `open_file` itself, which is exactly the seam a fake hides. It is fixed
+and pinned by `test_open_file_forwards_the_range_header`.
+
+Still open, and outside the host: deploying the backend to the VPS and the real take sizes
+per platform (SPEC-111). The keys that were public before the `.htaccess` must be rotated
+(§ Current State) — that is an operational action, not a code change.
 
 ## Risks and Mitigations
 
