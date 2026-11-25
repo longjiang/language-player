@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Metnin en popüler öğrenme dillerinde tek tek kelimelere ve temel biçimlerine nasıl ayrıldığını görün.",
         "transactions_estimate": "Veritabanı, tahsil edilen tutarları veya para birimini değil abonelik üst verilerini saklar. Fiyatlar güncel USD fiyat listesinden ve geçmiş kampanya indirimlerinden tahmin edilir. Aylık ve yıllık satırlar her yenilemeyi değil, son ödemeyi gösterir.",
         "transactions_hint": "Tahmini abonelik satışları. Ücretsiz denemeler ve içe aktarılan eski hesaplar hariç tutulur.",
-        "transactions_pricing_source": "Fiyatlandırma, Classic’ten kurtarılan {count} geçmiş kampanya dönemini kullanır; dönem içindeki ömür boyu satın alımlara indirim uygulanır.",
+        "transactions_pricing_source": "Fiyatlar güncel USD fiyat listesinden tahminidir. Ödeme defterine kaydedilen satın alımlar gerçek tutarlarını kullanır.",
         "transcript_cache_hint": "Altyazı listeleri video başına önbelleğe alınır, bu yüzden bu aşamayı yeniden çalıştırmak ucuzdur.",
         "transcript_check_complete": "Tüm transkriptler denetlendi.",
         "transcript_check_done": "Transkript denetimi tamamlandı. Uygun satırları inceleyin ve istediklerinizi ekleyin.",

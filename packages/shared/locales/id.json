@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Lihat bagaimana teks dipecah menjadi kata-kata individu dan bentuk dasarnya di bahasa-bahasa pembelajaran paling populer.",
         "transactions_estimate": "Basis data menyimpan metadata langganan, bukan jumlah yang ditagih atau mata uang. Harga diperkirakan dari daftar harga USD saat ini dan diskon promo sebelumnya. Baris bulanan dan tahunan menampilkan pembayaran terakhir, bukan setiap perpanjangan.",
         "transactions_hint": "Perkiraan penjualan langganan. Uji coba gratis dan akun lama yang diimpor dikecualikan.",
-        "transactions_pricing_source": "Penetapan harga menggunakan {count} periode promo historis yang dipulihkan dari Classic; pembelian seumur hidup dalam periode tersebut mendapat diskon.",
+        "transactions_pricing_source": "Harga merupakan perkiraan dari daftar harga USD saat ini. Pembelian yang tercatat di buku besar pembayaran menggunakan jumlah pastinya.",
         "transcript_cache_hint": "Daftar takarir di-cache per video, jadi menjalankan ulang tahap ini murah.",
         "transcript_check_complete": "Semua transkrip diperiksa.",
         "transcript_check_done": "Pemeriksaan transkrip selesai. Tinjau baris yang memenuhi syarat dan tambahkan yang Anda inginkan.",

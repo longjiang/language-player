@@ -1399,7 +1399,7 @@
         "tokenizer_test_desc": "查看文字如何在最受歡迎的學習語言中被拆分為單詞及其原形。",
         "transactions_estimate": "資料庫只儲存訂閱中繼資料，不儲存實際扣款金額或貨幣。價格根據目前美元價目表和歷史促銷折扣估算。月度和年度記錄顯示最近一次付款，而非每次續費。",
         "transactions_hint": "訂閱銷售估算。免費試用和回填的歷史帳號已排除。",
-        "transactions_pricing_source": "定價使用從經典版還原的 {count} 個歷史促銷視窗；視窗內的終身購買會打折。",
+        "transactions_pricing_source": "價格根據現行美元價目表估算。付款分類帳中記錄的購買使用實際金額。",
         "transcript_cache_hint": "字幕軌道清單依影片快取，因此重新執行此階段成本很低。",
         "transcript_check_complete": "所有字幕稿已檢查。",
         "transcript_check_done": "字幕稿檢查完成。檢視符合條件的列並新增你想要的內容。",

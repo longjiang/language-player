@@ -533,9 +533,7 @@ export default function TransactionsPage() {
           )}
 
           <p className={cn('mt-4 text-xs text-muted-foreground', !data && 'hidden')}>
-            {t('msg.transactions_pricing_source', {
-              count: data?.pricing.saleWindowCount ?? 0,
-            })}
+            {t('msg.transactions_pricing_source')}
           </p>
         </CardContent>
       </Card>

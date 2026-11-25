@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Zobacz, jak tekst dzieli się na pojedyncze słowa i ich formy podstawowe w najpopularniejszych językach do nauki.",
         "transactions_estimate": "Baza danych przechowuje metadane subskrypcji, a nie pobrane kwoty ani walutę. Ceny są szacowane na podstawie aktualnego cennika USD i historycznych rabatów promocyjnych. Wiersze miesięczne i roczne pokazują ostatnią płatność, a nie każde odnowienie.",
         "transactions_hint": "Szacowana sprzedaż subskrypcji. Bezpłatne okresy próbne i zaimportowane stare konta są wykluczone.",
-        "transactions_pricing_source": "Ceny wykorzystują {count} historycznych okresów promocji odzyskanych z Classic; zakupy dożywotnie w danym okresie są objęte rabatem.",
+        "transactions_pricing_source": "Ceny są szacowane na podstawie aktualnego cennika USD. Zakupy zapisane w księdze płatności używają dokładnej kwoty.",
         "transcript_cache_hint": "Listy napisów są buforowane dla każdego filmu, więc ponowne uruchomienie tego etapu jest tanie.",
         "transcript_check_complete": "Wszystkie transkrypcje sprawdzone.",
         "transcript_check_done": "Sprawdzanie transkrypcji zakończone. Przejrzyj kwalifikujące się wiersze i dodaj, co chcesz.",

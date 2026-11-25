@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Voyez comment le texte se décompose en mots individuels et leurs formes de base dans les langues d'apprentissage les plus populaires.",
         "transactions_estimate": "La base de données stocke les métadonnées de l’abonnement, pas les montants débités ni la devise. Les prix sont estimés à partir du tarif actuel en USD et des remises historiques. Les lignes mensuelles et annuelles affichent le dernier paiement, pas chaque renouvellement.",
         "transactions_hint": "Ventes d’abonnements estimées. Les essais gratuits et les anciens comptes importés sont exclus.",
-        "transactions_pricing_source": "Le calcul utilise {count} périodes de promotion historiques récupérées depuis Classic ; les achats à vie dans une période sont remisés.",
+        "transactions_pricing_source": "Les prix sont des estimations issues de la liste de prix actuelle en USD. Les achats enregistrés dans le journal des paiements utilisent leur montant exact.",
         "transcript_cache_hint": "Les listes de sous-titres sont mises en cache par vidéo, donc relancer cette étape est peu coûteux.",
         "transcript_check_complete": "Toutes les transcriptions sont vérifiées.",
         "transcript_check_done": "Vérification des transcriptions terminée. Examinez les lignes éligibles et ajoutez ce que vous voulez.",

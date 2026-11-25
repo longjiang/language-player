@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Bekijk hoe tekst wordt opgesplitst in afzonderlijke woorden en hun grondvormen in de meest populaire leertalen.",
         "transactions_estimate": "De database bevat abonnementsmetadata, niet de gefactureerde bedragen of valuta. Prijzen zijn geschat op basis van de huidige USD-prijslijst en historische actiekortingen. Maand- en jaarregels tonen de laatste betaling, niet elke verlenging.",
         "transactions_hint": "Geschatte abonnementsverkopen. Gratis proefperiodes en geïmporteerde oude accounts zijn uitgesloten.",
-        "transactions_pricing_source": "De prijs gebruikt {count} historische actieperiodes uit Classic; levenslange aankopen binnen een periode krijgen korting.",
+        "transactions_pricing_source": "Prijzen zijn schattingen uit de huidige USD-prijslijst. Aankopen in het betalingsgrootboek gebruiken hun exacte bedrag.",
         "transcript_cache_hint": "Ondertitellijsten worden per video gecachet, dus deze fase opnieuw uitvoeren is goedkoop.",
         "transcript_check_complete": "Alle transcripten gecontroleerd.",
         "transcript_check_done": "Transcriptcontrole voltooid. Bekijk de geschikte rijen en voeg toe wat je wilt.",

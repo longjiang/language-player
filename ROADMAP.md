@@ -175,11 +175,10 @@
   management, opt-in attribution, lifetime Stripe coupons, payment ledger,
   commissions, statements, and manual PayPal payouts. Invitation emails,
   Classic, automated payouts, and the Stripe refund webhook are deferred
-- ⬜ Coupon-driven sales — SPEC-112 (draft): a sale becomes a featured coupon
-  served by `GET /coupons/featured` to the landing banner, pricing table,
-  go-pro page, and upgrade prompts; the admin gains an expiry time zone and
-  LLM-assisted, editable title translations; `sale_windows.csv` and the
-  client-side window are sunset; no sales in the mobile apps
+- 🔄 Coupon-driven sales — SPEC-112 in progress: backend done (featured
+  coupon, `GET /coupons/featured`, expiry time zone, admin title translation
+  endpoint, `sale_windows` sunset); admin UI, landing banner and web surfaces
+  next; no sales in the mobile apps
 - ✅ Account actions — permanent user deletion from the admin user page
   (guards: self, other admins, active auto-renew, affiliate history;
   type-the-email confirmation). SPEC-060 § Danger zone

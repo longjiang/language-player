@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Sieh, wie Text in einzelne Wörter und ihre Grundformen zerlegt wird – in den beliebtesten Lernsprachen.",
         "transactions_estimate": "Die Datenbank speichert Abonnement-Metadaten, nicht die tatsächlich belasteten Beträge oder Währungen. Preise werden aus der aktuellen USD-Preisliste und historischen Aktionsrabatten geschätzt. Monats- und Jahreszeilen zeigen die letzte Zahlung, nicht jede Verlängerung.",
         "transactions_hint": "Geschätzte Abonnementverkäufe. Kostenlose Testphasen und importierte Altkonten sind ausgeschlossen.",
-        "transactions_pricing_source": "Die Preisberechnung nutzt {count} historische Aktionszeiträume aus Classic; lebenslange Käufe innerhalb eines Zeitraums werden rabattiert.",
+        "transactions_pricing_source": "Preise sind Schätzungen aus der aktuellen USD-Preisliste. Käufe im Zahlungsjournal verwenden ihren tatsächlichen Betrag.",
         "transcript_cache_hint": "Untertitel-Listen werden pro Video zwischengespeichert, daher ist ein erneuter Lauf dieser Phase günstig.",
         "transcript_check_complete": "Alle Transkripte geprüft.",
         "transcript_check_done": "Die Transkriptprüfung ist abgeschlossen. Prüfe die geeigneten Zeilen und füge hinzu, was du willst.",

@@ -326,7 +326,8 @@ records, not a payment ledger**:
 - `user_subscriptions` has no `amount` or `currency` column, and there is no
   payments/orders table.
 - The screen estimates USD prices from the current `data/prices.csv` regular
-  rows plus historical lifetime sale windows in `data/sale_windows.csv`.
+  rows. SPEC-112 removed the historical `sale_windows.csv` adjustment; new
+  purchases use their exact `payment_events` amount.
 - Monthly/annual renewals update the existing row's `payment_date`; they do
   not insert a new transaction. The list therefore shows the latest payment
   per subscription and understates recurring revenue.

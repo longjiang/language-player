@@ -1,6 +1,11 @@
 # ADR-0048 — Sale windows are gated on the client clock; sale amounts stay in the backend price rows
 
-**Status:** Accepted (2026-09-22)
+**Status:** **Superseded in part by [ADR-0054](0054-sale-window-on-coupon-row.md)
+(2026-11-25)** — decision 1 (the client clock is the authority for *when*) and
+the compiled-in window are replaced by a featured coupon with a server-evaluated
+`expires_at`. Decisions 2–5 still hold: the amount comes from the backend, the
+displayed percentage is derived, and store prices are read, never claimed.
+Original status: Accepted (2026-09-22).
 **See also:**
 - [SPEC-014: Subscription & payment system](../specs/014-subscription-payment-system.md) — the flows and identifiers this prices
 - [ARCH-015: Payment methods — supported plans & renewal strategy](../arch/015-payment-methods-plan-support.md) — the plan/payment-method matrix

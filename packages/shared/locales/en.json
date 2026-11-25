@@ -1466,7 +1466,7 @@
         "tokenizer_test_desc": "See how text breaks down into individual words and their base forms across the most popular learning languages.",
         "transactions_estimate": "The database stores subscription metadata, not charged amounts or currency. Prices are estimated from the current USD price list and historical sale discounts. Monthly and annual rows show their latest payment, not every renewal.",
         "transactions_hint": "Estimated subscription sales. Free trials and backfilled legacy accounts are excluded.",
-        "transactions_pricing_source": "Pricing uses {count} historical sale windows recovered from Classic; lifetime purchases inside a window are discounted.",
+        "transactions_pricing_source": "Prices are estimates from the current USD price list. Purchases recorded in the payment ledger use their exact amount.",
         "transcript_cache_hint": "Caption listings are cached per video, so re-running this phase is cheap.",
         "transcript_check_complete": "All transcripts checked.",
         "transcript_check_done": "Transcript check finished. Review the eligible rows and add what you want.",

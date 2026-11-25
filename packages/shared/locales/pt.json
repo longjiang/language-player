@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Veja como o texto se divide em palavras individuais e suas formas básicas nos idiomas de aprendizado mais populares.",
         "transactions_estimate": "O banco de dados armazena metadados da assinatura, não os valores cobrados ou a moeda. Os preços são estimados a partir da tabela de preços atual em USD e dos descontos históricos. As linhas mensais e anuais mostram o último pagamento, não cada renovação.",
         "transactions_hint": "Vendas de assinaturas estimadas. Testes gratuitos e contas antigas importadas são excluídos.",
-        "transactions_pricing_source": "O preço usa {count} períodos de promoção históricos recuperados do Classic; compras vitalícias dentro de um período têm desconto.",
+        "transactions_pricing_source": "Os preços são estimativas da lista de preços atual em USD. As compras registradas no livro de pagamentos usam o valor exato.",
         "transcript_cache_hint": "As listas de legendas são guardadas em cache por vídeo, pelo que repetir esta fase é barato.",
         "transcript_check_complete": "Todas as transcrições verificadas.",
         "transcript_check_done": "Verificação de transcrições concluída. Reveja as linhas elegíveis e adicione o que quiser.",

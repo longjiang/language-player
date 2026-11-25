@@ -36,7 +36,6 @@ export interface TransactionPricing {
   currency: string;
   estimated: boolean;
   regular: Record<string, number>;
-  saleWindowCount: number;
 }
 
 export interface TransactionPage {

@@ -8,7 +8,9 @@
   banner, the pricing table, the go-pro page, and the in-app upgrade prompts;
   the admin console gains the expiry **time zone** and **LLM-assisted,
   editable translations** of the public sale title.
-- **Status**: **draft — decisions approved 2026-11-25; not implemented.**
+- **Status**: **in progress — backend implemented 2026-11-25** (migration,
+  `GET /coupons/featured`, admin translate endpoint, `sale_windows` sunset).
+  Admin UI, web surfaces and mobile de-chrome are the remaining task items.
 - **Created**: 2026-11-25
 - **ROADMAP Phase**: Phase 10 — Admin Console / payments
 - **See also**:
@@ -183,7 +185,9 @@ update public.coupons
    set featured         = true,
        public_title     = 'Black Friday',
        public_title_i18n = '{}'::jsonb,
-       expires_at       = '2026-12-01T08:00:00Z',   -- 2026-12-01 00:00 America/Vancouver
+       -- The admin form converts 2026-12-01 00:00 America/Vancouver to its
+       -- UTC instant and stores both (07:00Z with the current tz database).
+       expires_at       = '2026-12-01T07:00:00Z',
        expires_timezone = 'America/Vancouver'
  where lower(code) = 'bf50';
 ```
@@ -213,7 +217,7 @@ Response:
     "amountOffCents": null,
     "regularCents": 16900,
     "finalCents": 8450,
-    "expiresAt": "2026-12-01T08:00:00+00:00",
+    "expiresAt": "2026-12-01T07:00:00+00:00",
     "expiresTimezone": "America/Vancouver"
   }
 }
@@ -279,8 +283,8 @@ IANA zone (default: the browser's zone; list from
 `zoneinfo` server-side, so DST is resolved on the backend, not in the browser.
 The form shows the resolved instant back:
 
-> Expires **2026-12-01 00:00** `America/Vancouver` (PST, UTC−8)
-> → stored as **2026-12-01T08:00:00Z**
+> Expires **2026-12-01 00:00** `America/New_York` (EST, UTC−5)
+> → stored as **2026-12-01T05:00:00Z**
 
 Ambiguous/nonexistent local times (DST fold) resolve deterministically and the
 resolved UTC line makes the result visible before saving.
@@ -458,7 +462,7 @@ Each item is its own commit with its documentation.
 | Mobile | **No sales in the apps**; remove sale promo elements; store price only; no coupon field |
 | Classic | **Untouched**; sales stop working there by design |
 | Admin i18n | Public title translated with one click (LLM), manually editable, with a per-locale preview |
-| BF50 | `public_title = "Black Friday"`, expiry `2026-12-01 00:00 America/Vancouver`, translations **left empty** so the admin translate flow can be tested |
+| BF50 | `public_title = "Black Friday"`, expiry `2026-12-01 00:00 America/Vancouver` (stored instant computed by the admin form), translations **left empty** so the admin translate flow can be tested |
 
 ## Open questions
 
@@ -475,3 +479,15 @@ gating) instead of deleting it.
 - [Apple offer codes](https://developer.apple.com/documentation/storekit/supporting-offer-codes-in-your-app)
   and [Google Play promo codes](https://developer.android.com/google/play/billing/promo)
   — background for why the apps do not reference the web coupon
+
+## Implementation status
+
+| Item | Status |
+|---|---|
+| Migration `202611250001_featured_sale_coupons.sql` | written — **apply it before running the API** |
+| `utils_coupons` (featured validation, expiry zone, `featured_coupon()`, `translate_public_title()`) | done |
+| `GET /coupons/featured`, `POST /admin/coupons/translate-title` | done |
+| `sale_active` rejection removed; `sale_windows.csv` + estimate adjustment deleted | done |
+| Admin console UI (time zone, title translations, preview) | pending |
+| Web (banner, pricing, go-pro, sale notice, client-window removal, i18n keys) | pending |
+| Mobile de-chrome (`use-store-pricing`) | pending |

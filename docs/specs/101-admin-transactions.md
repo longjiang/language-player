@@ -49,8 +49,9 @@ There is no `amount`, `currency`, `coupon`, `affiliate`, `refund`, or
 tables. Most rows are free trials (29,503) or backfilled legacy lifetime
 accounts with no payment metadata.
 
-The screen therefore follows the requested fallback: **current price table +
-historical sale discounts**, clearly labelled as an estimate.
+The screen therefore follows the requested fallback: **current price table**,
+clearly labelled as an estimate. (SPEC-112 removed the historical sale discount
+adjustment; see § Historical sale windows.)
 
 ## What Counts as a Transaction
 
@@ -94,40 +95,19 @@ Fallback constants in the module mirror those values if the CSV cannot be read.
 The CNY rows are not used because the subscription record does not store which
 currency was charged; **every displayed price is a USD estimate**.
 
-### Historical sale windows
+### Historical sale windows (sunset 2026-11-25)
 
-`data/sale_windows.csv` holds 15 windows recovered from Classic's
-`SALE_START_DATE` / `SALE_END_DATE` / `SALE_DISCOUNT` history:
+`data/sale_windows.csv` used to adjust lifetime estimates for 15 windows
+recovered from Classic's `SALE_START_DATE` / `SALE_END_DATE` / `SALE_DISCOUNT`
+history. **SPEC-112 sunset it:** a sale is now a featured coupon
+([SPEC-112](112-coupon-driven-sales.md), [ADR-0054](../adr/0054-sale-window-on-coupon-row.md)),
+and the `payment_events` ledger records exact amounts for new purchases.
 
-| Window | Dates | Multiplier |
-|---|---|---|
-| Dragon Boat Festival | 2024-06-10 → 2024-06-12 | 0.80 |
-| Summer Vacation | 2024-07-15 → 2024-07-21 | 0.75 |
-| Back to School | 2024-08-24 → 2024-08-31 | 0.55 |
-| Mid-Autumn Festival | 2024-09-17 → 2024-09-20 | 0.65 |
-| Chongyang Festival | 2024-10-11 → 2024-10-14 | 0.65 |
-| Black Friday | 2024-11-24 → 2024-12-03 | 0.50 |
-| New Year | 2025-01-01 → 2025-01-05 | 0.50 |
-| Chinese New Year | 2025-01-25 → 2025-01-31 | 0.50 |
-| Spring | 2025-04-15 → 2025-04-20 | 0.50 |
-| Back to School | 2025-08-25 → 2025-08-31 | 0.50 |
-| Mid-Autumn Festival | 2025-10-01 → 2025-10-07 | 0.50 |
-| Singles Day | 2025-11-11 → 2025-11-14 | 0.50 |
-| Black Friday | 2025-11-24 → 2025-12-01 | 0.50 |
-| Chinese New Year | 2026-02-09 → 2026-02-20 | 0.50 |
-| Mid-Autumn Festival | 2026-09-21 → 2026-09-27 | 0.50 |
-
-Rules:
-
-- Sale discount applies to **lifetime only**, matching Classic's sale UI.
-- Calendar days are inclusive.
-- The purchase date is taken from `coalesce(payment_date, created_on)` in
-  **UTC**; a late-night local purchase may land in the adjacent UTC day.
-- `priceSource` is `sale`, `regular`, or `unknown`.
-- The amount is rounded to two decimals (`169 × 0.5 = 84.50`).
-
-At implementation time 548 of the 1,799 transaction rows fell inside a
-historical sale window.
+Prices are therefore estimated at the **regular** price for every row;
+pre-ledger purchases made during a historical sale read higher than they were
+charged. `priceSource` is `regular` or `unknown` — the old `sale` value is gone.
+At the time the adjustment was removed, 548 of the 1,799 rows had fallen inside
+a historical window.
 
 ## Backend API
 
@@ -219,9 +199,8 @@ The screen deliberately labels money as **estimated**:
 
 - “Total sales (est.)” and “Price (est.)”.
 - A note explains that only metadata is stored, prices come from the current
-  USD price list and historical sale discounts, and monthly/annual rows show
-  their latest payment rather than every renewal.
-- A second note reports how many historical sale windows are in use.
+  USD price list, and monthly/annual rows show their latest payment rather than
+  every renewal.
 
 ## Verification
 
@@ -249,10 +228,10 @@ The screen deliberately labels money as **estimated**:
 - **Refunds and chargebacks are not represented.** Purchases later downgraded
   to `type='trial'` disappear from the list. The screenshot's refunds and
   chargebacks metrics are intentionally omitted.
-- **Sale history starts in 2024.** 2023 sales (including the Black Friday sale
-  mentioned in notes) are not in the recovered window list, so those lifetime
-  purchases use the regular price. Add rows to `data/sale_windows.csv` when
-  another historical window is confirmed.
+- **Historical sale prices are no longer modelled.** SPEC-112 deleted
+  `data/sale_windows.csv`; every pre-ledger row is estimated at the regular
+  price. Purchases recorded in the `payment_events` ledger use their exact
+  amount.
 - **Price increases are not modelled.** Older $6/month and $59/year prices in
   `prices.csv` are `legacy`; this screen uses the current regular prices for all
   years.

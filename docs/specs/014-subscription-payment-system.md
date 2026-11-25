@@ -217,108 +217,58 @@ See ARCH-022 for the full as-built flow diagrams.
 
 ---
 
-## Mid-Autumn sale (2026)
+## Sales (coupon-driven, 2026-11-25)
 
-A 50%-off lifetime-Pro sale on web and mobile: **0:00 Sep 21 → 23:59:59.999
-Sep 27, 2026, in the user's own timezone**. Lifetime only, matching Classic
-(`zerotohero-nuxt/components/Pricing.vue` puts `SALE` on the lifetime card alone)
-and the only `type=sale` rows that exist in `prices.csv`.
+A sale is a **featured coupon** in `public.coupons`: the coupon's discount is
+the sale discount, `expires_at` is when it ends, and `featured = true` makes it
+the one public sale. There is no start time — a coupon is usable from creation,
+and featuring it starts the sale. Full design: [SPEC-112](112-coupon-driven-sales.md)
+and [ADR-0054](../adr/0054-sale-window-on-coupon-row.md).
 
-Full rationale: [ADR-0048](../adr/0048-client-side-sale-window-gating.md). The
-short version is that the two halves of "50% off until Sep 27" come from
-different authorities:
+The two halves of "50% off until Dec 1" come from different authorities:
 
 | Question | Authority | Where |
 |---|---|---|
-| **When** is the sale running? | The device clock, one shared definition | `packages/shared/src/sale.ts` — `SALE_START_LOCAL`, `SALE_END_LOCAL`, `isSaleWindowOpen()`, `isPlanOnSale()` |
-| **How much** does it cost? | The backend price rows | `prices.csv` `type=sale` row → Stripe `price_id` / Payment Link |
+| **When** is the sale running? | The coupon row, evaluated server-side | `GET /coupons/featured` — `featured AND active AND now < expires_at` |
+| **How much** does it cost? | The coupon's `percent_off` / `amount_off_cents` on the regular price | `utils_coupons.featured_coupon()` and `/coupons/validate` |
 | What will the **store** bill on mobile? | App Store Connect / Play Console | `getStorePrice()` → StoreKit / Play Billing `displayPrice` |
-
-### Sale prices
-
-| Currency | Regular | Sale | Stripe id |
-|---|---|---|---|
-| USD | 169 | **84.50** | `price_1QN5p2G5EbMGvOafLuatCuKc` |
-| CNY | 1227 | **608** | Payment Link `https://buy.stripe.com/9AQ3fD2krfM7aKk7sM` |
-
-These rows are `status=archived` in `prices.csv`. That is deliberate and
-harmless: `findSalePrice()` in `packages/shared/src/sale.ts` ignores `status`,
-because the column is an ops flag that is `archived` outside a run and must not
-be able to hide a discount the window has opened. **Do not add a `status`
-check to that lookup** — the sale becomes invisible again.
-
-The displayed percentage is derived from the rows (`getSaleDiscount()`, → 50%
-for both currencies), not from the `SALE_DISCOUNT` constant, so a banner can
-never promise a discount that checkout will not honour. The constant remains the
-fallback for surfaces that quote no price at all.
 
 ### Behaviour per surface
 
 | Surface | Web | Mobile |
 |---|---|---|
-| go-pro page | Banner, struck-through $169 + $84.50, sale badge on the lifetime card; checkout sends the sale `price_id` / CNY Payment Link | Banner, live store price with strikethrough once the store confirms it |
-| Pricing list | Landing section (`components/landing/pricing-section.tsx`) — lifetime row + banner. Price rows fetched only while the window is open | Profile plan list (`app/(tabs)/(me)/profile.tsx`) — same treatment. Mobile has no landing page |
-| Upgrade prompts | `SaleNotice` in the transcript footer, subs-search strip, review settings | `SaleNotice` in the same three places |
-| Discount claim | Shown; the web checkout charges the sale price | Shown only once the store price proves it |
+| Landing banner | Thin strip above the header on `/`, from `/coupons/featured`, links to go-pro with the code prefilled | None |
+| go-pro page | Offer strip; coupon input prefilled/validated; checkout sends `coupon_code` | No coupon entry; the store price only |
+| Pricing list | Landing section shows the coupon's regular/final price | Profile plan list shows the store price |
+| Upgrade prompts | `SaleNotice` renders the campaign from `/coupons/featured` | No sale chrome |
+| Discount claim | Shown; checkout charges the coupon-discounted amount | Never claimed; the app shows exactly what the store will charge |
 
-**iOS / Android store policy.** A store price cannot be discounted by the app:
-`pro_go` costs whatever App Store Connect / Play Console say. Mobile therefore
-never claims a discount on an IAP button — it displays StoreKit / Play Billing's
-own `displayPrice` and only strikes through a regular price when the store's
-numeric amount is genuinely below our regular row (`hasStoreDiscount()`). Classic
-had the same constraint and commented the warning out
-(`zerotohero-nuxt/components/PaymentMethods.vue`).
+**No sales in the mobile apps.** StoreKit and Play Billing charge their own
+configured prices and cannot redeem a Stripe coupon; after consideration the app
+shows the live store price only (SPEC-112 § Mobile).
 
-### Manual step: the store prices (not in this repo)
+**Classic/Nuxt is untouched.** Its `lib/utils/variables.js` window stays as it
+is, and coupon-driven sales do not appear there.
 
-To make the 50% off real on mobile, `pro_go` must be repriced in **both**
-consoles by hand:
+### Limitations
 
-1. **Before Sep 21** — lower `pro_go` in App Store Connect and Play Console to
-   the equivalent of roughly USD 84.50. Apple only allows its own price points,
-   so the achievable value may be **84.99**, not 84.50; prices are per-storefront,
-   so other currencies do not follow USD automatically. Google Play price
-   changes must be **published** and can go through review.
-2. **After Sep 27** — restore both prices to 169-equivalent, or `pro_go` sells
-   at half price indefinitely.
-
-This is safe to get wrong in one direction only: if a console price is not
-lowered, the mobile UI shows the full store price and claims no discount (the
-sale chrome needs `hasStoreDiscount()`). If it is lowered and then forgotten, the
-price stays low but the sale banner still stops at the window — the discount
-appears as a plain price, with no strike-through.
-
-Nothing server-side is flipped to start or end the sale, so there is no discount
-state to forget to revert.
-
-### Known limitations
-
-- **The sale cannot be exercised in Stripe test mode.** `prices.csv` has no
-  `test_price_id` for the sale rows, so `findSalePrice()` returns nothing and
-  checkout falls back to the regular price. The web go-pro page logs this
-  fallback. Add test ids for the sale rows to change that.
-- **Client clocks are user-controlled.** Moving the device date shows the sale
-  outside the window, and since the checkout honours the price id the client
-  sends, a user could buy at the sale price. Accepted: the sale price is a
-  legitimate published price. Closing it means enforcing the window in
-  `/create-stripe-checkout-session`.
-- **Changing the dates needs a deploy** — the window is a client constant. Web
-  needs a deploy; mobile needs a build (or an OTA update for the shared package).
-- **Storefronts outside USD and CNY get no discount claim on mobile.**
-  `hasStoreDiscount()` can only compare the store's amount against a regular row
-  we hold, and `prices.csv` has USD and CNY only. In a EUR, GBP, JPY, … storefront
-  the mobile UI therefore shows the store price with no strike-through and the
-  banner shows no percentage — conservative and never wrong, but the discount is
-  invisible in those storefronts even when the console price has been lowered.
-  Adding regular rows for those currencies, or a per-storefront regular-price
-  source, is what would close it.
+- **CNY cannot use a coupon.** The prebuilt Stripe Payment Links (WeChat/Alipay)
+  carry no discount; a coupon sale is USD-only (Stripe card and PayPal).
+- **Stripe test mode works**, unlike the old `type=sale` price rows: coupons
+  have `stripe_coupon_id_test` and `ensure_stripe_coupon(test=True)` caches it.
+- **A refunded coupon purchase cannot be re-used** (unique
+  `(coupon_id, user_id)`); support releases the redemption.
+- **The expiry is one UTC instant for everyone.** The banner formats it in the
+  viewer's locale; the admin enters it as local time plus an IANA zone and the
+  server stores the resolved instant.
 
 ### Deliberate non-goals
 
-- **Apple IAP / Google Play Billing discounts.** No discounted store product was
-  created; the store price is simply repriced for the window.
+- **Apple IAP / Google Play Billing discounts.** No store offer is created; the
+  app does not claim the web coupon's discount. Mirroring it would require
+  store-native offers (see SPEC-112 § Mobile).
 - **Archived Classic sales.** Classic keeps its own `SALE_*` constants and its
-  own (Feb 2026) window; this sale is the web/mobile pair only.
+  own (Feb 2026) window.
 
 
 ---
@@ -327,7 +277,8 @@ state to forget to revert.
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/stripe-prices` | GET | Parsed `prices.csv` (regular + sale) |
+| `/stripe-prices` | GET | Parsed `prices.csv` (regular rows; sale rows are legacy) |
+| `/coupons/featured` | GET | The public sale coupon (SPEC-112) — unauthenticated, cached 60s |
 | `/user-subscription` | GET | Current subscription for a user |
 | `/create-stripe-checkout-session` | POST | Create Stripe Checkout session, return URL |
 | `/stripe_checkout_success` | GET | Stripe success callback |
@@ -373,21 +324,19 @@ Implemented (see SPEC-048 checklist / SPEC-054 for verification):
   store policy)
 - Apple IAP (`pro_go`) with restore on mobile
 - Cancel-at-period-end on web and mobile
-- Sale pricing on Classic and mobile
-- **Sale pricing on web** (`2026-09-22`, ADR-0048) — go-pro page, landing
-  pricing section, and the upgrade prompts; the checkout sends the sale price id
-  so the charged amount matches the advertised one
+- Sale pricing on Classic and mobile (legacy window mechanism)
+- **Coupon-driven sales** (`2026-11-25`, SPEC-112, ADR-0054) — a sale is a
+  featured coupon served by `GET /coupons/featured`; the landing banner, pricing
+  section, go-pro page and upgrade prompts render from it; the client-side sale
+  window and `sale_windows.csv` are sunset; the admin console has an expiry time
+  zone and LLM-assisted title translations; the mobile apps show the store price
+  only
 - Store-policy cleanup: non-IAP payment UI removed from the mobile app
   (SPEC-054 Phase 3) — iOS is Apple IAP only, Android buys on the website
 
 Open work:
 
 - **Web direct PayPal** — currently links to Classic
-- **Sale window enforcement server-side** — `/create-stripe-checkout-session`
-  currently trusts the price id the client sends, so a client-side window can be
-  bypassed by changing the device clock (ADR-0048, "Costs / limits")
-- **Sale test prices** — `prices.csv` has no `test_price_id` for the sale rows,
-  so the sale cannot be tested in Stripe test mode
 - **Mobile IAP sandbox verification** — SPEC-054 Phase 3 (A1/A2)
 - **Play Billing (Android)** — SPEC-054 Phase 3: Play Console developer
   billing setup (account verified 2026-08-11), product configuration,

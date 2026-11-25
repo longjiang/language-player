@@ -1419,7 +1419,7 @@
         "tokenizer_test_desc": "Xem cách văn bản được tách thành các từ riêng lẻ và dạng gốc của chúng trong các ngôn ngữ học phổ biến nhất.",
         "transactions_estimate": "Cơ sở dữ liệu chỉ lưu siêu dữ liệu đăng ký, không lưu số tiền đã thu hoặc đơn vị tiền tệ. Giá được ước tính từ bảng giá USD hiện tại và các đợt giảm giá trong quá khứ. Các dòng hàng tháng và hàng năm hiển thị lần thanh toán gần nhất, không phải mọi lần gia hạn.",
         "transactions_hint": "Doanh số đăng ký ước tính. Không bao gồm bản dùng thử miễn phí và tài khoản cũ đã nhập.",
-        "transactions_pricing_source": "Giá được tính bằng {count} giai đoạn khuyến mãi trong quá khứ được khôi phục từ Classic; mua trọn đời trong giai đoạn đó được giảm giá.",
+        "transactions_pricing_source": "Giá là ước tính từ bảng giá USD hiện tại. Các giao dịch mua được ghi trong sổ thanh toán sử dụng số tiền chính xác.",
         "transcript_cache_hint": "Danh sách phụ đề được lưu đệm theo từng video, nên chạy lại giai đoạn này rất rẻ.",
         "transcript_check_complete": "Đã kiểm tra tất cả bản ghi.",
         "transcript_check_done": "Đã kiểm tra xong bản ghi. Xem lại các hàng đủ điều kiện và thêm những gì bạn muốn.",

@@ -1,9 +1,10 @@
 # SPEC-102: Affiliates and Coupon Codes
 
-> **Status: draft — decisions approved 2026-10-17; not implemented.** This
-> document is a proposal only; no schema, API, or UI has been implemented.
-> Several items below conflict with current architecture and are called out
-> explicitly in [Conflicts and required amendments](#conflicts-and-required-amendments).
+> **Status: v1 implemented (2026-10-17); extended by SPEC-112 (2026-11-25).**
+> Affiliate management, coupons, attribution, the payment ledger, commissions
+> and manual statements are live. Invitation emails, automated payouts and the
+> Stripe refund webhook are deferred. The coupon model gained the public-sale
+> fields in [SPEC-112](112-coupon-driven-sales.md).
 
 ## Metadata
 
@@ -21,6 +22,9 @@
   - [SPEC-097 — Payment Endpoint User Binding](097-payment-user-binding.md)
   - [SPEC-101 — Admin Transactions](101-admin-transactions.md) — the current
     subscription/price model this spec must replace with a payment ledger
+  - [SPEC-112 — Coupon-driven sales](112-coupon-driven-sales.md) — a featured
+    coupon is the public sale; extends this spec's coupon model
+  - [ADR-0054 — A sale is a featured coupon](../adr/0054-sale-window-on-coupon-row.md)
   - [SPEC-039 — Full Database Migration](039-full-database-migration-supabase.md)
   - [ARCH-015 — Payment Methods & Renewal Strategy](../arch/015-payment-methods-plan-support.md)
   - [ARCH-022 — Payment, Subscription & MailerLite](../arch/022-payment-subscription-mailerlite.md)
@@ -65,7 +69,8 @@ to Language Player.
   date/time. **v1 scope: lifetime Pro purchases in USD only**, using
   Stripe Checkout or PayPal. Coupons do not apply to Apple IAP, Google Play
   Billing, or the CNY Stripe Payment Links, because those paths cannot accept a
-  server-computed discount.
+  server-computed discount. The stores have their own offer mechanisms, but this
+  project does not use them (SPEC-112 § Mobile).
 
 ### Out of scope (v1)
 
@@ -155,8 +160,10 @@ Relevant facts before designing this:
    `PAYPAL_LIFETIME_AMOUNTS` (`169.00`, `84.50`); CNY uses prebuilt Stripe
    Payment Links; Apple IAP/Play Billing charge console-defined prices and
    cannot accept our coupon.
-5. **No coupon model exists.** Sale pricing is in `data/prices.csv` and
-   `packages/shared/src/sale.ts`.
+5. **Coupon model exists (v1).** Coupons live in `public.coupons`; SPEC-112 added
+   the public-sale fields (`featured`, `public_title`, `public_title_i18n`,
+   `expires_timezone`) and `GET /coupons/featured`. Sale pricing in
+   `data/prices.csv` / `packages/shared/src/sale.ts` is legacy.
 6. **`apps/web` has a Next.js proxy** that can set cookies, and GoTrue login is
    proxied through Flask. The Flask API is a different origin, so the checkout
    client must forward the affiliate token in the request body.
@@ -251,7 +258,7 @@ behavior the product owner described and the FAQ we must reproduce.
 | Payout timing | Monthly, one-month delay; statement available ~20 days after month end; paid on the first business day of the following month. |
 | Minimum payout | **None.** Every positive statement is payable; no balance is held back. |
 | Coupon scope | **Lifetime Pro, USD only.** No monthly/annual coupons in v1. |
-| Coupon stacking | One coupon; no stacking with a sale or another coupon. |
+| Coupon stacking | One coupon per purchase. The public sale is itself a coupon (SPEC-112), so there is no separate sale to stack with. |
 | Coupon editing | Code/discount immutable; archive and recreate. |
 | Affiliate portal language | English in v1 (same as admin app). |
 | Affiliate invitation email | **Not in v1.** The admin tells the affiliate out-of-band; onboarding starts on first login. Email is a deferred follow-up. |
@@ -428,6 +435,11 @@ create table public.coupons (
   max_redemptions integer not null default 10000 check (max_redemptions between 1 and 10000),
   expires_at timestamptz,
   active boolean not null default true,
+  -- SPEC-112 public sale fields (migration 202611250001)
+  featured boolean not null default false,
+  public_title text,
+  public_title_i18n jsonb not null default '{}'::jsonb,
+  expires_timezone text not null default 'UTC',
   stripe_coupon_id_live text,
   stripe_coupon_id_test text,
   created_by uuid references auth.users(id),
@@ -435,6 +447,8 @@ create table public.coupons (
   updated_at timestamptz not null default now()
 );
 create unique index coupons_code_lower_key on public.coupons (lower(code));
+-- At most one public sale at a time.
+create unique index coupons_single_featured_idx on public.coupons ((featured)) where featured;
 ```
 
 v1 constraints enforced by the API:
@@ -445,10 +459,15 @@ v1 constraints enforced by the API:
 - percent: `0 < percent_off <= 100`; amount: `0 < amount_off_cents <= lifetime
   price` (checked at validation/redemption, since prices can change).
 - `max_redemptions`: 1–10,000 (Teachable's maximum).
-- `expires_at`: UTC in the database; admin enters local time in
-  `America/Vancouver` by default and the UI sends `tz`.
-- code/discount fields are immutable after creation; internal name, expiry and
-  max redemptions are editable. Archive instead of deleting.
+- `expires_at`: UTC in the database; the admin enters local time plus an IANA
+  zone and the server stores the resolved instant (`expires_timezone` keeps the
+  zone for the form).
+- code/discount fields are immutable after creation; internal name, expiry,
+  max redemptions, `featured` and the public title are editable. Archive instead
+  of deleting.
+- A featured coupon must be active, lifetime, USD, have a public title and an
+  expiry in the future; it is the one public sale served by
+  `GET /coupons/featured` (SPEC-112).
 
 ### `coupon_redemptions`
 

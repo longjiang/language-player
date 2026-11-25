@@ -1400,7 +1400,7 @@
         "tokenizer_test_desc": "查看文本如何在最受欢迎的学习语言中被拆分成单词及其原形。",
         "transactions_estimate": "数据库只存储订阅元数据，不存储实际扣款金额或货币。价格根据当前美元价目表和历史促销折扣估算。月度和年度记录显示最近一次付款，而非每次续费。",
         "transactions_hint": "订阅销售估算。免费试用和回填的历史账号已排除。",
-        "transactions_pricing_source": "定价使用从经典版恢复的 {count} 个历史促销窗口；窗口内的终身购买会打折。",
+        "transactions_pricing_source": "价格根据当前美元价目表估算。付款分类账中记录的购买使用实际金额。",
         "transcript_cache_hint": "字幕轨道列表按视频缓存，因此重新运行此阶段开销很小。",
         "transcript_check_complete": "所有字幕稿已检查。",
         "transcript_check_done": "字幕稿检查完成。查看符合条件的行并添加你想要的内容。",
