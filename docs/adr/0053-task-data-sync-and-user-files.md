@@ -1,6 +1,16 @@
 # ADR-0053 — Task state syncs through Flask, and user files live in a private store on the shared host
 
 **Status:** Accepted (2026-11-24), revised (2026-11-25)
+**Revision 3 (2026-11-25):** takes may run to **30 minutes**. Two things changed with it.
+The server enforces **only bytes** (32 MiB per file): duration is a recorder/UI rule,
+because storage and request work scale with bytes and a container-duration parser would be
+untested code defending a rule a client cannot exploit beyond the cap anyway. And uploads
+become **chunked and resumable** in the same phase — a 5–32 MiB take on a student's
+connection is too expensive to restart, and on web a timeslice upload means a closed tab
+costs seconds rather than half an hour. The host envelope was measured rather than assumed:
+PHP 8.3, `post_max_size` 512 MB, `memory_limit` 128 MB, `max_execution_time` 120 s, no
+per-domain overrides, no CDN — which is why the PHP endpoints stream `php://input` to disk
+instead of buffering it.
 **Revision 2 (2026-11-25):** attempts are no longer an append-only log. A task has **one
 attempt row, last-write-wins on `submitted_at`**. Revision 1 (and ADR-0044 before it) kept a
 voided history; that shape borrowed its vocabulary from `user_srs_review_log` — where
@@ -97,7 +107,7 @@ project already uses as its overflow storage:
 - **Endpoints already live in production** (`SPEC-037` § "Shared Host API", `ARCH-034` § "Two-tier read/write"): `save-flask-cache.php` (POST raw body → `~/zerothero-server-flask-cache/{bucket}/{key}`), `load-flask-cache.php` (GET, bytes or `null`), `load-flask-cache-batch.php`, `delete-flask-cache.php`, `delete-flask-cache-batch.php` (≤ 5,000 keys per request).
 - **Key-gated**: every call needs an `X-Cache-Key` header matching `apikeys.json`; buckets are `[a-z0-9_-]` and each key segment is sanitised to `[A-Za-z0-9._-]`, so a key cannot traverse (client side in `remote_cache.py:51-67`).
 - **Outside the web root, verified 2026-11-25**: `GET /zerothero-server-flask-cache/` → `404`, while `GET /data/` → `200` (public, directory index). `GET`/`POST` to the two PHP endpoints without the key → `401 Unauthorized`.
-- **Capacity**: the shared host has ~5.8 TB free and is already the overflow destination for the 39 GB local cache (`SPEC-037:20-36`); it is a product dependency today (dictionary images, stroke SVGs, textbook media, cache tier).
+- **Capacity**: the account's plan storage is unlimited (`df` on 2026-11-25: an 18 TB volume with 3.9 TB free; SPEC-037 recorded ~5.8 TB free when it was written), and the host is already the overflow destination for the 39 GB local cache. It is a product dependency today (dictionary images, stroke SVGs, textbook media, cache tier).
 - **Client timeouts**: read 5 s, write 60 s, delete 10 s (`ARCH-034`).
 
 So the host is a working private file store with one gap that matters here: it has
@@ -195,20 +205,31 @@ by Flask. Both are general mechanisms, not one-off features.**
    (`where live_key is not null and voided_at is null`), so "re-record replaces"
    is a constraint rather than a convention.
 7. **Bytes are stored as recorded, with declared MIME and extension — no
-   transcoding.** The host has no ffmpeg and adding it would put CPU on the upload
-   path; both containers clients produce (WebM/Opus, Ogg/Opus, MP4/AAC) already
-   play in the only two clients. Mono and a small bitrate are requested
-   client-side; byte and duration caps are enforced **server-side** per kind.
-8. **Text writes ride the existing durable path; byte writes get their own
+   transcoding, and no duration parsing.** The host has no ffmpeg and adding it
+   would put CPU on the upload path; both containers clients produce (WebM/Opus,
+   Ogg/Opus, MP4/AAC) already play in the only two clients. Mono at 16–24 kbps is
+   requested client-side, which keeps a 30-minute take at 3.4–5.2 MiB. **Only the
+   byte cap is a server rule** (32 MiB — 30 minutes at up to ~149 kbps, so a
+   platform that ignores the bitrate hint still succeeds). Duration is the
+   recorder's rule (`maxDurationSec`, default 1800 s), and `duration_ms` is stored
+   as untrusted display metadata: it is never compared, parsed or enforced, so
+   there is no MP4/WebM duration reader to write, test or get wrong.
+8. **Long takes upload in 4 MiB chunks with resume.** A part is a raw byte range
+   of the finished file, written atomically to `<file>.part<n>`, listed so a retry
+   can skip what arrived, and concatenated by streaming on `complete` with a
+   sha256 check before the row is written. Web records in 4-second timeslices and
+   uploads each as it is produced, so closing the tab loses seconds; mobile
+   records to a file and chunks it at upload time. Abandoned parts are swept.
+9. **Text writes ride the existing durable path; byte writes get their own
    endpoint.** `task_response` and `task_attempt` become sync entities
    (`sync-entities.ts` + `_HANDLERS` + `_ENTITY_SCHEMAS`). Files do not: an upload's
    row insert is owned by that request, so the row has exactly one writer, and the
    endpoint appends its change to `user_sync_log` so other devices learn about it
    through the pull they already run.
-9. **Local storage remains the working copy; the network never blocks a task.**
-   Offline keeps working and the queue drains later. A signed-out student keeps the
-   local-only behaviour ADR-0044 describes.
-10. **Unchanged from ADR-0044:** textbook performance does not feed SRS (D5), and
+10. **Local storage remains the working copy; the network never blocks a task.**
+    Offline keeps working and the queue drains later. A signed-out student keeps the
+    local-only behaviour ADR-0044 describes.
+11. **Unchanged from ADR-0044:** textbook performance does not feed SRS (D5), and
     Pro gating is content access, never a per-attempt or per-byte allowance (D6).
     File storage is bounded by retention policy, not by plan.
 
@@ -225,10 +246,11 @@ by Flask. Both are general mechanisms, not one-off features.**
   retries, and the read path cannot grow with retries.
 - The text half is close to free: outbox, idempotency table, change log, pull merge
   and payload validation already exist and are used by five entities.
-- **Files cost nothing incremental and have no quota wall**: ~5.8 TB free versus
-  Supabase Storage's 1 GB free / 100 GB Pro at $0.0213/GB-month plus egress. At
-  ~2–15 MB per active student, the free Supabase plan holds roughly a hundred
-  students before it breaks.
+- **Files cost nothing incremental and have no quota wall**: the shared plan's
+  storage is unlimited (18 TB volume, 3.9 TB free) versus Supabase Storage's 1 GB
+  free / 100 GB Pro at $0.0213/GB-month plus egress. A 30-minute take at 24 kbps is
+  5.2 MiB, so ~31 MiB is the worst case for a whole book at full length; the free
+  Supabase plan would hold roughly thirty such students.
 - **The generic store pays for future kinds**: profile images, note attachments and
   exports get authorization, caps, content-type safety and deletion for free.
 
@@ -243,9 +265,10 @@ by Flask. Both are general mechanisms, not one-off features.**
   radius and rotation coupling, but this is a weaker second gate than Storage RLS
   would have been. The store must therefore never grow a public read path, and every
   endpoint that returns bytes must check ownership first.
-- **`Range` must be implemented.** The existing read endpoint returns the whole body;
-  seeking needs `fseek`-based range handling in the new endpoint, or whole-file
-  playback (acceptable at ≤ 2 MiB, worse as files grow).
+- **`Range` must be implemented.** The existing read endpoint returns the whole body
+  with no `Accept-Ranges`; at 5–32 MiB per take, whole-file playback on every seek is
+  no longer acceptable, so the new read endpoint must do `fseek`-based ranges and
+  Flask must relay `206`.
 - **Body-size limit is unmeasured.** PHP's `post_max_size` / `memory_limit` on that
   host are unknown, and no cache key exists on this machine to probe with. The cap
   must be measured before it is trusted.
@@ -258,7 +281,12 @@ by Flask. Both are general mechanisms, not one-off features.**
   on account close, privacy copy — and the account-deletion path must now delete rows
   *and* objects, which no `on delete cascade` can do.
 - **A new native dependency on mobile** (`expo-audio` + microphone permission → a new
-  development build).
+  development build), and **background recording** for 30-minute takes: iOS
+  `UIBackgroundMode: audio` and an Android foreground service with a persistent
+  notification. That is a battery and store-review cost — without it a take ends when
+  the student locks the screen.
+- **Chunking is more PHP**: three more endpoints, a part sweep, and an assembly step
+  that must stream rather than buffer (the host's `memory_limit` is 128 MB).
 - **Web rendering gets a second hydration hazard**: server-owned state must not be
   read during render, for the same reason device state must not be.
 - **Content versioning becomes load-bearing server-side too.** Re-authoring a shipped

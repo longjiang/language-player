@@ -76,7 +76,7 @@ Decided, not deferred:
 - **No image/video processing, thumbnailing or transcoding.** Bytes are stored as received.
 - **No public host URLs.** No URL for the shared host ever leaves Flask.
 - **No offline cache of uploaded files on mobile** in this spec; playback streams.
-- **No quota UI and no per-user quota enforcement in v1.** The host has ~5.8 TB free; a per-kind byte cap plus one-live-file-per-slot is the bound. A total-per-user cap is added only if measurement says it is needed.
+- **No quota UI and no per-user quota enforcement in v1.** The plan's storage is unlimited (measured 2026-11-25: 18 TB volume, 3.9 TB free); a per-kind byte cap (32 MiB) plus one-live-file-per-slot is the bound. A total-per-user cap is added only if measurement says it is needed.
 
 ## Current State (As-Built, Verified)
 
@@ -120,7 +120,7 @@ Decided, not deferred:
 | G4 | A re-authored task does not silently grade stale answers | Responses whose `content_version` differs are ignored on read, on both the local and server path; a stale attempt is replaced on the next submit rather than shown |
 | G5 | Offline work still works | Airplane mode: open, answer, submit, resume; the queue drains on reconnect with no user action and no lost answer |
 | G6 | Signed-out use still works | A signed-out student gets the current local-only behaviour, with no failed requests and no prompt to sign in |
-| G7 | A student can record, hear and replace themselves | Record ≤ 180 s mono, play it back with seeking, replace it; exactly one live file per task slot exists server-side at any time |
+| G7 | A student can record, hear and replace themselves | Record up to 30 min mono at 16–24 kbps, play it back with seeking, replace it; exactly one live file per task slot exists server-side at any time. The duration limit is a client/UI rule; the server enforces only the 32 MiB byte cap |
 | G8 | Files are private to their owner | An unauthenticated or other-user request for the bytes is refused; no shared-host URL ever reaches a client; the tree is not reachable over the web |
 | G9 | Deleting an account deletes its files | After account deletion, no object remains under that user's prefix and no `user_files` row survives |
 | G10 | Nothing about the sync blocks rendering | The task page paints the same HTML it paints today; server state is adopted after hydration on web and after the route's existing async load on mobile |
@@ -141,8 +141,10 @@ export interface RecordStimulus {
   slotId?: string;
   /** Prompt shown above the control, in L2 (tokenized like other instructions). */
   prompt?: string;
-  /** Server- and client-enforced cap. The workbook prints no length; ➏'s five short
-   *  notes suggest a spoken answer of about a minute, so the default cap is 180 s. */
+  /** The recorder's stop limit, in seconds. Defaults to `RECORDING_MAX_SEC`
+   *  (1800) from `packages/textbooks`; a task may lower it (➐'s five short notes
+   *  suggest about a minute). **Client-enforced only** — the server bounds storage
+   *  by bytes, not by time (ADR-0053 rev. 3). */
   maxDurationSec?: number;
 }
 ```
@@ -264,7 +266,7 @@ create table public.user_files (
   storage_path    text   not null,           -- '<user_id>/<kind>/<file_id>.<ext>'
   mime            text   not null,           -- validated, as stored
   byte_size       integer not null,
-  duration_ms     integer,                   -- media kinds only; display metadata
+  duration_ms     integer,                   -- client-reported, display only; never validated, never used for a decision
   live_key        text,                      -- '<kind>:<owner_type>:<owner_id>:<slot>' when the kind replaces
   created_at      bigint not null,           -- client clock, ms
   voided_at       bigint,                    -- replaced or deleted; never hard-deleted
@@ -449,6 +451,34 @@ A private, per-user byte store on the shared host, with one policy per file kind
 Its first kind is `task_recording`; the design exists so the second kind is a
 registry entry, not a new subsystem.
 
+### Capture (clients)
+
+| Client | API | Container / MIME | Settings |
+|---|---|---|---|
+| Web, Chromium & Android | `MediaRecorder` over `getUserMedia({ audio: { channelCount: 1 } })` | WebM/Opus (`audio/webm;codecs=opus`), or Ogg/Opus (Firefox) | `audioBitsPerSecond: 24_000`; pick the first `MediaRecorder.isTypeSupported()` match, never assume |
+| Web, Safari & iOS Safari | same | MP4/AAC (`audio/mp4`) | Safari cannot produce WebM; MediaRecorder is available from iOS 14.5 |
+| Mobile, iOS & Android | `expo-audio` `useAudioRecorder` | M4A/AAC (`.m4a`) | `RecordingPresets`-derived with `numberOfChannels: 1`, `bitRate: 24_000`, `directory: 'document'` so an unsynced take cannot be evicted |
+
+- **Bitrate is requested, not guaranteed.** 16–24 kbps mono Opus is transparent
+  enough for speech and keeps 30 minutes at 3.4–5.2 MiB. If a platform ignores the
+  hint, the byte cap (32 MiB) still covers 30 minutes at up to ~149 kbps.
+- **The 30-minute limit is the recorder's**, from `maxDurationSec` (default
+  `RECORDING_MAX_SEC = 1800` in `packages/textbooks`); the UI shows elapsed time,
+  warns near the cap and stops at it. The server never checks duration.
+- **Long takes need background recording on mobile.** Without it, locking the screen
+  or switching apps suspends the audio session and the take ends. `expo-audio`'s
+  `enableBackgroundRecording` adds iOS `UIBackgroundMode: audio` and an Android
+  foreground service with a persistent notification — a battery and store-review
+  cost that must be paid deliberately, because a 30-minute take is exactly the case
+  where the student will leave the app.
+- **Web records in timeslices** (`recorder.start(4_000)`): each `dataavailable` is
+  uploaded as a chunk (below), so a closed tab costs at most the last few seconds
+  instead of half an hour.
+- **Permission is requested at first record**, never at launch; denial is a stated
+  state with a path to OS settings, never a silent dead button.
+- **Interruptions** (a phone call, an audio-session reset) end the recording; what was
+  captured is offered for keeping rather than discarded.
+
 ### Layout and keys
 
 - Root on the shared host: `~/zerothero-user-files` — a **sibling of the public
@@ -476,10 +506,14 @@ or a separator is rejected.
 | `load-user-file.php` | GET/HEAD + same query | returns bytes (`200`) or `404`; honours `Range: bytes=start-end` with `206`, `Content-Range` and `Accept-Ranges: bytes`; answers `application/octet-stream` (Flask sets the client-facing type) |
 | `delete-user-file.php` | DELETE + same query | `200 OK` or `404` |
 | `delete-user-files-batch.php` | POST JSON `{"items":[{"user","kind","file"},…]}` (≤ 2 000) | deletes each, returns `{"deleted":n,"missing":n}` — the account-deletion path |
+| `save-user-file-chunk.php` | POST raw body + `?user=&kind=&file=&index=` | writes `<file>.part<index>` atomically; `413` above the measured ceiling; answers `OK` |
+| `list-user-file-chunks.php` | GET + same query | returns `{"received":[0,1,3]}` for resume |
+| `complete-user-file.php` | POST JSON `{user,kind,file,total,byteSize,sha256}` | concatenates the parts in order **by streaming**, verifies size + sha256, deletes the parts, answers `OK`; `422` on mismatch (parts kept) |
 
-The host ceiling in `save-user-file.php` is a blunt guard (target 8 MiB) that must
-be set from PHP's measured `post_max_size` / `memory_limit`; the per-kind caps in
-Flask are the real policy and are always lower.
+The host ceiling in the write endpoints is a blunt guard set from the measured
+envelope (512 MB body, 128 MB memory, 120 s — § The measured host envelope); the
+per-kind cap in Flask is 32 MiB and is always lower. Every write streams the body
+(`php://input` → temp file), never `file_get_contents`, so `memory_limit` never binds.
 
 ### Policy registry (Flask)
 
@@ -493,8 +527,7 @@ FILE_KINDS = {
         owner_types=('task',),
         mimes=('audio/webm', 'audio/ogg', 'audio/mp4', 'audio/m4a'),
         magic=('webm', 'ogg', 'mp4'),          # verified against the bytes, not the filename
-        max_bytes=2 * 1024 * 1024,
-        max_duration_ms=180_000,
+        max_bytes=32 * 1024 * 1024,            # 30 min at up to ~149 kbps
         replaces_slot=True,                    # -> live_key, one live take per slot
         disposition='inline',                  # safe to play in place
     ),
@@ -505,6 +538,13 @@ Rules the registry enforces, so a future kind cannot be sloppy:
 
 - **MIME is verified, not trusted.** Magic bytes must match the declared container
   (WebM/EBML `1A 45 DF A3`, Ogg `OggS`, MP4 `ftyp`); a mismatch is `415`.
+- **Bytes are the bound; duration is not a server rule.** The only resource a
+  server must bound here is storage and request work, and both scale with bytes.
+  A `duration_ms` the client sends is stored as display metadata and is never
+  parsed, compared or enforced — so there is no container-duration code to write,
+  test or get wrong, and a lying client gains nothing it could not already do by
+  uploading 32 MiB of anything. The recorder's stop limit lives with the recorder
+  (`maxDurationSec`, § Content Model).
 - **Only known kinds exist.** An unknown `kind` is `400`, not "stored with no policy".
 - **Response headers are safe by construction.** `X-Content-Type-Options: nosniff`
   always; `Content-Disposition: inline` only for kinds whose policy allows it,
@@ -526,26 +566,99 @@ disposition).
 
 1. Authenticate, rate-limit, resolve the policy for `kind`, and check the kind allows
    `ownerType`.
-2. Validate: declared MIME in the allow-list, `Content-Length` and the read bytes
-   under `max_bytes`, magic bytes match, `durationMs` within `max_duration_ms` when
-   the kind declares one, and `ownerId`/`slot` are within the id charset they become
+2. Check `Content-Length` **before reading the body** and reject over `max_bytes`
+   with `413`. This is the one check that must happen first: it is what keeps a
+   hostile request from being buffered, and the measured host envelope below is
+   only safe because of it.
+3. Validate the declared MIME against the allow-list, stream the body to a temp file
+   while counting bytes (see § The measured host envelope), verify the magic bytes
+   on the head, and check `ownerId`/`slot` are within the id charset they become
    path segments for.
-3. Write the object to the shared host with `X-User-Files-Key`
+4. Write the object to the shared host with `X-User-Files-Key`
    (`save-user-file.php`). A `413` here is the host ceiling, not the policy cap.
-4. In one transaction: compute `live_key`; if the kind replaces, void the previous
+5. In one transaction: compute `live_key`; if the kind replaces, void the previous
    live row for it; insert the `user_files` row; append the metadata change to
    `user_sync_log`.
-5. Best-effort delete the voided row's object. A failure leaves an unreferenced
+6. Best-effort delete the voided row's object. A failure leaves an unreferenced
    object, which is harmless and swept later.
 
 Idempotency has two halves, because a retry can interrupt at either step:
 
 - **Row exists** for `fileId` → return it with `200`; nothing is re-uploaded.
-- **Object exists, no row** (a crash between steps 3 and 4) → the retry writes the
+- **Object exists, no row** (a crash between steps 4 and 5) → the retry writes the
   same key again (the endpoint overwrites atomically) and completes the row.
 
-`409` is reserved for "another device won the slot". If step 4 fails, the object
-written in step 3 is deleted in the error path, so a failed upload leaves no bytes.
+`409` is reserved for "another device won the slot". If step 5 fails, the object
+written in step 4 is deleted in the error path, so a failed upload leaves no bytes.
+
+### The measured host envelope (PHP 8.3, verified 2026-11-25)
+
+The shared host serving `server.chinesezerotohero.com` was inspected over SSH rather
+than assumed. The panel reports *Shared · Unlimited · iad1-shared-b7-13 · PHP 8.3*;
+`/etc/php83/php.ini` is the effective base config, and `~/.php/8.3/phprc` contains
+only `zend_extension=opcache.so` — **no per-domain overrides**:
+
+| Limit | Value |
+|---|---|
+| `post_max_size` | 512 MB |
+| `upload_max_filesize` | 512 MB (multipart only; we send a raw body) |
+| `memory_limit` | **128 MB** |
+| `max_execution_time` | 120 s |
+| Apache `LimitRequestBody` | unset (unlimited; there is no `.htaccess` in the web root) |
+| CDN / proxy in front | none — Apache directly, no `cf-ray` |
+| Disk | 18 TB volume, 3.9 TB free |
+
+Confirmed empirically: unauthenticated POSTs of 8 MB and 32 MB returned `401` in
+14 s and 55 s — both accepted and handled by PHP, the second limited only by the
+tester's uplink. A 30-minute take at 24 kbps is 5.2 MiB, so the host has an order of
+magnitude of headroom over the 32 MiB policy cap.
+
+Two consequences are load-bearing:
+
+- **`memory_limit` 128 MB is the real ceiling**, and only if the script buffers the
+  body. `file_get_contents('php://input')` (the pattern the cache endpoints use) holds
+  the whole body in one string; the new endpoints must instead
+  `stream_copy_to_stream(fopen('php://input','rb'), $tmp)` so memory stays flat at
+  the chunk size. The `Content-Length` pre-check (step 2) is what makes that safe.
+- **120 s is ample** for a 32 MiB write (tens of milliseconds locally); it is the
+  *client's* uplink that makes a 30-minute take slow, which is why uploads are
+  chunked (§ Long takes).
+
+### Long takes: chunked, resumable upload
+
+A 30-minute take is expensive to lose, and on a student's connection 5–32 MiB takes
+tens of seconds to minutes. Uploading it as one request means a dropped connection
+loses the whole take, and a closed browser tab loses it even earlier. So uploads are
+chunked with resume, in Phase 1 (not deferred):
+
+1. The client splits the file into **4 MiB parts** and `POST`s each to
+   `POST /files/<file_id>/chunk?index=<n>&total=<N>` (raw body, `X-User-Files-Key`
+   to the host). The host writes `pwrite`-style to `<file>.part<n>` — atomically via
+   temp + rename, as the cache endpoint does.
+2. `GET /files/<file_id>/chunks` returns the indices already received, so a resumed
+   upload skips them instead of restarting.
+3. `POST /files/<file_id>/complete` concatenates the parts in index order into the
+   final object with `stream_copy_to_stream` (never into memory), verifies the
+   declared `byteSize` and the client-sent `sha256`, deletes the parts, and only
+   **then** runs the metadata transaction (step 5 above). A mismatch is `422`, and
+   the parts are kept for a retry.
+4. Parts older than 24 h are swept — an abandoned upload must not leak disk.
+
+Two details that are easy to get wrong:
+
+- **Parts are raw byte ranges of the finished file, not standalone containers.** A
+  WebM recorded with `MediaRecorder` and `timeslice` emits chunks that concatenate
+  into one stream (the header is in the first); the server must never try to parse a
+  part on its own.
+- **The web recorder should upload while recording** (`recorder.start(4000)` emits a
+  `dataavailable` every 4 s → one part per emission). Then closing the tab loses at
+  most the last part instead of the whole 30 minutes. Mobile records to a file first
+  and chunks that file at upload time (`expo-audio` writes to disk; the uploader
+  splits it).
+
+Chunking is also what makes the byte cap *resumable*: the cap is checked once, on
+the declared `byteSize` at `complete`, and per-part `Content-Length` keeps each
+request small.
 
 ### Playback protocol
 
@@ -597,12 +710,13 @@ Voice is personal data, and the product must behave accordingly:
 
 ### Cost
 
-The store adds no line item: ~5.8 TB free on a host the project already pays for, no
-per-GB or egress charge (SPEC-037). One 90-second take at 32 kbps is ≈ 350 KB; a
-student who attempts every speaking slot in the pilot book (~6) with one take each is
-≈ 2 MB, and a re-record replaces rather than adds. The real cost is the PHP surface
-(a repository we cannot lint locally) and the shared host's lack of SLA — both
-accepted in ADR-0053 rather than hidden.
+The store adds no line item: unlimited plan storage on a host the project already
+pays for, no per-GB or egress charge (SPEC-037). A 30-minute take at 24 kbps is
+5.2 MiB; a student who attempts every speaking slot in the pilot book (~6) at full
+length with one take each is ≈ 31 MiB worst case, and a re-record replaces rather
+than adds. Realistically most takes are 1–3 minutes, so ≈ 2–8 MiB per student per
+book. The real cost is the PHP surface (a repository we cannot lint locally) and the
+shared host's lack of SLA — both accepted in ADR-0053 rather than hidden.
 
 For the record, what was given up by not using Supabase Storage: per-object policies,
 signed URLs, `Range` for free, and metered quota. `Range` is re-implemented here; the
@@ -621,7 +735,10 @@ helpers in `utils_task_data.py` / `utils_user_files.py`.
 | GET | `/tasks/state?taskIds=a&taskIds=b` | Read responses, attempts and file metadata for ≤ 20 tasks | Server is content-agnostic: it returns `content_version` per row and the client filters |
 | POST | `/sync/push` | Enqueue-drain for `task_response` / `task_attempt` | Existing endpoint; new handlers |
 | GET | `/sync/pull?cursor=` | Cross-device changes, including `user_file` tombstones | Existing endpoint |
-| POST | `/files` | Upload one file (multipart) | § Upload protocol |
+| POST | `/files` | Upload one file in a single request (declared `byteSize`, ≤ 32 MiB) | § Upload protocol; used for short takes |
+| POST | `/files/<file_id>/chunk?index=&total=` | Upload one 4 MiB part | § Long takes |
+| GET | `/files/<file_id>/chunks` | List received part indices | Resume |
+| POST | `/files/<file_id>/complete` | Assemble parts, verify sha256 + size, then write the row | `422` keeps the parts |
 | GET | `/files?ownerType=&ownerId=&kind=` | List live files for an owner | The generic read path; `/tasks/state` is the task-shaped convenience |
 | GET | `/files/<file_id>/url` | Short-lived playback/download URL | 300 s TTL |
 | GET | `/files/<file_id>?t=&exp=` | Stream bytes, `Range` supported | Ownership checked; `206` on range |
@@ -692,8 +809,9 @@ shared host did not answer).
   under the same content-version rule.
 - `persisted-state.ts` (new) — `normalisePersistedTaskState()`, the one-time collapse
   of a legacy `attempts[]` array to the latest entry, used by both apps' adapters.
-- `recordings.ts` (new) — `recordingSlotsIn(task)`, `formatDuration(ms)`, cap
-  constants. Pure functions only (AGENTS.md rule 1).
+- `recordings.ts` (new) — `recordingSlotsIn(task)`, `formatDuration(ms)`,
+  `RECORDING_MAX_SEC = 1800`, `RECORDING_BYTES_CAP = 32 MiB`, `chunkCount(bytes)`.
+  Pure functions only (AGENTS.md rule 1).
 - `schema.ts` — validator rules: unique `slotId` per task, `record` only on
   speaking-ish task types, `maxDurationSec` bounds.
 
@@ -705,12 +823,14 @@ shared host did not answer).
 
 - `src/lib/task-sync-queue.ts` (new) — durable queue, modelled on `srs-pending-queue.ts`.
 - `src/lib/task-sync-client.ts` (new) — `fetchTaskState`, `pushOps`.
-- `src/lib/user-files-client.ts` (new) — `uploadFile`, `getFileUrl`, `deleteFile`,
-  MIME negotiation for `MediaRecorder`.
+- `src/lib/user-files-client.ts` (new) — `uploadFile` (single-shot for short takes),
+  `uploadChunk` / `getReceivedChunks` / `completeUpload` (4 MiB parts, resume),
+  `getFileUrl`, `deleteFile`, and `MediaRecorder` MIME negotiation.
 - `src/components/textbook/task-provider.tsx` — async server adoption after
   `pastHydration`; keep the existing synchronous store contract.
 - `src/components/textbook/record-field.tsx` (new) — `MediaRecorder` control:
-  record/stop/preview/replace/delete, elapsed vs cap, permission states.
+  record/stop/preview/replace/delete, an elapsed timer against `maxDurationSec`
+  (default 30 min), timeslice-driven chunk upload while recording, permission states.
 - `src/components/textbook/task-shell.tsx` — render `record` stimuli.
 - `src/lib/user-data-wipe.ts` — wipe `lp:textbook:` and the task-sync queue.
 
@@ -718,9 +838,10 @@ shared host did not answer).
 
 - `lib/task-sync.ts` (new) — outbox writes for the two text entities, using
   `sync-db.ts`'s existing single-transaction writer.
-- `lib/user-files-client.ts` (new) — upload, signed-URL fetch, delete; shares the
-  request shape with web but not the code (AGENTS.md rule 3).
-- `components/textbook/RecordField.tsx` (new) — `expo-audio` recorder + expo-video
+- `lib/user-files-client.ts` (new) — chunked upload with resume, signed-URL fetch,
+  delete; shares the request shape with web but not the code (AGENTS.md rule 3).
+- `components/textbook/RecordField.tsx` (new) — `expo-audio` recorder (mono, 24 kbps,
+  background recording so a 30-minute take survives a screen lock) + expo-video
   playback of the stored take.
 - `components/textbook/task-provider.tsx` — server adoption in the existing async
   load; wipe `lp:textbook:` in `lib/user-data-wipe.ts`.
@@ -756,6 +877,7 @@ New keys, added through `scripts/add-translation-key.mjs` + `sync-translations.m
 `task.play_my_recording`, `task.delete_recording`, `task.recording_saved`,
 `task.recording_upload_pending`, `task.recording_too_long`,
 `task.recording_permission_denied`, `task.recording_mic_unavailable`,
+`task.recording_uploading`, `task.recording_upload_resume`,
 `task.synced`, `task.sync_pending`, `task.sync_failed_retry`,
 `task.recording_from_other_device`. Reuse `action.delete`, `msg.loading`,
 `action.retry` if the CSV already has them — check before adding.
@@ -773,8 +895,11 @@ New keys, added through `scripts/add-translation-key.mjs` + `sync-translations.m
   when it is not.
 - **Permission denied / no microphone**: the record control explains how to enable
   it; the task remains completable, because the recording is not scored.
-- **Too long**: recording stops at the cap with a notice; the take so far is offered
-  for keeping.
+- **Too long**: recording stops at `maxDurationSec` (30 min by default) with a notice;
+  the take so far is uploaded and offered for keeping.
+- **Uploading a long take**: chunked upload shows progress and can be paused/resumed;
+  a dropped connection or a closed tab loses at most the last part, and reopening the
+  task offers **Resume** using the indices the host already has.
 - **Replaced from another device**: shows the newer take with a one-line notice; the
   local file is discarded only after the student sees the notice.
 - **Deleted account / signed out**: local task state is wiped (the leak in § Defects),
@@ -799,9 +924,11 @@ queue; mobile outbox; logout wipe fix; account-deletion table list. Ships cross-
 answers and results.
 
 **Phase 1 — the user file store (backend only).** PHP endpoints on the shared host +
-`filesKey`; `…0002_user_files.sql`; policy registry; `POST/GET/DELETE /files`; HMAC
-playback tokens plus `Range` passthrough; per-user deletion; the orphan sweep.
-Verifiable with `curl` alone, including the private-tree 404 and the range probe.
+`filesKey` (including the chunk trio); `…0002_user_files.sql`; policy registry;
+`POST/GET/DELETE /files`; **chunked, resumable upload**; HMAC playback tokens plus
+`Range` passthrough; per-user deletion; the orphan and stale-part sweeps. Verifiable
+with `curl` alone, including the private-tree 404, the range probe and a resumed
+32 MiB upload.
 
 **Phase 2 — web capture + D ➐ content.** `MediaRecorder` component, `record`
 stimulus, validator rules, i18n keys, D ➐'s authored note corrected, translations
@@ -828,13 +955,21 @@ transcription/pronunciation scoring, per-user export.
   arriving late is `dropped` and does not overwrite; `GET /tasks/state` caps
   `taskIds`; RLS denies an `anon` read (run once with the anon key).
 - **Backend — files**: policy registry rejects an unknown kind; MIME/magic mismatch →
-  `415`; oversize → `413`; a `fileId` from another user → `404`/`403`, never bytes; a
-  second upload for a live slot → `409`; delete voids and removes;
-  `delete_all_for_user` issues one batch delete and leaves no rows; the URL token is
-  bound to file **and** user and expires.
+  `415`; a `Content-Length` over the cap → `413` **before the body is read**; a
+  `fileId` from another user → `404`/`403`, never bytes; a second upload for a live
+  slot → `409`; delete voids and removes; `delete_all_for_user` issues one batch
+  delete and leaves no rows; the URL token is bound to file **and** user and expires;
+  a client-supplied `durationMs` is stored as-is and never affects accept/reject.
+- **Chunked upload**: parts arrive out of order and `complete` assembles them in index
+  order; a resumed upload skips the `received` indices and does not re-send them; a
+  sha256 mismatch is `422` with the parts kept; `complete` twice is idempotent; aborting
+  halfway leaves parts that the 24 h sweep removes; a 300 s take assembles to the same
+  bytes as a single-shot upload of the same file.
 - **Shared host (probe, not unit test)**: save → load → byte-compare → range request
   (`206`, correct slice) → delete → load returns `404`; `GET /zerothero-user-files/`
-  returns `404`; a request with a wrong key returns `401`.
+  returns `404`; a request with a wrong key returns `401`; a 32 MiB single-shot upload
+  succeeds (the measured ceiling), and a 33 MiB one is refused by Flask before the
+  body is read.
 - **Web components** (existing pattern: `task-audio.test.tsx`,
   `task-provider.test.tsx`): a saved server answer is adopted after hydration and
   never during the server render; a queued op survives a reload; offline submit
@@ -848,31 +983,36 @@ transcription/pronunciation scoring, per-user export.
 
 ## Verification Before Implementation
 
-These are unknowns this spec deliberately does not guess:
+Resolved by measurement on 2026-11-25 — the host is PHP **8.3** (panel), no per-domain
+overrides, `post_max_size` 512 MB, `memory_limit` 128 MB, `max_execution_time` 120 s,
+no Apache body limit, no CDN. § The measured host envelope records the details and the
+32 MiB cap is set inside it.
 
-1. **PHP body-size ceiling on the host.** `post_max_size` / `memory_limit` are unknown
-   and no cache key exists on this machine, so upload 1 / 2 / 5 MiB bodies from the VPS
-   and record where the endpoint fails. Set the PHP ceiling from the measurement; keep
-   the per-kind caps below it.
-2. **The new tree is actually private.** After creating `~/zerothero-user-files`,
+Still open, and still measured rather than assumed:
+
+1. **The new tree is actually private.** After creating `~/zerothero-user-files`,
    confirm `GET /zerothero-user-files/` → `404` and that no `.htaccess` rule in the web
    root exposes it.
-3. **`Range` works end to end** — PHP `206` with a correct `Content-Range`, and Flask
+2. **`Range` works end to end** — PHP `206` with a correct `Content-Range`, and Flask
    relaying it unchanged, for both WebM and MP4.
-4. **New key plumbing.** `apikeys.json` gains `filesKey`; the VPS env gains
+3. **New key plumbing.** `apikeys.json` gains `filesKey`; the VPS env gains
    `USER_FILES_KEY`; a request with the cache key is rejected (`401`) and vice versa —
    the two credentials must not be interchangeable.
-5. **Disk accounting.** `du -sh ~/zerothero-user-files` after the first hundred
-   uploads, to confirm the per-student estimate and that the host's quota is not shared
-   with the cache in a way that matters.
-6. **Backup retention.** Ask the host (or read its backup policy) how long a deleted
+4. **Disk accounting.** `du -sh ~/zerothero-user-files` after the first hundred
+   uploads, to confirm the per-student estimate (30 min at 24 kbps = 5.2 MiB; worst
+   case ≈ 31 MiB per student per book).
+5. **Backup retention.** Ask the host (or read its backup policy) how long a deleted
    file survives in backups; this decides the privacy copy, not a code change.
-7. **The id generator per platform, for file ids only.** Attempts no longer need an
+6. **The id generator per platform, for file ids only.** Attempts no longer need an
    id, but `file_id` still does. Confirm `makeSyncId()` is reachable from the recording
    path on mobile (it lives in `sync-db.ts`, no new dependency) and that web runs in a
    secure context so `crypto.randomUUID()` exists. If either fails, use the ms+random
    form on both sides — the columns are `text` precisely so the format is not a schema
    concern.
+7. **Real take sizes on the target platforms.** The bitrate is a request, not a
+   contract: record 30 s on iOS Safari, Chrome, and the mobile app and compare actual
+   bytes/second against 16–24 kbps. If a platform overshoots badly, lower
+   `maxDurationSec` for that kind or raise the byte cap — do not add duration parsing.
 
 ## Risks and Mitigations
 
@@ -889,6 +1029,8 @@ These are unknowns this spec deliberately does not guess:
 | Content re-authoring orphans answers | `content_version` on every row, ignored on read, never deleted |
 | Uploads become a DoS vector | Per-kind byte cap, magic-byte check, rate limit, host-level ceiling, one-live-per-slot |
 | Account deletion leaves bytes or sync-log rows | Explicit batch delete before the GoTrue delete, rows in the e2e cleanup list, and the deletion check in the manual matrix. `user_sync_log` has no FK cascade today — a pre-existing gap this work should close for the new entities at least |
+| A 30-minute take is lost to a dropped connection or a closed tab | 4 MiB chunked upload with resume, plus timeslice upload while recording on web; the host keeps received parts for 24 h |
+| Background recording drains the battery or trips store review | It is a deliberate, documented cost of 30-minute takes (`enableBackgroundRecording`, foreground-service notification); the alternative is takes that die on screen lock |
 | A new native dependency slips into a "docs only" release | Phase 3 is the only phase that needs a build; Phases 0–2 ship without one |
 | Students believe local work is safe when it is not | Explicit "not saved yet" marker and retry, per § States |
 
