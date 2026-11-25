@@ -13,7 +13,7 @@
 - **Web ref**: `apps/web/src/app/[l1]/[l2]/tasks/` (new), `apps/web/src/components/tokenized-text.tsx`, `apps/web/src/app/docs/doc-sidebar.tsx` (TOC pattern)
 - **Mobile ref**: `apps/mobile/app/(tabs)/(vocab)/tasks.tsx` (new), `apps/mobile/components/TokenizedText.tsx`
 - **Source content**: `tmp/interactive-text/` (workbook PDF, answer key PDF, audio transcript PDF, 47 mp3)
-- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording — superseded in part by ADR-0053), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0047 (mobile keyboard-aware inputs), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
+- **Related ADRs**: ADR-0043 (asset hosting), ADR-0044 (exercise state & attempt recording — decisions 2 and 3 superseded by ADR-0053), ADR-0045 (mock apps as sandboxed self-contained HTML behind a bridge), ADR-0047 (mobile keyboard-aware inputs), ADR-0003 (no shared UI components), ADR-0041 (inline content seam in `TokenizedText`), ADR-0034 (Pro gating)
 - **Successor for state sync and recordings**: [SPEC-111](111-task-data-sync-and-user-files.md) (with [ADR-0053](../adr/0053-task-data-sync-and-user-files.md)) adds the server copy of task state and in-app audio capture. It supersedes this spec's "local only" Non-Goal and the `record` capability D ➐ needs; nothing else in this spec changes.
 
 > **Note on scope**: Classic/Nuxt (`zerotohero-nuxt/`) is treated as **out of scope** for this feature by explicit product decision. This spec is grounded in the source workbook and the active web/mobile codebase only.
@@ -85,7 +85,7 @@ Consequently the feature is **not** 60 bespoke activity components. It is **two 
 Decided, not deferred — these are out of scope deliberately:
 
 - **Textbook performance does not feed SRS.** Completing tasks does not create review cards, and incorrect blanks are not auto-saved as words. This is a product decision, not a phasing one. `scoreTestResult` is reused only for its scoring shape.
-- **Exercise state is local only.** Answers, completion and attempt history live on the device (ADR-0044) and there is no server-side exercise table, no sync and no cross-device continuity. **Superseded 2026-11-24:** [SPEC-111](111-task-data-sync-and-user-files.md) / [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) add the server copy; the device store stays the working copy, so the local design described in this spec is unchanged.
+- **Exercise state is local only.** Answers, completion and the task's attempt live on the device (ADR-0044) and there is no server-side exercise table, no sync and no cross-device continuity. **Superseded 2026-11-24:** [SPEC-111](111-task-data-sync-and-user-files.md) / [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) add the server copy; the device store stays the working copy, so the local design described in this spec is unchanged.
 - **No pagination.** Long reading passages (B ➎, E ➌) render as a single continuous scrolling block. The existing paginated reader (`apps/web/src/components/reader/paginated-reader.tsx`, SPEC-087) is **not** integrated, and its measuring-window contract is not a dependency of this feature.
 - **No free-form conversation production or scoring** (see Phasing).
 - **No authoring UI.** Content is authored as files in the repository and validated in CI; there is no CMS screen for it.
@@ -1114,9 +1114,10 @@ The result banner (correct/incorrect with the score, or *Saved*) sits **above** 
 group: the outcome is read before the buttons that act on it, and a green *Correct 8 / 8* is not
 below the thing that produced it.
 
-**Next is disabled until the task is resolved** — that is, until the store holds an un-voided
-attempt, which a graded Submit, a self-check's Mark as complete, a read-only task's Mark as
-complete and a mock app's All Done! all append. Next is **hidden on the last task** in reading
+**Next is disabled until the task is resolved** — that is, until the store holds an attempt,
+which a graded Submit, a self-check's Mark as complete, a read-only task's Mark as complete and
+a mock app's All Done! all write. Re-submitting replaces that attempt rather than adding one
+(ADR-0053 rev. 2). Next is **hidden on the last task** in reading
 order (the student uses the TOC), and it moves to the next task via `adjacentTasks` and the
 platform's href helper (`taskHref` on web, `mobileTaskHref` in expo-router). Re-submitting after
 Try again does not disable it: an attempt has still been recorded.
@@ -1125,7 +1126,7 @@ Try again does not disable it: an attempt has still been recorded.
 shadowing exercise and E ➌ is a model post — a recording and its text, with no blanks at all —
 so there is nothing to submit, check or score, and yet a student who has listened and read has
 done the task. It carries the same **Mark as complete** control as a self-check task
-(`TaskResponseStore.recordChecked()`), which records one `complete: true` attempt and no blanks,
+(`TaskResponseStore.recordChecked()`), which records a `complete: true` attempt with no blanks,
 and its Next waits for that attempt like every other task's. The alternative — an ungated Next —
 advanced the student for free and left both tasks permanently unticked in the TOC, because a
 completion is only ever read from an attempt. The button reads *Completed* and disables itself
@@ -1295,8 +1296,8 @@ Per ADR-0003, UI components are **not shared** between web and mobile; logic and
 - **Schema + types** — task/blank/bank/stimulus types, plus the validator (`validateBook`) and the loader map. **Not** a YAML→JSON compiler: see [Task Schema](#task-schema) for why content is TypeScript.
 - **`gradeTask(task, responses)`** — normalisation and alternate acceptance. Script-variant matching is *not* in here: `expandAcceptedVariants` runs first, in the app, and adds the converted form to each blank's `accept[]` so grading itself stays a pure string comparison (and works offline, which matters on mobile).
 - **Task store** — per-task, per-blank response state with subscribe/select, so blank components re-render independently of the token tree.
-- **Attempt persistence** — per-task attempts in local storage (ADR-0044).
-- **Progress** — `bookProgress` / `summarizeProgress` roll the saved per-task attempts up through the book's own hierarchy, without a second store: the picker shows `complete/total`, each lesson a count, and each task a tick or a dot. The latest un-voided attempt is the one that counts, so a student who got it wrong and then right has completed it.
+- **Attempt persistence** — one attempt per task in local storage (ADR-0044; ADR-0053 rev. 2 replaces the append-only log).
+- **Progress** — `bookProgress` / `summarizeProgress` roll the saved per-task attempts up through the book's own hierarchy, without a second store: the picker shows `complete/total`, each lesson a count, and each task a tick or a dot. The task's attempt is the one that counts; a re-submit replaces it, so a student who got it wrong and then right has completed it.
 - **Asset resolver** — relative key → absolute URL via `ASSET_BASE_URL`, plus the shared default base URL constant.
 - **`assetKeysIn(task)`** — every asset key a task references, wherever it is declared (task, blank, table row, block, map pin, bank option, mock-app fallback), each with the location that declared it. The validator and the manifest test both call it, so a new declaration point cannot make the two disagree.
 - **Grading helpers** — `normalizeAnswer`, `acceptedAnswers`, `isBlankCorrect` (set comparison for `multiple`), `isBlankScoreable`, `expandAcceptedVariants`.
@@ -1652,7 +1653,7 @@ This is the highest-effort, lowest-reuse stimulus in the pilot and is scheduled 
    - **Blank tasks** — each `BlankField` writes to its slice of the task store. The token tree never re-renders.
    - **Mock-app tasks** — the app owns its own screen and reports the student's **selection**, which the host writes into the blank as it is toggled. The panel's bottom bar owns submission: **Submit** grades that selection and says whether this task is done, **Next ›** carries them to the next one, and **All Done!** on the last grades the task. Help mode, hint and the task's own `focus` forward over the bridge from the same bar.
 5. The attempt resolves — by the shell's Submit for blank and free-text tasks, or by the panel's **All Done!** for a mock-app task, which calls the same `store.submit()`. `gradeTask` runs locally either way, and the attempt is recorded locally (ADR-0044); the per-task Submits before that grade one blank and record nothing. Correct/incorrect is shown — a toast per task, and the result banner for the task as a whole.
-6. **Self-check tasks have no step 5.** C ➌'s questions are answered in the head and revealed one at a time; there is no submit and nothing is graded. Checking the last one calls `store.recordChecked()`, which appends a completion attempt so the TOC and picker can show the task as done (see [Self-check](#self-check)).
+6. **Self-check tasks have no step 5.** C ➌'s questions are answered in the head and revealed one at a time; there is no submit and nothing is graded. Checking the last one calls `store.recordChecked()`, which records a completion attempt so the TOC and picker can show the task as done (see [Self-check](#self-check)).
 
 ## States
 

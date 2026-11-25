@@ -70,7 +70,8 @@ Decided, not deferred:
 - **No sharing.** No teacher dashboard, no class roster, no public link to a student's recording, no staff playback of individual recordings. Aggregated, non-identifying analytics may read attempt rows; files are served to their owner only.
 - **No Pro gating of task data or files.** Pro gating stays content access (ADR-0044 D6). Storage is bounded by retention policy, not by plan.
 - **No Classic (Nuxt) support.** `/tasks` does not exist in Classic (SPEC-095 scope note).
-- **No per-device conflict UI.** Conflicts resolve by rule; where it matters the losing side is recoverable from the append-only attempt log.
+- **No per-device conflict UI.** Conflicts resolve by rule. There is no retry history to reconcile: a task has one attempt (see Non-Goals below).
+- **No attempt history.** A task keeps one attempt; re-submitting replaces it. "Wrong first, right second" is not stored, and there is no per-attempt viewer.
 - **No real-time collaboration or live push.** Sync happens on open/write/focus, not over websockets.
 - **No image/video processing, thumbnailing or transcoding.** Bytes are stored as received.
 - **No public host URLs.** No URL for the shared host ever leaves Flask.
@@ -86,8 +87,8 @@ Decided, not deferred:
 | Web persistence | `localStorage` under `lp:textbook:<taskId>` | `apps/web/src/components/textbook/task-provider.tsx:43,76-98` |
 | Mobile persistence | `AsyncStorage`, same prefix, read before mount | `apps/mobile/components/textbook/task-provider.tsx:34,43-61` |
 | State shape | `{ taskId, contentVersion, responses, attempts }` | `packages/textbooks/src/store.ts:46-52` |
-| Attempt log | append-only, `voidedAt` on the superseded entry | `packages/textbooks/src/store.ts:185-241` |
-| Completion | derived: latest un-voided attempt has `result.complete` | `packages/textbooks/src/progress.ts` |
+| Attempts | an array today: `submit()` voids prior entries and appends one (revision 2 makes this one row) | `packages/textbooks/src/store.ts:185-241` |
+| Completion | derived: the latest un-voided attempt's `result.complete` (becomes simply the attempt's) | `packages/textbooks/src/progress.ts` |
 | Content version gate | a response saved under another `contentVersion` is discarded on load | `packages/textbooks/src/store.ts:110-113` |
 | Hydration guard (web) | `pastHydration` via `useSyncExternalStore`; server HTML always renders unanswered | `apps/web/src/components/textbook/task-provider.tsx:61-67` |
 | Durable outbox (mobile) | `sync.db` → `outbox` + `entity_cache`, `POST /sync/push` | `apps/mobile/lib/sync-db.ts`, `apps/mobile/lib/sync-engine.ts` |
@@ -114,9 +115,9 @@ Decided, not deferred:
 | # | Goal | Acceptance |
 |---|---|---|
 | G1 | Task responses sync per blank across devices | Answer b3 on web, open the same task on mobile, b3 shows the answer; two devices editing different blanks both keep their text |
-| G2 | Attempts are recorded server-side exactly once | Submitting once produces one row; replaying the same queued op produces no second row; re-submitting voids the earlier row, never deletes it |
-| G3 | Completion is derivable server-side | No `completed` column; the latest un-voided attempt's `result.complete` reproduces `taskProgress()` exactly |
-| G4 | A re-authored task does not silently grade stale answers | Rows whose `content_version` differs from the task's are ignored on read, on both the local and server path |
+| G2 | A task has exactly one attempt row | Submitting creates it; re-submitting replaces it; a replayed op cannot double-apply; no `attempt_id` and no `voided_at` exist |
+| G3 | Completion is derivable server-side | No `completed` column; the attempt's `result.complete` reproduces `taskProgress()` exactly |
+| G4 | A re-authored task does not silently grade stale answers | Responses whose `content_version` differs are ignored on read, on both the local and server path; a stale attempt is replaced on the next submit rather than shown |
 | G5 | Offline work still works | Airplane mode: open, answer, submit, resume; the queue drains on reconnect with no user action and no lost answer |
 | G6 | Signed-out use still works | A signed-out student gets the current local-only behaviour, with no failed requests and no prompt to sign in |
 | G7 | A student can record, hear and replace themselves | Record ≤ 180 s mono, play it back with seeking, replace it; exactly one live file per task slot exists server-side at any time |
@@ -196,45 +197,55 @@ note cards.
 
 ### `public.user_task_attempts`
 
-Append-only; the only mutable field is `voided_at`, mirroring
-`public.user_srs_review_log` (SPEC-066), which is the shape ADR-0044 chose
-precisely so it would survive this step.
+**One row per task, mutable** (ADR-0053 rev. 2). A submit replaces the row; there is
+no append, no `attempt_id` and no `voided_at`. The table is a current-state row, not
+a log — which is what the product actually reads, and what bounds storage by the
+number of tasks instead of by how often a student retries.
 
 ```sql
 create table public.user_task_attempts (
-  user_id         uuid   not null references auth.users(id) on delete cascade,
-  attempt_id      text   not null,           -- client-generated stable id (see below)
-  task_id         text   not null,
+  user_id         uuid    not null references auth.users(id) on delete cascade,
+  task_id         text    not null,
   content_version integer not null,
-  responses       jsonb  not null default '{}'::jsonb,  -- snapshot at submit
-  result          jsonb,                     -- TaskResult, or null
-  submitted_at    bigint not null,
-  voided_at       bigint,
+  responses       jsonb   not null default '{}'::jsonb,  -- snapshot at submit
+  result          jsonb,                                 -- TaskResult, or null
+  submitted_at    bigint  not null,                      -- attempt time; also the LWW key
   created_at      timestamptz not null default now(),
-  primary key (user_id, attempt_id)
+  primary key (user_id, task_id)
 );
-create index on public.user_task_attempts (user_id, task_id, submitted_at desc);
 ```
 
-- **`attempt_id` is the idempotency key** for `/sync/push`, so a replayed op can
-  never mint a second attempt and two devices cannot collide. This replaces
-  `` `${task.id}#${seq}` `` (`store.ts:195,228`) with an id created where the
-  attempt is created, through an injected `newAttemptId?: () => string` on
-  `TaskStoreOptions` — `packages/textbooks` stays platform-agnostic (AGENTS.md
-  rule 1). Web passes `crypto.randomUUID()` (available in a secure context);
-  mobile passes the existing Hermes-safe `makeSyncId()` (`Date.now()` + 8 base36
-  chars, `apps/mobile/lib/sync-db.ts:51-53`, whose comment records that
-  `crypto.randomUUID` is not guaranteed on Hermes); tests pass a counter. The
-  server column is `text`, not `uuid`, because not every platform can mint one —
-  uniqueness only has to hold per user, and the primary key is `(user_id, attempt_id)`.
-- **Attempts created before this ships are not backfilled.** They carry `taskId#n`
-  ids that would either collide or, if re-keyed per device, produce duplicate
-  attempts from the same student. They stay in the local store only. Stated as a
-  deliberate limitation: their information value is a handful of pilot tasks, and
-  the alternative (re-keying) silently corrupts attempt analytics.
+- **The task id is the key.** `(user_id, task_id)` means two devices cannot
+  disagree about *which* row is the attempt — there is only one. The old
+  `` `${task.id}#${seq}` `` id (`store.ts:195,228`) disappears rather than being
+  made globally unique: with one row per task, an attempt id would be a second
+  identifier for the same thing.
+- **Replay safety comes from two places, neither of which is an attempt id.** The
+  outbox op carries its own `idempotency_key` (recorded in `user_sync_ops`), and the
+  upsert is last-write-wins: `on conflict (user_id, task_id) do update … where
+  excluded.submitted_at >= user_task_attempts.submitted_at`. An older queued submit
+  that arrives late loses and is reported as `dropped`, so it cannot overwrite a
+  newer attempt.
+- **The attempt is replaced, so the write order is the client clock's.** Two
+  devices submitting within the same window resolve by `submitted_at`; a device whose
+  clock is far ahead wins. That is the same trust the SRS card store already places
+  in `state.lastReview`, accepted rather than solved here.
+- **`recordChecked()` (self-check / read-only completion) updates the same row.**
+  It is only offered when a task has nothing to grade — `needsExplicitCompletion`
+  is `isSelfCheckOnly || isReadOnly` (`apps/web/src/components/textbook/task-shell.tsx:102`)
+  — so replacing the result with the synthetic `{ complete: true, blanks: [] }` cannot
+  discard a real grade. The validator gains a rule that a task mixing `selfCheck`
+  with scoreable blanks is an error, so this stays true by construction.
 - **`result` is a snapshot, not a reference.** Grading is client-side (`gradeTask`),
   so the server cannot recompute a past attempt under new content; storing the
-  `TaskResult` is the only faithful record.
+  `TaskResult` is the only faithful record — and with a mutable row it is also the
+  *only* record, so a result graded under an old content version is overwritten on
+  the next submit instead of being retained.
+- **Local state migrates on load.** `PersistedTaskState.attempts` (an array) becomes
+  `attempt: AttemptRecord | null`. A shared `normalisePersistedTaskState()` in
+  `packages/textbooks` collapses a legacy array to its latest entry and drops
+  `voidedAt`, so both apps' storage adapters run one migration instead of two
+  slightly different ones, and a student's existing answers survive the upgrade.
 
 ### `public.user_files` — one table for every user-generated binary
 
@@ -306,7 +317,7 @@ fail closed.
 | State | Write pattern | Conflict rule | Wrong if merged |
 |---|---|---|---|
 | Responses | every keystroke (debounced) | per-blank LWW | Per-task LWW would discard the other device's work on unrelated blanks |
-| Attempts | once per submit | immutable fact; voided by a later attempt | LWW would let a retried push overwrite or duplicate a past result |
+| Attempts | once per submit, replaced on re-submit | one row per task, LWW on `submitted_at` | Appending would grow with retries and keep history nothing reads; a client-supplied id would be a second key for one row |
 | Files | one object per upload | kind policy: replace a slot, or append | Storing bytes in the response row would re-upload audio on every keystroke path |
 
 ## Sync Design
@@ -319,9 +330,9 @@ Two new entities in `packages/utils/src/sync-entities.ts` (client contract) and
 | Entity | Payload | Coalesce | Ops |
 |---|---|---|---|
 | `task_response` | `{ taskId: string, blankId: string, contentVersion: number, value: string, updatedAt: number }` | replace the same `(taskId, blankId)` op | upsert |
-| `task_attempt` | `{ taskId: string, attemptId: string, contentVersion: number, responses: object, result: object\|null, submittedAt: number }` | replace (an op for one `attemptId` is unique) | upsert |
+| `task_attempt` | `{ taskId: string, contentVersion: number, responses: object, result: object\|null, submittedAt: number }` | replace — one row per task, so the last queued submit wins | upsert |
 
-Entity id: `task_response` → `${taskId}#${blankId}`, `task_attempt` → `attemptId`.
+Entity id: `task_response` → `${taskId}#${blankId}`, `task_attempt` → `taskId`.
 Server-side, both handlers write the row and the change log entry in one
 transaction — `log_change()` already does this for every other entity.
 
@@ -333,10 +344,11 @@ against):
   and a write older than a tombstone for the same entity is refused with
   `stale_after_delete()` (`utils_sync.py:161-164`) — the guard that stops a queued
   offline write resurrecting deleted state.
-- `task_attempt` upsert never updates an existing row's payload; it inserts, and
-  first sets `voided_at = submitted_at` on the same task's un-voided rows. A
-  replayed `attemptId` is caught by the primary key (or the idempotency table)
-  before either step.
+- `task_attempt` upsert is last-write-wins on the same key, in SQL:
+  `on conflict (user_id, task_id) do update set content_version = …, responses = …, result = …, submitted_at = … where excluded.submitted_at >= user_task_attempts.submitted_at`.
+  There is no void step and nothing to insert before: the row either exists or it
+  does not. A replayed op is stopped earlier by `user_sync_ops`, and if it is not
+  (a different op with the same payload), the LWW guard makes it harmless.
 - A write that loses (older timestamp, stale after delete) returns
   `{ ok: true, dropped: true }`, the shape `_h_bookshelf` already uses, so the
   client can tell "already superseded" from "failed" and stop retrying.
@@ -363,8 +375,9 @@ push path never sees it.
 |---|---|
 | Two devices edit the same blank | Higher `updatedAt` wins (client clocks; the same basis the SRS store uses) |
 | Two devices edit different blanks | Both kept — per-blank rows |
-| Same attempt pushed twice (retry, replay, offline flush) | One row: primary key + `user_sync_ops` idempotency |
-| Re-submit after a submit | Older attempt gets `voided_at`; both rows kept |
+| Same attempt pushed twice (retry, replay, offline flush) | `user_sync_ops` returns the stored response; the LWW guard on `submitted_at` makes a duplicate harmless even if it slips through |
+| Re-submit after a submit | The row is replaced: `responses`, `result`, `submitted_at`. The previous submission is not kept |
+| An older queued submit arrives after a newer one | Loses the LWW guard and is reported `dropped`; it never overwrites the newer attempt |
 | Task re-authored (new `contentVersion`) | Rows are **ignored on read**, never deleted, so a revert to old content restores them |
 | Two devices upload a file for the same slot | `live_key` unique index picks one; the loser receives `409` and keeps its local file, showing "a newer recording from another device is here" |
 | Local answer newer than the server's | The local store already wins on the same device; the queued op still drains and pushes the newer value |
@@ -375,7 +388,7 @@ push path never sees it.
 | State | Syncs? | Notes |
 |---|---|---|
 | `responses` | yes | per blank |
-| `attempts` | yes | append-only |
+| `attempt` | yes | one row per task, replaced on submit |
 | completion | derived | no column |
 | file bytes + metadata | yes | bytes via the upload endpoint; metadata via the log |
 | `BlankSelectionStore` ("which blank the bank fills next") | **no** | UI cursor, meaningless on another device |
@@ -628,9 +641,9 @@ two tasks", which is the only question the task page asks.
     { "taskId": "…", "blankId": "b3", "contentVersion": 3, "value": "地铁", "updatedAt": 1764000000000 }
   ],
   "attempts": [
-    { "attemptId": "…", "taskId": "…", "contentVersion": 3,
+    { "taskId": "…", "contentVersion": 3,
       "responses": { "b1": "…" }, "result": { "complete": true, "correctCount": 4,
-      "scoreableCount": 5, "blanks": [] }, "submittedAt": 1764000000000, "voidedAt": null }
+      "scoreableCount": 5, "blanks": [] }, "submittedAt": 1764000000000 }
   ],
   "files": [
     { "fileId": "…", "kind": "task_recording", "ownerType": "task", "ownerId": "…",
@@ -656,8 +669,8 @@ shared host did not answer).
    (mobile), local-newest winning per row.
 4. Student answers. Each blank writes to the store, which persists locally and
    enqueues one coalesced `task_response` op per `(task, blank)`.
-5. Submit grades locally (`gradeTask`), appends an attempt with a fresh id, voids the
-   previous one, and enqueues a `task_attempt` op.
+5. Submit grades locally (`gradeTask`), writes the task's single attempt (replacing
+   the previous submission), and enqueues a `task_attempt` op keyed by the task id.
 6. The queue drains through `/sync/push` (web: queued in `localStorage`; mobile:
    `sync.db` outbox). Retries are idempotent; offline simply defers.
 7. Another device pulls the change on next open and shows the answer/attempt.
@@ -673,9 +686,12 @@ shared host did not answer).
 ### Shared (`packages/textbooks`, pure TS)
 
 - `types.ts` — `RecordStimulus`, `RecordingSlot`.
-- `store.ts` — injected `newAttemptId`, `AttemptRecord.id` becomes a client id; a
-  merge entry point (`adoptServerState`) that applies remote rows under the same
-  content-version rule.
+- `store.ts` — `PersistedTaskState.attempt` (singular) replaces `attempts[]`;
+  `AttemptRecord` loses `id` and `voidedAt`; `submit()` and `recordChecked()` write
+  the one attempt; a merge entry point (`adoptServerState`) that applies remote rows
+  under the same content-version rule.
+- `persisted-state.ts` (new) — `normalisePersistedTaskState()`, the one-time collapse
+  of a legacy `attempts[]` array to the latest entry, used by both apps' adapters.
 - `recordings.ts` (new) — `recordingSlotsIn(task)`, `formatDuration(ms)`, cap
   constants. Pure functions only (AGENTS.md rule 1).
 - `schema.ts` — validator rules: unique `slotId` per task, `record` only on
@@ -763,8 +779,13 @@ New keys, added through `scripts/add-translation-key.mjs` + `sync-translations.m
   local file is discarded only after the student sees the notice.
 - **Deleted account / signed out**: local task state is wiped (the leak in § Defects),
   and nothing is left to restore.
-- **Task re-authored**: server rows for the old version are not shown and not deleted;
-  a content revert brings them back.
+- **Task re-authored**: rows for the old version are not shown; a content revert
+  brings responses back. The attempt is the exception: it is a single mutable row, so
+  a result graded under the old version is replaced on the next submit rather than
+  restored.
+- **Attempt replaced from another device**: the newer `submitted_at` wins and the
+  result banner re-renders; the student sees there is a newer attempt rather than a
+  silently different score.
 - **Store unavailable** (shared host down or slow): uploads and playback fail with
   `502 file_store_unavailable`, text sync is unaffected, and nothing is lost — the
   local file is kept and retried.
@@ -772,9 +793,10 @@ New keys, added through `scripts/add-translation-key.mjs` + `sync-translations.m
 ## Phasing
 
 **Phase 0 — task data sync (no files).** `…0001_user_task_data.sql` (tables, indexes,
-RLS, grants); `task_response` / `task_attempt` entities; `GET /tasks/state`;
-client-generated attempt ids; web queue; mobile outbox; logout wipe fix;
-account-deletion table list. Ships cross-device answers and attempt history.
+RLS, grants); `task_response` / `task_attempt` entities; `GET /tasks/state`; the local
+store's `attempts[]` → `attempt` change with `normalisePersistedTaskState()`; web
+queue; mobile outbox; logout wipe fix; account-deletion table list. Ships cross-device
+answers and results.
 
 **Phase 1 — the user file store (backend only).** PHP endpoints on the shared host +
 `filesKey`; `…0002_user_files.sql`; policy registry; `POST/GET/DELETE /files`; HMAC
@@ -796,12 +818,15 @@ transcription/pronunciation scoring, per-user export.
 
 ## Testing
 
-- **Unit (shared)**: `newAttemptId` injection produces unique ids; server-state
-  adoption respects content version and keeps the newer local value;
-  `recordingSlotsIn` finds slots at every level; validator rejects duplicate `slotId`.
+- **Unit (shared)**: `normalisePersistedTaskState()` collapses a legacy array to its
+  latest entry and drops `voidedAt`; `submit()` twice leaves exactly one attempt;
+  server-state adoption respects content version and keeps the newer local value;
+  `recordingSlotsIn` finds slots at every level; validator rejects duplicate `slotId`
+  and a `selfCheck` blank mixed with scoreable ones.
 - **Backend — text**: handlers are idempotent (same op twice → one row, same
-  response); void-on-re-submit keeps both rows; `GET /tasks/state` caps `taskIds`;
-  RLS denies an `anon` read (run once with the anon key).
+  response); a re-submit replaces the row (still one row); an older `submitted_at`
+  arriving late is `dropped` and does not overwrite; `GET /tasks/state` caps
+  `taskIds`; RLS denies an `anon` read (run once with the anon key).
 - **Backend — files**: policy registry rejects an unknown kind; MIME/magic mismatch →
   `415`; oversize → `413`; a `fileId` from another user → `404`/`403`, never bytes; a
   second upload for a live slot → `409`; delete voids and removes;
@@ -842,11 +867,12 @@ These are unknowns this spec deliberately does not guess:
    with the cache in a way that matters.
 6. **Backup retention.** Ask the host (or read its backup policy) how long a deleted
    file survives in backups; this decides the privacy copy, not a code change.
-7. **The id generator per platform.** Confirm `makeSyncId()` is reachable from the
-   attempt and recording paths on mobile (it lives in `sync-db.ts`, no new dependency),
-   and that web runs in a secure context so `crypto.randomUUID()` exists. If either
-   fails, use the ms+random form on both sides — the columns are `text` precisely so the
-   format is not a schema concern.
+7. **The id generator per platform, for file ids only.** Attempts no longer need an
+   id, but `file_id` still does. Confirm `makeSyncId()` is reachable from the recording
+   path on mobile (it lives in `sync-db.ts`, no new dependency) and that web runs in a
+   secure context so `crypto.randomUUID()` exists. If either fails, use the ms+random
+   form on both sides — the columns are `text` precisely so the format is not a schema
+   concern.
 
 ## Risks and Mitigations
 
@@ -857,7 +883,7 @@ These are unknowns this spec deliberately does not guess:
 | Shared host down or slow | Text sync is unaffected; file operations fail with `502 file_store_unavailable`; the local file is kept and retried; the same host already backs images, textbooks and cache, so this is a known dependency |
 | A PHP change we cannot test locally | Four small endpoints, reviewed line by line, proven by the save → load → range → delete probe before any client code ships |
 | A future kind serves an XSS payload | Per-kind MIME allow-list, magic-byte check, `nosniff`, `inline` only where the policy says so, and no kind may allow HTML/SVG/script types |
-| Sync duplicates or loses a submit | Append-only attempts + primary key on `attemptId` + `user_sync_ops` idempotency |
+| Sync duplicates or loses a submit | `user_sync_ops` idempotency + the LWW guard on `submitted_at`; a duplicate is harmless and an older submit cannot overwrite a newer one |
 | A stale device overwrites newer answers | Per-blank LWW by `updatedAt`; the attempt log preserves what was submitted |
 | Server state breaks the web server render | Adoption only after `pastHydration` |
 | Content re-authoring orphans answers | `content_version` on every row, ignored on read, never deleted |
@@ -884,7 +910,7 @@ These are unknowns this spec deliberately does not guess:
 - **SPEC-039** — Supabase as the store, Flask as the only gateway.
 - **SPEC-041** — account deletion, which must learn about `user_files` and the host tree.
 - **SPEC-095** — the task/blank model and the content pipeline the `record` stimulus extends.
-- **SPEC-066** — the append-only review-log shape the attempt table mirrors.
+- **SPEC-066** — the review-log shape ADR-0044 originally borrowed for attempts; ADR-0053 rev. 2 keeps only the review log's idempotency lesson, not its void/append history.
 - **ADR-0046** — the China constraint that keeps every byte on a Flask-proxied path.
 - **ADR-0043** — the contrast case: authored *content* media is public on `/data/`; user files are private and never client-addressable.
 - **ADR-0034** — Pro gating remains content access, never a data allowance.
@@ -895,8 +921,8 @@ These are unknowns this spec deliberately does not guess:
 |---|---|
 | Scope of sync | Responses + attempts + completion + files (all user-visible task data) |
 | In-progress drafts across devices | Yes — per-blank LWW, not per-task |
-| Completion storage | Derived from the latest un-voided attempt; no column |
-| Attempt identity | Client-generated stable id (UUID on web, `makeSyncId()` on mobile); legacy `task#n` attempts are not backfilled |
+| Completion storage | Derived from the task's one attempt; no column |
+| Attempt identity | **One mutable row per task**, keyed `(user_id, task_id)`; no attempt id, no void column; LWW on `submitted_at`; local `attempts[]` collapses to one on load |
 | File backend | Private tree on the shared host, dedicated key and endpoints, Flask-only access |
 | File abstraction | One `user_files` table + per-kind policy registry + `live_key`, not a recordings table |
 | Credential | Separate `X-User-Files-Key`; never the cache key |
