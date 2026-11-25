@@ -465,9 +465,9 @@ v1 constraints enforced by the API:
 - code/discount fields are immutable after creation; internal name, expiry,
   max redemptions, `featured` and the public title are editable. Archive instead
   of deleting.
-- A featured coupon must be active, lifetime, USD, have a public title and an
-  expiry in the future; it is the one public sale served by
-  `GET /coupons/featured` (SPEC-112).
+- A featured coupon must be active, lifetime, USD, a percentage discount, have
+  a public title and an expiry in the future; it is the one public sale served
+  by `GET /coupons/featured` (SPEC-112).
 
 ### `coupon_redemptions`
 

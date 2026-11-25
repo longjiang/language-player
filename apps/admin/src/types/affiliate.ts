@@ -107,7 +107,11 @@ export interface Coupon {
   reserved: number;
   remaining: number;
   expiresAt: string;
+  expiresTimezone: string;
   active: boolean;
+  featured: boolean;
+  publicTitle: string | null;
+  publicTitleI18n: Record<string, string>;
   createdAt: string;
   updatedAt: string;
 }

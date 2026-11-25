@@ -217,7 +217,10 @@ export function createCoupon(payload: {
   percentOff?: number;
   amountOffCents?: number;
   maxRedemptions: number;
-  expiresAt: string;
+  expiresAtLocal: string;
+  expiresTimezone: string;
+  featured?: boolean;
+  publicTitle?: string;
 }): Promise<Coupon> {
   return request('/admin/coupons', jsonBody('POST', payload), 'create coupon');
 }
@@ -227,9 +230,24 @@ export function updateCoupon(
   payload: {
     internalName?: string;
     maxRedemptions?: number;
-    expiresAt?: string;
+    expiresAtLocal?: string;
+    expiresTimezone?: string;
     active?: boolean;
+    featured?: boolean;
+    publicTitle?: string;
+    publicTitleI18n?: Record<string, string>;
   },
 ): Promise<Coupon> {
   return request(`/admin/coupons/${id}`, jsonBody('PATCH', payload), 'update coupon');
+}
+
+export function translateCouponTitle(
+  title: string,
+  locale: string,
+): Promise<{ title: string }> {
+  return request(
+    '/admin/coupons/translate-title',
+    jsonBody('POST', { title, locale }),
+    'translate coupon title',
+  );
 }

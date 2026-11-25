@@ -162,7 +162,8 @@ create index coupons_featured_idx
 API-level validation (`utils_coupons.py`, not only the DB):
 
 - `featured` requires `active`, `applies_to = 'lifetime'`, `currency = 'usd'`,
-  a non-empty `public_title` (≤ 60 chars), and `expires_at` in the future.
+  a **percentage** discount (the banner quotes a percentage), a non-empty
+  `public_title` (≤ 60 chars), and `expires_at` in the future.
 - `public_title_i18n` must be an object whose keys are supported locales and
   whose values are non-empty strings (≤ 120 chars); unknown locales are
   rejected.
@@ -488,6 +489,6 @@ gating) instead of deleting it.
 | `utils_coupons` (featured validation, expiry zone, `featured_coupon()`, `translate_public_title()`) | done |
 | `GET /coupons/featured`, `POST /admin/coupons/translate-title` | done |
 | `sale_active` rejection removed; `sale_windows.csv` + estimate adjustment deleted | done |
-| Admin console UI (time zone, title translations, preview) | pending |
+| Admin console UI (time zone, title translations, preview) | done |
 | Web (banner, pricing, go-pro, sale notice, client-window removal, i18n keys) | pending |
 | Mobile de-chrome (`use-store-pricing`) | pending |
