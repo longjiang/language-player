@@ -151,11 +151,11 @@ export function PricingSection() {
         <h3 className="mb-4 text-center text-xl font-semibold">{t('pricing.plans')}</h3>
 
         {coupon && offerTitle && (
-          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-800 dark:bg-amber-950">
-            <p className="text-base font-bold text-amber-900 dark:text-amber-100">
+          <div className="mb-4 rounded-xl bg-destructive p-4 text-center text-destructive-foreground">
+            <p className="text-base font-bold text-destructive-foreground">
               {t('msg.sale_banner', { title: offerTitle, pct: salePct ?? 0 })}
             </p>
-            <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+            <p className="mt-1 text-sm text-destructive-foreground/90">
               {t('msg.sale_use_code', { code: coupon.code })}
               {' · '}
               {t('msg.sale_offer_ends', {
@@ -164,7 +164,7 @@ export function PricingSection() {
             </p>
             <Link
               href={upgradeHref}
-              className="mt-2 inline-block text-sm font-semibold text-amber-900 underline underline-offset-2 dark:text-amber-100"
+              className="mt-2 inline-block text-sm font-semibold text-destructive-foreground underline underline-offset-2"
             >
               {t('title.upgrade_to_pro')}
             </Link>
@@ -203,7 +203,7 @@ export function PricingSection() {
                           <span className="text-muted-foreground line-through">
                             {t(plan.priceKey, { price: regularDisplay })}
                           </span>
-                          <span className="font-semibold text-red-600 dark:text-red-400">
+                          <span className="font-semibold text-destructive">
                             {t(plan.priceKey, {
                               price: `US$${formatPriceAmount(coupon.finalCents / 100)}`,
                             })}

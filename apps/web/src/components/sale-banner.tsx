@@ -70,19 +70,19 @@ export function SaleBanner() {
   };
 
   return (
-    <div className="relative flex w-full items-center justify-center bg-brand-600 text-primary-foreground">
+    <div className="relative flex w-full items-center justify-center bg-destructive text-destructive-foreground">
       <Link
         href={href}
-        className="group flex flex-1 items-center justify-center gap-2 px-10 py-2 text-center text-xs font-semibold transition-colors hover:bg-brand-700 sm:text-sm"
+        className="group flex flex-1 items-center justify-center gap-2 px-10 py-2 text-center text-xs font-semibold transition-colors hover:bg-destructive-foreground/10 sm:text-sm"
       >
         <Tag className="hidden h-4 w-4 shrink-0 sm:block" />
         <span>{t('msg.sale_banner', { title, pct: coupon.percentOff ?? 0 })}</span>
-        <span className="hidden text-primary-foreground/80 sm:inline">
+        <span className="hidden text-destructive-foreground/90 sm:inline">
           {t('msg.sale_offer_ends', {
             date: formatCouponDate(coupon.expiresAt, locale),
           })}
         </span>
-        <span className="rounded-full bg-primary-foreground/15 px-2 py-0.5 font-mono text-[11px]">
+        <span className="rounded-full bg-destructive-foreground/15 px-2 py-0.5 font-mono text-[11px]">
           {t('msg.sale_use_code', { code: coupon.code })}
         </span>
         <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
@@ -91,7 +91,7 @@ export function SaleBanner() {
         type="button"
         onClick={dismiss}
         aria-label={t('action.close')}
-        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60"
+        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-destructive-foreground/80 transition-colors hover:bg-destructive-foreground/15 hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive-foreground/60"
       >
         <X className="h-4 w-4" />
       </button>

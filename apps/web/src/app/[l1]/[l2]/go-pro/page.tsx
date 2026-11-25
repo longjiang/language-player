@@ -282,11 +282,11 @@ export default function GoProPage() {
 
       {/* ── Public sale (SPEC-112) ── */}
       {showOffer && offer && offerTitle && (
-        <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-800 dark:bg-amber-950">
-          <p className="text-base font-bold text-amber-900 dark:text-amber-100">
+        <div className="mb-8 rounded-xl bg-destructive p-4 text-center text-destructive-foreground">
+          <p className="text-base font-bold text-destructive-foreground">
             {t('msg.sale_banner', { title: offerTitle, pct: offer.percentOff ?? 0 })}
           </p>
-          <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+          <p className="mt-1 text-sm text-destructive-foreground/90">
             {t('msg.sale_use_code', { code: offer.code })}
             {' · '}
             {t('msg.sale_offer_ends', {

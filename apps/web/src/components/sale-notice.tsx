@@ -32,7 +32,7 @@ export function SaleNotice({ className = '' }: { className?: string }) {
 
   return (
     <div className={className}>
-      <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+      <p className="text-sm font-semibold text-destructive">
         {t('msg.sale_banner', { title, pct: coupon.percentOff ?? 0 })}
       </p>
       <p className="mt-0.5 text-xs text-muted-foreground">
