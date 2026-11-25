@@ -139,6 +139,7 @@ docs/
 | 108 | [Web Function Invocation Budget — Cut Netlify Serverless Usage](specs/108-web-function-invocation-budget.md) | — | 🔄 In progress |
 | 110 | [Email Verification Support Pipe — Sender Matching, LLM Triage, Outcome Notifications](specs/110-email-verification-support-pipe.md) | 9 | ⬜ Draft |
 | 111 | [Task Data Sync and Student Recordings](specs/111-task-data-sync-and-recordings.md) | 5 | ⬜ Draft |
+| 112 | [Coupon-Driven Sales (sale = a featured coupon)](specs/112-coupon-driven-sales.md) | 10 | ⬜ Draft |
 
 ## ADRs
 
