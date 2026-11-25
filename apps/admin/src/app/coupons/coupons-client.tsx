@@ -173,6 +173,7 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<CreateForm>(EMPTY_CREATE);
+  const [createError, setCreateError] = useState('');
 
   const [editing, setEditing] = useState<Coupon | null>(null);
   const [edit, setEdit] = useState<EditForm | null>(null);
@@ -201,7 +202,7 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
 
   async function create() {
     setBusy(true);
-    setError('');
+    setCreateError('');
     try {
       await createCoupon({
         code: form.code.trim(),
@@ -220,7 +221,7 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
       setForm(EMPTY_CREATE);
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('error.general'));
+      setCreateError(err instanceof Error ? err.message : t('error.general'));
     } finally {
       setBusy(false);
     }
@@ -353,7 +354,12 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
     <AdminShell>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('label.coupons')}</h1>
-        <Button onClick={() => setOpen(true)}>
+        <Button
+          onClick={() => {
+            setCreateError('');
+            setOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4" />
           {t('action.create_coupon')}
         </Button>
@@ -558,6 +564,12 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
               Lifetime Pro, USD only. Codes and discounts cannot be changed after creation;
               archive and create a new one.
             </p>
+            {createError && (
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                {createError}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>
@@ -565,7 +577,13 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
             </Button>
             <Button
               onClick={create}
-              disabled={busy || !form.code || !form.internalName || !form.expiresLocal}
+              disabled={
+                busy ||
+                !form.code ||
+                !form.internalName ||
+                !form.expiresLocal ||
+                (form.featured && !form.publicTitle.trim())
+              }
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('action.save')}
