@@ -1,6 +1,12 @@
 # ADR-0053 — Task state syncs through Flask, and user files live in a private store on the shared host
 
 **Status:** Accepted (2026-11-24), revised (2026-11-25)
+**Revision 2 (2026-11-25):** attempts are no longer an append-only log. A task has **one
+attempt row, last-write-wins on `submitted_at`**. Revision 1 (and ADR-0044 before it) kept a
+voided history; that shape borrowed its vocabulary from `user_srs_review_log` — where
+`voided_at` means *undo*, not *superseded* — never bounded its growth, and preserved a retry
+history that no surface reads. ADR-0044 decisions 2 and 3 are now both superseded; its store
+shape, content-version rule and SRS separation still stand. See Context § Revision 2.
 **Revision 1 (2026-11-25):** the storage target changed from a Supabase Storage bucket to the
 existing PHP shared host, and the recordings table was generalised into a user-file store.
 Revision 0 rejected the shared host on the grounds that it is "public by design … no upload API";
@@ -9,7 +15,7 @@ root, key-gated, and has working write and delete endpoints (evidence under Cont
 `*.supabase.co` accessibility constraint that drove the original choice has not changed, and
 neither has anything about the Flask-only boundary or the task-state design.
 **See also:**
-- [ADR-0044: Textbook exercise state is local-only](0044-textbook-exercise-state-local-only.md) — **superseded in part by this record.** Its store shape, content-version rule and void semantics stand; only decision 3 ("no server table, endpoint or sync") is replaced here, exercising the escape hatch that ADR named: *"If server persistence is wanted later, it reuses the ADR-0040 outbox pattern and the same append-only + void + idempotency-key shape, and that is a separate decision."* This is that decision.
+- [ADR-0044: Textbook exercise state is local-only](0044-textbook-exercise-state-local-only.md) — **superseded in part by this record.** Decision 3 ("no server table, endpoint or sync") is replaced here, exercising the escape hatch that ADR named: *"If server persistence is wanted later, it reuses the ADR-0040 outbox pattern and the same append-only + void + idempotency-key shape, and that is a separate decision."* Decision 2 (the append-only attempt log with void semantics) is superseded by revision 2 below, for the reasons recorded there. The store shape, content-version rule, SRS separation and Pro-gating stance still stand.
 - [ADR-0040: Harden the web SRS sync outbox](0040-srs-sync-outbox-hardening.md) — the durable-pending-queue pattern the text entities reuse
 - [SPEC-037: Two-tier remote cache offload](../specs/037-two-tier-remote-cache-offload.md) and [ARCH-034: Video lemmatization cache](../arch/034-video-lemmatization-cache.md) — the cache tier on the same host: endpoints, key, sanitisation, timeouts
 - [ADR-0043: Serve textbook media from the shared host](0043-textbook-media-hosted-on-shared-host.md) — the *content* tree on the same box, and why it is public
@@ -50,13 +56,14 @@ of the feature growing:
 
 - Web: `TEXTBOOK_STORAGE_PREFIX = 'lp:textbook:'` (`apps/web/src/components/textbook/task-provider.tsx:43`), `loadPersistedTask` / `savePersistedTask` over `window.localStorage`. The store is built synchronously in a `useMemo`; a `pastHydration` gate keeps the server-rendered HTML unanswered so React does not discard the tree.
 - Mobile: the same prefix over `AsyncStorage` (`apps/mobile/components/textbook/task-provider.tsx:34`), loaded by the route **before** the provider mounts so the store can stay synchronous.
-- `PersistedTaskState` = `{ taskId, contentVersion, responses, attempts }` (`packages/textbooks/src/store.ts:46-52`); `submit()` voids prior attempts and appends one (`:185-208`); `recordChecked()` appends a completion attempt (`:221-241`) — so **completion is already derived from attempts**, not stored separately.
+- `PersistedTaskState` = `{ taskId, contentVersion, responses, attempts }` (`packages/textbooks/src/store.ts:46-52`); `submit()` voids prior attempts and appends one (`:185-208`); `recordChecked()` appends a completion attempt (`:221-241`) — so **completion is already derived from attempts**, not stored separately. (That is the code as built; revision 2 below replaces the array with a single attempt.)
 
 **Attempt ids are not globally unique.** `AttemptRecord.id` is
 `` `${this.task.id}#${this.attemptSeq}` `` (`store.ts:195,228`). Two devices
 resuming the same task both produce `tblt-hsk4.u06.A.t1#1`. Today that is invisible
-because ids never leave the device; any server keyed on it collides on the first
-second device.
+because ids never leave the device; a server keyed on it would collide on the first
+second device. Revision 2 removes the id rather than minting a better one: with one
+attempt per task, the task id **is** the key.
 
 **There is no upload path in our applications and no recording anywhere.**
 Flask contains no `request.files`, no multipart handling and no
@@ -108,6 +115,32 @@ for the next kind, and each copy would re-answer the same questions
 (authorisation, retention, deletion, content-type safety) slightly differently. One
 store with an explicit per-kind policy answers them once.
 
+### Revision 2: one mutable attempt per task
+
+ADR-0044 modelled attempts on `public.user_srs_review_log` — an append-only log where a later
+entry **voids** an earlier one. It was reconsidered on 2026-11-25 and dropped, for four reasons:
+
+1. **The borrowed shape means something else there.** In the review log `voided_at` is
+   **undo**: the rating is retracted and never counted (`utils_user_data.py:529-539`). In
+   attempts it would mean **superseded** — the work happened and is real. Same column, opposite
+   meaning, in two tables a future reader will inevitably compare.
+2. **The invariant differs too.** The review log keeps *every* rating live forever; only an
+   explicit undo voids one. Attempts voided every predecessor, so at most one row was ever live —
+   a current-state pointer wearing a log's clothes.
+3. **Nothing reads the history.** `getAttempts()` has no caller in either app and progress reads
+   the single live attempt. The history was stored for a future that was never specified, and no
+   retention rule was ever decided for it — which is how the unbounded growth below went unnoticed.
+4. **It grows without a bound, and each row carries a snapshot.** A review-log row is ~40 bytes
+   with no payload; an attempt carries every response plus its graded result. A student who
+   retries ten times on a free-write task stores ten snapshots, and `/tasks/state` would have
+   returned all of them on first paint.
+
+One mutable row per task keeps everything the product actually uses — the result the TOC reads,
+the completion flag, the per-blank outcomes for analytics — and loses only the retry sequence,
+which nothing specified, renders, or prunes. It also means the attempt conflicts the same way
+responses and SRS cards already do (last-write-wins on a client timestamp) instead of
+introducing a second mechanism.
+
 ### The DDL-ownership objection no longer holds
 
 ADR-0044 rejected server tables partly because *"`supabase/migrations/` does not
@@ -127,21 +160,22 @@ shared host, behind a dedicated key and dedicated endpoints, and are served only
 by Flask. Both are general mechanisms, not one-off features.**
 
 1. **Three tables, one per conflict semantics.** `user_task_responses` (one row
-   per user + task + blank, last-write-wins), `user_task_attempts` (append-only,
-   immutable except `voided_at`), `user_files` (a generic file registry: `kind`,
+   per user + task + blank, last-write-wins), `user_task_attempts` (one row per
+   user + task, last-write-wins), `user_files` (a generic file registry: `kind`,
    `owner_type`, `owner_id`, `slot`, bytes metadata, `voided_at`). Created in
    `supabase/migrations/` with `references auth.users(id) on delete cascade` and
    owner RLS policies, and the two security-migration table arrays are extended
    so new tables inherit the same baseline.
-2. **Attempts keep ADR-0044's shape and gain a stable id.** A new attempt gets a
-   client-generated stable id at creation (`crypto.randomUUID()` on web, the
-   Hermes-safe `makeSyncId()` on mobile — the column is `text` so the format is
-   not a schema concern); the old `taskId#seq` form is retired rather than
-   migrated (nothing has ever left a device). That id is the idempotency key —
-   replaying a push cannot mint a second attempt, and two devices cannot collide.
+2. **Attempts are one mutable row per task.** `(user_id, task_id)` is the key; a
+   submit replaces `responses`, `result` and `submitted_at` in place. Replay safety
+   comes from the outbox op's idempotency key plus a last-write-wins guard on
+   `submitted_at` (`where excluded.submitted_at >= existing.submitted_at`) — the
+   same shape `user_task_responses` and `user_srs_cards` already use. There is no
+   attempt id and no void column: a task's attempt is present or absent, and the
+   local `AttemptRecord[]` collapses to one on load.
 3. **Completion stays derived.** No completion table and no `completed` flag: the
-   latest un-voided attempt's `result.complete` is the answer, exactly as the TOC
-   and picker compute it locally today.
+   attempt's `result.complete` is the answer, exactly as the TOC and picker compute
+   it locally today.
 4. **Responses are per-blank last-write-wins.** Per blank, not per task. Rows carry
    the `content_version` they were written against and a read drops rows whose
    version no longer matches — the local store's existing rule. Stale rows are
@@ -185,7 +219,10 @@ by Flask. Both are general mechanisms, not one-off features.**
 - A student's task work — answers, attempts, completion, recordings — follows them
   between web and mobile and survives a cleared browser.
 - D ➐ becomes a real speaking task inside the product.
-- Per-blank attempt outcomes become queryable server-side.
+- The latest per-blank outcome becomes queryable server-side — "which blanks do
+  students get wrong" — from one bounded row per task, with no history to prune.
+- **Attempt storage is bounded by the number of tasks**, not by how often a student
+  retries, and the read path cannot grow with retries.
 - The text half is close to free: outbox, idempotency table, change log, pull merge
   and payload validation already exist and are used by five entities.
 - **Files cost nothing incremental and have no quota wall**: ~5.8 TB free versus
@@ -225,10 +262,21 @@ by Flask. Both are general mechanisms, not one-off features.**
 - **Web rendering gets a second hydration hazard**: server-owned state must not be
   read during render, for the same reason device state must not be.
 - **Content versioning becomes load-bearing server-side too.** Re-authoring a shipped
-  task without bumping its version orphans answers on both sides of the sync now.
+  task without bumping its version orphans answers on both sides of the sync, and a
+  result graded under the old version is overwritten on the next submit rather than
+  retained.
+- **Retry history is gone.** "Wrong first, right second" is not recoverable, and two
+  devices submitting near-simultaneously resolve by `submitted_at` alone, so the later
+  clock wins and the earlier submission leaves no trace. Accepted: no surface rendered
+  history, and the question analytics asks ("which blanks are wrong") is answered by
+  the latest outcome.
 
 ## Alternatives Considered
 
+- **An append-only attempt log with void semantics (revisions 0–1, and ADR-0044
+  decision 2).** Rejected on 2026-11-25: it borrowed `voided_at` from a table where it
+  means *undo*, never bounded its growth, and preserved a retry history no surface
+  reads. See Context § Revision 2.
 - **Keep it local-only (ADR-0044 as written).** Rejected: both requirements are
   product requirements, not nice-to-haves, and D ➐ cannot be completed as authored.
 - **A Supabase Storage bucket (revision 0's choice).** Still the strongest option on

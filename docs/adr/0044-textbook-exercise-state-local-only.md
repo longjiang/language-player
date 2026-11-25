@@ -1,7 +1,12 @@
 # ADR-0044 — Textbook exercise state is local-only, with an append-only attempt log in SRS's shape
 
-**Status:** Accepted (2026-09-11) — **superseded in part by [ADR-0053](0053-task-data-sync-and-user-files.md) (2026-11-24)**
-**Superseded:** decision 3 only. The store shape, the append-only attempt log with void semantics (decision 2), the content-version rule (decision 4), the SRS separation (decision 5) and the Pro-gating stance (decision 6) all stand. ADR-0053 keeps the local store as the device's working copy and adds the server copy this ADR declined, using the outbox + idempotency-key shape decision 3 named as the prerequisite. The text below is kept as written so the reasoning and its stated costs remain visible; read "Scope (2026-09-11): local only" as the state before ADR-0053.
+**Status:** Accepted (2026-09-11) — **superseded in part by [ADR-0053](0053-task-data-sync-and-user-files.md) (rev. 1, 2026-11-24; rev. 2, 2026-11-25)**
+**Superseded:** decisions 2 and 3.
+
+- **Decision 3** (no server table, endpoint or sync) is replaced by ADR-0053 revision 1, which keeps the local store as the device's working copy and adds the server copy this ADR declined, using the outbox + idempotency-key shape decision 3 named as the prerequisite.
+- **Decision 2** (an append-only attempt log with void semantics) is replaced by ADR-0053 revision 2: a task now has one mutable attempt row, last-write-wins on `submitted_at`. The shape was borrowed from `user_srs_review_log`, where `voided_at` means *undo* rather than *superseded*; it had no retention rule and no reader, and it grew without a bound. ADR-0053 records the reasoning.
+
+The store shape (decision 1), the content-version rule (decision 4), the SRS separation (decision 5) and the Pro-gating stance (decision 6) all stand. The text below is kept as written so the reasoning and its stated costs remain visible; read "Scope (2026-09-11): local only" as the state before ADR-0053.
 
 ## Context
 
