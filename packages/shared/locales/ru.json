@@ -1541,6 +1541,7 @@
         "search_all_content": "Поиск по всему контенту на {language}",
         "search_dots": "Поиск…",
         "search_languages": "Поиск языков…",
+        "search_timezone": "Поиск города, страны или смещения UTC…",
         "search_transactions": "Поиск покупателя, email или ID платежа…",
         "search_users": "Поиск пользователей…",
         "select_language": "Выберите язык",

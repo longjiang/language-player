@@ -1511,6 +1511,7 @@
         "search": "搜尋…",
         "search_all_content": "搜尋所有{language}內容",
         "search_languages": "搜尋語言…",
+        "search_timezone": "搜尋城市、國家或 UTC 偏移…",
         "search_transactions": "搜尋購買者、電子郵件或付款 ID…",
         "search_users": "搜尋使用者…",
         "select_language": "選擇一種語言",

@@ -1541,6 +1541,7 @@
         "search_all_content": "{language}のコンテンツをすべて検索",
         "search_dots": "検索…",
         "search_languages": "言語を検索…",
+        "search_timezone": "都市・国・UTCオフセットで検索…",
         "search_transactions": "購入者、メール、支払い ID を検索…",
         "search_users": "ユーザーを検索…",
         "select_language": "言語を選択してください",

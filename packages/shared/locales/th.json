@@ -1541,6 +1541,7 @@
         "search_all_content": "ค้นหาเนื้อหาภาษา{language}ทั้งหมด",
         "search_dots": "ค้นหา…",
         "search_languages": "ค้นหาภาษา…",
+        "search_timezone": "ค้นหาเมือง ประเทศ หรือ UTC offset…",
         "search_transactions": "ค้นหาผู้ซื้อ อีเมล หรือรหัสการชำระเงิน…",
         "search_users": "ค้นหาผู้ใช้…",
         "select_language": "เลือกภาษา",

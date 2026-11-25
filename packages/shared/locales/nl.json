@@ -1541,6 +1541,7 @@
         "search_all_content": "Doorzoek alle {language} inhoud",
         "search_dots": "Zoeken…",
         "search_languages": "Talen zoeken…",
+        "search_timezone": "Zoek stad, land of UTC-offset…",
         "search_transactions": "Zoek koper, e-mail of betalings-ID…",
         "search_users": "Gebruikers zoeken…",
         "select_language": "Selecteer een taal",

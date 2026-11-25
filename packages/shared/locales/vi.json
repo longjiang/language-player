@@ -1541,6 +1541,7 @@
         "search_all_content": "Tìm kiếm tất cả nội dung {language}",
         "search_dots": "Tìm kiếm…",
         "search_languages": "Tìm kiếm ngôn ngữ…",
+        "search_timezone": "Tìm thành phố, quốc gia hoặc độ lệch UTC…",
         "search_transactions": "Tìm người mua, email hoặc mã thanh toán…",
         "search_users": "Tìm kiếm người dùng…",
         "select_language": "Chọn một ngôn ngữ",

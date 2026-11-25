@@ -1541,6 +1541,7 @@
         "search_all_content": "Cari semua konten {language}",
         "search_dots": "Cari…",
         "search_languages": "Cari bahasa…",
+        "search_timezone": "Cari kota, negara, atau offset UTC…",
         "search_transactions": "Cari pembeli, email, atau ID pembayaran…",
         "search_users": "Cari pengguna…",
         "select_language": "Pilih bahasa",

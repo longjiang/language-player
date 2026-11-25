@@ -278,8 +278,9 @@ Changes:
 `apps/admin` → Coupons (`apps/admin/src/app/coupons/page.tsx`).
 
 **Expiry with an explicit time zone.** The admin picks a local date/time and an
-IANA zone (default: the browser's zone; list from
-`Intl.supportedValuesOf('timeZone')`). The API accepts
+IANA zone through a searchable picker (city, country, IANA name, or UTC offset;
+reusable `TimezoneSelect` on cmdk + `@vvo/tzdb`, default: the browser's zone).
+The API accepts
 `expiresAtLocal` + `expiresTimezone` and converts to a UTC instant with
 `zoneinfo` server-side, so DST is resolved on the backend, not in the browser.
 The form shows the resolved instant back:

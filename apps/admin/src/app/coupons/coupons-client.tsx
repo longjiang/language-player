@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { TimezoneSelect } from '@/components/ui/timezone-select';
 import { useT } from '@/hooks/use-t';
 import {
   createCoupon,
@@ -21,6 +22,7 @@ import {
   updateCoupon,
 } from '@/lib/affiliate-api';
 import { formatCents } from '@/lib/money';
+import { browserTimeZone } from '@/lib/timezone';
 import { logerr } from '@/lib/logger';
 import type { Coupon, CouponList } from '@/types/affiliate';
 import { useEffect, useMemo, useState } from 'react';
@@ -36,29 +38,6 @@ function status(c: Coupon): string {
   if (new Date(c.expiresAt) <= new Date()) return 'expired';
   if (c.remaining <= 0) return 'exhausted';
   return 'active';
-}
-
-function intlTimeZones(): string[] {
-  const anyIntl = Intl as unknown as {
-    supportedValuesOf?: (key: string) => string[];
-  };
-  return (
-    anyIntl.supportedValuesOf?.('timeZone') ?? [
-      'UTC',
-      'America/Vancouver',
-      'America/New_York',
-      'Europe/London',
-      'Asia/Tokyo',
-    ]
-  );
-}
-
-function browserTimeZone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  } catch {
-    return 'UTC';
-  }
 }
 
 /** Render an ISO instant as a `datetime-local` value in `timeZone`. */
@@ -128,7 +107,6 @@ function formatDate(iso: string, locale: string): string {
   }
 }
 
-const TIME_ZONES = intlTimeZones();
 const DEFAULT_TIME_ZONE = browserTimeZone();
 
 interface CreateForm {
@@ -449,7 +427,7 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
 
       {/* ── Create ── */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('action.create_coupon')}</DialogTitle>
           </DialogHeader>
@@ -522,18 +500,16 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">{t('label.timezone')}</label>
-              <select
-                value={form.expiresTimezone}
-                onChange={(e) => setForm({ ...form, expiresTimezone: e.target.value })}
-                className="mt-1 flex h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-              >
-                {TIME_ZONES.map((zone) => (
-                  <option key={zone} value={zone}>
-                    {zone}
-                  </option>
-                ))}
-              </select>
+              <label className="text-sm font-medium" htmlFor="coupon-expires-timezone">
+                {t('label.timezone')}
+              </label>
+              <div className="mt-1">
+                <TimezoneSelect
+                  id="coupon-expires-timezone"
+                  value={form.expiresTimezone}
+                  onChange={(zone) => setForm({ ...form, expiresTimezone: zone })}
+                />
+              </div>
             </div>
             <div className="rounded-lg border border-border p-3">
               <label className="flex items-center gap-2 text-sm font-medium">
@@ -644,18 +620,16 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">{t('label.timezone')}</label>
-                    <select
-                      value={edit.expiresTimezone}
-                      onChange={(e) => setEdit({ ...edit, expiresTimezone: e.target.value })}
-                      className="mt-1 flex h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {TIME_ZONES.map((zone) => (
-                        <option key={zone} value={zone}>
-                          {zone}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="text-sm font-medium" htmlFor="coupon-edit-timezone">
+                      {t('label.timezone')}
+                    </label>
+                    <div className="mt-1">
+                      <TimezoneSelect
+                        id="coupon-edit-timezone"
+                        value={edit.expiresTimezone}
+                        onChange={(zone) => setEdit({ ...edit, expiresTimezone: zone })}
+                      />
+                    </div>
                   </div>
                 </div>
                 {editUtc && (

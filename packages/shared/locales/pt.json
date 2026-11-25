@@ -1541,6 +1541,7 @@
         "search_all_content": "Pesquisar todo o conteúdo em {language}",
         "search_dots": "Pesquisar…",
         "search_languages": "Pesquisar idiomas…",
+        "search_timezone": "Pesquisar cidade, país ou deslocamento UTC…",
         "search_transactions": "Buscar comprador, e-mail ou ID de pagamento…",
         "search_users": "Pesquisar usuários…",
         "select_language": "Selecione um idioma",

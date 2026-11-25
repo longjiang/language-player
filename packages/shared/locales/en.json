@@ -1589,6 +1589,7 @@
         "search_all_content": "Search all {language} content",
         "search_dots": "Search…",
         "search_languages": "Search languages…",
+        "search_timezone": "Search city, country, or UTC offset…",
         "search_transactions": "Search purchaser, email, or payment ID…",
         "search_users": "Search users…",
         "select_language": "Select a language",

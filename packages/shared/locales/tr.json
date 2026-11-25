@@ -1541,6 +1541,7 @@
         "search_all_content": "Tüm {language} içeriği ara",
         "search_dots": "Ara...",
         "search_languages": "Dilleri ara…",
+        "search_timezone": "Şehir, ülke veya UTC farkı ara…",
         "search_transactions": "Alıcı, e-posta veya ödeme kimliği ara…",
         "search_users": "Kullanıcı ara…",
         "select_language": "Bir dil seçin",

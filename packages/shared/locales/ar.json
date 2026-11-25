@@ -1541,6 +1541,7 @@
         "search_all_content": "البحث في كل محتوى {language}",
         "search_dots": "بحث…",
         "search_languages": "ابحث عن اللغات…",
+        "search_timezone": "ابحث عن مدينة أو بلد أو إزاحة UTC…",
         "search_transactions": "ابحث عن المشتري أو البريد الإلكتروني أو معرف الدفع…",
         "search_users": "ابحث عن مستخدمين…",
         "select_language": "اختر لغة",
