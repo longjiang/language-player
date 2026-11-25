@@ -7,7 +7,7 @@
 - **Status**: draft — **design only, nothing implemented**
 - **Created**: 2026-11-24
 - **ROADMAP Phase**: Phase 5 (Content Features)
-- **Supersedes (in scope only)**: this spec replaces two statements in [SPEC-095](095-interactive-textbook.md) — the Non-Goal "Exercise state is local only" and the resolved decision "Attempt recording scope". The architectural decision behind the change is [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) (revisions 1–3), which supersedes [ADR-0044](../adr/0044-textbook-exercise-state-local-only.md) decisions 2 and 3
+- **Supersedes (in scope only)**: this spec replaces two statements in [SPEC-095](095-interactive-textbook.md) — the Non-Goal "Exercise state is local only" and the resolved decision "Attempt recording scope". The architectural decision behind the change is [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) (revisions 1–4), which supersedes [ADR-0044](../adr/0044-textbook-exercise-state-local-only.md) decisions 2 and 3
 - **Depends on**: [SPEC-113: User File Store](113-user-file-store.md) — where the recording bytes live, and what a `task_recording` kind means
 - **Web ref**: `apps/web/src/components/textbook/task-provider.tsx`, `apps/web/src/app/[l1]/[l2]/tasks/…`, `apps/web/src/components/textbook/task-shell.tsx`
 - **Mobile ref**: `apps/mobile/components/textbook/task-provider.tsx`, `apps/mobile/components/textbook/TaskView.tsx`, `apps/mobile/lib/sync-db.ts`, `apps/mobile/lib/sync-engine.ts`
@@ -737,7 +737,7 @@ owes:
 
 ## Dependencies
 
-- **ADR-0053 (rev. 1–3)** — this spec's governing decision: task state via Flask, user files in a private store on the shared host.
+- **ADR-0053 (rev. 1–4)** — this spec's governing decision: task state via Flask, user files in a private store on the shared host.
 - **SPEC-113** — the user file store the recordings use: tree, key, endpoints, kind policy, chunking, playback, deletion.
 - **ADR-0040** — the web durable-queue pattern this copies, including its failure lessons.
 - **SPEC-053** — the mobile outbox / `entity_cache` / `/sync/pull` engine the new entities plug into.
@@ -760,4 +760,4 @@ owes:
 | Recording limits | 30 min (recorder), 16–24 kbps mono; the store bounds 32 MiB |
 | Completion of a recording-required task | **Not complete until the take is stored.** `record` stimuli default to `required: true`; content that only asks the student to shadow a model keeps completing from its own control |
 | Capture scope | Included, phased — sync first, web capture, then mobile capture |
-| Docs | ADR-0053 (rev. 1–3) + this spec + SPEC-113 |
+| Docs | ADR-0053 (rev. 1–4) + this spec + SPEC-113 |

@@ -7,7 +7,7 @@
 - **Status**: draft — **design only, nothing implemented**
 - **Created**: 2026-11-25
 - **ROADMAP Phase**: Phase 5 (first consumer is the interactive textbook; the store itself is cross-cutting)
-- **Governing decision**: [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) revisions 1–3
+- **Governing decision**: [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) revisions 1–4
 - **Consumers**: [SPEC-111](111-task-data-sync-and-recordings.md) — task state sync, with `task_recording` as the first registered kind
 - **Backend ref**: `zerotohero-python-server/routes/user_files.py` (new), `utils_user_files.py` (new); the cache tier this follows is `remote_cache.py`
 - **Host ref**: [SPEC-037](037-two-tier-remote-cache-offload.md), [ARCH-034](../arch/034-video-lemmatization-cache.md)
@@ -231,11 +231,6 @@ Rules the registry enforces, so a future kind cannot be sloppy:
   own origin.
 - **`replaces_slot: True` computes `live_key`, `False` leaves it null.** The database
   enforces the former; the latter is append-only by having no key.
-
-Documented future kinds (not implemented, listed so the registry shape is reviewed
-against them): `user_avatar` (raster images, 1 MiB, replaces), `note_attachment`
-(PDF/PNG/JPEG, 8 MiB, appends), `export` (zip, 64 MiB, appends, `attachment`
-disposition).
 
 ### Upload protocol
 
@@ -480,25 +475,41 @@ path.
 | Upload buffer exhausts PHP memory | `Content-Length` pre-check, stream `php://input` to disk, measured 128 MB `memory_limit` recorded |
 | Abandoned uploads leak disk | Part sweep after 24 h; orphan-object sweep against `user_files` |
 
+## Future kinds (noted, not planned)
+
+Nothing here is scheduled or designed; these are the ideas worth remembering so a future
+spec does not rediscover them.
+
+- **User avatars** — small raster images, one per user, replacing. The catch is access:
+  every read today is owner-scoped (G2), and an avatar is read by *other* users or the
+  public. That needs an explicit per-kind read scope, which the store does not have.
+- **Reader content (EPUB, PDF, images)** — currently **local-only**: web keeps books in
+  IndexedDB (`epub-store.ts`, `image-reader-store.ts`), mobile as files under
+  `documentDirectory/epub_library/`, and SPEC-053 lists the EPUB shelf and progress as
+  local-only. Moving it server-side is a feature (library listing, dedupe, shelf,
+  progress), not just a registry entry, and it supersedes parts of SPEC-085/089/090/053.
+  Two hazards are known up front: **EPUB is a ZIP of HTML/CSS/JS** and **PDF can embed
+  JavaScript**, so both must be `attachment`-only and rendered by our own reader; images
+  must stay raster (no SVG). Hosting user-supplied books also raises a copyright
+  question that keeping them on the device does not.
+- **Attachments and exports** — appending kinds with `attachment` disposition, several
+  live files per owner.
+
+The mechanics already stretch to larger kinds — 4 MiB chunks, streaming assembly and
+streaming hashing — so the practical ceiling is the host's 120 s script time (a few
+hundred MB per file) plus a per-user quota, which small kinds do not need.
+
 ## Open Questions
 
-1. **Which kind is second?** G8 claims a new kind costs a registry entry plus a client surface. That is a claim, not evidence, until a second kind exists — and the three candidates stress different halves of the contract:
-
-   | Candidate | What it would prove |
-   |---|---|
-   | `user_avatar` (raster images, 1 MiB, replaces, `inline`) | The replace path outside audio, and image serving without opening an XSS door |
-   | `note_attachment` (PDF/PNG/JPEG, 8 MiB, appends, `attachment`) | Append semantics (`live_key` null), several live files for one owner, a download rather than a playback disposition |
-   | `export` (zip, 64 MiB, appends, `attachment`) | The byte cap well above audio, streaming assembly at scale, and a kind that must never be served `inline` |
-
-   Picking one is a product/roadmap call; the store is shaped so any of them is additive.
-2. **Virus/malware scanning.** Not needed for audio-only in v1; it becomes a real question the moment a kind accepts PDFs or archives.
-3. **Per-user quota.** Not enforced in v1; add a byte cap per user only if measured usage justifies it.
+1. **Which kind is second?** G8 claims a new kind costs a registry entry plus a client surface — a claim, not evidence, until a second shape exists. Nothing depends on it today; the store is shaped so the first real candidate is additive.
+2. **Virus/malware scanning.** Irrelevant for audio; it becomes a requirement the moment a kind accepts documents or archives.
+3. **Per-user quota.** Not enforced in v1 and not needed for the current kind; large kinds would change that.
 4. **Export.** A student cannot yet download all their files; a zip export is a separate feature.
-5. **Off-site backup tier.** DreamHost's ~2-week retention is known; whether a separate off-site copy exists is a support question, not something we can read off the host.
+5. **Off-site backup tier.** DreamHost's ~2-week retention is known; whether a separate off-site copy exists is a support question.
 
 ## Dependencies
 
-- **ADR-0053 (rev. 1–3)** — the storage decision this spec implements.
+- **ADR-0053 (rev. 1–4)** — the storage decision this spec implements.
 - **SPEC-037 / ARCH-034** — the cache tier on the same host: endpoint conventions, key handling, sanitisation, timeouts, and the "private tree outside the web root" fact this store relies on.
 - **ADR-0043** — the contrast case: authored content is public on `/data/`; user files are private and never client-addressable.
 - **ADR-0023 / ADR-0046** — Flask is the only gateway, and no client may reach a storage host directly.
