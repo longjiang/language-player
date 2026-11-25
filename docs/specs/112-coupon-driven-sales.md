@@ -321,8 +321,8 @@ resolved UTC line makes the result visible before saving.
 
 | Surface | Change |
 |---|---|
-| `(public)/layout.tsx` | Render a slim `<SaleBanner />` above `<PublicHeader />`; the component renders only on `/` (pathname check), so login/docs/etc. are untouched |
-| New `SaleBanner` | One line, full-width strip, brand background, centred: **`{title}: {pct}% off lifetime Pro`** · `ends {date}` · `Use code {code}`. The whole strip links to go-pro with `?coupon=` prefilled. Static (no marquee). Fetches `GET /coupons/featured` on mount, re-checks every 60s (matching the cache TTL) and on tab visibility |
+| `(public)/layout.tsx`, `[l1]/[l2]/layout.tsx` | Render a slim `<SaleBanner />` above the header in both layouts, so the sale appears site-wide. It is a client component that fetches after hydration: the `[l1]/[l2]` shell stays static and cacheable (ADR-0051/SPEC-108 — no request-time API is added) |
+| New `SaleBanner` | One line, full-width strip, brand background, centred: **`{title}: {pct}% off lifetime Pro`** · `ends {date}` · `Use code {code}`, with a close button. The strip links to go-pro with `?coupon=` prefilled. Static (no marquee). Fetches `GET /coupons/featured` on mount (one shared, 55s-cached request across banner/pricing/notice), re-checks every 60s and on tab visibility. **Hidden for lifetime Pro** (waits for the subscription check first, so there is no flash) and **dismissible per browser session** via `sessionStorage` keyed by coupon code — a new campaign shows again |
 | `landing/pricing-section.tsx` | Sale row driven by `/coupons/featured`; strike-through uses `regularCents`, sale price `finalCents`; sale row links to go-pro with the code; no price fetch outside a sale |
 | `go-pro/page.tsx` | Remove `useSaleWindow`/`showSale` and the disabled-while-sale coupon input. Render the offer strip from `/coupons/featured`; prefill from `?coupon=` or the offer; auto-validate when a session exists; keep the manual input |
 | `sale-notice.tsx` | Render from `/coupons/featured` (title, pct, end, code) instead of `SALE_DISCOUNT` + `msg.sale_mid_autumn`; renders nothing when there is no coupon |
@@ -393,11 +393,16 @@ Each item is its own commit with its documentation.
 
 ## Acceptance criteria
 
-- `/` shows a one-line sale strip **above the header** while a featured coupon
-  is active and unexpired; no other public page shows it; the strip contains
-  the translated title, the derived percentage, the end date, and the code, and
-  links to go-pro with `?coupon=BF50` when a language pair is known
-  (otherwise `/language-select`).
+- Every web page (public routes and `[l1]/[l2]` routes; not the admin app or
+  mobile) shows a one-line sale strip **above the header** while a featured
+  coupon is active and unexpired. It contains the translated title, the derived
+  percentage, the end date, and the code, and links to go-pro with
+  `?coupon=BF50` when a language pair is known (otherwise `/language-select`).
+- The strip is **dismissible for the browser session**; once closed it stays
+  closed across navigation and reloads in that tab, and a new campaign code
+  shows it again.
+- The strip is **not shown to lifetime Pro owners**, including before the
+  subscription check resolves (no flash).
 - The strip disappears within 60 seconds of the coupon expiring, being archived,
   being exhausted, or being unfeatured — with no deploy.
 - Featuring a coupon starts the sale immediately (no `starts_at` anywhere).
@@ -460,7 +465,7 @@ Each item is its own commit with its documentation.
 | Window timezone | Server-evaluated UTC instant; expiry entered as local + IANA zone in admin |
 | Public API | **`GET /coupons/featured`**, response `{ coupon: ... }` |
 | `sale_windows` | Sunset: gating removed and the CSV/estimate mechanism deleted (historical-estimate consequence accepted) |
-| Banner | Above the header, landing `/` only, static, not dismissible, links to go-pro with code prefilled |
+| Banner | Above the header on **every web page** (public and app shell; not the admin app or mobile), dismissible for the browser session, hidden for lifetime Pro owners, links to go-pro with the code prefilled |
 | Mobile | **No sales in the apps**; remove sale promo elements; store price only; no coupon field |
 | Classic | **Untouched**; sales stop working there by design |
 | Admin i18n | Public title translated with one click (LLM), manually editable, with a per-locale preview |

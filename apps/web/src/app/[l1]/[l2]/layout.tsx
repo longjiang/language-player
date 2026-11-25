@@ -11,6 +11,7 @@ import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
 import { UserLibraryProvider } from '@/providers/user-library-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { Header } from '@/components/layout/header';
+import { SaleBanner } from '@/components/sale-banner';
 import { ReaderChromeProvider } from '@/providers/reader-chrome-provider';
 import { CookieConsent } from '@/components/consent/cookie-consent';
 import { LanguagePairCookies } from '@/components/layout/language-pair-cookies';
@@ -92,6 +93,9 @@ export default async function LanguageLayout(
                 <VideoPlayerProvider>
                   <ReaderChromeProvider>
                     <div className="flex min-h-screen flex-col">
+                      {/* Client-only, fetches after hydration: adds no
+                          request-time API to this static shell (ADR-0051). */}
+                      <SaleBanner />
                       <Header />
                       {/*
                         A boundary above the page is required for every client

@@ -237,7 +237,7 @@ The two halves of "50% off until Dec 1" come from different authorities:
 
 | Surface | Web | Mobile |
 |---|---|---|
-| Landing banner | Thin strip above the header on `/`, from `/coupons/featured`, links to go-pro with the code prefilled | None |
+| Sale banner | Thin strip above the header on every web page, from `/coupons/featured`; dismissible per session and hidden for lifetime Pro; links to go-pro with the code prefilled | None |
 | go-pro page | Offer strip; coupon input prefilled/validated; checkout sends `coupon_code` | No coupon entry; the store price only |
 | Pricing list | Landing section shows the coupon's regular/final price | Profile plan list shows the store price |
 | Upgrade prompts | `SaleNotice` renders the campaign from `/coupons/featured` | No sale chrome |

@@ -30,28 +30,53 @@ export interface FeaturedCoupon {
  *  within a minute without a reload. */
 const RECHECK_MS = 60_000;
 
+/**
+ * Shared response cache. The banner, the landing pricing table and the in-app
+ * sale notice can all mount on one page; the endpoint is public and cached for
+ * 60s, so they should not each issue a request. A module-level value also
+ * survives client-side navigation, which matters now that the banner renders on
+ * every app page.
+ */
+const CACHE_MS = 55_000;
+let cached: { at: number; coupon: FeaturedCoupon | null } | null = null;
+let inflight: Promise<FeaturedCoupon | null> | null = null;
+
+function fetchFeaturedCoupon(): Promise<FeaturedCoupon | null> {
+  if (cached && Date.now() - cached.at < CACHE_MS) return Promise.resolve(cached.coupon);
+
+  inflight ??= fetch(`${PYTHON_API_URL}/coupons/featured`)
+    .then((res) => (res.ok ? res.json() : { coupon: null }))
+    .then((data: { coupon?: FeaturedCoupon | null }): FeaturedCoupon | null => {
+      const coupon = data?.coupon ?? null;
+      cached = { at: Date.now(), coupon };
+      return coupon;
+    })
+    .catch((err) => {
+      log('[LP Web] featured coupon fetch failed:', err);
+      // Do not cache a failure: the next mount should retry, but the current
+      // render must not advertise a campaign that may have ended.
+      return null;
+    })
+    .finally(() => {
+      inflight = null;
+    });
+
+  return inflight;
+}
+
 export function useFeaturedCoupon(): { coupon: FeaturedCoupon | null; loaded: boolean } {
-  const [coupon, setCoupon] = useState<FeaturedCoupon | null>(null);
+  const [coupon, setCoupon] = useState<FeaturedCoupon | null>(cached?.coupon ?? null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = () => {
-      fetch(`${PYTHON_API_URL}/coupons/featured`)
-        .then((res) => (res.ok ? res.json() : { coupon: null }))
-        .then((data: { coupon?: FeaturedCoupon | null }) => {
-          if (cancelled) return;
-          setCoupon(data?.coupon ?? null);
-          setLoaded(true);
-        })
-        .catch((err) => {
-          log('[LP Web] featured coupon fetch failed:', err);
-          if (!cancelled) {
-            setCoupon(null);
-            setLoaded(true);
-          }
-        });
+      fetchFeaturedCoupon().then((next) => {
+        if (cancelled) return;
+        setCoupon(next);
+        setLoaded(true);
+      });
     };
 
     load();
