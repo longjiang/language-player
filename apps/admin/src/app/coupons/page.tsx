@@ -26,6 +26,10 @@ import { CouponsClient, type SaleTemplates } from './coupons-client';
  * templates from the shared locale files. Loading them here keeps all 18
  * locale bundles on the server; only the three strings the preview renders are
  * passed to the client.
+ *
+ * The locale JSON is **nested by key category** (`msg.sale_banner` is
+ * `messages.msg.sale_banner`), so the templates are read with a dotted-path
+ * lookup, not a flat property access.
  */
 const LOCALES: Record<string, unknown> = {
   en,
@@ -48,15 +52,31 @@ const LOCALES: Record<string, unknown> = {
   vi,
 };
 
-export default function CouponsPage() {
-  const templates: SaleTemplates = {};
-  for (const locale of SUPPORTED_L1S) {
-    const messages = (LOCALES[locale] ?? en) as unknown as Record<string, string>;
-    templates[locale] = {
-      banner: messages['msg.sale_banner'] ?? '',
-      ends: messages['msg.sale_offer_ends'] ?? '',
-      code: messages['msg.sale_use_code'] ?? '',
-    };
+const TEMPLATE_KEYS = ['msg.sale_banner', 'msg.sale_offer_ends', 'msg.sale_use_code'] as const;
+
+/** Read a dotted key from the nested locale JSON. */
+function lookup(messages: unknown, dottedKey: string): string {
+  let current: unknown = messages;
+  for (const part of dottedKey.split('.')) {
+    if (!current || typeof current !== 'object') return '';
+    current = (current as Record<string, unknown>)[part];
   }
+  return typeof current === 'string' ? current : '';
+}
+
+export default function CouponsPage() {
+  const english = LOCALES.en;
+  const templates: SaleTemplates = {};
+
+  for (const locale of SUPPORTED_L1S) {
+    const messages = LOCALES[locale] ?? english;
+    // Fall back per key to English so a locale missing one template still
+    // renders the sentence (and never shows an empty preview row).
+    const [banner, ends, code] = TEMPLATE_KEYS.map(
+      (key) => lookup(messages, key) || lookup(english, key),
+    );
+    templates[locale] = { banner: banner ?? '', ends: ends ?? '', code: code ?? '' };
+  }
+
   return <CouponsClient templates={templates} />;
 }

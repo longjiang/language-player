@@ -322,7 +322,7 @@ export function CouponsClient({ templates }: { templates: SaleTemplates }) {
       parts.push(tpl.ends.replace('{date}', formatDate(utc.toISOString(), locale)));
     }
     if (tpl.code) parts.push(tpl.code.replace('{code}', editing.code));
-    return parts.join(' · ');
+    return parts.join(' · ') || '—';
   }
 
   const editUtc = edit ? zonedToUtc(edit.expiresLocal, edit.expiresTimezone) : null;
