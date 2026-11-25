@@ -89,7 +89,7 @@
 - ✅ Documentation / Help
 - ✅ Ebook reader — bookshelf, EPUB, paginated reader, notes reader, web reader, PDF (web only) and image reader (vision OCR) (SPEC-085, SPEC-087, SPEC-089, SPEC-090)
 - ✅ Interactive textbook — `book > unit > lesson > task` with interactive blanks and per-activity widgets (SPEC-095)
-- ⬜ Task data sync and student recordings — server-side answers/attempts (cross-device) and in-app audio capture for speaking tasks (SPEC-111), on a reusable private user file store (SPEC-113, ADR-0053; design only)
+- 🔄 Task data sync and student recordings — server-side answers/attempts (cross-device) and in-app audio capture for speaking tasks (SPEC-111), on a reusable private user file store (SPEC-113, ADR-0053). The store's backend, endpoints and migration are shipped and host-verified; task sync and the capture UI are not started
 
 ## Phase 6: User Features
 

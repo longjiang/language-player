@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-113
 - **Feature**: A private, per-user byte store on the shared host — per-kind policy, resumable chunked upload, owner-only playback and deletion — for files users create (first kind: a student's task recording)
-- **Status**: draft — **design only, nothing implemented**
+- **Status**: **in progress — backend implemented and host-verified (2026-11-25).** The eight PHP endpoints are deployed and pushed to `zerothero-server`, `utils_user_files.py` + `routes/user_files.py` are in the backend, the `user_files` migration is applied, and `scripts/probe-user-files.sh` passes 18/18 against the live host. No client uses the store yet; the first consumer's UI is SPEC-111 Phase 2/3.
 - **Created**: 2026-11-25
 - **ROADMAP Phase**: Phase 5 (first consumer is the interactive textbook; the store itself is cross-cutting)
 - **Governing decision**: [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) revisions 1–4
@@ -79,6 +79,8 @@ of any upload path in our applications:
 - **No upload path in our applications.** Flask has no `request.files`, no multipart handling and no `MAX_CONTENT_LENGTH`; no app constructs a `FormData`.
 - **The host envelope has been measured** (PHP 8.3, § The measured host envelope) and the tree position has been proven private (`~/zerothero-user-files`, created 2026-11-25, `GET` → `404`).
 - **Backup retention is known**: DreamHost keeps ~2 weeks of backups, not guaranteed (§ Privacy).
+- **The host's WAF refuses raw binary bodies** (2026-11-25): a POST whose body contains a NUL byte is answered `418` with a 500 page, before PHP runs. Every audio container contains NULs, so **all writes are `multipart/form-data`** (`file` part); a text body passes either way, which is why the cache endpoints' raw-body pattern worked and misled the first design.
+- **The docroot serves dotfiles by default.** `/apikeys.json` (with the live `cacheKey`) and the whole `/.git/` tree were publicly readable until 2026-11-25; a `.htaccess` now denies `apikeys.json`, `apikeys.example.json`, `.htaccess*` and env files and 404s `/.git` and `/.dh-diag`. The exposed keys still need rotating, and moving the repository out of the docroot is the durable fix.
 
 ## Data Model
 
@@ -151,9 +153,10 @@ closed.
 
 - Root on the shared host: `~/zerothero-user-files` — a **sibling of the public
   content tree**, outside the web root. Created 2026-11-25 (mode `0750`) and confirmed
-  not web-reachable: `GET /zerothero-user-files/` → `404` and a probe file inside it →
-  `404`, because the docroot exposes a directory only through a symlink and this tree
-  has none. There is no `.htaccess` in the web root to override anything.
+  not web-reachable: a probe file inside it answers **`403`** (deny) rather than being
+  served, because the docroot exposes a directory only through a symlink and this tree
+  has none. (The web root now carries an `.htaccess` that also denies `apikeys.json` and
+  the repository internals — see § Current State.)
 - Object key: `{user_id}/{kind}/{file_id}.{ext}`. The user prefix is what makes
   account deletion a known-set delete; `file_id` makes an upload idempotent and the
   bytes immutable (no overwrite in normal operation, so no cache invalidation).
@@ -171,11 +174,11 @@ or a separator is rejected.
 
 | Endpoint | Method | Contract |
 |---|---|---|
-| `save-user-file.php` | POST raw body + `?user=&kind=&file=` | writes `~/zerothero-user-files/{user}/{kind}/{file}`; temp file + `rename()` so a partial upload never becomes visible; `413` above the host ceiling; answers `OK` |
+| `save-user-file.php` | POST **multipart `file` part** + `?user=&kind=&file=` | writes `~/zerothero-user-files/{user}/{kind}/{file}` via `move_uploaded_file` to a temp name then `rename()`, so a partial upload never becomes visible; `413` above the host ceiling; answers `OK` |
 | `load-user-file.php` | GET/HEAD + same query | returns bytes (`200`) or `404`; honours `Range: bytes=start-end` with `206`, `Content-Range` and `Accept-Ranges: bytes`; answers `application/octet-stream` (Flask sets the client-facing type) |
 | `delete-user-file.php` | DELETE + same query | `200 OK` or `404` |
 | `delete-user-files-batch.php` | POST JSON `{"items":[{"user","kind","file"},…]}` (≤ 2 000) | deletes each, returns `{"deleted":n,"missing":n}` — the account-deletion path |
-| `save-user-file-chunk.php` | POST raw body + `?user=&kind=&file=&index=` | writes `<file>.part<index>` atomically; `413` above the measured ceiling; answers `OK` |
+| `save-user-file-chunk.php` | POST **multipart `file` part** + `?user=&kind=&file=&index=` | writes `<file>.part<index>` atomically; `413` above the measured ceiling; answers `OK` |
 | `list-user-file-chunks.php` | GET + same query | returns `{"received":[0,1,3]}` for resume |
 | `complete-user-file.php` | POST JSON `{user,kind,file,total,byteSize,sha256}` | concatenates the parts in order **by streaming**, verifies size + sha256, deletes the parts, answers `OK`; `422` on mismatch (parts kept) |
 
@@ -247,8 +250,10 @@ Rules the registry enforces, so a future kind cannot be sloppy:
    while counting bytes (see § The measured host envelope), verify the magic bytes
    on the head, and check `ownerId`/`slot` are within the id charset they become
    path segments for.
-4. Write the object to the shared host with `X-User-Files-Key`
-   (`save-user-file.php`). A `413` here is the host ceiling, not the policy cap.
+4. Write the object to the shared host with `X-User-Files-Key` (`save-user-file.php`)
+   as a **multipart `file` part** — raw bodies are blocked by the host's WAF once
+   they contain a NUL byte (§ Current State). A `413` here is the host ceiling, not
+   the policy cap.
 5. In one transaction: compute `live_key`; if the kind replaces, void the previous
    live row for it; insert the `user_files` row; append the metadata change to
    `user_sync_log`.
@@ -305,9 +310,10 @@ loses the whole take, and a closed browser tab loses it even earlier. So uploads
 chunked with resume, in Phase 1 (not deferred):
 
 1. The client splits the file into **4 MiB parts** and `POST`s each to
-   `POST /files/<file_id>/chunk?index=<n>&total=<N>` (raw body, `X-User-Files-Key`
-   to the host). The host writes `pwrite`-style to `<file>.part<n>` — atomically via
-   temp + rename, as the cache endpoint does.
+   `POST /files/<file_id>/chunk?index=<n>&total=<N>`. Flask forwards each as a
+   **multipart `file` part** with `X-User-Files-Key`; the host writes
+   `<file>.part<n>` atomically (temp + rename). Raw bodies cannot be used — the WAF
+   blocks them once they contain a NUL byte.
 2. `GET /files/<file_id>/chunks` returns the indices already received, so a resumed
    upload skips them instead of restarting.
 3. `POST /files/<file_id>/complete` concatenates the parts in index order into the
@@ -456,12 +462,23 @@ path.
 
 | Item | Status | Evidence |
 |---|---|---|
-| The file tree is private | ✅ **confirmed** | `~/zerothero-user-files` created (mode `0750`); `GET /zerothero-user-files/` → **404** and a probe file inside it → **404**. Only docroot symlinks are public (`data -> ~/zerothero-server-data` serves `/data/` with 200; `cache` and `lemmatized-subs-cache` are symlinks too). The new tree has **no** symlink, and there is **no `.htaccess` in the web root**. |
-| `Range` reaches the host | ◐ host side confirmed | A published mp3 answers `HTTP/2 206` with `accept-ranges: bytes`, `content-range: bytes 0-1023/129084`. Nothing strips `Range`. The remaining work is our `load-user-file.php` + the Flask relay. |
-| Key plumbing | ◐ file shape confirmed | `apikeys.json` holds `cacheKey` (plus three unrelated keys) and **no `filesKey`**; the guard is `hash_equals()` over that file. Still to do: install `filesKey` + `USER_FILES_KEY`, then prove the two credentials are not interchangeable. |
-| Backup retention | ✅ **confirmed** | DreamHost's docs: *"generally retains a 2-week backup … not guaranteed"* (§ Privacy). |
-| PHP envelope | ✅ **confirmed** | PHP 8.3; `post_max_size` 512 MB, `upload_max_filesize` 512 MB, `memory_limit` 128 MB, `max_execution_time` 120 s; no per-domain overrides; no Apache body limit; no CDN (§ The measured host envelope). |
+| The file tree is private | ✅ **confirmed** | `~/zerothero-user-files` created (mode `0750`); a probe file inside it answers **`403`** (deny), never the bytes. Only docroot symlinks are public (`data -> ~/zerothero-server-data` serves `/data/` with 200). |
+| Writes must be multipart | ✅ **confirmed** | A raw binary body containing NUL is answered **`418`** with a 500 page by the host WAF; the same bytes as a multipart `file` part reach PHP. Text bodies pass either way. |
+| `Range` works end to end at the host | ✅ **confirmed** | `Range: bytes=100-199` on a 1 KiB object → **206**, `Content-Range: bytes 100-199/1024`, exactly 100 bytes; whole read byte-identical; `HEAD` 200. |
+| Chunked assembly | ✅ **confirmed** | Two 450-byte parts → `{"received":[0,1]}` → `complete` with the sha256 → assembled file byte-identical; a wrong digest → **422** with the parts kept. |
+| Deletion | ✅ **confirmed** | Single delete → `OK`, then `404`; batch delete of one present + one absent file → `{"deleted":1,"missing":1,"invalid":0}`. |
+| Key plumbing | ✅ **confirmed** | A wrong or absent `X-User-Files-Key` → **401**; the key lives in the now-denied `apikeys.json`. |
+| PHP envelope | ✅ **confirmed** | PHP 8.3; `post_max_size` 512 MB, `upload_max_filesize` 512 MB, `memory_limit` 128 MB, `max_execution_time` 120 s; no per-domain overrides; no Apache body limit; no CDN. |
+| Flask ↔ host, live | ◐ **not yet** | The API is unit-tested against fakes and the host passes the probe, but the running Flask has not been restarted with the new blueprint and `USER_FILES_KEY`, so the composed path has not been exercised end to end. |
 | Disk accounting | ❌ needs uploads | Plan storage unlimited; 18 TB volume, 3.9 TB free today. |
+
+The probe is reproducible: `scripts/probe-user-files.sh` (needs the key in
+`$USER_FILES_KEY_FILE`, default `~/.uf.key`) exits non-zero if any check fails — **18/18
+pass** as of 2026-11-25.
+
+Still open, and outside the host: the end-to-end pass through Flask after a restart, the
+real take sizes per platform (SPEC-111), and the rotation of the keys that were public
+before the `.htaccess` (§ Current State).
 
 ## Risks and Mitigations
 
