@@ -33,7 +33,8 @@ neither has anything about the Flask-only boundary or the task-state design.
 - [SPEC-053: Mobile offline mode](../specs/053-mobile-offline-mode.md) — the `sync.db` outbox / `entity_cache` / `/sync/pull` engine extended here
 - [SPEC-039: Full database migration](../specs/039-full-database-migration-supabase.md) — Supabase is the store; Flask is the only gateway
 - [SPEC-095: Interactive textbook](../specs/095-interactive-textbook.md) — the feature whose Non-Goals this supersedes
-- [SPEC-111: Task data sync, user file store and student recordings](../specs/111-task-data-sync-and-user-files.md) — the implementation plan
+- [SPEC-111: Task data sync and student recordings](../specs/111-task-data-sync-and-recordings.md) — task responses, attempts and completion, and the `task_recording` kind
+- [SPEC-113: User file store](../specs/113-user-file-store.md) — the private store those bytes live in (the generic half of this decision)
 
 ---
 
