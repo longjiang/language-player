@@ -138,7 +138,7 @@ docs/
 | 107 | [Tag Search and Video-Tag Pills](specs/107-tag-search-and-video-tag-pills.md) | 3 | ✅ Complete |
 | 108 | [Web Function Invocation Budget — Cut Netlify Serverless Usage](specs/108-web-function-invocation-budget.md) | — | 🔄 In progress |
 | 110 | [Email Verification Support Pipe — Sender Matching, LLM Triage, Outcome Notifications](specs/110-email-verification-support-pipe.md) | 9 | ⬜ Draft |
-| 111 | [Task Data Sync and Student Recordings](specs/111-task-data-sync-and-recordings.md) | 5 | ⬜ Draft |
+| 111 | [Task Data Sync, User File Store and Student Recordings](specs/111-task-data-sync-and-user-files.md) | 5 | ⬜ Draft |
 | 112 | [Coupon-Driven Sales (sale = a featured coupon)](specs/112-coupon-driven-sales.md) | 10 | 🔄 In progress |
 
 ## ADRs
