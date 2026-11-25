@@ -23,12 +23,14 @@ function tokenExpiry(token: string): number {
  * to every Flask admin call. This mirrors the web app's ApiClientProvider
  * token handling (single-flight refresh, NextAuth `update()` persistence).
  *
- * The mirror is populated during render — not in an effect — so child
- * components that fire authenticated requests on the session-loading render
- * already read the current token.
+ * The mirror is populated during render — not in an effect — so a child that
+ * fires an authenticated request right after the session lands already reads
+ * the token. While the session is still loading nothing is published: an empty
+ * token then is not "signed out", and `authenticatedFetch` waits for
+ * `waitForAuthToken()` instead of sending an unauthenticated request.
  */
 export function SessionTokenMirror() {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const updateRef = useRef(update);
@@ -86,11 +88,16 @@ export function SessionTokenMirror() {
     return refreshInFlight.current;
   }, []);
 
-  const sessionUser = (session?.user as any) ?? null;
-  setAuthTokens(
-    (sessionUser?.accessToken as string | undefined) ?? null,
-    refreshAccessToken,
-  );
+  // Publish only once the session state is known. Publishing `null` during the
+  // loading render would resolve `waitForAuthToken()` with no token and bring
+  // back the 401 on a hard page load.
+  if (status !== 'loading') {
+    const sessionUser = (session?.user as any) ?? null;
+    setAuthTokens(
+      (sessionUser?.accessToken as string | undefined) ?? null,
+      refreshAccessToken,
+    );
+  }
 
   return null;
 }
