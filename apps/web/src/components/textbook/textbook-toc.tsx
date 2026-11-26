@@ -3,9 +3,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { ChevronDown } from 'lucide-react';
 import {
   bookProgress,
+  liveRecordingSlotsByTask,
   taskHref,
   type BookProgress,
   type LessonProgress,
@@ -15,6 +17,7 @@ import {
 import { loadPersistedTask } from './task-provider';
 import { TaskTypeIcon } from './task-type-icon';
 import { useT } from '@/hooks/use-t';
+import { fetchTaskState } from '@/lib/task-sync-client';
 
 interface TextbookTocProps {
   tree: TocTree;
@@ -61,15 +64,39 @@ export function useCurrentTaskId(tree: TocTree, l1: string, l2: string): string 
  */
 export function useBookProgress(tree: TocTree): BookProgress | null {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const sessionToken = (session as unknown as { accessToken?: unknown } | null)?.accessToken;
+  const token = status === 'authenticated' && typeof sessionToken === 'string' ? sessionToken : null;
   const [progress, setProgress] = useState<BookProgress | null>(null);
+
   useEffect(() => {
-    const states = new Map(
-      tree.units
-        .flatMap((u) => u.lessons.flatMap((l) => l.tasks))
-        .map((task) => [task.id, loadPersistedTask(task.id)] as const),
-    );
+    const ids = tree.units.flatMap((u) => u.lessons.flatMap((l) => l.tasks)).map((task) => task.id);
+    const states = new Map(ids.map((id) => [id, loadPersistedTask(id)] as const));
+    // Paint from the device first: a student with no network still sees progress.
     setProgress(bookProgress(tree, states));
-  }, [tree, pathname]);
+    if (!token) return;
+
+    let cancelled = false;
+    void (async () => {
+      // A task that requires a take is only complete once the file store holds it
+      // (SPEC-111), so the live slots come from the server in `/tasks/state`
+      // batches. A failed batch leaves those tasks gated rather than assumed done.
+      const liveByTask = new Map<string, Set<string>>();
+      for (let index = 0; index < ids.length; index += 20) {
+        const result = await fetchTaskState(ids.slice(index, index + 20), token);
+        if (!result.ok) continue;
+        for (const [taskId, slots] of liveRecordingSlotsByTask(result.state)) {
+          liveByTask.set(taskId, slots);
+        }
+      }
+      if (!cancelled) setProgress(bookProgress(tree, states, liveByTask));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tree, pathname, token]);
+
   return progress;
 }
 

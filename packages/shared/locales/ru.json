@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Я"
     },
+    "task": {
+        "delete_recording": "Удалить запись",
+        "record": "Записать",
+        "recording_mic_unavailable": "Этот браузер не умеет записывать звук.",
+        "recording_permission_denied": "Для записи этого задания нужен доступ к микрофону.",
+        "recording_retry": "Повторить сохранение",
+        "recording_saved": "Сохранено в аккаунте",
+        "recording_upload_failed": "Не удалось сохранить запись. Попробуйте ещё раз.",
+        "recording_upload_pending": "Ещё не сохранено",
+        "recording_uploading": "Сохраняем запись…",
+        "rerecord": "Записать заново",
+        "stop_recording": "Остановить"
+    },
     "time": {
         "hours": "часы",
         "min": "мин",

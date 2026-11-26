@@ -22,6 +22,7 @@ import { AudioPlayer } from './audio-player';
 import { TaskAudioProvider } from './task-audio';
 import { TranscriptDialogProvider } from './transcript-dialog';
 import { RecallCard } from './recall-card';
+import { RecordField } from './record-field';
 import { PictureSet } from './picture-set';
 import { DataTable } from './data-table';
 import { OrderList } from './order-list';
@@ -326,6 +327,8 @@ export function TaskStimulus() {
           }
           case 'recall':
             return <RecallCard key={i} stimulus={stimulus} />;
+          case 'record':
+            return <RecordField key={i} stimulus={stimulus} />;
           case 'audio':
             return (
               <div key={i} className="flex flex-col gap-2">

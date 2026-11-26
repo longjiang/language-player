@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Ik"
     },
+    "task": {
+        "delete_recording": "Opname verwijderen",
+        "record": "Opnemen",
+        "recording_mic_unavailable": "Deze browser kan geen audio opnemen.",
+        "recording_permission_denied": "Microfoontoegang is nodig om deze taak op te nemen.",
+        "recording_retry": "Opnieuw opslaan",
+        "recording_saved": "Opgeslagen in je account",
+        "recording_upload_failed": "Je opname kon niet worden opgeslagen. Probeer het opnieuw.",
+        "recording_upload_pending": "Nog niet opgeslagen",
+        "recording_uploading": "Je opname wordt opgeslagen…",
+        "rerecord": "Opnieuw opnemen",
+        "stop_recording": "Stoppen"
+    },
     "time": {
         "hours": "uur",
         "min": "min",

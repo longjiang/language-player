@@ -1724,6 +1724,19 @@
     "tab": {
         "me": "我的"
     },
+    "task": {
+        "delete_recording": "刪除錄音",
+        "record": "錄音",
+        "recording_mic_unavailable": "此瀏覽器無法錄製音訊。",
+        "recording_permission_denied": "需要麥克風權限才能錄製此任務。",
+        "recording_retry": "重試儲存",
+        "recording_saved": "已儲存到你的帳戶",
+        "recording_upload_failed": "錄音未能儲存，請重試。",
+        "recording_upload_pending": "尚未儲存",
+        "recording_uploading": "正在儲存錄音…",
+        "rerecord": "重新錄音",
+        "stop_recording": "停止"
+    },
     "time": {
         "hours": "小時",
         "min": "分鐘",

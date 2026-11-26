@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "أنا"
     },
+    "task": {
+        "delete_recording": "حذف التسجيل",
+        "record": "تسجيل",
+        "recording_mic_unavailable": "لا يستطيع هذا المتصفح تسجيل الصوت.",
+        "recording_permission_denied": "يلزم السماح باستخدام الميكروفون لتسجيل هذه المهمة.",
+        "recording_retry": "إعادة محاولة الحفظ",
+        "recording_saved": "تم الحفظ في حسابك",
+        "recording_upload_failed": "تعذّر حفظ تسجيلك. حاول مرة أخرى.",
+        "recording_upload_pending": "لم يُحفظ بعد",
+        "recording_uploading": "يتم حفظ تسجيلك…",
+        "rerecord": "إعادة التسجيل",
+        "stop_recording": "إيقاف"
+    },
     "time": {
         "hours": "ساعات",
         "min": "دقيقة",

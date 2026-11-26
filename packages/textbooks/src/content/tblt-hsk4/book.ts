@@ -20,7 +20,7 @@ import { lessonE } from './u06/lesson-e';
  * because a re-authored task can leave a saved answer pointing at the wrong
  * blank.
  */
-export const TBLT_HSK4_CONTENT_VERSION = 3;
+export const TBLT_HSK4_CONTENT_VERSION = 4;
 
 const unit06: UnitMeta = {
   id: 'u06',

@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Io"
     },
+    "task": {
+        "delete_recording": "Elimina registrazione",
+        "record": "Registra",
+        "recording_mic_unavailable": "Questo browser non può registrare audio.",
+        "recording_permission_denied": "Per registrare questa attività serve l'accesso al microfono.",
+        "recording_retry": "Riprova a salvare",
+        "recording_saved": "Salvato nel tuo account",
+        "recording_upload_failed": "Non è stato possibile salvare la registrazione. Riprova.",
+        "recording_upload_pending": "Non ancora salvato",
+        "recording_uploading": "Salvataggio della registrazione…",
+        "rerecord": "Registra di nuovo",
+        "stop_recording": "Interrompi"
+    },
     "time": {
         "hours": "ore",
         "min": "min",

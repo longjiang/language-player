@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Ben"
     },
+    "task": {
+        "delete_recording": "Kaydı sil",
+        "record": "Kaydet",
+        "recording_mic_unavailable": "Bu tarayıcı ses kaydedemiyor.",
+        "recording_permission_denied": "Bu görevi kaydetmek için mikrofon erişimi gerekir.",
+        "recording_retry": "Kaydetmeyi yeniden dene",
+        "recording_saved": "Hesabına kaydedildi",
+        "recording_upload_failed": "Kaydın kaydedilemedi. Tekrar dene.",
+        "recording_upload_pending": "Henüz kaydedilmedi",
+        "recording_uploading": "Kaydın kaydediliyor…",
+        "rerecord": "Yeniden kaydet",
+        "stop_recording": "Durdur"
+    },
     "time": {
         "hours": "saat",
         "min": "dakika",

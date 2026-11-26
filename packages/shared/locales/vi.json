@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Tôi"
     },
+    "task": {
+        "delete_recording": "Xóa bản ghi",
+        "record": "Ghi âm",
+        "recording_mic_unavailable": "Trình duyệt này không thể ghi âm.",
+        "recording_permission_denied": "Cần quyền truy cập micrô để ghi âm bài tập này.",
+        "recording_retry": "Thử lưu lại",
+        "recording_saved": "Đã lưu vào tài khoản của bạn",
+        "recording_upload_failed": "Không lưu được bản ghi của bạn. Hãy thử lại.",
+        "recording_upload_pending": "Chưa được lưu",
+        "recording_uploading": "Đang lưu bản ghi của bạn…",
+        "rerecord": "Ghi âm lại",
+        "stop_recording": "Dừng"
+    },
     "time": {
         "hours": "giờ",
         "min": "phút",

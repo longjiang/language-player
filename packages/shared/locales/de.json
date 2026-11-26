@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Ich"
     },
+    "task": {
+        "delete_recording": "Aufnahme löschen",
+        "record": "Aufnehmen",
+        "recording_mic_unavailable": "Dieser Browser kann kein Audio aufnehmen.",
+        "recording_permission_denied": "Für diese Aufgabe ist Mikrofonzugriff nötig.",
+        "recording_retry": "Speichern erneut versuchen",
+        "recording_saved": "In deinem Konto gespeichert",
+        "recording_upload_failed": "Deine Aufnahme konnte nicht gespeichert werden. Versuche es erneut.",
+        "recording_upload_pending": "Noch nicht gespeichert",
+        "recording_uploading": "Aufnahme wird gespeichert…",
+        "rerecord": "Neu aufnehmen",
+        "stop_recording": "Stopp"
+    },
     "time": {
         "hours": "Stunden",
         "min": "Min",

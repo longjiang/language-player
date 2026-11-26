@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "나"
     },
+    "task": {
+        "delete_recording": "녹음 삭제",
+        "record": "녹음",
+        "recording_mic_unavailable": "이 브라우저는 오디오를 녹음할 수 없습니다.",
+        "recording_permission_denied": "이 과제를 녹음하려면 마이크 접근이 필요합니다.",
+        "recording_retry": "저장 다시 시도",
+        "recording_saved": "계정에 저장됨",
+        "recording_upload_failed": "녹음을 저장하지 못했습니다. 다시 시도하세요.",
+        "recording_upload_pending": "아직 저장되지 않음",
+        "recording_uploading": "녹음을 저장하는 중…",
+        "rerecord": "다시 녹음",
+        "stop_recording": "중지"
+    },
     "time": {
         "hours": "시간",
         "min": "분",

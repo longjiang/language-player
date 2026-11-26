@@ -180,7 +180,7 @@ describe('TaskResponseStore', () => {
         taskId: task.id,
         contentVersion: 1,
         responses: {},
-        result: { complete: true, correctCount: 1, scoreableCount: 1 },
+        result: { taskId: task.id, blanks: [], complete: true, correctCount: 1, scoreableCount: 1 },
         submittedAt: 500,
       },
     });
@@ -190,7 +190,7 @@ describe('TaskResponseStore', () => {
         taskId: task.id,
         contentVersion: 1,
         responses: {},
-        result: { complete: false, correctCount: 0, scoreableCount: 1 },
+        result: { taskId: task.id, blanks: [], complete: false, correctCount: 0, scoreableCount: 1 },
         submittedAt: 500,
       },
     });
@@ -200,7 +200,7 @@ describe('TaskResponseStore', () => {
         taskId: task.id,
         contentVersion: 1,
         responses: {},
-        result: { complete: false, correctCount: 0, scoreableCount: 1 },
+        result: { taskId: task.id, blanks: [], complete: false, correctCount: 0, scoreableCount: 1 },
         submittedAt: 900,
       },
     });

@@ -405,12 +405,12 @@ export const lessonD: LessonMeta = {
       number: '➐',
       type: 'conversation',
       sourcePage: 20,
-      // The student does the speaking themselves and completes the task here: neither
-      // app captures audio, and requiring a recording would make the task impossible to
-      // finish. What the app can do is put the draft in front of them and keep their
-      // own assessment of it.
+      // The student records themselves (SPEC-111): the task is not complete until the
+      // take is stored, and the self-assessment below is what they write after hearing
+      // it back. The workbook's own wording for the speaking step is used in the
+      // stimulus prompt so the instruction and the recorder agree.
       instructions:
-        '看着 ➏ 写的草稿，自己说一遍。说完以后想一想：哪一部分说得不太顺？还想补充什么？写在下面，这个任务就算完成了。',
+        '按照你写的草稿，录一段介绍自己城市的公共交通的音频。录完以后听一遍，想一想：哪一部分说得不太顺？还想补充什么？写在下面。',
       body: [
         {
           kind: 'recall',
@@ -423,6 +423,12 @@ export const lessonD: LessonMeta = {
             { blankId: 'b4', title: '运营时刻' },
             { blankId: 'b5', title: '其它' },
           ],
+        },
+        {
+          kind: 'record',
+          prompt: '按照你写的草稿，录一段介绍自己城市的公共交通的音频。',
+          maxDurationSec: 180,
+          required: true,
         },
         {
           kind: 'freeWrite',

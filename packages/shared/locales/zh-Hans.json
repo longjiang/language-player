@@ -1749,6 +1749,19 @@
     "tab": {
         "me": "我的"
     },
+    "task": {
+        "delete_recording": "删除录音",
+        "record": "录音",
+        "recording_mic_unavailable": "此浏览器无法录制音频。",
+        "recording_permission_denied": "需要麦克风权限才能录制此任务。",
+        "recording_retry": "重试保存",
+        "recording_saved": "已保存到你的账户",
+        "recording_upload_failed": "录音未能保存，请重试。",
+        "recording_upload_pending": "尚未保存",
+        "recording_uploading": "正在保存录音…",
+        "rerecord": "重新录音",
+        "stop_recording": "停止"
+    },
     "time": {
         "hours": "小时",
         "min": "分钟",

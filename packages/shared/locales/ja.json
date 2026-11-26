@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "私"
     },
+    "task": {
+        "delete_recording": "録音を削除",
+        "record": "録音",
+        "recording_mic_unavailable": "このブラウザは音声を録音できません。",
+        "recording_permission_denied": "このタスクを録音するにはマイクへのアクセスが必要です。",
+        "recording_retry": "保存を再試行",
+        "recording_saved": "アカウントに保存しました",
+        "recording_upload_failed": "録音を保存できませんでした。もう一度お試しください。",
+        "recording_upload_pending": "まだ保存されていません",
+        "recording_uploading": "録音を保存しています…",
+        "rerecord": "もう一度録音",
+        "stop_recording": "停止"
+    },
     "time": {
         "hours": "時間",
         "min": "分",

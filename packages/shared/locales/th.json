@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "ฉัน"
     },
+    "task": {
+        "delete_recording": "ลบเสียงที่อัด",
+        "record": "อัดเสียง",
+        "recording_mic_unavailable": "เบราว์เซอร์นี้บันทึกเสียงไม่ได้",
+        "recording_permission_denied": "ต้องอนุญาตใช้ไมโครโฟนเพื่ออัดงานนี้",
+        "recording_retry": "ลองบันทึกอีกครั้ง",
+        "recording_saved": "บันทึกในบัญชีของคุณแล้ว",
+        "recording_upload_failed": "บันทึกเสียงของคุณไม่สำเร็จ ลองอีกครั้ง",
+        "recording_upload_pending": "ยังไม่ได้บันทึก",
+        "recording_uploading": "กำลังบันทึกเสียงของคุณ…",
+        "rerecord": "อัดใหม่",
+        "stop_recording": "หยุด"
+    },
     "time": {
         "hours": "ชั่วโมง",
         "min": "นาที",

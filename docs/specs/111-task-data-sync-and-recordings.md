@@ -453,9 +453,11 @@ supply.
   foreground service with a persistent notification — a battery and store-review
   cost that must be paid deliberately, because a 30-minute take is exactly the case
   where the student will leave the app.
-- **Web records in timeslices** (`recorder.start(4_000)`): each `dataavailable` is
-  uploaded as a chunk ([SPEC-113](113-user-file-store.md) § Long takes), so a closed tab
-  costs at most the last few seconds instead of half an hour.
+- **Web records to a Blob, then uploads it in 4 MiB parts** when the student stops. A
+  closed tab before that loses the take, and the control says so before recording
+  starts. Uploading *while* recording is deferred: the parts endpoint wants a known
+  `total` up front, so streaming parts need an open-ended part contract first (see
+  Open Questions).
 - **Permission is requested at first record**, never at launch; denial is a stated
   state with a path to OS settings, never a silent dead button.
 - **Interruptions** (a phone call, an audio-session reset) end the recording; what was
@@ -736,6 +738,7 @@ owes:
 1. **Should a teacher ever hear a recording?** Out of scope now (Non-Goals), but it is the obvious next request and needs its own consent model.
 2. **Keep every take, for Pro?** Deferred; it is a store-level retention choice (SPEC-113) plus a UI, so it is additive rather than a rewrite.
 3. **Analytics reads.** Attempt rows make "which blanks are wrong" possible; who may query it, and does the admin console get a report? Not decided here.
+4. **Uploading while recording.** Today the take uploads after the stop button, so a closed tab loses it. Streaming 4 MiB parts during the recording needs the store's part contract to accept an unknown total (SPEC-113); the web recorder's `dataavailable` events then become parts.
 
 ## Dependencies
 

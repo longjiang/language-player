@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Ja"
     },
+    "task": {
+        "delete_recording": "Usuń nagranie",
+        "record": "Nagraj",
+        "recording_mic_unavailable": "Ta przeglądarka nie może nagrywać dźwięku.",
+        "recording_permission_denied": "Do nagrania tego zadania potrzebny jest dostęp do mikrofonu.",
+        "recording_retry": "Ponów zapis",
+        "recording_saved": "Zapisano na koncie",
+        "recording_upload_failed": "Nie udało się zapisać nagrania. Spróbuj ponownie.",
+        "recording_upload_pending": "Jeszcze nie zapisano",
+        "recording_uploading": "Zapisywanie nagrania…",
+        "rerecord": "Nagraj ponownie",
+        "stop_recording": "Zatrzymaj"
+    },
     "time": {
         "hours": "godz.",
         "min": "min",

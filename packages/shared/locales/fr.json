@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Moi"
     },
+    "task": {
+        "delete_recording": "Supprimer l'enregistrement",
+        "record": "Enregistrer",
+        "recording_mic_unavailable": "Ce navigateur ne peut pas enregistrer d'audio.",
+        "recording_permission_denied": "L'accès au micro est nécessaire pour enregistrer cette tâche.",
+        "recording_retry": "Réessayer l'enregistrement",
+        "recording_saved": "Enregistré dans votre compte",
+        "recording_upload_failed": "Votre enregistrement n'a pas pu être sauvegardé. Réessayez.",
+        "recording_upload_pending": "Pas encore enregistré",
+        "recording_uploading": "Enregistrement de votre audio…",
+        "rerecord": "Réenregistrer",
+        "stop_recording": "Arrêter"
+    },
     "time": {
         "hours": "heures",
         "min": "min",

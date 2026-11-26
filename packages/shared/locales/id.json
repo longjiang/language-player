@@ -1771,6 +1771,19 @@
     "tab": {
         "me": "Saya"
     },
+    "task": {
+        "delete_recording": "Hapus rekaman",
+        "record": "Rekam",
+        "recording_mic_unavailable": "Peramban ini tidak dapat merekam audio.",
+        "recording_permission_denied": "Akses mikrofon diperlukan untuk merekam tugas ini.",
+        "recording_retry": "Coba simpan lagi",
+        "recording_saved": "Tersimpan di akunmu",
+        "recording_upload_failed": "Rekamanmu gagal disimpan. Coba lagi.",
+        "recording_upload_pending": "Belum tersimpan",
+        "recording_uploading": "Menyimpan rekaman…",
+        "rerecord": "Rekam ulang",
+        "stop_recording": "Berhenti"
+    },
     "time": {
         "hours": "jam",
         "min": "menit",

@@ -1819,6 +1819,19 @@
     "tab": {
         "me": "Me"
     },
+    "task": {
+        "delete_recording": "Delete recording",
+        "record": "Record",
+        "recording_mic_unavailable": "This browser cannot record audio.",
+        "recording_permission_denied": "Microphone access is needed to record this task.",
+        "recording_retry": "Retry saving",
+        "recording_saved": "Saved to your account",
+        "recording_upload_failed": "Your recording could not be saved. Try again.",
+        "recording_upload_pending": "Not saved yet",
+        "recording_uploading": "Saving your recording…",
+        "rerecord": "Record again",
+        "stop_recording": "Stop"
+    },
     "time": {
         "hours": "hours",
         "min": "min",
