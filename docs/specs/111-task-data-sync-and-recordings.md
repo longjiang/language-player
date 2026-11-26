@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-111
 - **Feature**: Server-side storage and cross-device sync for a student's textbook task data — responses, attempts, completion — and in-app capture of the student's own audio for speaking tasks, stored through the user file store
-- **Status**: draft — **design only, nothing implemented**
+- **Status**: in progress — Phases 0–2 implemented and verified (backend + web); Phase 3 (mobile capture) needs `expo-audio` and a new development build
 - **Created**: 2026-11-24
 - **ROADMAP Phase**: Phase 5 (Content Features)
 - **Supersedes (in scope only)**: this spec replaces two statements in [SPEC-095](095-interactive-textbook.md) — the Non-Goal "Exercise state is local only" and the resolved decision "Attempt recording scope". The architectural decision behind the change is [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) (revisions 1–4), which supersedes [ADR-0044](../adr/0044-textbook-exercise-state-local-only.md) decisions 2 and 3
@@ -69,9 +69,9 @@ Decided, not deferred:
 - **No file-store work in this spec.** Endpoints, keys, chunking, byte caps, playback tokens and deletion live in SPEC-113; this spec only registers a kind and consumes the API.
 - **No offline cache of uploaded files on mobile** in this spec; playback streams.
 
-## Current State (As-Built, Verified)
+## Current State at Design Time
 
-### What exists
+### What existed
 
 | Concern | Today | File |
 |---|---|---|
@@ -89,17 +89,47 @@ Decided, not deferred:
 | Logout wipe | web: settings/SRS/saved words; mobile: notes, saved words, progress, SRS, `sync.db` | `apps/web/src/lib/user-data-wipe.ts:6-19`, `apps/mobile/lib/user-data-wipe.ts:33-56` |
 | Private file tier | key-gated save/load/delete PHP endpoints over a tree outside the web root, used as the cache overflow | `zerotohero-python-server/remote_cache.py`, [SPEC-037](037-two-tier-remote-cache-offload.md), [ARCH-034](../arch/034-video-lemmatization-cache.md) |
 
-### What does not exist
+### What did not exist (all of it is built now — see below)
 
 - **No upload path in our applications.** Flask has no `request.files`, no multipart handling and no `MAX_CONTENT_LENGTH`; no app constructs a `FormData`.
 - **No user-file endpoints on the shared host.** The cache endpoints are cache-shaped (`bucket`/`key`, text payloads) and share one credential with the cache tier; they are not a user store. [SPEC-113](113-user-file-store.md) builds the store this feature needs.
 - **No recording capability.** `expo-audio` / `expo-av` are not installed (mobile plays audio through `expo-video` to avoid a native rebuild — `apps/mobile/components/textbook/TaskAudio.tsx:19-27`), `MediaRecorder` appears nowhere in `apps/web`, and mobile's config explicitly **disables** the microphone permission (`apps/mobile/app.config.js:91-95`).
 
-### Defects this spec has to fix on the way through
+### Defects this spec had to fix on the way through (all three fixed)
 
 1. **Attempt ids are not unique across devices.** `` `${task.id}#${attemptSeq}` `` (`packages/textbooks/src/store.ts:195,228`) repeats on every device. Any server keyed on it collides the moment a student uses two devices.
 2. **Task answers leak across accounts on a shared device.** Mobile's wipe deliberately keeps `lp:textbook:*` — *"it is device-local with no server copy, so wiping it would destroy the returning user's answers"* (`apps/mobile/lib/user-data-wipe.ts:3-11`) — and web's wipe list does not contain the prefix at all. So the next user to sign in on that device sees the previous user's drafts: the mobile task route loads them with `loadPersistedTask` (`apps/mobile/components/textbook/TaskView.tsx:50`), and `RecallCard` reads the same store on both platforms (`apps/web/src/components/textbook/recall-card.tsx:26`). Once the server holds the copy, the wipe becomes safe and must be added.
 3. **Completion has no server representation**, because there is no server row — a derived property that must stay derived, not become a column.
+
+### As-built after the implementation (2026-11-26)
+
+| Concern | Now | Where |
+|---|---|---|
+| Attempt shape | one `attempt: AttemptRecord \| null` per task; `submit()` replaces it | `packages/textbooks/src/store.ts` |
+| Legacy state | `normalisePersistedTaskState()` collapses `attempts[]` on every load | `packages/textbooks/src/persisted-state.ts` |
+| Per-blank LWW | `updatedAt: Record<blankId, number>` + `adoptRemote()` | `packages/textbooks/src/store.ts` |
+| Completion gate | attempt complete **and** every required slot has a stored take | `packages/textbooks/src/progress.ts` |
+| Recording slots | `record` stimulus, `recordingSlotsIn`, `requiredRecordingSlotsIn` | `packages/textbooks/src/recordings.ts`, `types.ts` |
+| Server tables | `user_task_responses`, `user_task_attempts` (owner RLS, grants) | `supabase/migrations/202611240001_user_task_data.sql` |
+| Push entities | `task_response`, `task_attempt` (LWW in SQL, tombstone check) | `zerotohero-python-server/utils_sync.py`, `utils_task_data.py` |
+| Shaped read | `GET /tasks/state?taskIds=` (≤ 20, responses + attempts + files) | `zerotohero-python-server/routes/task_data.py` |
+| Web sync | adopt after hydration, durable `lp:task-sync:<userId>` queue, reconnect/focus flush | `apps/web/src/components/textbook/task-sync-bridge.tsx`, `lib/task-sync-queue.ts` |
+| Mobile sync | the same diff through `sync.db`/`outbox` | `apps/mobile/components/textbook/TaskSyncBridge.tsx`, `lib/task-sync.ts` |
+| Related tasks | recall/carried sources mirrored into their device slots | both bridges (`relatedTaskIds`) |
+| Web capture | `MediaRecorder` → chunked upload, preview, replace, delete, retry | `apps/web/src/components/textbook/record-field.tsx`, `lib/user-files-client.ts` |
+| TOC gating | live slots fetched in `/tasks/state` batches, passed to `bookProgress` | `apps/web/src/components/textbook/textbook-toc.tsx` |
+| Logout wipe | `lp:textbook:` and `lp:task-sync:` removed on pastHydration both platforms | web + mobile `user-data-wipe.ts` |
+| Content | D ➐ records (180 s, required); content version 3 → 4 | `packages/textbooks/src/content/tblt-hsk4/u06/lesson-d.ts` |
+
+**Known gaps at the end of this pass** (deliberate, each with a next step):
+
+- **Mobile capture (Phase 3) is not built.** It needs `expo-audio`, a microphone
+  permission in `app.config.js` and a new development build — the one part of this
+  spec that cannot land without a native rebuild.
+- **Uploads start at the stop button**, not during recording (Open Questions 4).
+- **The picker's per-book totals are not gated** by stored takes; the TOC and the
+  task page are. The picker only has task counts, so gating it needs either the book
+  content loaded there or a task-count-aware summary.
 
 ## Goals and Acceptance Criteria
 
@@ -696,24 +726,31 @@ build, recorder component, wipe parity. Requires a device build; not a web-only 
 - **Store-level behaviour** (chunking, ranges, keys, sweeps) is tested in
   [SPEC-113](113-user-file-store.md) § Testing; this spec does not duplicate it.
 
-## Verification Before Implementation
+## Verification
 
 The host-side questions are settled and recorded in
-[SPEC-113 § Verification](113-user-file-store.md); these are the ones this spec still
-owes:
+[SPEC-113 § Verification](113-user-file-store.md).
 
-1. **Real take sizes per platform.** The bitrate is a request, not a contract. Record 30 s
-   on iOS Safari, Chrome and the mobile app, and compare bytes/second with 16–24 kbps. If
-   a platform overshoots badly, lower `maxDurationSec` for that kind or raise the cap —
-   **never** add duration parsing.
-2. **Background recording actually holds a 30-minute take** on a real device: lock the
-   screen at minute 2, unlock at minute 20, and confirm the file is continuous. This is
-   the behaviour most likely to differ from the docs.
-3. **Adoption after hydration** on a task that already has a server attempt: the HTML must
-   paint unanswered, then adopt on the next render — the failure mode ADR-0044 documents.
-4. **`user_sync_log` survives account deletion.** `user_sync_log` has no FK cascade today;
-   deletion must explicitly remove the user's log and ops rows, or "delete account" leaves
-   task metadata behind.
+| # | Question | Result |
+|---|---|---|
+| 1 | Real take sizes per platform (bitrate is a request, not a contract) | **Open** — needs a device pass: record 30 s in Chrome, iOS Safari and the app, compare bytes/s with 16–24 kbps. Lower `maxDurationSec` or raise the cap; never add duration parsing. |
+| 2 | A 30-minute background take is continuous | **Deferred** with mobile capture (Phase 3); the web recorder cannot record in a background tab. |
+| 3 | Adoption after hydration paints unanswered HTML first | **Verified by construction + unit tests** — the bridge adopts in an effect (post-hydration) and `adoptRemote` merges per blank. A browser pass on a task that already has a server attempt is still owed. |
+| 4 | Account deletion removes sync metadata | **Fixed** — `user_sync_log` and `user_sync_ops` are now deleted with the account (`2561fb1`). |
+
+### What this pass verified
+
+- **Composed pass, real Flask + real tables** (`tmp/e2e_task_data.py`, 11/11):
+  push 3 ops → all ok; replay the same ops → still one response row and one
+  attempt row; an older `task_response` → `dropped: true`; `/tasks/state`
+  returns the newer value, the attempt and `files: []`; 21 ids → 400.
+  It also **found a real bug**: the row helpers committed inside the push
+  savepoint, so the batch failed after the row had landed (`a5f9ec8`).
+- **Unit**: 14 backend task-data tests, 16 shared progress-gate tests, the
+  store/normaliser/adoption tests, 21 web sync tests, 4 recording-client tests,
+  the entity-contract tests.
+- **Types**: `packages/textbooks`, `packages/utils`, `apps/web`, `apps/mobile`
+  typecheck clean.
 
 ## Risks and Mitigations
 
