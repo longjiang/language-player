@@ -141,7 +141,7 @@ docs/
 | 111 | [Task Data Sync and Student Recordings](specs/111-task-data-sync-and-recordings.md) | 5 | ⬜ Draft |
 | 113 | [User File Store](specs/113-user-file-store.md) | 5 | ⬜ Draft |
 | 112 | [Coupon-Driven Sales (sale = a featured coupon)](specs/112-coupon-driven-sales.md) | 10 | 🔄 In progress |
-| 114 | [Subs-Search Result Rows Render Tokenized Text (Display-Only)](specs/114-subs-search-tokenized-rows.md) | 4 | ✅ Complete |
+| 114 | [Tokenized L2 Text in Dictionary Reading Surfaces](specs/114-tokenized-dictionary-surfaces.md) | 4 | ✅ Complete |
 
 ## ADRs
 

@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { dictionaryEntryLogger } from '@/lib/logger';
 import { WebViewSheet } from '@/components/WebViewSheet';
 import { RareGlyphText } from '@/components/RareGlyphText';
+import { TokenizedText } from '@/components/TokenizedText';
 
 const { log } = dictionaryEntryLogger;
 
@@ -543,7 +544,13 @@ export function DictionaryEntryCard({
                 </Text>
               </View>
               {m.example && (
-                        <Text className="mt-1 text-sm text-foreground" lang={glyphLang}><RareGlyphText text={m.example} /></Text>
+                /* SPEC-114: the textbook example is an L2 reading line — render it
+                   through TokenizedText so the learner's script preference
+                   (ADR-0019) and phonetics setting apply, and words are tappable
+                   for lookup (a stacked popup, like the popup's context sentence). */
+                <View className="mt-1">
+                  <TokenizedText text={m.example} l2Code={l2Code ?? l2Lang.code} />
+                </View>
               )}
               {m.exampleTranslation && (
                 <Text className="mt-0.5 text-sm text-muted-foreground">{m.exampleTranslation}</Text>

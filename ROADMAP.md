@@ -78,7 +78,7 @@
 - ✅ Glyph rendering — `lang` attributes and per-script font stacks (SPEC-080, SPEC-088)
 - ✅ Literary Chinese (`lzh`) — CEDICT definitions, HSK levels, modern-Chinese translation (SPEC-103)
 - ✅ Rare-Han codepoints via on-demand font subsets + chip fallback (SPEC-104)
-- ✅ Subs-search result rows render tokenized text — Chinese script preference (simp/trad) and phonetics now apply to every result row; display-only, so no dictionary popup, no saved-word highlight, no interlinear gloss (SPEC-114)
+- ✅ Subs-search result rows and the entry card's textbook example render tokenized L2 text — Chinese script preference (simp/trad) and phonetics now apply; result rows are display-only (no dictionary popup, no saved-word highlight, no interlinear gloss), textbook examples stay tappable (SPEC-114)
 
 ## Phase 5: Content Features
 

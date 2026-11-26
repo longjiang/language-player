@@ -12,6 +12,7 @@ import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { RareGlyphText } from '@/components/rare-glyph-text';
+import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
@@ -541,7 +542,16 @@ export function DictionaryEntryCard({
                 <span>{t('label.textbook_format', { material: m.material, book: m.location?.book ?? '', lesson: m.location?.lesson ?? '' })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
-                <p className="text-sm" lang={glyphLang}><RareGlyphText text={m.example} /></p>
+                /* SPEC-114: the textbook example is an L2 reading line — render it
+                   through TokenizedText so the learner's script preference
+                   (ADR-0019) and phonetics setting apply, and words are tappable
+                   for lookup (a stacked popup, like the popup's context sentence). */
+                <p className="text-sm">
+                  <TokenizedText
+                    text={m.example}
+                    l2Code={l2Code ?? l2.code}
+                  />
+                </p>
               )}
               {m.exampleTranslation && (
                 <p className="text-sm text-muted-foreground">{m.exampleTranslation}</p>
