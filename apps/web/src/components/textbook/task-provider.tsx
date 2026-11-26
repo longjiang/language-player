@@ -15,7 +15,7 @@ import {
   type PersistedTaskState,
   type Task,
 } from '@langplayer/textbooks';
-import { expandAcceptedVariants } from '@langplayer/textbooks';
+import { expandAcceptedVariants, normalisePersistedTaskState } from '@langplayer/textbooks';
 import { toTraditional } from '@/lib/chinese-script';
 import { log } from '@/lib/logger';
 
@@ -78,8 +78,10 @@ export function loadPersistedTask(taskId: string): PersistedTaskState | null {
   try {
     const raw = window.localStorage.getItem(TEXTBOOK_STORAGE_PREFIX + taskId);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as PersistedTaskState;
-    if (!parsed || typeof parsed !== 'object' || parsed.taskId !== taskId) return null;
+    // One migration point: legacy `attempts[]` state is collapsed here, so the
+    // store never sees the old shape (SPEC-111).
+    const parsed = normalisePersistedTaskState(JSON.parse(raw));
+    if (!parsed || parsed.taskId !== taskId) return null;
     return parsed;
   } catch (err) {
     log('[LP Web] Textbook: failed to read saved state for', taskId, err);

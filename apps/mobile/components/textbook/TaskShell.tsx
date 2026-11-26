@@ -108,15 +108,16 @@ export function TaskShell({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const nextTask = adjacentTasks(book, task.id).next;
   /**
-   * The latest un-voided attempt, as a primitive so it can be a store snapshot. A graded
-   * Submit, a self-check's Mark as complete, a read-only task's Mark as complete and a mock
-   * app's All Done! all append one, so this is "the task has been resolved" — which is what
-   * enables Next.
+   * The task's attempt, as a primitive so it can be a store snapshot. A graded Submit, a
+   * self-check's Mark as complete, a read-only task's Mark as complete and a mock app's
+   * All Done! all write it, so this is "the task has been resolved" — which is what enables
+   * Next. A recording-required task's completion additionally needs the take stored, which
+   * is the TOC/picker's business (SPEC-111), not Next's.
    */
   const getAttemptState = useCallback(() => {
-    const latest = [...ctx.store.getAttempts()].reverse().find((attempt) => !attempt.voidedAt);
-    if (!latest) return 'none';
-    return latest.result?.complete ? 'complete' : 'attempted';
+    const attempt = ctx.store.getAttempt();
+    if (!attempt) return 'none';
+    return attempt.result?.complete ? 'complete' : 'attempted';
   }, [ctx]);
   const attemptState = useSyncExternalStore(
     ctx.store.subscribe,

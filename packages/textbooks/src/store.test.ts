@@ -81,21 +81,25 @@ describe('TaskResponseStore', () => {
     expect(store.getAnsweredCount()).toBe(1);
   });
 
-  it('records attempts append-only and voids the previous one', () => {
+  it('keeps ONE attempt and replaces it on every submit', () => {
     const store = make();
     store.setValue('b2', '新');
     store.setValue('b3', '免费Wi-Fi');
-    store.submit();
+    const first = store.submit();
+    const firstAt = store.getAttempt()!.submittedAt;
     store.setValue('b3', '充电口');
-    store.submit();
+    const second = store.submit();
+    const secondAt = store.getAttempt()!.submittedAt;
 
-    const attempts = store.getAttempts();
-    expect(attempts).toHaveLength(2);
-    expect(attempts[0]!.voidedAt).toBeTypeOf('number');
-    expect(attempts[1]!.voidedAt).toBeUndefined();
-    // The superseded attempt keeps its own answers and result.
-    expect(attempts[0]!.result!.complete).toBe(true);
-    expect(attempts[1]!.result!.complete).toBe(false);
+    // The second submit replaces the first: there is no second row to inspect.
+    const attempt = store.getAttempt();
+    expect(attempt).not.toBeNull();
+    expect(attempt!.responses.b3).toBe('充电口');
+    expect(attempt!.result).toBe(second);
+    expect(secondAt).toBeGreaterThanOrEqual(firstAt);
+    // The earlier result object survives only through the caller's reference.
+    expect(first.complete).toBe(true);
+    expect(second.complete).toBe(false);
   });
 
   it('restores persisted responses', () => {
@@ -103,7 +107,7 @@ describe('TaskResponseStore', () => {
       taskId: task.id,
       contentVersion: 1,
       responses: { b2: '新', b3: '免费Wi-Fi' },
-      attempts: [],
+      attempt: null,
     };
     const store = make({ load: () => persisted });
     expect(store.getValue('b2')).toBe('新');
@@ -116,7 +120,7 @@ describe('TaskResponseStore', () => {
       taskId: task.id,
       contentVersion: 0,
       responses: { b2: '旧答案' },
-      attempts: [],
+      attempt: null,
     };
     const store = make({ load: () => stale });
     expect(store.getValue('b2')).toBe('');
@@ -130,7 +134,7 @@ describe('TaskResponseStore', () => {
     expect(save.mock.calls[0]![0].responses.b2).toBe('新');
     store.submit();
     expect(save).toHaveBeenCalledTimes(2);
-    expect(save.mock.calls[1]![0].attempts).toHaveLength(1);
+    expect(save.mock.calls[1]![0].attempt).not.toBeNull();
   });
 
   it('reset clears answers but keeps the attempt history', () => {
@@ -141,7 +145,7 @@ describe('TaskResponseStore', () => {
     expect(store.getValue('b2')).toBe('');
     expect(store.getValue('b1')).toBe('快');
     expect(store.getResult()).toBeNull();
-    expect(store.getAttempts()).toHaveLength(1);
+    expect(store.getAttempt()).not.toBeNull();
   });
 
   it('snapshots defensively (mutating the copy cannot corrupt state)', () => {
@@ -196,7 +200,7 @@ describe('TaskResponseStore — a given illustration slot', () => {
       taskId: slotTask.id,
       contentVersion: 1,
       responses: { b1: 'C' },
-      attempts: [],
+      attempt: null,
     };
     expect(slotStore({ load: () => persisted }).getValue('b1')).toBe('C');
 
@@ -260,7 +264,7 @@ describe('TaskResponseStore — a carried slot', () => {
       taskId: carriedTask.id,
       contentVersion: 1,
       responses: { b1: 'B', b2: 'A' },
-      attempts: [],
+      attempt: null,
     };
     expect(carriedStore({ load: () => persisted }).getValue('b2')).toBe('');
   });
@@ -304,7 +308,7 @@ describe('TaskResponseStore — a check-only task', () => {
       taskId: checkTask.id,
       contentVersion: 1,
       responses: { b1: '1' },
-      attempts: [],
+      attempt: null,
     };
     expect(checkStore({ load: () => persisted }).getValue('b1')).toBe('1');
     expect(checkStore({ load: () => persisted }).getValue('b2')).toBe('');
@@ -316,18 +320,20 @@ describe('TaskResponseStore — a check-only task', () => {
     expect(store.getResult()).toBeNull();
     expect(store.isSubmitted()).toBe(false);
 
-    const attempts = store.getAttempts();
-    expect(attempts).toHaveLength(1);
-    expect(attempts[0]!.result?.complete).toBe(true);
-    expect(attempts[0]!.result?.scoreableCount).toBe(0);
+    const attempt = store.getAttempt();
+    expect(attempt).not.toBeNull();
+    expect(attempt!.result?.complete).toBe(true);
+    expect(attempt!.result?.scoreableCount).toBe(0);
   });
 
   it('records completion once, however many times the last answer is re-checked', () => {
     const store = checkStore();
     store.recordChecked();
+    const first = store.getAttempt();
     store.recordChecked();
-    expect(store.getAttempts()).toHaveLength(1);
-    expect(store.getAttempts()[0]!.voidedAt).toBeUndefined();
+    // Idempotent: re-checking does not rewrite the record.
+    expect(store.getAttempt()).toEqual(first);
+    expect(store.getAttempt()!.result?.complete).toBe(true);
   });
 
   it('never scores a self-check answer', () => {

@@ -47,7 +47,7 @@ async function taskA2(): Promise<{ book: BookMeta; task: Task }> {
 function seedSavedAttempt(book: BookMeta, task: Task, responses: Record<string, string>) {
   window.localStorage.setItem(
     TEXTBOOK_STORAGE_PREFIX + task.id,
-    JSON.stringify({ taskId: task.id, contentVersion: book.contentVersion, responses, attempts: [] }),
+    JSON.stringify({ taskId: task.id, contentVersion: book.contentVersion, responses, attempt: null }),
   );
 }
 

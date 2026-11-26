@@ -147,8 +147,9 @@ export interface RecordStimulus {
 - `slotId` defaults to `'task'`. The same stimulus can hang off a table row or a
   block, matching how `audio` is already declared at four levels
   (`audioTracksIn` in `packages/textbooks/src/types.ts:713`) — `recordingSlotsIn(task)`
-  is the parallel helper, and the validator gains a rule that two `record` stimuli
-  in one task cannot share a `slotId`.
+  walks the **body** today (D ➐'s slot is task-wide; item-level slots are added by
+  extending that one walker when a task needs one). The validator rejects two `record`
+  stimuli in one task sharing a `slotId`.
 - **`required` decides whether the take gates completion.** A task that asks the
   student to produce speech (D ➐) is not complete until the take is **stored** —
   uploaded, not merely recorded on the device. Adding, removing or flipping `required`
@@ -665,7 +666,8 @@ build, recorder component, wipe parity. Requires a device build; not a web-only 
 - **Unit (shared)**: `normalisePersistedTaskState()` collapses a legacy array to its
   latest entry and drops `voidedAt`; `submit()` twice leaves exactly one attempt;
   server-state adoption respects content version and keeps the newer local value;
-  `recordingSlotsIn` finds slots at every level; validator rejects duplicate `slotId`
+  `recordingSlotsIn` finds body-level slots and applies the defaults; validator rejects
+  duplicate `slotId`
   and a `selfCheck` blank mixed with scoreable ones.
 - **Backend — text**: handlers are idempotent (same op twice → one row, same response); a
   re-submit replaces the row (still one row); an older `submitted_at` arriving late is

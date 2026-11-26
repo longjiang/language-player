@@ -10,7 +10,8 @@
 
 import { extractBlankMarkers } from '@langplayer/utils';
 import { answersForKeyIndex, answersForKeyLabel } from './answer-key';
-import { normalizeAnswer } from './grading';
+import { isBlankScoreable, normalizeAnswer } from './grading';
+import { recordingSlotsIn } from './recordings';
 import { assetKeysIn, inlineBankIds, pictureSetsIn, recordingsIn, tasksIn, textsIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
 
@@ -87,6 +88,22 @@ export function validateTask(task: Task, options?: ValidationOptions): Validatio
   const blanks = task.blanks ?? {};
   const banks = new Map((task.banks ?? []).map((b) => [b.id, b]));
   const pictureSets = pictureSetsIn(task);
+
+  // ── Recording slots (SPEC-111) ──
+  const slotIds = new Set<string>();
+  for (const slot of recordingSlotsIn(task)) {
+    if (slotIds.has(slot.slotId)) {
+      add('error', `Two record stimuli share the slot "${slot.slotId}" (${slot.where}).`);
+    }
+    slotIds.add(slot.slotId);
+  }
+  // A self-check question is answered in the head and a scoreable blank is graded;
+  // a task mixing them would either submit what it cannot grade or never complete.
+  const hasSelfCheck = Object.values(blanks).some((blank) => blank.kind === 'selfCheck');
+  const hasScoreable = Object.values(blanks).some(isBlankScoreable);
+  if (hasSelfCheck && hasScoreable) {
+    add('error', 'A task cannot mix selfCheck blanks with scoreable ones.');
+  }
 
   // ── Blanks ──
   for (const [key, blank] of Object.entries(blanks)) {

@@ -44,7 +44,7 @@ const buttons = () => [...document.querySelectorAll('button')] as HTMLButtonElem
 const saved = () =>
   JSON.parse(
     window.localStorage.getItem(TEXTBOOK_STORAGE_PREFIX + 'tblt-hsk4.u06.C.t3') ?? 'null',
-  ) as { attempts: Array<{ voidedAt?: number; result: { complete: boolean } }> } | null;
+  ) as { attempt: { result: { complete: boolean } } | null } | null;
 
 describe('a self-check question', () => {
   it('offers a Check answer control per question, with no input to fill in', async () => {
@@ -79,7 +79,7 @@ describe('a self-check question', () => {
     }
 
     // The reveals are responses, so they survive a reload…
-    expect(saved()?.attempts).toHaveLength(0);
+    expect(saved()?.attempt).toBeNull();
     const stored = JSON.parse(
       window.localStorage.getItem(TEXTBOOK_STORAGE_PREFIX + 'tblt-hsk4.u06.C.t3') ?? 'null',
     ) as { responses: Record<string, string> };
@@ -88,7 +88,7 @@ describe('a self-check question', () => {
     // …but completing the task is the explicit Mark as complete button's job, not the last
     // check's: a check-only task has no submit, and checking every answer is not an act the
     // student necessarily means as "done".
-    expect(saved()?.attempts).toHaveLength(0);
+    expect(saved()?.attempt).toBeNull();
   });
 
   it('clears a reveal when it is hidden again', async () => {

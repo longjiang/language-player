@@ -1,28 +1,34 @@
 /**
- * Cross-task progress (SPEC-095).
+ * Cross-task progress (SPEC-095, SPEC-111).
  *
- * Exercise state is per-task and local (ADR-0044), so nothing aggregates it: the
- * picker and the TOC had no way to say what a student had already attempted. This
- * derives that picture from the same persisted state the store writes, without
- * introducing a second store or any server record.
+ * Nothing aggregates state server-side: each saved task state is rolled up here,
+ * without introducing a second store.
+ *
+ * Completion has **two inputs** since ADR-0053 rev. 2: the task's attempt must be
+ * complete **and** every required recording slot must have a stored take. The
+ * second input is the file store's (SPEC-113), so it is passed in — this module
+ * never talks to a store or a network.
  *
  * Pure and platform-agnostic: each app loads the persisted states (localStorage is
- * synchronous, AsyncStorage is not) and passes them in.
+ * synchronous, AsyncStorage is not) and the live recording slots, and passes both in.
  */
 
 import { isBlankScoreable } from './grading';
+import { requiredRecordingSlotsIn } from './recordings';
 import type { Task } from './types';
 import type { PersistedTaskState } from './store';
 
 export interface TaskProgress {
   taskId: string;
-  /** The student has submitted at least once. */
+  /** The task has an attempt. */
   attempted: boolean;
-  /** The most recent un-voided attempt was fully correct. */
+  /** The attempt is complete and every required take is stored. */
   complete: boolean;
-  /** Correct / scoreable on the latest un-voided attempt. */
+  /** Correct / scoreable on the attempt. */
   correctCount: number;
   scoreableCount: number;
+  /** Required recording slots that have no stored take yet. */
+  missingRecordings: string[];
 }
 
 export interface LessonProgress {
@@ -49,50 +55,76 @@ export interface BookProgress {
   total: number;
 }
 
-/**
- * Summarise one task from its saved state.
- *
- * Attempts are append-only and a later one voids the earlier (ADR-0044), so the
- * latest un-voided attempt is the one that counts — a student who got it wrong and
- * then right has completed it.
- */
-export function taskProgress(task: Task, state: PersistedTaskState | null): TaskProgress {
-  const scoreable = Object.values(task.blanks ?? {}).filter(isBlankScoreable).length;
-  return progressForId(task.id, scoreable, state);
+/** What a task needs from the file store before it can be complete. */
+export interface ProgressOptions {
+  requiredRecordings?: readonly string[];
+  /** Slot ids that have a stored take. Absent means none. */
+  liveRecordings?: Iterable<string>;
 }
 
-/** The same summary when only the id is known — what the TOC has. */
+/**
+ * Summarise one task.
+ *
+ * `liveRecordings` is the set of this task's slots with a stored take; a task
+ * with a required slot and no take is `attempted` but not `complete`.
+ */
+export function taskProgress(
+  task: Task,
+  state: PersistedTaskState | null,
+  liveRecordings?: Iterable<string>,
+): TaskProgress {
+  const scoreable = Object.values(task.blanks ?? {}).filter(isBlankScoreable).length;
+  return progressForId(task.id, scoreable, state, {
+    requiredRecordings: requiredRecordingSlotsIn(task),
+    liveRecordings,
+  });
+}
+
+/** The same summary when only the id (and what the tree knows) is at hand. */
 export function progressForId(
   taskId: string,
   scoreableFallback: number,
   state: PersistedTaskState | null,
+  options: ProgressOptions = {},
 ): TaskProgress {
-  const live = (state?.attempts ?? []).filter((a) => !a.voidedAt);
-  const latest = live[live.length - 1];
+  const attempt = state?.attempt ?? null;
+  const live = new Set(options.liveRecordings ?? []);
+  const missing = (options.requiredRecordings ?? []).filter((slot) => !live.has(slot));
   return {
     taskId,
-    attempted: live.length > 0,
-    complete: Boolean(latest?.result?.complete),
-    correctCount: latest?.result?.correctCount ?? 0,
-    scoreableCount: latest?.result?.scoreableCount ?? scoreableFallback,
+    attempted: attempt !== null,
+    complete: Boolean(attempt?.result?.complete) && missing.length === 0,
+    correctCount: attempt?.result?.correctCount ?? 0,
+    scoreableCount: attempt?.result?.scoreableCount ?? scoreableFallback,
+    missingRecordings: missing,
   };
 }
 
 /**
- * The shape `bookProgress` needs: just ids, so both `BookMeta` and the TOC tree a
- * screen already holds can be rolled up without loading the content again.
+ * The shape `bookProgress` needs: ids plus the required slots the TOC tree carries,
+ * so both `BookMeta` and a screen's TOC can be rolled up without the bodies.
  */
 export interface ProgressTree {
   units: Array<{
     id: string;
-    lessons: Array<{ id: string; tasks: Array<{ id: string }> }>;
+    lessons: Array<{
+      id: string;
+      tasks: Array<{ id: string; requiredRecordings?: readonly string[] }>;
+    }>;
   }>;
 }
 
-/** Roll per-task progress up through the book's own hierarchy. */
+/**
+ * Roll per-task progress up through the book's own hierarchy.
+ *
+ * `liveByTask` maps a task id to the slots that have a stored take; a task absent
+ * from the map is treated as having none, so a required take can never be
+ * assumed present.
+ */
 export function bookProgress(
   book: ProgressTree,
   states: Map<string, PersistedTaskState | null>,
+  liveByTask?: Map<string, Iterable<string>>,
 ): BookProgress {
   const units: UnitProgress[] = [];
   let attempted = 0;
@@ -106,8 +138,10 @@ export function bookProgress(
       let lessonComplete = 0;
       const tasks: TaskProgress[] = [];
       for (const task of lesson.tasks) {
-        // The stored attempt carries its own totals, so the tree needs only ids.
-        const p = progressForId(task.id, 0, states.get(task.id) ?? null);
+        const p = progressForId(task.id, 0, states.get(task.id) ?? null, {
+          requiredRecordings: task.requiredRecordings,
+          liveRecordings: liveByTask?.get(task.id),
+        });
         tasks.push(p);
         if (p.attempted) lessonAttempted += 1;
         if (p.complete) lessonComplete += 1;
@@ -141,21 +175,33 @@ export interface ProgressSummary {
   total: number;
 }
 
+export interface SummaryOptions {
+  /** Required recording slots per task id (the picker knows the book it is showing). */
+  requiredByTask?: Map<string, readonly string[]>;
+  /** Stored-take slots per task id. */
+  liveByTask?: Map<string, Iterable<string>>;
+}
+
 /**
  * Totals across a set of saved states, when the task list is not at hand.
  *
  * The picker renders before any task is opened, so it has the student's saved states
  * and the book's task count but not the book's tree. Kept here rather than in the app
- * so the "latest un-voided attempt counts" rule lives in one place.
+ * so the completion rule lives in one place.
  */
 export function summarizeProgress(
   states: Iterable<PersistedTaskState | null>,
   total: number,
+  options: SummaryOptions = {},
 ): ProgressSummary {
   let attempted = 0;
   let complete = 0;
   for (const state of states) {
-    const p = progressForId('', 0, state);
+    const taskId = state?.taskId ?? '';
+    const p = progressForId(taskId, 0, state, {
+      requiredRecordings: options.requiredByTask?.get(taskId),
+      liveRecordings: options.liveByTask?.get(taskId),
+    });
     if (p.attempted) attempted += 1;
     if (p.complete) complete += 1;
   }

@@ -11,12 +11,15 @@
  *     device-local only, so persistence is an injected adapter rather than a
  *     network call, and the owning app supplies localStorage / AsyncStorage.
  *
- * Attempts are recorded as an append-only log with `voidedAt` rather than
- * mutating a single record, mirroring `public.user_srs_review_log`, so
- * "try again" is lossless.
+ * A task holds ONE attempt (ADR-0053 rev. 2). Submitting replaces it rather than
+ * appending to a log: the product reads a single current result, and an
+ * unbounded log of full response snapshots was growth nothing consumed. The
+ * attempt is still a snapshot — grading happens here, so it cannot be
+ * recomputed later.
  */
 
 import { gradeTask, isBlankScoreable } from './grading';
+import { normalisePersistedTaskState } from './persisted-state';
 import type { BlankSpec, Task, TaskResult } from './types';
 
 /**
@@ -30,17 +33,14 @@ function isEditableGiven(blank: BlankSpec): boolean {
   return blank.kind === 'given' && Boolean(blank.optionSet);
 }
 
-/** A single recorded attempt. Append-only; re-answering voids the previous one. */
+/** A single recorded attempt: a snapshot taken at submit. Replaced, never appended. */
 export interface AttemptRecord {
-  id: string;
   taskId: string;
-  /** Content version this attempt was made against (ADR-0044). */
+  /** Content version this attempt was made against (ADR-0053). */
   contentVersion: number;
   responses: Record<string, string>;
   result: TaskResult | null;
   submittedAt: number;
-  /** Set when a later attempt supersedes this one. */
-  voidedAt?: number;
 }
 
 /** What gets persisted to device storage. */
@@ -48,7 +48,7 @@ export interface PersistedTaskState {
   taskId: string;
   contentVersion: number;
   responses: Record<string, string>;
-  attempts: AttemptRecord[];
+  attempt: AttemptRecord | null;
 }
 
 /** Storage adapter supplied by the app (localStorage / AsyncStorage). */
@@ -95,23 +95,25 @@ export class TaskResponseStore {
   private responses: Record<string, string>;
   /** Invalidation cache for getResponsesSnapshot. */
   private responsesSnapshot: Record<string, string> | null = null;
-  private attempts: AttemptRecord[] = [];
+  private attempt: AttemptRecord | null = null;
   private result: TaskResult | null = null;
   private submitted = false;
   private listeners = new Set<() => void>();
   private save?: (state: PersistedTaskState) => void;
-  private attemptSeq = 0;
 
   constructor(options: TaskStoreOptions) {
     this.task = options.task;
     this.contentVersion = options.contentVersion;
 
-    const loaded = options.load?.() ?? null;
+    // Normalise here as well as in the adapters: state saved before the shape
+    // changed still carries `attempts[]`, and a legacy array must never reach the
+    // store's reads.
+    const loaded = normalisePersistedTaskState(options.load?.() ?? null);
     // A response saved against different content is stale: the task was
     // re-authored, so the answers may no longer line up (ADR-0044).
     const usable = loaded && loaded.contentVersion === this.contentVersion ? loaded : null;
     this.responses = mutableResponses(this.task, usable?.responses);
-    this.attempts = usable?.attempts ?? [];
+    this.attempt = usable?.attempt ?? null;
     this.save = options.save;
   }
 
@@ -151,7 +153,9 @@ export class TaskResponseStore {
     return this.responsesSnapshot;
   };
 
-  getAttempts = (): AttemptRecord[] => [...this.attempts];
+  /** The task's attempt, or null. A copy: callers cannot mutate the store's. */
+  getAttempt = (): AttemptRecord | null =>
+    this.attempt ? { ...this.attempt, responses: { ...this.attempt.responses } } : null;
 
   /** Count of blanks the student has answered (excluding `given`). */
   getAnsweredCount = (): number =>
@@ -187,18 +191,15 @@ export class TaskResponseStore {
     this.result = result;
     this.submitted = true;
 
-    // Void the previous attempt rather than deleting it (append-only log).
-    const now = Date.now();
-    for (const attempt of this.attempts) if (!attempt.voidedAt) attempt.voidedAt = now;
-    this.attemptSeq += 1;
-    this.attempts.push({
-      id: `${this.task.id}#${this.attemptSeq}`,
+    // Replace the row: one attempt per task (ADR-0053 rev. 2). The snapshot is
+    // taken because grading happens here and cannot be recomputed later.
+    this.attempt = {
       taskId: this.task.id,
       contentVersion: this.contentVersion,
       responses: { ...this.responses },
       result,
-      submittedAt: now,
-    });
+      submittedAt: Date.now(),
+    };
 
     this.persist();
     this.emit();
@@ -211,21 +212,17 @@ export class TaskResponseStore {
    * A task whose questions are all `selfCheck` has nothing to submit: the student answers in
    * their head and reveals the model answer. A graded result is `complete` only when at least
    * one blank is scoreable and all of them are right, so such a task could never be marked
-   * complete — this appends the same append-only attempt, carrying `complete: true` and no
-   * blanks. The store's `submitted`/`result` are deliberately left alone: there is nothing to
-   * report and no result banner.
+   * complete — this writes the task's attempt, carrying `complete: true` and no blanks. The
+   * store's `submitted`/`result` are deliberately left alone: there is nothing to report and
+   * no result banner.
    *
-   * Idempotent: once the latest un-voided attempt is a completion, re-checking does not append
-   * another (hiding and re-showing an answer must not multiply the history).
+   * Idempotent: once the attempt is a completion, re-checking leaves it alone (hiding and
+   * re-showing an answer must not rewrite the record). The UI only offers this control when
+   * the task has nothing to grade, so replacing the result cannot discard a real grade.
    */
   recordChecked = (): void => {
-    const latest = [...this.attempts].reverse().find((attempt) => !attempt.voidedAt);
-    if (latest?.result?.complete) return;
-    const now = Date.now();
-    for (const attempt of this.attempts) if (!attempt.voidedAt) attempt.voidedAt = now;
-    this.attemptSeq += 1;
-    this.attempts.push({
-      id: `${this.task.id}#${this.attemptSeq}`,
+    if (this.attempt?.result?.complete) return;
+    this.attempt = {
       taskId: this.task.id,
       contentVersion: this.contentVersion,
       responses: { ...this.responses },
@@ -236,13 +233,13 @@ export class TaskResponseStore {
         scoreableCount: 0,
         complete: true,
       },
-      submittedAt: now,
-    });
+      submittedAt: Date.now(),
+    };
     this.persist();
     this.emit();
   };
 
-  /** Clear responses and the current verdict, keeping the attempt history. */
+  /** Clear responses and the current verdict. The attempt stays: it happened. */
   reset = (): void => {
     this.responses = mutableResponses(this.task, null);
     this.result = null;
@@ -255,7 +252,7 @@ export class TaskResponseStore {
     taskId: this.task.id,
     contentVersion: this.contentVersion,
     responses: { ...this.responses },
-    attempts: this.attempts.map((a) => ({ ...a })),
+    attempt: this.attempt ? { ...this.attempt, responses: { ...this.attempt.responses } } : null,
   });
 
   private persist(): void {

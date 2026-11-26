@@ -31,7 +31,7 @@ function seedTask5(responses: Record<string, string>) {
       taskId: 'tblt-hsk4.u06.B.t5',
       contentVersion: 3,
       responses,
-      attempts: [],
+      attempt: null,
     }),
   );
 }

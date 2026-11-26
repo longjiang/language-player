@@ -39,11 +39,11 @@ const buttons = () => [...document.querySelectorAll('button')] as HTMLButtonElem
 const labels = () => buttons().map((b) => b.textContent ?? '').filter(Boolean);
 const button = (label: string) => buttons().find((b) => b.textContent === label);
 
-/** The attempts the task's own save slot holds, in order. */
-const savedAttempts = (taskId: string) =>
+/** The task's attempt in its own save slot (one per task, SPEC-111). */
+const savedAttempt = (taskId: string) =>
   (JSON.parse(window.localStorage.getItem(TEXTBOOK_STORAGE_PREFIX + taskId) ?? 'null') as
-    | { attempts: Array<{ voidedAt?: number; result: { complete: boolean } }> }
-    | null)?.attempts ?? [];
+    | { attempt: { result: { complete: boolean } } | null }
+    | null)?.attempt ?? null;
 
 async function renderTask(taskId: string): Promise<{ book: BookMeta; task: Task }> {
   const book = await loadBook('tblt-hsk4');
@@ -69,7 +69,7 @@ describe('a read-only task’s controls', () => {
 
     expect(labels()).toEqual(['action.mark_complete', 'action.next']);
     expect(button('action.next')!.disabled).toBe(true);
-    expect(savedAttempts('tblt-hsk4.u06.D.t4')).toHaveLength(0);
+    expect(savedAttempt('tblt-hsk4.u06.D.t4')).toBeNull();
   });
 
   it('records one complete attempt, turns the button into Completed, and enables Next', async () => {
@@ -83,9 +83,7 @@ describe('a read-only task’s controls', () => {
     expect(button('label.completed')!.disabled).toBe(true);
     expect(button('action.next')!.disabled).toBe(false);
 
-    const attempts = savedAttempts('tblt-hsk4.u06.D.t4');
-    expect(attempts.filter((a) => !a.voidedAt)).toHaveLength(1);
-    expect(attempts.filter((a) => !a.voidedAt)[0]!.result.complete).toBe(true);
+    expect(savedAttempt('tblt-hsk4.u06.D.t4')?.result.complete).toBe(true);
     // Nothing was submitted, so the task reports no result banner — there is no score.
     expect(document.querySelector('[role="status"]')).toBeNull();
   });
@@ -100,7 +98,7 @@ describe('a read-only task’s controls', () => {
       button('label.completed')!.click();
     });
 
-    expect(savedAttempts('tblt-hsk4.u06.D.t4').filter((a) => !a.voidedAt)).toHaveLength(1);
+    expect(savedAttempt('tblt-hsk4.u06.D.t4')).not.toBeNull();
   });
 
   it('moves to the next task once completed', async () => {

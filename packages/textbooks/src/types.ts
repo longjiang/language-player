@@ -468,8 +468,33 @@ export interface AudioStimulus {
   tracks: AudioTrack[];
 }
 
+/**
+ * A slot the student records into (SPEC-111). Never graded.
+ *
+ * A recording is not a blank: it has no string answer and belongs to a *slot*,
+ * so it is a stimulus rather than an answer kind. `required` (default true) is
+ * what gates completion: a task that asks the student to produce speech is not
+ * complete until the take is stored, while a shadowing exercise with no `record`
+ * stimulus still completes from its own control.
+ */
+export interface RecordStimulus {
+  kind: 'record';
+  /** Stable within the task: 'task' for the task-wide slot, or an item/blank id. */
+  slotId?: string;
+  /** Prompt shown above the control, in L2 (tokenized like other instructions). */
+  prompt?: string;
+  /**
+   * The recorder's stop limit, in seconds. Defaults to `RECORDING_MAX_SEC`; a
+   * task may lower it. Client-enforced only — the store bounds bytes, not time.
+   */
+  maxDurationSec?: number;
+  /** Whether a stored take is required before the task counts as complete. */
+  required?: boolean;
+}
+
 export type Stimulus =
   | AudioStimulus
+  | RecordStimulus
   | RecallStimulus
   | PassageStimulus
   | DialogueStimulus

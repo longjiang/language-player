@@ -75,6 +75,7 @@ export type {
   NumberedBlanksStimulus,
   PassageStimulus,
   PictureOption,
+  RecordStimulus,
   PictureSetStimulus,
   Stimulus,
   Task,
@@ -104,6 +105,20 @@ export type { AnswerKeyItem } from './answer-key';
 
 export { assertValid, validateBook, validateLesson, validateTask } from './schema';
 export type { IssueLevel, ValidationIssue, ValidationOptions } from './schema';
+
+export { normalisePersistedTaskState } from './persisted-state';
+
+export {
+  RECORDING_BYTES_CAP,
+  RECORDING_CHUNK_BYTES,
+  RECORDING_MAX_SEC,
+  chunkCount,
+  formatDuration,
+  hasRecording,
+  recordingSlotsIn,
+  requiredRecordingSlotsIn,
+} from './recordings';
+export type { RecordingSlot } from './recordings';
 
 export { BlankSelectionStore, TaskResponseStore } from './store';
 export type {

@@ -10,6 +10,7 @@
  * the shared barrel, which is exactly the shape textbook content must avoid.
  */
 
+import { requiredRecordingSlotsIn } from './recordings';
 import { tasksIn } from './types';
 import type { BookMeta, LessonMeta, Task } from './types';
 
@@ -103,6 +104,8 @@ export interface TocTask {
   /** Display glyph, e.g. ➋. */
   number: string;
   type?: Task['type'];
+  /** Slots that must have a stored take before the task is complete (SPEC-111). */
+  requiredRecordings: string[];
 }
 
 export interface TocLesson {
@@ -148,7 +151,12 @@ export function buildTocTree(book: BookMeta): TocTree {
         letter: lesson.letter,
         title: lesson.title,
         canDo: lesson.canDo,
-        tasks: lesson.tasks.map((task) => ({ id: task.id, number: task.number, type: task.type })),
+        tasks: lesson.tasks.map((task) => ({
+          id: task.id,
+          number: task.number,
+          type: task.type,
+          requiredRecordings: requiredRecordingSlotsIn(task),
+        })),
       })),
     })),
   };
