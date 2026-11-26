@@ -108,6 +108,13 @@ export type { IssueLevel, ValidationIssue, ValidationOptions } from './schema';
 
 export { normalisePersistedTaskState } from './persisted-state';
 export { relatedTaskIds } from './related';
+export {
+  collectTaskOps,
+  emptyTaskState,
+  liveRecordingSlotsByTask,
+  remoteStateForTask,
+} from './task-sync';
+export type { TaskStateResponse, TaskSyncOpDraft } from './task-sync';
 
 export {
   RECORDING_BYTES_CAP,

@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import type { PersistedTaskState } from '@langplayer/textbooks';
+import type { PersistedTaskState } from './store';
 import {
   collectTaskOps,
   emptyTaskState,
   liveRecordingSlotsByTask,
   remoteStateForTask,
   type TaskStateResponse,
-} from './task-state-adoption';
+} from './task-sync';
 
 const TASK = 'tblt-hsk4.u06.D.t7';
 const OTHER = 'tblt-hsk4.u06.D.t6';

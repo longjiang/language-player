@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { relatedTaskIds, type PersistedTaskState } from '@langplayer/textbooks';
-import { log } from '@/lib/logger';
-import { fetchTaskState, pushTaskOps } from '@/lib/task-sync-client';
 import {
   collectTaskOps,
+  relatedTaskIds,
   remoteStateForTask,
+  type PersistedTaskState,
   type TaskStateResponse,
-} from '@/lib/task-state-adoption';
+} from '@langplayer/textbooks';
+import { log } from '@/lib/logger';
+import { fetchTaskState, pushTaskOps } from '@/lib/task-sync-client';
 import {
   enqueueTaskSyncOps,
   flushTaskSyncOps,

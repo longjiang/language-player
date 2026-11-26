@@ -11,6 +11,7 @@ import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TextbookTaskProvider, loadPersistedTask } from './task-provider';
 import { TaskShell, TaskStimulus } from './TaskShell';
+import { TaskSyncBridge } from './TaskSyncBridge';
 
 /**
  * Loads one task for the given book and renders it.
@@ -86,6 +87,7 @@ export function TaskView({
 
   return (
     <TextbookTaskProvider task={task} book={book} initialState={initialState}>
+      <TaskSyncBridge />
       <TaskShell>
         <TaskStimulus />
       </TaskShell>

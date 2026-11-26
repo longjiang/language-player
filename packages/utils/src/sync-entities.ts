@@ -58,6 +58,19 @@ const SYNC_ENTITY_DEFS: Record<string, SyncEntityDef> = {
     schema: { videoId: 'number' },
     coalesce: (_prev, next) => next,
   },
+  // SPEC-111 — textbook task state. One op per blank, and one per task attempt.
+  // `result` is optional (a check-only completion has none), so it is absent from
+  // the whole-row schema and passes through as a partial field.
+  task_response: {
+    entity: 'task_response',
+    schema: { taskId: 'string', blankId: 'string', contentVersion: 'number', value: 'string' },
+    coalesce: (_prev, next) => next,
+  },
+  task_attempt: {
+    entity: 'task_attempt',
+    schema: { taskId: 'string', contentVersion: 'number', responses: 'object', submittedAt: 'number' },
+    coalesce: (_prev, next) => next,
+  },
 };
 
 /** Safe defaults for optional schema fields (used to heal legacy payloads). */

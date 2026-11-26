@@ -8,10 +8,12 @@
  * Offline Mode toggle so the next login isn't blocked by the network gate.
  *
  * Deliberately KEEPS: language preference, offline dictionaries, tokenizer
- * packs, tokenizer caches, and the study-mode preference. Textbook exercise
- * state (`lp:textbook:*`) is also kept: it is device-local with no server copy,
- * so wiping it would destroy the returning user's answers with nothing to
- * restore them from.
+ * packs, tokenizer caches, and the study-mode preference.
+ *
+ * Textbook exercise state (`lp:textbook:*`) is NOT kept since SPEC-111: the
+ * answers have a server copy, so keeping them would show the previous user's
+ * drafts to the next account on a shared device. The device copy that matters
+ * to a signed-out student is never wiped by a logout it did not have.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -50,6 +52,7 @@ const ASYNC_PREFIXES = [
   'note_',                     // note body cache per id
   'reader_anchor_note_',       // notes reader page anchors
   'reader_anchor_url_',        // web reader page anchors
+  'lp:textbook:',              // task responses, attempts and timestamps (SPEC-111)
   'lp-ask-ai:',                // Ask-AI transcripts (keyed by video/book/image/note)
 ];
 

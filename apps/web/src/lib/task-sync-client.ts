@@ -7,7 +7,7 @@
  */
 
 import { PYTHON_API_URL } from '@/lib/api-url';
-import type { TaskStateResponse } from '@/lib/task-state-adoption';
+import type { TaskStateResponse } from '@langplayer/textbooks';
 import type { TaskSyncOp } from '@/lib/task-sync-queue';
 
 export type FetchTaskStateResult =
