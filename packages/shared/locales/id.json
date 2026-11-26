@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Hapus rekaman",
+        "play_my_recording": "Putar rekamanku",
         "record": "Rekam",
         "recording_mic_unavailable": "Peramban ini tidak dapat merekam audio.",
         "recording_permission_denied": "Akses mikrofon diperlukan untuk merekam tugas ini.",

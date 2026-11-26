@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "ลบเสียงที่อัด",
+        "play_my_recording": "เล่นเสียงที่ฉันอัด",
         "record": "อัดเสียง",
         "recording_mic_unavailable": "เบราว์เซอร์นี้บันทึกเสียงไม่ได้",
         "recording_permission_denied": "ต้องอนุญาตใช้ไมโครโฟนเพื่ออัดงานนี้",

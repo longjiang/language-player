@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Elimina registrazione",
+        "play_my_recording": "Riproduci la mia registrazione",
         "record": "Registra",
         "recording_mic_unavailable": "Questo browser non può registrare audio.",
         "recording_permission_denied": "Per registrare questa attività serve l'accesso al microfono.",

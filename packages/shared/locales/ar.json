@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "حذف التسجيل",
+        "play_my_recording": "تشغيل تسجيلي",
         "record": "تسجيل",
         "recording_mic_unavailable": "لا يستطيع هذا المتصفح تسجيل الصوت.",
         "recording_permission_denied": "يلزم السماح باستخدام الميكروفون لتسجيل هذه المهمة.",

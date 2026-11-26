@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Удалить запись",
+        "play_my_recording": "Прослушать мою запись",
         "record": "Записать",
         "recording_mic_unavailable": "Этот браузер не умеет записывать звук.",
         "recording_permission_denied": "Для записи этого задания нужен доступ к микрофону.",

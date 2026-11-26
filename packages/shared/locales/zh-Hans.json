@@ -1751,6 +1751,7 @@
     },
     "task": {
         "delete_recording": "删除录音",
+        "play_my_recording": "播放我的录音",
         "record": "录音",
         "recording_mic_unavailable": "此浏览器无法录制音频。",
         "recording_permission_denied": "需要麦克风权限才能录制此任务。",

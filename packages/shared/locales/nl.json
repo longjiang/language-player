@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Opname verwijderen",
+        "play_my_recording": "Mijn opname afspelen",
         "record": "Opnemen",
         "recording_mic_unavailable": "Deze browser kan geen audio opnemen.",
         "recording_permission_denied": "Microfoontoegang is nodig om deze taak op te nemen.",

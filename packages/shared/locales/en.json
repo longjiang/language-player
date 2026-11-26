@@ -1821,6 +1821,7 @@
     },
     "task": {
         "delete_recording": "Delete recording",
+        "play_my_recording": "Play my recording",
         "record": "Record",
         "recording_mic_unavailable": "This browser cannot record audio.",
         "recording_permission_denied": "Microphone access is needed to record this task.",

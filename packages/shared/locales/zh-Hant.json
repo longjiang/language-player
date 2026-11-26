@@ -1726,6 +1726,7 @@
     },
     "task": {
         "delete_recording": "刪除錄音",
+        "play_my_recording": "播放我的錄音",
         "record": "錄音",
         "recording_mic_unavailable": "此瀏覽器無法錄製音訊。",
         "recording_permission_denied": "需要麥克風權限才能錄製此任務。",

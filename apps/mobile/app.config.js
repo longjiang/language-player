@@ -89,9 +89,9 @@ module.exports = {
       'expo-splash-screen',
       'expo-web-browser',
       // Image reader (SPEC-090): "Select images" offers camera, photo library
-      // and files. Photos only — no video capture — so the microphone
-      // permission is switched off instead of being requested (it would
-      // otherwise appear in the iOS usage strings and the Play privacy report).
+      // and files. Photos only — no video capture — so the picker's microphone
+      // permission stays off; the microphone is requested by expo-audio below,
+      // which is the only feature that records (SPEC-111).
       [
         'expo-image-picker',
         {
@@ -100,6 +100,15 @@ module.exports = {
           cameraPermission:
             'Language Player uses the camera so you can photograph a page and read its text.',
           microphonePermission: false,
+        },
+      ],
+      // Task recordings (SPEC-111): speaking tasks record the student's answer.
+      // The plugin adds NSMicrophoneUsageDescription and RECORD_AUDIO.
+      [
+        'expo-audio',
+        {
+          microphonePermission:
+            'Language Player records your spoken answer for the current speaking task.',
         },
       ],
     ],

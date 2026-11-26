@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Supprimer l'enregistrement",
+        "play_my_recording": "Écouter mon enregistrement",
         "record": "Enregistrer",
         "recording_mic_unavailable": "Ce navigateur ne peut pas enregistrer d'audio.",
         "recording_permission_denied": "L'accès au micro est nécessaire pour enregistrer cette tâche.",

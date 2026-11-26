@@ -24,6 +24,7 @@ import { AudioPlayer } from './AudioPlayer';
 import { TaskAudioProvider } from './TaskAudio';
 import { TranscriptDialogProvider } from './TranscriptDialog';
 import { RecallCard } from './RecallCard';
+import { RecordField } from './RecordField';
 import { PictureSet } from './PictureSet';
 import { DataTable } from './DataTable';
 import { OrderList } from './OrderList';
@@ -334,6 +335,8 @@ export function TaskStimulus() {
           }
           case 'recall':
             return <RecallCard key={i} stimulus={stimulus} />;
+          case 'record':
+            return <RecordField key={i} stimulus={stimulus} />;
           case 'audio':
             return (
               <View key={i} className="gap-2">

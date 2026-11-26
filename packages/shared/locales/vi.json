@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Xóa bản ghi",
+        "play_my_recording": "Phát bản ghi của tôi",
         "record": "Ghi âm",
         "recording_mic_unavailable": "Trình duyệt này không thể ghi âm.",
         "recording_permission_denied": "Cần quyền truy cập micrô để ghi âm bài tập này.",

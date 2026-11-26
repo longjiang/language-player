@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 import {
   bookProgress,
+  liveRecordingSlotsByTask,
   type BookProgress,
   type LessonProgress,
   type TaskProgress,
@@ -12,6 +13,8 @@ import { router } from 'expo-router';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { mobileTaskHref } from '@/lib/textbook-routes';
 import { useT } from '@/hooks/use-t';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchTaskState } from '@/lib/task-sync-client';
 import { loadPersistedTask } from './task-provider';
 import { TaskTypeIcon } from './TaskTypeIcon';
 
@@ -31,9 +34,12 @@ interface TextbookTocProps {
  */
 export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
   const t = useT();
-  // Progress comes from the same local state the tasks write (ADR-0044). Recomputed
-  // when the route changes — the screen remounts on navigation, so a task the student
-  // just finished shows its tick when they come back.
+  const { token } = useAuth();
+  // Progress comes from the same local state the tasks write (ADR-0044), plus the
+  // server's live recording slots: a task that requires a take is only complete
+  // once the file store holds it (SPEC-111). Recomputed when the route changes —
+  // the screen remounts on navigation, so a task the student just finished shows
+  // its tick when they come back.
   const [progress, setProgress] = useState<BookProgress | null>(null);
 
   useEffect(() => {
@@ -43,13 +49,27 @@ export function TextbookToc({ tree, currentTaskId }: TextbookTocProps) {
       const entries = await Promise.all(
         tasks.map(async (task) => [task.id, await loadPersistedTask(task.id)] as const),
       );
-      if (!cancelled) setProgress(bookProgress(tree, new Map(entries)));
+      const states = new Map(entries);
+      if (!cancelled) setProgress(bookProgress(tree, states));
+      if (!token) return;
+      const liveByTask = new Map<string, Set<string>>();
+      for (let index = 0; index < tasks.length; index += 20) {
+        const result = await fetchTaskState(
+          tasks.slice(index, index + 20).map((task) => task.id),
+          token,
+        );
+        if (!result.ok) continue;
+        for (const [taskId, slots] of liveRecordingSlotsByTask(result.state)) {
+          liveByTask.set(taskId, slots);
+        }
+      }
+      if (!cancelled) setProgress(bookProgress(tree, states, liveByTask));
     };
     void load();
     return () => {
       cancelled = true;
     };
-  }, [tree, currentTaskId]);
+  }, [tree, currentTaskId, token]);
 
   const status = useMemo(() => {
     const lessons = new Map<string, LessonProgress>();

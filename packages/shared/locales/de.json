@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Aufnahme löschen",
+        "play_my_recording": "Meine Aufnahme abspielen",
         "record": "Aufnehmen",
         "recording_mic_unavailable": "Dieser Browser kann kein Audio aufnehmen.",
         "recording_permission_denied": "Für diese Aufgabe ist Mikrofonzugriff nötig.",

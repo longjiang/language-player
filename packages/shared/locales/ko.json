@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "녹음 삭제",
+        "play_my_recording": "내 녹음 재생",
         "record": "녹음",
         "recording_mic_unavailable": "이 브라우저는 오디오를 녹음할 수 없습니다.",
         "recording_permission_denied": "이 과제를 녹음하려면 마이크 접근이 필요합니다.",

@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Kaydı sil",
+        "play_my_recording": "Kaydımı çal",
         "record": "Kaydet",
         "recording_mic_unavailable": "Bu tarayıcı ses kaydedemiyor.",
         "recording_permission_denied": "Bu görevi kaydetmek için mikrofon erişimi gerekir.",

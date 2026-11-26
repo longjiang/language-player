@@ -31,6 +31,7 @@
     "arabic-stem": "^0.0.12",
     "clsx": "^2.1.1",
     "expo": "~57.0.8",
+    "expo-audio": "~57.0.3",
     "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.6",
     "expo-document-picker": "^57.0.1",

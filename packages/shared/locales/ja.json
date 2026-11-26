@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "録音を削除",
+        "play_my_recording": "自分の録音を再生",
         "record": "録音",
         "recording_mic_unavailable": "このブラウザは音声を録音できません。",
         "recording_permission_denied": "このタスクを録音するにはマイクへのアクセスが必要です。",

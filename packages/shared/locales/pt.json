@@ -1773,6 +1773,7 @@
     },
     "task": {
         "delete_recording": "Eliminar gravação",
+        "play_my_recording": "Reproduzir a minha gravação",
         "record": "Gravar",
         "recording_mic_unavailable": "Este navegador não consegue gravar áudio.",
         "recording_permission_denied": "É necessário acesso ao microfone para gravar esta tarefa.",
