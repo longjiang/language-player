@@ -80,7 +80,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 61 | 35db1b6b | 2026-09-17 | 3.6.2 — iOS TestFlight (b24, consumed) | — |
 | 62 | 102a7c1d | 2026-09-22 | 3.7.0 — iOS TestFlight (b25, consumed) · iOS App Store (b25, in review since 2026-09-25; releaseType AFTER_APPROVAL) | — |
 | 63 | d6f93e7a | 2026-10-01 | 3.7.1 — iOS TestFlight (b26, consumed) | — |
-| 64 | cb1a3618 | 2026-10-01 | — | dev 41 (Debug; deleted; lp-dev-41-ios-device-cb1a3618e1d6.zip; 701a965cc793cc4091e580f245574b92036c82a6336e9916afd96f422f7fc596) |
+| 64 | cb1a3618 | 2026-10-01 | — | dev 41 (Debug; deleted; lp-dev-41-ios-device-cb1a3618e1d6.zip; 701a965cc793cc4091e580f245574b92036c82a6336e9916afd96f422f7fc596) — broken: crashed at launch, `dyld: Library not loaded: @rpath/React.framework/React` |
 | 65 | f2a134e1 | 2026-10-01 | — | dev 42 (Debug; archived; lp-dev-42-ios-device-f2a134e1ff99.zip; 5d6120a94189fd2e26f33d171e4a0ef17c24a5ea75daf483b6a453ab158cbccd) |
 | 66 | 1af62494 | 2026-10-01 | 3.7.2 — iOS TestFlight (b27, consumed) | — |
 | 67 | c44aafd2 | 2026-10-06 | 3.7.3 — iOS TestFlight (b28, consumed) · iOS App Store (b28, submitted for review 2026-10-26, review submission `b61afc68`; releaseType AFTER_APPROVAL) | — |

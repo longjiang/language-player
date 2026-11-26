@@ -568,11 +568,30 @@ install pods. So adding a dependency with native code (ADR-0047 added
 or the JS import fails at runtime with a missing-native-module error even though
 the package is installed:
 
+Use a Ruby **2.7 or newer**. The system Ruby (2.6.10) and the RVM 2.6.3 gem set are
+too old: CocoaPods 1.17 calls `Array#filter_map` inside Expo's autolinking scripts
+and dies with `undefined method 'filter_map'`, and the RVM binaries are x86_64 under
+Rosetta (`pod install` warns and can mix architectures into the ffi extension). This
+machine builds pods with Homebrew Ruby and a workspace-local gem home:
+
 ```bash
-cd apps/mobile/ios
-pod install                      # if the RVM nkf gem fails on Apple silicon:
-/usr/bin/ruby -S pod install     # ... use the system Ruby instead
+brew install ruby
+cd apps/mobile
+export GEM_HOME=/Users/longjiang/Projects/language-player/tmp/gems
+export GEM_PATH=$GEM_HOME
+export PATH=$GEM_HOME/bin:/opt/homebrew/opt/ruby/bin:$PATH
+gem install cocoapods --no-document
+pod install --project-directory=ios
 ```
+
+`npx expo prebuild --platform ios` **deletes and regenerates `ios/`** (it prints
+"Clearing ios"), so pods must be reinstalled after any prebuild — including one run
+just to apply a new config plugin. Android needs no pods, but a dev APK build needs
+the SDK and JDK 17; on this machine `ANDROID_HOME=/opt/homebrew/share/android-commandlinetools`
+and `JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home`, with
+`platform-tools`, `platforms;android-36`, `build-tools;36.0.0`, `ndk;27.1.12297006`
+and `cmake;3.22.1` installed via `sdkmanager`, plus `android/local.properties`
+pointing at the SDK root.
 
 Then build as usual. Android needs no equivalent step (Gradle autolinking picks
 the module up), and a tree that does not yet contain native changes needs

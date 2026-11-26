@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-111
 - **Feature**: Server-side storage and cross-device sync for a student's textbook task data — responses, attempts, completion — and in-app capture of the student's own audio for speaking tasks, stored through the user file store
-- **Status**: in progress — Phases 0–2 implemented and verified (backend + web); Phase 3 (mobile capture) needs `expo-audio` and a new development build
+- **Status**: implemented — Phases 0–3 shipped (backend, web, mobile capture); verified end to end except the checks that need a real device (take sizes, background recording, on-device recording)
 - **Created**: 2026-11-24
 - **ROADMAP Phase**: Phase 5 (Content Features)
 - **Supersedes (in scope only)**: this spec replaces two statements in [SPEC-095](095-interactive-textbook.md) — the Non-Goal "Exercise state is local only" and the resolved decision "Attempt recording scope". The architectural decision behind the change is [ADR-0053](../adr/0053-task-data-sync-and-user-files.md) (revisions 1–4), which supersedes [ADR-0044](../adr/0044-textbook-exercise-state-local-only.md) decisions 2 and 3
@@ -117,16 +117,21 @@ Decided, not deferred:
 | Mobile sync | the same diff through `sync.db`/`outbox` | `apps/mobile/components/textbook/TaskSyncBridge.tsx`, `lib/task-sync.ts` |
 | Related tasks | recall/carried sources mirrored into their device slots | both bridges (`relatedTaskIds`) |
 | Web capture | `MediaRecorder` → chunked upload, preview, replace, delete, retry | `apps/web/src/components/textbook/record-field.tsx`, `lib/user-files-client.ts` |
+| Mobile capture | `expo-audio` recorder (24 kHz mono AAC/m4a), upload on stop, playback, retry, delete | `apps/mobile/components/textbook/RecordField.tsx`, `lib/user-files-client.ts` |
+| Mic permission | expo-audio plugin; the image picker no longer strips it | `apps/mobile/app.config.js` |
+| Dev builds | iOS device **46** and Android **45**, both with the permission verified in the artifact | `.dev-builds/`, `docs/versioning/build-ledger.md` |
 | TOC gating | live slots fetched in `/tasks/state` batches, passed to `bookProgress` | `apps/web/src/components/textbook/textbook-toc.tsx` |
 | Logout wipe | `lp:textbook:` and `lp:task-sync:` removed on pastHydration both platforms | web + mobile `user-data-wipe.ts` |
 | Content | D ➐ records (180 s, required); content version 3 → 4 | `packages/textbooks/src/content/tblt-hsk4/u06/lesson-d.ts` |
 
 **Known gaps at the end of this pass** (deliberate, each with a next step):
 
-- **Mobile capture (Phase 3) is not built.** It needs `expo-audio`, a microphone
-  permission in `app.config.js` and a new development build — the one part of this
-  spec that cannot land without a native rebuild.
-- **Uploads start at the stop button**, not during recording (Open Questions 4).
+- **No device or emulator was attached while this was built.** The binaries carry
+  the permission and were verified with `aapt2`/`plutil`, but nothing has run a real
+  take, a locked-screen take, or a 30-minute one — those are the remaining checks.
+- **Uploads start at the stop button** on the web (chunked) and, by construction, on
+  mobile; streaming parts during recording needs an open-ended part contract in the
+  store (Open Questions 4).
 - **The picker's per-book totals are not gated** by stored takes; the TOC and the
   task page are. The picker only has task counts, so gating it needs either the book
   content loaded there or a task-count-aware summary.
@@ -687,8 +692,12 @@ PHP endpoints and key, `user_files`, the policy registry, chunked upload, playba
 validator rules, i18n keys, D ➐'s authored note corrected, translations regenerated. First
 release where a student can complete the speaking task inside the product.
 
-**Phase 3 — mobile capture.** `expo-audio`, microphone permission, new development
-build, recorder component, wipe parity. Requires a device build; not a web-only release.
+**Phase 3 — mobile capture.** Delivered: `expo-audio` (57.0.3), the plugin's
+microphone permission (with background recording on), the recorder component, and
+dev builds 45 (Android) and 46 (iOS). Note the prebuild trap: the image picker's
+`microphonePermission: false` had been emitting `RECORD_AUDIO tools:node="remove"`,
+so the first builds shipped without the permission until the artifacts were
+inspected.
 
 **Phase 4 — follow-ups (separate decisions).** Attempt analytics dashboards, optional
 "keep every take" for Pro, transcription/pronunciation scoring, per-user export.
@@ -733,8 +742,8 @@ The host-side questions are settled and recorded in
 
 | # | Question | Result |
 |---|---|---|
-| 1 | Real take sizes per platform (bitrate is a request, not a contract) | **Open** — needs a device pass: record 30 s in Chrome, iOS Safari and the app, compare bytes/s with 16–24 kbps. Lower `maxDurationSec` or raise the cap; never add duration parsing. |
-| 2 | A 30-minute background take is continuous | **Deferred** with mobile capture (Phase 3); the web recorder cannot record in a background tab. |
+| 1 | Real take sizes per platform (bitrate is a request, not a contract) | **Open** — needs a device pass: record 30 s in Chrome, iOS Safari and the app, compare bytes/s with 16–24 kbps. The app asks for 24 kbps mono AAC/m4a; lower `maxDurationSec` or raise the cap rather than adding duration parsing. |
+| 2 | A 30-minute background take is continuous | **Enabled, not yet exercised**: `enableBackgroundRecording` is on (iOS background audio + Android recording service), but no device was attached to record one. |
 | 3 | Adoption after hydration paints unanswered HTML first | **Verified by construction + unit tests** — the bridge adopts in an effect (post-hydration) and `adoptRemote` merges per blank. A browser pass on a task that already has a server attempt is still owed. |
 | 4 | Account deletion removes sync metadata | **Fixed** — `user_sync_log` and `user_sync_ops` are now deleted with the account (`2561fb1`). |
 
@@ -751,6 +760,12 @@ The host-side questions are settled and recorded in
   the entity-contract tests.
 - **Types**: `packages/textbooks`, `packages/utils`, `apps/web`, `apps/mobile`
   typecheck clean.
+- **Binaries**: dev 46 (iOS device) and dev 45 (Android) built and hash-verified
+  (`scripts/verify-dev-build.mjs`); `NSMicrophoneUsageDescription`,
+  `UIBackgroundModes: audio`, `RECORD_AUDIO` and `FOREGROUND_SERVICE_MICROPHONE`
+  are present in the artifacts. The first pair of builds (43/44) did **not** carry
+  the permission — the image picker was stripping it — which is why the artifacts
+  are inspected rather than assumed.
 
 ## Risks and Mitigations
 
