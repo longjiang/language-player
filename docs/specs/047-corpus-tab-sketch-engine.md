@@ -66,6 +66,21 @@ Added to `translations.csv` (all 31 locales): `title.corpus`, `title.collocation
 
 ## Notes & Gotchas
 
+- **Failure reasons are shown, not just status codes.** The Flask endpoints
+  answer `503` with `{error, reason}` when the server cannot choose a corpus
+  (no `SKETCH_ENGINE_KEYS` in the Flask `.env`, corpus list unreachable, no
+  corpus for the language) and `502` when Sketch Engine returned nothing usable
+  (ARCH-020 §3.1). `use-corpus-fetch.ts` includes that `error` text in the
+  message, so the pill shows e.g. `Failed to load (HTTP 503: no Sketch Engine API
+  keys are configured…)` instead of a bare status. The bare code previously sent
+  debugging after the 400, whose message wrongly blamed the client for omitting
+  `word`/`l2`.
+- **Local dev requires the Sketch Engine key in `.env`.** `SKETCH_ENGINE_KEYS`
+  (flat `{"username": "apiKey"}` map) in `zerotohero-python-server/.env` is the
+  canonical store; restart Flask after changing it. Without a key the corpus list
+  cannot load, so collocations/examples/related fail rather than returning empty
+  data.
+
 - **Gramrel descriptions** contain a literal `{word}` placeholder from the
   backend (e.g. `modifier of "{word}"`) — the client replaces `{word}` with the
   queried term before rendering.

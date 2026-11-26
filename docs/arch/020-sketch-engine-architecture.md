@@ -78,18 +78,81 @@ All routes live on the Flask blueprint `sketch_engine` (`zerotohero-python-serve
 
 Every feature endpoint accepts an optional `corpname` override; otherwise the corpus is auto-resolved from `l2` (see §6).
 
+### 3.1 Error responses
+
+The failure modes are deliberately distinguishable, because collapsing them into
+one status is what made a missing API key look like a malformed client request:
+
+| Status | `reason` | Meaning |
+|---|---|---|
+| 400 | — | `word` itself is missing (`{"error": "word is required"}`) |
+| 503 | `missing_l2` | no `l2` and no explicit `corpname`, so no corpus can be chosen |
+| 503 | `no_keys` | no Sketch Engine API keys configured — no upstream request was attempted |
+| 503 | `corpora_unavailable` | the corpus list could not be loaded (upstream failure) |
+| 503 | `no_matching_corpus` | the corpus list loaded but has no corpus for this `l2` |
+| 502 | `no_keys` | endpoint that needs no corpus (mistakes) found no keys |
+| 502 | `upstream_failed` | a key was used but Sketch Engine returned nothing usable |
+
+503 bodies carry `{error, reason, word, l2}`; 502 bodies carry the raw relay
+`{status, username, from, data}` plus `error`. The web Corpus tab renders
+`error` inline (see SPEC-047), so a developer sees the actual cause rather than
+`Failed to load (HTTP 400)`.
+
+**Logging** — the blueprint logs every step at `INFO` (key source and count,
+cache HIT/STALE/miss with byte sizes, upstream HTTP status and content-type,
+corpus resolution and candidate count) and every failure at `WARNING`/`ERROR`
+(non-JSON upstream body with a 300-char prefix, live-fetch exception, zero keys,
+unresolvable corpus). Non-JSON bodies are never cached but are now logged, which
+identifies the usual cause of an otherwise silent 502.
+
+
 ---
 
 ## 4. Auth & Keys
 
-- Keys are a `{username: apiKey}` map stored in `apikeys.json` (gitignored; `apikeys.example.json` is the template). The Flask port reads them from, in order:
-  1. env var `SKETCH_ENGINE_KEYS` (JSON)
-  2. `<python-root>/apikeys.json`
-  3. `../zerotohero-php-server/apikeys.json` (dev fallback next to the PHP repo)
-- Every upstream request sends `Authorization: Bearer <key>`.
+Keys are a `{username: apiKey}` map. **The canonical store is the Flask `.env`**
+(`SKETCH_ENGINE_KEYS`), alongside the other server secrets, and the file loaders
+below are a last-resort fallback. The Flask port reads them from, in order:
+
+1. env var `SKETCH_ENGINE_KEYS` — **canonical** (set in `zerotohero-python-server/.env`)
+2. `<python-root>/apikeys.json`
+3. `<python-root>/../../zerotohero-php-server/apikeys.json` — dev fallback to the
+   copy in the sibling PHP repo (a sibling of the *monorepo*, not a child of it)
+
+**Both payload shapes are accepted** — this matters because they are not the same
+shape:
+
+| Source | Shape |
+|---|---|
+| `SKETCH_ENGINE_KEYS` (`.env`) | flat map `{"username": "apiKey"}` |
+| `apikeys.json` | wrapped `{"sketchEngine": {"username": "apiKey"}}` |
+
+> **Gotcha (the local-dev trap)**: an earlier port required the `sketchEngine`
+> wrapper for *both* sources. Because `.env` uses the flat form, `_load_keys()`
+> returned `{}`, and an empty key map makes the rotation loop issue **no upstream
+> request at all**. That surfaced as `502` on `/sketch-engine/corpora` and
+> `/sketch-engine/mistakes`, and `400` on collocations/examples/thesaurus — the
+> last three only because a corpus name must be resolved from the (unreachable)
+> corpus list, so the response wrongly blamed the caller for omitting `word`/`l2`.
+> Production was unaffected because it had the wrapper form or a key file. The
+> loader now accepts both and logs which source produced the keys.
+
+Every upstream request sends `Authorization: Bearer <key>`.
+
 - **Key rotation** (`_try_request_with_keys`): the server tries each key in order and returns the first non-empty body — mirroring the PHP proxy's rotation. This lets multiple Sketch Engine accounts share quota, and lets a broken/expired key fail over automatically.
 - The response echoes which `username` served the request when it was fetched live (for usage attribution).
 - **The Corpus Access (CA) API accepts the same Bearer key** — no browser `sessionid` cookie is needed server-side (the browser curl used a `sessionid` cookie, but that is not required for API-key auth).
+
+### 4.1 `apikeys.json` vs the PHP credential file
+
+`apikeys.json` is **primarily a PHP-server artifact**: it holds the PHP side's
+`cacheKey` (`X-Cache-Key` for the cache endpoints, SPEC-037) and `filesKey`
+(`X-User-Files-Key`, SPEC-113). Only its `sketchEngine` field is read by Flask.
+Do not assume deleting it is safe — it is not the Flask secrets file. Adding new
+Flask-only credentials to `.env` is the convention; the file loaders exist so an
+existing deployment that still carries `apikeys.json` keeps working (their use is
+logged at warning level).
+
 
 ---
 

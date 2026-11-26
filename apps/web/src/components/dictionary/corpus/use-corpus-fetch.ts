@@ -4,6 +4,27 @@ import { useEffect, useState } from 'react';
 import { logwarn } from '@/lib/logger';
 
 /**
+ * Turn a failed `/sketch-engine/*` response into a message worth showing.
+ *
+ * The Flask endpoints now answer **503** with `{error, reason}` when the server
+ * cannot choose a corpus (no API keys configured, corpus list unreachable, or
+ * no corpus for the language) and **502** when Sketch Engine itself returned
+ * nothing usable. Rendering that reason — instead of a bare `HTTP 503` — is
+ * what makes a local corpus failure diagnosable (ARCH-020 §3.1).
+ */
+async function describeFailure(res: Response): Promise<string> {
+  const base = `HTTP ${res.status}`;
+  try {
+    const body = (await res.json()) as { error?: unknown; reason?: unknown };
+    if (typeof body?.error === 'string' && body.error) return `${base}: ${body.error}`;
+    if (typeof body?.reason === 'string' && body.reason) return `${base} (${body.reason})`;
+  } catch {
+    // Non-JSON error body (proxy/HTML error page) — the status is all we have.
+  }
+  return base;
+}
+
+/**
  * Minimal fetch wrapper for the unauthenticated Flask `/sketch-engine/*`
  * endpoints (see docs/arch/020-sketch-engine-architecture.md). Mirrors the
  * direct `fetch(PYTHON_API_URL + ...)` pattern used by subs-search-results
@@ -32,7 +53,7 @@ export function useCorpusFetch<T>(url: string | null) {
     (async () => {
       try {
         const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(await describeFailure(res));
         const json = (await res.json()) as T;
         if (cancelled) return;
         setData(json);
