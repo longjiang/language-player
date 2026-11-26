@@ -222,6 +222,12 @@ amounts instead of the pricing-table heuristic, and we gain exact revenue by
 day, plan, processor, coupon and affiliate, plus refund/chargeback and
 commission reporting. See [Why log at purchase completion](#why-log-at-purchase-completion).
 
+**Wired on 2026-11-26:** `routes/admin_transactions.query_transactions()` now
+prices each row from its latest `payment_events` payment, so the Transactions
+table (and the Revenue chart that reuses it) shows the charged amount for a
+coupon purchase instead of the list price. Pre-ledger rows remain estimates —
+see [SPEC-101 § Charged amount (ledger)](101-admin-transactions.md#charged-amount-ledger).
+
 ### 4. Processor limitations
 
 | Path | Can apply coupon? | Can record exact amount? | Affiliate commission v1? |

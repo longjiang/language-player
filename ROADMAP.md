@@ -166,11 +166,13 @@
 - ✅ Analytics — daily chart toggling between New Signups and estimated
   Revenue for the last 7/30 days, this month, this year, and all time.
   Signups exclude imported Directus accounts; Revenue reuses the Transactions
-  inclusion rules and price heuristic (SPEC-100, SPEC-101)
-- ✅ Transactions — estimated subscription sales with purchaser/plan/date
-  filters, search, sortable date/price columns, pagination, and CSV export.
-  Prices come from the current USD price list plus historical sale windows
-  because the database stores no charged amount (SPEC-101)
+  inclusion rules and pricing (ledger amount, else list-price estimate)
+  (SPEC-100, SPEC-101)
+- ✅ Transactions — subscription sales with purchaser/plan/date filters,
+  search, sortable date/price columns, pagination, and CSV export. Each row
+  shows the exact amount collected from the `payment_events` ledger (coupon
+  discounts included); rows with no ledger payment fall back to the current
+  USD price list and are labelled as estimates (SPEC-101, SPEC-102)
 - 🔄 Affiliates and coupon codes — SPEC-102 v1 implemented: admin affiliate
   management, opt-in attribution, lifetime Stripe coupons, payment ledger,
   commissions, statements, and manual PayPal payouts. Invitation emails,

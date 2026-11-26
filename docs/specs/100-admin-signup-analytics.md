@@ -272,8 +272,9 @@ rather than re-implementing the rules. That guarantees:
 - non-trial subscription rows only,
 - rows with a `payment_id` or payment processor only (backfilled legacy
   lifetime accounts excluded),
-- prices from `data/prices.csv` (regular rows only; SPEC-112 removed the
-  historical `sale_windows.csv` adjustment),
+- prices are the exact USD amount from the row's latest `payment_events`
+  payment when one exists, otherwise the `data/prices.csv` regular rows
+  (SPEC-112 removed the historical `sale_windows.csv` adjustment),
 - monthly/annual rows contribute their latest payment, not every renewal.
 
 **Range difference:** signup “all time” starts at the first post-cutover

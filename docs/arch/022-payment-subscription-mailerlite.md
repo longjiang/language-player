@@ -320,23 +320,26 @@ The admin console (`apps/admin`, SPEC-060 / ADR-0032) can grant a subscription d
 ### Admin transactions view (SPEC-101)
 
 The console's `/transactions` screen lists non-trial subscription rows that
-carry a payment reference or processor. It is a **view of subscription
-records, not a payment ledger**:
+carry a payment reference or processor. The row set is a **view of subscription
+records** (one row per subscription, not per invoice), priced from the
+**latest `payment_events` payment** for each subscription:
 
-- `user_subscriptions` has no `amount` or `currency` column, and there is no
-  payments/orders table.
-- The screen estimates USD prices from the current `data/prices.csv` regular
-  rows. SPEC-112 removed the historical `sale_windows.csv` adjustment; new
-  purchases use their exact `payment_events` amount.
+- `user_subscriptions` has no `amount` or `currency` column, so the exact
+  charged amount comes from the ledger (`amount_cents`, tax included) while the
+  event's currency is USD. A coupon purchase therefore shows the discounted
+  amount it was charged ([ADR-0054](../adr/0054-sale-window-on-coupon-row.md)
+  decision 6).
+- Rows with no ledger payment (pre-ledger history) or a non-USD latest payment
+  fall back to the current `data/prices.csv` regular rows and are labelled as
+  estimates. SPEC-112 removed the historical `sale_windows.csv` adjustment.
 - Monthly/annual renewals update the existing row's `payment_date`; they do
   not insert a new transaction. The list therefore shows the latest payment
   per subscription and understates recurring revenue.
-- Refunds are not stored, so purchases downgraded to `type='trial'` are absent
-  and no refund/chargeback metrics exist.
+- Refunds are not stored as subscription rows, so purchases downgraded to
+  `type='trial'` are absent and no refund/chargeback metrics exist.
 
-If exact financial reporting is needed, persist `amount`, `currency`, the
-provider price id, and a refund/payment ledger row at grant time, then replace
-the estimate. See [SPEC-101](../specs/101-admin-transactions.md).
+A true financial report still needs one ledger row per invoice (renewals), not
+one per subscription. See [SPEC-101](../specs/101-admin-transactions.md).
 
 The Analytics screen's **Revenue** metric (SPEC-100) calls the same
 `query_transactions()` function, so its daily graph uses exactly these
