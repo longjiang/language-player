@@ -89,7 +89,7 @@
 - ✅ Documentation / Help
 - ✅ Ebook reader — bookshelf, EPUB, paginated reader, notes reader, web reader, PDF (web only) and image reader (vision OCR) (SPEC-085, SPEC-087, SPEC-089, SPEC-090)
 - ✅ Interactive textbook — `book > unit > lesson > task` with interactive blanks and per-activity widgets (SPEC-095)
-- 🔄 Task data sync and student recordings — server-side answers/attempts (cross-device) and in-app audio capture for speaking tasks (SPEC-111), on a reusable private user file store (SPEC-113, ADR-0053). Backend sync (`task_response`/`task_attempt`, `GET /tasks/state`), both clients' adoption/outbox and web capture are shipped and unit/composed-verified; mobile capture still needs `expo-audio` and a new development build
+- ✅ Task data sync and student recordings — server-side answers/attempts (cross-device) and in-app audio capture for speaking tasks (SPEC-111), on a reusable private user file store (SPEC-113, ADR-0053). Shipped: backend sync (`task_response`/`task_attempt`, `GET /tasks/state`), both clients' adoption/outbox, web `MediaRecorder` capture, mobile `expo-audio` capture, and dev builds 45 (Android) / 46 (iOS) with the microphone permission verified in the artifacts. Open: a real-device pass (take sizes, 30-minute background take) and per-take retention for Pro
 
 ## Phase 6: User Features
 
