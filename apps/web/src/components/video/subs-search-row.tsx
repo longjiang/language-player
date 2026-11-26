@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
-import type { SubtitleLine, SubsSearchVideo, VideoNote, SubtitleNoteMarker } from '@langplayer/shared';
-import { extractNoteMarkers } from '@langplayer/utils';
+import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
-import { NoteBadge, NotePopup } from '@/components/note-popup';
+import { TokenizedText } from '@/components/tokenized-text';
+import { useLanguage } from '@/providers/language-provider';
 import { log } from '@/lib/logger';
 import { HIGHLIGHT_CLASS } from '@/lib/highlight';
 
@@ -59,114 +58,21 @@ interface SubsSearchRowProps {
   firstLineIndex: number;
 }
 
-/** Highlight the earliest search-term match in a line, preferring the longest
- *  term on a tie. Also strips `[n]` note markers (SPEC-093) and draws a badge
- *  where each marker was, so the annotation is visible in the preview without
- *  leaking raw brackets. */
-function HighlightLine({
-  line,
-  terms,
-  notes,
-  onNote,
-}: {
-  line: string;
-  terms: string[];
-  notes?: VideoNote[];
-  onNote: (marker: SubtitleNoteMarker) => void;
-}) {
-  const active = terms.map((t) => t.trim()).filter(Boolean);
-  const noteById = useMemo(() => new Map((notes ?? []).map((n) => [n.id, n])), [notes]);
-
-  const { cleanText, markers } = useMemo(() => extractNoteMarkers(line), [line]);
-  const markerByBoundary = useMemo(() => {
-    const m = new Map<number, SubtitleNoteMarker>();
-    for (const mk of markers) {
-      m.set(mk.index, { id: mk.id, index: mk.index, note: noteById.get(mk.id)?.note ?? '' });
-    }
-    return m;
-  }, [markers, noteById]);
-
-  // Build [start, end, highlighted] runs over the clean text.
-  const segs = useMemo(() => {
-    const out: Array<{ start: number; end: number; highlight: boolean }> = [];
-    const push = (start: number, end: number, highlight: boolean) => {
-      if (end > start) out.push({ start, end, highlight });
-    };
-    if (cleanText.length === 0) return out;
-    if (active.length === 0) {
-      push(0, cleanText.length, false);
-      return out;
-    }
-    const lower = cleanText.toLowerCase();
-    let pos = 0;
-    while (pos < cleanText.length) {
-      let bestIdx = -1;
-      let bestLen = 0;
-      for (const term of active) {
-        const idx = lower.indexOf(term.toLowerCase(), pos);
-        if (
-          idx !== -1 &&
-          (bestIdx === -1 || idx < bestIdx || (idx === bestIdx && term.length > bestLen))
-        ) {
-          bestIdx = idx;
-          bestLen = term.length;
-        }
-      }
-      if (bestIdx === -1) {
-        push(pos, cleanText.length, false);
-        break;
-      }
-      push(pos, bestIdx, false);
-      push(bestIdx, bestIdx + bestLen, true);
-      pos = bestIdx + bestLen;
-    }
-    return out;
-  }, [cleanText, active]);
-
-  // Flatten: text runs (search-highlighted) interleaved with note badges at
-  // the marker boundaries.
-  const nodes: ReactNode[] = [];
-  let cursor = 0;
-  const emitMarker = (boundary: number) => {
-    const mk = markerByBoundary.get(boundary);
-    if (mk) {
-      nodes.push(
-        <NoteBadge
-          key={`note-${boundary}-${mk.id}`}
-          id={mk.id}
-          muted={!mk.note}
-          onClick={() => onNote(mk)}
-        />,
-      );
-    }
-  };
-  for (const seg of segs) {
-    emitMarker(cursor);
-    const text = cleanText.slice(seg.start, seg.end);
-    if (seg.highlight) {
-      nodes.push(
-        <mark
-          key={`hl-${seg.start}-${seg.end}`}
-          className={`rounded px-0.5 font-semibold ${HIGHLIGHT_CLASS}`}
-        >
-          {text}
-        </mark>,
-      );
-    } else {
-      nodes.push(text);
-    }
-    cursor = seg.end;
-  }
-  emitMarker(cleanText.length);
-
-  return <span>{nodes}</span>;
-}
-
 /**
  * A single subs-search result row: thumbnail + the matched subtitle line
  * (with search terms highlighted and note badges drawn) and, when
  * translations are enabled, the muted translation below. Clicking opens
  * playback for that result.
+ *
+ * SPEC-114: the L2 line renders through `TokenizedText` so Chinese
+ * simplified↔traditional follows the learner's script preference
+ * (ADR-0019, render-layer conversion) and phonetics follow their
+ * `tokenSpan.phonetics` setting. The row is a *preview*, not an interactive
+ * reading surface: the tokenized text is wrapped in `pointer-events-none`, so
+ * taps fall through to the row (opening playback) instead of opening the
+ * dictionary popup, saved words are not highlighted, and interlinear
+ * definitions are suppressed so a row stays one line tall. Text size follows
+ * SPEC-051's block-level rule — the user's zoom applies.
  */
 export function SubsSearchRow({
   video,
@@ -181,8 +87,8 @@ export function SubsSearchRow({
   translating,
   firstLineIndex,
 }: SubsSearchRowProps) {
+  const { l2 } = useLanguage();
   const ml = video.subs_l2[video.matchLineIndex];
-  const [selectedNote, setSelectedNote] = useState<SubtitleNoteMarker | null>(null);
 
   return (
     <div
@@ -224,12 +130,21 @@ export function SubsSearchRow({
                 className={seg.hasTerm ? '' : 'text-muted-foreground'}
               >
                 {j > 0 ? ' ' : ''}
-                <HighlightLine
-                  line={seg.text}
-                  terms={highlightTerms}
-                  notes={video.notes}
-                  onNote={(m) => setSelectedNote(m)}
-                />
+                {/* Display-only tokenized L2 line (SPEC-114). `pointer-events-none`
+                    makes every token inert: the click reaches the row (playback),
+                    never a dictionary popup. */}
+                <span className="pointer-events-none">
+                  <TokenizedText
+                    text={seg.text}
+                    l2Code={l2.code}
+                    textColor={seg.hasTerm ? undefined : 'text-muted-foreground'}
+                    highlightForms={highlightTerms}
+                    notes={video.notes}
+                    highlightSaved={false}
+                    showDefinition={false}
+                    disablePopup
+                  />
+                </span>
               </span>
             ))}
           </div>
@@ -272,10 +187,6 @@ export function SubsSearchRow({
           )}
         </div>
       </div>
-
-      {selectedNote && (
-        <NotePopup note={selectedNote} onClose={() => setSelectedNote(null)} />
-      )}
     </div>
   );
 }

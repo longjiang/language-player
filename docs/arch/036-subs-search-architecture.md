@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: draft — the body still describes the retired MySQL FULLTEXT path and the deleted `app_subs_search.py`; SPEC-044 Part 2 is the current strategy
 - **Created**: 2026-07-24
-- **Last Updated**: 2026-10-19
+- **Last Updated**: 2026-11-26
 - **ROADMAP Phase**: Phase 4 — Dictionary
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask), Supabase Postgres
 - **Renumbered**: was `004-subs-search-architecture.md` (collided with ARCH-004); renamed to ARCH-036 on 2026-10-18
@@ -377,6 +377,44 @@ results locally instead of re-querying. See SPEC-109 for the full semantics.
 6. **Sort**: Lines sorted by `starttime` ascending — **required** by `SubtitleDisplay`'s sequential active-index logic.
 7. **Display**: Sorted lines passed as `initialLines` to `SubtitleDisplay` in singleline mode.
 
+### Result row rendering (SPEC-114)
+
+The page list's row (`apps/web/src/components/video/subs-search-row.tsx`, mobile
+`apps/mobile/components/video/SubsSearchRow.tsx`) renders the matched L2 line through
+**`TokenizedText` in display-only mode**, not as a plain string:
+
+| Concern | Web | Mobile |
+|---|---|---|
+| Display-only | `<span className="pointer-events-none">` wrapper | `<View pointerEvents="none">` wrapper |
+| Dictionary popup | `disablePopup` | `disablePopup` |
+| Saved-word highlight | `highlightSaved={false}` | `highlightSaved={false}` |
+| Interlinear definitions | `showDefinition={false}` | `showDefinition={false}` |
+| Search-term highlight | `highlightForms={highlightTerms}` | `highlightTerms={highlightTerms}` |
+| Note badges | `notes={video.notes}` | `notes={video.notes}` |
+| Text size | block-level zoom (SPEC-051) | block-level zoom (SPEC-051) |
+
+Why: the row previously rendered raw text with a substring `<mark>`, so it bypassed
+everything `TokenizedText` owns at the render layer — Chinese script preference
+(ADR-0019 converts per token in `TokenSpan`, and in flat mode per ruby segment) and
+phonetics (`tokenSpan.phonetics`). Chinese learners with `display.traditional = true`
+saw Simplified rows under a Traditional headword. Delegating to `TokenizedText`
+fixes script and adds readings; the three overrides keep the row a *preview*: tokens
+never take a click (the tap falls through to the row, which opens playback), saved
+words are not highlighted (which also suppresses quick glosses), and no interlinear
+gloss stack appears.
+
+`pointer-events-none` is also why `[n]` note badges are inert in a row (they still
+render); the playback modal's `SubtitleDisplay` keeps them tappable. Text size is
+deliberately **not** exempted — the row follows SPEC-051's block-level rule and grows
+with the user's zoom. Rows now tokenize lazily via `TokenizedText`'s
+`IntersectionObserver` + the shared lemmatize/lookup queues, so off-screen rows never
+tokenize. The same row component backs the DeepSeek explanation's "Examples from
+Videos" chips, so those pick up the same behaviour.
+
+While tokenization is in flight (or if lemmatization fails) `TokenizedText` shows its
+plain-text fallback, which is the **source** script — the converted glyphs appear when
+the tokens land, exactly like every other tokenized surface (ADR-0019).
+
 ### YouTube Player Integration
 
 The mini-player is embedded with `startTime={matchLine.starttime}`, which is applied in the YouTube IFrame API's `onReady` callback (guaranteed to work — unlike `seekTo()` calls before the API initializes). A backup `seekTo` via `setTimeout(600ms)` is also in place for navigation between videos.
@@ -414,6 +452,8 @@ for (let i = 0; i < syncedLines.length; i++) {
 |---|---|
 | `zerotohero-python-server/app_subs_search.py` | Backend: SQL query + context reduction + caching |
 | `apps/web/src/components/video/subs-search-results.tsx` | Frontend: fetch, parse, filter, sort, player + subtitle display |
+| `apps/web/src/components/video/subs-search-row.tsx` | List row: thumbnail + display-only tokenized L2 line + translation (SPEC-114) |
+| `apps/mobile/components/video/SubsSearchRow.tsx` | Mobile row: same layout, display-only tokenized L2 line (SPEC-114) |
 | `apps/mobile/components/video/SubsSearchResults.tsx` | Mobile port: same fetch/parse/skip logic with `react-native-youtube-iframe` |
 | `apps/web/src/components/video/subtitle-display.tsx` | Singleline subtitle rendering with active-index tracking |
 | `apps/web/src/components/video/youtube-player.tsx` | YouTube IFrame API wrapper with `startTime` support |
