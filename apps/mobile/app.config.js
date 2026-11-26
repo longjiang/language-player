@@ -89,9 +89,14 @@ module.exports = {
       'expo-splash-screen',
       'expo-web-browser',
       // Image reader (SPEC-090): "Select images" offers camera, photo library
-      // and files. Photos only — no video capture — so the picker's microphone
-      // permission stays off; the microphone is requested by expo-audio below,
-      // which is the only feature that records (SPEC-111).
+      // and files. Photos only — no video capture.
+      //
+      // `microphonePermission: false` must NOT be set: expo-image-picker's plugin
+      // then emits `<uses-permission android:name="android.permission.RECORD_AUDIO"
+      // tools:node="remove"/>` and drops NSMicrophoneUsageDescription, which
+      // silently strips the permission expo-audio needs (found when the first
+      // capture build was checked with aapt2 and plutil). The mic is legitimately
+      // used now — by task recording (SPEC-111) — so the string stays.
       [
         'expo-image-picker',
         {
@@ -99,7 +104,6 @@ module.exports = {
             'Language Player opens the photo you pick so it can read the text in it.',
           cameraPermission:
             'Language Player uses the camera so you can photograph a page and read its text.',
-          microphonePermission: false,
         },
       ],
       // Task recordings (SPEC-111): speaking tasks record the student's answer.
@@ -109,6 +113,10 @@ module.exports = {
         {
           microphonePermission:
             'Language Player records your spoken answer for the current speaking task.',
+          // A take can run 30 minutes (SPEC-111 G7): keep recording with the
+          // screen off. Adds the iOS background-audio mode and Android's
+          // recording foreground service.
+          enableBackgroundRecording: true,
         },
       ],
     ],
