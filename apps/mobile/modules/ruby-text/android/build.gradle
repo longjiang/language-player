@@ -15,6 +15,13 @@ android {
 }
 
 dependencies {
+  // React APIs used by the paragraph view (ReactFontManager, SPEC-104). An Expo
+  // module must declare this itself: expo-modules-core depends on
+  // `com.facebook.react:react-android` as `implementation`, so it is not on a
+  // consumer's compile classpath. Versionless on purpose — the Expo/RN gradle
+  // plugin supplies the version, exactly as expo-modules-core does.
+  implementation 'com.facebook.react:react-android'
+
   // RubyTextParagraphView extends AppCompatTextView (SPEC-084 Task 2 rewrite).
   // Declared here because appcompat is not transitively exposed to this
   // module's compile classpath (it is `implementation` in other modules).

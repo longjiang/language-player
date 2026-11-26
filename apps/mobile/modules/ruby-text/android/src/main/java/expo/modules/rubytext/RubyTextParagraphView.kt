@@ -515,7 +515,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
         }
         continue
       }
-      val span = RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily, language)
+      val span = RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily, language, context.assets)
       builder.setSpan(span, start, start + run.text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
     runRanges = ranges
@@ -547,10 +547,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       run?.italic == true -> Typeface.ITALIC
       else -> Typeface.NORMAL
     }
-    return if (fontFamily != null) {
+    // A local copy: `fontFamily` is a mutable property, so Kotlin refuses to
+    // smart-cast it across the call.
+    val family = fontFamily
+    return if (family != null) {
       // Runtime-loaded expo-font families live in ReactFontManager, not in
       // Android's system font resolver (SPEC-104).
-      ReactFontManager.getInstance().getTypeface(fontFamily, style, context.assets)
+      ReactFontManager.getInstance().getTypeface(family, style, context.assets)
     } else {
       Typeface.create(Typeface.DEFAULT, style)
     }
@@ -629,7 +632,9 @@ private class RubyReplacementSpan(
   private val fontSize: Float,
   private val readingSize: Float,
   private val fontFamily: String?,
-  private val language: String?
+  private val language: String?,
+  /** The view's asset manager: a span has no Context of its own (SPEC-104). */
+  private val assets: android.content.res.AssetManager
 ) : ReplacementSpan() {
 
   private fun dp(value: Float): Float = value * density
@@ -746,10 +751,11 @@ private class RubyReplacementSpan(
       run?.italic == true -> Typeface.ITALIC
       else -> Typeface.NORMAL
     }
-    return if (fontFamily != null) {
+    val family = fontFamily
+    return if (family != null) {
       // Runtime-loaded expo-font families live in ReactFontManager, not in
       // Android's system font resolver (SPEC-104).
-      ReactFontManager.getInstance().getTypeface(fontFamily, style, context.assets)
+      ReactFontManager.getInstance().getTypeface(family, style, assets)
     } else {
       Typeface.create(Typeface.DEFAULT, style)
     }
