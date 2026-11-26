@@ -75,7 +75,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 56 | ffac75ce | 2026-09-08 | 3.5.0 — iOS TestFlight (b21, consumed) · 3.5.0 — Android Internal testing (b21, consumed) | — |
 | 57 | f6c7ab27 | 2026-09-16 | 3.6.0 — iOS TestFlight (b22, consumed) | — |
 | 58 | c9634ffb | 2026-09-16 | — | dev 39 (Debug; archived; lp-dev-39-ios-device-c9634ffb9b32.zip; 4161a8881db30bbf8c48f12966e05c0bf0d7caa9082b87299bc22069bbc9fdd0) |
-| 59 | 5aca7f47 | 2026-09-16 | — | dev 40 (Debug; active; lp-dev-40-ios-device-5aca7f47e8ac.zip; aa0e5e99967fb88de83dcf943c7e5cf133cb75ae5addad28384c1819fb506ac1) |
+| 59 | 5aca7f47 | 2026-09-16 | — | dev 40 (Debug; archived; lp-dev-40-ios-device-5aca7f47e8ac.zip; aa0e5e99967fb88de83dcf943c7e5cf133cb75ae5addad28384c1819fb506ac1) |
 | 60 | af7921ce | 2026-09-17 | 3.6.1 — iOS TestFlight (b23, consumed) | — |
 | 61 | 35db1b6b | 2026-09-17 | 3.6.2 — iOS TestFlight (b24, consumed) | — |
 | 62 | 102a7c1d | 2026-09-22 | 3.7.0 — iOS TestFlight (b25, consumed) · iOS App Store (b25, in review since 2026-09-25; releaseType AFTER_APPROVAL) | — |
@@ -88,6 +88,7 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 69 | b9b6b597 | 2026-11-08 | 3.9.0 — iOS TestFlight (b30, consumed) | — |
 | 70 | 274a8c66 | 2026-11-09 | 3.10.0 — iOS TestFlight (b31, consumed) | — |
 | 71 | e35f078e | 2026-11-26 | — | dev 43 (Debug; active; lp-dev-43-ios-device-e35f078edea4.zip; a4890d3b1f261c3f953f3068d7081ac17c3e3657e10b254531332ce177eaa5fc) |
+| 72 | 6be1fafb | 2026-11-26 | — | dev 44 (Debug; active; lp-dev-44-android-6be1fafb412c.apk; bf6ec752b4d91b71e73c38987b254daf749876891690f954d6272bd1d1de7d1f) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
