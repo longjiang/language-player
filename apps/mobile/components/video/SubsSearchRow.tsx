@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text, Image, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
-import { extractNoteMarkers } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
-import { HIGHLIGHT_CLASS } from '@/lib/highlight';
+import { TokenizedText } from '@/components/TokenizedText';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /** mm:ss clock label for a subtitle timestamp or video duration. */
 export function formatTime(seconds: number): string {
@@ -23,68 +23,6 @@ export function youtubeThumbnail(id: string): string {
 export interface SubsSearchRowSegment {
   text: string;
   hasTerm: boolean;
-}
-
-/** Highlight every search-term match in a line, preferring the longest term
- *  on a tie (web subs-search-row fidelity, SPEC-082 Task 7). Also strips `[n]`
- *  note markers (SPEC-093) and draws a small circled number where each marker
- *  was, so the annotation is visible in the preview without leaking raw
- *  brackets. The circled numbers are non-interactive here — the row opens the
- *  playback modal, where the full interactive (tap-to-open) note line renders.
- */
-function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
-  const active = terms.map((t) => t.trim()).filter(Boolean);
-  const { cleanText, markers } = useMemo(() => extractNoteMarkers(line), [line]);
-  if (active.length === 0 && markers.length === 0) return <Text>{cleanText}</Text>;
-
-  const lowerLine = cleanText.toLowerCase();
-  const nodes: React.ReactNode[] = [];
-  // Boundaries where a note badge is drawn (operate on the clean text).
-  const markerBoundaries = new Map<number, number>();
-  for (const mk of markers) markerBoundaries.set(mk.index, mk.id);
-
-  const emitBadge = (at: number) => {
-    const id = markerBoundaries.get(at);
-    if (id != null) {
-      nodes.push(
-        <Text key={`note-${at}-${id}`} className="bg-primary text-primary-foreground rounded-full text-center text-[10px] font-semibold">
-          {' '}{id}{' '}
-        </Text>,
-      );
-    }
-  };
-
-  let pos = 0;
-  while (pos < cleanText.length) {
-    emitBadge(pos);
-    // Find the earliest match of any term; prefer the longest term on ties.
-    let bestIdx = -1;
-    let bestLen = 0;
-    for (const term of active) {
-      const idx = lowerLine.indexOf(term.toLowerCase(), pos);
-      if (
-        idx !== -1 &&
-        (bestIdx === -1 || idx < bestIdx || (idx === bestIdx && term.length > bestLen))
-      ) {
-        bestIdx = idx;
-        bestLen = term.length;
-      }
-    }
-    if (bestIdx === -1) {
-      nodes.push(<Text key={`tail-${pos}`}>{cleanText.slice(pos)}</Text>);
-      break;
-    }
-    if (bestIdx > pos) nodes.push(<Text key={`pre-${pos}`}>{cleanText.slice(pos, bestIdx)}</Text>);
-    nodes.push(
-      <Text key={`hit-${bestIdx}-${bestLen}`} className={`font-semibold ${HIGHLIGHT_CLASS}`}>
-        {cleanText.slice(bestIdx, bestIdx + bestLen)}
-      </Text>,
-    );
-    pos = bestIdx + bestLen;
-  }
-  emitBadge(cleanText.length);
-
-  return <Text>{nodes}</Text>;
 }
 
 interface SubsSearchRowProps {
@@ -111,6 +49,16 @@ interface SubsSearchRowProps {
  * (with search terms highlighted) and, when translations are enabled, the
  * muted translation below. Clicking opens playback for that result.
  * The parent owns list state, grouping, and the player queue (SPEC-082 Task 16).
+ *
+ * SPEC-114: the L2 line renders through `TokenizedText` so Chinese
+ * simplified↔traditional follows the learner's script preference
+ * (ADR-0019, render-layer conversion) and phonetics follow their
+ * `tokenSpan.phonetics` setting. The row is a *preview*, not an interactive
+ * reading surface: the tokenized text is wrapped in `pointerEvents="none"`, so
+ * taps fall through to the row (opening playback) instead of opening the
+ * dictionary popup, saved words are not highlighted, and interlinear
+ * definitions are suppressed so a row stays one line tall. Text size follows
+ * SPEC-051's block-level rule — the user's zoom applies.
  */
 export function SubsSearchRow({
   video,
@@ -122,6 +70,7 @@ export function SubsSearchRow({
   translationStart,
   translations,
 }: SubsSearchRowProps) {
+  const { l2Lang } = useLanguage();
   const ml = video.subs_l2[video.matchLineIndex];
 
   return (
@@ -150,13 +99,24 @@ export function SubsSearchRow({
           <View>
             <View className="flex-row">
               {segments.map((seg, j) => (
-                <Text
-                  key={j}
-                  className={`text-base ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
-                >
-                  {j > 0 ? ' ' : ''}
-                  <HighlightTerms line={seg.text} terms={highlightTerms} />
-                </Text>
+                <View key={j} className="flex-row">
+                  {j > 0 ? <Text> </Text> : null}
+                  {/* Display-only tokenized L2 line (SPEC-114). `pointerEvents="none"`
+                      makes every token inert: the tap reaches the row (playback),
+                      never a dictionary popup. */}
+                  <View pointerEvents="none">
+                    <TokenizedText
+                      text={seg.text}
+                      l2Code={l2Lang.code}
+                      textColor={seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}
+                      highlightTerms={highlightTerms}
+                      notes={video.notes}
+                      highlightSaved={false}
+                      showDefinition={false}
+                      disablePopup
+                    />
+                  </View>
+                </View>
               ))}
             </View>
             {showTranslation && (
