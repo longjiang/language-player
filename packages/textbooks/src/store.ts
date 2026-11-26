@@ -49,6 +49,18 @@ export interface PersistedTaskState {
   contentVersion: number;
   responses: Record<string, string>;
   attempt: AttemptRecord | null;
+  /**
+   * Per-blank client timestamps, in ms. This is what makes per-blank last-write-
+   * wins real when two devices edit the same task: the value alone cannot say
+   * which edit is newer. Missing on state saved before SPEC-111, treated as 0.
+   */
+  updatedAt?: Record<string, number>;
+}
+
+/** A remote snapshot to merge into the store (SPEC-111 `/tasks/state`). */
+export interface RemoteTaskState {
+  responses?: Record<string, { value: string; updatedAt: number }>;
+  attempt?: AttemptRecord | null;
 }
 
 /** Storage adapter supplied by the app (localStorage / AsyncStorage). */
@@ -96,6 +108,7 @@ export class TaskResponseStore {
   /** Invalidation cache for getResponsesSnapshot. */
   private responsesSnapshot: Record<string, string> | null = null;
   private attempt: AttemptRecord | null = null;
+  private updatedAt: Record<string, number> = {};
   private result: TaskResult | null = null;
   private submitted = false;
   private listeners = new Set<() => void>();
@@ -114,6 +127,7 @@ export class TaskResponseStore {
     const usable = loaded && loaded.contentVersion === this.contentVersion ? loaded : null;
     this.responses = mutableResponses(this.task, usable?.responses);
     this.attempt = usable?.attempt ?? null;
+    this.updatedAt = { ...(usable?.updatedAt ?? {}) };
     this.save = options.save;
   }
 
@@ -157,6 +171,9 @@ export class TaskResponseStore {
   getAttempt = (): AttemptRecord | null =>
     this.attempt ? { ...this.attempt, responses: { ...this.attempt.responses } } : null;
 
+  /** Client timestamp of a blank's last local edit (0 when never edited). */
+  getUpdatedAt = (blankId: string): number => this.updatedAt[blankId] ?? 0;
+
   /** Count of blanks the student has answered (excluding `given`). */
   getAnsweredCount = (): number =>
     Object.values(this.task.blanks ?? {}).filter(
@@ -177,6 +194,7 @@ export class TaskResponseStore {
     if (!blank || blank.kind === 'carried' || (blank.kind === 'given' && !isEditableGiven(blank))) return;
     if (this.responses[blankId] === value) return;
     this.responses[blankId] = value;
+    this.updatedAt[blankId] = Date.now();
     // Editing after submit clears the verdict so stale ticks are never shown.
     if (this.submitted) {
       this.submitted = false;
@@ -239,6 +257,38 @@ export class TaskResponseStore {
     this.emit();
   };
 
+  /**
+   * Merge a server snapshot (SPEC-111), per blank and per attempt.
+   *
+   * A remote value wins over a local one only when it is strictly newer — the
+   * local store is the device the student is looking at, and adopting a tie
+   * would rewrite what they just typed. The attempt is the same rule on
+   * `submittedAt`. One persist + one emit follows a merge, so a task that
+   * already has answers does not re-render per blank.
+   */
+  adoptRemote = (remote: RemoteTaskState): void => {
+    let changed = false;
+    for (const [blankId, entry] of Object.entries(remote.responses ?? {})) {
+      if (!entry) continue;
+      if (entry.updatedAt <= (this.updatedAt[blankId] ?? 0)) continue;
+      if (this.responses[blankId] === entry.value) {
+        this.updatedAt[blankId] = entry.updatedAt;
+        continue;
+      }
+      this.responses[blankId] = entry.value;
+      this.updatedAt[blankId] = entry.updatedAt;
+      changed = true;
+    }
+    const incoming = remote.attempt ?? null;
+    if (incoming && (!this.attempt || incoming.submittedAt > this.attempt.submittedAt)) {
+      this.attempt = { ...incoming, responses: { ...incoming.responses } };
+      changed = true;
+    }
+    if (!changed) return;
+    this.persist();
+    this.emit();
+  };
+
   /** Clear responses and the current verdict. The attempt stays: it happened. */
   reset = (): void => {
     this.responses = mutableResponses(this.task, null);
@@ -253,6 +303,7 @@ export class TaskResponseStore {
     contentVersion: this.contentVersion,
     responses: { ...this.responses },
     attempt: this.attempt ? { ...this.attempt, responses: { ...this.attempt.responses } } : null,
+    updatedAt: { ...this.updatedAt },
   });
 
   private persist(): void {

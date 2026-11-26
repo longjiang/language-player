@@ -107,6 +107,7 @@ export { assertValid, validateBook, validateLesson, validateTask } from './schem
 export type { IssueLevel, ValidationIssue, ValidationOptions } from './schema';
 
 export { normalisePersistedTaskState } from './persisted-state';
+export { relatedTaskIds } from './related';
 
 export {
   RECORDING_BYTES_CAP,
@@ -124,6 +125,7 @@ export { BlankSelectionStore, TaskResponseStore } from './store';
 export type {
   AttemptRecord,
   PersistedTaskState,
+  RemoteTaskState,
   TaskStateAdapter,
   TaskStoreOptions,
 } from './store';

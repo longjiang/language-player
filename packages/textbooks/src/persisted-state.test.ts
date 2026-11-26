@@ -17,7 +17,13 @@ describe('normalisePersistedTaskState', () => {
       responses: { b1: 'x' },
       attempt,
     });
-    expect(out).toEqual({ taskId: 't', contentVersion: 1, responses: { b1: 'x' }, attempt });
+    expect(out).toEqual({
+      taskId: 't',
+      contentVersion: 1,
+      responses: { b1: 'x' },
+      attempt,
+      updatedAt: {},
+    });
   });
 
   it('collapses a legacy attempts[] to the latest un-voided entry', () => {
@@ -66,6 +72,17 @@ describe('normalisePersistedTaskState', () => {
       attempt: null,
     });
     expect(out?.responses).toEqual({ b1: 'x' });
+  });
+
+  it('keeps per-blank timestamps, discarding non-numbers', () => {
+    const out = normalisePersistedTaskState({
+      taskId: 't',
+      contentVersion: 1,
+      responses: {},
+      attempt: null,
+      updatedAt: { b1: 5, b2: 'nope', b3: null },
+    });
+    expect(out?.updatedAt).toEqual({ b1: 5 });
   });
 
   it('returns null when there is no usable task id', () => {

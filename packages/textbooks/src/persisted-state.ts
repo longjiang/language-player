@@ -77,10 +77,18 @@ export function normalisePersistedTaskState(raw: unknown): PersistedTaskState | 
   const attempt =
     normaliseAttempt(raw.attempt) ?? latestLegacyAttempt(raw.attempts) ?? null;
 
+  const updatedAt: Record<string, number> = {};
+  if (isRecord(raw.updatedAt)) {
+    for (const [key, entry] of Object.entries(raw.updatedAt)) {
+      if (typeof entry === 'number' && Number.isFinite(entry)) updatedAt[key] = entry;
+    }
+  }
+
   return {
     taskId: raw.taskId,
     contentVersion: typeof raw.contentVersion === 'number' ? raw.contentVersion : 0,
     responses: stringMap(raw.responses),
     attempt,
+    updatedAt,
   };
 }

@@ -51,6 +51,19 @@ export function clearUserData(): void {
       // storage unavailable (privacy mode, etc.) — best effort
     }
   }
+  // Per-user task state and its undrained ops (SPEC-111). Prefix sweep: the
+  // textbook keys are `lp:textbook:<taskId>` and the queue is
+  // `lp:task-sync:<userId>`, so neither can be listed exactly.
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('lp:textbook:') || key.startsWith('lp:task-sync:'))) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // best effort
+  }
   // Per-user anonymous-merge flags (SPEC-062): lpSavedWordsAnonMerged:<userId>
   try {
     for (let i = localStorage.length - 1; i >= 0; i--) {

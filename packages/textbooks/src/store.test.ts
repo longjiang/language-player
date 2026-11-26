@@ -148,6 +148,74 @@ describe('TaskResponseStore', () => {
     expect(store.getAttempt()).not.toBeNull();
   });
 
+  it('stamps each blank edit and persists the timestamps', () => {
+    const store = make();
+    store.setValue('b2', '新');
+    const at = store.getUpdatedAt('b2');
+    expect(at).toBeGreaterThan(0);
+    expect(store.snapshot().updatedAt?.b2).toBe(at);
+    // A blank never edited has no timestamp.
+    expect(store.getUpdatedAt('b3')).toBe(0);
+  });
+
+  it('adopts a newer remote answer per blank, ignoring an older one', () => {
+    const store = make();
+    store.setValue('b2', '本地');
+    const localAt = store.getUpdatedAt('b2');
+    store.adoptRemote({
+      responses: {
+        b2: { value: '旧远端', updatedAt: localAt - 1 },
+        b3: { value: '远端新', updatedAt: localAt + 1000 },
+      },
+    });
+    expect(store.getValue('b2')).toBe('本地');
+    expect(store.getValue('b3')).toBe('远端新');
+    expect(store.getUpdatedAt('b3')).toBe(localAt + 1000);
+  });
+
+  it('adopts a newer remote attempt, and not an older or tied one', () => {
+    const store = make();
+    store.adoptRemote({
+      attempt: {
+        taskId: task.id,
+        contentVersion: 1,
+        responses: {},
+        result: { complete: true, correctCount: 1, scoreableCount: 1 },
+        submittedAt: 500,
+      },
+    });
+    expect(store.getAttempt()?.submittedAt).toBe(500);
+    store.adoptRemote({
+      attempt: {
+        taskId: task.id,
+        contentVersion: 1,
+        responses: {},
+        result: { complete: false, correctCount: 0, scoreableCount: 1 },
+        submittedAt: 500,
+      },
+    });
+    expect(store.getAttempt()?.result?.complete).toBe(true);
+    store.adoptRemote({
+      attempt: {
+        taskId: task.id,
+        contentVersion: 1,
+        responses: {},
+        result: { complete: false, correctCount: 0, scoreableCount: 1 },
+        submittedAt: 900,
+      },
+    });
+    expect(store.getAttempt()?.submittedAt).toBe(900);
+  });
+
+  it('does not persist when a remote snapshot has nothing newer', () => {
+    const save = vi.fn();
+    const store = make({ save });
+    store.setValue('b2', '本地');
+    save.mockClear();
+    store.adoptRemote({ responses: { b2: { value: '旧', updatedAt: 1 } } });
+    expect(save).not.toHaveBeenCalled();
+  });
+
   it('snapshots defensively (mutating the copy cannot corrupt state)', () => {
     const store = make();
     const snap = store.snapshot();
