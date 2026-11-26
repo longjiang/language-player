@@ -74,19 +74,20 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 55 | 74395962 | 2026-09-08 | — | dev 38 (Debug; archived; lp-dev-38-ios-device-7439596290e6.zip; 7d9901363582b6d562535e0618479e33c1c437a85c17f5812bad110ebdf8b03a) |
 | 56 | ffac75ce | 2026-09-08 | 3.5.0 — iOS TestFlight (b21, consumed) · 3.5.0 — Android Internal testing (b21, consumed) | — |
 | 57 | f6c7ab27 | 2026-09-16 | 3.6.0 — iOS TestFlight (b22, consumed) | — |
-| 58 | c9634ffb | 2026-09-16 | — | dev 39 (Debug; active; lp-dev-39-ios-device-c9634ffb9b32.zip; 4161a8881db30bbf8c48f12966e05c0bf0d7caa9082b87299bc22069bbc9fdd0) |
+| 58 | c9634ffb | 2026-09-16 | — | dev 39 (Debug; archived; lp-dev-39-ios-device-c9634ffb9b32.zip; 4161a8881db30bbf8c48f12966e05c0bf0d7caa9082b87299bc22069bbc9fdd0) |
 | 59 | 5aca7f47 | 2026-09-16 | — | dev 40 (Debug; active; lp-dev-40-ios-device-5aca7f47e8ac.zip; aa0e5e99967fb88de83dcf943c7e5cf133cb75ae5addad28384c1819fb506ac1) |
 | 60 | af7921ce | 2026-09-17 | 3.6.1 — iOS TestFlight (b23, consumed) | — |
 | 61 | 35db1b6b | 2026-09-17 | 3.6.2 — iOS TestFlight (b24, consumed) | — |
 | 62 | 102a7c1d | 2026-09-22 | 3.7.0 — iOS TestFlight (b25, consumed) · iOS App Store (b25, in review since 2026-09-25; releaseType AFTER_APPROVAL) | — |
 | 63 | d6f93e7a | 2026-10-01 | 3.7.1 — iOS TestFlight (b26, consumed) | — |
-| 64 | cb1a3618 | 2026-10-01 | — | dev 41 (Debug; deleted; lp-dev-41-ios-device-cb1a3618e1d6.zip; 701a965cc793cc4091e580f245574b92036c82a6336e9916afd96f422f7fc596) — broken: crashed at launch, `dyld: Library not loaded: @rpath/React.framework/React` |
+| 64 | cb1a3618 | 2026-10-01 | — | dev 41 (Debug; deleted; lp-dev-41-ios-device-cb1a3618e1d6.zip; 701a965cc793cc4091e580f245574b92036c82a6336e9916afd96f422f7fc596) |
 | 65 | f2a134e1 | 2026-10-01 | — | dev 42 (Debug; active; lp-dev-42-ios-device-f2a134e1ff99.zip; 5d6120a94189fd2e26f33d171e4a0ef17c24a5ea75daf483b6a453ab158cbccd) |
 | 66 | 1af62494 | 2026-10-01 | 3.7.2 — iOS TestFlight (b27, consumed) | — |
 | 67 | c44aafd2 | 2026-10-06 | 3.7.3 — iOS TestFlight (b28, consumed) · iOS App Store (b28, submitted for review 2026-10-26, review submission `b61afc68`; releaseType AFTER_APPROVAL) | — |
 | 68 | 79da10ff | 2026-11-01 | 3.8.0 — iOS TestFlight (b29, consumed) | — |
 | 69 | b9b6b597 | 2026-11-08 | 3.9.0 — iOS TestFlight (b30, consumed) | — |
 | 70 | 274a8c66 | 2026-11-09 | 3.10.0 — iOS TestFlight (b31, consumed) | — |
+| 71 | e35f078e | 2026-11-26 | — | dev 43 (Debug; active; lp-dev-43-ios-device-e35f078edea4.zip; a4890d3b1f261c3f953f3068d7081ac17c3e3657e10b254531332ce177eaa5fc) |
 
 ## Preserved working builds (deleted 2026-08-29)
 
