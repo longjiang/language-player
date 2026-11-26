@@ -9,6 +9,13 @@
 > (Analytics, Transactions) is the first group in the sidebar. The proxy's
 > post-login and wrong-surface redirects land on `/analytics` for admins.
 
+> **Amendment 2026-11-26:** Revenue amounts are no longer all estimates. The
+> metric calls `query_transactions()`, which now prices each row from its latest
+> `payment_events` payment (see
+> [SPEC-101 § Charged amount (ledger)](101-admin-transactions.md#charged-amount-ledger)).
+> Rows with no USD ledger payment keep the price-list estimate, so the note copy
+> distinguishes the two.
+
 ## Metadata
 
 - **Spec ID**: SPEC-100

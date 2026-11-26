@@ -425,7 +425,7 @@ export default function TransactionsPage() {
                   <th className="px-3 py-2 font-medium">{t('label.product')}</th>
                   <th className="px-3 py-2 text-right font-medium">
                     <SortButton
-                      label={t('label.price_est')}
+                      label={t('pricing.price')}
                       active={priceSortActive}
                       direction={sort === 'price_asc' ? 'asc' : 'desc'}
                       onClick={togglePriceSort}
@@ -456,7 +456,7 @@ export default function TransactionsPage() {
 
                 {rows.map((row) => {
                   const when = transactionDate(row.date);
-                  const sale = row.priceSource === 'sale';
+                  const charged = row.priceSource === 'ledger';
                   return (
                     <tr key={row.id} className="border-b border-border/70 align-top last:border-0">
                       <td className="whitespace-nowrap px-3 py-3">
@@ -489,7 +489,9 @@ export default function TransactionsPage() {
                       <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums">
                         <div className="flex items-center justify-end gap-1.5">
                           {row.price == null ? '—' : formatUsd(row.price)}
-                          {sale && <Badge variant="warning">{t('label.sale')}</Badge>}
+                          {charged && (
+                            <Badge variant="secondary">{t('label.charged')}</Badge>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -228,6 +228,9 @@ Same filters, no pagination. Returns `text/csv` with:
 `Date, Purchaser, Email, Product, Price (USD), Price source, Payment processor,
 Payment method, Payment ID, Status`
 
+`Price source` is `ledger` for an exact charged amount, `regular` for the
+price-list estimate, and `unknown` when the plan has no price row.
+
 Capped at 100,000 rows.
 
 ### Security
@@ -242,21 +245,27 @@ blueprint-level `before_request` hook calling `require_admin()`, matching
 - Route `/transactions`, added to the **Insights** group next to Signup
   Analytics.
 - `app/transactions/page.tsx` — client page with summary metrics, plan/date/
-  search filters, sortable Date and Price columns, pagination, sale badges, and
-  Export CSV.
+  search filters, sortable Date and Price columns, pagination, a **Charged**
+  badge on ledger-priced rows, and Export CSV.
 - `lib/transactions-api.ts` — typed list + CSV clients through
   `authenticatedFetch`.
 - `types/transactions.ts` — response and filter types.
 - `lib/timezone.ts` — `browserTimeZone()`, now shared with the analytics
   screen (previously local to `analytics-api.ts`).
-- All user-facing strings use `useT()`; 16 keys were added in 18 locales.
+- All user-facing strings use `useT()`; 17 keys were added in 18 locales
+  (`label.charged` was added with the 2026-11-26 amendment).
 
-The screen deliberately labels money as **estimated**:
+The screen distinguishes **exact** from **estimated** amounts:
 
-- “Total sales (est.)” and “Price (est.)”.
-- A note explains that only metadata is stored, prices come from the current
-  USD price list, and monthly/annual rows show their latest payment rather than
-  every renewal.
+- The price column is headed “Price”. Rows with `priceSource='ledger'` show the
+  amount collected and carry a **Charged** badge; a coupon purchase therefore
+  reads **$84.50**, not $169.00.
+- “Total sales (est.)” stays qualified because pre-ledger rows are still
+  estimates. The note explains that prices come from the payment ledger where a
+  record exists, older rows are estimated from the current USD price list, and
+  monthly/annual rows show their latest payment rather than every renewal.
+- The old sale badge and its `priceSource='sale'` branch were removed; SPEC-112
+  had already stopped returning that value.
 
 ## Verification
 
